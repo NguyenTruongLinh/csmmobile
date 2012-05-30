@@ -166,6 +166,8 @@ export const DateFormat = {
   AlertDetail_Date: 'MM/dd/yyyy HH:mm:ss', //"MMM DD, YYYY HH:mm:ss"
   POS_Filter_Date: 'MM/dd/yyyy',
   TranDate: 'MM/dd/yyyy HH:mm:ss',
+  QuerryDateTime: 'yyyyMMddHHmmss',
+  CalendarDate: 'yyyy-MM-dd',
 };
 
 export const Domain = {
@@ -295,7 +297,7 @@ export const AlertTypes = {
   CMSWEB_Report_Daily_Performance_Indicators: 203,
   CMSWEB_Report_What_If_Conversion_Rate: 204,
   CMSWEB_Report_Opportunity_By_Hour_Report: 205,
-  CMSWEB_Report_Year_to_date_toll_up: 206,
+  CMSWEB_Report_Year_to_dateToll_up: 206,
   CMSWEB_Report_Conversion_Comparison: 207,
   CMSWEB_Report_Hourly_Performance_Measurements: 208,
   CMSWEB_Report_Location_Detail_Hour: 209,
@@ -380,6 +382,18 @@ export const FilterMore = {
   VA: 7,
   ProcessOp: 8,
 };
+
+export const FilterParamNames = [
+  '', // AlertSeverity: 0,
+  'sta', // Status: 1,
+  'sid', // Sites: 2,
+  'time', // Time: 3,
+  'aty', // AlertType: 4,
+  'ara', // Rating: 5,
+  'ano', // Note: 6,
+  'vty', // VA: 7,
+  '', // ProcessOp: 8,
+];
 
 export const MSG_CMD = {
   MOBILE_MSG_GROUP_COMMUNICATION_BEGIN: 0,

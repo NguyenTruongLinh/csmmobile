@@ -246,7 +246,7 @@ class NotificationController extends React.Component {
     const {data, messageId} = message;
     const {videoStore, alarmStore, appStore} = this.props;
 
-    __DEV__ && console.log('GOND onNotificationReceived: ', data);
+    // __DEV__ && console.log('GOND onNotificationReceived: ', data);
     if (!this.validate(data)) {
       __DEV__ && console.log('GOND notification is not valid: ', data);
       return;

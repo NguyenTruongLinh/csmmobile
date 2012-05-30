@@ -64,6 +64,9 @@ export const ActionMessages = {
 export const Comps = {
   searchPlaceholder: 'Search',
   notePlaceholder: 'Please click here to add notes',
+  alarmFilterTitle: 'Alarm search',
+  searchButton: 'Search',
+  cancelButton: 'Cancel',
 };
 
 export const Video = {

@@ -310,8 +310,8 @@ export const parseAlarmData = item =>
   });
 
 const AlarmTime = types.model({
-  stime: types.number,
-  etime: types.number,
+  stime: types.string,
+  etime: types.string,
 });
 
 const AlarmFilterParams = types.model({
@@ -327,9 +327,10 @@ export const AlarmModel = types
     rateConfig: types.array(AlarmRate),
     vaConfig: types.array(AlarmTypeVA),
     liveAlarms: types.array(AlarmData),
+    searchAlarms: types.array(AlarmData),
     filterText: types.string,
     filterParams: types.maybeNull(AlarmFilterParams),
-    alarmPage: types.string,
+    searchPage: types.number,
     selectedAlarm: types.maybeNull(types.reference(AlarmData)),
     notifiedAlarm: types.maybeNull(AlarmData),
   })
@@ -337,6 +338,16 @@ export const AlarmModel = types
     get filteredLiveData() {
       if (!self.filterText) return self.liveAlarms;
       return self.liveAlarms.filter(
+        item =>
+          item.serverID.toLowerCase().includes(self.filterText) ||
+          item.siteName.toLowerCase().includes(self.filterText) ||
+          item.alertType.toLowerCase().includes(self.filterText) ||
+          item.description.toLowerCase().includes(self.filterText)
+      );
+    },
+    get filteredSearchData() {
+      if (!self.filterText) return self.searchAlarms;
+      return self.searchAlarms.filter(
         item =>
           item.serverID.toLowerCase().includes(self.filterText) ||
           item.siteName.toLowerCase().includes(self.filterText) ||
@@ -370,6 +381,9 @@ export const AlarmModel = types
         self.selectedAlarm = self.notifiedAlarm.kAlertEvent;
       }
       return true;
+    },
+    applySearchParams(params) {
+      self.filterParams = AlarmFilterParams.create(params);
     },
     getConfigs: flow(function* getConfigs() {
       try {
@@ -409,16 +423,21 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND get getVAAlert error: ', err);
       }
     }),
-    getAlarms: flow(function* getAlarms(params) {
+    getAlarms: flow(function* getAlarms(params, isSearch) {
       self.isLoading = true;
       try {
         const res = yield apiService.get(Alert.controller, null, null, params);
-        __DEV__ && console.log('GOND get getAlarms: ', res);
+        __DEV__ &&
+          console.log(
+            'GOND get getAlarms ',
+            isSearch ? 'search: ' : 'live: ',
+            res
+          );
 
         if (res.error) {
           __DEV__ && console.log('GOND get getAlarms failed: ', res.error);
         } else {
-          self.liveAlarms = res.map(item => {
+          const data = res.map(item => {
             if (!item.SnapShot || item.SnapShot.length <= 0) {
               let channelsList = [];
               let {ImageTime, ChanMask, Channel} = item;
@@ -447,6 +466,11 @@ export const AlarmModel = types
 
             return alarm;
           });
+          if (isSearch) {
+            self.searchAlarms = data;
+          } else {
+            self.liveAlarms = data;
+          }
         }
       } catch (err) {
         __DEV__ && console.log('GOND get getAlarms error: ', err);
@@ -508,8 +532,9 @@ const storeDefault = {
   rateConfig: [],
   vaConfig: [],
   liveAlarms: [],
+  searchAlarms: [],
   filter: null,
-  alarmPage: '',
+  searchPage: 0,
 };
 
 const alarmStore = AlarmModel.create(storeDefault);

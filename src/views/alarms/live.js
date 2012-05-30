@@ -21,10 +21,6 @@ import {Comps as CompTxt} from '../../localization/texts';
 import {AlertType_Support} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
 
-const Timer_Get_Image = 3000;
-const thumb_size = {width: 60, height: 60};
-const lastScrollPos = 0;
-
 class AlarmsLiveView extends Component {
   constructor(props) {
     super(props);
@@ -33,7 +29,8 @@ class AlarmsLiveView extends Component {
   componentDidMount() {
     __DEV__ && console.log('AlarmsLive componentDidMount');
 
-    this.refreshLiveData();
+    this.props.alarmStore.getLiveData(this.buildRequestParams());
+    // this.refreshLiveData();
   }
 
   componentWillUnmount() {
