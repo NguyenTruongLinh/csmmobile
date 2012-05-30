@@ -90,7 +90,7 @@ class LocalDB {
    * @returns {string}
    */
   deviceId = async id => {
-    //var model = getDB('deviceid');
+    //const model = getDB('deviceid');
     if (!id) {
       return await this.getDeviceId();
     } else {

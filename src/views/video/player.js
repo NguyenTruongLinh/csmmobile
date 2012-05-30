@@ -12,11 +12,7 @@ import {
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import {CalendarList} from 'react-native-calendars';
-import Modal, {
-  BottomModal,
-  ModalContent,
-  SlideAnimation,
-} from 'react-native-modals';
+import Modal, {SlideAnimation} from 'react-native-modals';
 import Orientation from 'react-native-orientation-locker';
 import TimePicker from 'react-native-24h-timepicker';
 

@@ -69,16 +69,16 @@ class TransactionFCMView extends Component {
   //       // edate: moment(tranDate).format('YYYYMMDD235959'),
   //       sdate: moment.utc(TransDate).format('YYYYMMDD000000'),
   //       edate: moment.utc(TransDate).format('YYYYMMDD235959'),
-  //       date_from: dateTran,
-  //       date_to: dateTran,
+  //       dateFrom: dateTran,
+  //       dateTo: dateTran,
   //       sites: sites ? sites : this.state.filter.sites,
   //     };
   //   } else {
   //     paramFilter = {
   //       sdate: moment().add(-1, 'days').startOf('day').format('YYYYMMDDHHmmss'),
   //       edate: moment().add(-1, 'days').endOf('day').format('YYYYMMDDHHmmss'),
-  //       date_from: moment().add(-1, 'days').startOf('day'),
-  //       date_to: moment().add(-1, 'days').endOf('day'),
+  //       dateFrom: moment().add(-1, 'days').startOf('day'),
+  //       dateTo: moment().add(-1, 'days').endOf('day'),
   //       sites: sites ? sites : this.props.sites,
   //     };
   //   }

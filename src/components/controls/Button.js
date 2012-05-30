@@ -20,7 +20,6 @@ class Button extends Component {
     icon: PropTypes.string,
     caption: PropTypes.string,
     onPress: PropTypes.func,
-    textColor: PropTypes.string,
     backgroundColor: PropTypes.string,
   };
 
@@ -30,7 +29,6 @@ class Button extends Component {
     iconSize: 18,
     height: undefined,
     width: undefined,
-    textColor: undefined,
     backgroundColor: undefined,
   };
 
@@ -245,7 +243,7 @@ class Button extends Component {
   }
 }
 
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     height: HEIGHT,
     flexDirection: 'row',

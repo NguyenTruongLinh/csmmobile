@@ -1,6 +1,6 @@
 import RNFetchBlob from 'rn-fetch-blob';
 import uuid from 'react-native-uuid';
-//var urlhelpers = require('url-parse');
+//import urlhelpers from 'url-parse';
 import CryptoJS from 'crypto-js';
 import {HttpModel} from '../actions/types';
 import JSONbig from 'json-bigint';
@@ -56,9 +56,9 @@ class Api {
     if (!params) return url;
 
     if (params) {
-      var qs = '';
-      for (var key in params) {
-        var value = params[key];
+      let qs = '';
+      for (let key in params) {
+        let value = params[key];
         if (value !== undefined)
           qs += encodeURIComponent(key) + '=' + encodeURIComponent(value) + '&';
       }
@@ -84,7 +84,7 @@ class Api {
 
   _defaultHeader(appid) {
     let version = this.config.version;
-    var headers = new Headers();
+    let headers = new Headers();
     headers.append('AppID', appid);
     headers.append('Accept', 'application/json');
     headers.append('Content-Type', 'application/json');
@@ -119,7 +119,7 @@ class Api {
     //header.SID = this.ApiToken.Id;
     header.set('SID', this.configToken.id);
     let url = this._baseUrl('account');
-    var body = JSON.stringify({UserName: _uid, Password: _pass});
+    let body = JSON.stringify({UserName: _uid, Password: _pass});
     let response = await fetch(url, {
       method: _Post,
       headers: header,
@@ -128,8 +128,8 @@ class Api {
     });
     if (response.status == 200) {
       header = response.headers;
-      var raw_token = header.get('www-authenticate');
-      var hindex = raw_token.indexOf('3rd-auth ');
+      let raw_token = header.get('www-authenticate');
+      let hindex = raw_token.indexOf('3rd-auth ');
       if (hindex >= 0)
         raw_token = raw_token.substr(hindex + '3rd-auth '.length);
       this.configToken.token = raw_token;
@@ -210,26 +210,25 @@ class Api {
   base64HmacSHA256(raw_string) {
     let hmac = this.encodeHmacSHA256(raw_string);
     if (!hmac) return;
-    var base64String = CryptoJS.enc.Base64.stringify(hmac);
-    return base64String;
+    return CryptoJS.enc.Base64.stringify(hmac);
   }
 
   encodeHmacSHA256(raw_string) {
     if (!raw_string || !this.configToken || !this.configToken.apiKey) return;
 
-    var buff = CryptoJS.enc.Utf8.parse(raw_string);
-    var buff_key = CryptoJS.enc.Utf8.parse(this.configToken.apiKey);
-    var hmac = CryptoJS.HmacSHA256(buff, buff_key);
+    let buff = CryptoJS.enc.Utf8.parse(raw_string);
+    let buff_key = CryptoJS.enc.Utf8.parse(this.configToken.apiKey);
+    let hmac = CryptoJS.HmacSHA256(buff, buff_key);
     return hmac;
   }
 
   async getBase64Stream(controller, id = '', action = '', params) {
     let url = this._baseUrl(controller, id, action);
     if (params) {
-      var qs = '';
+      let qs = '';
       if (params) {
-        for (var key in params) {
-          var value = params[key];
+        for (let key in params) {
+          let value = params[key];
           qs += encodeURIComponent(key) + '=' + encodeURIComponent(value) + '&';
         }
       }
@@ -348,7 +347,7 @@ class Api {
       //response =  await this.GetDVRs();
 
       if (res.status == 200) {
-        var rs = await res.json();
+        let rs = await res.json();
         return {status: res.status, Result: rs};
       } else {
         return res;

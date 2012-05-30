@@ -120,7 +120,7 @@ class AlarmThumb extends React.Component {
       // __DEV__ && console.log('GOND Alarm load thumb: onLoad ', data.thumb);
       let {imgsize} = this.props;
       if (res && res.isCloud == true) {
-        var url = res.url_thumnail;
+        let url = res.url_thumnail;
         if (this.viewRef) {
           this.setState({image: {uri: url, ...imgsize}, isloading: false});
         }
@@ -165,7 +165,7 @@ class AlarmThumb extends React.Component {
   }
 }
 
-// var styles_Com = StyleSheet.create({
+// const styles_Com = StyleSheet.create({
 
 // });
 

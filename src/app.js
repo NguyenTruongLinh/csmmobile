@@ -174,43 +174,6 @@ class App extends React.Component {
     }
   };
 
-  // onFilter = () => {
-  //   const state = store.getState();
-  //   let sdate, edate;
-  //   if (selectedSite.length == 0) {
-  //     selectedSite = state.sites;
-  //   }
-
-  //   if (!selectedSite || selectedSite.length <= 0) {
-  //     return;
-  //   }
-
-  //   let strDateNow = new Date();
-  //   strDateNow.setDate(strDateNow.getDate() - 1);
-  //   sdate = strDateNow;
-  //   edate = strDateNow;
-  //   if (state.posexception.Filter) {
-  //     sdate = state.posexception.Filter.date_from
-  //       ? state.posexception.Filter.date_from
-  //       : sdate;
-  //     edate = state.posexception.Filter.date_to
-  //       ? state.posexception.Filter.date_to
-  //       : edate;
-  //   }
-  //   let s = Actions.currentScene;
-  //   let idSelect = _(selectedSite)
-  //     .map(x => x.Key)
-  //     .value();
-  //   this.refs.cmsmodal.setState({
-  //     data: state.sites,
-  //     SitesSelected: idSelect,
-  //     date_from: sdate,
-  //     date_to: edate,
-  //   });
-  //   // this.modal.Open = true;
-  //   this.modal.open();
-  // };
-
   onAPNSTokenRefreshed = event => {
     // console.log('@GOND, onAppState event = ', event)
     if (!event) return;

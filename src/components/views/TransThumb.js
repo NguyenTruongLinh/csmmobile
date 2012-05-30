@@ -54,7 +54,7 @@ class TransThumb extends React.Component {
       if (catchname) data[catchname] = ret;
       let {imageSize} = this.props;
       if (ret && ret.isCloud == true) {
-        var url = ret.url_thumnail;
+        let url = ret.url_thumnail;
 
         this.setState({image: {uri: url, ...imageSize}, isloading: false});
       } else {

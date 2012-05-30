@@ -22,7 +22,7 @@ const IPhoneX_BottomBar_Height =
   Default_BottomBar_Height + IPHONEX_PADDING_BOTTOM - 15;
 const line_border_height = deviceHeight / deviceWidth <= 1.6 ? 1 : 0.5;
 export default {
-  ModalHeight_percent: 0.8,
+  ModalHeightPercentage: 0.8,
   bottombarheight:
     platform === 'ios'
       ? DeviceInfo.hasNotch()

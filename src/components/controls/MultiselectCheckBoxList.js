@@ -222,7 +222,7 @@ export default class MultiselectCheckBoxList extends Component {
   }
 }
 
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
   RowHeader: {
     height: session_header_height,
     backgroundColor: CMSColors.RowHeaderAccordion,

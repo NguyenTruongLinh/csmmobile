@@ -34,7 +34,7 @@ import {
   TEMPERATURE_ALARMS_TYPES,
 } from '../../consts/misc';
 import {Settings as SettingsTxt} from '../../localization/texts';
-const ModalHeight_percent = variable.ModalHeight_percent;
+const ModalHeightPercentage = variable.ModalHeightPercentage;
 
 const ModalTypes = {
   none: 0,
@@ -55,7 +55,7 @@ class NotifySettingView extends React.Component {
       dataTemperatureAlarms: [],
       showedModal: ModalTypes.none,
       notifySettingData: [],
-      modalheight: Dimensions.get('window').height * ModalHeight_percent,
+      modalheight: Dimensions.get('window').height * ModalHeightPercentage,
     };
   }
 
@@ -189,7 +189,7 @@ class NotifySettingView extends React.Component {
           selectedExceptions: this.state.selectedExceptions,
         };
 
-        // var settingsave = JSON.stringify(settings);
+        // let settingsave = JSON.stringify(settings);
         this.props.userStore.updateNotifySettings(newSettings);
       } else if (!isNullOrUndef(param.selectedTemperatureAlarms)) {
         let newSelectedList = this.state.selectedNotifies.filter(
@@ -260,8 +260,9 @@ class NotifySettingView extends React.Component {
     // );
 
     const {width, height} = Dimensions.get('window');
-    let init_height = (height - variable.StatusBarHeight) * ModalHeight_percent;
-    let init_width = (width - variable.StatusBarHeight) * ModalHeight_percent;
+    let init_height =
+      (height - variable.StatusBarHeight) * ModalHeightPercentage;
+    let init_width = (width - variable.StatusBarHeight) * ModalHeightPercentage;
     // __DEV__ && console.log('GOND render_FilterModel, init_height = ', init_height);
     return (
       <ModalBase
@@ -275,7 +276,7 @@ class NotifySettingView extends React.Component {
         <View style={{flex: 1, flexDirection: 'column'}}>
           <TouchableOpacity
             style={{
-              flex: 1 - ModalHeight_percent,
+              flex: 1 - ModalHeightPercentage,
               backgroundColor: CMSColors.BorderColor,
             }}
             activeOpacity={1}
@@ -302,8 +303,9 @@ class NotifySettingView extends React.Component {
     let {showedModal, modalheight} = this.state;
 
     const {width, height} = Dimensions.get('window');
-    let init_height = (height - variable.StatusBarHeight) * ModalHeight_percent;
-    let init_width = (width - variable.StatusBarHeight) * ModalHeight_percent;
+    let init_height =
+      (height - variable.StatusBarHeight) * ModalHeightPercentage;
+    let init_width = (width - variable.StatusBarHeight) * ModalHeightPercentage;
     return (
       <ModalBase
         animationType={'slide'}
@@ -316,7 +318,7 @@ class NotifySettingView extends React.Component {
         <View style={{flex: 1, flexDirection: 'column'}}>
           <TouchableOpacity
             style={{
-              flex: 1 - ModalHeight_percent,
+              flex: 1 - ModalHeightPercentage,
               backgroundColor: CMSColors.BorderColor,
             }}
             activeOpacity={1}
