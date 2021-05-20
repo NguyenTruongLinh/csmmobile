@@ -2,8 +2,35 @@ import RNDBModel from 'react-native-db-models';
 import uuid from 'react-native-uuid';
 
 import {isNullOrUndef} from '../util/general';
+
+const cmsDBName = 'i3cms';
+init = async () => {
+  let cmsdb = new RNDBModel.create_db(cmsDBName);
+
+  if (isNullOrUndef(cmsdb)) {
+    console.log('GOND error! Cannot init db!');
+    return false;
+  }
+  return await new Promise(function (resolve) {
+    setTimeout(() => {
+      cmsdb.add({isInitialized: true}, result => {
+        resolve(result);
+      });
+    }, 1);
+  });
+};
+
+isFirstLaunch = async () => {
+  const model = RNDBModel[cmsDBName];
+  if (!model) {
+    await init();
+    return true;
+  }
+  return false;
+};
+
 /**
- * initDB
+ * getDB
  * @param {string} name
  * @returns {object}
  */
