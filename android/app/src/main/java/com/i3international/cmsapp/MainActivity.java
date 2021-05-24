@@ -1,4 +1,4 @@
-package com.cmsmobile;
+package com.i3international.cmsapp;
 
 import com.facebook.react.ReactActivity;
 
@@ -10,6 +10,6 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "cmsmobile";
+    return "CMSApp";
   }
 }

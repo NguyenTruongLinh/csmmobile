@@ -1,4 +1,18 @@
 module.exports = {
-  root: true,
-  extends: '@react-native-community',
+  env: {
+    node: true,
+    es2021: true,
+  },
+  extends: ['plugin:react/recommended', 'airbnb', 'prettier'],
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true,
+    },
+    ecmaVersion: 12,
+    sourceType: 'module',
+  },
+  plugins: ['react'],
+  rules: {
+    'react/prefer-stateless-function': 'off',
+  },
 };

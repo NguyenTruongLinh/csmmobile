@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "935274135296",
+    "firebase_url": "https://cms-mobile-310ad.firebaseio.com",
+    "project_id": "cms-mobile-310ad",
+    "storage_bucket": "cms-mobile-310ad.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935274135296:android:f5f4f63b31a420ee",
+        "android_client_info": {
+          "package_name": "com.i3international.cmsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "935274135296-vbvrkv404h7bud499k6nivd2a0hpl6u5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBS4-fYgjuxJDygB5d_naCqiRSntQX8ThQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "935274135296-vbvrkv404h7bud499k6nivd2a0hpl6u5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "935274135296-233jg8tmlil1c9r7uo5ner9lmcmosf59.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.i3International.CMSApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
