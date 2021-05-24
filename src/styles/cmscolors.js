@@ -12,22 +12,20 @@ const Very_Light_Gray_Mostly_White = '#FAFAFA';
 const Dark_Gray = '#757575';
 const Dark_Gray_2 = '#444444';
 
-
 module.exports = {
-
   // define Color CMS
   DarkPrimaryColor: '#2C5072',
-  PrimaryColor:'#436D8F',
+  PrimaryColor: '#436D8F',
   BlueSky: '#78A6C2',
-  LightPrimaryColor:'#C7D3DD',
-  AccentColor:'#FFD454',
-  PrimaryText:'#212121',
+  LightPrimaryColor: '#C7D3DD',
+  AccentColor: '#FFD454',
+  PrimaryText: '#212121',
   SecondaryText: '#757575',
   DividerColor: '#BDBDBD',
   DividerColor16: 'rgba(189,189,189,0.16)',
-  DividerColor24: 'rgba(189, 189, 189, 0.24)',//'#BDBDBD',
-  DividerColor54: 'rgba(189, 189, 189, 0.54)',//'#BDBDBD',
-  PrimaryColor54: 'rgba(33,33,33, 0.54)',//'#BDBDBD',
+  DividerColor24: 'rgba(189, 189, 189, 0.24)', //'#BDBDBD',
+  DividerColor54: 'rgba(189, 189, 189, 0.54)', //'#BDBDBD',
+  PrimaryColor54: 'rgba(33,33,33, 0.54)', //'#BDBDBD',
   DividerColor3: '#D8D8D8',
   DividerColor24_HEX: '#EFEFEF',
 
@@ -57,7 +55,7 @@ module.exports = {
   darkBackground: '#183E63',
   borderColor: 'rgba(0, 0, 0, .38)',
 
-  errorColor:'red',
+  errorColor: 'red',
   indicatorColor: 'rgb(245, 200, 10)',
   backgroundChart: White,
   backgroundModal: White,
@@ -101,6 +99,8 @@ module.exports = {
   //COMPONENT
   borderActiveColor: Dark_Moderate_Blue,
   iconButton: Very_Dark_Gray,
+  primaryActive: '#00AFFF',
+  inactive: '#DCE4EA',
 
   //Bottom Bar
   backgroundBar: '#fff',
@@ -111,6 +111,6 @@ module.exports = {
     Green: '#449D43',
     Yellow: '#F9A825',
     Red: '#A72D2A',
-    White: '#FFF'
+    White: '#FFF',
   },
 };
