@@ -6,7 +6,9 @@ import {LiquidLike} from 'react-native-animated-pagination-dots';
 // import {} from '../../navigation/navigationService';
 
 import Button from '../../components/controls/Button';
+
 import CMSColors from '../../styles/cmscolors';
+import styles from '../../styles/scenes/intro.style';
 
 const IntroData = [
   {
@@ -77,6 +79,7 @@ class CMSIntroView extends Component {
     if (this.introList && this.state.currentIndex < IntroData.length - 1)
       this.introList.scrollToIndex({index: this.state.currentIndex + 1});
     else if (this.state.currentIndex == IntroData.length - 1) {
+      this.onSkipIntro();
     }
   };
 
@@ -87,7 +90,7 @@ class CMSIntroView extends Component {
 
   handleScroll = event => {
     // Save the x (horizontal) value each time a scroll occurs
-    // console.log('GOND handleScroll, nativeEvent = ', event.nativeEvent);
+    // __DEV__ && console.log('GOND handleScroll, nativeEvent = ', event.nativeEvent);
     this.scrollX.setValue(event.nativeEvent.contentOffset.x);
   };
 
@@ -98,52 +101,27 @@ class CMSIntroView extends Component {
     console.log('GOND intro item = ', item);
     return (
       <View
-        style={{
-          flex: 1,
-          width: dim.width,
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
+        style={[
+          styles.listItemContainer,
+          {
+            width: dim.width,
+          },
+        ]}>
         <Image
-          // should not set marginLeft, edit image instead
-          style={{flex: 7}}
+          style={styles.itemImage}
           source={item.image}
           width={dim.width * 0.7}
           resizeMode="contain"
         />
         <View
-          style={{
-            flex: 3,
-            justifyContent: 'center',
-            width: dim.width,
-          }}>
-          <Text
-            style={{
-              textAlign: 'center',
-              fontSize: 24,
-              fontWeight: '700',
-              paddingTop: 7,
-              paddingLeft: 35,
-              paddingRight: 35,
-              fontFamily: 'Roboto-Regular',
-            }}>
-            {item.title}
-          </Text>
-          <Text
-            style={{
-              textAlign: 'center',
-              fontSize: 16,
-              fontWeight: '400',
-              lineHeight: 24,
-              paddingTop: 21,
-              paddingLeft: 56,
-              paddingRight: 56,
-              flexWrap: 'wrap',
-              fontFamily: 'Roboto-Regular',
-            }}>
-            {item.description}
-          </Text>
+          style={[
+            styles.itemTextContainer,
+            //{
+            // width: dim.width,
+            //}
+          ]}>
+          <Text style={styles.itemTitle}>{item.title}</Text>
+          <Text style={styles.itemDesc}>{item.description}</Text>
         </View>
       </View>
     );
@@ -151,23 +129,13 @@ class CMSIntroView extends Component {
 
   render() {
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'flex-end',
-            marginRight: 35,
-            marginTop: 28,
-          }}>
+      <View style={styles.container}>
+        <View style={styles.skipContainer}>
           <Button
             enable={true}
             type={'flat'}
             caption={'SKIP'}
-            captionStyle={{
-              fontWeight: '500',
-              fontSize: 16,
-              color: CMSColors.primaryActive,
-            }}
+            captionStyle={styles.skipCaption}
           />
         </View>
         <View style={{flex: 8}}>
@@ -188,13 +156,7 @@ class CMSIntroView extends Component {
             ref={r => (this.introList = r)}
           />
         </View>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
+        <View style={styles.indicatorContainer}>
           <LiquidLike
             data={IntroData}
             scrollX={this.scrollX}
@@ -205,51 +167,26 @@ class CMSIntroView extends Component {
           />
         </View>
 
-        <View
-          style={{
-            flex: 2,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View style={{flex: 1, alignContent: 'flex-start'}}>
+        <View style={styles.footerContainer}>
+          <View style={styles.backContainer}>
             {this.state.currentIndex > 0 ? (
               <Button
                 enable={true}
-                style={{
-                  height: 63,
-                  marginLeft: 28,
-                  marginRight: 49,
-                }}
+                style={styles.backButton}
                 type={'flat'}
                 caption={'< BACK'}
-                captionStyle={{
-                  fontWeight: '500',
-                  fontSize: 16,
-                  color: CMSColors.primaryActive,
-                }}
+                captionStyle={styles.backCaption}
                 onPress={this.onBackStep}
               />
             ) : null}
           </View>
-          <View style={{flex: 1, alignContent: 'flex-end'}}>
+          <View style={styles.nextContainer}>
             <Button
               enable={true}
-              style={{
-                backgroundColor: CMSColors.primaryActive,
-                height: 65,
-                marginLeft: 49,
-                marginRight: 35,
-                borderRadius: 2,
-              }}
+              style={styles.nextButton}
               type={'primary'}
               caption={'NEXT'}
-              styleCaption={{
-                fontWeight: '500',
-                fontSize: 16,
-                color: CMSColors.White,
-                justifyContent: 'center',
-              }}
+              styleCaption={styles.nextCaption}
               onPress={this.onNextStep}
             />
           </View>
