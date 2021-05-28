@@ -78,6 +78,7 @@ const _OAM = {
 };
 
 module.exports = {
+  Route: '/api/3rd',
   Account: _Account,
   Alertype: _Alertype,
   Site: _Site,

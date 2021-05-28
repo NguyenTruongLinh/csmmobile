@@ -57,9 +57,11 @@ class LoginView extends Component {
       username: '',
       password: '',
     };
-    this.domainBox = null;
-    this.usernameBox = null;
-    this.passwordBox = null;
+    this._refs = {
+      domain: null,
+      username: null,
+      password: null,
+    };
     this.keyboardView = null;
   }
 
@@ -74,13 +76,13 @@ class LoginView extends Component {
   onTypingDomain = text => {};
 
   onSubmitDomain = () => {
-    this.usernameBox && this.usernameBox.focus();
+    this._refs.username && this._refs.username.focus();
   };
 
   onTypingUsername = text => {};
 
   onSubmitUserName = () => {
-    this.passwordBox && this.passwordBox.focus();
+    this._refs.password && this._refs.password.focus();
   };
 
   onEndEditing = (event, name) => {
@@ -96,7 +98,7 @@ class LoginView extends Component {
     // let { errors = {} } = this.state;
     // this._scrollToInput(findNodeHandle(event.target));
     // for (let name in errors) {
-    //   let ref = this.refs[name];
+    //   let ref = this._refs[name];
     //   if (ref && ref.isFocused && ref.isFocused()) {
     //     delete errors[name];
     //   }
@@ -104,7 +106,68 @@ class LoginView extends Component {
     // this.setState({ errors });
   };
 
-  onLogin = () => {};
+  removeSpecificPort = domain => {
+    let ssl_port = ':443';
+    let nonssl_port = ':80';
+    let isSSL = domain.startsWith('https://');
+    let specificPort = isSSL ? ssl_port : nonssl_port;
+
+    if (domain.endsWith(specificPort) || domain.includes(specificPort + '/'))
+      domain = domain.replace(specificPort, '');
+    if (domain.endsWith('/')) {
+      domain = domain.substring(0, domain.length - 1);
+    }
+    return domain;
+  };
+
+  validatedomain = domain => {
+    if (!domain) return;
+
+    if (
+      domain.startsWith('http://') == false &&
+      domain.startsWith('https://') == false
+    )
+      domain = 'https://' + domain;
+
+    let options = {
+      schemes: ['http', 'https'],
+      allowLocal: true,
+      message: 'Domain is not a valid url.',
+    };
+    return validators.url(domain, options);
+  };
+
+  onLogin = () => {
+    const {errors, username, password} = this.state;
+    let domain = this.state.domain;
+    if (!domain) return;
+
+    const regexSubName = /^[A-z0-9]+$/;
+    if (regexSubName.test(domain)) {
+      domain = Domain.urlI3care + domain;
+    }
+
+    if (
+      !domain.startsWith(domain, 'http://') &&
+      !domain.startsWith(domain, 'https://')
+    )
+      domain = 'https://' + domain;
+
+    let invalid = this.validatedomain(domain);
+    if (invalid) {
+      errors.domainname = invalid;
+      this.setState({errors: errors});
+      return;
+    }
+
+    domain = this.removeSpecificPort(domain);
+
+    if (this.props.userStore) {
+      this.props.userStore.login(domain, username, password);
+    } else {
+      console.log('GOND Login failed, no userStore available!', this.props);
+    }
+  };
 
   onBack = () => {
     console.log('GOND Login onback <');
@@ -113,6 +176,17 @@ class LoginView extends Component {
 
   render() {
     const {width} = Dimensions.get('window');
+    const {domain, username, password} = this.state;
+    console.log(
+      'GOND login domain = ',
+      domain,
+      ', usn = ',
+      username,
+      ', psw = ',
+      password,
+      ', isloading = ',
+      this.props.appStore.isLoading
+    );
 
     return (
       <View
@@ -125,9 +199,9 @@ class LoginView extends Component {
           // enableAutomaticScroll={true}
           contentContainerStyle={{flex: 1}}
           getTextInputRefs={() => [
-            this.domainBox,
-            this.usernameBox,
-            this.passwordBox,
+            this._refs.domain,
+            this._refs.username,
+            this._refs.password,
           ]}>
           <View style={{flex: 1}}>
             <View
@@ -144,12 +218,12 @@ class LoginView extends Component {
                 }}
                 enable={true}
                 type={'flat'}
-                caption={'X'}
-                styleCaption={{
-                  color: 'CMSColors.PrimaryText',
-                  fontSize: 24,
-                  fontWeight: '500',
+                iconCustom={'clear-button'}
+                iconSize={16}
+                iconStyleEnable={{
+                  color: CMSColors.colorText,
                 }}
+                // iconStyleDisable={{}}
                 onPress={this.onBack}
               />
             </View>
@@ -187,7 +261,8 @@ class LoginView extends Component {
               {/* <View style={styles.centerContent}> */}
               <View style={{alignItems: 'center'}}>
                 <InputTextIcon
-                  ref={r => (this.domainBox = r)}
+                  ref={r => (this._refs.domain = r)}
+                  name="domain"
                   value={this.state.domain}
                   maxLength={60}
                   enablesReturnKeyAutomatically={true}
@@ -207,7 +282,7 @@ class LoginView extends Component {
                   secureTextEntry={false}
                 />
                 <InputTextIcon
-                  ref={r => (this.usernameBox = r)}
+                  ref={r => (this._refs.username = r)}
                   name="username"
                   maxLength={60}
                   value={this.state.username}
@@ -232,7 +307,7 @@ class LoginView extends Component {
                   secureTextEntry={false}
                 />
                 <InputTextIcon
-                  ref={r => (this.passwordBox = r)}
+                  ref={r => (this._refs.password = r)}
                   name="password"
                   maxLength={60}
                   autoCapitalize={'none'}
@@ -270,9 +345,14 @@ class LoginView extends Component {
                 }}
                 caption="LOGIN"
                 type="primary"
-                styleCaption={{}}
+                captionStyle={{}}
                 onPress={this.onLogin}
-                enable={this.state.canLogin}
+                enable={
+                  domain &&
+                  username &&
+                  password &&
+                  !this.props.appStore.isLoading
+                }
               />
               <Button
                 style={{
@@ -281,7 +361,7 @@ class LoginView extends Component {
                 }}
                 caption="FORGOT PASSWORD?"
                 type="flat"
-                styleCaption={{}}
+                captionStyle={{}}
                 onPress={this.onLogin}
                 enable={true}
               />
@@ -293,4 +373,4 @@ class LoginView extends Component {
   }
 }
 
-export default inject('userStore')(observer(LoginView));
+export default inject('userStore', 'appStore')(observer(LoginView));

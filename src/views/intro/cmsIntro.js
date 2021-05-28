@@ -67,12 +67,9 @@ class CMSIntroView extends Component {
   }
 
   onIntroItemChanged = ({viewableItems}) => {
-    console.log('GOND onIntroItemChanged ', viewableItems);
+    // console.log('GOND onIntroItemChanged ', viewableItems);
     this.setState({currentIndex: viewableItems[0].index});
-    // this.currentIndex = IntroData.findIndex(
-    //   item => item.key == viewableItems[0].key
-    // );
-    console.log('GOND onIntroItemChanged currentIndex = ', this.currentIndex);
+    // console.log('GOND onIntroItemChanged currentIndex = ', this.currentIndex);
   };
 
   onSkipIntro = () => {

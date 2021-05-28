@@ -7,6 +7,7 @@ import userStore from './stores/user';
 import App from './app';
 
 const Main = () => {
+  console.log('GOND userStore: ', userStore);
   return (
     <Provider appStore={appStore} userStore={userStore}>
       <App />

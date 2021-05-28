@@ -307,8 +307,8 @@ export default class InputTextIcon extends PureComponent {
       );
     }
     const revealIconStyle = this.state.revealHidden
-      ? {color: CMSColors.primaryActive}
-      : {};
+      ? {}
+      : {color: CMSColors.primaryActive};
 
     return (
       <View style={{flexDirection: 'row', alignSelf: 'center'}}>
@@ -365,7 +365,7 @@ export default class InputTextIcon extends PureComponent {
         </View>
         {this.props.secureTextEntry ? (
           <IconCustom
-            name={'sensor'}
+            name={'turn-visibility-off-button'}
             size={variable.fix_fontSize_Icon}
             style={[{color: baseColor}, styles.icon, revealIconStyle]}
             onPress={() => {

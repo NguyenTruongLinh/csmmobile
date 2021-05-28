@@ -42,10 +42,8 @@ class Button extends Component {
    */
   renderIcon(enable_style, disable_style) {
     let icon;
-
     if (this.props.icon) {
-      let size =
-        this.props.iconsize === undefined ? FONT_SIZE : this.props.iconsize;
+      let size = this.props.iconSize || FONT_SIZE;
       icon = (
         <Icon
           name={this.props.icon}
@@ -59,8 +57,8 @@ class Button extends Component {
       );
     }
     if (this.props.iconCustom) {
-      let size =
-        this.props.iconsize == undefined ? FONT_SIZE : this.props.iconsize;
+      let size = this.props.iconSize || FONT_SIZE;
+      console.log('GOND enable_style = ', enable_style);
       icon = (
         <IconCustom
           name={this.props.iconCustom}
@@ -112,13 +110,14 @@ class Button extends Component {
    * @returns JSXElement
    */
   renderCustom(caption) {
+    console.log('GOND iconStyleEnable ', this.props.iconStyleEnable);
     let icon = this.renderIcon(
-      this.props.IconStyleEnable,
-      this.props.IconStyleDisable
+      this.props.iconStyleEnable,
+      this.props.iconStyleDisable
     );
     let text = this.renderText(
       caption,
-      this.props.styleCaption ? this.props.styleCaption : styles.primaryCaption,
+      this.props.captionStyle ? this.props.captionStyle : styles.primaryCaption,
       styles.disableCaption
     );
     let Background = this.props.backgroundColor
@@ -149,7 +148,7 @@ class Button extends Component {
     let icon = this.renderIcon(styles.primaryCaption, styles.disableCaption);
     let text = this.renderText(
       caption,
-      {...styles.primaryCaption, ...(this.props.styleCaption || {})},
+      {...styles.primaryCaption, ...(this.props.captionStyle || {})},
       styles.disableCaption
     );
     let Background = this.props.backgroundColor
@@ -177,12 +176,15 @@ class Button extends Component {
    * @returns JSXElement
    */
   renderFlat(caption) {
-    const {styleCaption, captionDisabledStyle} = this.props;
-    let icon = this.renderIcon(styles.flatCaption, styles.flatcaptiondisable);
+    const {captionStyle, captionDisabledStyle} = this.props;
+    let icon = this.renderIcon(
+      this.props.iconStyleEnable || styles.flatCaption,
+      this.props.iconStyleDisable || styles.flatCaptionDisable
+    );
     let text = this.renderText(
       caption,
-      {...styles.flatCaption, ...styleCaption},
-      captionDisabledStyle || styles.flatcaptiondisable
+      {...styles.flatCaption, ...captionStyle},
+      captionDisabledStyle || styles.flatCaptionDisable
     );
     return (
       <MaterialButton.Button
@@ -235,7 +237,7 @@ class Button extends Component {
       return this.renderPrimary(caption);
     } else if (this.props.type === 'link') {
       return this.renderLink(caption);
-    } else if (this.props.type === 'Custom') {
+    } else if (this.props.type === 'custom') {
       return this.renderCustom(caption);
     } else {
       return this.renderFlat(caption);
@@ -309,7 +311,7 @@ var styles = StyleSheet.create({
     // color: 'rgba(0, 86, 145, 1)',
     color: CMSColors.primaryActive,
   },
-  flatcaptiondisable: {
+  flatCaptionDisable: {
     color: 'rgb(156,156,156)',
   },
 

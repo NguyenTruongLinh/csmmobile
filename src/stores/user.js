@@ -2,6 +2,13 @@ import {types} from 'mobx-state-tree';
 import {MODULES, Orient} from '../consts/misc';
 import ROUTERS from '../consts/routes';
 
+import {Route, Account} from '../consts/apiRoutes';
+import apiService from '../services/api';
+import dbService from '../services/localdb';
+
+// TODO: fixit
+const AppId = '4d53bce03ec34c0a911182d4c228ee6c';
+
 const ModuleModel = types
   .model({
     moduleId: types.identifierNumber,
@@ -119,7 +126,6 @@ export const UserDataModel = types
   .model({
     user: types.maybeNull(UserModel),
     error: types.maybeNull(types.string),
-    loading: types.boolean,
     message: types.string,
     isLoggedIn: types.boolean,
     loginInfo: types.maybeNull(LoginModel),
@@ -130,11 +136,34 @@ export const UserDataModel = types
     routes: types.array(types.string),
   })
   .actions(self => ({
+    async login(domain, username, password) {
+      self.error = '';
+
+      apiService.updateConfig(
+        {
+          Url: domain + Route,
+          AppId: AppId,
+          Version: '',
+        },
+        {
+          Id: '',
+          ApiKey: '',
+          Token: '',
+        }
+      );
+
+      const res = await apiService.login(username, password);
+      console.log('GOND login res = ', res);
+      if (res && res.status == 200) {
+        self.loginSuccess(res.Result);
+      } else {
+        self.loginFailed(res.Result);
+      }
+    },
     logout() {
       self.user = getAnonymousUser();
       self.error = '';
       self.message = '';
-      self.loading = false;
       self.isLoggedIn = false;
       self.fcm = null;
       self.api = null;
@@ -144,7 +173,6 @@ export const UserDataModel = types
     loginSuccess(data) {
       self.user.load(data);
       self.error = '';
-      self.loading = false;
       self.message = data.message || '';
       self.isLoggedIn = true;
       self.api = getDefaultAPI().load(data.Api);
@@ -164,10 +192,7 @@ export const UserDataModel = types
     },
     loginFailed(data) {
       self.loginInfo = LoginModel.create(data);
-    },
-    loginRequest() {
-      self.loading = true;
-      self.error = '';
+      self.error = data.error;
     },
     loginError(errorMessage) {
       self.error = errorMessage;
@@ -207,10 +232,9 @@ export const UserDataModel = types
     },
   }));
 
-export const userStore = UserDataModel.create({
+const userStore = UserDataModel.create({
   user: null,
   error: null,
-  loading: false,
   message: '',
   isLoggedIn: false,
   fcm: null,
@@ -219,4 +243,4 @@ export const userStore = UserDataModel.create({
   routes: [],
 });
 
-// export default userStore;
+export default userStore;

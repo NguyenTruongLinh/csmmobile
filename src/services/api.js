@@ -6,22 +6,32 @@ import {HttpModel} from '../actions/types';
 import JSONbig from 'json-bigint';
 import AES from 'crypto-js/aes';
 
-const _Get = 'GET';
+const _get = 'GET';
 const _Post = 'POST';
 const _Put = 'PUT';
 const _Delete = 'DELETE';
 
-export default class Api {
-  constructor(config, configToken) {
-    this._Api = config;
-    this._ApiToken = configToken;
+class Api {
+  // constructor(config, configToken) {
+  //   this._Api = config;
+  //   this._ApiToken = configToken;
+  // }
+
+  constructor() {
+    this.config = {};
+    this.configToken = {};
   }
 
-  UpdateDeviceId(id) {
-    if (this._ApiToken && id) this._ApiToken.devId = id;
+  updateConfig(config, configToken) {
+    this.config = config;
+    this.configToken = configToken;
   }
 
-  Url(controller = '', id = '', action = '', params) {
+  updateDeviceId(id) {
+    if (this.configToken && id) this.configToken.devId = id;
+  }
+
+  url(controller = '', id = '', action = '', params) {
     let url;
     url = this._baseUrl(controller, id, action);
     if (!params) return url;
@@ -42,8 +52,8 @@ export default class Api {
   }
 
   _baseUrl(controller = '', id = '', action = '') {
-    let ver = this._Api.Version;
-    let urlbase = this._Api.Url; //+ ((ver ==='' || ver=== undefined)?'' : ('/' + ver) );
+    let ver = this.config.Version;
+    let urlbase = this.config.Url; //+ ((ver ==='' || ver=== undefined)?'' : ('/' + ver) );
     if (!controller || controller === '') return urlbase;
     if (!id || id === '') {
       if (action) return urlbase + '/' + controller + '/' + action;
@@ -54,7 +64,7 @@ export default class Api {
   }
 
   _defaultHeader(appid) {
-    let version = this._Api.Version;
+    let version = this.config.Version;
     var headers = new Headers();
     headers.append('AppID', appid);
     headers.append('Accept', 'application/json');
@@ -67,17 +77,17 @@ export default class Api {
 
   async _getApiKey(controller) {
     try {
-      let header = this._defaultHeader(this._Api.AppId);
+      let header = this._defaultHeader(this.config.AppId);
       let url = this._baseUrl(controller);
       console.log(url);
-      let response = await fetch(url, {method: _Get, headers: header});
+      let response = await fetch(url, {method: _get, headers: header});
 
       if (response.status == 200) {
         let header = response.headers;
         let sid = header.get('SID');
         let arrayOfStrings = sid.split(':');
-        this._ApiToken.Id = arrayOfStrings[0];
-        this._ApiToken.ApiKey = arrayOfStrings[1];
+        this.configToken.Id = arrayOfStrings[0];
+        this.configToken.ApiKey = arrayOfStrings[1];
       }
       return response;
     } catch (ex) {
@@ -85,10 +95,10 @@ export default class Api {
     }
   }
 
-  async _Login(_uid, _pass) {
-    let header = this._defaultHeader(this._Api.AppId);
+  async _login(_uid, _pass) {
+    let header = this._defaultHeader(this.config.AppId);
     //header.SID = this.ApiToken.Id;
-    header.set('SID', this._ApiToken.Id);
+    header.set('SID', this.configToken.Id);
     let url = this._baseUrl('account');
     var body = JSON.stringify({UserName: _uid, Password: _pass});
     let response = await fetch(url, {
@@ -103,19 +113,19 @@ export default class Api {
       var hindex = raw_token.indexOf('3rd-auth ');
       if (hindex >= 0)
         raw_token = raw_token.substr(hindex + '3rd-auth '.length);
-      this._ApiToken.Token = raw_token;
+      this.configToken.Token = raw_token;
     }
     return response;
   }
 
-  Token(method, url, jsoncontent) {
-    let _method = _Get;
-    if (method != undefined && method != null) _method = method;
-    let token = this._generateToken(this._Api.AppId, _method, url, jsoncontent);
-    let header = this._defaultHeader(this._Api.AppId);
-    header.set('Authorization', '3rd-auth ' + token);
-    return header;
-  }
+  // Token(method, url, jsoncontent) {
+  //   let _method = _get;
+  //   if (method != undefined && method != null) _method = method;
+  //   let token = this._generateToken(this.config.AppId, _method, url, jsoncontent);
+  //   let header = this._defaultHeader(this.config.AppId);
+  //   header.set('Authorization', '3rd-auth ' + token);
+  //   return header;
+  // }
 
   _generateToken(appid, method, url, content = '') {
     //console.log(url);
@@ -135,11 +145,11 @@ export default class Api {
       guid.toString() +
       request_content;
     var buff = CryptoJS.enc.Utf8.parse(raw_string);
-    var buff_key = CryptoJS.enc.Utf8.parse(this._ApiToken.ApiKey);
-    var hmac = CryptoJS.HmacSHA256(buff, buff_key);
+    var buff_key = CryptoJS.enc.Utf8.parse(this.configToken.ApiKey);
+    var hmac = CryptoJS.hmacSHA256(buff, buff_key);
     var base64String = CryptoJS.enc.Base64.stringify(hmac);
     var token =
-      this._Api.AppId +
+      this.config.AppId +
       ':' +
       base64String +
       ':' +
@@ -147,16 +157,21 @@ export default class Api {
       ':' +
       today.getTime().toString() +
       ':' +
-      this._ApiToken.Token;
+      this.configToken.Token;
     return token;
   }
 
-  _RNFetchBlob(url, requestmoethod, body) {
-    let token = this._generateToken(this._Api.AppId, requestmoethod, url, body);
+  _fetchBlob(url, requestmoethod, body) {
+    let token = this._generateToken(
+      this.config.AppId,
+      requestmoethod,
+      url,
+      body
+    );
 
     let header = {
       Authorization: '3rd-auth ' + token,
-      AppID: this._Api.AppId,
+      AppID: this.config.AppId,
       'Content-Type': 'application/json',
     };
     //console.log('url:' + url);
@@ -166,35 +181,40 @@ export default class Api {
     else return RNFetchBlob.fetch(requestmoethod, url, header, body);
   }
 
-  _Fetch(url, requestmoethod, body) {
-    let token = this._generateToken(this._Api.AppId, requestmoethod, url, body);
-    let header = this._defaultHeader(this._Api.AppId);
+  _fetch(url, requestmoethod, body) {
+    let token = this._generateToken(
+      this.config.AppId,
+      requestmoethod,
+      url,
+      body
+    );
+    let header = this._defaultHeader(this.config.AppId);
     header.set('Authorization', '3rd-auth ' + token);
-    if (this._ApiToken && this._ApiToken.devId)
-      header.set('devId', this._ApiToken.devId);
+    if (this.configToken && this.configToken.devId)
+      header.set('devId', this.configToken.devId);
     if (body === null || body === undefined)
       return fetch(url, {method: requestmoethod, headers: header});
     else
       return fetch(url, {method: requestmoethod, headers: header, body: body});
   }
 
-  Base64HmacSHA256(raw_string) {
-    let hmac = this.HmacSHA256(raw_string);
+  base64HmacSHA256(raw_string) {
+    let hmac = this.hmacSHA256(raw_string);
     if (!hmac) return;
     var base64String = CryptoJS.enc.Base64.stringify(hmac);
     return base64String;
   }
 
-  HmacSHA256(raw_string) {
-    if (!raw_string || !this._ApiToken || !this._ApiToken.ApiKey) return;
+  hmacSHA256(raw_string) {
+    if (!raw_string || !this.configToken || !this.configToken.ApiKey) return;
 
     var buff = CryptoJS.enc.Utf8.parse(raw_string);
-    var buff_key = CryptoJS.enc.Utf8.parse(this._ApiToken.ApiKey);
-    var hmac = CryptoJS.HmacSHA256(buff, buff_key);
+    var buff_key = CryptoJS.enc.Utf8.parse(this.configToken.ApiKey);
+    var hmac = CryptoJS.hmacSHA256(buff, buff_key);
     return hmac;
   }
 
-  async GetBase64Stream(controller, id = '', action = '', params) {
+  async getBase64Stream(controller, id = '', action = '', params) {
     let url = this._baseUrl(controller, id, action);
     if (params) {
       var qs = '';
@@ -211,9 +231,9 @@ export default class Api {
       }
     }
 
-    let requestHttpMethod = _Get;
+    let requestHttpMethod = _get;
     try {
-      let request = this._RNFetchBlob(url, requestHttpMethod);
+      let request = this._fetchBlob(url, requestHttpMethod);
 
       return request
         .then(res => {
@@ -242,7 +262,7 @@ export default class Api {
     }
   }
 
-  _toResponseData(response) {
+  parseResponse(response) {
     if (response) {
       if (response.ok) {
         //return response.bodyUsed? response.json(): '';
@@ -258,74 +278,62 @@ export default class Api {
     }
   }
 
-  GetUrlObject(controller, id = '', action = '', params) {
-    let uri = this.Url(controller, id, action, params);
-    let requestHttpMethod = _Get;
-    let token = this._generateToken(this._Api.AppId, requestHttpMethod, uri);
-    let header = this._defaultHeader(this._Api.AppId);
-    header.set('Authorization', '3rd-auth ' + token);
-    if (this._ApiToken && this._ApiToken.devId)
-      header.set('devId', this._ApiToken.devId);
-    return {uri, header, method: requestHttpMethod};
+  async get(controller, id = '', action = '', params) {
+    let response = await this._get(controller, id, action, params);
+    return this.parseResponse(response);
   }
 
-  async Get(controller, id = '', action = '', params) {
-    let response = await this._Get(controller, id, action, params);
-    return this._toResponseData(response);
-  }
-
-  _Get(controller, id = '', action = '', params) {
+  _get(controller, id = '', action = '', params) {
     let url = this.Url(controller, id, action, params);
-    let requestHttpMethod = _Get;
-    return this._Fetch(url, requestHttpMethod);
+    let requestHttpMethod = _get;
+    return this._fetch(url, requestHttpMethod);
   }
 
-  async Post(controller, id = '', action = '', value = null) {
+  async post(controller, id = '', action = '', value = null) {
     let url = this._baseUrl(controller, id, action);
     let requestHttpMethod = _Post;
     let request_content =
       value === null || value === undefined ? '' : JSON.stringify(value);
-    let response = await this._Fetch(url, requestHttpMethod, request_content);
-    return this._toResponseData(response);
+    let response = await this._fetch(url, requestHttpMethod, request_content);
+    return this.parseResponse(response);
   }
 
-  async Put(controller, id = '', action = '', value = null) {
+  async put(controller, id = '', action = '', value = null) {
     let url = this._baseUrl(controller, id, action);
     let requestHttpMethod = _Put;
     let request_content =
       value === null || value === undefined ? '' : JSON.stringify(value);
-    let response = await this._Fetch(url, requestHttpMethod, request_content);
-    return this._toResponseData(response);
+    let response = await this._fetch(url, requestHttpMethod, request_content);
+    return this.parseResponse(response);
   }
 
-  async Delete(controller, id = '', action = '', value = null) {
+  async delete(controller, id = '', action = '', value = null) {
     let url = this._baseUrl(controller, id, action);
     let requestHttpMethod = _Delete;
     let request_content =
       value === null || value === undefined ? '' : JSON.stringify(value);
-    let response = await this._Fetch(url, requestHttpMethod, request_content);
-    return this._toResponseData(response);
+    let response = await this._fetch(url, requestHttpMethod, request_content);
+    return this.parseResponse(response);
   }
 
-  async Login(username, pass) {
+  async login(username, pass) {
     try {
       let response = await this._getApiKey('account');
       if (response.status != 200) {
         return {status: response.status, Result: undefined};
       }
-      let enc_user = AES.encrypt(username, this._ApiToken.ApiKey);
+      let enc_user = AES.encrypt(username, this.configToken.ApiKey);
       let uid = enc_user.toString();
-      enc_user = AES.encrypt(pass, this._ApiToken.ApiKey);
+      enc_user = AES.encrypt(pass, this.configToken.ApiKey);
       let pas = enc_user.toString();
-      let res = await this._Login(uid, pas);
+      let res = await this._login(uid, pas);
       //response =  await this.GetDVRs();
 
       if (res.status == 200) {
         var rs = await res.json();
         return {status: res.status, Result: rs};
-        //console.log(rs);
       } else {
-        return res; //{ status : res.status, Result: undefined};
+        return res;
       }
     } catch (ex) {
       console.log('GOND LOGIN Exception: ', ex);
@@ -341,43 +349,7 @@ export default class Api {
     console.log('Signal Fail');
     console.log(error);
   }
-
-  async GetFileStream(controller, id = '', action = '', params) {
-    let url = this._baseUrl(controller, id, action);
-    if (params) {
-      var qs = '';
-      for (var key in params) {
-        var value = params[key];
-        qs += encodeURIComponent(key) + '=' + encodeURIComponent(value) + '&';
-      }
-      if (qs.length > 0) {
-        qs = qs.substring(0, qs.length - 1); //chop off last "&"
-        url = url + '?' + qs;
-      }
-    }
-
-    let appId = this._Api.AppId;
-    let token = await this._generateToken(this._Api.AppId, _Get, url);
-    let header = await this._defaultHeader(this._Api.AppId);
-    header.set('Authorization', '3rd-auth ' + token);
-
-    return new Promise(function (resolve, reject) {
-      setTimeout(function () {
-        RNFetchBlob.fetch(_Get, url, {
-          Authorization: '3rd-auth ' + token,
-          AppID: appId.toString(),
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        })
-          // when response status code is 200
-          .then(res => resolve(res.base64()))
-          // Status code is not 200
-          .catch((errorMessage, statusCode) => {
-            // error handling
-            reject(errorMessage);
-          })
-          .done();
-      }, 1);
-    });
-  }
 }
+
+const apiService = new Api();
+export default apiService;
