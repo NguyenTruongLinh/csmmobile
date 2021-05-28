@@ -44,11 +44,6 @@ module.exports = StyleSheet.create({
     marginRight: 35,
     marginTop: 28,
   },
-  skipCaption: {
-    fontWeight: '500',
-    fontSize: 16,
-    color: CMSColors.primaryActive,
-  },
   indicatorContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -67,23 +62,11 @@ module.exports = StyleSheet.create({
     marginLeft: 28,
     marginRight: 49,
   },
-  backCaption: {
-    fontWeight: '500',
-    fontSize: 16,
-    color: CMSColors.primaryActive,
-  },
   nextContainer: {flex: 1, alignContent: 'flex-end'},
   nextButton: {
     backgroundColor: CMSColors.primaryActive,
     height: 65,
     marginLeft: 49,
     marginRight: 35,
-    borderRadius: 2,
-  },
-  nextCaption: {
-    fontWeight: '500',
-    fontSize: 16,
-    color: CMSColors.White,
-    justifyContent: 'center',
   },
 });

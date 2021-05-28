@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 
-const CMSColors = require('../../consts/cmscolors');
+import CMSColors from '../../styles/cmscolors';
 const RowEmpty = {isEmpty: true};
 
 class HealthDetailView extends Component {

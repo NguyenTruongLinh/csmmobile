@@ -6,6 +6,9 @@ import {
   getFocusedRouteNameFromRoute,
 } from '@react-navigation/native';
 
+import navigationService from './navigationService';
+// import {navigationStore} from '../stores/navigation';
+
 import CMSIntroView from '../views/intro/cmsIntro';
 import WelcomeView from '../views/intro/welcome';
 import LoginView from '../views/auth/login';
@@ -207,21 +210,44 @@ const CMSMainTab = () => (
 );
 
 const IntroStack = createStackNavigator();
+const WelcomeStack = createStackNavigator();
 
-// export const createAppNavigator = () => {
-//   return (
-const AppNavigator = (
-  <NavigationContainer>
-    <IntroStack.Navigator
-      initialRouteName={ROUTERS.INTRO_CMS}
-      headerMode="none">
-      <IntroStack.Screen name={ROUTERS.INTRO_CMS} component={CMSIntroView} />
-      <IntroStack.Screen name={ROUTERS.INTRO_WELCOME} component={WelcomeView} />
-      <IntroStack.Screen name={ROUTERS.LOGIN} component={LoginView} />
-      <IntroStack.Screen name={ROUTERS.HOME_TAB} component={CMSMainTab} />
-    </IntroStack.Navigator>
-  </NavigationContainer>
-);
+/**
+ *
+ * @param {bool} showIntro
+ * @param {bool} isLoggedIn
+ * @returns ReactElement
+ */
+const AppNavigator = (showIntro, isLoggedIn = false) => {
+  return (
+    <NavigationContainer
+      ref={ref => {
+        console.log('GOND NavContainer ref = ', ref);
+        navigationService.setTopLevelNavigator(ref);
+      }}>
+      {showIntro ? (
+        <IntroStack.Navigator
+          initialRouteName={ROUTERS.INTRO_CMS}
+          headerMode="none">
+          <IntroStack.Screen
+            name={ROUTERS.INTRO_CMS}
+            component={CMSIntroView}
+          />
+        </IntroStack.Navigator>
+      ) : (
+        <WelcomeStack.Navigator
+          initialRouteName={ROUTERS.INTRO_WELCOME}
+          headerMode="none">
+          <WelcomeStack.Screen
+            name={ROUTERS.INTRO_WELCOME}
+            component={WelcomeView}
+          />
+          <WelcomeStack.Screen name={ROUTERS.LOGIN} component={LoginView} />
+        </WelcomeStack.Navigator>
+      )}
+    </NavigationContainer>
+  );
+};
 // };
 
 export default AppNavigator;

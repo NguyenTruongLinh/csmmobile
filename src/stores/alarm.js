@@ -1,13 +1,13 @@
-import { types/*, onSnapshot*/ } from 'mobx-state-tree';
+import {types /*, onSnapshot*/} from 'mobx-state-tree';
 
 const AlarmRate = types.model({
   RateID: types.identifierNumber,
-  RateName: types.string(''),
+  RateName: types.string,
 });
 
 const AlarmTypeVA = types.model({
   Id: types.identifierNumber,
-  Name: types.string(''),
+  Name: types.string,
 });
 
 const AlarmSnapShot = types.model({
@@ -15,7 +15,7 @@ const AlarmSnapShot = types.model({
   Time: types.number,
   FileName: types.string,
   ChannelName: types.string,
-})
+});
 
 const AlarmAddress = types.model({
   AddressLine1: types.maybeNull(types.string),
@@ -24,11 +24,11 @@ const AlarmAddress = types.model({
   StateProvince: types.maybeNull(types.string),
   Country: types.maybeNull(types.string),
   ZipCode: types.maybeNull(types.string),
-})
+});
 
 const AlarmThumb = types.model({
   base64_thumnail: types.maybeNull(types.string),
-})
+});
 
 const AlarmData = types.model({
   KAlertEvent: types.integer,
@@ -77,24 +77,29 @@ const AlarmFilter = types.model({
   edate: types.string,
 });
 
-const alarmStore = types.model({
-  rateConfig: types.map(AlarmRate),
-  vaConfig: types.map(AlarmTypeVA),  
-  alarmList: types.array(AlarmData),
-  filter: types.maybeNull(AlarmFilter),
-  alarmPage: types.string,
-}).actions(self => ({
-  loadRateConfig(config) {
-    if (Array.isArray(config)) {
-      config.forEach(item => self.rateConfig.put(item));
-    }
-  },
-  loadVAConfig(config) {
-    if (Array.isArray(config)) {
-      config.forEach(item => self.vaConfig.put(item));
-    }
-  },
-})).create({
+export const AlarmModel = types
+  .model({
+    // id: types.identifier,
+    rateConfig: types.map(AlarmRate),
+    vaConfig: types.map(AlarmTypeVA),
+    alarmList: types.array(AlarmData),
+    filter: types.maybeNull(AlarmFilter),
+    alarmPage: types.string,
+  })
+  .actions(self => ({
+    loadRateConfig(config) {
+      if (Array.isArray(config)) {
+        config.forEach(item => self.rateConfig.put(item));
+      }
+    },
+    loadVAConfig(config) {
+      if (Array.isArray(config)) {
+        config.forEach(item => self.vaConfig.put(item));
+      }
+    },
+  }));
+
+export const alarmStore = AlarmModel.create({
   rateConfig: {},
   vaConfig: {},
   alarmList: [],
@@ -102,4 +107,4 @@ const alarmStore = types.model({
   alarmPage: '',
 });
 
-export default alarmStore;
+// export default alarmStore;

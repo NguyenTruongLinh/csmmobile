@@ -11,7 +11,7 @@ import CMSStyleSheet from '../CMSStyleSheet';
 
 const Icon = CMSStyleSheet.Icon;
 const IconCustom = CMSStyleSheet.IconCustom;
-const FONT_SIZE = CMSStyleSheet.Font_Size;
+const FONT_SIZE = CMSStyleSheet.FontSize;
 const HEIGHT = 50;
 
 class Button extends Component {
@@ -149,7 +149,7 @@ class Button extends Component {
     let icon = this.renderIcon(styles.primaryCaption, styles.disableCaption);
     let text = this.renderText(
       caption,
-      this.props.styleCaption ? this.props.styleCaption : styles.primaryCaption,
+      {...styles.primaryCaption, ...(this.props.styleCaption || {})},
       styles.disableCaption
     );
     let Background = this.props.backgroundColor
@@ -177,11 +177,11 @@ class Button extends Component {
    * @returns JSXElement
    */
   renderFlat(caption) {
-    const {captionStyle, captionDisabledStyle} = this.props;
-    let icon = this.renderIcon(styles.flatcaption, styles.flatcaptiondisable);
+    const {styleCaption, captionDisabledStyle} = this.props;
+    let icon = this.renderIcon(styles.flatCaption, styles.flatcaptiondisable);
     let text = this.renderText(
       caption,
-      captionStyle || styles.flatcaption,
+      {...styles.flatCaption, ...styleCaption},
       captionDisabledStyle || styles.flatcaptiondisable
     );
     return (
@@ -249,6 +249,7 @@ var styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 3,
     // borderRadius: HEIGHT / 2,
     // borderWidth: 1 / PixelRatio.get(),
   },
@@ -286,8 +287,8 @@ var styles = StyleSheet.create({
 
   Background: {
     //backgroundColor: 'rgba(0, 86, 145, 1)'
-    backgroundColor: CMSColors.PrimaryColor,
-    borderColor: CMSColors.PrimaryColor,
+    backgroundColor: CMSColors.primaryActive,
+    borderColor: CMSColors.primaryActive,
   },
 
   disableBackground: {
@@ -304,8 +305,9 @@ var styles = StyleSheet.create({
     //backgroundColor: CMSColors.PrimaryColor,
   },
 
-  flatcaption: {
-    color: 'rgba(0, 86, 145, 1)',
+  flatCaption: {
+    // color: 'rgba(0, 86, 145, 1)',
+    color: CMSColors.primaryActive,
   },
   flatcaptiondisable: {
     color: 'rgb(156,156,156)',

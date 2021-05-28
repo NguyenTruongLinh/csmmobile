@@ -19,7 +19,7 @@ export default class InputText extends PureComponent {
 
     animationDuration: 225,
 
-    fontSize: CMSStyleSheet.Font_Size,
+    fontSize: CMSStyleSheet.FontSize,
 
     tintColor: CMSColors.borderActiveColor,
     textColor: CMSColors.actionText,
@@ -123,16 +123,16 @@ export default class InputText extends PureComponent {
     let {disabled, editable} = this.props;
 
     if (!disabled && editable) {
-      this.refs.input.focus();
+      this.inputRef.focus();
     }
   }
 
   blur() {
-    this.refs.input.blur();
+    this.inputRef.blur();
   }
 
   clear() {
-    this.refs.input.clear();
+    this.inputRef.clear();
   }
 
   value() {
@@ -140,7 +140,7 @@ export default class InputText extends PureComponent {
   }
 
   isFocused() {
-    return this.refs.input.isFocused();
+    return this.inputRef.isFocused();
   }
 
   isRestricted() {
@@ -323,7 +323,7 @@ export default class InputText extends PureComponent {
           onFocus={event => this.onFocus(event)}
           onBlur={this.onBlur}
           value={text}
-          ref="input"
+          ref={ref => (this.inputRef = ref)}
         />
         {/* </Animated.View> */}
 

@@ -1,8 +1,10 @@
 import React, {Component} from 'react';
 import {View, Image, Text, FlatList, Animated, Dimensions} from 'react-native';
+import {inject} from 'mobx-react';
 
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 
+// import appStore from '../../stores/appStore';
 // import {} from '../../navigation/navigationService';
 
 import Button from '../../components/controls/Button';
@@ -73,7 +75,11 @@ class CMSIntroView extends Component {
     console.log('GOND onIntroItemChanged currentIndex = ', this.currentIndex);
   };
 
-  onSkipIntro = () => {};
+  onSkipIntro = () => {
+    console.log('GOND appStore = ', this.props);
+    // this.props.appStore.skipIntro();
+    this.props.appStore.skipIntro();
+  };
 
   onNextStep = () => {
     if (this.introList && this.state.currentIndex < IntroData.length - 1)
@@ -97,8 +103,6 @@ class CMSIntroView extends Component {
   renderIntroItem = ({item, index}) => {
     // this.currentIndex = index;
     let dim = Dimensions.get('window');
-    console.log('GOND intro dim = ', dim);
-    console.log('GOND intro item = ', item);
     return (
       <View
         style={[
@@ -132,10 +136,11 @@ class CMSIntroView extends Component {
       <View style={styles.container}>
         <View style={styles.skipContainer}>
           <Button
+            style={{width: '20%'}}
             enable={true}
             type={'flat'}
             caption={'SKIP'}
-            captionStyle={styles.skipCaption}
+            onPress={this.onSkipIntro}
           />
         </View>
         <View style={{flex: 8}}>
@@ -143,12 +148,6 @@ class CMSIntroView extends Component {
             data={IntroData}
             pagingEnabled={true}
             horizontal={true}
-            // onScroll={Animated.event(
-            //   [{nativeEvent: {contentOffset: {x: scrollX}}}],
-            //   {
-            //     useNativeDriver: false,
-            //   }
-            // )}
             onScroll={this.handleScroll}
             onViewableItemsChanged={this.onIntroItemChanged}
             showsHorizontalScrollIndicator={false}
@@ -175,7 +174,6 @@ class CMSIntroView extends Component {
                 style={styles.backButton}
                 type={'flat'}
                 caption={'< BACK'}
-                captionStyle={styles.backCaption}
                 onPress={this.onBackStep}
               />
             ) : null}
@@ -186,7 +184,6 @@ class CMSIntroView extends Component {
               style={styles.nextButton}
               type={'primary'}
               caption={'NEXT'}
-              styleCaption={styles.nextCaption}
               onPress={this.onNextStep}
             />
           </View>
@@ -196,4 +193,4 @@ class CMSIntroView extends Component {
   }
 }
 
-export default CMSIntroView;
+export default inject('appStore')(CMSIntroView);

@@ -7,7 +7,7 @@ import {createIconSetFromFontello} from 'react-native-vector-icons';
 import fontelloConfig from './common/fontello/config.json';
 
 const IconCustom = createIconSetFromFontello(fontelloConfig);
-const TEXT_FONT_SIZE = 14;
+const TEXT_FONT_SIZE = 16;
 
 /**
  *
@@ -29,7 +29,8 @@ export function create(styles) {
   return StyleSheet.create(platformStyles);
 }
 module.exports = {
-  Font_Size: TEXT_FONT_SIZE,
+  FontSize: TEXT_FONT_SIZE,
+  FontWeight: '500',
   Icon: Icon,
   IconCustom: IconCustom,
   MaterialIcons: MaterialIcons,

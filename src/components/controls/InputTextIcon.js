@@ -1,24 +1,17 @@
-import React, {Component, PureComponent} from 'react';
-import {
-  TextInput,
-  View,
-  Animated,
-  Easing,
-  StyleSheet,
-  Platform,
-} from 'react-native';
+import React, {PureComponent} from 'react';
+import {View, Animated, Easing, StyleSheet, Platform} from 'react-native';
 import {TextField} from 'react-native-material-textfield';
-import Line from 'react-native-material-textfield/src/components/line';
-import Label from 'react-native-material-textfield/src/components/label';
 import Helper from 'react-native-material-textfield/src/components/helper';
 import Counter from 'react-native-material-textfield/src/components/counter';
 import PropTypes from 'prop-types';
 import variable from '../../styles/variables';
 
 import CMSColors from '../../styles/cmscolors';
-var CMSStyleSheet = require('./CMSStyleSheet');
+import CMSStyleSheet from '../CMSStyleSheet';
+
 const Icon = CMSStyleSheet.Icon;
 const IconCustom = CMSStyleSheet.IconCustom;
+
 export default class InputTextIcon extends PureComponent {
   static defaultProps = {
     underlineColorAndroid: 'transparent',
@@ -29,7 +22,7 @@ export default class InputTextIcon extends PureComponent {
 
     animationDuration: 225,
 
-    //fontSize: CMSStyleSheet.Font_Size,
+    //fontSize: CMSStyleSheet.FontSize,
     fontSize: variable.fix_fontSire,
 
     tintColor: CMSColors.borderActiveColor,
@@ -87,7 +80,9 @@ export default class InputTextIcon extends PureComponent {
       errored: !!error,
 
       height: 24,
+      revealHidden: false,
     };
+    this.inputRef = null;
   }
 
   UNSAFE_componentWillReceiveProps(props) {
@@ -136,16 +131,16 @@ export default class InputTextIcon extends PureComponent {
     let {disabled, editable} = this.props;
 
     if (!disabled && editable) {
-      this.refs.input.focus();
+      this.inputRef.focus();
     }
   }
 
   blur() {
-    this.refs.input.blur();
+    this.inputRef.blur();
   }
 
   clear() {
-    this.refs.input.clear();
+    this.inputRef.clear();
   }
 
   value() {
@@ -153,7 +148,7 @@ export default class InputTextIcon extends PureComponent {
   }
 
   isFocused() {
-    return this.refs.input.isFocused();
+    return this.inputRef.isFocused();
   }
 
   isRestricted() {
@@ -192,6 +187,7 @@ export default class InputTextIcon extends PureComponent {
 
     this.setState({text});
   }
+
   onEndEditing = e => {
     let {onEndEditing} = this.props;
 
@@ -199,6 +195,7 @@ export default class InputTextIcon extends PureComponent {
       onEndEditing(e, this.props.name);
     }
   };
+
   onContentSizeChange({nativeEvent}) {
     let {height} = nativeEvent.contentSize;
 
@@ -222,6 +219,7 @@ export default class InputTextIcon extends PureComponent {
       baseColor,
       textColor,
       errorColor,
+      secureTextEntry,
       ...props
     } = this.props;
     let {focused, focus, error, errored, height, text = ''} = this.state;
@@ -230,27 +228,6 @@ export default class InputTextIcon extends PureComponent {
     let count = text.length;
     let active = !!text;
     let restricted = limit < count;
-
-    let borderBottomColor = restricted
-      ? errorColor
-      : focus.interpolate({
-          inputRange: [-1, 0, 1],
-          outputRange: [errorColor, baseColor, tintColor],
-        });
-
-    let borderBottomWidth = restricted
-      ? 2
-      : focus.interpolate({
-          inputRange: [-1, 0, 1],
-          outputRange: [2, StyleSheet.hairlineWidth, 2],
-        });
-
-    let containerStyle = {
-      ...(disabled
-        ? {overflow: 'hidden'}
-        : {borderBottomColor, borderBottomWidth}),
-      ...(multiline ? {height: 40 + height} : {height: 40 + fontSize * 1.5}),
-    };
 
     let inputStyle = {
       fontSize,
@@ -314,6 +291,7 @@ export default class InputTextIcon extends PureComponent {
           name={icon}
           size={variable.fix_fontSize_Icon}
           style={[{color: baseColor}, styles.icon]}
+          onPress={() => console.log('GOND icon name: ', icon)}
         />
       );
     }
@@ -324,9 +302,13 @@ export default class InputTextIcon extends PureComponent {
           name={iconCustom}
           size={variable.fix_fontSize_Icon}
           style={[{color: baseColor}, styles.icon]}
+          onPress={() => console.log('GOND icon customed name: ', iconCustom)}
         />
       );
     }
+    const revealIconStyle = this.state.revealHidden
+      ? {color: CMSColors.primaryActive}
+      : {};
 
     return (
       <View style={{flexDirection: 'row', alignSelf: 'center'}}>
@@ -336,14 +318,6 @@ export default class InputTextIcon extends PureComponent {
           onStartShouldSetResponder={() => true}
           onResponderRelease={this.onPress}
           style={styles.flex}>
-          {/* <Animated.View style={[ styles.container, containerStyle ]}> */}
-          {/* {disabled && <Line type='dotted' color={baseColor} focusAnimation={new Animated.Value(0)} />} */}
-          {/* <Label activeFontSize={fontSize} {...{ fontSize, tintColor, baseColor, errorColor, animationDuration, focused, errored, restricted, active }}
-              focusAnimation={new Animated.Value(0)}
-              labelAnimation={new Animated.Value(0)}>
-              {label}
-            </Label> */}
-
           <TextField
             style={[styles.input, inputStyle, style]}
             selectionColor={tintColor}
@@ -368,12 +342,11 @@ export default class InputTextIcon extends PureComponent {
             }}
             onBlur={this.onBlur}
             value={text}
-            ref="input"
+            ref={ref => (this.inputRef = ref)}
             label={label}
             labelFontSize={fontSize}
+            secureTextEntry={secureTextEntry && !this.state.revealHidden}
           />
-          {/* </Animated.View> */}
-
           <Animated.View style={helperContainerStyle}>
             <View style={styles.flex}>
               <Helper
@@ -387,10 +360,20 @@ export default class InputTextIcon extends PureComponent {
                 focusAnimation={new Animated.Value(0)}
               />
             </View>
-
             <Counter {...{baseColor, errorColor, count, limit}} />
           </Animated.View>
         </View>
+        {this.props.secureTextEntry ? (
+          <IconCustom
+            name={'sensor'}
+            size={variable.fix_fontSize_Icon}
+            style={[{color: baseColor}, styles.icon, revealIconStyle]}
+            onPress={() => {
+              console.log('GOND icon customed name: ', iconCustom);
+              this.setState({revealHidden: !this.state.revealHidden});
+            }}
+          />
+        ) : null}
       </View>
     );
   }
@@ -413,7 +396,6 @@ var styles = StyleSheet.create({
     padding: 0,
     margin: 0,
   },
-
   flex: {
     flex: 1,
   },

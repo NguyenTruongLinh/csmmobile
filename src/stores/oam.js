@@ -1,4 +1,4 @@
-import { types/*, onSnapshot*/ } from 'mobx-state-tree';
+import {types /*, onSnapshot*/} from 'mobx-state-tree';
 
 const oamData = types.model({
   kdvr: types.identifierNumber,
@@ -25,39 +25,52 @@ const oamData = types.model({
 // onSnapshot(oamData, snapshot => {
 // });
 
-const oamStore = types.model({
-  currentDVR: types.reference(oamData), // types.integer,
-  oamList: types.map(oamData),
-}).actions(self => ({
-  onDataUpdate(newData) {
-    // Do we need to save last data?
-    // let previousData = self.oamList[newData.dvr] ? Object.assign(self.oamList[newData.dvr]) : {};
-    // self.oamList[newData.dvr] = {
-    self.oamList.put({
-      dvrName: newData.dvrName,
-      siteName: newData.siteName,
-      occupancy: newData.occupancy,
-      occupancyTitle: newData.occupancyTitle,
-      capacity: newData.capacity,
-      capacityTitle: newData.capacityTitle,
-      untilCapacity: newData.untilCapacity,
-      estWaitTime: newData.estWaitTime,
-      dataTrendCount: newData.dataTrendCount,
-      foreColor: newData.foreColor,
-      backColor: newData.backColor,
-      channelNo: newData.channelNo,
-      historicalData: newData.historicalData,
-      forecastData: newData.forecastData,
-      kAlertEventDetail: newData.KAlertEventDetail,
-      kAlertType: newData.KAlertType,
-      serverID: newData.serverID,
-      isOffline: newData.isOffline,
-      // lastData: previousData,
-    });
-  }
-})).create({
-  currentDVR: null,
-  oamList: {},
+export const OAMModel = types
+  .model({
+    current: types.maybeNull(types.reference(oamData)), // types.integer,
+    oamMap: types.map(oamData),
+  })
+  .views(self => ({
+    getData(_kdvr) {
+      return self.oamMap.get(_kdvr);
+    },
+    getCurrentData() {
+      console.log('GOND current OAM: ', current);
+      return current;
+    },
+  }))
+  .actions(self => ({
+    onDataUpdate(newData) {
+      // Do we need to save last data?
+      // let previousData = self.oamMap[newData.dvr] ? Object.assign(self.oamMap[newData.dvr]) : {};
+      // self.oamMap[newData.dvr] = {
+      self.oamMap.put({
+        dvrName: newData.dvrName,
+        siteName: newData.siteName,
+        occupancy: newData.occupancy,
+        occupancyTitle: newData.occupancyTitle,
+        capacity: newData.capacity,
+        capacityTitle: newData.capacityTitle,
+        untilCapacity: newData.untilCapacity,
+        estWaitTime: newData.estWaitTime,
+        dataTrendCount: newData.dataTrendCount,
+        foreColor: newData.foreColor,
+        backColor: newData.backColor,
+        channelNo: newData.channelNo,
+        historicalData: newData.historicalData,
+        forecastData: newData.forecastData,
+        kAlertEventDetail: newData.KAlertEventDetail,
+        kAlertType: newData.KAlertType,
+        serverID: newData.serverID,
+        isOffline: newData.isOffline,
+        // lastData: previousData,
+      });
+    },
+  }));
+
+export const oamStore = OAMModel.create({
+  current: null,
+  oamMap: {},
 });
 
-export default oamStore;
+// export default oamStore;

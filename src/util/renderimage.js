@@ -1,7 +1,5 @@
-//import { PropTypes } from 'react';
 import PropTypes from 'prop-types';
-import { requireNativeComponent, View } from 'react-native';
-// const ViewPropTypes = require('ViewPropTypes');
+import {requireNativeComponent, View} from 'react-native';
 
 const iface = {
   name: 'GraphicView',
@@ -12,7 +10,7 @@ const iface = {
     channelId: PropTypes.number,
     svVersion: PropTypes.number,
     ...View.propTypes,
-  }
+  },
 };
 
 // const iFFMpegFrameView = {

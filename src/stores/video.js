@@ -17,13 +17,14 @@ const RTCStreamModel = types.model({
   rtcChannelName: types.string,
 
   // rtcViewer: types.map, // TODO
-  signalingClient: maybeNull(types.frozen(SignalingClient)),
-  peerConnection: maybeNull(types.frozen(RTCPeerConnection)),
-  dataChannel: maybeNull(types.frozen()),
+  signalingClient: types.maybeNull(types.frozen(SignalingClient)),
+  peerConnection: types.maybeNull(types.frozen(RTCPeerConnection)),
+  // dataChannel: types.maybeNull(types.frozen()),
   remoteStream: types.string,
 });
 
 const HLSStreamModel = types.model({
+  sid: types.identifier,
   streamUrl: types.string,
 });
 
@@ -92,14 +93,20 @@ const ChannelSettingModel = types.model({
   selectedChannels: types.array(types.reference(ChannelModel)),
 });
 
-const videoStore = types
-  .model({
-    channelSetting: ChannelSettingModel,
-    rtcStreams: types.array(RTCStreamModel),
-    hlsStreams: types.array(HLSStreamModel),
-    directStreams: types.array(DirectConnectionModel),
-    singleStreamIndex: maybeNull(types.integer),
-  })
-  .create();
+export const VideoModel = types.model({
+  channelSetting: types.maybeNull(ChannelSettingModel),
+  rtcStreams: types.array(types.reference(RTCStreamModel)),
+  hlsStreams: types.array(types.reference(HLSStreamModel)),
+  directStreams: types.array(types.reference(DirectConnectionModel)),
+  singleStreamIndex: types.maybeNull(types.integer),
+});
 
-export default videoStore;
+export const videoStore = VideoModel.create({
+  channelSetting: null,
+  rtcStreams: [],
+  hlsStreams: [],
+  directStreams: [],
+  singleStreamIndex: null,
+});
+
+// export default videoStore;

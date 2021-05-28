@@ -5,7 +5,7 @@ import ROUTERS from '../consts/routes';
 const ModuleModel = types
   .model({
     moduleId: types.identifierNumber,
-    functionId: types.integer(0),
+    functionId: types.integer,
     functionName: types.string,
   })
   .actions(self => ({
@@ -15,6 +15,13 @@ const ModuleModel = types
       self.functionName = _module.FunctionName;
     },
   }));
+
+const getDefaultModule = () =>
+  ModuleModel.create({
+    moduleId: 0,
+    functionId: 0,
+    functionName: '',
+  });
 
 const APIModel = types
   .model({
@@ -43,16 +50,27 @@ const APIModel = types
     },
   }));
 
+const getDefaultAPI = () =>
+  APIModel.create({
+    url: '',
+    appId: '',
+    version: '',
+    id: '',
+    apiKey: '',
+    token: '',
+    devId: '',
+  });
+
 const UserModel = types
   .model({
-    userId: types.identifierNumber,
+    userId: types.maybeNull(types.identifierNumber),
     userName: types.string,
     firstName: types.string,
     lastName: types.string,
     email: types.string,
     userPhoto: types.string,
-    isAuth: types.boolean(false),
-    isAdmin: types.boolean(false),
+    isAuth: types.boolean,
+    isAdmin: types.boolean,
   })
   .actions(self => ({
     load(_user) {
@@ -66,6 +84,18 @@ const UserModel = types
       self.isAuth = _user.isAuth;
     },
   }));
+
+const getAnonymousUser = () =>
+  UserModel.create({
+    userId: 0,
+    userName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    userPhoto: '',
+    isAuth: false,
+    isAdmin: false,
+  });
 
 const LoginModel = types.model({
   domainname: types.string,
@@ -85,13 +115,13 @@ const FCMModel = types
     },
   }));
 
-const userStore = types
+export const UserDataModel = types
   .model({
     user: types.maybeNull(UserModel),
-    error: types.maybeNull(types.string, ''),
-    loading: types.boolean(false),
+    error: types.maybeNull(types.string),
+    loading: types.boolean,
     message: types.string,
-    isLoggedIn: types.boolean(false),
+    isLoggedIn: types.boolean,
     loginInfo: types.maybeNull(LoginModel),
     //
     fcm: types.maybeNull(FCMModel),
@@ -101,7 +131,7 @@ const userStore = types
   })
   .actions(self => ({
     logout() {
-      self.user = UserModel.create();
+      self.user = getAnonymousUser();
       self.error = '';
       self.message = '';
       self.loading = false;
@@ -117,14 +147,14 @@ const userStore = types
       self.loading = false;
       self.message = data.message || '';
       self.isLoggedIn = true;
-      self.api = APIModel.create().load(data.Api);
+      self.api = getDefaultAPI().load(data.Api);
       self.modules = [];
       if (Array.isArray(data.Modules)) {
         data.Modules.forEach(item => {
-          self.modules.push(ModuleModel.create().load(item));
+          self.modules.push(getDefaultModule().load(item));
         });
       }
-      self.api = APIModel.create().load(data.Api);
+      self.api = getDefaultAPI().load(data.Api);
       self.routes = [];
       if (Array.isArray(data.routes)) {
         data.routes.forEach(item => {
@@ -153,7 +183,7 @@ const userStore = types
         self.modules = [];
         self.routes = [];
         module.forEach(item => {
-          self.modules.push(ModuleModel.create().load(item));
+          self.modules.push(getDefaultModule().load(item));
           if (item.FunctionName == MODULES.MODULE_SITE) {
             self.routes = [...self.routes, ROUTERS.ALARM, ROUTERS.HEALTH];
           } else if (item.FunctionName == MODULES.MODULE_REBAR) {
@@ -175,17 +205,18 @@ const userStore = types
       }
       return {...user};
     },
-  }))
-  .create({
-    user: null,
-    error: null,
-    loading: false,
-    message: '',
-    isLoggedIn: false,
-    fcm: null,
-    api: null,
-    modules: [],
-    routes: [],
-  });
+  }));
 
-export default userStore;
+export const userStore = UserDataModel.create({
+  user: null,
+  error: null,
+  loading: false,
+  message: '',
+  isLoggedIn: false,
+  fcm: null,
+  api: null,
+  modules: [],
+  routes: [],
+});
+
+// export default userStore;

@@ -12,13 +12,17 @@ import {
   Text,
   SafeAreaView,
 } from 'react-native';
-import {Provider} from 'mobx-react';
+import {observer, inject} from 'mobx-react';
 import Orientation from 'react-native-orientation-locker';
 
 import Snackbar from 'react-native-snackbar';
 import DeviceInfo from 'react-native-device-info';
 
+import CMSIntroView from '../views/intro/cmsIntro';
+
 import AppNavigator from './navigation/appNavigator';
+// import navigationService from './navigation/navigationService';
+// import navigationStore from './stores/navigation';
 
 // import CMSAvatars from './components/CMSAvatars';
 // import CMSModal from './components/CMSModal';
@@ -31,11 +35,10 @@ import styles from './styles/scenes/appnavigation.style';
 import {ROUTERS, DateFormat, Store_Name, APP_INFO} from './consts/misc';
 import {STREAMING_TYPES} from './consts/video';
 import CMSColors from './styles/cmscolors';
-import {createStackNavigator} from '@react-navigation/stack';
 
 const {height, width} = getwindow(); //Dimensions.get('window')
 
-let selectedSite = [];
+// let selectedSite = [];
 let LogActivityCMS = {
   UserID: 0,
   AccessTime: new Date(),
@@ -308,6 +311,9 @@ class App extends React.Component {
         this.onAPNSTokenRefreshed
       );
     }
+
+    // console.log('GOND navStore = ', navigationStore);
+    // navigationService.setNavigationStore(navigationStore);
   }
 
   componentWillUnmount() {
@@ -444,11 +450,11 @@ class App extends React.Component {
   */
 
   render() {
-    return <Provider rootStore={this.rootStore}>{AppNavigator}</Provider>;
+    return AppNavigator(this.props.appStore.showIntro, false);
   }
 }
 
 Text.defaultProps = Text.defaultProps || {};
 Text.defaultProps.allowFontScaling = false;
 
-export default App;
+export default inject('appStore')(observer(App));
