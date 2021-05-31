@@ -1,4 +1,5 @@
 import {types} from 'mobx-state-tree';
+
 import {MODULES, Orient} from '../consts/misc';
 import ROUTERS from '../consts/routes';
 
@@ -154,10 +155,10 @@ export const UserDataModel = types
 
       const res = await apiService.login(username, password);
       console.log('GOND login res = ', res);
-      if (res && res.status == 200) {
-        self.loginSuccess(res.Result);
+      if (res && res.status == 200 && res.Result) {
+        self.loginSuccess(res);
       } else {
-        self.loginFailed(res.Result);
+        self.loginFailed(res);
       }
     },
     logout() {
@@ -171,7 +172,13 @@ export const UserDataModel = types
       self.routes = [];
     },
     loginSuccess(data) {
-      self.user.load(data);
+      try {
+        self.user.load(data.Result);
+      } catch (err) {
+        console.log('GOND load user profile error: ', err);
+        self.error = '';
+        return;
+      }
       self.error = '';
       self.message = data.message || '';
       self.isLoggedIn = true;

@@ -24,7 +24,7 @@ import {
 
 import {inject, observer} from 'mobx-react';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import validatejs from 'validate.js';
+// import validatejs from 'validate.js';
 
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import Button from '../../components/controls/Button';
@@ -43,7 +43,7 @@ const IconCustom = createIconSetFromFontello(fontelloConfig);
 const backgroundImg = require('../../assets/images/intro/welcome.png');
 // const launchscreenLogo = require('../../assets/images/CMS-logo-white.png');
 
-const validators = validatejs.validators;
+// const validators = validatejs.validators;
 // <!-- END CONSTS -->
 // ----------------------------------------------------
 
@@ -56,6 +56,11 @@ class LoginView extends Component {
       domain: '',
       username: '',
       password: '',
+      errors: {
+        domain: '',
+        username: '',
+        password: '',
+      },
     };
     this._refs = {
       domain: null,
@@ -95,15 +100,16 @@ class LoginView extends Component {
   };
 
   onFocus = event => {
-    // let { errors = {} } = this.state;
+    let {errors = {}} = this.state;
     // this._scrollToInput(findNodeHandle(event.target));
-    // for (let name in errors) {
-    //   let ref = this._refs[name];
-    //   if (ref && ref.isFocused && ref.isFocused()) {
-    //     delete errors[name];
-    //   }
-    // }
-    // this.setState({ errors });
+    for (let name in errors) {
+      let ref = this._refs[name];
+      console.log('GOND onFocus ref = ', ref);
+      if (ref && ref.isFocused && ref.isFocused()) {
+        delete errors[name];
+      }
+    }
+    this.setState({errors});
   };
 
   removeSpecificPort = domain => {
@@ -134,16 +140,18 @@ class LoginView extends Component {
       allowLocal: true,
       message: 'Domain is not a valid url.',
     };
-    return validators.url(domain, options);
+    console.log('GOND validate domain: ', domain);
+    return validators.url({website: domain}, options);
   };
 
   onLogin = () => {
-    const {errors, username, password} = this.state;
-    let domain = this.state.domain;
+    const {username, password} = this.state;
+    let domain = '' + this.state.domain;
     if (!domain) return;
 
     const regexSubName = /^[A-z0-9]+$/;
     if (regexSubName.test(domain)) {
+      console.log('aaaaaaaaaaaaaa');
       domain = Domain.urlI3care + domain;
     }
 
@@ -153,10 +161,9 @@ class LoginView extends Component {
     )
       domain = 'https://' + domain;
 
-    let invalid = this.validatedomain(domain);
-    if (invalid) {
-      errors.domainname = invalid;
-      this.setState({errors: errors});
+    let invalidMsg = this.validatedomain(domain);
+    if (invalidMsg) {
+      this.setState({errors: {domain: invalidMsg}});
       return;
     }
 
@@ -176,17 +183,17 @@ class LoginView extends Component {
 
   render() {
     const {width} = Dimensions.get('window');
-    const {domain, username, password} = this.state;
-    console.log(
-      'GOND login domain = ',
-      domain,
-      ', usn = ',
-      username,
-      ', psw = ',
-      password,
-      ', isloading = ',
-      this.props.appStore.isLoading
-    );
+    const {domain, username, password, errors} = this.state;
+    // console.log(
+    //   'GOND login domain = ',
+    //   domain,
+    //   ', usn = ',
+    //   username,
+    //   ', psw = ',
+    //   password,
+    //   ', isloading = ',
+    //   this.props.appStore.isLoading
+    // );
 
     return (
       <View
@@ -269,6 +276,7 @@ class LoginView extends Component {
                   onEndEditing={this.onEndEditing}
                   onChangeText={this.onTypingDomain}
                   onSubmitEditing={this.onSubmitDomain}
+                  onFocus={this.onFocus}
                   returnKeyType="next"
                   iconCustom="earth-grid-select-language-button"
                   label={LoginTxt.domain}
@@ -277,7 +285,7 @@ class LoginView extends Component {
                   tintColor={CMSColors.PrimaryText}
                   textColor={CMSColors.PrimaryText}
                   baseColor={CMSColors.PrimaryText}
-                  // error={errors.domain}
+                  error={errors.domain}
                   disabled={false}
                   secureTextEntry={false}
                 />
@@ -289,9 +297,7 @@ class LoginView extends Component {
                   autoCorrect={false}
                   enablesReturnKeyAutomatically={true}
                   onEndEditing={this.onEndEditing}
-                  onFocus={event => {
-                    this.onFocus(event);
-                  }}
+                  onFocus={this.onFocus}
                   onChangeText={this.onTypingUsername}
                   onSubmitEditing={this.onSubmitUserName}
                   returnKeyType="next"
@@ -315,9 +321,7 @@ class LoginView extends Component {
                   autoCorrect={false}
                   enablesReturnKeyAutomatically={true}
                   onEndEditing={this.onEndEditing}
-                  onFocus={event => {
-                    this.onFocus(event);
-                  }}
+                  onFocus={this.onFocus}
                   returnKeyType="next"
                   iconCustom="locked-padlock"
                   label={LoginTxt.password}
