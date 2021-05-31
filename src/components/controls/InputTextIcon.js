@@ -284,28 +284,22 @@ export default class InputTextIcon extends PureComponent {
             }),
     };
 
-    let CIcon;
-    if (icon) {
-      CIcon = (
-        <Icon
-          name={icon}
-          size={variable.fix_fontSize_Icon}
-          style={[{color: baseColor}, styles.icon]}
-          onPress={() => console.log('GOND icon name: ', icon)}
-        />
-      );
-    }
-    let CIconCustom;
-    if (iconCustom) {
-      CIconCustom = (
-        <IconCustom
-          name={iconCustom}
-          size={variable.fix_fontSize_Icon}
-          style={[{color: baseColor}, styles.icon]}
-          onPress={() => console.log('GOND icon customed name: ', iconCustom)}
-        />
-      );
-    }
+    let CIcon = icon ? (
+      <Icon
+        name={icon}
+        size={variable.fix_fontSize_Icon}
+        style={[{color: baseColor}, styles.icon]}
+        onPress={() => console.log('GOND icon name: ', icon)}
+      />
+    ) : null;
+    let CIconCustom = iconCustom ? (
+      <IconCustom
+        name={iconCustom}
+        size={variable.fix_fontSize_Icon}
+        style={[{color: baseColor}, styles.icon]}
+        onPress={() => console.log('GOND icon customed name: ', iconCustom)}
+      />
+    ) : null;
     const revealIconStyle = this.state.revealHidden
       ? {}
       : {color: CMSColors.primaryActive};

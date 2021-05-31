@@ -2,8 +2,9 @@
 // export const API_VERSION =''
 // export const APP_Id = '89ab5a91edf94caeae6f5a38e1cc3c26'
 export const ApiSetting = {
-  Version: '2.0.1',
-  AppId: '89ab5a91edf94caeae6f5a38e1cc3c26',
+  // Version: '2.0.1',
+  // AppId: '89ab5a91edf94caeae6f5a38e1cc3c26',
+  AppId: '4d53bce03ec34c0a911182d4c228ee6c',
 };
 
 export const AlarmStatus = {
@@ -526,4 +527,5 @@ export const APP_INFO = {
   Version: '2.5.1.28',
   BuiltDate: 'Apr 29, 2021',
   CopyRight: 'Copyright © 2021 i3 International Inc.',
+  AppId: '4d53bce03ec34c0a911182d4c228ee6c',
 };

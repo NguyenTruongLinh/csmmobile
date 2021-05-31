@@ -31,7 +31,7 @@ import AppNavigator from './navigation/appNavigator';
 // import PushController from './PushController';
 import {getwindow, isNullOrUndef} from './util/general';
 
-import styles from './styles/scenes/appnavigation.style';
+// import styles from './styles/scenes/appnavigation.style';
 import {ROUTERS, DateFormat, Store_Name, APP_INFO} from './consts/misc';
 import {STREAMING_TYPES} from './consts/video';
 import CMSColors from './styles/cmscolors';

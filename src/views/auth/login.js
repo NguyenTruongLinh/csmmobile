@@ -15,7 +15,7 @@ import {
   StyleSheet,
   Text,
   Image,
-  ScrollView,
+  ActivityIndicator,
   Alert,
   Platform,
   findNodeHandle,
@@ -23,6 +23,7 @@ import {
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
+import {onSnapshot, onPatch} from 'mobx-state-tree';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 // import validatejs from 'validate.js';
 
@@ -31,13 +32,17 @@ import Button from '../../components/controls/Button';
 
 import navigationService from '../../navigation/navigationService';
 
+import {isValidHttpUrl} from '../../util/general';
+
 import {createIconSetFromFontello} from 'react-native-vector-icons';
 import fontelloConfig from '../../components/common/fontello/config.json';
 import {Domain} from '../../consts/misc';
 import styles from '../../styles/scenes/login.style';
+import styles_cmp from '../../styles/components.style';
 import CMSColors from '../../styles/cmscolors';
 import {I3_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
+
 const IconCustom = createIconSetFromFontello(fontelloConfig);
 
 const backgroundImg = require('../../assets/images/intro/welcome.png');
@@ -68,15 +73,33 @@ class LoginView extends Component {
       password: null,
     };
     this.keyboardView = null;
+    this.lastLoginError = '';
+    onPatch(props.userStore, this.onStoreChanged);
   }
 
   componentDidMount() {
     __DEV__ && console.log('LoginView componentDidMount');
+    this.props.appStore.setLoading(false);
   }
 
   componentWillUnmount() {
     __DEV__ && console.log('LoginView componentWillUnmount');
   }
+
+  // static getDerivedStateFromProps(nextProps, nextState) {
+  //   __DEV__ && console.log('LoginView getDerivedStateFromProps: ', nextProps);
+  // }
+
+  onStoreChanged = newValues => {
+    const {error, isLoggedIn} = this.props.userStore;
+    if (error != this.lastLoginError) {
+      this.lastLoginError = error;
+      error && Alert.alert(LoginTxt.errorTitle, error);
+      return;
+    }
+    if (newValues.path == '/isLoggedIn' && isLoggedIn === true)
+      Alert.alert('Login successfully', 'Yay!');
+  };
 
   onTypingDomain = text => {};
 
@@ -129,19 +152,17 @@ class LoginView extends Component {
   validatedomain = domain => {
     if (!domain) return;
 
-    if (
-      domain.startsWith('http://') == false &&
-      domain.startsWith('https://') == false
-    )
+    if (!domain.startsWith('http://') && !domain.startsWith('https://'))
       domain = 'https://' + domain;
 
-    let options = {
-      schemes: ['http', 'https'],
-      allowLocal: true,
-      message: 'Domain is not a valid url.',
-    };
+    // let options = {
+    //   schemes: ['http', 'https'],
+    //   allowLocal: true,
+    //   message: 'Domain is not a valid url.',
+    // };
     console.log('GOND validate domain: ', domain);
-    return validators.url({website: domain}, options);
+    // return validators.url({website: domain}, options);
+    return isValidHttpUrl(domain) ? null : 'Domain is not a valid url.';
   };
 
   onLogin = () => {
@@ -151,7 +172,6 @@ class LoginView extends Component {
 
     const regexSubName = /^[A-z0-9]+$/;
     if (regexSubName.test(domain)) {
-      console.log('aaaaaaaaaaaaaa');
       domain = Domain.urlI3care + domain;
     }
 
@@ -184,6 +204,11 @@ class LoginView extends Component {
   render() {
     const {width} = Dimensions.get('window');
     const {domain, username, password, errors} = this.state;
+    const {isLoading} = this.props.appStore;
+    const {error} = this.props.userStore;
+    console.log('GOND login render isLoading: ', isLoading);
+
+    // if (error)
     // console.log(
     //   'GOND login domain = ',
     //   domain,
@@ -195,9 +220,22 @@ class LoginView extends Component {
     //   this.props.appStore.isLoading
     // );
 
-    return (
+    return isLoading ? (
+      <View style={styles.spinner}>
+        <ActivityIndicator
+          animating={this.state.animating}
+          style={[styles_cmp.ActivityIndicator_centering]}
+          size="large"
+          color={CMSColors.ActivityIndicator_color_Login}
+        />
+      </View>
+    ) : (
       <View
-        style={{flex: 1, paddingLeft: width * 0.1, paddingRight: width * 0.1}}>
+        style={{
+          flex: 1,
+          paddingLeft: width * 0.1,
+          paddingRight: width * 0.1,
+        }}>
         <KeyboardAwareScrollView
           // keyBoardShouldPersistTaps="always"
           ref={r => {

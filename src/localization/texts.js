@@ -24,4 +24,7 @@ export const Login = {
   password: 'Password',
   login: 'LOGIN',
   skip: 'FORGOT PASSWORD?',
+  errorTitle: 'Login Error',
+  errorLoginIncorrect: 'Incorrect username or password.',
+  errorLoginCantConnect: 'Cannot connect to server.',
 };

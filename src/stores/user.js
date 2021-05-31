@@ -1,14 +1,17 @@
-import {types} from 'mobx-state-tree';
+import {types, flow} from 'mobx-state-tree';
+import {Alert} from 'react-native';
 
-import {MODULES, Orient} from '../consts/misc';
+import {MODULES, Orient, APP_INFO} from '../consts/misc';
 import ROUTERS from '../consts/routes';
 
 import {Route, Account} from '../consts/apiRoutes';
+import {Login as LoginTxt} from '../localization/texts';
 import apiService from '../services/api';
 import dbService from '../services/localdb';
+import appStore from './appStore';
 
 // TODO: fixit
-const AppId = '4d53bce03ec34c0a911182d4c228ee6c';
+// const AppId = '4d53bce03ec34c0a911182d4c228ee6c';
 
 const ModuleModel = types
   .model({
@@ -43,6 +46,7 @@ const APIModel = types
   })
   .actions(self => ({
     load(_api) {
+      console.log('GOND load _api: ', _api);
       if (!_api._Api || !_api._ApiToken) {
         console.log('GOND API is not valid!');
         return false;
@@ -71,29 +75,29 @@ const getDefaultAPI = () =>
 
 const UserModel = types
   .model({
-    userId: types.maybeNull(types.identifierNumber),
+    userId: types.maybeNull(types.number),
     userName: types.string,
     firstName: types.string,
     lastName: types.string,
     email: types.string,
-    userPhoto: types.string,
+    userPhoto: types.maybe(types.string),
     isAuth: types.boolean,
     isAdmin: types.boolean,
   })
   .actions(self => ({
     load(_user) {
       self.userId = _user.UserID;
-      self.userName = _user.UName;
+      self.userName = _user.UName || '';
       self.firstName = _user.FName;
       self.lastName = _user.LName;
       self.email = _user.Email;
-      self.userPhoto = _user.UPhoto;
+      self.userPhoto = _user.UPhoto || undefined;
       self.isAdmin = _user.IsAdmin;
-      self.isAuth = _user.isAuth;
+      self.isAuth = true;
     },
   }));
 
-const getAnonymousUser = () =>
+const createAnonymousUser = () =>
   UserModel.create({
     userId: 0,
     userName: '',
@@ -137,14 +141,21 @@ export const UserDataModel = types
     routes: types.array(types.string),
   })
   .actions(self => ({
-    async login(domain, username, password) {
+    // async login(domainname, username, password) {
+    login: flow(function* login(domainname, username, password) {
+      appStore.setLoading(true);
       self.error = '';
+      self.loginInfo = LoginModel.create({
+        domainname,
+        username,
+        password,
+      });
 
       apiService.updateConfig(
         {
-          Url: domain + Route,
-          AppId: AppId,
-          Version: '',
+          Url: domainname + Route,
+          AppId: APP_INFO.AppId,
+          Version: APP_INFO.Version,
         },
         {
           Id: '',
@@ -153,16 +164,65 @@ export const UserDataModel = types
         }
       );
 
-      const res = await apiService.login(username, password);
+      // const res = await apiService.login(username, password);
+      const res = yield apiService.login(username, password);
       console.log('GOND login res = ', res);
       if (res && res.status == 200 && res.Result) {
-        self.loginSuccess(res);
+        try {
+          self.user.load(res.Result);
+        } catch (err) {
+          console.log('GOND load user profile error: ', err);
+          self.isLoggedIn = false;
+          self.error = err;
+          appStore.setLoading(false);
+          return;
+        }
+        self.error = '';
+        self.message = res.message || '';
+        self.isLoggedIn = true;
+
+        self.api = res.Api
+          ? getDefaultAPI().load(res.Api)
+          : APIModel.create({
+              url: domainname,
+              appId: APP_INFO.AppId,
+              version: APP_INFO.Version,
+              id: '',
+              apiKey: '',
+              token: '',
+              devId: '', // load from db
+            });
+
+        self.modules = [];
+        if (Array.isArray(res.Modules)) {
+          res.Modules.forEach(item => {
+            self.modules.push(getDefaultModule().load(item));
+          });
+        }
+        self.routes = [];
+        if (Array.isArray(res.routes)) {
+          res.routes.forEach(item => {
+            self.routes.push(item);
+          });
+        }
+        console.log(
+          'GOND logged in modules = ',
+          self.modules,
+          '\n --- routes: ',
+          self.routes
+        );
       } else {
-        self.loginFailed(res);
+        if (res.status === 401) {
+          self.error = LoginTxt.errorLoginIncorrect;
+        } else {
+          self.error = LoginTxt.errorLoginCantConnect;
+        }
+        self.isLoggedIn = false;
       }
-    },
+      appStore.setLoading(false);
+    }),
     logout() {
-      self.user = getAnonymousUser();
+      self.user = createAnonymousUser();
       self.error = '';
       self.message = '';
       self.isLoggedIn = false;
@@ -171,35 +231,8 @@ export const UserDataModel = types
       self.modules = [];
       self.routes = [];
     },
-    loginSuccess(data) {
-      try {
-        self.user.load(data.Result);
-      } catch (err) {
-        console.log('GOND load user profile error: ', err);
-        self.error = '';
-        return;
-      }
+    didShowError() {
       self.error = '';
-      self.message = data.message || '';
-      self.isLoggedIn = true;
-      self.api = getDefaultAPI().load(data.Api);
-      self.modules = [];
-      if (Array.isArray(data.Modules)) {
-        data.Modules.forEach(item => {
-          self.modules.push(getDefaultModule().load(item));
-        });
-      }
-      self.api = getDefaultAPI().load(data.Api);
-      self.routes = [];
-      if (Array.isArray(data.routes)) {
-        data.routes.forEach(item => {
-          self.routes.push(item);
-        });
-      }
-    },
-    loginFailed(data) {
-      self.loginInfo = LoginModel.create(data);
-      self.error = data.error;
     },
     loginError(errorMessage) {
       self.error = errorMessage;
@@ -240,8 +273,8 @@ export const UserDataModel = types
   }));
 
 const userStore = UserDataModel.create({
-  user: null,
-  error: null,
+  user: createAnonymousUser(),
+  error: '',
   message: '',
   isLoggedIn: false,
   fcm: null,

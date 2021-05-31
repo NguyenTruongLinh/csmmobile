@@ -22,6 +22,7 @@ class Api {
     this.configToken = {};
   }
 
+  // TODO: get config from userStore
   updateConfig(config, configToken) {
     this.config = config;
     this.configToken = configToken;

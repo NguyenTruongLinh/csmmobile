@@ -535,3 +535,14 @@ exports.isSDAlert = alertId => {
 exports.getRandomId = () => {
   return uuid.v1().toString();
 };
+
+exports.isValidHttpUrl = val => {
+  // toString.call(val) === '[object URL]';
+  try {
+    const url = new URL(val);
+    return val.startsWith('http:://') || val.startsWith('https://');
+  } catch (err) {
+    console.log('GOND not valid url: ', err);
+    return false;
+  }
+};
