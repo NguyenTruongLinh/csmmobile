@@ -13,7 +13,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import {observer, inject} from 'mobx-react';
-import Orientation from 'react-native-orientation-locker';
+// import Orientation from 'react-native-orientation-locker';
 
 import Snackbar from 'react-native-snackbar';
 import DeviceInfo from 'react-native-device-info';
