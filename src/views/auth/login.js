@@ -97,8 +97,8 @@ class LoginView extends Component {
       error && Alert.alert(LoginTxt.errorTitle, error);
       return;
     }
-    if (newValues.path == '/isLoggedIn' && isLoggedIn === true)
-      Alert.alert('Login successfully', 'Yay!');
+    // if (newValues.path == '/isLoggedIn' && isLoggedIn === true)
+    //   Alert.alert('Login successfully', 'Yay!');
   };
 
   onTypingDomain = text => {};

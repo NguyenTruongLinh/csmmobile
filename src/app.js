@@ -13,7 +13,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import {observer, inject} from 'mobx-react';
-// import Orientation from 'react-native-orientation-locker';
+import Orientation from 'react-native-orientation-locker';
 
 import Snackbar from 'react-native-snackbar';
 import DeviceInfo from 'react-native-device-info';
@@ -32,7 +32,9 @@ import AppNavigator from './navigation/appNavigator';
 import {getwindow, isNullOrUndef} from './util/general';
 
 // import styles from './styles/scenes/appnavigation.style';
-import {ROUTERS, DateFormat, Store_Name, APP_INFO} from './consts/misc';
+import {ROUTERS, DateFormat, Store_Name} from './consts/misc';
+import APP_INFO from './consts/appInfo';
+
 import {STREAMING_TYPES} from './consts/video';
 import CMSColors from './styles/cmscolors';
 
@@ -450,11 +452,17 @@ class App extends React.Component {
   */
 
   render() {
-    return AppNavigator(this.props.appStore.showIntro, false);
+    const {showIntro, isLoading} = this.props.appStore;
+    const {isLoggedIn} = this.props.userStore;
+    return AppNavigator({
+      showIntro,
+      isLoading,
+      isLoggedIn,
+    });
   }
 }
 
 Text.defaultProps = Text.defaultProps || {};
 Text.defaultProps.allowFontScaling = false;
 
-export default inject('appStore')(observer(App));
+export default inject('appStore', 'userStore')(observer(App));

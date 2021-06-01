@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {View, Text, Image, Platform, Linking, StatusBar} from 'react-native';
 
+import APP_INFO from '../../consts/appInfo';
+
 class AboutView extends Component {
   constructor(props) {
     super(props);

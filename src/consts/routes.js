@@ -11,6 +11,7 @@ export default ROUTERS = {
 
   HOME_TAB: 'hometab',
   HOME_NAVIGATOR: 'homenavi',
+  HOME: 'home',
 
   HEALTH: 'health',
   HEALTH_STACK: 'healthstack',

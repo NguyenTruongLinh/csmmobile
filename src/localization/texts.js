@@ -28,3 +28,10 @@ export const Login = {
   errorLoginIncorrect: 'Incorrect username or password.',
   errorLoginCantConnect: 'Cannot connect to server.',
 };
+
+export const Tabbar = {
+  home: 'Home',
+  video: 'Video',
+  alarm: 'Alarm',
+  settings: 'Settings',
+};

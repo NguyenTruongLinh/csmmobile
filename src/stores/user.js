@@ -1,7 +1,8 @@
 import {types, flow} from 'mobx-state-tree';
 import {Alert} from 'react-native';
 
-import {MODULES, Orient, APP_INFO} from '../consts/misc';
+import {MODULES, Orient} from '../consts/misc';
+import APP_INFO from '../consts/appInfo';
 import ROUTERS from '../consts/routes';
 
 import {Route, Account} from '../consts/apiRoutes';

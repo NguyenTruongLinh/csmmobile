@@ -8,6 +8,7 @@ import {
 
 import navigationService from './navigationService';
 // import {navigationStore} from '../stores/navigation';
+import CMSTabbar from './tabbar';
 
 import CMSIntroView from '../views/intro/cmsIntro';
 import WelcomeView from '../views/intro/welcome';
@@ -112,16 +113,16 @@ getHeaderTitle = route => {
 };
 
 const AStack = createStackNavigator();
-const AlarmStack = () => {
+const AlarmStack = () => (
   <AStack.Navigator initialRouteName={ROUTERS.ALARM_LIVE} headerMode="float">
     <AStack.Screen name={ROUTERS.ALARM_LIVE} component={AlarmsLiveView} />
     <AStack.Screen name={ROUTERS.ALARM_SEARCH} component={AlarmsSearchView} />
     <AStack.Screen name={ROUTERS.ALARM_DETAIL} component={AlarmDetailView} />
-  </AStack.Navigator>;
-};
+  </AStack.Navigator>
+);
 
 const VStack = createStackNavigator();
-const VideoStack = () => {
+const VideoStack = () => (
   <VStack.Navigator initialRouteName={ROUTERS.VIDEO_REGIONS} headerMode="float">
     <VStack.Screen name={ROUTERS.VIDEO_REGIONS} component={RegionsView} />
     <VStack.Screen name={ROUTERS.VIDEO_SITES} component={SitesView} />
@@ -132,11 +133,11 @@ const VideoStack = () => {
       component={ChannelsSettingView}
     />
     <VStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
-  </VStack.Navigator>;
-};
+  </VStack.Navigator>
+);
 
 const OPStack = createStackNavigator();
-const OptionsStack = () => {
+const OptionsStack = () => (
   <OPStack.Navigator initialRouteName={ROUTERS.OPTIONS} headerMode="float">
     <OPStack.Screen name={ROUTERS.OPTIONS} component={OptionsView} />
     <OPStack.Screen name={ROUTERS.OPTIONS_PROFILE} component={ProfileView} />
@@ -146,19 +147,19 @@ const OptionsStack = () => {
       component={NotifySettingView}
     />
     <OPStack.Screen name={ROUTERS.OPTIONS_VIDEO} component={VideoSettingView} />
-  </OPStack.Navigator>;
-};
+  </OPStack.Navigator>
+);
 
 const OAStack = createStackNavigator();
-const OAMStack = () => {
+const OAMStack = () => (
   <OAStack.Navigator initialRouteName={ROUTERS.OAM_SITES} headerMode="float">
     <OAStack.Screen name={ROUTERS.OAM_SITES} component={OAMSitesView} />
     <OAStack.Screen name={ROUTERS.OAM_DETAIL} component={OAMDetailView} />
-  </OAStack.Navigator>;
-};
+  </OAStack.Navigator>
+);
 
 const HStack = createStackNavigator();
-const HealthStack = () => {
+const HealthStack = () => (
   <HStack.Navigator initialRouteName={ROUTERS.HEALTH_SITES} headerMode="float">
     <HStack.Screen name={ROUTERS.HEALTH_SITES} component={HealthView} />
     <HStack.Screen name={ROUTERS.HEALTH_DETAIL} component={HealthDetailView} />
@@ -167,11 +168,11 @@ const HealthStack = () => {
       name={ROUTERS.HEALTH_ALERT_DETAIL}
       component={AlertDetailView}
     />
-  </HStack.Navigator>;
-};
+  </HStack.Navigator>
+);
 
 const PStack = createStackNavigator();
-const POSStack = () => {
+const POSStack = () => (
   <PStack.Navigator initialRouteName={ROUTERS.POS} headerMode="float">
     <PStack.Screen name={ROUTERS.POS} component={SummaryView} />
     <PStack.Screen name={ROUTERS.TRANSACTIONS} component={ExceptionsView} />
@@ -183,22 +184,27 @@ const POSStack = () => {
       name={ROUTERS.TRAN_DETAIL_FCM}
       component={TransactionFCMView}
     />
-  </PStack.Navigator>;
-};
+  </PStack.Navigator>
+);
 
 const HOStack = createStackNavigator();
-const HomeNavigator = () => {
+const HomeNavigator = () => (
   <HOStack.Navigator initialRouteName={ROUTERS.HOME} headerMode="float">
     <HOStack.Screen name={ROUTERS.HOME} component={HomeView} />
     <HOStack.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} />
     <HOStack.Screen name={ROUTERS.POS_STACK} component={POSStack} />
     <HOStack.Screen name={ROUTERS.OAM_STACK} component={OAMStack} />
-  </HOStack.Navigator>;
-};
+  </HOStack.Navigator>
+);
 
 const BottomTab = createBottomTabNavigator();
 const CMSMainTab = () => (
-  <BottomTab.Navigator initialRouteName={ROUTERS.HOME} headerMode="none">
+  <BottomTab.Navigator
+    initialRouteName={ROUTERS.HOME}
+    headerMode="none"
+    tabBar={props => {
+      return <CMSTabbar {...props} />;
+    }}>
     <BottomTab.Screen name={ROUTERS.HOME_NAVIGATOR} component={HomeNavigator} />
     <BottomTab.Screen name={ROUTERS.VIDEO_STACK} component={VideoStack} />
     <BottomTab.Screen name={ROUTERS.ALARM_STACK} component={AlarmStack} />
@@ -218,7 +224,7 @@ const WelcomeStack = createStackNavigator();
  * @param {bool} isLoggedIn
  * @returns ReactElement
  */
-const AppNavigator = (showIntro, isLoggedIn = false) => {
+const AppNavigator = ({showIntro, isLoggedIn, isLoading}) => {
   return (
     <NavigationContainer
       ref={ref => {
@@ -234,6 +240,8 @@ const AppNavigator = (showIntro, isLoggedIn = false) => {
             component={CMSIntroView}
           />
         </IntroStack.Navigator>
+      ) : isLoggedIn ? (
+        CMSMainTab()
       ) : (
         <WelcomeStack.Navigator
           initialRouteName={ROUTERS.INTRO_WELCOME}

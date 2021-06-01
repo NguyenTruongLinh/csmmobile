@@ -521,11 +521,3 @@ export const NOTIFY_TYPE = {
 
 export const CALENDAR_DATE_FORMAT = 'YYYY-MM-DD';
 
-export const APP_INFO = {
-  Title: 'Cloud Managed Services',
-  Name: 'CMS Mobile 2.5',
-  Version: '2.5.1.28',
-  BuiltDate: 'Apr 29, 2021',
-  CopyRight: 'Copyright © 2021 i3 International Inc.',
-  AppId: '4d53bce03ec34c0a911182d4c228ee6c',
-};
