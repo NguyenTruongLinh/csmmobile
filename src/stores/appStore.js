@@ -68,7 +68,7 @@ const appStore = types
       apnsToken: '',
       deviceModel: '',
     }),
-    showIntro: true,
+    showIntro: false,
     isLoading: false,
   });
 

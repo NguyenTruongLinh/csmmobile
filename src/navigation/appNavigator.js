@@ -47,6 +47,7 @@ import AboutViews from '../views/settings/about';
 import NotifySettingView from '../views/settings/notify';
 import VideoSettingView from '../views/settings/video';
 
+import LoadingOverlay from '../components/common/loadingOverlay';
 import ROUTERS from '../consts/routes';
 
 getHeaderTitle = route => {
@@ -232,7 +233,9 @@ const AppNavigator = ({showIntro, isLoggedIn, isLoading}) => {
         // __DEV__ && console.log('GOND NavContainer ref = ', ref);
         navigationService.setTopLevelNavigator(ref);
       }}>
-      {showIntro ? (
+      {isLoading ? (
+        <LoadingOverlay />
+      ) : showIntro ? (
         <IntroStack.Navigator
           initialRouteName={ROUTERS.INTRO_CMS}
           headerMode="none">

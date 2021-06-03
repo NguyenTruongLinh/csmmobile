@@ -70,6 +70,7 @@ class App extends React.Component {
 
     // this.pushController = undefined;
     this.appStateEventListener = null;
+    this.props.appStore.setLoading(true);
   }
 
   getAutoRotateState = async () => {
@@ -316,11 +317,10 @@ class App extends React.Component {
     }
 
     // autoLogin
-    this.props.appStore.setLoading(true);
     await this.props.appStore.loadLocalData();
     // await this.props.userStore.loadLocalData();
     this.props.userStore.shouldAutoLogin();
-    this.props.appStore.setLoading(false);
+    setTimeout(() => this.props.appStore.setLoading(false), 1000);
   }
 
   componentWillUnmount() {

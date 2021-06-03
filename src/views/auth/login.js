@@ -1,15 +1,4 @@
-// ----------------------------------------------------
-// <!-- START CONST -->
-//const PATH_ACTIONS = "../../actions";
-//const PATH_VIEW = "../../actions";
-
-// <!-- END CONST -->
-// ----------------------------------------------------
-
-// ----------------------------------------------------
-// <!-- START MODULES -->
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
@@ -17,13 +6,11 @@ import {
   Image,
   ActivityIndicator,
   Alert,
-  Platform,
-  findNodeHandle,
   Dimensions,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
-import {onSnapshot, onPatch} from 'mobx-state-tree';
+import {onPatch} from 'mobx-state-tree';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 // import validatejs from 'validate.js';
 
@@ -200,7 +187,7 @@ class LoginView extends Component {
   render() {
     const {width} = Dimensions.get('window');
     const {domain, username, password, errors} = this.state;
-    const {isLoading} = this.props.appStore;
+    // const {isLoading} = this.props.appStore;
     // const {error} = this.props.userStore;
     // console.log('GOND login render isLoading: ', isLoading);
 
@@ -216,16 +203,7 @@ class LoginView extends Component {
     //   this.props.appStore.isLoading
     // );
 
-    return isLoading ? (
-      <View style={styles.spinner}>
-        <ActivityIndicator
-          animating={this.state.animating}
-          style={[styles_cmp.ActivityIndicator_centering]}
-          size="large"
-          color={CMSColors.ActivityIndicator_color_Login}
-        />
-      </View>
-    ) : (
+    return (
       <View
         style={{
           flex: 1,
@@ -386,10 +364,8 @@ class LoginView extends Component {
                 captionStyle={{}}
                 onPress={this.onLogin}
                 enable={
-                  domain &&
-                  username &&
-                  password &&
-                  !this.props.appStore.isLoading
+                  domain && username && password // &&
+                  // !this.props.appStore.isLoading
                 }
               />
               <Button
