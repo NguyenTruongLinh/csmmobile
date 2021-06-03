@@ -2,13 +2,19 @@ import RNDBModel from 'react-native-db-models';
 import uuid from 'react-native-uuid';
 
 import {isNullOrUndef} from '../util/general';
+import {LocalDBName} from '../consts/misc';
+import {mode} from 'crypto-js';
 
 const cmsDBName = 'i3cms';
 
 class LocalDB {
-  constructor() {}
+  constructor() {
+    new RNDBModel.create_db(LocalDBName.user);
+    new RNDBModel.create_db(LocalDBName.device);
+    // new RNDBModel.create_db(LocalDBName.alertConfig);
+  }
 
-  init = async () => {
+  firstInit = async () => {
     let cmsdb = new RNDBModel.create_db(cmsDBName);
 
     if (isNullOrUndef(cmsdb)) {
@@ -25,23 +31,41 @@ class LocalDB {
   };
 
   isFirstLaunch = async () => {
-    const model = RNDBModel[cmsDBName];
-    if (!model) {
-      await init();
+    // const model = RNDBModel[cmsDBName];
+    // __DEV__ && console.log('GOND get initdb = ', new RNDBModel.create_db());
+    // if (!model) {
+    //   __DEV__ && console.log('GOND first launch init');
+    //   await this.firstInit();
+    //   return true;
+    // }
+    // __DEV__ && console.log('GOND not first launch');
+    // return false;
+    const _device = await this.query(LocalDBName.device);
+    __DEV__ &&
+      console.log(
+        'GOND get initdb = ',
+        _device,
+        ', first = ',
+        this.first(_device.rows)
+      );
+    if (!_device && !this.first(_device.rows)) {
+      __DEV__ && console.log('GOND first launch init');
+      await this.getDeviceId();
       return true;
     }
+    __DEV__ && console.log('GOND not first launch');
     return false;
   };
 
   /**
    * getDB
-   * @param {string} name
+   * @param {string} dbName
    * @returns {object}
    */
-  getDB = name => {
-    const model = RNDBModel[name];
+  getDB = dbName => {
+    const model = RNDBModel[dbName];
     if (model) return model;
-    return new RNDBModel.create_db(name);
+    return new RNDBModel.create_db(dbName);
   };
 
   /**
@@ -49,43 +73,41 @@ class LocalDB {
    * @returns {string}
    */
   getDeviceId = async () => {
-    const d_id = await query('deviceid');
-    let _id = null;
+    const d_id = await this.query(LocalDBName.device);
     if (d_id === undefined || d_id.totalrows == 0) {
       const guid = uuid.v1();
-      _id = guid.toString();
-      await _add('deviceid', {deviceid: _id});
+      let _id = guid.toString();
+      await this.add(LocalDBName.device, {deviceid: _id});
+      return _id;
     } else {
-      _id = _first(d_id.rows); //d_id.rows[d_id.autoinc -1];
-      _id = _id.deviceid;
+      return this.first(d_id.rows).deviceid;
     }
-    return _id;
   };
 
   /**
-   * _deviceId
+   * deviceId
    * @param {string} id
    * @returns {string}
    */
-  _deviceId = async id => {
+  deviceId = async id => {
     //var model = getDB('deviceid');
     if (!id) {
-      return await getDeviceId();
+      return await this.getDeviceId();
     } else {
       let oldid = await getDeviceId();
-      const model = getDB('deviceid');
+      const model = this.getDB(LocalDBName.device);
       await model.remove({deviceid: oldid});
-      await _add('deviceid', {deviceid: id});
+      await this.add(LocalDBName.device, {deviceid: id});
       return id;
     }
   };
 
   /**
-   * _first
-   * @param {object} row
-   * @returns {any}
+   * first
+   * @param {object} rows
+   * @returns {object} : first data
    */
-  _first = rows => {
+  first = rows => {
     if (!rows) return null;
     for (let name in rows) {
       return rows[name];
@@ -94,13 +116,31 @@ class LocalDB {
   };
 
   /**
+   *
+   * @param {string} dbName
+   * @returns {object} first row in db
+   */
+  getFirstData = async dbName => {
+    const model = this.getDB(dbName);
+    const data = await new Promise(resolve => {
+      setTimeout(() => {
+        model.get_all(result => {
+          resolve(result);
+        });
+      }, 1);
+    });
+    console.log('GOND get first data ', dbName, ': ', data);
+    return this.first(data.rows);
+  };
+
+  /**
    * _query
    * @param {string} id
    * @param {any} filter
    * @returns {any}
    */
-  _query = async (name, filter = undefined) => {
-    const model = getDB(name);
+  query = async (dbName, filter = undefined) => {
+    const model = this.getDB(dbName);
     // if (filter == undefined || filter == null) {
     //   promise = new Promise(resolve => {
     //     setTimeout(function () {
@@ -118,28 +158,42 @@ class LocalDB {
     //     }, 1);
     //   });
     // }
-    const getter = isNullOrUndef(filter) ? model.get_all : model.get;
     return await new Promise(resolve => {
       setTimeout(() => {
-        getter(result => {
-          resolve(result);
-        });
+        isNullOrUndef(filter)
+          ? model.get_all(result => {
+              resolve(result);
+            })
+          : model.get(filter, result => {
+              resolve(result);
+            });
       }, 1);
     });
   };
 
   /**
-   * _add
-   * @param {string} name
+   * add
+   * @param {string} dbName
    * @param {any} data
    * @returns {any}
    */
-  _add = async (name, data) => {
-    const model = getDB(name);
+  add = async (dbName, data) => {
+    console.log('1111111111111 data', data);
+    const model = this.getDB(dbName);
+    console.log('22222222222 ', model);
     if (isNullOrUndef(data)) return data;
+    console.log('33333333333');
     return await new Promise(function (resolve) {
       setTimeout(() => {
         model.add(data, result => {
+          console.log(
+            'GOND add db: ',
+            dbName,
+            ', data: ',
+            data,
+            '\n => ',
+            result
+          );
           resolve(result);
         });
       }, 1);
@@ -148,13 +202,13 @@ class LocalDB {
 
   /**
    * _update
-   * @param {string} name
+   * @param {string} dbName
    * @param {string} new_data
    * @param {any} filter
    * @returns {any}
    */
-  _update = async (name, new_data, filter) => {
-    const model = getDB(name);
+  update = async (dbName, new_data, filter) => {
+    const model = this.getDB(dbName);
     if (isNullOrUndef(new_data)) return new_data;
     return await new Promise(resolve => {
       setTimeout(() => {
@@ -168,15 +222,15 @@ class LocalDB {
 
   /**
    * _delete
-   * @param {string} name
+   * @param {string} dbName
    * @param {any} filter
    * @returns {any}
    */
-  _delete = async (name, filter) => {
-    const model = getDB(name);
+  delete = async (dbName, filter) => {
+    const model = this.getDB(dbName);
     if (isNullOrUndef(filter)) {
       await model.erase_db(removed_data => {
-        __DEV__ && console.log(removed_data);
+        __DEV__ && console.log('GOND removed from localdb: ', removed_data);
       });
       return 1;
     }
@@ -189,10 +243,6 @@ class LocalDB {
       }, 1);
     });
   };
-
-  initDomains = () => new RNDBModel.create_db('domains');
-  initUsers = () => new RNDBModel.create_db('users');
-  initAlertconfig = () => new RNDBModel.create_db('alertconfig');
 }
 
 const dbService = new LocalDB();

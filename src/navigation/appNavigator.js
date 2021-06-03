@@ -41,7 +41,7 @@ import TransactionFCMView from '../views/pos/transactionDetailFCM';
 import OAMSitesView from '../views/oam/oamSites';
 import OAMDetailView from '../views/oam/detail';
 
-import OptionsView from '../views/settings/options';
+import SettingsView from '../views/settings/settings';
 import ProfileView from '../views/settings/profile';
 import AboutViews from '../views/settings/about';
 import NotifySettingView from '../views/settings/notify';
@@ -114,7 +114,7 @@ getHeaderTitle = route => {
 
 const AStack = createStackNavigator();
 const AlarmStack = () => (
-  <AStack.Navigator initialRouteName={ROUTERS.ALARM_LIVE} headerMode="float">
+  <AStack.Navigator initialRouteName={ROUTERS.ALARM_LIVE} headerMode="none">
     <AStack.Screen name={ROUTERS.ALARM_LIVE} component={AlarmsLiveView} />
     <AStack.Screen name={ROUTERS.ALARM_SEARCH} component={AlarmsSearchView} />
     <AStack.Screen name={ROUTERS.ALARM_DETAIL} component={AlarmDetailView} />
@@ -123,7 +123,7 @@ const AlarmStack = () => (
 
 const VStack = createStackNavigator();
 const VideoStack = () => (
-  <VStack.Navigator initialRouteName={ROUTERS.VIDEO_REGIONS} headerMode="float">
+  <VStack.Navigator initialRouteName={ROUTERS.VIDEO_REGIONS} headerMode="none">
     <VStack.Screen name={ROUTERS.VIDEO_REGIONS} component={RegionsView} />
     <VStack.Screen name={ROUTERS.VIDEO_SITES} component={SitesView} />
     <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
@@ -138,8 +138,8 @@ const VideoStack = () => (
 
 const OPStack = createStackNavigator();
 const OptionsStack = () => (
-  <OPStack.Navigator initialRouteName={ROUTERS.OPTIONS} headerMode="float">
-    <OPStack.Screen name={ROUTERS.OPTIONS} component={OptionsView} />
+  <OPStack.Navigator initialRouteName={ROUTERS.OPTIONS} headerMode="none">
+    <OPStack.Screen name={ROUTERS.OPTIONS} component={SettingsView} />
     <OPStack.Screen name={ROUTERS.OPTIONS_PROFILE} component={ProfileView} />
     <OPStack.Screen name={ROUTERS.OPTIONS_ABOUT} component={AboutViews} />
     <OPStack.Screen
@@ -189,7 +189,7 @@ const POSStack = () => (
 
 const HOStack = createStackNavigator();
 const HomeNavigator = () => (
-  <HOStack.Navigator initialRouteName={ROUTERS.HOME} headerMode="float">
+  <HOStack.Navigator initialRouteName={ROUTERS.HOME} headerMode="none">
     <HOStack.Screen name={ROUTERS.HOME} component={HomeView} />
     <HOStack.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} />
     <HOStack.Screen name={ROUTERS.POS_STACK} component={POSStack} />
@@ -225,10 +225,11 @@ const WelcomeStack = createStackNavigator();
  * @returns ReactElement
  */
 const AppNavigator = ({showIntro, isLoggedIn, isLoading}) => {
+  __DEV__ && console.log('GOND NavContainer render, isLogin = ', isLoggedIn);
   return (
     <NavigationContainer
       ref={ref => {
-        console.log('GOND NavContainer ref = ', ref);
+        // __DEV__ && console.log('GOND NavContainer ref = ', ref);
         navigationService.setTopLevelNavigator(ref);
       }}>
       {showIntro ? (

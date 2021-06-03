@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {View, Text, ActivityIndicator, StatusBar} from 'react-native';
 // import { validation } from '../../util/validation.js'
-// const img_header = require('../../components/common/img/profile_header.jpg');
+// const img_header = require('../../assets/images/common/profile_header.jpg');
 const initData: UserProfile = {
   UserID: null,
   FName: null,

@@ -2,7 +2,7 @@ const _Account = {
   controller: 'account',
   get: '',
   post: '',
-  avartar: 'avartar',
+  avatar: 'avartar',
   getsettingalert: 'settingalert',
   modules: 'modules',
   getsettingnotify: 'settingnotify',

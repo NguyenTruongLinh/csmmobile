@@ -1,4 +1,7 @@
-import {types} from 'mobx-state-tree';
+import {types, flow} from 'mobx-state-tree';
+
+import apiService from '../services/api';
+import dbService from '../services/localdb';
 
 const DeviceInfo = types.model({
   deviceId: types.string,
@@ -19,7 +22,7 @@ const appStore = types
   .model({
     nextScene: types.string,
     nextLogId: types.string,
-    rotatable: types.boolean,
+    canRotate: types.boolean,
     // domains: types.array(types.string),
     domain: types.string,
     deviceInfo: DeviceInfo,
@@ -30,9 +33,6 @@ const appStore = types
     getDeviceInfo() {
       return self.deviceInfo;
     },
-    canRotate() {
-      return self.rotatable;
-    },
   }))
   .actions(self => ({
     saveDeviceInfo(_device) {
@@ -40,7 +40,7 @@ const appStore = types
       self.deviceInfo = {...self.deviceInfo, _device};
     },
     allowRotation(isAllow) {
-      self.rotatable = isAllow || false;
+      self.canRotate = isAllow || false;
     },
     skipIntro() {
       self.showIntro = false;
@@ -48,11 +48,19 @@ const appStore = types
     setLoading(val) {
       self.isLoading = val || false;
     },
+    loadLocalData: flow(function* loadLocalData() {
+      const _id = yield dbService.deviceId();
+      console.log('GOND get deviceId: ', _id);
+      self.deviceInfo.deviceId = _id;
+      apiService.updateDeviceId(_id);
+
+      self.showIntro = yield dbService.isFirstLaunch();
+    }),
   }))
   .create({
     nextScene: '',
     nextLogId: '',
-    rotatable: true,
+    canRotate: false,
     domain: '',
     deviceInfo: DeviceInfo.create({
       deviceId: '',

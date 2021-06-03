@@ -34,8 +34,6 @@ import navigationService from '../../navigation/navigationService';
 
 import {isValidHttpUrl} from '../../util/general';
 
-import {createIconSetFromFontello} from 'react-native-vector-icons';
-import fontelloConfig from '../../components/common/fontello/config.json';
 import {Domain} from '../../consts/misc';
 import styles from '../../styles/scenes/login.style';
 import styles_cmp from '../../styles/components.style';
@@ -43,9 +41,7 @@ import CMSColors from '../../styles/cmscolors';
 import {I3_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
 
-const IconCustom = createIconSetFromFontello(fontelloConfig);
-
-const backgroundImg = require('../../assets/images/intro/welcome.png');
+// const backgroundImg = require('../../assets/images/intro/welcome.png');
 // const launchscreenLogo = require('../../assets/images/CMS-logo-white.png');
 
 // const validators = validatejs.validators;
@@ -205,8 +201,8 @@ class LoginView extends Component {
     const {width} = Dimensions.get('window');
     const {domain, username, password, errors} = this.state;
     const {isLoading} = this.props.appStore;
-    const {error} = this.props.userStore;
-    console.log('GOND login render isLoading: ', isLoading);
+    // const {error} = this.props.userStore;
+    // console.log('GOND login render isLoading: ', isLoading);
 
     // if (error)
     // console.log(

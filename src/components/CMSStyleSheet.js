@@ -4,7 +4,7 @@ import {StyleSheet, Platform} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {createIconSetFromFontello} from 'react-native-vector-icons';
-import fontelloConfig from './common/fontello/config.json';
+import fontelloConfig from '../assets/fontello/config.json';
 
 const IconCustom = createIconSetFromFontello(fontelloConfig);
 const TEXT_FONT_SIZE = 16;
@@ -28,6 +28,7 @@ export function create(styles) {
   });
   return StyleSheet.create(platformStyles);
 }
+
 module.exports = {
   FontSize: TEXT_FONT_SIZE,
   FontWeight: '500',

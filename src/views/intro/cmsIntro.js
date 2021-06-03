@@ -50,10 +50,7 @@ const IntroData = [
 class CMSIntroView extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      currentIndex: 0,
-    };
-
+    this.currentIndex = 0;
     this.introList = null;
     this.scrollX = new Animated.Value(0);
   }
@@ -67,9 +64,9 @@ class CMSIntroView extends Component {
   }
 
   onIntroItemChanged = ({viewableItems}) => {
-    // console.log('GOND onIntroItemChanged ', viewableItems);
-    this.setState({currentIndex: viewableItems[0].index});
-    // console.log('GOND onIntroItemChanged currentIndex = ', this.currentIndex);
+    console.log('GOND onIntroItemChanged ', viewableItems);
+    this.currentIndex = viewableItems[viewableItems.length - 1].index;
+    console.log('GOND onIntroItemChanged currentIndex = ', this.currentIndex);
   };
 
   onSkipIntro = () => {
@@ -79,16 +76,22 @@ class CMSIntroView extends Component {
   };
 
   onNextStep = () => {
-    if (this.introList && this.state.currentIndex < IntroData.length - 1)
-      this.introList.scrollToIndex({index: this.state.currentIndex + 1});
-    else if (this.state.currentIndex == IntroData.length - 1) {
+    console.log('GOND onNextStep = ', this.currentIndex);
+    if (this.introList && this.currentIndex < IntroData.length - 1)
+      this.introList.scrollToIndex({index: this.currentIndex + 1});
+    else if (this.currentIndex == IntroData.length - 1) {
       this.onSkipIntro();
     }
   };
 
+  onEndReached = () => {
+    console.log('GOND onEndReached = ', this.currentIndex);
+    // this.onSkipIntro();
+  };
+
   onBackStep = () => {
-    if (this.introList && this.state.currentIndex > 0)
-      this.introList.scrollToIndex({index: this.state.currentIndex - 1});
+    if (this.introList && this.currentIndex > 0)
+      this.introList.scrollToIndex({index: this.currentIndex - 1});
   };
 
   handleScroll = event => {
@@ -105,7 +108,7 @@ class CMSIntroView extends Component {
         style={[
           styles.listItemContainer,
           {
-            width: dim.width,
+            width: dim.width + 2, // Fix onViewableItemsChanged viewitems contain not reached view
           },
         ]}>
         <Image
@@ -114,13 +117,7 @@ class CMSIntroView extends Component {
           width={dim.width * 0.7}
           resizeMode="contain"
         />
-        <View
-          style={[
-            styles.itemTextContainer,
-            //{
-            // width: dim.width,
-            //}
-          ]}>
+        <View style={[styles.itemTextContainer]}>
           <Text style={styles.itemTitle}>{item.title}</Text>
           <Text style={styles.itemDesc}>{item.description}</Text>
         </View>
@@ -147,6 +144,7 @@ class CMSIntroView extends Component {
             horizontal={true}
             onScroll={this.handleScroll}
             onViewableItemsChanged={this.onIntroItemChanged}
+            onEndReached={this.onEndReached}
             showsHorizontalScrollIndicator={false}
             renderItem={this.renderIntroItem}
             ref={r => (this.introList = r)}
@@ -165,7 +163,7 @@ class CMSIntroView extends Component {
 
         <View style={styles.footerContainer}>
           <View style={styles.backContainer}>
-            {this.state.currentIndex > 0 ? (
+            {this.currentIndex > 0 ? (
               <Button
                 enable={true}
                 style={styles.backButton}

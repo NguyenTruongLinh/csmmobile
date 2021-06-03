@@ -35,3 +35,8 @@ export const Tabbar = {
   alarm: 'Alarm',
   settings: 'Settings',
 };
+
+export const Settings = {
+  logOut: 'Logout',
+  actionFailed: 'Operation failed! Please try again later',
+};

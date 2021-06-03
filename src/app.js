@@ -288,11 +288,11 @@ class App extends React.Component {
     AppState.addEventListener('change', this._handleAppStateChange);
     this.keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
-      this._keyboardDidShow
+      this.keyboardDidShow
     );
     this.keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
-      this._keyboardDidHide
+      this.keyboardDidHide
     );
     this.allowRotation = await this.getAutoRotateState();
     // this.props.publishRotationState(this.allowRotation);
@@ -300,6 +300,7 @@ class App extends React.Component {
       this.checkAutoRotateTimer = setInterval(this.onCheckAutoRotateState, 100);
 
     Orientation.addDeviceOrientationListener(this._orientationDidChange);
+    Orientation.lockToPortrait();
     // BackHandler.addEventListener('hardwareBackPress', this.handleBack);
     // let config = this.props.config;
     // if (!config || !config.isLoaded) this.props.LoadConfig();
@@ -314,8 +315,12 @@ class App extends React.Component {
       );
     }
 
-    // console.log('GOND navStore = ', navigationStore);
-    // navigationService.setNavigationStore(navigationStore);
+    // autoLogin
+    this.props.appStore.setLoading(true);
+    await this.props.appStore.loadLocalData();
+    // await this.props.userStore.loadLocalData();
+    this.props.userStore.shouldAutoLogin();
+    this.props.appStore.setLoading(false);
   }
 
   componentWillUnmount() {
@@ -357,11 +362,11 @@ class App extends React.Component {
     this.appState = nextAppState;
   };
 
-  _keyboardDidShow = () => {
+  keyboardDidShow = () => {
     __DEV__ && console.log('GOND on keyboard showed');
   };
 
-  _keyboardDidHide = () => {
+  keyboardDidHide = () => {
     __DEV__ && console.log('GOND on keyboard hidden');
   };
 

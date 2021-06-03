@@ -7,6 +7,12 @@ export const ApiSetting = {
   AppId: '4d53bce03ec34c0a911182d4c228ee6c',
 };
 
+export const LocalDBName = {
+  user: 'users',
+  alertConfig: 'alertconfigs',
+  device: 'deviceid',
+};
+
 export const AlarmStatus = {
   2: 'Pending',
   1: 'Process',
@@ -520,4 +526,3 @@ export const NOTIFY_TYPE = {
 };
 
 export const CALENDAR_DATE_FORMAT = 'YYYY-MM-DD';
-

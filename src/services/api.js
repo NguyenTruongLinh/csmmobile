@@ -18,8 +18,17 @@ class Api {
   // }
 
   constructor() {
-    this.config = {};
-    this.configToken = {};
+    this.config = {
+      url: '',
+      appId: '',
+      version: '',
+    };
+    this.configToken = {
+      id: '',
+      apiKey: '',
+      token: '',
+      devId: '',
+    };
   }
 
   // TODO: get config from userStore
@@ -53,8 +62,8 @@ class Api {
   }
 
   _baseUrl(controller = '', id = '', action = '') {
-    let ver = this.config.Version;
-    let urlbase = this.config.Url; //+ ((ver ==='' || ver=== undefined)?'' : ('/' + ver) );
+    let ver = this.config.version;
+    let urlbase = this.config.url; //+ ((ver ==='' || ver=== undefined)?'' : ('/' + ver) );
     if (!controller || controller === '') return urlbase;
     if (!id || id === '') {
       if (action) return urlbase + '/' + controller + '/' + action;
@@ -65,7 +74,7 @@ class Api {
   }
 
   _defaultHeader(appid) {
-    let version = this.config.Version;
+    let version = this.config.version;
     var headers = new Headers();
     headers.append('AppID', appid);
     headers.append('Accept', 'application/json');
@@ -78,7 +87,7 @@ class Api {
 
   async _getApiKey(controller) {
     try {
-      let header = this._defaultHeader(this.config.AppId);
+      let header = this._defaultHeader(this.config.appId);
       let url = this._baseUrl(controller);
       console.log(url);
       let response = await fetch(url, {method: _get, headers: header});
@@ -87,8 +96,8 @@ class Api {
         let header = response.headers;
         let sid = header.get('SID');
         let arrayOfStrings = sid.split(':');
-        this.configToken.Id = arrayOfStrings[0];
-        this.configToken.ApiKey = arrayOfStrings[1];
+        this.configToken.id = arrayOfStrings[0];
+        this.configToken.apiKey = arrayOfStrings[1];
       }
       return response;
     } catch (ex) {
@@ -97,9 +106,9 @@ class Api {
   }
 
   async _login(_uid, _pass) {
-    let header = this._defaultHeader(this.config.AppId);
+    let header = this._defaultHeader(this.config.appId);
     //header.SID = this.ApiToken.Id;
-    header.set('SID', this.configToken.Id);
+    header.set('SID', this.configToken.id);
     let url = this._baseUrl('account');
     var body = JSON.stringify({UserName: _uid, Password: _pass});
     let response = await fetch(url, {
@@ -114,7 +123,7 @@ class Api {
       var hindex = raw_token.indexOf('3rd-auth ');
       if (hindex >= 0)
         raw_token = raw_token.substr(hindex + '3rd-auth '.length);
-      this.configToken.Token = raw_token;
+      this.configToken.token = raw_token;
     }
     return response;
   }
@@ -122,8 +131,8 @@ class Api {
   // Token(method, url, jsoncontent) {
   //   let _method = _get;
   //   if (method != undefined && method != null) _method = method;
-  //   let token = this._generateToken(this.config.AppId, _method, url, jsoncontent);
-  //   let header = this._defaultHeader(this.config.AppId);
+  //   let token = this._generateToken(this.config.appId, _method, url, jsoncontent);
+  //   let header = this._defaultHeader(this.config.appId);
   //   header.set('Authorization', '3rd-auth ' + token);
   //   return header;
   // }
@@ -132,25 +141,25 @@ class Api {
     //console.log(url);
     let url_enc = encodeURIComponent(url).toLocaleLowerCase();
     let requestHttpMethod = method;
-    var today = new Date();
-    var guid = uuid.v1();
-    var request_content =
+    let today = new Date();
+    let guid = uuid.v1();
+    let request_content =
       content != ''
         ? CryptoJS.enc.Base64.stringify(CryptoJS.MD5(content))
         : content;
-    var raw_string =
+    let raw_string =
       appid +
       requestHttpMethod +
       url_enc +
       today.getTime().toString() +
       guid.toString() +
       request_content;
-    var buff = CryptoJS.enc.Utf8.parse(raw_string);
-    var buff_key = CryptoJS.enc.Utf8.parse(this.configToken.ApiKey);
-    var hmac = CryptoJS.hmacSHA256(buff, buff_key);
-    var base64String = CryptoJS.enc.Base64.stringify(hmac);
-    var token =
-      this.config.AppId +
+    let buff = CryptoJS.enc.Utf8.parse(raw_string);
+    let buff_key = CryptoJS.enc.Utf8.parse(this.configToken.apiKey);
+    let hmac = CryptoJS.HmacSHA256(buff, buff_key);
+    let base64String = CryptoJS.enc.Base64.stringify(hmac);
+    let token =
+      this.config.appId +
       ':' +
       base64String +
       ':' +
@@ -158,13 +167,13 @@ class Api {
       ':' +
       today.getTime().toString() +
       ':' +
-      this.configToken.Token;
+      this.configToken.token;
     return token;
   }
 
   _fetchBlob(url, requestmoethod, body) {
     let token = this._generateToken(
-      this.config.AppId,
+      this.config.appId,
       requestmoethod,
       url,
       body
@@ -172,7 +181,7 @@ class Api {
 
     let header = {
       Authorization: '3rd-auth ' + token,
-      AppID: this.config.AppId,
+      AppID: this.config.appId,
       'Content-Type': 'application/json',
     };
     //console.log('url:' + url);
@@ -184,12 +193,12 @@ class Api {
 
   _fetch(url, requestmoethod, body) {
     let token = this._generateToken(
-      this.config.AppId,
+      this.config.appId,
       requestmoethod,
       url,
       body
     );
-    let header = this._defaultHeader(this.config.AppId);
+    let header = this._defaultHeader(this.config.appId);
     header.set('Authorization', '3rd-auth ' + token);
     if (this.configToken && this.configToken.devId)
       header.set('devId', this.configToken.devId);
@@ -200,18 +209,18 @@ class Api {
   }
 
   base64HmacSHA256(raw_string) {
-    let hmac = this.hmacSHA256(raw_string);
+    let hmac = this.encodeHmacSHA256(raw_string);
     if (!hmac) return;
     var base64String = CryptoJS.enc.Base64.stringify(hmac);
     return base64String;
   }
 
-  hmacSHA256(raw_string) {
-    if (!raw_string || !this.configToken || !this.configToken.ApiKey) return;
+  encodeHmacSHA256(raw_string) {
+    if (!raw_string || !this.configToken || !this.configToken.apiKey) return;
 
     var buff = CryptoJS.enc.Utf8.parse(raw_string);
-    var buff_key = CryptoJS.enc.Utf8.parse(this.configToken.ApiKey);
-    var hmac = CryptoJS.hmacSHA256(buff, buff_key);
+    var buff_key = CryptoJS.enc.Utf8.parse(this.configToken.apiKey);
+    var hmac = CryptoJS.HmacSHA256(buff, buff_key);
     return hmac;
   }
 
@@ -323,9 +332,9 @@ class Api {
       if (response.status != 200) {
         return {status: response.status, Result: undefined};
       }
-      let enc_user = AES.encrypt(username, this.configToken.ApiKey);
+      let enc_user = AES.encrypt(username, this.configToken.apiKey);
       let uid = enc_user.toString();
-      enc_user = AES.encrypt(pass, this.configToken.ApiKey);
+      enc_user = AES.encrypt(pass, this.configToken.apiKey);
       let pas = enc_user.toString();
       let res = await this._login(uid, pas);
       //response =  await this.GetDVRs();
