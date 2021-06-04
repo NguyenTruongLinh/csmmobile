@@ -89,7 +89,7 @@ const UserModel = types
     firstName: types.string,
     lastName: types.string,
     email: types.string,
-    userPhoto: types.maybeNull(types.string),
+    avatar: types.maybeNull(types.string),
     // isAuth: types.boolean,
     isAdmin: types.boolean,
   })
@@ -100,7 +100,7 @@ const UserModel = types
       self.firstName = _user.FName;
       self.lastName = _user.LName;
       self.email = _user.Email;
-      self.userPhoto = _user.UPhoto || undefined;
+      self.avatar = _user.UPhoto || undefined;
       self.isAdmin = _user.IsAdmin;
       // self.isAuth = true;
     },
@@ -113,8 +113,14 @@ const UserModel = types
         lastName,
         email,
         isAdmin,
-        userPhoto: '',
+        // avatar: '', // not saving/editing avatar
       };
+    },
+    updateProfile({firstName, lastName, email, avatar}) {
+      self.firstName = firstName || self.firstName;
+      self.lastName = lastName || self.lastName;
+      self.email = email || self.email;
+      self.avatar = avatar || self.avatar;
     },
   }));
 
@@ -125,7 +131,7 @@ const createAnonymousUser = () =>
     firstName: '',
     lastName: '',
     email: '',
-    userPhoto: '',
+    avatar: '',
     // isAuth: false,
     isAdmin: false,
   });
@@ -311,7 +317,7 @@ export const UserDataModel = types
           );
           __DEV__ && console.log('GOND get user photo res: ', res);
           if (res && res.status == 200) {
-            self.user.userPhoto = res.data;
+            self.user.avatar = res.data;
             return true;
           }
         } catch (err) {
@@ -358,7 +364,7 @@ export const UserDataModel = types
       }
       return false;
     }),
-    profileUpdated(data) {
+    onProfileUpdated(data) {
       let {photo, profile, module} = data;
       let user = state;
       if (module && Array.isArray(module)) {
@@ -377,7 +383,7 @@ export const UserDataModel = types
         self.routes = [ROUTERS.OPTIONS];
       }
 
-      if (photo) self.userPhoto = photo;
+      if (photo) self.avatar = photo;
       if (profile) {
         self.email = profile.Email;
         self.firstName = profile.FName;
@@ -432,6 +438,16 @@ export const UserDataModel = types
         return self.isLoggedIn;
       }
       return false;
+    }),
+    updateProfile: flow(function* updateProfile(data) {
+      self.user.updateProfile(data);
+      let res = yield apiService.put(
+        Account.controller,
+        null,
+        null,
+        self.user.get()
+      );
+      return !res.error;
     }),
   }));
 

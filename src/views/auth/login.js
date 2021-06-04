@@ -23,7 +23,6 @@ import {isValidHttpUrl} from '../../util/general';
 
 import {Domain} from '../../consts/misc';
 import styles from '../../styles/scenes/login.style';
-import styles_cmp from '../../styles/components.style';
 import CMSColors from '../../styles/cmscolors';
 import {I3_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';

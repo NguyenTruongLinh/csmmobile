@@ -5,9 +5,10 @@ import {View, Animated, Easing, StyleSheet, Platform} from 'react-native';
 import {TextField} from 'react-native-material-textfield';
 import Helper from 'react-native-material-textfield/src/components/helper';
 import Counter from 'react-native-material-textfield/src/components/counter';
+import validate from 'validate.js';
 
 import CMSColors from '../../styles/cmscolors';
-import CMSStyleSheet from './CMSStyleSheet';
+import CMSStyleSheet from '../CMSStyleSheet';
 
 export default class InputText extends PureComponent {
   static defaultProps = {
@@ -17,6 +18,7 @@ export default class InputText extends PureComponent {
     blurOnSubmit: true,
     editable: true,
 
+    validation: null,
     animationDuration: 225,
 
     fontSize: CMSStyleSheet.FontSize,
@@ -33,6 +35,7 @@ export default class InputText extends PureComponent {
   static propTypes = {
     ...TextField.propTypes,
 
+    validation: PropTypes.object,
     animationDuration: PropTypes.number,
 
     fontSize: PropTypes.number,
@@ -55,15 +58,15 @@ export default class InputText extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.onBlur = this.onBlur.bind(this);
-    this.onFocus = this.onFocus.bind(this);
-    this.onPress = this.focus.bind(this);
-    this.onChangeText = this.onChangeText.bind(this);
-    this.onContentSizeChange = this.onContentSizeChange.bind(this);
+    // this.onBlur = this.onBlur.bind(this);
+    // this.onFocus = this.onFocus.bind(this);
+    // this.onPress = this.focus.bind(this);
+    // this.onChangeText = this.onChangeText.bind(this);
+    // this.onContentSizeChange = this.onContentSizeChange.bind(this);
 
     let {value, error} = this.props;
 
-    this.mounted = false;
+    this._isMounted = false;
     this.state = {
       text: value,
 
@@ -71,120 +74,178 @@ export default class InputText extends PureComponent {
       focused: false,
 
       error: error,
-      errored: !!error,
+      // errored: !!error,
+      validationError: '',
 
       height: 24,
     };
   }
 
-  UNSAFE_componentWillReceiveProps(props) {
-    let {text, error} = this.state;
+  // UNSAFE_componentWillReceiveProps(props) {
+  //   let {text, error} = this.state;
 
-    if (null != props.value && props.value !== text) {
-      this.setState({text: props.value});
+  //   if (null != props.value && props.value !== text) {
+  //     this.setState({text: props.value});
+  //   }
+
+  //   if (props.error && props.error !== error) {
+  //     this.setState({error: props.error});
+  //   }
+
+  //   if (props.error !== this.props.error) {
+  //     this.setState({errored: !!props.error});
+  //   }
+  // }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    let {text, error} = prevState;
+    let nextState = {};
+
+    if (nextProps.value != null && nextProps.value !== text) {
+      nextState = {...nextState, text: nextProps.value};
     }
 
-    if (props.error && props.error !== error) {
-      this.setState({error: props.error});
+    if (nextProps.error && nextProps.error !== error) {
+      nextState = {...nextState, error: nextProps.error};
     }
 
-    if (props.error !== this.props.error) {
-      this.setState({errored: !!props.error});
-    }
+    // if (nextProps.error !== this.props.error) {
+    //   this.setState({errored: !!props.error});
+    // }
   }
 
+  // UNSAFE_componentWillUpdate(props, state) {
+  //   let {error, animationDuration} = this.props;
+  //   let {focus, focused} = this.state;
+
+  //   if (props.error !== error || focused ^ state.focused) {
+  //     Animated.timing(focus, {
+  //       toValue: props.error ? -1 : state.focused ? 1 : 0,
+  //       duration: animationDuration,
+  //       easing: Easing.inOut(Easing.ease),
+  //       useNativeDriver: false,
+  //     }).start(() => {
+  //       if (this._isMounted) {
+  //         this.setState((state, {error}) => ({error}));
+  //       }
+  //     });
+  //   }
+  // }
+
   componentDidMount() {
-    this.mounted = true;
+    this._isMounted = true;
   }
 
   componentWillUnmount() {
-    this.mounted = false;
+    this._isMounted = false;
   }
 
-  UNSAFE_componentWillUpdate(props, state) {
-    let {error, animationDuration} = this.props;
-    let {focus, focused} = this.state;
-
-    if (props.error !== error || focused ^ state.focused) {
-      Animated.timing(focus, {
-        toValue: props.error ? -1 : state.focused ? 1 : 0,
-        duration: animationDuration,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: false,
-      }).start(() => {
-        if (this.mounted) {
-          this.setState((state, {error}) => ({error}));
-        }
-      });
-    }
-  }
-
-  focus() {
+  focus = () => {
     let {disabled, editable} = this.props;
 
     if (!disabled && editable) {
       this.inputRef.focus();
     }
-  }
+  };
 
-  blur() {
+  blur = () => {
     this.inputRef.blur();
-  }
+  };
 
-  clear() {
+  clear = () => {
     this.inputRef.clear();
-  }
+  };
 
-  value() {
+  value = () => {
     return this.state.text;
-  }
+  };
 
-  isFocused() {
+  isFocused = () => {
     return this.inputRef.isFocused();
-  }
+  };
 
-  isRestricted() {
+  isRestricted = () => {
     let {characterRestriction} = this.props;
     let {text = ''} = this.state;
 
     return characterRestriction < text.length;
-  }
+  };
 
-  onFocus(event) {
-    let {onFocus} = this.props;
+  onFocus = event => {
+    __DEV__ && console.log('GOND InputText onFocus: ', event);
+    let {onFocus, validation} = this.props;
+    let {error} = this.state;
 
     if (typeof onFocus === 'function') {
       onFocus(event);
     }
 
-    this.setState({focused: true});
-  }
+    this.setState({focused: true, error: validation ? null : error});
+  };
 
-  onBlur() {
+  onBlur = () => {
     let {onBlur} = this.props;
+    let {error, text} = this.state;
+    __DEV__ && console.log('GOND InputText onBlur: ', text);
 
     if (typeof onBlur === 'function') {
       onBlur();
     }
 
-    this.setState({focused: false});
-  }
+    error = this.onValidate(text) || error;
+    __DEV__ && console.log('GOND InputText onBlur valid: ', error);
+    this.setState({focused: false, error: error});
+  };
 
-  onChangeText(text) {
+  onChangeText = text => {
+    __DEV__ && console.log('GOND InputText onChangeText: ', text);
     let {onChangeText} = this.props;
+    let {error} = this.state;
 
     if (typeof onChangeText === 'function') {
       onChangeText(text);
     }
 
-    this.setState({text});
-  }
+    error = this.onValidate(text) || error;
+    this.setState({text, error});
+  };
 
-  onContentSizeChange({nativeEvent}) {
+  onValidate = value => {
+    let {validation} = this.props;
+    let {error} = this.state;
+
+    if (!validation) {
+      __DEV__ && console.log('GOND InputText no validation');
+      return null;
+    }
+    const name = Object.keys(validation)[0];
+
+    let formValues = {};
+    formValues[name] = value;
+    let formFields = {};
+    formFields[name] = validation[name];
+
+    const result = validate(formValues, formFields);
+    // If there is an error message, return it!
+    if (result) {
+      // Return only the field error message if there are multiple
+      __DEV__ && console.log('GOND InputText validate = ', result);
+      return result[name][0];
+    }
+
+    __DEV__ && console.log('GOND InputText validate is valid');
+    return null;
+  };
+
+  isValid = () => {
+    return this.props.validation ? !this.state.error : true;
+  };
+
+  onContentSizeChange = ({nativeEvent}) => {
     let {height} = nativeEvent.contentSize;
 
     this.setState({height: Math.ceil(height)});
-  }
+  };
 
   render() {
     let {
@@ -201,10 +262,12 @@ export default class InputText extends PureComponent {
       baseColor,
       textColor,
       errorColor,
+      validation,
       ...props
     } = this.props;
-    let {focused, focus, error, errored, height, text = ''} = this.state;
+    let {focused, focus, error, /*errored,*/ height, text = ''} = this.state;
     let {multiline, numberOfLines} = props;
+    __DEV__ && console.log('GOND InputText rerender error: ', error);
 
     let count = !text ? 0 : text.length;
     let active = !!text;
@@ -290,7 +353,7 @@ export default class InputText extends PureComponent {
     return (
       <View
         onStartShouldSetResponder={() => true}
-        onResponderRelease={this.onPress}>
+        onResponderRelease={this.focus}>
         {/* <Animated.View style={[ styles.container, containerStyle ]}> */}
         {/* {disabled && <Line type='dotted' color={baseColor} focusAnimation={new Animated.Value(0)} />} */}
         {/* <Label activeFontSize={fontSize} active={true} > */}
@@ -309,10 +372,11 @@ export default class InputText extends PureComponent {
             errorColor,
             animationDuration,
             focused,
-            errored,
+            // errored,
             restricted,
             active,
           }}
+          error={validation ? error : props.error}
           label={label}
           labelFontSize={fontSize}
           // multiline={multiline ? multiline : false}
@@ -347,7 +411,7 @@ export default class InputText extends PureComponent {
     );
   }
 }
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     paddingTop: 32,
     paddingBottom: 8,

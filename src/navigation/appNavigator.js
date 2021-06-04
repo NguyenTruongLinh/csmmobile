@@ -155,19 +155,22 @@ const VideoStack = () => (
 
 const OPStack = createStackNavigator();
 const OptionsStack = () => (
-  <OPStack.Navigator initialRouteName={ROUTERS.OPTIONS}>
+  <OPStack.Navigator
+    initialRouteName={ROUTERS.OPTIONS}
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: CMSColors.White,
+      },
+      headerStatusBarHeight: 35,
+      headerTitleStyle: {
+        alignSelf: 'center',
+      },
+    }}>
     <OPStack.Screen
       name={ROUTERS.OPTIONS}
       component={SettingsView}
       options={{
         title: 'Settings',
-        headerStyle: {
-          backgroundColor: CMSColors.White_Smoke,
-        },
-        headerStatusBarHeight: 35,
-        headerTitleStyle: {
-          alignSelf: 'center',
-        },
       }}
     />
     <OPStack.Screen name={ROUTERS.OPTIONS_PROFILE} component={ProfileView} />

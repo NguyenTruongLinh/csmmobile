@@ -66,7 +66,7 @@ module.exports = {
   borderShadow: '#828287',
 
   //ActivityIndicator
-  ActivityIndicator_color: Vivid_Blue,
+  SpinnerColor: Vivid_Blue,
   ActivityIndicator_color_Login: White,
 
   //LOGIN

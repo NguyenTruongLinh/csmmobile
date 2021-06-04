@@ -39,4 +39,13 @@ export const Tabbar = {
 export const Settings = {
   logOut: 'Logout',
   actionFailed: 'Operation failed! Please try again later',
+  profileTitle: 'EDIT PROFILE',
+  firstName: 'First Name',
+  lastName: 'Last Name',
+  email: 'Email',
+};
+
+export const ActionMessages = {
+  saveSuccess: 'Save successfully!',
+  saveFailRestart: 'Cannot save, please restart app and try again!',
 };
