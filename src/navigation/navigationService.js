@@ -5,7 +5,7 @@ let _navigator;
 let _navStore = navigationStore;
 
 function setTopLevelNavigator(navigatorRef) {
-  console.log('GOND setTopNav ref = ', navigatorRef);
+  // console.log('GOND setTopNav ref = ', navigatorRef);
   _navigator = navigatorRef;
 }
 
@@ -21,7 +21,6 @@ function setNavigationStore(store) {
 function navigate(routeName, options) {
   const {params, key} = options || {params: undefined, key: undefined};
   if (params || key) {
-    console.log('FFFFFFFFFF');
     const routeParams = RouteParams.create({routeKey: key, params: params});
     _navStore.setParamsForRoute(routeParams);
   }
@@ -40,7 +39,7 @@ function push(routeName, params) {
 }
 
 function back() {
-  console.log('-- NAVIGATE BACK -- ');
+  __DEV__ && console.log('-- NAVIGATE BACK -- ');
   _navigator.dispatch(CommonActions.goBack());
 }
 

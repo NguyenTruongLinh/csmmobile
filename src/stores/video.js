@@ -60,7 +60,7 @@ const ChannelModel = types
     image: types.string,
   })
   .actions(self => ({
-    load(_channel) {
+    parse(_channel) {
       self.channelNo = _channel.ChannelNo;
       self.kDVR = _channel.KDVR;
       self.kChannel = _channel.KChannel;

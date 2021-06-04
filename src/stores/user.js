@@ -19,24 +19,26 @@ import {isNullOrUndef} from '../util/general';
 
 const ModuleModel = types
   .model({
-    moduleId: types.identifierNumber,
+    moduleId: types.integer,
     functionId: types.integer,
     functionName: types.string,
   })
   .actions(self => ({
-    load(_module) {
+    parse(_module) {
       self.moduleId = _module.ModuleID;
       self.functionId = _module.FunctionID;
       self.functionName = _module.FunctionName;
     },
   }));
 
-const getDefaultModule = () =>
-  ModuleModel.create({
+const getDefaultModule = () => {
+  console.log('GOND defaultmodule');
+  return ModuleModel.create({
     moduleId: 0,
     functionId: 0,
     functionName: '',
   });
+};
 
 const APIModel = types
   .model({
@@ -49,10 +51,9 @@ const APIModel = types
     // devId: types.string,
   })
   .actions(self => ({
-    load(_api) {
-      console.log('GOND load _api: ', _api);
+    parse(_api) {
+      __DEV__ && console.log('GOND load _api: ', _api);
       if (!_api._Api || !_api._ApiToken) {
-        console.log('GOND API is not valid!');
         return false;
       }
       self.url = _api._Api.Url || self.url;
@@ -93,7 +94,7 @@ const UserModel = types
     isAdmin: types.boolean,
   })
   .actions(self => ({
-    load(_user) {
+    parse(_user) {
       self.userId = _user.UserID;
       self.userName = _user.UName || '';
       self.firstName = _user.FName;
@@ -148,7 +149,7 @@ const LoginModel = types
     validate(_data) {
       return _data.domainname && _data.username && data.password;
     },
-    load(_data) {
+    parse(_data) {
       if (self.validate(_data)) {
         self.domainname = _data.domainname;
         self.username = _data.username;
@@ -168,7 +169,7 @@ const FCMModel = types
     serverid: types.string,
   })
   .actions(self => ({
-    load(data) {
+    parse(data) {
       self.fcmKey = data.fcm;
       self.serverid = data.serverid;
     },
@@ -189,6 +190,21 @@ export const UserDataModel = types
     routes: types.array(types.string),
   })
   .actions(self => ({
+    setConfigApi() {
+      apiService.updateConfig(
+        {
+          url: self.api.url,
+          appId: self.api.appId,
+          version: self.api.version,
+        },
+        {
+          id: self.api.id,
+          apiKey: self.api.apiKey,
+          token: self.api.token,
+          devId: appStore.deviceInfo.deviceId,
+        }
+      );
+    },
     // async login(domainname, username, password) {
     login: flow(function* login(domainname, username, password) {
       appStore.setLoading(true);
@@ -201,6 +217,7 @@ export const UserDataModel = types
         username,
         password,
       });
+      self.domain = domainname;
       self.api = APIModel.create({
         url: domainname + Route,
         appId: APP_INFO.AppId,
@@ -211,20 +228,7 @@ export const UserDataModel = types
         // devId: appStore.deviceInfo.deviceId,
       });
 
-      apiService.updateConfig(
-        {
-          url: self.api.url,
-          appId: self.api.appId,
-          version: self.api.version,
-        },
-        {
-          id: '',
-          apiKey: '',
-          token: '',
-          devId: appStore.deviceInfo.deviceId,
-        }
-      );
-
+      self.setConfigApi();
       // const res = await apiService.login(username, password);
       const res = yield apiService.login(username, password);
       console.log('GOND login res = ', res);
@@ -237,7 +241,7 @@ export const UserDataModel = types
     }),
     loginSuccess: flow(function* loginSuccess(data) {
       try {
-        self.user.load(data.Result);
+        self.user.parse(data.Result);
       } catch (err) {
         console.log('GOND load user profile error: ', err);
         self.isLoggedIn = false;
@@ -253,9 +257,16 @@ export const UserDataModel = types
       self.message = data.message || '';
       self.isLoggedIn = true;
 
-      // data.Api && self.api.load(data.Api);
+      // data.Api && self.api.parse(data.Api);
       yield self.getUserPhoto();
       yield self.getPrivilege();
+      let {configToken} = apiService.getConfig();
+      if (configToken) {
+        self.api.id = configToken.id;
+        self.api.apiKey = configToken.apiKey;
+        self.api.token = configToken.token;
+      }
+
       self.saveLocal(); // no need to yield
       // clear login info
       self.loginInfo.postLogin();
@@ -293,35 +304,53 @@ export const UserDataModel = types
     getUserPhoto: flow(function* getUserPhoto() {
       if (self.user && self.user.userId) {
         try {
-          self.user.UPhoto = yield apiService.getBase64Stream(
+          let res = yield apiService.getBase64Stream(
             Account.controller,
             self.user.userId,
             Account.avatar
           );
+          __DEV__ && console.log('GOND get user photo res: ', res);
+          if (res && res.status == 200) {
+            self.user.userPhoto = res.data;
+            return true;
+          }
         } catch (err) {
           __DEV__ && console.log('GOND get user photo failed: ', err);
           return false;
         }
-        return true;
+        return false;
       }
       return false;
     }),
     getPrivilege: flow(function* getPrivilege() {
       if (self.user && self.user.userId) {
         try {
-          let res = yield apiService.getBase64Stream(
+          let res = yield apiService.get(
             Account.controller,
             self.user.userId,
             Account.modules
           );
 
-          __DEV__ && console.log('GOND user getmodules: ', res);
-          if (Array.isArray(res)) {
+          __DEV__ &&
+            console.log(
+              'GOND user getmodules: ',
+              res,
+              ' \n self.modules = ',
+              self.modules
+            );
+          if (
+            Array.isArray(res) // ||
+            // (typeof res == 'object' &&
+            //   res.status == 200 &&
+            //   Array.isArray(res.data))
+          ) {
             res.forEach(item => {
-              self.modules.push(getDefaultModule().load(item));
+              const newModule = getDefaultModule();
+              newModule.parse(item);
+              self.modules.push(newModule);
             });
+            return true;
           }
-          return true;
         } catch (err) {
           __DEV__ && console.log('GOND get user module failed: ', err);
           return false;
@@ -336,7 +365,7 @@ export const UserDataModel = types
         self.modules = [];
         self.routes = [];
         module.forEach(item => {
-          self.modules.push(getDefaultModule().load(item));
+          self.modules.push(getDefaultModule().parse(item));
           if (item.FunctionName == MODULES.MODULE_SITE) {
             self.routes = [...self.routes, ROUTERS.ALARM, ROUTERS.HEALTH];
           } else if (item.FunctionName == MODULES.MODULE_REBAR) {
@@ -373,22 +402,19 @@ export const UserDataModel = types
     }),
     loadLocalData: flow(function* loadLocalData() {
       const savedData = yield dbService.getFirstData(LocalDBName.user);
-      console.log('GOND user load local data: ', savedData);
-      if (typeof savedData === 'object') {
-        console.log('GOND user load local data 111111111');
+      __DEV__ && console.log('GOND user load local data: ', savedData);
+      if (savedData && typeof savedData === 'object') {
         try {
           self.user = UserModel.create(savedData);
           self.api = APIModel.create(savedData.api);
         } catch (err) {
-          console.log('GOND load user local data failed: ', err);
+          __DEV__ && console.log('GOND load user local data failed: ', err);
           self.error = err;
           return false;
         }
-        console.log('GOND user load local data 22222222');
         self.error = '';
         return true;
       }
-      console.log('GOND user load local data 3333333333');
       return false;
     }),
     shouldAutoLogin: flow(function* shouldAutoLogin() {
@@ -397,24 +423,12 @@ export const UserDataModel = types
         yield appStore.loadLocalData();
       }
       if (shouldLogin) {
-        apiService.updateConfig(
-          {
-            url: self.api.url,
-            appId: self.api.appId,
-            version: self.api.version,
-          },
-          {
-            id: '',
-            apiKey: '',
-            token: '',
-            devId: appStore.deviceInfo.deviceId,
-          }
-        );
+        self.setConfigApi();
 
         let res = yield self.getUserPhoto();
-        console.log('GOND getUPhoto: ', res);
-        res && (res = yield self.getPrivilege());
-        self.isLoggedIn = res;
+        __DEV__ && console.log('GOND getUPhoto: ', res);
+        res && (self.isLoggedIn = yield self.getPrivilege());
+        // if (!self.isLoggedIn) self.deleteLocal();
         return self.isLoggedIn;
       }
       return false;

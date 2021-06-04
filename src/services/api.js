@@ -37,11 +37,15 @@ class Api {
     this.configToken = configToken;
   }
 
+  getConfig() {
+    return {config: this.config, configToken: this.configToken};
+  }
+
   updateDeviceId(id) {
     if (this.configToken && id) this.configToken.devId = id;
   }
 
-  url(controller = '', id = '', action = '', params) {
+  _url(controller = '', id = '', action = '', params) {
     let url;
     url = this._baseUrl(controller, id, action);
     if (!params) return url;
@@ -171,41 +175,30 @@ class Api {
     return token;
   }
 
-  _fetchBlob(url, requestmoethod, body) {
-    let token = this._generateToken(
-      this.config.appId,
-      requestmoethod,
-      url,
-      body
-    );
+  _fetchBlob(url, reqMethod, body) {
+    let token = this._generateToken(this.config.appId, reqMethod, url, body);
 
     let header = {
       Authorization: '3rd-auth ' + token,
       AppID: this.config.appId,
       'Content-Type': 'application/json',
     };
-    //console.log('url:' + url);
+    // __DEV__ && console.log('_fetchBlob header: ', header);
     //console.log('token:' + token);
     if (body === null || body === undefined)
-      return RNFetchBlob.fetch(requestmoethod, url, header);
-    else return RNFetchBlob.fetch(requestmoethod, url, header, body);
+      return RNFetchBlob.fetch(reqMethod, url, header);
+    else return RNFetchBlob.fetch(reqMethod, url, header, body);
   }
 
-  _fetch(url, requestmoethod, body) {
-    let token = this._generateToken(
-      this.config.appId,
-      requestmoethod,
-      url,
-      body
-    );
+  _fetch(url, reqMethod, body) {
+    let token = this._generateToken(this.config.appId, reqMethod, url, body);
     let header = this._defaultHeader(this.config.appId);
     header.set('Authorization', '3rd-auth ' + token);
     if (this.configToken && this.configToken.devId)
       header.set('devId', this.configToken.devId);
     if (body === null || body === undefined)
-      return fetch(url, {method: requestmoethod, headers: header});
-    else
-      return fetch(url, {method: requestmoethod, headers: header, body: body});
+      return fetch(url, {method: reqMethod, headers: header});
+    else return fetch(url, {method: reqMethod, headers: header, body: body});
   }
 
   base64HmacSHA256(raw_string) {
@@ -294,7 +287,7 @@ class Api {
   }
 
   _get(controller, id = '', action = '', params) {
-    let url = this.Url(controller, id, action, params);
+    let url = this._url(controller, id, action, params);
     let requestHttpMethod = _get;
     return this._fetch(url, requestHttpMethod);
   }

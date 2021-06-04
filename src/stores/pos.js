@@ -27,7 +27,7 @@ const ExceptionModel = types
     pacId: types.integer,
   })
   .actions(self => ({
-    load(_exception) {
+    parse(_exception) {
       self.riskFactor = _exception.RiskFactor;
       self.countRisk = _exception.CountRisk;
       self.totalAmount = _exception.TotalAmount;
@@ -78,7 +78,7 @@ const ExceptionGroupModel = types.model({
   // childs: types.array(types.reference(ExceptionGroupModel)), // todo
 });
 // .actions(self => ({
-//   load(_exception) {
+//   parse(_exception) {
 //     self.sumRiskFactors = _exception.SumRiskFactors;
 //     self.totalAmount = _exception.TotalAmount;
 //     self.totalRatio = BigNumber(_exception.TotalRatio);
@@ -93,7 +93,7 @@ const ExceptionGroupModel = types.model({
 //     if (Array.isArray(_exception.Date)) {
 //       _exception.Date.forEach(item => {
 //         self.data.push(
-//           getDefaultException().load(item)
+//           getDefaultException().parse(item)
 //         );
 //       });
 //     }
@@ -114,7 +114,7 @@ const ExceptionParamsModel = types
     sites: types.string,
   })
   .actions(self => ({
-    load(_params) {
+    parse(_params) {
       self.sites = _params.sites;
       self.sort = _params.sort;
       self.groupBy = _params.groupby;

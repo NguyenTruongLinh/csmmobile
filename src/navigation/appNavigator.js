@@ -49,69 +49,85 @@ import VideoSettingView from '../views/settings/video';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
 import ROUTERS from '../consts/routes';
+import CMSColors from '../styles/cmscolors';
 
-getHeaderTitle = route => {
+const getHeaderTitle = route => {
   // If the focused route is not found, we need to assume it's the initial screen
   // This can happen during if there hasn't been any navigation inside the screen
   // In our case, it's "Feed" as that's the first screen inside the navigator
   const routeName = getFocusedRouteNameFromRoute(route) ?? '';
 
   switch (routeName) {
-    case ROUTES.HEALTH_SITES:
+    case ROUTERS.HEALTH_SITES:
       return 'Health';
-    case ROUTES.HEALTH_DETAIL:
+    case ROUTERS.HEALTH_DETAIL:
       return ''; // TODO: site name get from store
-    case ROUTES.HEALTH_ALERTS:
+    case ROUTERS.HEALTH_ALERTS:
       return ''; // TODO: get from store
-    case ROUTES.HEALTH_ALERT_DETAIL:
+    case ROUTERS.HEALTH_ALERT_DETAIL:
       return ''; // TODO: get from store
 
-    case ROUTES.VIDEO_REGIONS:
+    case ROUTERS.VIDEO_REGIONS:
       return 'Regions';
-    case ROUTES.VIDEO_SITES:
+    case ROUTERS.VIDEO_SITES:
       return 'Sites';
-    case ROUTES.VIDEO_NVRS:
+    case ROUTERS.VIDEO_NVRS:
       return 'NVRS';
-    case ROUTES.VIDEO_CHANNELS:
+    case ROUTERS.VIDEO_CHANNELS:
       return 'Channels';
-    case ROUTES.VIDEO_CHANNELS_SETTING:
+    case ROUTERS.VIDEO_CHANNELS_SETTING:
       return 'Channels setting';
-    // case ROUTES.VIDEO_PLAYER:
+    // case ROUTERS.VIDEO_PLAYER:
 
-    case ROUTES.ALARM_LIVE:
+    case ROUTERS.ALARM_LIVE:
       return 'Live';
-    case ROUTES.ALARM_SEARCH:
+    case ROUTERS.ALARM_SEARCH:
       return 'Search';
-    case ROUTES.ALARM_DETAIL:
-    case ROUTES.ALARM_SEARCH_DETAIL:
+    case ROUTERS.ALARM_DETAIL:
+    case ROUTERS.ALARM_SEARCH_DETAIL:
       return ''; // TODO: get from store
 
-    case ROUTES.OAM_SITES:
+    case ROUTERS.OAM_SITES:
       return 'OAM';
-    case ROUTES.OAM_DETAIL:
+    case ROUTERS.OAM_DETAIL:
       return 'OAM';
 
-    case ROUTES.POS:
+    case ROUTERS.POS:
       return 'POS';
-    case ROUTES.TRANSACTIONS:
+    case ROUTERS.TRANSACTIONS:
       return 'Transactions';
-    case ROUTES.TRAN_DETAIL:
-    case ROUTES.TRAN_DETAIL_FCM:
+    case ROUTERS.TRAN_DETAIL:
+    case ROUTERS.TRAN_DETAIL_FCM:
       return 'Transaction detail';
 
-    case ROUTES.OPTIONS:
-      return 'Options';
-    case ROUTES.OPTIONS_PROFILE:
+    case ROUTERS.OPTIONS:
+      return 'Settings';
+    case ROUTERS.OPTIONS_PROFILE:
       return 'Profile';
-    case ROUTES.OPTIONS_ABOUT:
+    case ROUTERS.OPTIONS_ABOUT:
       return 'About';
-    case ROUTES.OPTIONS_NOTIFY:
+    case ROUTERS.OPTIONS_NOTIFY:
       return 'Notification Setting';
-    case ROUTES.OPTIONS_VIDEO:
+    case ROUTERS.OPTIONS_VIDEO:
       return 'Video Setting';
   }
   return null;
 };
+
+// const getHeaderOptions = route => {
+//   const headerTitle = getHeaderTitle(route);
+//   console.log('GOND getHeaderTitle: ', headerTitle);
+//   return {
+//     title: headerTitle,
+//     headerStyle: {
+//       backgroundColor: CMSColors.White_Op54,
+//     },
+//     // headerTintColor: '#fff',
+//     headerTitleStyle: {
+//       fontWeight: 'bold',
+//     },
+//   };
+// };
 
 const AStack = createStackNavigator();
 const AlarmStack = () => (
@@ -139,8 +155,21 @@ const VideoStack = () => (
 
 const OPStack = createStackNavigator();
 const OptionsStack = () => (
-  <OPStack.Navigator initialRouteName={ROUTERS.OPTIONS} headerMode="none">
-    <OPStack.Screen name={ROUTERS.OPTIONS} component={SettingsView} />
+  <OPStack.Navigator initialRouteName={ROUTERS.OPTIONS}>
+    <OPStack.Screen
+      name={ROUTERS.OPTIONS}
+      component={SettingsView}
+      options={{
+        title: 'Settings',
+        headerStyle: {
+          backgroundColor: CMSColors.White_Smoke,
+        },
+        headerStatusBarHeight: 35,
+        headerTitleStyle: {
+          alignSelf: 'center',
+        },
+      }}
+    />
     <OPStack.Screen name={ROUTERS.OPTIONS_PROFILE} component={ProfileView} />
     <OPStack.Screen name={ROUTERS.OPTIONS_ABOUT} component={AboutViews} />
     <OPStack.Screen
@@ -226,7 +255,7 @@ const WelcomeStack = createStackNavigator();
  * @returns ReactElement
  */
 const AppNavigator = ({showIntro, isLoggedIn, isLoading}) => {
-  __DEV__ && console.log('GOND NavContainer render, isLogin = ', isLoggedIn);
+  // __DEV__ && console.log('GOND NavContainer render, isLogin = ', isLoggedIn);
   return (
     <NavigationContainer
       ref={ref => {

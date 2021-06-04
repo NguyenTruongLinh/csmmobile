@@ -129,7 +129,7 @@ class LocalDB {
         });
       }, 1);
     });
-    console.log('GOND get first data ', dbName, ': ', data);
+    // __DEV__ && console.log('GOND get first data ', dbName, ': ', data);
     return this.first(data.rows);
   };
 
@@ -178,22 +178,20 @@ class LocalDB {
    * @returns {any}
    */
   add = async (dbName, data) => {
-    console.log('1111111111111 data', data);
     const model = this.getDB(dbName);
-    console.log('22222222222 ', model);
     if (isNullOrUndef(data)) return data;
-    console.log('33333333333');
     return await new Promise(function (resolve) {
       setTimeout(() => {
         model.add(data, result => {
-          console.log(
-            'GOND add db: ',
-            dbName,
-            ', data: ',
-            data,
-            '\n => ',
-            result
-          );
+          __DEV__ &&
+            console.log(
+              'GOND add db: ',
+              dbName,
+              ', data: ',
+              data,
+              '\n => ',
+              result
+            );
           resolve(result);
         });
       }, 1);
@@ -238,6 +236,7 @@ class LocalDB {
     return await new Promise(resolve => {
       setTimeout(() => {
         model.remove(filter, result => {
+          __DEV__ && console.log('GOND removed all from localdb: ', result);
           resolve(result);
         });
       }, 1);

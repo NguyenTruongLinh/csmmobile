@@ -6,7 +6,7 @@ const DVRModel = types
     name: types.string,
   })
   .actions(self => ({
-    load(_dvr) {
+    parse(_dvr) {
       self.kDVR = _dvr.KDVR;
       self.name = _dvr.Name;
     },
@@ -19,7 +19,7 @@ const SiteModel = types
     childs: types.array(types.reference(DVRModel)),
   })
   .actions(self => ({
-    load(_site) {
+    parse(_site) {
       self.key = _site.key;
       self.name = _site.Name;
       self.childs = [];
@@ -41,7 +41,7 @@ export const SitesMapModel = types
     sitesList: types.array(types.reference(SiteModel)),
   })
   .actions(self => ({
-    load(data) {
+    parse(data) {
       self.sitesList = [];
       if (Array.isArray(data)) {
         data.forEach(_site => {
@@ -69,7 +69,7 @@ export const SitesMapModel = types
     },
     edit(_editedSite) {
       let site = self.sitesList.find(item => item.key == _editedSite.Key);
-      site.load(_editedSite);
+      site.parse(_editedSite);
       self.sitesList.sort(item => item.name);
     },
     delete(_deletedSite) {
@@ -95,7 +95,7 @@ export const SitesMapModel = types
         key: _newSite.key,
         name: _newSite.Name,
         childs: [],
-      }).load(_newSite);
+      }).parse(_newSite);
       self.sitesList.push(site);
       self.sitesList.sort(item => item.name);
     },
