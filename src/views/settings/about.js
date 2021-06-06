@@ -1,7 +1,16 @@
 import React, {Component} from 'react';
-import {View, Text, Image, Platform, Linking, StatusBar} from 'react-native';
+import {View, Text, Image, StyleSheet, Linking, StatusBar} from 'react-native';
 
+import Ripple from 'react-native-material-ripple';
+
+import CMSStyleSheet from '../../components/CMSStyleSheet';
+const IconCustom = CMSStyleSheet.IconCustom;
 import APP_INFO from '../../consts/appInfo';
+
+import variable from '../../styles/variables';
+// import commonStyles from '../../styles/commons.style';
+import CMSColors from '../../styles/cmscolors';
+import {CMS_Logo} from '../../consts/images';
 
 class AboutView extends Component {
   constructor(props) {
@@ -9,10 +18,9 @@ class AboutView extends Component {
     this.state = {
       title: 'ABOUT',
     };
-    this.onBack.bind(this);
   }
 
-  onOpenPolocies() {
+  onOpenPolicies() {
     let url = 'http://i3international.com/company-policies';
     Linking.canOpenURL(url)
       .then(supported => {
@@ -25,7 +33,7 @@ class AboutView extends Component {
       .catch(err => console.error('An error occurred', err));
   }
 
-  onOpenPrivatePolicy() {
+  onOpenPrivacyPolicy() {
     let url = 'http://i3international.com/privacy-policy';
     Linking.canOpenURL(url)
       .then(supported => {
@@ -42,15 +50,16 @@ class AboutView extends Component {
     // let statusbar = Platform.OS == 'ios' ?  (
     //   <View style={styles.statusbarios}></View>
     // ) : null;
+    console.log('GOND aaaaaaaaaaaaa CMS_Logo = ', CMS_Logo);
+
     return (
-      <View />
-      /*<View style={styles.all}>
-        <StatusBar
+      <View style={styles.viewContainer}>
+        {/* <StatusBar
           translucent={false}
           backgroundColor={CMSColors.Dark_Blue}
           barStyle="light-content" />
-        {statusbar}
-        <View style={styles.navbar_body}>
+        {statusbar} */}
+        {/* <View style={styles.navbar_body}>
           <View style={styles.navbar}>
             <Ripple
               rippleCentered={true}
@@ -71,64 +80,156 @@ class AboutView extends Component {
 
             </View>
           </View>
-        </View>
+        </View> */}
 
         <View style={styles.firstContainer}>
           <View style={styles.imageLogo}>
-            <Image  source={img_logo}
-              style={styles.size_launchscreenLogo}
-              resizeMode='contain'/>
+            <Image
+              source={CMS_Logo}
+              style={styles.logoSize}
+              resizeMode="contain"
+            />
           </View>
-          <View style={styles.Name}>
+          <View style={styles.name}>
             <Text style={styles.textName}>{APP_INFO.Title}</Text>
           </View>
-          <View style={styles.Infos}>
+          <View style={styles.infos}>
             <Text style={styles.textInfo}>{APP_INFO.Name}</Text>
-            <Text style={styles.textInfo}>Build : {APP_INFO.BuiltDate} - {APP_INFO.Version}</Text>
+            <Text style={styles.textInfo}>
+              Build : {APP_INFO.BuiltDate} - {APP_INFO.Version}
+            </Text>
             <Text style={styles.textInfo}>{APP_INFO.CopyRight}</Text>
           </View>
         </View>
         <View style={styles.secondContainer}>
           <Ripple
-            style={styles.container_row}
+            style={styles.containerRow}
             rippleOpacity={0.87}
-            onPress={this.onOpenPolocies.bind(this)}>
+            onPress={this.onOpenPolicies.bind(this)}>
             <View style={styles.row}>
-              <View style={styles.row_icon}>
-                <IconCustom name="polocies" size={20} color={CMSColors.colorRow_options} />
+              <View style={styles.rowIcon}>
+                <IconCustom
+                  name="polocies"
+                  size={20}
+                  color={CMSColors.colorRow_options}
+                />
               </View>
 
-              <Text style={styles.row_text}>
-                            Policies
-              </Text>
-              <View style={styles.row_icon_end}>
-                <IconCustom  name="keyboard-right-arrow-button" size={16} color={CMSColors.colorRow_options} />
+              <Text style={styles.rowText}>Policies</Text>
+              <View style={styles.rowIconEnd}>
+                <IconCustom
+                  name="keyboard-right-arrow-button"
+                  size={16}
+                  color={CMSColors.colorRow_options}
+                />
               </View>
-
             </View>
           </Ripple>
           <Ripple
-            style={styles.container_row}
+            style={styles.containerRow}
             rippleOpacity={0.87}
-            onPress={this.onOpenPrivatePolicy.bind(this)}>
+            onPress={this.onOpenPrivacyPolicy.bind(this)}>
             <View style={styles.row}>
-              <View style={styles.row_icon}>
-                <IconCustom name="polocies" size={20} color={CMSColors.colorRow_options} />
+              <View style={styles.rowIcon}>
+                <IconCustom
+                  name="polocies"
+                  size={20}
+                  color={CMSColors.colorRow_options}
+                />
               </View>
 
-              <Text style={styles.row_text}>
-                          Privacy policies
-              </Text>
-              <View style={styles.row_icon_end}>
-                <IconCustom  name="keyboard-right-arrow-button" size={16} color={CMSColors.colorRow_options} />
+              <Text style={styles.rowText}>Privacy policies</Text>
+              <View style={styles.rowIconEnd}>
+                <IconCustom
+                  name="keyboard-right-arrow-button"
+                  size={16}
+                  color={CMSColors.colorRow_options}
+                />
               </View>
-
             </View>
           </Ripple>
         </View>
-      </View>*/
+      </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  viewContainer: {
+    flex: 1,
+    backgroundColor: CMSColors.White,
+  },
+  firstContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageLogo: {},
+  logoSize: {
+    width: variable.width_logo_image,
+    height: variable.height_logo_image,
+    tintColor: CMSColors.PrimaryColor,
+  },
+  name: {
+    marginTop: 5,
+  },
+  textName: {
+    color: CMSColors.Dark_Gray_2,
+    fontSize: 20,
+  },
+  infos: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  textInfo: {
+    color: CMSColors.Dark_Gray,
+    fontSize: 14,
+  },
+  secondContainer: {
+    flex: 1,
+  },
+  containerRow: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 70,
+    borderWidth: 1,
+    borderColor: 'rgb(204, 204, 204)',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rowIcon: {
+    margin: 5,
+    width: 30,
+    height: 30,
+    //fontSize: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 5,
+  },
+  rowText: {
+    flex: 1,
+    margin: 5,
+    padding: 5,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: CMSColors.colorText,
+  },
+  rowIconEnd: {
+    width: 30,
+    height: 30,
+    paddingTop: 3,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // statusbarios: {
+  //   height: variable.isPhoneX ? 44 : 20,
+  //   backgroundColor: CMSColors.Dark_Blue,
+  // },
+});
 
 export default AboutView;

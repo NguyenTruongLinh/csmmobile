@@ -3,6 +3,11 @@ import variable from './variables';
 import {StyleSheet, Platform} from 'react-native';
 
 module.exports = StyleSheet.create({
+  rowsViewContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    // backgroundColor: '#fff',
+  },
   // Component ActivityIndicator
   spinnerCenter: {
     height: 10,

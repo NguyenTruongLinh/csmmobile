@@ -1,4 +1,9 @@
-export default ROUTERS = {
+import {
+  // NavigationContainer,
+  getFocusedRouteNameFromRoute,
+} from '@react-navigation/native';
+
+const ROUTERS = {
   // SPLASH: 'splash',
   INTRO_CMS: 'introcms',
   INTRO_HEALTH: 'introhealth',
@@ -57,4 +62,70 @@ export default ROUTERS = {
   OPTIONS_NOTIFY: 'optionsnotify',
   OPTIONS_VIDEO: 'optionsvideo',
   // OPTIONS_LOGOUT: 'optionslogout',
+};
+
+export default ROUTERS;
+
+export const getHeaderTitle = route => {
+  // If the focused route is not found, we need to assume it's the initial screen
+  // This can happen during if there hasn't been any navigation inside the screen
+  // In our case, it's "Feed" as that's the first screen inside the navigator
+  const routeName = route.name ?? getFocusedRouteNameFromRoute(route) ?? '';
+  console.log('GOND getHeaderTitle routeName = ', routeName, '\n++', route);
+
+  switch (routeName) {
+    case ROUTERS.HEALTH_SITES:
+      return 'Health';
+    case ROUTERS.HEALTH_DETAIL:
+      return 'Health'; // TODO: site name get from store
+    case ROUTERS.HEALTH_ALERTS:
+      return 'Health'; // TODO: get from store
+    case ROUTERS.HEALTH_ALERT_DETAIL:
+      return 'Health'; // TODO: get from store
+
+    case ROUTERS.VIDEO_REGIONS:
+      return 'Regions';
+    case ROUTERS.VIDEO_SITES:
+      return 'Sites';
+    case ROUTERS.VIDEO_NVRS:
+      return 'NVRS';
+    case ROUTERS.VIDEO_CHANNELS:
+      return 'Channels';
+    case ROUTERS.VIDEO_CHANNELS_SETTING:
+      return 'Channels setting';
+    // case ROUTERS.VIDEO_PLAYER:
+
+    case ROUTERS.ALARM_LIVE:
+      return 'Live';
+    case ROUTERS.ALARM_SEARCH:
+      return 'Search';
+    case ROUTERS.ALARM_DETAIL:
+    case ROUTERS.ALARM_SEARCH_DETAIL:
+      return ''; // TODO: get from store
+
+    case ROUTERS.OAM_SITES:
+      return 'OAM';
+    case ROUTERS.OAM_DETAIL:
+      return 'OAM';
+
+    case ROUTERS.POS:
+      return 'POS';
+    case ROUTERS.TRANSACTIONS:
+      return 'Transactions';
+    case ROUTERS.TRAN_DETAIL:
+    case ROUTERS.TRAN_DETAIL_FCM:
+      return 'Transaction detail';
+
+    case ROUTERS.OPTIONS:
+      return 'Settings';
+    case ROUTERS.OPTIONS_PROFILE:
+      return 'EDIT PROFILE';
+    case ROUTERS.OPTIONS_ABOUT:
+      return 'About';
+    case ROUTERS.OPTIONS_NOTIFY:
+      return 'Notification Setting';
+    case ROUTERS.OPTIONS_VIDEO:
+      return 'Video Setting';
+  }
+  return routeName;
 };

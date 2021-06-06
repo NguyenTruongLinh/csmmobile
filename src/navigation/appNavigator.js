@@ -41,11 +41,13 @@ import TransactionFCMView from '../views/pos/transactionDetailFCM';
 import OAMSitesView from '../views/oam/oamSites';
 import OAMDetailView from '../views/oam/detail';
 
-import SettingsView from '../views/settings/settings';
-import ProfileView from '../views/settings/profile';
-import AboutViews from '../views/settings/about';
-import NotifySettingView from '../views/settings/notify';
-import VideoSettingView from '../views/settings/video';
+// import SettingsView from '../views/settings/settings';
+// import ProfileView from '../views/settings/profile';
+// import AboutViews from '../views/settings/about';
+// import NotifySettingView from '../views/settings/notify';
+// import VideoSettingView from '../views/settings/video';
+
+import SettingsStack from './settingsNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
 import ROUTERS from '../consts/routes';
@@ -153,35 +155,35 @@ const VideoStack = () => (
   </VStack.Navigator>
 );
 
-const OPStack = createStackNavigator();
-const OptionsStack = () => (
-  <OPStack.Navigator
-    initialRouteName={ROUTERS.OPTIONS}
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: CMSColors.White,
-      },
-      headerStatusBarHeight: 35,
-      headerTitleStyle: {
-        alignSelf: 'center',
-      },
-    }}>
-    <OPStack.Screen
-      name={ROUTERS.OPTIONS}
-      component={SettingsView}
-      options={{
-        title: 'Settings',
-      }}
-    />
-    <OPStack.Screen name={ROUTERS.OPTIONS_PROFILE} component={ProfileView} />
-    <OPStack.Screen name={ROUTERS.OPTIONS_ABOUT} component={AboutViews} />
-    <OPStack.Screen
-      name={ROUTERS.OPTIONS_NOTIFY}
-      component={NotifySettingView}
-    />
-    <OPStack.Screen name={ROUTERS.OPTIONS_VIDEO} component={VideoSettingView} />
-  </OPStack.Navigator>
-);
+// const OPStack = createStackNavigator();
+// const OptionsStack = () => (
+//   <OPStack.Navigator
+//     initialRouteName={ROUTERS.OPTIONS}
+//     screenOptions={{
+//       headerStyle: {
+//         backgroundColor: CMSColors.White,
+//       },
+//       headerStatusBarHeight: 35,
+//       headerTitleStyle: {
+//         alignSelf: 'center',
+//       },
+//     }}>
+//     <OPStack.Screen
+//       name={ROUTERS.OPTIONS}
+//       component={SettingsView}
+//       options={{
+//         title: 'Settings',
+//       }}
+//     />
+//     <OPStack.Screen name={ROUTERS.OPTIONS_PROFILE} component={ProfileView} />
+//     <OPStack.Screen name={ROUTERS.OPTIONS_ABOUT} component={AboutViews} />
+//     <OPStack.Screen
+//       name={ROUTERS.OPTIONS_NOTIFY}
+//       component={NotifySettingView}
+//     />
+//     <OPStack.Screen name={ROUTERS.OPTIONS_VIDEO} component={VideoSettingView} />
+//   </OPStack.Navigator>
+// );
 
 const OAStack = createStackNavigator();
 const OAMStack = () => (
@@ -243,7 +245,7 @@ const CMSMainTab = () => (
     <BottomTab.Screen name={ROUTERS.ALARM_STACK} component={AlarmStack} />
     <BottomTab.Screen
       name={ROUTERS.OPTIONS_NAVIGATOR}
-      component={OptionsStack}
+      component={SettingsStack}
     />
   </BottomTab.Navigator>
 );

@@ -36,10 +36,10 @@ const Fields = {
 class ProfileView extends React.Component {
   constructor(props) {
     super(props);
+    this.updateProfile = this.updateProfile.bind(this);
 
     const user = props.userStore.user;
 
-    //let emailError = this.validate('email', email);
     this.state = {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -58,16 +58,32 @@ class ProfileView extends React.Component {
     };
   }
 
-  onBack = () => {
-    naviService.back();
-  };
+  componentDidMount() {
+    __DEV__ && console.log('GOND profile navi = ', this.props.navigation);
+    this.props.navigation.setOptions({
+      headerRight: () => (
+        <Button
+          style={styles.buttonSave}
+          caption="SAVE"
+          enable={this.isInputsValid() && !this.compareInputNewData()}
+          onPress={this.updateProfile}
+          styleCaption={styles.buttonSaveText}
+          type="flat"
+        />
+      ),
+    });
+  }
 
-  updateProfile = async () => {
+  // onBack = () => {
+  //   naviService.back();
+  // };
+
+  async updateProfile() {
     this.setState({showSpinner: true});
     const {firstName, lastName, email} = this.state;
 
     this.props.userStore.updateProfile({firstName, lastName, email});
-  };
+  }
 
   buildUserImageParams() {
     return {
@@ -76,31 +92,6 @@ class ProfileView extends React.Component {
       id: this.props.userStore.user.userId,
     };
   }
-
-  // onFocus = () => {
-  //   let {errors = {}} = this.state;
-
-  //   for (let name in errors) {
-  //     let ref = this._refs[name];
-
-  //     if (ref && ref.isFocused && ref.isFocused()) {
-  //       delete errors[name];
-  //     }
-  //   }
-
-  //   this.setState({errors});
-  // };
-
-  // onChangeText = text => {
-  //   for (let key in this._refs) {
-  //     let ref = this._refs[key];
-
-  //     if (ref && ref.isFocused && ref.isFocused()) {
-  //       this.setState({[key]: text, [key + 'Error']: this.validate(key, text)});
-  //       break;
-  //     }
-  //   }
-  // };
 
   compareInputNewData() {
     const user = this.props.userStore;
@@ -115,11 +106,6 @@ class ProfileView extends React.Component {
   }
 
   isInputsValid() {
-    // return !(
-    //   this.state.firstNameError ||
-    //   this.state.lastNameError ||
-    //   this.state.emailError
-    // );
     console.log('GOND isInputsValid: ', this._refs.firstName);
     return (
       this._refs.firstName &&
@@ -130,38 +116,6 @@ class ProfileView extends React.Component {
       this._refs.email.isValid()
     );
   }
-
-  // onBlur = fieldName => {
-  //   if (fieldName == Fields.firstname) {
-  //     this.setState({
-  //       firstNameError: this.validate(Fields.firstname, this.state.firstname),
-  //     });
-  //   } else if (fieldName == Fields.lastname) {
-  //     this.setState({
-  //       lastNameError: this.validate(Fields.lastname, this.state.lastname),
-  //     });
-  //   } else if (fieldName == Fields.email) {
-  //     this.setState({
-  //       emailError: this.validate(Fields.email, this.state.email),
-  //     });
-  //   }
-  // };
-
-  // validate(fieldName, value) {
-  //   var formValues = {};
-  //   formValues[fieldName] = value;
-  //   var formFields = {};
-  //   formFields[fieldName] = validation[fieldName];
-
-  //   const result = validate(formValues, formFields);
-  //   // If there is an error message, return it!
-  //   if (result) {
-  //     // Return only the field error message if there are multiple
-  //     return result[fieldName][0];
-  //   }
-
-  //   return null;
-  // }
 
   render() {
     let {user} = this.props.userStore;
@@ -201,15 +155,15 @@ class ProfileView extends React.Component {
       Platform.OS == 'ios' ? <View style={styles.statusBar}></View> : null;
 
     return (
-      <View style={styles.all}>
+      <View style={commonStyles.rowsViewContainer}>
         <StatusBar
           translucent={false}
           backgroundColor={CMSColors.Dark_Blue}
           barStyle="light-content"
         />
         <View style={styles.container}>
-          {statusbar}
-          <View style={styles.navbarBody}>
+          {/* {statusbar} */}
+          {/* <View style={styles.navbarBody}>
             <View style={styles.navbar}>
               <Ripple
                 rippleCentered={true}
@@ -238,7 +192,7 @@ class ProfileView extends React.Component {
                 />
               </View>
             </View>
-          </View>
+          </View> */}
           {spninner}
           <View style={styles.rowHeaderContainer}>
             <View>{AvatarUser}</View>
@@ -252,13 +206,10 @@ class ProfileView extends React.Component {
                 autoCorrect={false}
                 enablesReturnKeyAutomatically={true}
                 maxLength={20}
-                // onFocus={this.onFocus}
-                // onChangeText={this.onChangeText}
                 onChangeText={text => this.setState({firstName: text})}
                 returnKeyType="next"
                 label="First Name"
                 disabled={this.state.showSpinner}
-                // onBlur={() => this.onBlur(Fields.firstname)}
                 error={this.state.firstNameError}
                 validation={{firstName: profileConstraints.firstName}}
               />
@@ -269,15 +220,12 @@ class ProfileView extends React.Component {
                 maxLength={20}
                 fontSize={16}
                 value={this.state.lastName}
-                // onFocus={this.onFocus}
-                // onChangeText={this.onChangeText}
                 onChangeText={text => this.setState({lastName: text})}
                 autoCorrect={false}
                 enablesReturnKeyAutomatically={true}
                 returnKeyType="next"
                 label="Last Name"
                 disabled={this.state.showSpinner}
-                // onBlur={() => this.onBlur(Fields.lastname)}
                 error={this.state.lastNameError}
                 validation={{lastName: profileConstraints.lastName}}
               />
@@ -288,15 +236,12 @@ class ProfileView extends React.Component {
                 maxLength={50}
                 fontSize={16}
                 value={this.state.email}
-                // onFocus={this.onFocus}
-                // onChangeText={this.onChangeText}
                 onChangeText={text => this.setState({email: text})}
                 autoCorrect={false}
                 enablesReturnKeyAutomatically={true}
                 returnKeyType="next"
                 label="Email"
                 disabled={this.state.showSpinner}
-                // onBlur={() => this.onBlur(Fields.email)}
                 error={this.state.emailError}
                 validation={{email: profileConstraints.email}}
               />
@@ -309,11 +254,6 @@ class ProfileView extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  all: {
-    flexDirection: 'row',
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   container: {
     flex: 1,
     width: null,

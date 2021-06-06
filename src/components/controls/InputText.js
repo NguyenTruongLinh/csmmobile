@@ -58,11 +58,13 @@ export default class InputText extends PureComponent {
   constructor(props) {
     super(props);
 
-    // this.onBlur = this.onBlur.bind(this);
-    // this.onFocus = this.onFocus.bind(this);
-    // this.onPress = this.focus.bind(this);
-    // this.onChangeText = this.onChangeText.bind(this);
-    // this.onContentSizeChange = this.onContentSizeChange.bind(this);
+    this.onBlur = this.onBlur.bind(this);
+    this.onFocus = this.onFocus.bind(this);
+    this.onPress = this.focus.bind(this);
+    this.onChangeText = this.onChangeText.bind(this);
+    this.onContentSizeChange = this.onContentSizeChange.bind(this);
+    this.onValidate = this.onValidate.bind(this);
+    this.isValid = this.isValid.bind(this);
 
     let {value, error} = this.props;
 
@@ -112,6 +114,7 @@ export default class InputText extends PureComponent {
     // if (nextProps.error !== this.props.error) {
     //   this.setState({errored: !!props.error});
     // }
+    return nextState;
   }
 
   // UNSAFE_componentWillUpdate(props, state) {
@@ -171,7 +174,7 @@ export default class InputText extends PureComponent {
     return characterRestriction < text.length;
   };
 
-  onFocus = event => {
+  onFocus(event) {
     __DEV__ && console.log('GOND InputText onFocus: ', event);
     let {onFocus, validation} = this.props;
     let {error} = this.state;
@@ -181,9 +184,9 @@ export default class InputText extends PureComponent {
     }
 
     this.setState({focused: true, error: validation ? null : error});
-  };
+  }
 
-  onBlur = () => {
+  onBlur() {
     let {onBlur} = this.props;
     let {error, text} = this.state;
     __DEV__ && console.log('GOND InputText onBlur: ', text);
@@ -195,9 +198,9 @@ export default class InputText extends PureComponent {
     error = this.onValidate(text) || error;
     __DEV__ && console.log('GOND InputText onBlur valid: ', error);
     this.setState({focused: false, error: error});
-  };
+  }
 
-  onChangeText = text => {
+  onChangeText(text) {
     __DEV__ && console.log('GOND InputText onChangeText: ', text);
     let {onChangeText} = this.props;
     let {error} = this.state;
@@ -206,17 +209,17 @@ export default class InputText extends PureComponent {
       onChangeText(text);
     }
 
-    error = this.onValidate(text) || error;
+    error = this.onValidate(text);
     this.setState({text, error});
-  };
+  }
 
-  onValidate = value => {
+  onValidate(value) {
     let {validation} = this.props;
     let {error} = this.state;
 
     if (!validation) {
       __DEV__ && console.log('GOND InputText no validation');
-      return null;
+      return error;
     }
     const name = Object.keys(validation)[0];
 
@@ -235,11 +238,11 @@ export default class InputText extends PureComponent {
 
     __DEV__ && console.log('GOND InputText validate is valid');
     return null;
-  };
+  }
 
-  isValid = () => {
+  isValid() {
     return this.props.validation ? !this.state.error : true;
-  };
+  }
 
   onContentSizeChange = ({nativeEvent}) => {
     let {height} = nativeEvent.contentSize;

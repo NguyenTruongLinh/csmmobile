@@ -16,12 +16,9 @@ import ROUTERS from '../../consts/routes';
 import {I3_Logo} from '../../consts/images';
 import CMSColor from '../../styles/cmscolors';
 
+import APP_INFO from '../../consts/appInfo';
+import {Welcome as WelcomeTxt} from '../../localization/texts';
 const backgroundImg = require('../../assets/images/intro/welcome.png');
-const titleText = 'SIGN IN TO GET THE MOST OUT OF YOUR';
-const titleBoldText = 'SMART VIDEO SYSTEM.';
-const descriptionText =
-  'By signing up for your i3 cloud account you will be able to unlock multiple features like real-time alarms, POS integration, video streaming, health monitoring, and much more. ';
-const hyperlinkText = 'Contact i3 to sign up today.';
 
 class WelcomeView extends Component {
   constructor(props) {
@@ -86,7 +83,7 @@ class WelcomeView extends Component {
                 flexWrap: 'wrap',
                 fontFamily: 'Roboto-Regular',
               }}>
-              {titleText}
+              {WelcomeTxt.title}
             </Text>
             <Text
               style={{
@@ -95,7 +92,7 @@ class WelcomeView extends Component {
                 flexWrap: 'wrap',
                 fontFamily: 'Roboto-Regular',
               }}>
-              {titleBoldText}
+              {WelcomeTxt.titleBold}
             </Text>
             <Text
               style={{
@@ -105,7 +102,7 @@ class WelcomeView extends Component {
                 fontFamily: 'Roboto-Regular',
                 paddingTop: 48,
               }}>
-              {descriptionText}
+              {WelcomeTxt.description}
               <Text
                 style={{
                   // fontWeight: 'normal',
@@ -113,9 +110,9 @@ class WelcomeView extends Component {
                   color: CMSColor.primaryActive,
                 }}
                 onPress={() => {
-                  Linking.openURL('https://i3international.com/contact');
+                  Linking.openURL(APP_INFO.ContactUrl);
                 }}>
-                {hyperlinkText}
+                {WelcomeTxt.contactLink}
               </Text>
             </Text>
           </View>
@@ -124,14 +121,14 @@ class WelcomeView extends Component {
               enable={true}
               style={{marginTop: 21}}
               type={'primary'}
-              caption={'LOGIN'}
+              caption={WelcomeTxt.login}
               onPress={this.onLogin}
             />
             <Button
               enable={true}
               style={{marginTop: 14}}
               type={'flat'}
-              caption={'Skip to stand alone remote app'}
+              caption={WelcomeTxt.skip}
               onPress={this.onGoPro}
             />
           </View>
