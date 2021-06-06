@@ -10,7 +10,7 @@ import {RTCPeerConnection} from 'react-native-webrtc';
 
 const RTCStreamModel = types.model({
   sid: types.identifier,
-  kdvr: types.integer,
+  kdvr: types.number,
   channelNo: types.number,
   accessKeyId: types.string,
   secretAccessKey: types.string,
@@ -37,18 +37,18 @@ const DirectConnectionModel = types.model({
 const ChannelModel = types
   .model({
     channelNo: types.identifierNumber,
-    kDVR: types.integer,
-    kChannel: types.integer,
-    videoSource: types.integer,
-    kAudioSource: types.integer,
-    kPTZ: types.integer,
-    status: types.integer,
+    kDVR: types.number,
+    kChannel: types.number,
+    videoSource: types.number,
+    kAudioSource: types.number,
+    kPTZ: types.number,
+    status: types.number,
     name: types.string,
-    enable: types.integer,
-    dwellTime: types.integer,
-    ap: types.integer,
-    cameraID: types.integer,
-    videoCompressQual: types.integer,
+    enable: types.number,
+    dwellTime: types.number,
+    ap: types.number,
+    cameraID: types.number,
+    videoCompressQual: types.number,
     videoType: types.maybeNull(types.string), // ?
     kVideo: types.maybeNull(types.string), // ?
     enableiSearch: types.boolean,
@@ -89,7 +89,7 @@ const ChannelModel = types
 const ChannelSettingModel = types.model({
   allChannels: types.array(types.reference(ChannelModel)),
   error: types.string,
-  maxReadyChannels: types.integer,
+  maxReadyChannels: types.number,
   selectedChannels: types.array(types.reference(ChannelModel)),
 });
 
@@ -98,7 +98,8 @@ export const VideoModel = types.model({
   rtcStreams: types.array(types.reference(RTCStreamModel)),
   hlsStreams: types.array(types.reference(HLSStreamModel)),
   directStreams: types.array(types.reference(DirectConnectionModel)),
-  singleStreamIndex: types.maybeNull(types.integer),
+  singleStreamIndex: types.maybeNull(types.number),
+  cloudType: types.number,
 });
 
 export const videoStore = VideoModel.create({

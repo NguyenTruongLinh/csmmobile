@@ -10,7 +10,7 @@ const oamData = types.model({
   capacityTitle: types.string,
   untilCapacity: types.string,
   estWaitTime: types.string,
-  dataTrendCount: types.integer,
+  dataTrendCount: types.number,
   foreColor: types.string,
   backColor: types.string,
   channelNo: types.string,
@@ -27,7 +27,7 @@ const oamData = types.model({
 
 export const OAMModel = types
   .model({
-    current: types.maybeNull(types.reference(oamData)), // types.integer,
+    current: types.maybeNull(types.reference(oamData)), // types.number,
     oamMap: types.map(oamData),
   })
   .views(self => ({

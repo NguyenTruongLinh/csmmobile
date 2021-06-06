@@ -3,7 +3,7 @@ import {types} from 'mobx-state-tree';
 const AlertModel = types.model({
   id: types.identifierNumber,
   name: types.maybeNull(types.string),
-  total: types.integer,
+  total: types.number,
   sdate: types.string, // should be Date or number?
   edate: types.string, // should be Date or number?
   isDismissAll: types.boolean,
@@ -12,16 +12,16 @@ const AlertModel = types.model({
 });
 
 const DVRModel = types.model({
-  kDVR: types.integer, //types.identifierNumber
+  kDVR: types.number, //types.identifierNumber
   name: types.string,
 });
 
 const DVRAlertlModel = types.model({
   channelName: types.maybeNull(types.string),
-  kDVR: types.integer,
+  kDVR: types.number,
   id: types.identifierNumber, //types.maybeNull(types.number),
-  kChannel: types.maybeNull(types.integer),
-  channelNo: types.maybeNull(types.integer),
+  kChannel: types.maybeNull(types.number),
+  channelNo: types.maybeNull(types.number),
   timezone: types.string,
   time: types.string,
   dvr: DVRModel,
@@ -30,8 +30,8 @@ const DVRAlertlModel = types.model({
 });
 
 const DVRAlertViewInfoModel = types.model({
-  page: types.integer,
-  totalPages: types.integer,
+  page: types.number,
+  totalPages: types.number,
 });
 
 const DVRAlertViewModel = types.model({
@@ -42,11 +42,11 @@ const DVRAlertViewModel = types.model({
 
 const AlertTypeModel = types.model({
   id: types.identifierNumber,
-  kAlertSeverity: types.integer,
+  kAlertSeverity: types.number,
   name: types.string,
-  cmsWebType: types.integer,
-  cmsWebGroup: types.integer,
-  displayStatus: types.integer,
+  cmsWebType: types.number,
+  cmsWebGroup: types.number,
+  displayStatus: types.number,
 });
 
 export const HealthModel = types

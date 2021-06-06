@@ -6,25 +6,25 @@ import BigNumberPrimitive from './types/bignumber';
 const ExceptionFilterModel = types.model({
   dateFrom: types.Date,
   dateTo: types.Date,
-  selectedSites: types.array(types.integer),
+  selectedSites: types.array(types.number),
 });
 
 const ExceptionModel = types
   .model({
     riskFactor: types.number,
-    countRisk: types.integer,
+    countRisk: types.number,
     totalAmount: types.number,
     percentToSale: types.number,
-    totalTran: types.integer,
+    totalTran: types.number,
     date: types.string, // Date?
-    employerId: types.maybeNull(types.integer),
+    employerId: types.maybeNull(types.number),
     employerName: types.maybeNull(types.string),
-    storeId: types.maybeNull(types.integer),
+    storeId: types.maybeNull(types.number),
     storeName: types.maybeNull(types.string),
     exceptionAmount: types.number,
-    siteKey: types.integer,
+    siteKey: types.number,
     siteName: types.string,
-    pacId: types.integer,
+    pacId: types.number,
   })
   .actions(self => ({
     parse(_exception) {
@@ -68,13 +68,13 @@ const ExceptionGroupModel = types.model({
   sumRiskFactors: types.number,
   totalAmount: types.number,
   totalRatio: BigNumberPrimitive,
-  numberSite: types.integer,
+  numberSite: types.number,
   totalRiskFactors: types.number,
   exceptionAmount: types.number,
   data: types.array(ExceptionModel),
-  currentPage: types.integer,
-  totalPages: types.integer,
-  pageSize: types.integer,
+  currentPage: types.number,
+  totalPages: types.number,
+  pageSize: types.number,
   // childs: types.array(types.reference(ExceptionGroupModel)), // todo
 });
 // .actions(self => ({
@@ -103,12 +103,12 @@ const ExceptionGroupModel = types.model({
 const ExceptionParamsModel = types
   .model({
     // Site: types.maybeNull(),
-    siteKey: types.integer,
-    sort: types.integer,
-    groupBy: types.integer,
+    siteKey: types.number,
+    sort: types.number,
+    groupBy: types.number,
     emprisk: types.string,
-    page: types.integer,
-    pSize: types.integer,
+    page: types.number,
+    pSize: types.number,
     sDate: types.string,
     eDate: types.string,
     sites: types.string,

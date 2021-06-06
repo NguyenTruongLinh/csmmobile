@@ -11,7 +11,7 @@ const AlarmTypeVA = types.model({
 });
 
 const AlarmSnapShot = types.model({
-  Channel: types.integer,
+  Channel: types.number,
   Time: types.number,
   FileName: types.string,
   ChannelName: types.string,
@@ -31,17 +31,17 @@ const AlarmThumb = types.model({
 });
 
 const AlarmData = types.model({
-  KAlertEvent: types.integer,
-  KAlertTypeVA: types.integer,
+  KAlertEvent: types.number,
+  KAlertTypeVA: types.number,
   CMSUser: types.maybeNull(types.string),
-  Status: types.integer,
+  Status: types.number,
   UpdateTime: types.number,
-  Rate: types.integer,
+  Rate: types.number,
   Note: types.maybeNull(types.string),
   Image: types.string,
   ImageTime: types.number,
   Thumbnail: types.string,
-  Severity: types.integer,
+  Severity: types.number,
   ServerID: types.string,
   Site: types.string,
   SiteName: types.string,
@@ -53,21 +53,21 @@ const AlarmData = types.model({
   ActionName: types.string,
   Extra: types.maybeNull(types.string),
   TemperatureImage: types.string,
-  KAlertType: types.integer,
-  KDVR: types.integer,
+  KAlertType: types.number,
+  KDVR: types.number,
   TimeZone: types.string,
   DVRUser: types.string,
   Description: types.string,
   Time: types.string,
-  Channel: types.integer,
+  Channel: types.number,
   AlertType: types.string,
   ChanMask: types.number, // BigInt
   thumb: AlarmThumb,
 });
 
 const AlarmTime = types.model({
-  stime: types.integer,
-  etime: types.integer,
+  stime: types.number,
+  etime: types.number,
 });
 
 const AlarmFilter = types.model({

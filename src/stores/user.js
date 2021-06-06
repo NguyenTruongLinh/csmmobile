@@ -19,8 +19,8 @@ import {isNullOrUndef} from '../util/general';
 
 const ModuleModel = types
   .model({
-    moduleId: types.integer,
-    functionId: types.integer,
+    moduleId: types.number,
+    functionId: types.number,
     functionName: types.string,
   })
   .actions(self => ({
