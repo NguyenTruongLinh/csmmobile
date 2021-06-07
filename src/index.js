@@ -4,11 +4,11 @@ import {Provider} from 'mobx-react';
 import appStore from './stores/appStore';
 import userStore from './stores/user';
 import videoStore from './stores/video';
-import alarmStore from './stores/alarm';
-import oamStore from './stores/oam';
-import posStore from './stores/pos';
-import sitesStore from './stores/sites';
-import healthStore from './stores/health';
+// import alarmStore from './stores/alarm';
+// import oamStore from './stores/oam';
+// import posStore from './stores/pos';
+// import sitesStore from './stores/sites';
+// import healthStore from './stores/health';
 import App from './app';
 
 const Main = () => {
@@ -18,11 +18,12 @@ const Main = () => {
       appStore={appStore}
       userStore={userStore}
       videoStore={videoStore}
-      alarmStore={alarmStore}
-      healthStore={healthStore}
-      posStore={posStore}
-      sitesStore={sitesStore}
-      oamStore={oamStore}>
+      // alarmStore={alarmStore}
+      // healthStore={healthStore}
+      // posStore={posStore}
+      // sitesStore={sitesStore}
+      // oamStore={oamStore}
+    >
       <App />
     </Provider>
   );

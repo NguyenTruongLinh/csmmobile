@@ -38,14 +38,22 @@ export const Tabbar = {
 
 export const Settings = {
   logOut: 'Logout',
-  actionFailed: 'Operation failed! Please try again later',
+  save: 'SAVE',
   profileTitle: 'EDIT PROFILE',
   firstName: 'First Name',
   lastName: 'Last Name',
   email: 'Email',
+  videoDirectName: 'Direct connection',
+  videoStreamName: 'Video streaming',
+  videoDirecDesc:
+    'Connect to your NVR directly. Public IP is required, mobile connection must be opened.',
+  videoStreamDesc:
+    'Connect to your NVR via cloud. Subject to AWS fees and data caps.',
 };
 
 export const ActionMessages = {
+  actionFailed: 'Operation failed! Please try again later',
   saveSuccess: 'Save successfully!',
   saveFailRestart: 'Cannot save, please restart app and try again!',
+  getDataFailed: 'Cannot connect to CMS server, please try again later!',
 };

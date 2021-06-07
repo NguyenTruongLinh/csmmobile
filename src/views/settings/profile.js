@@ -37,6 +37,7 @@ class ProfileView extends React.Component {
   constructor(props) {
     super(props);
     this.updateProfile = this.updateProfile.bind(this);
+    this.onTextChanged = this.onTextChanged.bind(this);
 
     const user = props.userStore.user;
 
@@ -60,18 +61,8 @@ class ProfileView extends React.Component {
 
   componentDidMount() {
     __DEV__ && console.log('GOND profile navi = ', this.props.navigation);
-    this.props.navigation.setOptions({
-      headerRight: () => (
-        <Button
-          style={styles.buttonSave}
-          caption="SAVE"
-          enable={this.isInputsValid() && !this.compareInputNewData()}
-          onPress={this.updateProfile}
-          styleCaption={styles.buttonSaveText}
-          type="flat"
-        />
-      ),
-    });
+
+    this.refreshSaveButton();
   }
 
   // onBack = () => {
@@ -94,7 +85,18 @@ class ProfileView extends React.Component {
   }
 
   compareInputNewData() {
-    const user = this.props.userStore;
+    const {user} = this.props.userStore;
+    // console.log(
+    //   'GOND state: {',
+    //   this.state.firstName,
+    //   this.state.lastName,
+    //   this.state.email,
+    //   '} , user: {',
+    //   user.firstName,
+    //   user.lastName,
+    //   user.email,
+    //   '}'
+    // );
     if (
       this.state.firstName != user.firstName ||
       this.state.lastName != user.lastName ||
@@ -106,7 +108,7 @@ class ProfileView extends React.Component {
   }
 
   isInputsValid() {
-    console.log('GOND isInputsValid: ', this._refs.firstName);
+    // console.log('GOND isInputsValid: ', this._refs.firstName);
     return (
       this._refs.firstName &&
       this._refs.lastName &&
@@ -115,6 +117,32 @@ class ProfileView extends React.Component {
       this._refs.lastName.isValid() &&
       this._refs.email.isValid()
     );
+  }
+
+  onTextChanged(field, value) {
+    if (field == 'firstName') {
+      this.setState({firstName: value});
+    } else if (field == 'lastName') {
+      this.setState({lastName: value});
+    } else if (field == 'email') {
+      this.setState({email: value});
+    }
+    this.refreshSaveButton();
+  }
+
+  refreshSaveButton() {
+    this.props.navigation.setOptions({
+      headerRight: () => (
+        <Button
+          style={commonStyles.buttonSave}
+          caption={SettingTxt.save}
+          enable={this.isInputsValid() && !this.compareInputNewData()}
+          onPress={this.updateProfile}
+          styleCaption={commonStyles.buttonSaveText}
+          type="flat"
+        />
+      ),
+    });
   }
 
   render() {
@@ -163,36 +191,6 @@ class ProfileView extends React.Component {
         />
         <View style={styles.container}>
           {/* {statusbar} */}
-          {/* <View style={styles.navbarBody}>
-            <View style={styles.navbar}>
-              <Ripple
-                rippleCentered={true}
-                style={styles.left}
-                onPress={this.onBack}>
-                <View style={styles.icon}>
-                  <CMSAvatars
-                    size={20}
-                    color={CMSColors.SecondaryText}
-                    styles={[styles.contentIcon, {position: 'relative'}]}
-                    iconCustom="keyboard-left-arrow-button"
-                  />
-                </View>
-                <View style={styles.title}>
-                  <Text>{SettingTxt.profileTitle}</Text>
-                </View>
-              </Ripple>
-              <View>
-                <Button
-                  style={styles.buttonSave}
-                  caption="SAVE"
-                  enable={this.isInputsValid() && !this.compareInputNewData()}
-                  onPress={this.updateProfile}
-                  styleCaption={styles.buttonSaveText}
-                  type="flat"
-                />
-              </View>
-            </View>
-          </View> */}
           {spninner}
           <View style={styles.rowHeaderContainer}>
             <View>{AvatarUser}</View>
@@ -206,7 +204,7 @@ class ProfileView extends React.Component {
                 autoCorrect={false}
                 enablesReturnKeyAutomatically={true}
                 maxLength={20}
-                onChangeText={text => this.setState({firstName: text})}
+                onChangeText={text => this.onTextChanged('firstName', text)}
                 returnKeyType="next"
                 label="First Name"
                 disabled={this.state.showSpinner}
@@ -220,7 +218,7 @@ class ProfileView extends React.Component {
                 maxLength={20}
                 fontSize={16}
                 value={this.state.lastName}
-                onChangeText={text => this.setState({lastName: text})}
+                onChangeText={text => this.onTextChanged('lastName', text)}
                 autoCorrect={false}
                 enablesReturnKeyAutomatically={true}
                 returnKeyType="next"
@@ -236,7 +234,7 @@ class ProfileView extends React.Component {
                 maxLength={50}
                 fontSize={16}
                 value={this.state.email}
-                onChangeText={text => this.setState({email: text})}
+                onChangeText={text => this.onTextChanged('email', text)}
                 autoCorrect={false}
                 enablesReturnKeyAutomatically={true}
                 returnKeyType="next"
@@ -349,17 +347,13 @@ const styles = StyleSheet.create({
   title: {
     marginLeft: 5,
   },
-  buttonSave: {
-    marginRight: 12,
-    backgroundColor: CMSColors.transparent,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonSaveText: {
-    fontSize: 16,
-    color: '#436D8F',
-  },
+  // buttonSave: {
+  //   marginRight: 12,
+  //   backgroundColor: CMSColors.transparent,
+  //   height: 20,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
   spinner: {
     alignItems: 'center',
     alignSelf: 'stretch',

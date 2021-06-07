@@ -31,15 +31,7 @@ export default function SettingsStack() {
         headerLeft: () => <BackButton navigator={navigation} />,
       })}>
       <OPStack.Screen name={ROUTERS.OPTIONS} component={SettingsView} />
-      <OPStack.Screen
-        name={ROUTERS.OPTIONS_PROFILE}
-        component={ProfileView}
-        // options={{
-        //   headerTitleStyle: {
-        //     alignSelf: 'center',
-        //   },
-        // }}
-      />
+      <OPStack.Screen name={ROUTERS.OPTIONS_PROFILE} component={ProfileView} />
       <OPStack.Screen name={ROUTERS.OPTIONS_ABOUT} component={AboutViews} />
       <OPStack.Screen
         name={ROUTERS.OPTIONS_NOTIFY}

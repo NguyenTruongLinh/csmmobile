@@ -1,4 +1,4 @@
-import {types} from 'mobx-state-tree';
+import {flow, types} from 'mobx-state-tree';
 import {
   SignalingClientType,
   PeerConnectionType,
@@ -7,6 +7,12 @@ import {
 
 import {SignalingClient} from 'amazon-kinesis-video-streams-webrtc';
 import {RTCPeerConnection} from 'react-native-webrtc';
+
+import apiService from '../services/api';
+
+import {Route, VSC} from '../consts/apiRoutes';
+
+import {STREAMING_TYPES} from '../consts/video';
 
 const RTCStreamModel = types.model({
   sid: types.identifier,
@@ -93,21 +99,81 @@ const ChannelSettingModel = types.model({
   selectedChannels: types.array(types.reference(ChannelModel)),
 });
 
-export const VideoModel = types.model({
-  channelSetting: types.maybeNull(ChannelSettingModel),
-  rtcStreams: types.array(types.reference(RTCStreamModel)),
-  hlsStreams: types.array(types.reference(HLSStreamModel)),
-  directStreams: types.array(types.reference(DirectConnectionModel)),
-  singleStreamIndex: types.maybeNull(types.number),
-  cloudType: types.number,
-});
+export const VideoModel = types
+  .model({
+    channelSetting: types.maybeNull(ChannelSettingModel),
+    rtcStreams: types.array(types.reference(RTCStreamModel)),
+    hlsStreams: types.array(types.reference(HLSStreamModel)),
+    directStreams: types.array(types.reference(DirectConnectionModel)),
+    singleStreamIndex: types.maybeNull(types.number),
+    cloudType: types.number,
+    isLoading: types.boolean,
+  })
+  .views(self => ({
+    get isCloud() {
+      return self.cloudType > STREAMING_TYPES.DIRECTION;
+    },
+  }))
+  .actions(self => ({
+    getCloudSetting: flow(function* getCloudSetting() {
+      let res = undefined;
+      self.isLoading = true;
+      try {
+        res = yield apiService.get(
+          VSC.controller,
+          apiService.configToken.devId,
+          VSC.Cloud
+        );
+      } catch (err) {
+        console.log('GOND get cloud type failed, error: ', err);
+        self.isLoading = false;
+        return false;
+      }
 
-export const videoStore = VideoModel.create({
+      let result = true;
+      if (typeof res === 'boolean') {
+        self.cloudType =
+          res === true ? STREAMING_TYPES.HLS : STREAMING_TYPES.DIRECTION;
+      } else if (
+        typeof res === 'number' &&
+        res < STREAMING_TYPES.TOTAL &&
+        res > STREAMING_TYPES.UNKNOWN
+      ) {
+        self.cloudType = res;
+      } else {
+        console.log('GOND get cloud type return wrong value, res = ', res);
+        result = false;
+      }
+      self.isLoading = false;
+      return result;
+    }),
+    updateCloudSetting: flow(function* updateCloudSetting(value) {
+      try {
+        yield apiService.post(
+          VSC.controller,
+          apiService.configToken.devId,
+          value
+        );
+        self.getCloudSetting();
+      } catch (err) {
+        console.log('GOND save setting error: ', err);
+        return false;
+      }
+      return true;
+    }),
+    setLoading(value) {
+      self.isLoading = value;
+    },
+  }));
+
+const videoStore = VideoModel.create({
   channelSetting: null,
   rtcStreams: [],
   hlsStreams: [],
   directStreams: [],
   singleStreamIndex: null,
+  cloudType: 1,
+  isLoading: false,
 });
 
-// export default videoStore;
+export default videoStore;

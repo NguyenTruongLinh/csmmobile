@@ -10,7 +10,7 @@ import {Login as LoginTxt} from '../localization/texts';
 import apiService from '../services/api';
 import dbService from '../services/localdb';
 import appStore from './appStore';
-import navigationService from '../navigation/navigationService';
+// import navigationService from '../navigation/navigationService';
 
 // TODO: fixit
 // const AppId = '4d53bce03ec34c0a911182d4c228ee6c';
