@@ -6,10 +6,9 @@ const non_employee_16_9 = require('../assets/images/common/non_employee_16_9.png
 const i3_logo = require('../assets/images/common/I3-logo.png');
 const cmsLogo = require('../assets/images/common/logo.png');
 
-const _Tabbar_Home = require('../assets/images/nav/Hometab-normal.png');
-const _Tabbar_Video = require('../assets/images/nav/Video-normal.png');
-const _Tabbar_Alarm = require('../assets/images/nav/Alarm-normal.png');
-const _Tabbar_Settings = require('../assets/images/nav/Settings-normal.png');
+const _Setting_Video_Direct = require('../assets/images/common/direct-connect.png');
+const _Setting_Video_Cloud = require('../assets/images/common/media-stream.png');
+const _Setting_Video_Relay = require('../assets/images/common/relay.png');
 
 export const No_Image = no_img;
 export const No_Image_16_9 = no_img_16_9;
@@ -19,7 +18,6 @@ export const Nonemployee_16_9 = non_employee_16_9;
 export const I3_Logo = i3_logo;
 export const CMS_Logo = cmsLogo;
 
-export const Tabbar_Home = _Tabbar_Home;
-export const Tabbar_Video = _Tabbar_Video;
-export const Tabbar_Alarm = _Tabbar_Alarm;
-export const Tabbar_Settings = _Tabbar_Settings;
+export const Setting_Video_Direct = _Setting_Video_Direct;
+export const Setting_Video_Cloud = _Setting_Video_Cloud;
+export const Setting_Video_Relay = _Setting_Video_Relay;

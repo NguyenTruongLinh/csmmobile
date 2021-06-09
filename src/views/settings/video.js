@@ -5,6 +5,7 @@ import {
   Text,
   Platform,
   StyleSheet,
+  Image,
   // StatusBar,
 } from 'react-native';
 
@@ -21,6 +22,11 @@ import snackbar from '../util/snackbar';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variable from '../../styles/variables';
+import {
+  Setting_Video_Direct,
+  Setting_Video_Cloud,
+  // Setting_Video_Relay,
+} from '../../consts/images';
 import {Settings as SettingsTxt} from '../../localization/texts';
 
 const CloudSettingData = [
@@ -28,14 +34,14 @@ const CloudSettingData = [
     id: 'direct',
     name: SettingsTxt.videoDirectName,
     description: SettingsTxt.videoDirecDesc,
-    icon: 'desktop',
+    icon: Setting_Video_Direct, // 'desktop',
     value: false,
   },
   {
     id: 'stream',
     name: SettingsTxt.videoStreamName,
     description: SettingsTxt.videoStreamDesc,
-    icon: 'cloud',
+    icon: Setting_Video_Cloud, // 'cloud',
     value: true,
   },
 ];
@@ -143,7 +149,7 @@ class VideosettingView extends Component {
         }}>
         <View style={styles.rowList}>
           <View style={styles.rowButton_contain_icon}>
-            <CMSAvatars
+            {/* <CMSAvatars
               size={24}
               styles={[
                 styles.rowButton_icon,
@@ -154,11 +160,12 @@ class VideosettingView extends Component {
               disabled={true}
               color={isChecked ? CMSColors.White : CMSColors.colorRow_options}
               icon={item.icon}
-            />
+            /> */}
+            <Image source={item.icon} style={styles.rowButton_icon} />
           </View>
           <View style={styles.rowButton_contain_name}>
             <Text style={styles.rowButton_name}>{item.name}</Text>
-            <Text style={styles.rowButton_name}>{item.description}</Text>
+            <Text style={styles.rowButton_desc}>{item.description}</Text>
           </View>
           {checkBox}
         </View>
@@ -318,11 +325,12 @@ const styles = StyleSheet.create({
     margin: 5,
     marginLeft: 10,
     marginRight: 10,
+    marginTop: 10,
     justifyContent: 'center',
     alignItems: 'center',
     width: 40,
     height: 40,
-    borderRadius: 20,
+    // borderRadius: 20,
   },
   rowButton_icon_check: {
     backgroundColor: CMSColors.PrimaryColor,
@@ -337,6 +345,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   rowButton_name: {
+    margin: 5,
+    paddingTop: 10,
+    paddingBottom: 10,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  rowButton_desc: {
     margin: 5,
     paddingTop: 10,
     paddingBottom: 10,

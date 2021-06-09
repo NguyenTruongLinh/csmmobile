@@ -10,12 +10,6 @@ import {
 
 import {Tabbar as Labels} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
-import {
-  Tabbar_Home,
-  Tabbar_Video,
-  Tabbar_Alarm,
-  Tabbar_Settings,
-} from '../consts/images';
 import CMSStyleSheet from '../components/CMSStyleSheet';
 
 // const Icon = CMSStyleSheet.Icon;
@@ -57,7 +51,7 @@ export default class extends React.Component {
                 name={TabIcons[index]}
                 size={30}
                 color={
-                  isSelected ? CMSColors.primaryActive : CMSColors.PrimaryText
+                  isSelected ? CMSColors.primaryActive : CMSColors.SecondaryText
                 }
               />
               {/* <Image

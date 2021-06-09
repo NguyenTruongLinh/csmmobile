@@ -459,6 +459,7 @@ export const UserStoreModel = types
       let data = self.user.data;
       data.api = self.api.data;
       let res = yield self.deleteLocal();
+      __DEV__ && console.log('GOND user delete local: ', res);
       res && (res = yield dbService.add(LocalDBName.user, data));
       // __DEV__ && console.log('GOND user save local: ', res);
       return res == true;
@@ -510,7 +511,10 @@ export const UserStoreModel = types
         self.user.dataForProfileUpdate
       );
       // __DEV__ && console.log('GOND update user profile: ', res);
-      return !res.error;
+      if (res.error) return false;
+      res = yield self.saveLocal();
+      __DEV__ && console.log('GOND update user profile save local: ', res);
+      return res;
     }),
     //* Settings:
     getNotifySettings: flow(function* getNotifySettings() {
@@ -548,7 +552,7 @@ export const UserStoreModel = types
         self.user.userId,
         AccountRoute.getAlertSettings
       );
-      __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
+      // __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
       if (!res || res.error) {
         snackbar.handleGetDataFailed();
         return false;

@@ -183,15 +183,15 @@ class LocalDB {
     return await new Promise(function (resolve) {
       setTimeout(() => {
         model.add(data, result => {
-          // __DEV__ &&
-          //   console.log(
-          //     'GOND add db: ',
-          //     dbName,
-          //     ', data: ',
-          //     data,
-          //     '\n => ',
-          //     result
-          //   );
+          __DEV__ &&
+            console.log(
+              'GOND add db: ',
+              dbName,
+              ', data: ',
+              data,
+              '\n => ',
+              result
+            );
           resolve(result);
         });
       }, 1);
