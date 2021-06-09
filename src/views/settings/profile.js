@@ -11,7 +11,6 @@ import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 
-import naviService from '../../navigation/navigationService';
 import {profileConstraints} from '../../util/constraints.js';
 
 import InputText from '../../components/controls/InputText';
@@ -60,7 +59,7 @@ class ProfileView extends React.Component {
   }
 
   componentDidMount() {
-    __DEV__ && console.log('GOND profile navi = ', this.props.navigation);
+    // __DEV__ && console.log('GOND profile navi = ', this.props.navigation);
 
     this.refreshSaveButton();
   }
@@ -73,7 +72,8 @@ class ProfileView extends React.Component {
     this.setState({showSpinner: true});
     const {firstName, lastName, email} = this.state;
 
-    this.props.userStore.updateProfile({firstName, lastName, email});
+    await this.props.userStore.updateProfile({firstName, lastName, email});
+    this.setState({showSpinner: false});
   }
 
   buildUserImageParams() {

@@ -71,7 +71,8 @@ export const getHeaderTitle = route => {
   // This can happen during if there hasn't been any navigation inside the screen
   // In our case, it's "Feed" as that's the first screen inside the navigator
   const routeName = route.name ?? getFocusedRouteNameFromRoute(route) ?? '';
-  console.log('GOND getHeaderTitle routeName = ', routeName, '\n++', route);
+  // __DEV__ &&
+  //   console.log('GOND getHeaderTitle routeName = ', routeName, '\n++', route);
 
   switch (routeName) {
     case ROUTERS.HEALTH_SITES:
@@ -123,9 +124,9 @@ export const getHeaderTitle = route => {
     case ROUTERS.OPTIONS_ABOUT:
       return 'About';
     case ROUTERS.OPTIONS_NOTIFY:
-      return 'Notification Setting';
+      return 'Notification Settings';
     case ROUTERS.OPTIONS_VIDEO:
-      return 'Video Setting';
+      return 'Video Settings';
   }
   return routeName;
 };

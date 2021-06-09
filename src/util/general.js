@@ -269,11 +269,6 @@ exports.toQueryStringUTCDate = function (localdate, format) {
   // }
 };
 
-exports.toQueryStringArray = function (array) {
-  if (!array || _.isArray([array]) == false) return null;
-  // return _.join(array, ',').toString();
-  return arr.join(',');
-};
 exports.AES_encrypt = function (input, key) {
   let enc_user = AES.encrypt(input, key);
   let uid = enc_user.toString();
@@ -475,7 +470,6 @@ exports.getAlertTypeVA = status => {
 };
 
 exports.findItem = (collection, key, value) => {
-  // let ret = _.find(collection, function (item) {
   return collection.find(item => {
     if (item[key] === undefined) return false;
     return item[key] === value;
@@ -483,7 +477,6 @@ exports.findItem = (collection, key, value) => {
 };
 
 exports.findItems = (collection, key, value) => {
-  // let ret = _.find(collection, function (item) {
   return (ret = collection.find(item => {
     if (Array.isArray(key)) {
       let i = 0;
@@ -495,7 +488,6 @@ exports.findItems = (collection, key, value) => {
         childs = parent[key[i]];
         i++;
         if (i == len - 1) {
-          // let ret = _.find(childs, function (it) {
           return childs.find(it => {
             let val = it[key[i]];
             return val === value;
@@ -542,7 +534,15 @@ exports.isValidHttpUrl = val => {
     const url = new URL(val);
     return val.startsWith('http:://') || val.startsWith('https://');
   } catch (err) {
-    console.log('GOND not valid url: ', err);
+    __DEV__ && console.log('GOND not valid url: ', err);
     return false;
   }
+};
+
+exports.compareArrays = (a, b) => {
+  return JSON.stringify(a) == JSON.stringify(b);
+};
+
+exports.compareStrings = (a, b) => {
+  return a > b ? 1 : a < b ? -1 : 0;
 };

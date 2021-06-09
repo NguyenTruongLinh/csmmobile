@@ -99,7 +99,7 @@ class App extends React.Component {
         Orientation.lockToPortraitUpsideDown();
         break;
       case 'UNKNOWN':
-        console.log('GOND lock to orientation UNKNOWN');
+        __DEV__ && console.log('GOND lock to orientation UNKNOWN');
         break;
       default:
         Orientation.lockToPortrait();
@@ -338,7 +338,8 @@ class App extends React.Component {
   }
 
   _handleAppStateChange = nextAppState => {
-    console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
+    __DEV__ &&
+      console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
     if (nextAppState === 'active' && this.appState) {
       if (this.appState.match(/inactive|background/)) {
         console.log('App has come to the foreground!');
@@ -389,7 +390,7 @@ class App extends React.Component {
   };
 
   onLogIn = () => {
-    console.log('GOND %%% ON LOGGED IN! user = ', nextProps.user);
+    __DEV__ && console.log('GOND %%% ON LOGGED IN! user = ', nextProps.user);
     // if (nextProps.user.Api)
     //   this.props.GetCloudType(nextProps.user.Api, nextProps.user.Api._ApiToken.devId);
     // else
@@ -397,7 +398,7 @@ class App extends React.Component {
   };
 
   onLogOut = () => {
-    console.log('GOND %%% ON LOGGED OUT!');
+    __DEV__ && console.log('GOND %%% ON LOGGED OUT!');
   };
 
   // renderBottomBar = () => {
@@ -456,13 +457,20 @@ class App extends React.Component {
   }
   */
 
+  setNavigator(ref) {
+    __DEV__ && console.log('GOND set top navigator: ', ref);
+    this.props.appStore.setNavigator(ref);
+  }
+
   render() {
     const {showIntro, isLoading} = this.props.appStore;
     const {isLoggedIn} = this.props.userStore;
+    const navigatorSetter = this.setNavigator.bind(this);
     return AppNavigator({
       showIntro,
       isLoading,
       isLoggedIn,
+      navigatorSetter,
     });
   }
 }

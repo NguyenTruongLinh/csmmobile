@@ -5,27 +5,23 @@ import {
   Text,
   Platform,
   StyleSheet,
-  StatusBar,
+  // StatusBar,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
-import Snackbar from 'react-native-snackbar';
 
 import Button from '../../components/controls/Button';
 import CMSAvatars from '../../components/containers/CMSAvatars';
 import {Icon} from '../../components/CMSStyleSheet';
 
-// import utils from '../../util/general';
+import snackbar from '../util/snackbar';
 // import {STREAMING_TYPES} from '../../consts/video';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variable from '../../styles/variables';
-import {
-  Settings as SettingsTxt,
-  ActionMessages,
-} from '../../localization/texts';
+import {Settings as SettingsTxt} from '../../localization/texts';
 
 const CloudSettingData = [
   {
@@ -99,30 +95,27 @@ class VideosettingView extends Component {
         selectedValue: this.props.videoStore.isCloud,
       });
     } else {
-      Snackbar.show({
-        text: ActionMessages.getDataFailed,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: CMSColors.Danger, //CMSColors.Danger,
-      });
+      snackbar.handleGetDataFailed();
     }
   }
 
   async updateCloudSetting() {
     const res = this.props.videoStore.updateCloudSetting();
     // console.log('GOND save cloud setting response: ', response)
-    if (res) {
-      Snackbar.show({
-        text: ActionMessages.saveSuccess,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: CMSColors.Success, //CMSColors.Danger, //onTimeOut: this.onSnackbarTimeout
-      });
-    } else {
-      Snackbar.show({
-        text: ActionMessages.saveFailRestart,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: CMSColors.Danger, //CMSColors.Danger,
-      });
-    }
+    // if (res) {
+    //   Snackbar.show({
+    //     text: ActionMessages.saveSuccess,
+    //     duration: Snackbar.LENGTH_LONG,
+    //     backgroundColor: CMSColors.Success, //CMSColors.Danger, //onTimeOut: this.onSnackbarTimeout
+    //   });
+    // } else {
+    //   Snackbar.show({
+    //     text: ActionMessages.saveFailRestart,
+    //     duration: Snackbar.LENGTH_LONG,
+    //     backgroundColor: CMSColors.Danger, //CMSColors.Danger,
+    //   });
+    // }
+    snackbar.handleSaveResult(res);
   }
 
   renderItem(_item) {
@@ -144,7 +137,7 @@ class VideosettingView extends Component {
       <Ripple
         rippleOpacity={0.87}
         onPress={() => {
-          if (selectedValue != item.value) {
+          if (selectedValue != item.value && !this.props.videoStore.isLoading) {
             this.setState({selectedValue: item.value});
           }
         }}>

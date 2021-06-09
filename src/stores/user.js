@@ -1,21 +1,26 @@
 import {types, flow} from 'mobx-state-tree';
 import {Alert} from 'react-native';
+import Snackbar from 'react-native-snackbar';
 
 import {MODULES, Orient} from '../consts/misc';
 import APP_INFO from '../consts/appInfo';
 import ROUTERS from '../consts/routes';
 
-import {Route, Account} from '../consts/apiRoutes';
+import {
+  Route,
+  Account as AccountRoute,
+  Users as UserRoute,
+} from '../consts/apiRoutes';
 import {Login as LoginTxt} from '../localization/texts';
 import apiService from '../services/api';
 import dbService from '../services/localdb';
 import appStore from './appStore';
-// import navigationService from '../navigation/navigationService';
 
 // TODO: fixit
 // const AppId = '4d53bce03ec34c0a911182d4c228ee6c';
-import {LocalDBName} from '../consts/misc';
 import {isNullOrUndef} from '../util/general';
+import snackbar from '../util/snackbar';
+import {LocalDBName} from '../consts/misc';
 
 const ModuleModel = types
   .model({
@@ -31,12 +36,11 @@ const ModuleModel = types
     },
   }));
 
-const getDefaultModule = () => {
-  console.log('GOND defaultmodule');
+const parseModule = _module => {
   return ModuleModel.create({
-    moduleId: 0,
-    functionId: 0,
-    functionName: '',
+    moduleId: _module.ModuleID,
+    functionId: _module.FunctionID,
+    functionName: _module.FunctionName,
   });
 };
 
@@ -50,6 +54,12 @@ const APIModel = types
     token: types.string,
     // devId: types.string,
   })
+  .views(self => ({
+    get data() {
+      const {url, appId, version, id, apiKey, token} = self;
+      return {url, appId, version, id, apiKey, token};
+    },
+  }))
   .actions(self => ({
     parse(_api) {
       __DEV__ && console.log('GOND load _api: ', _api);
@@ -64,10 +74,6 @@ const APIModel = types
       self.token = _api._ApiToken.Token || self.token;
       // self.devId = _api._ApiToken.devId || self.devId;
       return true;
-    },
-    get() {
-      const {url, appId, version, id, apiKey, token} = self;
-      return {url, appId, version, id, apiKey, token};
     },
   }));
 
@@ -93,18 +99,16 @@ const UserModel = types
     // isAuth: types.boolean,
     isAdmin: types.boolean,
   })
-  .actions(self => ({
-    parse(_user) {
-      self.userId = _user.UserID;
-      self.userName = _user.UName || '';
-      self.firstName = _user.FName;
-      self.lastName = _user.LName;
-      self.email = _user.Email;
-      self.avatar = _user.UPhoto || undefined;
-      self.isAdmin = _user.IsAdmin;
-      // self.isAuth = true;
+  .views(self => ({
+    get dataForProfileUpdate() {
+      return {
+        FName: self.firstName,
+        LName: self.lastName,
+        Email: self.email,
+        // UPhoto: self.avatar,
+      };
     },
-    get() {
+    get data() {
       const {userId, userName, firstName, lastName, email, isAdmin} = self;
       return {
         userId,
@@ -113,8 +117,20 @@ const UserModel = types
         lastName,
         email,
         isAdmin,
-        // avatar: '', // not saving/editing avatar
+        avatar: '', // not saving/editing avatar
       };
+    },
+  }))
+  .actions(self => ({
+    parse(_user) {
+      self.userId = _user.UserID;
+      self.userName = _user.UName ?? '';
+      self.firstName = _user.FName ?? '';
+      self.lastName = _user.LName ?? '';
+      self.email = _user.Email ?? '';
+      self.avatar = _user.UPhoto ?? '';
+      self.isAdmin = _user.IsAdmin ?? '';
+      // self.isAuth = true;
     },
     updateProfile({firstName, lastName, email, avatar}) {
       self.firstName = firstName || self.firstName;
@@ -181,7 +197,33 @@ const FCMModel = types
     },
   }));
 
-export const UserDataModel = types
+const AlertTypeModel = types.model({
+  id: types.identifierNumber,
+  kAlertSeverity: types.number,
+  name: types.string,
+  cmsWebType: types.number,
+  cmsWebGroup: types.number,
+  displayStatus: types.number,
+});
+
+const parseAlertType = _data => {
+  return AlertTypeModel.create({
+    id: _data.Id,
+    kAlertSeverity: _data.KAlertSeverity,
+    name: _data.Name,
+    cmsWebType: _data.CmsWebType,
+    cmsWebGroup: _data.CmsWebGroup,
+    displayStatus: _data.DisplayStatus,
+  });
+};
+
+const UserSettingsModel = types.model({
+  selectedNotifies: types.array(types.number),
+  selectedExceptions: types.array(types.number),
+  alertTypes: types.array(AlertTypeModel),
+});
+
+export const UserStoreModel = types
   .model({
     user: types.maybeNull(UserModel),
     error: types.maybeNull(types.string),
@@ -194,6 +236,8 @@ export const UserDataModel = types
     api: types.maybeNull(APIModel),
     modules: types.array(ModuleModel),
     routes: types.array(types.string),
+    //
+    settings: types.maybeNull(UserSettingsModel),
   })
   .actions(self => ({
     setConfigApi() {
@@ -237,7 +281,7 @@ export const UserDataModel = types
       self.setConfigApi();
       // const res = await apiService.login(username, password);
       const res = yield apiService.login(username, password);
-      console.log('GOND login res = ', res);
+      __DEV__ && console.log('GOND login res = ', res);
       if (res && res.status == 200 && res.Result) {
         self.loginSuccess(res);
       } else {
@@ -248,8 +292,9 @@ export const UserDataModel = types
     loginSuccess: flow(function* loginSuccess(data) {
       try {
         self.user.parse(data.Result);
+        apiService.updateUserId(self.user.userId);
       } catch (err) {
-        console.log('GOND load user profile error: ', err);
+        __DEV__ && console.log('GOND load user profile error: ', err);
         self.isLoggedIn = false;
         self.error = err;
         appStore.setLoading(false);
@@ -264,8 +309,8 @@ export const UserDataModel = types
       self.isLoggedIn = true;
 
       // data.Api && self.api.parse(data.Api);
-      yield self.getUserPhoto();
-      yield self.getPrivilege();
+      // yield self.getUserPhoto();
+      // yield self.getPrivilege();
       let {configToken} = apiService.getConfig();
       if (configToken) {
         self.api.id = configToken.id;
@@ -273,6 +318,7 @@ export const UserDataModel = types
         self.api.token = configToken.token;
       }
 
+      self.getDataPostLogin();
       self.saveLocal(); // no need to yield
       // clear login info
       self.loginInfo.postLogin();
@@ -297,6 +343,26 @@ export const UserDataModel = types
       self.routes = [];
       return true;
     }),
+    getDataPostLogin: flow(function* getDataPostLogin() {
+      try {
+        const [uPhotoRes, modulesRes, alertTypesRes] = yield Promise.all([
+          self.getUserPhoto(),
+          self.getPrivilege(),
+          self.getAlertTypesSettings(),
+        ]);
+        __DEV__ &&
+          console.log(
+            'GOND getDataPostLogin ',
+            uPhotoRes,
+            modulesRes,
+            alertTypesRes
+          );
+        return uPhotoRes && modulesRes; // && alertTypesRes;
+      } catch (err) {
+        snackbar.handleGetDataFailed();
+        return false;
+      }
+    }),
     didShowError() {
       self.error = '';
     },
@@ -311,11 +377,11 @@ export const UserDataModel = types
       if (self.user && self.user.userId) {
         try {
           let res = yield apiService.getBase64Stream(
-            Account.controller,
+            AccountRoute.controller,
             self.user.userId,
-            Account.avatar
+            AccountRoute.avatar
           );
-          __DEV__ && console.log('GOND get user photo res: ', res);
+          // __DEV__ && console.log('GOND get user photo res: ', res);
           if (res && res.status == 200) {
             self.user.avatar = res.data;
             return true;
@@ -332,9 +398,9 @@ export const UserDataModel = types
       if (self.user && self.user.userId) {
         try {
           let res = yield apiService.get(
-            Account.controller,
+            AccountRoute.controller,
             self.user.userId,
-            Account.modules
+            AccountRoute.modules
           );
 
           __DEV__ &&
@@ -350,11 +416,7 @@ export const UserDataModel = types
             //   res.status == 200 &&
             //   Array.isArray(res.data))
           ) {
-            res.forEach(item => {
-              const newModule = getDefaultModule();
-              newModule.parse(item);
-              self.modules.push(newModule);
-            });
+            self.modules = res.map(item => parseModule(item));
             return true;
           }
         } catch (err) {
@@ -394,25 +456,27 @@ export const UserDataModel = types
       return {...user};
     },
     saveLocal: flow(function* saveLocal() {
-      let data = self.user.get();
-      data.api = self.api.get();
+      let data = self.user.data;
+      data.api = self.api.data;
       let res = yield self.deleteLocal();
       res && (res = yield dbService.add(LocalDBName.user, data));
-      __DEV__ && console.log('GOND user save local: ', res);
+      // __DEV__ && console.log('GOND user save local: ', res);
       return res == true;
     }),
     deleteLocal: flow(function* deleteLocal() {
       let res = yield dbService.delete(LocalDBName.user);
-      __DEV__ && console.log('GOND user delete local: ', res);
+      // __DEV__ && console.log('GOND user delete local: ', res);
       return res;
     }),
     loadLocalData: flow(function* loadLocalData() {
       const savedData = yield dbService.getFirstData(LocalDBName.user);
-      __DEV__ && console.log('GOND user load local data: ', savedData);
+      // __DEV__ && console.log('GOND user load local data: ', savedData);
       if (savedData && typeof savedData === 'object') {
         try {
           self.user = UserModel.create(savedData);
           self.api = APIModel.create(savedData.api);
+          self.setConfigApi();
+          apiService.updateUserId(self.user.userId);
         } catch (err) {
           __DEV__ && console.log('GOND load user local data failed: ', err);
           self.error = err;
@@ -424,34 +488,87 @@ export const UserDataModel = types
       return false;
     }),
     shouldAutoLogin: flow(function* shouldAutoLogin() {
+      appStore.setLoading(true);
       const shouldLogin = yield self.loadLocalData();
       if (!appStore.deviceInfo || !appStore.deviceInfo.deviceId) {
         yield appStore.loadLocalData();
       }
       if (shouldLogin) {
-        self.setConfigApi();
-
-        let res = yield self.getUserPhoto();
-        __DEV__ && console.log('GOND getUPhoto: ', res);
-        res && (self.isLoggedIn = yield self.getPrivilege());
-        // if (!self.isLoggedIn) self.deleteLocal();
-        return self.isLoggedIn;
+        self.isLoggedIn = yield self.getDataPostLogin();
+        if (!self.isLoggedIn) self.deleteLocal();
+        // __DEV__ && console.log('GOND self.isLoggedIn: ', self.isLoggedIn);
       }
-      return false;
+      appStore.setLoading(false);
+      return self.isLoggedIn;
     }),
     updateProfile: flow(function* updateProfile(data) {
       self.user.updateProfile(data);
       let res = yield apiService.put(
-        Account.controller,
+        UserRoute.controller,
         null,
         null,
-        self.user.get()
+        self.user.dataForProfileUpdate
       );
+      // __DEV__ && console.log('GOND update user profile: ', res);
       return !res.error;
+    }),
+    //* Settings:
+    getNotifySettings: flow(function* getNotifySettings() {
+      let res = yield apiService.get(
+        AccountRoute.controller,
+        self.user.userId,
+        AccountRoute.getNotifySettings
+      );
+      if (res.error) {
+        snackbar.handleGetDataFailed();
+        return false;
+      } else {
+        // __DEV__ && console.log('GOND getNotifySettings: ', res);
+        res.NotifySelected &&
+          (self.settings.selectedNotifies = [...res.NotifySelected]);
+        res.ExceptionSelected &&
+          (self.settings.selectedExceptions = [...res.ExceptionSelected]);
+        return true;
+      }
+    }),
+    updateNotifySettings: flow(function* updateNotifySettings(newSetting) {
+      let res = yield apiService.post(
+        AccountRoute.controller,
+        self.user.userId,
+        AccountRoute.updateNotifySettings,
+        newSetting
+      );
+      // __DEV__ && console.log('GOND updateNotifySettings: ', res);
+      snackbar.handleSaveResult(res);
+      res && !res.error && self.getNotifySettings();
+    }),
+    getAlertTypesSettings: flow(function* getAlertTypesSettings() {
+      let res = yield apiService.get(
+        AccountRoute.controller,
+        self.user.userId,
+        AccountRoute.getAlertSettings
+      );
+      __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
+      if (!res || res.error) {
+        snackbar.handleGetDataFailed();
+        return false;
+      } else {
+        if (!Array.isArray(res)) {
+          __DEV__ &&
+            console.log(
+              'GOND getAlertTypeSettings failed: result is not an array.'
+            );
+          return;
+        }
+        self.settings.alertTypes = res.map(alertType =>
+          parseAlertType(alertType)
+        );
+        return true;
+      }
     }),
   }));
 
-const userStore = UserDataModel.create({
+const userStore = UserStoreModel.create({
   user: createAnonymousUser(),
   domain: '',
   error: '',
@@ -461,6 +578,11 @@ const userStore = UserDataModel.create({
   api: getDefaultAPI(),
   modules: [],
   routes: [],
+  settings: UserSettingsModel.create({
+    selectedNotifies: [],
+    selectedExceptions: [],
+    alertTypes: [],
+  }),
 });
 
 export default userStore;

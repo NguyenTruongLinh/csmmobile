@@ -58,7 +58,7 @@ class Button extends Component {
     }
     if (this.props.iconCustom) {
       let size = this.props.iconSize || FONT_SIZE;
-      console.log('GOND enable_style = ', enable_style);
+      // __DEV__ && console.log('GOND enable_style = ', enable_style);
       icon = (
         <IconCustom
           name={this.props.iconCustom}
@@ -110,7 +110,7 @@ class Button extends Component {
    * @returns JSXElement
    */
   renderCustom(caption) {
-    console.log('GOND iconStyleEnable ', this.props.iconStyleEnable);
+    // __DEV__ && console.log('GOND iconStyleEnable ', this.props.iconStyleEnable);
     let icon = this.renderIcon(
       this.props.iconStyleEnable,
       this.props.iconStyleDisable

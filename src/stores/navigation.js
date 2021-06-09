@@ -11,7 +11,7 @@ const {map, union, safeReference, reference} = types;
 
 const getTypeFromJson = json => {
   const identifier = json.id || json;
-  console.log('GOND navigationStore getTypeFromJson: ', identifier);
+  // __DEV__ && console.log('GOND navigationStore getTypeFromJson: ', identifier);
   if (identifier.startsWith('alarm')) return reference(AlarmModel);
   if (identifier.startsWith('health')) return reference(HealthModel);
   if (identifier.startsWith('oam')) return reference(OAMModel);
@@ -69,6 +69,6 @@ export const NavigationModel = types
     // },
   }));
 
-export const navigationStore = NavigationModel.create({
-  paramsMap: {},
-});
+// export const navigationStore = NavigationModel.create({
+//   paramsMap: {},
+// });

@@ -8,7 +8,8 @@ import {
   Linking,
 } from 'react-native';
 
-import navigationService from '../../navigation/navigationService';
+import {inject, observer} from 'mobx-react';
+// import navigationService from '../../navigation/navigationService';
 
 import Button from '../../components/controls/Button';
 
@@ -18,6 +19,7 @@ import CMSColor from '../../styles/cmscolors';
 
 import APP_INFO from '../../consts/appInfo';
 import {Welcome as WelcomeTxt} from '../../localization/texts';
+
 const backgroundImg = require('../../assets/images/intro/welcome.png');
 
 class WelcomeView extends Component {
@@ -34,7 +36,8 @@ class WelcomeView extends Component {
   }
 
   onLogin = () => {
-    navigationService.navigate(ROUTERS.LOGIN);
+    // navigationService.navigate(ROUTERS.LOGIN);
+    this.props.appStore.naviService.navigate(ROUTERS.LOGIN);
   };
 
   onGoPro = () => {};
@@ -139,4 +142,4 @@ class WelcomeView extends Component {
   }
 }
 
-export default WelcomeView;
+export default inject('appStore')(observer(WelcomeView));

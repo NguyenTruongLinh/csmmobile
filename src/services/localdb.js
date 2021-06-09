@@ -18,7 +18,7 @@ class LocalDB {
     let cmsdb = new RNDBModel.create_db(cmsDBName);
 
     if (isNullOrUndef(cmsdb)) {
-      console.log('GOND error! Cannot init db!');
+      __DEV__ && console.log('GOND error! Cannot init db!');
       return false;
     }
     return await new Promise(function (resolve) {
@@ -183,15 +183,15 @@ class LocalDB {
     return await new Promise(function (resolve) {
       setTimeout(() => {
         model.add(data, result => {
-          __DEV__ &&
-            console.log(
-              'GOND add db: ',
-              dbName,
-              ', data: ',
-              data,
-              '\n => ',
-              result
-            );
+          // __DEV__ &&
+          //   console.log(
+          //     'GOND add db: ',
+          //     dbName,
+          //     ', data: ',
+          //     data,
+          //     '\n => ',
+          //     result
+          //   );
           resolve(result);
         });
       }, 1);

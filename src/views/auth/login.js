@@ -17,7 +17,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import Button from '../../components/controls/Button';
 
-import navigationService from '../../navigation/navigationService';
+// import navigationService from '../../navigation/navigationService';
 
 import {isValidHttpUrl} from '../../util/general';
 
@@ -180,7 +180,8 @@ class LoginView extends Component {
 
   onBack = () => {
     console.log('GOND Login onback <');
-    navigationService.back();
+    // navigationService.back();
+    this.props.appStore.naviService.back();
   };
 
   render() {

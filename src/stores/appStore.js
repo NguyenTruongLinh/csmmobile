@@ -2,6 +2,8 @@ import {types, flow} from 'mobx-state-tree';
 
 import apiService from '../services/api';
 import dbService from '../services/localdb';
+import NavigationService from '../navigation/navigationService';
+import {NavigationModel} from '../stores/navigation';
 
 const DeviceInfo = types.model({
   deviceId: types.string,
@@ -28,16 +30,20 @@ const appStore = types
     deviceInfo: DeviceInfo,
     showIntro: types.boolean,
     isLoading: types.boolean,
+    naviService: NavigationService,
   })
   .views(self => ({
-    getDeviceInfo() {
+    get getDeviceInfo() {
       return self.deviceInfo;
+    },
+    get naviStore() {
+      return self.naviService._navStore();
     },
   }))
   .actions(self => ({
     saveDeviceInfo(_device) {
       // if (!self.deviceInfo) self.deviceInfo = getDefaultDeviceInfo();
-      self.deviceInfo = {...self.deviceInfo, _device};
+      self.deviceInfo = {...self.deviceInfo, ..._device};
     },
     allowRotation(isAllow) {
       self.canRotate = isAllow || false;
@@ -50,12 +56,16 @@ const appStore = types
     },
     loadLocalData: flow(function* loadLocalData() {
       const _id = yield dbService.deviceId();
-      console.log('GOND get deviceId: ', _id);
+      //  __DEV__ && console.log('GOND get deviceId: ', _id);
       self.deviceInfo.deviceId = _id;
       apiService.updateDeviceId(_id);
 
       self.showIntro = yield dbService.isFirstLaunch();
     }),
+    setNavigator(ref) {
+      self.naviService.setTopLevelNavigator(ref);
+      // __DEV__ && console.log('GOND setNavigator then ', self.naviService);
+    },
   }))
   .create({
     nextScene: '',
@@ -70,6 +80,10 @@ const appStore = types
     }),
     showIntro: false,
     isLoading: false,
+    naviService: NavigationService.create({
+      _navigator: null,
+      _navStore: NavigationModel.create({paramsMap: {}}),
+    }),
   });
 
 export default appStore;

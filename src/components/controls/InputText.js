@@ -175,7 +175,7 @@ export default class InputText extends PureComponent {
   };
 
   onFocus(event) {
-    __DEV__ && console.log('GOND InputText onFocus: ', event);
+    // __DEV__ && console.log('GOND InputText onFocus: ', event);
     let {onFocus, validation} = this.props;
     let {error} = this.state;
 
@@ -189,19 +189,19 @@ export default class InputText extends PureComponent {
   onBlur() {
     let {onBlur} = this.props;
     let {error, text} = this.state;
-    __DEV__ && console.log('GOND InputText onBlur: ', text);
+    // __DEV__ && console.log('GOND InputText onBlur: ', text);
 
     if (typeof onBlur === 'function') {
       onBlur();
     }
 
     error = this.onValidate(text) || error;
-    __DEV__ && console.log('GOND InputText onBlur valid: ', error);
+    // __DEV__ && console.log('GOND InputText onBlur valid: ', error);
     this.setState({focused: false, error: error});
   }
 
   onChangeText(text) {
-    __DEV__ && console.log('GOND InputText onChangeText: ', text);
+    // __DEV__ && console.log('GOND InputText onChangeText: ', text);
     let {onChangeText} = this.props;
     let {error} = this.state;
 
@@ -218,7 +218,7 @@ export default class InputText extends PureComponent {
     let {error} = this.state;
 
     if (!validation) {
-      __DEV__ && console.log('GOND InputText no validation');
+      // __DEV__ && console.log('GOND InputText no validation');
       return error;
     }
     const name = Object.keys(validation)[0];
@@ -232,11 +232,11 @@ export default class InputText extends PureComponent {
     // If there is an error message, return it!
     if (result) {
       // Return only the field error message if there are multiple
-      __DEV__ && console.log('GOND InputText validate = ', result);
+      // __DEV__ && console.log('GOND InputText validate = ', result);
       return result[name][0];
     }
 
-    __DEV__ && console.log('GOND InputText validate is valid');
+    // __DEV__ && console.log('GOND InputText validate is valid');
     return null;
   }
 
@@ -270,7 +270,7 @@ export default class InputText extends PureComponent {
     } = this.props;
     let {focused, focus, error, /*errored,*/ height, text = ''} = this.state;
     let {multiline, numberOfLines} = props;
-    __DEV__ && console.log('GOND InputText rerender error: ', error);
+    // __DEV__ && console.log('GOND InputText rerender error: ', error);
 
     let count = !text ? 0 : text.length;
     let active = !!text;

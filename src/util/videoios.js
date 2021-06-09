@@ -1,9 +1,9 @@
 //import { PropTypes } from 'react';
 import PropTypes from 'prop-types';
-import { requireNativeComponent, View } from 'react-native';
+import {requireNativeComponent, View} from 'react-native';
 // const ViewPropTypes = require('ViewPropTypes');
 
-var iFFMpegFrameView = {
+const iFFMpegFrameView = {
   name: 'FFMpegFrameView',
   propTypes: {
     data: PropTypes.array,
@@ -22,9 +22,12 @@ var iFFMpegFrameView = {
     hdmode: PropTypes.number,
     onFFMPegFrameChange: PropTypes.func,
     // ...ViewPropTypes
-  }
+  },
 };
 
-const FFMpegFrameViewIOS = requireNativeComponent('FFMpegFrameView', iFFMpegFrameView);
+const FFMpegFrameViewIOS = requireNativeComponent(
+  'FFMpegFrameView',
+  iFFMpegFrameView
+);
 
 module.exports = FFMpegFrameViewIOS;

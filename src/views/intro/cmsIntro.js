@@ -5,7 +5,6 @@ import {inject} from 'mobx-react';
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 
 // import appStore from '../../stores/appStore';
-// import {} from '../../navigation/navigationService';
 
 import Button from '../../components/controls/Button';
 
@@ -64,19 +63,17 @@ class CMSIntroView extends Component {
   }
 
   onIntroItemChanged = ({viewableItems}) => {
-    console.log('GOND onIntroItemChanged ', viewableItems);
+    __DEV__ && console.log('GOND onIntroItemChanged ', viewableItems);
     this.currentIndex = viewableItems[viewableItems.length - 1].index;
-    console.log('GOND onIntroItemChanged currentIndex = ', this.currentIndex);
   };
 
   onSkipIntro = () => {
-    console.log('GOND appStore = ', this.props);
     // this.props.appStore.skipIntro();
     this.props.appStore.skipIntro();
   };
 
   onNextStep = () => {
-    console.log('GOND onNextStep = ', this.currentIndex);
+    // __DEV__ && console.log('GOND onNextStep = ', this.currentIndex);
     if (this.introList && this.currentIndex < IntroData.length - 1)
       this.introList.scrollToIndex({index: this.currentIndex + 1});
     else if (this.currentIndex == IntroData.length - 1) {
@@ -85,7 +82,7 @@ class CMSIntroView extends Component {
   };
 
   onEndReached = () => {
-    console.log('GOND onEndReached = ', this.currentIndex);
+    __DEV__ && console.log('GOND onEndReached = ', this.currentIndex);
     // this.onSkipIntro();
   };
 

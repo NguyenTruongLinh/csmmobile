@@ -36,12 +36,12 @@ export default class extends React.Component {
     const {width, height} = Dimensions.get('window');
     const tabWidth = width / TabLabels.length;
 
-    console.log(
-      'GOND createTabbar navigation = ',
-      navigation,
-      ', --- state = ',
-      state
-    );
+    //  __DEV__ && console.log(
+    //   'GOND createTabbar navigation = ',
+    //   navigation,
+    //   ', --- state = ',
+    //   state
+    // );
     return (
       <View style={[styles.container, {height: height / 10}]}>
         {state.routes.map((route, index) => {

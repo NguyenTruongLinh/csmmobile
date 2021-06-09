@@ -4,9 +4,9 @@ import {Provider} from 'mobx-react';
 import appStore from './stores/appStore';
 import userStore from './stores/user';
 import videoStore from './stores/video';
-// import alarmStore from './stores/alarm';
+import alarmStore from './stores/alarm';
+import posStore from './stores/pos';
 // import oamStore from './stores/oam';
-// import posStore from './stores/pos';
 // import sitesStore from './stores/sites';
 // import healthStore from './stores/health';
 import App from './app';
@@ -18,9 +18,9 @@ const Main = () => {
       appStore={appStore}
       userStore={userStore}
       videoStore={videoStore}
-      // alarmStore={alarmStore}
+      alarmStore={alarmStore}
+      posStore={posStore}
       // healthStore={healthStore}
-      // posStore={posStore}
       // sitesStore={sitesStore}
       // oamStore={oamStore}
     >

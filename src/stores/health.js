@@ -40,20 +40,20 @@ const DVRAlertViewModel = types.model({
   info: DVRAlertViewInfoModel,
 });
 
-const AlertTypeModel = types.model({
-  id: types.identifierNumber,
-  kAlertSeverity: types.number,
-  name: types.string,
-  cmsWebType: types.number,
-  cmsWebGroup: types.number,
-  displayStatus: types.number,
-});
+// const AlertTypeModel = types.model({
+//   id: types.identifierNumber,
+//   kAlertSeverity: types.number,
+//   name: types.string,
+//   cmsWebType: types.number,
+//   cmsWebGroup: types.number,
+//   displayStatus: types.number,
+// });
 
 export const HealthModel = types
   .model({
     // selectedHealthRow: types.maybeNull(AlertModel),
     alertsList: types.array(AlertModel),
-    alertTypes: types.array(AlertTypeModel),
+    // alertTypes: types.array(AlertTypeModel),
     date: types.string, // should be Date or number?
     //dvrAlerts: types.array(types.map),
     alertDetailView: types.maybeNull(DVRAlertViewModel),
@@ -65,7 +65,7 @@ export const HealthModel = types
   }))
   .actions(self => ({}));
 
-export const healthStore = HealthModel.create({
+const healthStore = HealthModel.create({
   alertsList: [],
   alertTypes: [],
   date: '',
@@ -73,5 +73,4 @@ export const healthStore = HealthModel.create({
   activeDVRAlert: null,
 });
 
-// export const HealthModel = {};
-// export default healthStore;
+export default healthStore;

@@ -6,7 +6,7 @@ import {
   getFocusedRouteNameFromRoute,
 } from '@react-navigation/native';
 
-import navigationService from './navigationService';
+// import navigationService from './navigationService';
 // import {navigationStore} from '../stores/navigation';
 import CMSTabbar from './tabbar';
 
@@ -259,13 +259,14 @@ const WelcomeStack = createStackNavigator();
  * @param {bool} isLoggedIn
  * @returns ReactElement
  */
-const AppNavigator = ({showIntro, isLoggedIn, isLoading}) => {
+const AppNavigator = ({showIntro, isLoggedIn, isLoading, navigatorSetter}) => {
   // __DEV__ && console.log('GOND NavContainer render, isLogin = ', isLoggedIn);
   return (
     <NavigationContainer
       ref={ref => {
         // __DEV__ && console.log('GOND NavContainer ref = ', ref);
-        navigationService.setTopLevelNavigator(ref);
+        // navigationService.setTopLevelNavigator(ref);
+        if (typeof navigatorSetter == 'function') navigatorSetter(ref);
       }}>
       {isLoading ? (
         <LoadingOverlay />

@@ -35,7 +35,7 @@ export const OAMModel = types
       return self.oamMap.get(_kdvr);
     },
     getCurrentData() {
-      console.log('GOND current OAM: ', current);
+      // __DEV__ && console.log('GOND current OAM: ', current);
       return current;
     },
   }))
@@ -68,9 +68,9 @@ export const OAMModel = types
     },
   }));
 
-export const oamStore = OAMModel.create({
+const oamStore = OAMModel.create({
   current: null,
   oamMap: {},
 });
 
-// export default oamStore;
+export default oamStore;

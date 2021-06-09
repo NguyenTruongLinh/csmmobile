@@ -125,7 +125,7 @@ export const VideoModel = types
           VSC.Cloud
         );
       } catch (err) {
-        console.log('GOND get cloud type failed, error: ', err);
+        __DEV__ && console.log('GOND get cloud type failed, error: ', err);
         self.isLoading = false;
         return false;
       }
@@ -141,7 +141,8 @@ export const VideoModel = types
       ) {
         self.cloudType = res;
       } else {
-        console.log('GOND get cloud type return wrong value, res = ', res);
+        __DEV__ &&
+          console.log('GOND get cloud type return wrong value, res = ', res);
         result = false;
       }
       self.isLoading = false;
@@ -156,7 +157,7 @@ export const VideoModel = types
         );
         self.getCloudSetting();
       } catch (err) {
-        console.log('GOND save setting error: ', err);
+        __DEV__ && console.log('GOND save setting error: ', err);
         return false;
       }
       return true;

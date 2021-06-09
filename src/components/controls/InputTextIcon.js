@@ -289,7 +289,7 @@ export default class InputTextIcon extends PureComponent {
         name={icon}
         size={variable.fix_fontSize_Icon}
         style={[{color: baseColor}, styles.icon]}
-        onPress={() => console.log('GOND icon name: ', icon)}
+        // onPress={() =>  __DEV__ && console.log('GOND icon name: ', icon)}
       />
     ) : null;
     let CIconCustom = iconCustom ? (
@@ -297,7 +297,7 @@ export default class InputTextIcon extends PureComponent {
         name={iconCustom}
         size={variable.fix_fontSize_Icon}
         style={[{color: baseColor}, styles.icon]}
-        onPress={() => console.log('GOND icon customed name: ', iconCustom)}
+        // onPress={() =>  __DEV__ && console.log('GOND icon customed name: ', iconCustom)}
       />
     ) : null;
     const revealIconStyle = this.state.revealHidden
@@ -363,7 +363,7 @@ export default class InputTextIcon extends PureComponent {
             size={variable.fix_fontSize_Icon}
             style={[{color: baseColor}, styles.icon, revealIconStyle]}
             onPress={() => {
-              console.log('GOND icon customed name: ', iconCustom);
+              //  __DEV__ && console.log('GOND icon customed name: ', iconCustom);
               this.setState({revealHidden: !this.state.revealHidden});
             }}
           />

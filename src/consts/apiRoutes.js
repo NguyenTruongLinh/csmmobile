@@ -3,48 +3,48 @@ const _Account = {
   get: '',
   post: '',
   avatar: 'avartar',
-  getsettingalert: 'settingalert',
+  getAlertSettings: 'settingalert',
   modules: 'modules',
-  getsettingnotify: 'settingnotify',
-  editsettingnotify: 'EditUserNotifySettings',
+  getNotifySettings: 'settingnotify',
+  updateNotifySettings: 'EditUserNotifySettings',
 };
 
 const _Alertype = {
   controller: 'alerttype',
   get: '',
-  getalerttypeVA: 'getalerttypeva',
+  getAlertTypeVA: 'getalerttypeva',
 };
 
 const _Site = {
   controller: 'site',
   get: 'all=true',
-  getdvrname: '?all=true&dvr=true',
-  getsitepvm: '?all=true&dvr=true&filter=pvm',
+  getDvrName: '?all=true&dvr=true',
+  getSiteOam: '?all=true&dvr=true&filter=pvm',
 };
 
 const _Alert = {
   controller: 'alert',
-  getbydvr: 'dvr',
-  IgnoreMutiAlertType: 'IgnoreMutiAlertType',
-  IgnoreMutiAlertSite: 'IgnoreMutiAlertSite',
+  getByDvr: 'dvr',
+  ignoreMutiAlertType: 'IgnoreMutiAlertType',
+  ignoreMutiAlertSite: 'IgnoreMutiAlertSite',
 };
 
 const _DVR = {
   controller: 'dvr',
-  getconnection: 'infoconnectvideo',
-  getchannels: 'channels',
-  getallchannels: 'getallchannels',
+  getConnection: 'infoconnectvideo',
+  getChannels: 'channels',
+  getAllChannels: 'getallchannels',
 };
 
 const _Users = {
   controller: 'users',
-  updateprofile: 'updateprofile',
+  updateProfile: 'updateprofile',
 };
 
 const _Exception = {
   controller: 'exception',
   get: 'get',
-  gettransactiontypes: 'GetTransactionTypes',
+  getTransactionTypes: 'GetTransactionTypes',
 };
 
 const _Channel = {

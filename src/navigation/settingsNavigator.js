@@ -21,7 +21,7 @@ export default function SettingsStack() {
       initialRouteName={ROUTERS.OPTIONS}
       screenOptions={({route, navigation}) => ({
         headerStyle: {
-          backgroundColor: CMSColors.White,
+          // backgroundColor: CMSColors.White,
           borderBottomWidth: 1,
         },
         headerStatusBarHeight: 35,

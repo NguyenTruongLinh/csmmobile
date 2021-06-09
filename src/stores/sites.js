@@ -101,8 +101,8 @@ export const SitesMapModel = types
     },
   }));
 
-export const sitesStore = SitesMapModel.create({
+const sitesStore = SitesMapModel.create({
   sitesList: [],
 });
 
-// export default sitesStore;
+export default sitesStore;

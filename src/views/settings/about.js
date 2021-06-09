@@ -50,7 +50,6 @@ class AboutView extends Component {
     // let statusbar = Platform.OS == 'ios' ?  (
     //   <View style={styles.statusbarios}></View>
     // ) : null;
-    console.log('GOND aaaaaaaaaaaaa CMS_Logo = ', CMS_Logo);
 
     return (
       <View style={styles.viewContainer}>

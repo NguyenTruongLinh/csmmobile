@@ -1,7 +1,13 @@
-import {types} from 'mobx-state-tree';
+import {flow, types} from 'mobx-state-tree';
 // import SiteStore from './sites';
 import BigNumber from 'bignumber.js';
 import BigNumberPrimitive from './types/bignumber';
+
+import userStore from './user';
+import apiService from '../services/api';
+
+import {Exception} from '../consts/apiRoutes';
+import snackbar from '../util/snackbar';
 
 const ExceptionFilterModel = types.model({
   dateFrom: types.Date,
@@ -9,62 +15,44 @@ const ExceptionFilterModel = types.model({
   selectedSites: types.array(types.number),
 });
 
-const ExceptionModel = types
-  .model({
-    riskFactor: types.number,
-    countRisk: types.number,
-    totalAmount: types.number,
-    percentToSale: types.number,
-    totalTran: types.number,
-    date: types.string, // Date?
-    employerId: types.maybeNull(types.number),
-    employerName: types.maybeNull(types.string),
-    storeId: types.maybeNull(types.number),
-    storeName: types.maybeNull(types.string),
-    exceptionAmount: types.number,
-    siteKey: types.number,
-    siteName: types.string,
-    pacId: types.number,
-  })
-  .actions(self => ({
-    parse(_exception) {
-      self.riskFactor = _exception.RiskFactor;
-      self.countRisk = _exception.CountRisk;
-      self.totalAmount = _exception.TotalAmount;
-      self.percentToSale = _exception.PercentToSale;
-      self.totalTran = _exception.TotalTran;
-      self.date = _exception.Date;
-      self.employerId = _exception.EmployerId;
-      self.employerName = _exception.EmployerName;
-      self.storeId = _exception.StoreId;
-      self.storeName = _exception.StoreName;
-      self.exceptionAmount = _exception.ExceptionAmount;
-      self.siteKey = _exception.SiteKey;
-      self.siteName = _exception.SiteName;
-      self.pacId = _exception.PacId;
-    },
-  }));
+const ExceptionModel = types.model({
+  riskFactor: types.number,
+  countRisk: types.number,
+  totalAmount: types.number,
+  percentToSale: types.number,
+  totalTran: types.number,
+  date: types.string, // Date?
+  employerId: types.maybeNull(types.number),
+  employerName: types.maybeNull(types.string),
+  storeId: types.maybeNull(types.number),
+  storeName: types.maybeNull(types.string),
+  exceptionAmount: types.number,
+  siteKey: types.number,
+  siteName: types.string,
+  pacId: types.number,
+});
 
-const getDefaultException = () =>
-  ExceptionModel.create({
-    riskFactor: 0,
-    countRisk: 0,
-    totalAmount: 0,
-    percentToSale: 0,
-    totalTran: 0,
-    date: '',
-    employerId: null,
-    employerName: null,
-    storeId: null,
-    storeName: null,
-    exceptionAmount: 0,
-    siteKey: 0,
-    siteName: '',
-    pacId: 0,
+const parseException = _ex => {
+  return ExceptionModel.create({
+    riskFactor: _ex.RiskFactor,
+    countRisk: _ex.CountRisk,
+    totalAmount: _ex.TotalAmount,
+    percentToSale: _ex.PercentToSale,
+    totalTran: _ex.TotalTran,
+    date: _ex.Date,
+    employerId: _ex.EmployerId,
+    employerName: _ex.EmployerName,
+    storeId: _ex.StoreId,
+    storeName: _ex.StoreName,
+    exceptionAmount: _ex.ExceptionAmount,
+    siteKey: _ex.SiteKey,
+    siteName: _ex.SiteName,
+    pacId: _ex.PacId,
   });
+};
 
 const ExceptionGroupModel = types.model({
-  id: types.identifier,
+  // id: types.identifier, // TODO
   sumRiskFactors: types.number,
   totalAmount: types.number,
   totalRatio: BigNumberPrimitive,
@@ -75,7 +63,7 @@ const ExceptionGroupModel = types.model({
   currentPage: types.number,
   totalPages: types.number,
   pageSize: types.number,
-  // childs: types.array(types.reference(ExceptionGroupModel)), // todo
+  // childs: types.array(types.reference(ExceptionTypeModel)), // todo
 });
 // .actions(self => ({
 //   parse(_exception) {
@@ -99,6 +87,24 @@ const ExceptionGroupModel = types.model({
 //     }
 //   },
 // }));
+
+const parseExceptionGroup = _data => {
+  return ExceptionGroup.create({
+    sumRiskFactors: _data.SumRiskFactors,
+    totalAmount: _data.TotalAmount,
+    totalRatio: BigNumber(_data.TotalRatio),
+    numberSite: _data.NumberSite,
+    totalRiskFactors: _data.TotalRiskFactors,
+    exceptionAmount: _data.ExceptionAmount,
+    currentPage: _data.CurrentPage,
+    totalPages: _data.TotalPages,
+    pageSize: _data.PageSize,
+    data:
+      _data.Data && Array.isArray(_data.Data)
+        ? _data.Data.map(_ex => parseException(_ex))
+        : [],
+  });
+};
 
 const ExceptionParamsModel = types
   .model({
@@ -129,6 +135,47 @@ const ExceptionParamsModel = types
     },
   }));
 
+const ExceptionTypeModel = types
+  .model({
+    id: types.identifierNumber,
+    name: types.string,
+    desc: types.string,
+    flagTime: types.maybeNull(types.string),
+    typeWeight: types.number,
+    color: types.string,
+    isSystem: types.boolean,
+    readOnly: types.boolean,
+    userId: types.number,
+  })
+  .views(self => ({
+    get data() {
+      return {
+        id: self.id,
+        name: self.name,
+        desc: self.desc,
+        flagTime: self.flagTime,
+        typeWeight: self.typeWeight,
+        color: self.color,
+        isSystem: self.isSystem,
+        readOnly: self.readOnly,
+        userId: self.userId,
+      };
+    },
+  }));
+
+const parseExceptionType = _data =>
+  ExceptionTypeModel.create({
+    id: _data.Id,
+    name: _data.Name,
+    desc: _data.Desc,
+    flagTime: _data.FlagTime,
+    typeWeight: _data.TypeWeight,
+    color: _data.Color,
+    isSystem: _data.IsSystem,
+    readOnly: _data.ReadOnly,
+    userId: _data.UserID,
+  });
+
 export const POSModel = types
   .model({
     showChartView: types.boolean,
@@ -137,15 +184,39 @@ export const POSModel = types
     // isBackFromFCM: types.boolean,
     exceptionsGroupBySite: types.array(ExceptionGroupModel),
     // exceptionsGroupByEmployee: types.array(ExceptionGroupModel), // use with computed views
+    exceptionTypes: types.array(ExceptionTypeModel),
   })
-  .views(self => ({}))
-  .actions(self => ({}));
-export const exceptionStore = POSModel.create({
+  .views(self => ({
+    get exceptionTypesData() {
+      return self.exceptionTypes.map(item => item.data);
+    },
+  }))
+  .actions(self => ({
+    getTransactionTypes: flow(function* getTransactionTypes() {
+      let res = yield apiService.get(
+        Exception.controller,
+        apiService.configToken.userId,
+        Exception.getTransactionTypes
+      );
+
+      // __DEV__ && console.log('GOND exceptionTypes = ', res);
+      if (!res || res.error) {
+        snackbar.handleGetDataFailed();
+      }
+      self.exceptionTypes = Array.isArray(res)
+        ? res.map(item => parseExceptionType(item))
+        : [];
+      // __DEV__ &&
+      //   console.log('GOND self.exceptionTypes = ', self.exceptionTypes);
+    }),
+  }));
+const exceptionStore = POSModel.create({
   showChartView: true,
   param: null,
   searchSiteText: '',
   // isBackFromFCM: types.boolean(false),
   exceptionsGroupBySite: [],
+  exceptionTypes: [],
 });
 
-// export default exceptionStore;
+export default exceptionStore;

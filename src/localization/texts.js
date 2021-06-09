@@ -54,6 +54,7 @@ export const Settings = {
 export const ActionMessages = {
   actionFailed: 'Operation failed! Please try again later',
   saveSuccess: 'Save successfully!',
+  saveFail: 'Cannot save, please try again later!',
   saveFailRestart: 'Cannot save, please restart app and try again!',
   getDataFailed: 'Cannot connect to CMS server, please try again later!',
 };

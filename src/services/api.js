@@ -28,6 +28,7 @@ class Api {
       apiKey: '',
       token: '',
       devId: '',
+      userId: '0',
     };
   }
 
@@ -42,7 +43,11 @@ class Api {
   }
 
   updateDeviceId(id) {
-    if (this.configToken && id) this.configToken.devId = id;
+    if (this.configToken && id) this.configToken.devId = '' + id;
+  }
+
+  updateUserId(uid) {
+    if (this.configToken && uid) this.configToken.userId = '' + uid;
   }
 
   _url(controller = '', id = '', action = '', params) {
@@ -196,6 +201,7 @@ class Api {
     header.set('Authorization', '3rd-auth ' + token);
     if (this.configToken && this.configToken.devId)
       header.set('devId', this.configToken.devId);
+    __DEV__ && console.log('api::_fetch url: ', url, 'header: ', header);
     if (body === null || body === undefined)
       return fetch(url, {method: reqMethod, headers: header});
     else return fetch(url, {method: reqMethod, headers: header, body: body});
@@ -306,6 +312,7 @@ class Api {
     let requestHttpMethod = _Put;
     let request_content =
       value === null || value === undefined ? '' : JSON.stringify(value);
+    // __DEV__ && console.log('GOND api::put url = ', url, ', content = ', request_content);
     let response = await this._fetch(url, requestHttpMethod, request_content);
     return this.parseResponse(response);
   }
@@ -339,17 +346,17 @@ class Api {
         return res;
       }
     } catch (ex) {
-      console.log('GOND LOGIN Exception: ', ex);
+      __DEV__ && console.log('GOND LOGIN Exception: ', ex);
       return {status: undefined, Result: undefined};
     }
   }
 
   _connectionSignalRdone() {
-    console.log('Signal Connect');
+    __DEV__ && console.log('Signal Connect');
   }
 
   _connectionSignalRfail(error) {
-    console.log('Signal Fail');
+    __DEV__ && console.log('Signal Fail');
     console.log(error);
   }
 }
