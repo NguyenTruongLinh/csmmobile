@@ -4,6 +4,7 @@ import apiService from '../services/api';
 import dbService from '../services/localdb';
 import NavigationService from '../navigation/navigationService';
 import {NavigationModel} from '../stores/navigation';
+import snackbarUtil from '../util/snackbar';
 
 const DeviceInfo = types.model({
   deviceId: types.string,
@@ -55,12 +56,16 @@ const appStore = types
       self.isLoading = val || false;
     },
     loadLocalData: flow(function* loadLocalData() {
-      const _id = yield dbService.deviceId();
-      //  __DEV__ && console.log('GOND get deviceId: ', _id);
-      self.deviceInfo.deviceId = _id;
-      apiService.updateDeviceId(_id);
+      try {
+        self.showIntro = yield dbService.isFirstLaunch();
 
-      self.showIntro = yield dbService.isFirstLaunch();
+        const _id = yield dbService.deviceId();
+        //  __DEV__ && console.log('GOND get deviceId: ', _id);
+        self.deviceInfo.deviceId = _id;
+        apiService.updateDeviceId(_id);
+      } catch (err) {
+        snackbarUtil.handleReadLocalDataFailed(err);
+      }
     }),
     setNavigator(ref) {
       self.naviService.setTopLevelNavigator(ref);

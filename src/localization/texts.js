@@ -57,4 +57,6 @@ export const ActionMessages = {
   saveFail: 'Cannot save, please try again later!',
   saveFailRestart: 'Cannot save, please restart app and try again!',
   getDataFailed: 'Cannot connect to CMS server, please try again later!',
+  readLocalFailed: 'Cannot read local data!',
+  saveLocalFailed: 'Cannot save local data!',
 };

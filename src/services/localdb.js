@@ -23,7 +23,7 @@ class LocalDB {
     }
     return await new Promise(function (resolve) {
       setTimeout(() => {
-        cmsdb.add({isInitialized: true}, result => {
+        cmsdb.add({isInitialized: 'true'}, result => {
           resolve(result);
         });
       }, 1);
@@ -48,7 +48,7 @@ class LocalDB {
         ', first = ',
         this.first(_device.rows)
       );
-    if (!_device && !this.first(_device.rows)) {
+    if (!_device || !this.first(_device.rows)) {
       __DEV__ && console.log('GOND first launch init');
       await this.getDeviceId();
       return true;

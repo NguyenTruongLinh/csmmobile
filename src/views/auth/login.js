@@ -109,7 +109,7 @@ class LoginView extends Component {
     // this._scrollToInput(findNodeHandle(event.target));
     for (let name in errors) {
       let ref = this._refs[name];
-      console.log('GOND onFocus ref = ', ref);
+      // __DEV__ && console.log('GOND onFocus ref = ', ref);
       if (ref && ref.isFocused && ref.isFocused()) {
         delete errors[name];
       }
@@ -142,7 +142,7 @@ class LoginView extends Component {
     //   allowLocal: true,
     //   message: 'Domain is not a valid url.',
     // };
-    console.log('GOND validate domain: ', domain);
+    // __DEV__ && console.log('GOND validate domain: ', domain);
     // return validators.url({website: domain}, options);
     return isValidHttpUrl(domain) ? null : 'Domain is not a valid url.';
   };
@@ -174,12 +174,13 @@ class LoginView extends Component {
     if (this.props.userStore) {
       this.props.userStore.login(domain, username, password);
     } else {
-      console.log('GOND Login failed, no userStore available!', this.props);
+      __DEV__ &&
+        console.log('GOND Login failed, no userStore available!', this.props);
     }
   };
 
   onBack = () => {
-    console.log('GOND Login onback <');
+    // __DEV__ && console.log('GOND Login onback <');
     // navigationService.back();
     this.props.appStore.naviService.back();
   };

@@ -19,7 +19,7 @@ import appStore from './appStore';
 // TODO: fixit
 // const AppId = '4d53bce03ec34c0a911182d4c228ee6c';
 import {isNullOrUndef} from '../util/general';
-import snackbar from '../util/snackbar';
+import snackbarUtil from '../util/snackbar';
 import {LocalDBName} from '../consts/misc';
 
 const ModuleModel = types
@@ -359,7 +359,7 @@ export const UserStoreModel = types
           );
         return uPhotoRes && modulesRes; // && alertTypesRes;
       } catch (err) {
-        snackbar.handleGetDataFailed();
+        snackbarUtil.handleGetDataFailed();
         return false;
       }
     }),
@@ -456,13 +456,33 @@ export const UserStoreModel = types
       return {...user};
     },
     saveLocal: flow(function* saveLocal() {
-      let data = self.user.data;
-      data.api = self.api.data;
-      let res = yield self.deleteLocal();
-      __DEV__ && console.log('GOND user delete local: ', res);
-      res && (res = yield dbService.add(LocalDBName.user, data));
-      // __DEV__ && console.log('GOND user save local: ', res);
-      return res == true;
+      try {
+        let data = self.user.data;
+        data.api = self.api.data;
+        let localUser = yield dbService.getFirstData(LocalDBName.user);
+        let res = null;
+        if (!localUser) {
+          res = yield dbService.add(LocalDBName.user, data);
+        } else {
+          if (localUser.userId != data.userId) {
+            __DEV__ &&
+              console.log(
+                'GOND This is weird, saved user (',
+                localUser,
+                ') is different than logged in user ',
+                data
+              );
+          }
+          res = yield dbService.update(LocalDBName.user, data, {
+            userId: localUser.userId,
+          });
+        }
+        __DEV__ && console.log('GOND user update local: ', res);
+        return res;
+      } catch (err) {
+        snackbarUtil.handleSaveLocalDataFailed(err);
+        return false;
+      }
     }),
     deleteLocal: flow(function* deleteLocal() {
       let res = yield dbService.delete(LocalDBName.user);
@@ -480,6 +500,7 @@ export const UserStoreModel = types
           apiService.updateUserId(self.user.userId);
         } catch (err) {
           __DEV__ && console.log('GOND load user local data failed: ', err);
+          snackbarUtil.handleReadLocalDataFailed(err);
           self.error = err;
           return false;
         }
@@ -524,7 +545,7 @@ export const UserStoreModel = types
         AccountRoute.getNotifySettings
       );
       if (res.error) {
-        snackbar.handleGetDataFailed();
+        snackbarUtil.handleGetDataFailed();
         return false;
       } else {
         // __DEV__ && console.log('GOND getNotifySettings: ', res);
@@ -543,7 +564,7 @@ export const UserStoreModel = types
         newSetting
       );
       // __DEV__ && console.log('GOND updateNotifySettings: ', res);
-      snackbar.handleSaveResult(res);
+      snackbarUtil.handleSaveResult(res);
       res && !res.error && self.getNotifySettings();
     }),
     getAlertTypesSettings: flow(function* getAlertTypesSettings() {
@@ -554,7 +575,7 @@ export const UserStoreModel = types
       );
       // __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
       if (!res || res.error) {
-        snackbar.handleGetDataFailed();
+        snackbarUtil.handleGetDataFailed();
         return false;
       } else {
         if (!Array.isArray(res)) {

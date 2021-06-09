@@ -19,15 +19,33 @@ handleSaveResult = (result, errorMessage) => {
   }
 };
 
-handleGetDataFailed = () => {
+handleGetDataFailed = error => {
   Snackbar.show({
     text: ActionMessages.getDataFailed,
     duration: Snackbar.LENGTH_LONG,
-    backgroundColor: CMSColors.Danger, //CMSColors.Danger,
+    backgroundColor: CMSColors.Danger,
+  });
+};
+
+handleReadLocalDataFailed = error => {
+  Snackbar.show({
+    text: ActionMessages.readLocalFailed,
+    duration: Snackbar.LENGTH_LONG,
+    backgroundColor: CMSColors.Danger,
+  });
+};
+
+handleSaveLocalDataFailed = error => {
+  Snackbar.show({
+    text: ActionMessages.saveLocalFailed,
+    duration: Snackbar.LENGTH_LONG,
+    backgroundColor: CMSColors.Danger,
   });
 };
 
 module.exports = {
   handleSaveResult,
   handleGetDataFailed,
+  handleReadLocalDataFailed,
+  handleSaveLocalDataFailed,
 };

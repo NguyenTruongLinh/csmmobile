@@ -21,26 +21,26 @@ class AboutView extends Component {
   }
 
   onOpenPolicies() {
-    let url = 'https://i3international.com/company-policies';
-    Linking.canOpenURL(url)
+    // let url = 'https://i3international.com/company-policies';
+    Linking.canOpenURL(APP_INFO.PoliciesUrl)
       .then(supported => {
         if (!supported) {
-          console.log("Can't handle url: " + url);
+          console.log("Can't handle url: " + APP_INFO.PoliciesUrl);
         } else {
-          return Linking.openURL(url);
+          return Linking.openURL(APP_INFO.PoliciesUrl);
         }
       })
       .catch(err => console.error('An error occurred', err));
   }
 
   onOpenPrivacyPolicy() {
-    let url = 'https://i3international.com/privacy-policy';
-    Linking.canOpenURL(url)
+    // let url = 'https://i3international.com/privacy-policy';
+    Linking.canOpenURL(APP_INFO.PrivacyPolicyUrl)
       .then(supported => {
         if (!supported) {
-          console.log("Can't handle url: " + url);
+          console.log("Can't handle url: " + APP_INFO.PrivacyPolicyUrl);
         } else {
-          return Linking.openURL(url);
+          return Linking.openURL(APP_INFO.PrivacyPolicyUrl);
         }
       })
       .catch(err => console.error('An error occurred', err));
