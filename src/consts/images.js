@@ -6,6 +6,12 @@ const non_employee_16_9 = require('../assets/images/common/non_employee_16_9.png
 const i3_logo = require('../assets/images/common/I3-logo.png');
 const cmsLogo = require('../assets/images/common/logo.png');
 
+const _Intro_Begin = require('../../assets/images/intro/intro.png');
+const _Intro_Health = require('../../assets/images/intro/health.png');
+const _Intro_Video = require('../../assets/images/intro/video.png');
+const _Intro_Smarter = require('../../assets/images/intro/smarter.png');
+const _Intro_OAM = require('../../assets/images/intro/oam.png');
+
 const _Setting_Video_Direct = require('../assets/images/common/direct-connect.png');
 const _Setting_Video_Cloud = require('../assets/images/common/media-stream.png');
 const _Setting_Video_Relay = require('../assets/images/common/relay.png');
@@ -17,6 +23,12 @@ export const NVR_Play_VideoLoss_Img = NVR_Play_VideoLoss_img;
 export const Nonemployee_16_9 = non_employee_16_9;
 export const I3_Logo = i3_logo;
 export const CMS_Logo = cmsLogo;
+
+export const Intro_Begin = _Intro_Begin;
+export const Intro_Health = _Intro_Health;
+export const Intro_Video = _Intro_Video;
+export const Intro_Smarter = _Intro_Smarter;
+export const Intro_OAM = _Intro_OAM;
 
 export const Setting_Video_Direct = _Setting_Video_Direct;
 export const Setting_Video_Cloud = _Setting_Video_Cloud;

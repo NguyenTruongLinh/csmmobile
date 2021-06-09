@@ -463,7 +463,8 @@ class App extends React.Component {
   }
 
   render() {
-    const {showIntro, isLoading} = this.props.appStore;
+    let {showIntro, isLoading} = this.props.appStore;
+    // showIntro = true; // testing
     const {isLoggedIn} = this.props.userStore;
     const navigatorSetter = this.setNavigator.bind(this);
     return AppNavigator({

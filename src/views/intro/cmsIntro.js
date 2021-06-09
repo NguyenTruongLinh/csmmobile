@@ -1,5 +1,13 @@
 import React, {Component} from 'react';
-import {View, Image, Text, FlatList, Animated, Dimensions} from 'react-native';
+import {
+  View,
+  Image,
+  Text,
+  FlatList,
+  Animated,
+  Dimensions,
+  StyleSheet,
+} from 'react-native';
 import {inject} from 'mobx-react';
 
 import {LiquidLike} from 'react-native-animated-pagination-dots';
@@ -8,41 +16,48 @@ import {LiquidLike} from 'react-native-animated-pagination-dots';
 
 import Button from '../../components/controls/Button';
 
+import {
+  Intro_Begin,
+  Intro_Health,
+  Intro_Video,
+  Intro_Smarter,
+  Intro_OAM,
+  I3_Logo,
+} from '../../consts/images';
 import CMSColors from '../../styles/cmscolors';
-import styles from '../../styles/scenes/intro.style';
+// import styles from '../../styles/scenes/intro.style';
 
 const IntroData = [
   {
     key: 1,
     title: 'Combine SRX Pro with CMS',
     description: 'Combine SRX Pro with CMS to enhance our mobile app',
-    image: require('../../assets/images/intro/intro.png'),
-    uri: '../../assets/images/intro/intro.png',
+    image: Intro_Begin,
   },
   {
     key: 2,
     title: 'Health monitoring',
     description:
       'Provide health status of video system via report and notification',
-    image: require('../../assets/images/intro/health.png'),
+    image: Intro_Health,
   },
   {
     key: 3,
     title: 'Video monitoring',
     description: 'Live and Playback video monitoring',
-    image: require('../../assets/images/intro/video.png'),
+    image: Intro_Video,
   },
   {
     key: 4,
     title: 'Smart-ER report',
     description: 'POS exceptions report along with corresponding video',
-    image: require('../../assets/images/intro/smarter.png'),
+    image: Intro_Smarter,
   },
   {
     key: 5,
     title: 'Occupancy monitoring',
     description: 'Live Occupancy Alert Monitoring ',
-    image: require('../../assets/images/intro/oam.png'),
+    image: Intro_OAM,
   },
 ];
 
@@ -109,6 +124,12 @@ class CMSIntroView extends Component {
           },
         ]}>
         <Image
+          style={styles.logoImage}
+          source={I3_Logo}
+          width={dim.width * 0.5}
+          resizeMode="contain"
+        />
+        <Image
           style={styles.itemImage}
           source={item.image}
           width={dim.width * 0.7}
@@ -126,15 +147,15 @@ class CMSIntroView extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.skipContainer}>
-          <Button
+          {/* <Button
             style={{width: '20%'}}
             enable={true}
             type={'flat'}
             caption={'SKIP'}
             onPress={this.onSkipIntro}
-          />
+          /> */}
         </View>
-        <View style={{flex: 8}}>
+        <View style={styles.listContainer}>
           <FlatList
             data={IntroData}
             pagingEnabled={true}
@@ -160,21 +181,24 @@ class CMSIntroView extends Component {
 
         <View style={styles.footerContainer}>
           <View style={styles.backContainer}>
-            {this.currentIndex > 0 ? (
-              <Button
-                enable={true}
-                style={styles.backButton}
-                type={'flat'}
-                caption={'< BACK'}
-                onPress={this.onBackStep}
-              />
-            ) : null}
+            {/* {this.currentIndex > 0 ? ( */}
+            <Button
+              enable={true}
+              style={styles.backButton}
+              type={'flat'}
+              // caption={'< BACK'}
+              // onPress={this.onBackStep}
+              caption={'SKIP'}
+              onPress={this.onSkipIntro}
+            />
+            {/* ) : null} */}
           </View>
           <View style={styles.nextContainer}>
             <Button
               enable={true}
               style={styles.nextButton}
-              type={'primary'}
+              // type={'primary'}
+              type={'flat'}
               caption={'NEXT'}
               onPress={this.onNextStep}
             />
@@ -184,5 +208,84 @@ class CMSIntroView extends Component {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {flex: 1, flexDirection: 'column'},
+  listItemContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoImage: {
+    flex: 3,
+    tintColor: CMSColors.Dark_Blue,
+  },
+  itemImage: {
+    flex: 7,
+  },
+  itemTextContainer: {
+    flex: 3,
+    justifyContent: 'center',
+  },
+  itemTitle: {
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '700',
+    paddingTop: 7,
+    paddingLeft: 35,
+    paddingRight: 35,
+    fontFamily: 'Roboto-Regular',
+  },
+  itemDesc: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
+    paddingTop: 21,
+    paddingLeft: 56,
+    paddingRight: 56,
+    flexWrap: 'wrap',
+    fontFamily: 'Roboto-Regular',
+  },
+  skipContainer: {
+    flex: 3,
+    alignItems: 'flex-end',
+    marginRight: 35,
+    marginTop: 28,
+  },
+  listContainer: {
+    flex: 13,
+  },
+  indicatorContainer: {
+    flex: 2,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerContainer: {
+    flex: 4,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backContainer: {flex: 1, alignContent: 'flex-start'},
+  backButton: {
+    // height: 63,
+    // marginLeft: 28,
+    // marginRight: 49,
+    margin: 42,
+    alignSelf: 'flex-start',
+  },
+  nextContainer: {flex: 1, alignContent: 'flex-end'},
+  nextButton: {
+    // backgroundColor: CMSColors.primaryActive,
+    // height: 63,
+    // marginLeft: 49,
+    // marginRight: 35,
+    margin: 42,
+    alignSelf: 'flex-end',
+  },
+});
 
 export default inject('appStore')(CMSIntroView);

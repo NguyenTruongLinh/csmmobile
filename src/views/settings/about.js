@@ -21,7 +21,7 @@ class AboutView extends Component {
   }
 
   onOpenPolicies() {
-    let url = 'http://i3international.com/company-policies';
+    let url = 'https://i3international.com/company-policies';
     Linking.canOpenURL(url)
       .then(supported => {
         if (!supported) {
@@ -34,7 +34,7 @@ class AboutView extends Component {
   }
 
   onOpenPrivacyPolicy() {
-    let url = 'http://i3international.com/privacy-policy';
+    let url = 'https://i3international.com/privacy-policy';
     Linking.canOpenURL(url)
       .then(supported => {
         if (!supported) {

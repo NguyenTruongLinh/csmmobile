@@ -11,6 +11,10 @@ module.exports = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  logoImage: {
+    flex: 3,
+    tintColor: CMSColors.Dark_Blue,
+  },
   itemImage: {
     flex: 7,
   },
@@ -58,15 +62,19 @@ module.exports = StyleSheet.create({
   },
   backContainer: {flex: 1, alignContent: 'flex-start'},
   backButton: {
-    height: 63,
-    marginLeft: 28,
-    marginRight: 49,
+    // height: 63,
+    // marginLeft: 28,
+    // marginRight: 49,
+    margin: 42,
+    alignSelf: 'flex-start',
   },
   nextContainer: {flex: 1, alignContent: 'flex-end'},
   nextButton: {
-    backgroundColor: CMSColors.primaryActive,
-    height: 65,
-    marginLeft: 49,
-    marginRight: 35,
+    // backgroundColor: CMSColors.primaryActive,
+    // height: 63,
+    // marginLeft: 49,
+    // marginRight: 35,
+    margin: 42,
+    alignSelf: 'flex-end',
   },
 });
