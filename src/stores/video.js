@@ -122,7 +122,7 @@ export const VideoModel = types
         res = yield apiService.get(
           VSC.controller,
           apiService.configToken.devId,
-          VSC.Cloud
+          VSC.cloud
         );
       } catch (err) {
         __DEV__ && console.log('GOND get cloud type failed, error: ', err);
@@ -153,6 +153,7 @@ export const VideoModel = types
         yield apiService.post(
           VSC.controller,
           apiService.configToken.devId,
+          VSC.setting,
           value
         );
         self.getCloudSetting();

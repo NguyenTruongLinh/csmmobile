@@ -54,27 +54,27 @@ const _Channel = {
 const _ACConfig = {
   controller: 'ACConfig',
   get: 'get',
-  GetRatingConfig: 'GetRatingConfig',
-  GetUserLog: 'GetUserLog',
+  getRatingConfig: 'GetRatingConfig',
+  getUserLog: 'GetUserLog',
   setActivites: 'setActivites',
 };
 
 const _VSC = {
   controller: 'VSC',
-  RequestVSCURL: 'RequestVSCURL',
-  UpdateStream: 'Update',
-  GetHLSStream: 'GetHLSStream',
-  Cloud: 'Cloud',
-  Setting: 'Setting',
-  ActiveChannels: 'ActiveChannels',
-  GetActiveChannels: 'GetVSCActiveChannel',
-  UpdateActiveChannels: 'UpdateVSCActiveChannel',
+  requestVSCURL: 'RequestVSCURL',
+  updateStream: 'Update',
+  getHLSStream: 'GetHLSStream',
+  cloud: 'Cloud',
+  setting: 'Setting',
+  activeChannels: 'ActiveChannels',
+  getActiveChannels: 'GetVSCActiveChannel',
+  updateActiveChannels: 'UpdateVSCActiveChannel',
 };
 
 const _OAM = {
   controller: 'PVM',
-  GetLastDoorCountData: 'GetLastDoorCountData',
-  AcknowledgePVMAlert: 'AcknowledgePVMAlert',
+  getLastDoorCountData: 'GetLastDoorCountData',
+  acknowledgePVMAlert: 'AcknowledgePVMAlert',
 };
 
 module.exports = {
