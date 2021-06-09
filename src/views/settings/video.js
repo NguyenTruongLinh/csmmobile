@@ -106,7 +106,9 @@ class VideosettingView extends Component {
   }
 
   async updateCloudSetting() {
-    const res = this.props.videoStore.updateCloudSetting();
+    const res = this.props.videoStore.updateCloudSetting(
+      this.state.selectedValue
+    );
     // console.log('GOND save cloud setting response: ', response)
     // if (res) {
     //   Snackbar.show({
