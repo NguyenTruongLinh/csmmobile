@@ -12,6 +12,7 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		181728A02671CA7F002B413D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1817289E2671CA7F002B413D /* LaunchScreen.xib */; };
 		1822C9782666102F00BEF572 /* libswiftWebKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1822C9752666101A00BEF572 /* libswiftWebKit.tbd */; };
 		18D3E56426663843006AEE48 /* libBVLinearGradient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E54526663843006AEE48 /* libBVLinearGradient.a */; };
 		18D3E56526663843006AEE48 /* libCharts.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E54626663843006AEE48 /* libCharts.a */; };
@@ -44,7 +45,6 @@
 		18D3E58226663846006AEE48 /* libYoga.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E56326663843006AEE48 /* libYoga.a */; };
 		277DAF5754C314C4FA7FF098 /* libPods-CMSApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E05560B870450A0C1B6CE /* libPods-CMSApp.a */; };
 		2C44C33BEF156945DFBC2F3B /* libPods-CMSAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F79323A7EC5FD6D74182C25F /* libPods-CMSAppTests.a */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,6 +68,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CMSApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CMSApp/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = CMSApp/main.m; sourceTree = "<group>"; };
+		1817289F2671CA7F002B413D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = CMSApp/Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		1822C9752666101A00BEF572 /* libswiftWebKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libswiftWebKit.tbd; path = usr/lib/swift/libswiftWebKit.tbd; sourceTree = SDKROOT; };
 		18D3E3F8266614D2006AEE48 /* CMSApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = CMSApp.entitlements; path = CMSApp/CMSApp.entitlements; sourceTree = "<group>"; };
 		18D3E54526663843006AEE48 /* libBVLinearGradient.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libBVLinearGradient.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,7 +113,6 @@
 		609B4F39C661410AA322B5DE /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		7D3044220AA6487CAF6B9CC5 /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
 		7F66B35EF28F464AAF6C8480 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CMSApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9A6C7369855B449082236CAB /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		A4A97524345F47718136C00E /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		B9B9AA531EC84A3FA0A46ED7 /* Roboto-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Regular.ttf"; path = "../src/assets/fonts/Roboto-Regular.ttf"; sourceTree = "<group>"; };
@@ -196,12 +196,12 @@
 		13B07FAE1A68108700A75B9A /* CMSApp */ = {
 			isa = PBXGroup;
 			children = (
+				1817289E2671CA7F002B413D /* LaunchScreen.xib */,
 				18D3E3F8266614D2006AEE48 /* CMSApp.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
-				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
 			);
 			name = CMSApp;
@@ -407,7 +407,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				181728A02671CA7F002B413D /* LaunchScreen.xib in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13ACFD0FDA86419C9B3610FE /* Roboto-Regular.ttf in Resources */,
 			);
@@ -557,6 +557,17 @@
 		};
 /* End PBXTargetDependency section */
 
+/* Begin PBXVariantGroup section */
+		1817289E2671CA7F002B413D /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1817289F2671CA7F002B413D /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -616,7 +627,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CMSApp/CMSApp.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = SCBSNP7VE9;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = CMSApp/Info.plist;
@@ -628,7 +639,7 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MARKETING_VERSION = 3.0;
+				MARKETING_VERSION = 3.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -650,7 +661,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CMSApp/CMSApp.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = SCBSNP7VE9;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = CMSApp/Info.plist;
@@ -662,7 +673,7 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MARKETING_VERSION = 3.0;
+				MARKETING_VERSION = 3.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -725,7 +736,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -783,7 +794,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",

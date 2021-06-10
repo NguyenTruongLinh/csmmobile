@@ -7,7 +7,7 @@ import {
   Platform,
   Keyboard,
   NativeEventEmitter,
-  NativeModules,
+  // NativeModules,
   AppState,
   Text,
   SafeAreaView,
@@ -70,7 +70,7 @@ class App extends React.Component {
 
     // this.pushController = undefined;
     this.appStateEventListener = null;
-    this.props.appStore.setLoading(true);
+    // this.props.appStore.setLoading(true);
   }
 
   getAutoRotateState = async () => {
@@ -307,16 +307,25 @@ class App extends React.Component {
     // if (!config || !config.isLoaded) this.props.LoadConfig();
 
     if (Platform.OS === 'ios') {
-      const eventEmitter = new NativeEventEmitter(
-        NativeModules.AppStateEventEmitter
-      );
-      this.appStateEventListener = eventEmitter.addListener(
-        'onAppStateChange',
-        this.onAPNSTokenRefreshed
-      );
+      try {
+        const eventEmitter = new NativeEventEmitter(
+          NativeModules.AppStateEventEmitter
+        );
+        this.appStateEventListener = eventEmitter.addListener(
+          'onAppStateChange',
+          this.onAPNSTokenRefreshed
+        );
+      } catch (error) {
+        __DEV__ &&
+          console.log(
+            'GOND could not load native module: AppStateEventEmitter'
+          );
+      }
     }
 
     // autoLogin
+
+    this.props.appStore.setLoading(true);
     await this.props.appStore.loadLocalData();
     // await this.props.userStore.loadLocalData();
     this.props.userStore.shouldAutoLogin();
