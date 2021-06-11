@@ -2,50 +2,31 @@ import Snackbar from 'react-native-snackbar';
 import {ActionMessages} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
 
-handleSaveResult = (result, errorMessage) => {
+const showMessage = (message, isError = true) => {
+  Snackbar.show({
+    text: message,
+    duration: Snackbar.LENGTH_LONG,
+    backgroundColor: isError ? CMSColors.Danger : CMSColors.Success,
+  });
+};
+
+exports.handleSaveResult = (result, errorMessage) => {
   if (result.error) {
     __DEV__ && console.log('GOND save error: ', result.error);
-    Snackbar.show({
-      text: errorMessage || ActionMessages.saveFail,
-      duration: Snackbar.LENGTH_LONG,
-      backgroundColor: CMSColors.Danger,
-    });
+    showMessage(errorMessage || ActionMessages.saveFail, true);
   } else {
-    Snackbar.show({
-      text: ActionMessages.saveSuccess,
-      duration: Snackbar.LENGTH_LONG,
-      backgroundColor: CMSColors.Success,
-    });
+    showMessage(ActionMessages.saveSuccess, false);
   }
 };
 
-handleGetDataFailed = error => {
-  Snackbar.show({
-    text: ActionMessages.getDataFailed,
-    duration: Snackbar.LENGTH_LONG,
-    backgroundColor: CMSColors.Danger,
-  });
+exports.handleGetDataFailed = error => {
+  showMessage(ActionMessages.getDataFailed, true);
 };
 
-handleReadLocalDataFailed = error => {
-  Snackbar.show({
-    text: ActionMessages.readLocalFailed,
-    duration: Snackbar.LENGTH_LONG,
-    backgroundColor: CMSColors.Danger,
-  });
+exports.handleReadLocalDataFailed = error => {
+  showMessage(ActionMessages.readLocalFailed, true);
 };
 
-handleSaveLocalDataFailed = error => {
-  Snackbar.show({
-    text: ActionMessages.saveLocalFailed,
-    duration: Snackbar.LENGTH_LONG,
-    backgroundColor: CMSColors.Danger,
-  });
-};
-
-module.exports = {
-  handleSaveResult,
-  handleGetDataFailed,
-  handleReadLocalDataFailed,
-  handleSaveLocalDataFailed,
+exports.handleSaveLocalDataFailed = error => {
+  showMessage(ActionMessages.saveLocalFailed, true);
 };

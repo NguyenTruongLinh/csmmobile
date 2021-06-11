@@ -7,6 +7,7 @@ import {
   StatusBar,
   BackHandler,
 } from 'react-native';
+import {inject, observer} from 'mobx-react';
 
 class RegionsView extends Component {
   constructor(props) {

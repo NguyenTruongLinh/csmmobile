@@ -91,6 +91,8 @@ module.exports = {
   iconUserListRow: Black,
   btnNumberListRow: Bright_Red,
   textNumberListRow: Very_Light_Gray_Mostly_White,
+  headerListRow: '#F7F7F7',
+  borderColorListRow: 'rgb(204, 204, 204)',
 
   //OPTIONS
   colorRow_options: '#757575',

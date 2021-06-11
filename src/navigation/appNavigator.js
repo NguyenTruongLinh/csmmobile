@@ -29,9 +29,9 @@ import RegionsView from '../views/sitetree/regions';
 import SitesView from '../views/sitetree/sites';
 import NVRsView from '../views/sitetree/nvrs';
 
-import ChannelsView from '../views/video/channels';
-import ChannelsSettingView from '../views/video/channelsSetting';
-import VideoPlayerView from '../views/video/player';
+// import ChannelsView from '../views/video/channels';
+// import ChannelsSettingView from '../views/video/channelsSetting';
+// import VideoPlayerView from '../views/video/player';
 
 import SummaryView from '../views/pos/summary';
 import ExceptionsView from '../views/pos/transactions';
@@ -47,74 +47,11 @@ import OAMDetailView from '../views/oam/detail';
 // import NotifySettingView from '../views/settings/notify';
 // import VideoSettingView from '../views/settings/video';
 
+import VideoStack from './videoNavigator';
 import SettingsStack from './settingsNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
 import ROUTERS from '../consts/routes';
-import CMSColors from '../styles/cmscolors';
-
-const getHeaderTitle = route => {
-  // If the focused route is not found, we need to assume it's the initial screen
-  // This can happen during if there hasn't been any navigation inside the screen
-  // In our case, it's "Feed" as that's the first screen inside the navigator
-  const routeName = getFocusedRouteNameFromRoute(route) ?? '';
-
-  switch (routeName) {
-    case ROUTERS.HEALTH_SITES:
-      return 'Health';
-    case ROUTERS.HEALTH_DETAIL:
-      return ''; // TODO: site name get from store
-    case ROUTERS.HEALTH_ALERTS:
-      return ''; // TODO: get from store
-    case ROUTERS.HEALTH_ALERT_DETAIL:
-      return ''; // TODO: get from store
-
-    case ROUTERS.VIDEO_REGIONS:
-      return 'Regions';
-    case ROUTERS.VIDEO_SITES:
-      return 'Sites';
-    case ROUTERS.VIDEO_NVRS:
-      return 'NVRS';
-    case ROUTERS.VIDEO_CHANNELS:
-      return 'Channels';
-    case ROUTERS.VIDEO_CHANNELS_SETTING:
-      return 'Channels setting';
-    // case ROUTERS.VIDEO_PLAYER:
-
-    case ROUTERS.ALARM_LIVE:
-      return 'Live';
-    case ROUTERS.ALARM_SEARCH:
-      return 'Search';
-    case ROUTERS.ALARM_DETAIL:
-    case ROUTERS.ALARM_SEARCH_DETAIL:
-      return ''; // TODO: get from store
-
-    case ROUTERS.OAM_SITES:
-      return 'OAM';
-    case ROUTERS.OAM_DETAIL:
-      return 'OAM';
-
-    case ROUTERS.POS:
-      return 'POS';
-    case ROUTERS.TRANSACTIONS:
-      return 'Transactions';
-    case ROUTERS.TRAN_DETAIL:
-    case ROUTERS.TRAN_DETAIL_FCM:
-      return 'Transaction detail';
-
-    case ROUTERS.OPTIONS:
-      return 'Settings';
-    case ROUTERS.OPTIONS_PROFILE:
-      return 'Profile';
-    case ROUTERS.OPTIONS_ABOUT:
-      return 'About';
-    case ROUTERS.OPTIONS_NOTIFY:
-      return 'Notification Setting';
-    case ROUTERS.OPTIONS_VIDEO:
-      return 'Video Setting';
-  }
-  return null;
-};
 
 // const getHeaderOptions = route => {
 //   const headerTitle = getHeaderTitle(route);
@@ -140,20 +77,20 @@ const AlarmStack = () => (
   </AStack.Navigator>
 );
 
-const VStack = createStackNavigator();
-const VideoStack = () => (
-  <VStack.Navigator initialRouteName={ROUTERS.VIDEO_REGIONS} headerMode="none">
-    <VStack.Screen name={ROUTERS.VIDEO_REGIONS} component={RegionsView} />
-    <VStack.Screen name={ROUTERS.VIDEO_SITES} component={SitesView} />
-    <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
-    <VStack.Screen name={ROUTERS.VIDEO_CHANNELS} component={ChannelsView} />
-    <VStack.Screen
-      name={ROUTERS.VIDEO_CHANNELS_SETTING}
-      component={ChannelsSettingView}
-    />
-    <VStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
-  </VStack.Navigator>
-);
+// const VStack = createStackNavigator();
+// const VideoStack = () => (
+//   <VStack.Navigator initialRouteName={ROUTERS.VIDEO_REGIONS} headerMode="none">
+//     <VStack.Screen name={ROUTERS.VIDEO_REGIONS} component={RegionsView} />
+//     <VStack.Screen name={ROUTERS.VIDEO_SITES} component={SitesView} />
+//     <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
+//     <VStack.Screen name={ROUTERS.VIDEO_CHANNELS} component={ChannelsView} />
+//     <VStack.Screen
+//       name={ROUTERS.VIDEO_CHANNELS_SETTING}
+//       component={ChannelsSettingView}
+//     />
+//     <VStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
+//   </VStack.Navigator>
+// );
 
 // const OPStack = createStackNavigator();
 // const OptionsStack = () => (

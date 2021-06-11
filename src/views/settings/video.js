@@ -126,9 +126,8 @@ class VideosettingView extends Component {
     snackbar.handleSaveResult(res);
   }
 
-  renderItem(_item) {
-    const item = _item.item;
-    if (!_item) return;
+  renderItem({item}) {
+    if (!item) return;
     const {selectedValue} = this.state;
     const isChecked = selectedValue == item.value;
 

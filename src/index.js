@@ -7,7 +7,7 @@ import videoStore from './stores/video';
 import alarmStore from './stores/alarm';
 import posStore from './stores/pos';
 // import oamStore from './stores/oam';
-// import sitesStore from './stores/sites';
+import sitesStore from './stores/sites';
 // import healthStore from './stores/health';
 import App from './app';
 
@@ -17,11 +17,11 @@ const Main = () => {
     <Provider
       appStore={appStore}
       userStore={userStore}
+      sitesStore={sitesStore}
       videoStore={videoStore}
       alarmStore={alarmStore}
       posStore={posStore}
       // healthStore={healthStore}
-      // sitesStore={sitesStore}
       // oamStore={oamStore}
     >
       <App />

@@ -9,7 +9,6 @@ import AboutViews from '../views/settings/about';
 import NotifySettingView from '../views/settings/notify';
 import VideoSettingView from '../views/settings/video';
 
-import CMSColors from '../styles/cmscolors';
 import ROUTERS, {getHeaderTitle} from '../consts/routes';
 
 const OPStack = createStackNavigator();

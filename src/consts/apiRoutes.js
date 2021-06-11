@@ -17,8 +17,8 @@ const _Alertype = {
 
 const _Site = {
   controller: 'site',
-  get: 'all=true',
-  getDvrName: '?all=true&dvr=true',
+  getAll: 'all=true',
+  getAllWithDVR: '?all=true&dvr=true',
   getSiteOam: '?all=true&dvr=true&filter=pvm',
 };
 
