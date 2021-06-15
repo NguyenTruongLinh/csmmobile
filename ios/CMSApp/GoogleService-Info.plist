@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>935274135296-233jg8tmlil1c9r7uo5ner9lmcmosf59.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.935274135296-233jg8tmlil1c9r7uo5ner9lmcmosf59</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBIWpLWVOVHXdBY-fRGWoAjIBFqPPAeb3I</string>
+	<key>GCM_SENDER_ID</key>
+	<string>935274135296</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.i3International.CMSApp</string>
+	<key>PROJECT_ID</key>
+	<string>cms-mobile-310ad</string>
+	<key>STORAGE_BUCKET</key>
+	<string>cms-mobile-310ad.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:935274135296:ios:8ddf99a93fdc1198</string>
+	<key>DATABASE_URL</key>
+	<string>https://cms-mobile-310ad.firebaseio.com</string>
+</dict>
+</plist>
