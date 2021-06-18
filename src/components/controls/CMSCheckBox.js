@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {Text, View, StyleSheet, ScrollView} from 'react-native';
 
-import SearchBar from 'react-native-searchbar';
+import {Searchbar} from 'react-native-paper';
 import Ripple from 'react-native-material-ripple';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 
@@ -22,6 +22,9 @@ export default class CheckboxGroup extends Component {
     super(props);
     // __DEV__ && console.log('GOND allData = ', props.allData);
     this._onSelectAll.bind(this);
+    this.state = {
+      filterValue: '',
+    };
   }
 
   componentDidMount = () => {
@@ -83,7 +86,12 @@ export default class CheckboxGroup extends Component {
     }
     //let checkboxes  = this.props.checkboxes;
     let checkboxes = this.props.dataForSearch; //this.state.allData;
-    if (!checkboxes || checkboxes.length == 0) return;
+    if (!checkboxes || checkboxes.length == 0) {
+      this.setState({
+        filterValue: input,
+      });
+      return;
+    }
 
     // let can_search = !input || input.length == 0 ? true : false;
     //this.setState({ can_refresh: can_search});
@@ -97,6 +105,9 @@ export default class CheckboxGroup extends Component {
       return ret;
     });
     this.props.setFilterDataSource(result);
+    this.setState({
+      filterValue: input,
+    });
   };
 
   compareFn = (a, b) => {
@@ -197,17 +208,18 @@ export default class CheckboxGroup extends Component {
 
     const header = (
       <View style={styles.body_header}>
-        <SearchBar
-          enable={true}
+        <Searchbar
           ref={ref => (this.searchBar = ref)}
-          data={this.props.checkboxes}
-          focusOnLayout={false}
+          // data={this.props.checkboxes}
+          // focusOnLayout={false}
           placeholder="Search..."
-          handleSearch={input => {
+          onChangeText={input => {
             this._handleSearch(input);
           }}
-          hideBack={true}
-          showOnLoad={true}
+          value={this.state.filterValue}
+          style={{borderWidth: 0}}
+          // hideBack={true}
+          // showOnLoad={true}
         />
       </View>
     );
@@ -290,15 +302,13 @@ const styles = StyleSheet.create({
       height: 2,
       width: 2,
     },
-    borderWidth: 1,
+    // borderWidth: 1,
     borderColor: 'rgb(204, 204, 204)',
     backgroundColor: CMSColors.White,
     // flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     // height: 48,
-    borderWidth: 2,
-    borderColor: 'black',
     height: 60, // to prevent scrollview overlap header and weird behavior with parent's header
   },
 

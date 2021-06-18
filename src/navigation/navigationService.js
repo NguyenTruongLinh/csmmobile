@@ -47,9 +47,31 @@ const NavigationService = types
     },
 
     push(routeName, params) {
-      // console.log("navigator", self._navigator);
-      self._navigator._navigation.push(routeName, params);
+      console.log('navigator', self._navigator);
+      if (
+        self._navigator._navigation &&
+        typeof self._navigator._navigation.push == 'function'
+      ) {
+        self._navigator._navigation.push(routeName, params);
+      } else if (typeof self._navigator.push == 'function') {
+        self._navigator.push(routeName, params);
+      } else {
+        console.log(
+          'GOND naviService cannot push new view, use navigate instead'
+        );
+        self._navigator.dispatch(
+          CommonActions.navigate({
+            name: routeName,
+            params,
+          })
+        );
+      }
     },
+
+    goBack() {
+      self.back();
+    },
+
     back() {
       __DEV__ && console.log('-- NAVIGATE BACK -- ');
       self._navigator.dispatch(CommonActions.goBack());

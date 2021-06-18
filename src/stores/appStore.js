@@ -32,6 +32,7 @@ const appStore = types
     showIntro: types.boolean,
     isLoading: types.boolean,
     naviService: NavigationService,
+    showSearchBar: types.boolean,
   })
   .views(self => ({
     get getDeviceInfo() {
@@ -71,6 +72,10 @@ const appStore = types
       self.naviService.setTopLevelNavigator(ref);
       // __DEV__ && console.log('GOND setNavigator then ', self.naviService);
     },
+    enableSearchbar(value) {
+      __DEV__ && console.log('GOND store.enableSearchbar ', value);
+      self.showSearchBar = value;
+    },
   }))
   .create({
     nextScene: '',
@@ -89,6 +94,7 @@ const appStore = types
       _navigator: null,
       _navStore: NavigationModel.create({paramsMap: {}}),
     }),
+    showSearchBar: false,
   });
 
 export default appStore;

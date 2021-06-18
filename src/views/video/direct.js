@@ -3,307 +3,308 @@ import {
   View,
   StyleSheet,
   Text,
-  Image,
   ImageBackground,
   Dimensions,
   Platform,
-  StatusBar,
   TouchableOpacity,
-  Modal,
-  UIManager,
-  BackHandler,
   NativeModules,
   NativeEventEmitter,
+  ActivityIndicator,
 } from 'react-native';
 
-import util, {normalize} from '../../util/general';
+import {inject, observer} from 'mobx-react';
 
-const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
-// const Time_Ruler_Height = normalize(variables.isPhoneX ? 75 : 65);
-// const content_padding = normalize(6);
+import FFMpegFrameView from '../../components/native/videonative';
+import FFMpegFrameViewIOS from '../../components/native/videoios';
 
-const Default_Action_Offset = 30;
-const Action_Button_Height = 54;
-const naturalRatio = 16 / 9;
-const Limit_Time_Allow_Change_Live_Search = 1;
-const header_height = 50;
-const footer_height = 50;
-// let isSwitchToLive = false;
+import util from '../../util/general';
+import CMSColors from '../../styles/cmscolors';
+import {NVR_Play_NoVideo_Image} from '../../consts/images';
+import {NATIVE_MESSAGE} from '../../consts/video';
 
-class DirectStreamingView extends Component {
+import {
+  Video_State,
+  Limit_Time_Allow_Change_Live_Search,
+  NATURAL_RATIO,
+} from '../../consts/video';
+
+class DirectVideoView extends Component {
   static defaultProps = {
     enableSwitchChannel: true,
+    serverInfo: {},
   };
 
   constructor(props) {
     super(props);
+
+    this.nativeVideoEventListener = null;
+    this.ffmpegPlayer = null;
+
+    this.state = {
+      videoLoading: true,
+      message: '',
+      noVideo: false,
+    };
   }
 
   componentDidMount() {
     __DEV__ && console.log('DirectStreamingView componentDidMount');
-    // if (Platform.OS === 'ios') {
-    //   const eventEmitter = new NativeEventEmitter(NativeModules.FFMpegFrameEventEmitter)
-    //   this.appStateEventListener = eventEmitter.addListener('onFFMPegFrameChange', this.onChange)
-    // }
+    if (Platform.OS === 'ios') {
+      const eventEmitter = new NativeEventEmitter(
+        NativeModules.FFMpegFrameEventEmitter
+      );
+      this.nativeVideoEventListener = eventEmitter.addListener(
+        'onFFMPegFrameChange',
+        this.onChange
+      );
+    }
+    const {serverInfo} = this.props;
+
+    if (this.ffmpegPlayer && serverInfo) {
+      if (serverInfo.serverIP && serverInfo.port)
+        this.ffmpegPlayer.setNativeProps({startplayback: serverInfo});
+      else
+        this.setState({
+          message: 'Error: wrong server config',
+          videoLoading: false,
+        });
+    }
   }
 
   componentWillUnmount() {
     __DEV__ && console.log('DirectStreamingView componentWillUnmount');
     // Dimensions.removeEventListener('change', this.Dimension_handler);
     // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
-    // if (Platform.OS === 'ios') {
-    //   this.appStateEventListener.remove();
-    // }
+    if (Platform.OS === 'ios') {
+      this.nativeVideoEventListener.remove();
+    }
   }
 
+  componentDidUpdate(prevProps) {
+    const prevServerInfo = prevProps.serverInfo;
+    const {serverInfo} = this.props;
+
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND DirectPlayer did update, prevServerInfo = ',
+    //     prevServerInfo,
+    //     '\n - serverInfo = ',
+    //     serverInfo
+    //   );
+
+    try {
+      if (
+        this.ffmpegPlayer &&
+        JSON.stringify(prevServerInfo) != JSON.stringify(serverInfo)
+      ) {
+        __DEV__ &&
+          console.log(
+            'GOND DirectPlayer did update, startplayback = ',
+            serverInfo
+          );
+        this.ffmpegPlayer.setNativeProps({startplayback: serverInfo});
+      }
+    } catch (err) {
+      __DEV__ && console.log('GOND parseJSON error: ', err);
+    }
+  }
+
+  onFrameChange = event => {
+    let {msgid, value} = event; //.nativeEvent;
+    console.log('GOND onFFMpegFrameChange event = ', event.nativeEvent);
+    if (util.isNullOrUndef(msgid) && util.isNullOrUndef(value)) {
+      if (event.nativeEvent) {
+        msgid = event.nativeEvent.msgid;
+        value = event.nativeEvent.value;
+      } else {
+        console.log('GOND onReceiveNativeEvent parse failed, event = ', event);
+        return;
+      }
+    }
+    // console.log('GOND onFFMpegFrameChange, id = ', msgid, ' , val = ', value)
+    setTimeout(() => {
+      this.onVideoMessage(msgid, value);
+    }, 100);
+  };
+
+  onVideoMessage = (msgid, value) => {
+    console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+    switch (msgid) {
+      case NATIVE_MESSAGE.CONNECTING:
+        this.setState({message: 'Connecting...'});
+        break;
+      case NATIVE_MESSAGE.CONNECTED:
+        this.setState({videoLoading: false, message: ''});
+        break;
+      case NATIVE_MESSAGE.LOGIN_MESSAGE:
+        this.setState({message: value});
+        break;
+      case NATIVE_MESSAGE.LOGIN_FAILED:
+        this.setState({message: 'Login failed'});
+        this.props.videoStore.resetNVRAuthentication();
+        break;
+      case NATIVE_MESSAGE.LOGIN_SUCCCESS:
+        console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+        break;
+      case NATIVE_MESSAGE.SVR_REJECT_ACCEPT:
+        break;
+      case NATIVE_MESSAGE.LOGIN_MESSAGE_WRONG_SERVERID:
+        this.setState({message: 'Wrong server ID'});
+        break;
+      case NATIVE_MESSAGE.LOGIN_MESSAGE_VIDEO_PORT_ERROR:
+        this.setState({message: 'Video port error'});
+        break;
+      case NATIVE_MESSAGE.CANNOT_CONNECT_SERVER:
+        this.setState({
+          message: 'Cannot connect to server',
+          videoLoading: false,
+        });
+        break;
+      case NATIVE_MESSAGE.ORIENTATION_CHANGED:
+        break;
+      case NATIVE_MESSAGE.VIEW_CLICK:
+        break;
+      case NATIVE_MESSAGE.SEARCH_NO_DATA:
+        this.setState({message: 'No video data', noVideo: true});
+        break;
+      case NATIVE_MESSAGE.SEARCH_FRAME_TIME:
+        break;
+      case NATIVE_MESSAGE.SERVER_CHANGED_CURRENT_USER:
+        break;
+      case NATIVE_MESSAGE.SERVER_CHANGED_SERVER_INFO:
+        break;
+      case NATIVE_MESSAGE.SERVER_CHANGED_PORTS:
+        break;
+      case NATIVE_MESSAGE.SERVER_RECORDING_ONLY:
+        break;
+      case NATIVE_MESSAGE.SERVER_CHANNEL_DISABLE:
+        break;
+      case NATIVE_MESSAGE.PERMISSION_CHANNEL_DISABLE:
+        break;
+      case NATIVE_MESSAGE.RECORDING_DATE:
+        break;
+      case NATIVE_MESSAGE.TIME_DATA:
+        break;
+      case NATIVE_MESSAGE.HOUR_DATA:
+        break;
+      case NATIVE_MESSAGE.RULER_DST:
+        break;
+      case NATIVE_MESSAGE.UNKNOWN:
+        break;
+      case NATIVE_MESSAGE.SERVER_MESSAGE:
+        break;
+      default:
+        break;
+    }
+  };
+
+  onTimeFrame = (value, displayTime) => {};
+
+  onLayout = event => {
+    if (event == null || event.nativeEvent == null) return;
+    // __DEV__ &&
+    //   console.log('GOND directplayer onlayout: ', event.nativeEvent.layout);
+    let {width, height} = event.nativeEvent.layout;
+    setTimeout(() => {
+      if (width <= height) {
+        const videoRatio = width / height;
+        if (videoRatio !== NATURAL_RATIO) {
+          height = parseInt((width * 9) / 16);
+          //console.log( _height);
+        }
+        this.setState({
+          fullscreen: false,
+          width: width,
+          height: height,
+          status: '',
+        });
+      } else {
+        this.setState({
+          controller: false,
+          fullscreen: true,
+          width: width,
+          height: height,
+          status: '',
+        });
+      }
+    }, 100);
+  };
+
   render() {
-    return <View></View>;
+    const {width, height, serverInfo} = this.props;
+    const {message, videoLoading, noVideo} = this.state;
+
+    return (
+      <View
+        onLayout={this.onLayout}
+        // {...this.props}
+      >
+        <ImageBackground
+          source={NVR_Play_NoVideo_Image}
+          style={{width: width, height: height}}
+          resizeMode="stretch">
+          {/* <View style={{width: width, height: height}}> */}
+          <Text style={{color: CMSColors.White}}>
+            {serverInfo.name ?? 'Unknown'}
+          </Text>
+          <View
+            style={{
+              width: width,
+              height: height,
+              justifyContent: 'center',
+              alignContent: 'center',
+            }}>
+            <Text
+              style={{
+                width: width,
+                height: height * 0.8,
+                color: CMSColors.Danger,
+                alignSelf: 'center',
+                textAlignVertical: 'bottom',
+              }}>
+              {message}
+            </Text>
+            {videoLoading && (
+              <ActivityIndicator
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                size="large"
+                color="white"
+              />
+            )}
+          </View>
+          <View style={{}}>
+            {Platform.OS === 'ios' ? (
+              <FFMpegFrameViewIOS
+                width={width}
+                height={height}
+                ref={ref => {
+                  this.ffmpegPlayer = ref;
+                }}
+                onFFMPegFrameChange={this.onFrameChange}
+              />
+            ) : (
+              <FFMpegFrameView
+                iterationCount={1}
+                width={width}
+                height={height}
+                ref={ref => (this.ffmpegPlayer = ref)}
+                onFFMPegFrameChange={this.onFrameChange}
+              />
+            )}
+          </View>
+          {/* </View> */}
+        </ImageBackground>
+      </View>
+    );
   }
 }
 
-var SliderStyle = StyleSheet.create({
-  slidercontainer: {
-    paddingLeft: normalize(10),
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-  },
-  track: {
-    height: normalize(3.5),
-    backgroundColor: CMSColors.White_Op40,
-  },
-  slider: {paddingLeft: normalize(10), paddingRight: normalize(10), flex: 1},
-  thumb: {
-    width: normalize(7.5),
-    height: normalize(7.5),
-    backgroundColor: CMSColors.White,
-    shadowColor: CMSColors.borderColor,
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 1,
-    borderColor: CMSColors.White_Op40,
-    borderWidth: normalize(22 / 2),
-  },
-});
-
-const styles = StyleSheet.create({
-  modalcontainer: {
-    flex: 1,
-    backgroundColor: CMSColors.PrimaryColor54,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    backgroundColor: CMSColors.PrimaryText,
-    flexDirection: 'row',
-    /* , paddingLeft: normalize(10)*/
-    paddingRight: 0,
-  },
-  headerOverlay: {
-    paddingLeft: normalize(10),
-    paddingRight: 0,
-    flexDirection: 'row',
-    position: 'absolute',
-    zIndex: 2,
-    backgroundColor: CMSColors.PrimaryColor54,
-  },
-  FullScreenButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingRight: normalize(10),
-    paddingLeft: normalize(10),
-    backgroundColor: 'transparent',
-  },
-  HDModeButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingRight: normalize(10),
-    paddingLeft: normalize(10),
-    backgroundColor: 'transparent',
-  },
-  Channel_Container: {
-    flexDirection: 'row',
-    flex: 5,
-    //marginBottom: normalize(13),
-    marginLeft: normalize(0),
-    paddingTop: normalize(10),
-    paddingBottom: normalize(10),
-    paddingLeft: normalize(12),
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: CMSColors.DividerColor24,
-  },
-  HistoricalText: {
-    fontSize: normalize(14),
-    color: CMSColors.Danger,
-    alignItems: 'flex-end',
-  },
-  ChanelText: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-    fontSize: normalize(16),
-  },
-  SiteText: {
-    fontSize: normalize(14),
-    color: CMSColors.White,
-  },
-  Site: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-  },
-  Historical_Container: {
-    flexDirection: 'column',
-    flex: 5,
-    paddingLeft: normalize(12),
-    paddingRight: normalize(10),
-    paddingTop: normalize(10),
-    paddingBottom: normalize(10),
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    //alignItems: 'center',
-    //justifyContent: 'center',
-    //backgroundColor: 'white'
-  },
-  VideoContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignContent: 'center',
-    backgroundColor: CMSColors.PrimaryText,
-  },
-  StatusText: {
-    color: CMSColors.White,
-    fontSize: normalize(14),
-  },
-  StatusContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: 'transparent',
-  },
-  ControlContainer: {
-    flexDirection: 'row',
-    position: 'absolute',
-    zIndex: 2,
-    backgroundColor: CMSColors.PrimaryColor54,
-  },
-  styleIcon_Close: {
-    //backgroundColor: 'blue',
-    backgroundColor: 'transparent',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: normalize(22),
-    paddingBottom: normalize(22),
-    width: normalize(63),
-  },
-  styleIcon_changechannel: {
-    //backgroundColor: 'blue',
-    backgroundColor: 'transparent',
-  },
-  fixedRatio: {
-    backgroundColor: 'rebeccapurple',
-    flex: 1,
-    aspectRatio: 1,
-  },
-  lableContainer: {
-    position: 'absolute',
-    zIndex: 3,
-    flex: 0,
-    flexDirection: 'column',
-    paddingLeft: normalize(10),
-    paddingRight: normalize(10),
-    alignItems: 'flex-start',
-  },
-  Novideo: {
-    flex: 1,
-    alignSelf: 'stretch',
-    //width: undefined,
-    //height: undefined,
-    width: '100%',
-    height: '100%',
-    alignItems: 'stretch',
-    justifyContent: 'flex-start',
-  },
-  modal_footer_Apply: {
-    height: footer_height,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderColor: CMSColors.footer_border,
-    //alignItems: 'flex-end',
-    //paddingRight: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  button_cancel: {
-    height: 50,
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    //backgroundColor: 'red'
-  },
-  content_button_apply: {
-    height: 50,
-    flex: 2,
-    justifyContent: 'center',
-    //paddingLeft: 10,
-    //paddingRight: 10,
-    marginRight: 10,
-  },
-  content_button_cancel: {
-    height: 50,
-    flex: 2,
-    justifyContent: 'center',
-    //paddingLeft: 10,
-    //paddingRight: 10,
-    marginLeft: 10,
-  },
-  button_apply: {
-    height: 36,
-  },
-  modal_header: {
-    height: header_height,
-    backgroundColor: CMSColors.White,
-    borderBottomWidth: 1,
-    borderColor: CMSColors.header_border,
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  modal_header_icon: {
-    marginLeft: 15,
-  },
-  modal_title: {
-    marginLeft: 10,
-    fontSize: 16,
-  },
-  modal_title_search: {
-    color: CMSColors.PrimaryText,
-    fontSize: 16,
-  },
-  modal_body: {
-    flex: 1,
-  },
-  timeontimerule: {
-    backgroundColor: CMSColors.SecondaryText,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  timeontimerule_horizon: {
-    backgroundColor: CMSColors.transparent,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-  },
-});
-
-export default DirectStreamingView;
+export default inject('videoStore')(observer(DirectVideoView));

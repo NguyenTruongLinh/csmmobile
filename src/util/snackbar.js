@@ -30,3 +30,27 @@ exports.handleReadLocalDataFailed = error => {
 exports.handleSaveLocalDataFailed = error => {
   showMessage(ActionMessages.saveLocalFailed, true);
 };
+
+exports.onMessage = (msg, backcolor, actions) => {
+  if (!actions) {
+    Snackbar.show({
+      text: msg,
+      duration: Snackbar.LENGTH_LONG,
+      backgroundColor: backcolor, //CMSColors.Danger,
+      // onTimeOut: this.onSnackbarTimeout,
+    });
+  } else {
+    let {title, color, onPress} = actions;
+    Snackbar.show({
+      text: msg,
+      duration: Snackbar.LENGTH_INDEFINITE,
+      backgroundColor: backcolor,
+      // onTimeOut: this.onSnackbarTimeout,
+      action: {
+        title: title,
+        color: color,
+        onPress: onPress,
+      },
+    });
+  }
+};

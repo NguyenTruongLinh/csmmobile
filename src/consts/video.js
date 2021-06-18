@@ -46,7 +46,7 @@ export const VIDEO_MESSAGE = {
 
 export const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
 
-export const STREAMING_TYPES = {
+export const CLOUD_TYPE = {
   UNKNOWN: -2,
   DEFAULT: -1,
   DIRECTION: 0,
@@ -76,6 +76,34 @@ export const STREAM_STATUS = {
   ERROR: 'Network Error.',
   TIMEOUT: 'Time out.',
   NOVIDEO: 'No video.',
+};
+
+export const NATIVE_MESSAGE = {
+  CONNECTING: 1,
+  CONNECTED: 2,
+  LOGIN_MESSAGE: 3,
+  LOGIN_FAILED: 4,
+  LOGIN_SUCCCESS: 5,
+  SVR_REJECT_ACCEPT: 6,
+  LOGIN_MESSAGE_WRONG_SERVERID: 7,
+  LOGIN_MESSAGE_VIDEO_PORT_ERROR: 8,
+  CANNOT_CONNECT_SERVER: 9,
+  ORIENTATION_CHANGED: 10,
+  VIEW_CLICK: 11,
+  SEARCH_NO_DATA: 12,
+  SEARCH_FRAME_TIME: 13,
+  SERVER_CHANGED_CURRENT_USER: 14,
+  SERVER_CHANGED_SERVER_INFO: 15,
+  SERVER_CHANGED_PORTS: 16,
+  SERVER_RECORDING_ONLY: 17,
+  SERVER_CHANNEL_DISABLE: 18,
+  PERMISSION_CHANNEL_DISABLE: 19,
+  RECORDING_DATE: 20,
+  TIME_DATA: 21,
+  HOUR_DATA: 22,
+  RULER_DST: 23,
+  UNKNOWN: 24,
+  SERVER_MESSAGE: 25,
 };
 
 export const arrayof24HTime = [
@@ -131,31 +159,17 @@ export const arrayof12HTime = [
   '11:00 PM',
 ];
 
-export const STREAM_CONST = {
-  DAY_INTERVAL: 86399,
-  default24H: 24,
-  startDST: 23,
-  endDST: 25,
-  Limit_Time_Allow_Change_Live_Search: 1,
-  HoursOnScreen: 4,
-};
-
 export const USE_TIMESTAMP = true;
 
-export const RTC_VIDEO_STATES = {
-  BEGIN: 0,
-  GETTING_STREAM_INFO: 1,
-  READY_INIT_CONNECTION: 2,
-  INIT_CONNECTION: 3,
-  READY_TO_OPEN_DATA_CHANNEL: 4,
-  OPENING_DATA_CHANNEL: 5,
-  GOT_STREAMURL: 6,
-  READY_TO_PLAY: 7,
-  GETTING_TIMEZONE: 8,
-  END: 9,
-};
+export const DAY_INTERVAL = 86399;
+export const default24H = 24;
+export const startDST = 23;
+export const endDST = 25;
+export const Limit_Time_Allow_Change_Live_Search = 1;
+export const HoursOnScreen = 4;
 
 export const IS_FORCE_TURN = true;
 export const IS_OPEN_DATA_CHANNEL = true;
 export const USE_TRICKLE_ICE = true;
 export const STREAM_TIMEOUT = 30000;
+export const NATURAL_RATIO = 16 / 9;

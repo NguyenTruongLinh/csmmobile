@@ -30,9 +30,17 @@ export default function VideoStack() {
         headerMode: 'screen',
         headerTitle: getHeaderTitle(route),
         headerLeft: () => <BackButton navigator={navigation} />,
-      })}>
+      })}
+      // screenOptions={() => ({
+      //   headerShown: false,
+      // })}
+    >
       <VStack.Screen name={ROUTERS.VIDEO_REGIONS} component={RegionsView} />
-      <VStack.Screen name={ROUTERS.VIDEO_SITES} component={SitesView} />
+      <VStack.Screen
+        name={ROUTERS.VIDEO_SITES}
+        component={SitesView}
+        // options={{headerMode: 'none'}}
+      />
       <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
       <VStack.Screen name={ROUTERS.VIDEO_CHANNELS} component={ChannelsView} />
       <VStack.Screen

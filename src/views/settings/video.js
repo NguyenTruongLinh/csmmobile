@@ -17,7 +17,7 @@ import CMSAvatars from '../../components/containers/CMSAvatars';
 import {Icon} from '../../components/CMSStyleSheet';
 
 import snackbar from '../util/snackbar';
-// import {STREAMING_TYPES} from '../../consts/video';
+// import {CLOUD_TYPE} from '../../consts/video';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';

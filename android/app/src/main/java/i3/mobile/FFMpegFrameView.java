@@ -1,0 +1,575 @@
+package i3.mobile;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.hardware.SensorManager;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
+import android.view.OrientationEventListener;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.uimanager.UIManagerModule;
+import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.facebook.react.views.imagehelper.ImageSource;
+
+import org.joda.time.DateTime;
+import org.json.JSONObject;
+
+import java.lang.reflect.Array;
+
+import javax.annotation.Nullable;
+
+import i3.mobile.base.Constant;
+import i3.mobile.base.MobileSystemInfo;
+import i3.mobile.base.ServerSite;
+import i3.mobile.base.i3Global;
+import i3.mobile.dvrsocket.CommunicationSocket;
+import i3.mobile.search.setting.SearchAllDayInterval;
+import i3.mobile.search.setting.SearchTimeData;
+
+/**
+ * TODO: document your custom view class.
+ */
+//public class FFMpegFrameView extends AppCompatImageView {
+public class FFMpegFrameView extends View {
+    private static float RATIO = 16f / 9f;
+    double _width = 0;
+    double _height = 0;
+    boolean firstRunAlarm;
+    int index = 0;
+    Paint mPaint = null;
+    Bitmap DrawBitmap = null;
+    Bitmap preDrawBitmap = null;
+    Bitmap src;
+    boolean valid_first_frame = false;
+    static MobileSystemInfo mobileSystemInfo = null;
+    public static MobileSystemInfo getMobileSystemInfo(){
+                return  mobileSystemInfo;
+        }
+    public void SetWidth(double _w)
+    {
+        if( _width != _w)
+            _width = _w ;
+
+    }
+    public void SetHeight(double _h)
+    {
+        if(_height != _h) _height = _h;
+    }
+
+    int img_width;
+
+    int img_height;
+    Rect img_rect = null;
+    ServerSite Server;
+    String Channels;
+    boolean ByChannel;
+    Handler handler = null;
+    public  ServerSite getServer(){ return Server;}
+    public  void  setServer(ServerSite value){ this.Server = value; }
+
+    public String getChannels(){ return  this.Channels;}
+    public  void  setChannels(String value){ this.Channels = value;}
+
+    public  boolean getByChannels(){ return  this.ByChannel;}
+    public  void setByChannels(boolean value){ this.ByChannel = value;}
+    Thread video_thread = null;
+    CommunicationSocket socket_handler;
+    OrientationEventListener mOrientationListener;
+    //volatile  boolean is_fullscreen = false;
+    ReactContext reactContext;
+    int  mLastRotation;
+    public FFMpegFrameView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        reactContext = (ReactContext)getContext();
+        mobileSystemInfo = i3Global.GetMobileSysInfo(reactContext );
+        initPaint();
+        i3Global.LoadLib();
+        InitHandler();
+        // InitOrientation();
+        setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        //setBackgroundColor(Color.DKGRAY);
+        this.setOnClickListener(
+                new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_VIEW_CLICK, 0);
+//                        WritableMap event = Arguments.createMap();
+//                        event.putInt("msgId",1);
+//                        //event.putString("message", "MyMessage");
+//                        ReactContext reactContext = (ReactContext)getContext();
+//                        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+//                                getId(),
+//                                FFMPEG_EVENT,
+//                                event);
+
+                    }
+                }
+        );
+    }
+
+    public void  setOrientation( int orient ){
+        //reactContext.getCurrentActivity().setRequestedOrientation(orient);
+    }
+    public void setFullscreen() {
+
+        getSystemUiVisibility();
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN;
+                flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+            setSystemUiVisibility(flags);
+    }
+
+    public void exitFullscreen() {
+        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
+        setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+//        if (hasFocus) {
+//            setSystemUiVisibility(
+//                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+//        }
+    }
+    void InitOrientation() {
+
+        mOrientationListener = new OrientationEventListener(this.getContext()) {
+
+            @Override
+            public void onOrientationChanged(int orientation) {
+                // Log.v("DEBUG_TAG", "Orientation changed to " + orientation);
+
+                if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
+                    return;
+                }
+
+                orientation = orientation % 360;
+                int retVal;
+                if (orientation < (0 * 90) + 45) {
+                    retVal = 0;
+                } else if (orientation < (1 * 90) + 45) {
+                    retVal = 90;
+                } else if (orientation < (2 * 90) + 45) {
+                    retVal = 180;
+                } else if (orientation < (3 * 90) + 45) {
+                    retVal = 270;
+                } else {
+                    retVal = 0;
+                }
+                if(mLastRotation !=  retVal) {
+                    mLastRotation = retVal;
+                    OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_ORIENTATION, mLastRotation);
+                }
+
+
+//                int rotation = reactContext.getCurrentActivity().getWindowManager().getDefaultDisplay().getRotation();
+//                switch (rotation) {
+//                    case Surface.ROTATION_0:
+//                        android.util.Log.i("DEBUG_TAG", "changed ROTATION_0 - " + orientation);
+//                        break;
+//                    case Surface.ROTATION_90:
+//                        android.util.Log.i("DEBUG_TAG", "changed ROTATION_90 - " + orientation);
+//                        break;
+//                    case Surface.ROTATION_180:
+//                        android.util.Log.i("DEBUG_TAG", "changed ROTATION_180 - " + orientation);
+//                        break;
+//                    case Surface.ROTATION_270:
+//                        android.util.Log.i("DEBUG_TAG", "changed ROTATION_270 - " + orientation);
+//                        break;
+//                }
+
+
+
+            }
+        };
+
+        if (mOrientationListener.canDetectOrientation() == true) {
+            Log.v("DEBUG_TAG", "Can detect orientation");
+            mOrientationListener.enable();
+        } else {
+            Log.v("DEBUG_TAG", "Cannot detect orientation");
+            mOrientationListener.disable();
+        }
+
+    }
+
+    void  InitHandler()
+    {
+        handler = new Handler(Looper.getMainLooper()){
+            @Override
+            public void handleMessage(Message msg) {
+//                if(msg.what == 1000) {
+//                    UpdateFrame( (Bitmap) msg.obj );
+//                }
+                HandlerMessage(msg.what, msg.obj);
+                super.handleMessage(msg);
+            }
+        };
+    }
+    private void HandlerMessage( int msgId, Object data)
+    {
+        switch (msgId)
+        {
+            case Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER:
+                UpdateFrame( (Bitmap) data );
+                break;
+            default:
+                OnEvent(msgId, data);
+                break;
+
+        }
+    }
+    private  void  OnEvent( int msgid, Object value)
+    {
+        if( msgid == Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME && valid_first_frame == false)
+        {
+            return;
+        }
+        try {
+            WritableMap event = Arguments.createMap();
+            event.putInt("msgid", msgid);
+            if(value != null) {
+                if (value instanceof String)
+                    event.putString("value", (String) value);
+                else
+                {
+
+                    if(value instanceof String[])
+                    {
+                        String[] c_value = (String[])value;
+                        WritableArray array = Arguments.createArray();
+                        for(int i = 0 ; i< c_value.length; i++)
+                        {
+                            array.pushString( c_value[i]);
+                        }
+                        event.putArray("value", array);
+                    }
+                    else
+//                        if(value instanceof SearchAllDayInterval)
+//                        {
+//                            JSONObject.wrap()
+//                        }
+                    event.putInt("value", (int) value);
+            }
+            }
+
+            ReactContext reactContext = (ReactContext)getContext();
+            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    getId(),
+                    Constant.FFMPEG_EVENT,
+                    event);
+        }
+        catch (NullPointerException nex){
+            Log.e("TAG", "NullPointerException " + nex.getMessage());
+        }
+
+    }
+    private void initPaint(){
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        //mPaint.setColor(Color.RED);
+        mPaint.setStrokeWidth(30);
+        setLayerType(View.LAYER_TYPE_NONE, null);
+        setLayerType(View.LAYER_TYPE_NONE, mPaint);
+    }
+
+    protected void onDraw(Canvas canvas) {
+        //canvas.drawColor(Color.TRANSPARENT);
+        super.onDraw(canvas);
+
+        if(DrawBitmap != null)
+        {
+            Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
+            if(DrawBitmap != null) {
+                if (!DrawBitmap.sameAs(emptyBitmap)) {
+                    preDrawBitmap = DrawBitmap;
+                    valid_first_frame = true;
+                    //Bitmap bmp = i3Global.resizeImage(preDrawBitmap, (int)this._width, (int)this._height, true );
+                    Rect src =   new Rect(0, 0, getWidth(), getHeight());//new Rect(0,0,DrawBitmap.getWidth()-1, DrawBitmap.getHeight()-1);
+                    //Rect dest = new Rect(0,0, (int)this.img_width, (int)this.img_height);
+                    canvas.drawBitmap(preDrawBitmap, null, src, mPaint);
+                    //bmp.recycle();
+                    //bmp = null;
+                    //Rect dest = new Rect(0, 0, getWidth(), getHeight());
+                    //canvas.drawBitmap(preDrawBitmap,null, img_rect, mPaint);
+                }else
+                {
+                    if(preDrawBitmap != null && !preDrawBitmap.sameAs(emptyBitmap)) {
+//                        Rect dest = new Rect(0, 0, getWidth(), getHeight());
+//                        canvas.drawBitmap(preDrawBitmap,null, dest, mPaint);
+                        //Rect src = new Rect(0,0,DrawBitmap.getWidth(), DrawBitmap.getHeight());
+                        Rect dest = new Rect(0,0,   this.img_width, this.img_height);
+                        canvas.drawBitmap(preDrawBitmap, null, dest, mPaint);
+                    }
+                }
+            }
+
+        }
+        else
+        {
+            if( src != null){
+
+                Rect dest = new Rect(0, 0, getWidth(), getHeight());
+                canvas.drawBitmap(src,null, dest, mPaint);
+            }
+        }
+    }
+
+    int _getScreenOrientation(){
+        return getResources().getConfiguration().orientation;
+    }
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh){
+        super.onSizeChanged(w,h,oldw,oldh);
+      this.img_height = h;
+      this.img_width = w;
+      img_rect  = new Rect(0,0, (int)this.img_width, (int)this.img_height);
+    }
+
+//    @Override
+//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//
+//        int desiredWidth = 100;
+//        int desiredHeight = 100;
+//
+//        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+//        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+//        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+//        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+//
+//        int width;
+//        int height;
+//
+//        //Measure Width
+//        if (widthMode == MeasureSpec.EXACTLY) {
+//            //Must be this size
+//            width = widthSize;
+//        } else if (widthMode == MeasureSpec.AT_MOST) {
+//            //Can't be bigger than...
+//            width = Math.min(desiredWidth, widthSize);
+//        } else {
+//            //Be whatever you want
+//            width = desiredWidth;
+//        }
+//
+//        //Measure Height
+//        if (heightMode == MeasureSpec.EXACTLY) {
+//            //Must be this size
+//            height = heightSize;
+//        } else if (heightMode == MeasureSpec.AT_MOST) {
+//            //Can't be bigger than...
+//            height = Math.min(desiredHeight, heightSize);
+//        } else {
+//            //Be whatever you want
+//            height = desiredHeight;
+//        }
+//
+//        //MUST CALL THIS
+//        //int w = (int)this._width * 2 - 20;
+//        //int h = (int)this._height * 2 - 20;
+//        setMeasuredDimension( (int)this._width, (int)this._height );
+//    }
+//
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
+        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+
+        int maxWidth = (int) (heigthWithoutPadding * RATIO);
+        int maxHeight = (int) (widthWithoutPadding / RATIO);
+
+        if (widthWithoutPadding  > maxWidth) {
+            width = maxWidth + getPaddingLeft() + getPaddingRight();
+        } else {
+            height = maxHeight + getPaddingTop() + getPaddingBottom();
+        }
+//        this._width = width;
+//        this._height = height;
+
+        setMeasuredDimension(width, height);
+    }
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+//        // Checks the orientation of the screen
+//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            Toast.makeText(this.getContext(), "landscape", Toast.LENGTH_SHORT).show();
+//
+//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+//            Toast.makeText(this.getContext(), "portrait", Toast.LENGTH_SHORT).show();
+//        }
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        // View is now attached
+        Activity activity =  reactContext.getCurrentActivity();
+        if(activity != null)
+        {
+            activity.getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        // View is now detached, and about to be destroyed
+        Activity activity =  reactContext.getCurrentActivity();
+        if(activity != null) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, mPaint);
+            activity.getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
+    @Override
+    public void finalize() {
+
+        try {
+            exitFullscreen();
+            super.finalize();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    public  void  UpdateFrame(Bitmap bmp)
+    {
+        DrawBitmap = bmp;
+        this.invalidate(img_rect);
+        //this.invalidate();
+    }
+    public  void  Stop()
+    {
+        if( video_thread == null)
+            return;
+
+        if(socket_handler != null) {
+            socket_handler.running = false;
+            socket_handler.Stop();
+        }
+        video_thread.interrupt();
+        video_thread = null;
+        socket_handler = null;
+        valid_first_frame = false;
+    }
+
+    //public  void  StartSearch(int KDVR, String ip, String WanIp, String Name, int port, String serverID, String UserName, String Password,String channel, boolean bychanel)
+    public void StartSearch(DateTime date, int interval, boolean HD)
+    {
+        //this.Stop();
+        int year, month, day, hour, min, sec;
+        year = date.getYear();
+        month = date.getMonthOfYear();
+        day = date.getDayOfMonth();
+        hour = date.getHourOfDay();
+        min = date.getMinuteOfHour();
+        sec = date.getSecondOfMinute();
+        SearchTimeData search = new SearchTimeData(year, month, day, hour, min, sec, interval);
+
+        valid_first_frame = false;
+        if(video_thread == null || socket_handler == null || socket_handler.running == false) {
+            this.Server.setLive(false);
+            this.Server.setSearchTime(search);
+            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, true, this.ByChannel);
+            socket_handler.setHDMode( HD);
+            video_thread = new Thread(socket_handler);
+            video_thread.start();
+        }
+        else
+        {
+            boolean re_init = false;
+            SearchTimeData searchtime = this.Server.getSearchTime();
+            if( searchtime == null || searchtime.getYear() != year|| searchtime.getMonth() != month || searchtime.getDay() != day) {
+                this.Server.setSearchTime(search);
+                re_init = true;
+            }
+            socket_handler.setHDMode( HD);
+            socket_handler.ChangePlay(false, re_init, Channels);
+        }
+    }
+    public void setSource(@Nullable ReadableArray sources) {
+        if (sources != null && sources.size() != 0) {
+            ReadableMap source = sources.getMap(0);
+            String uri = source.getString("uri");
+            ImageSource imageSource = new ImageSource(getContext(), uri);
+            src = BitmapFactory.decodeFile(uri);
+        }
+
+    }
+    //public  void  StartLive(int KDVR, String ip, String WanIp, String Name, int port, String serverID, String UserName, String Password, String channel, boolean bychanel)
+    public  void  StartLive( boolean HD )
+    {
+        //this.Stop();
+        valid_first_frame = false;
+        if( video_thread == null || socket_handler == null || socket_handler.running == false) {
+            this.Server.setLive(true);
+            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, false, this.ByChannel);
+            socket_handler.setHDMode(HD);
+            video_thread = new Thread(socket_handler);
+            video_thread.start();
+        }
+        else
+        {
+            socket_handler.setHDMode(HD);
+            socket_handler.ChangePlay( true, false, Channels);
+        }
+    }
+    public  void  PauseVideo(){
+        if( video_thread == null || socket_handler== null )
+            return;
+        socket_handler.PauseVideo();
+    }
+
+    public void setFirstRun(boolean firstrun){
+        if(firstrun != firstRunAlarm)
+            firstRunAlarm = firstrun;
+    }
+
+    public void SeekPOS(int val, boolean HD)
+    {
+        if( video_thread == null || socket_handler== null )
+            return;
+        socket_handler.SeekPOS(val, HD, this.firstRunAlarm);
+    }
+    public void ViewHD( boolean HDMode)
+    {
+        socket_handler.ChangetoHD(HDMode);
+    }
+
+}

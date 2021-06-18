@@ -3,6 +3,7 @@ import {types, flow} from 'mobx-state-tree';
 import {Route, Site as SiteRoute} from '../consts/apiRoutes';
 import {Login as LoginTxt} from '../localization/texts';
 import apiService from '../services/api';
+import utils from '../util/general';
 
 const DVRModel = types
   .model({
@@ -71,9 +72,12 @@ const parseSiteWithDVRs = _site => {
 export const SitesMapModel = types
   .model({
     sitesList: types.array(SiteModel),
+    siteFilter: types.string,
     selectedSite: types.maybeNull(types.reference(SiteModel)),
     selectedDVR: types.maybeNull(types.reference(DVRModel)),
+    dvrFilter: types.string,
     oamSites: types.array(types.reference(SiteModel)),
+    oamSiteFilter: types.string,
     isLoading: types.boolean,
   })
   .views(self => ({
@@ -88,6 +92,16 @@ export const SitesMapModel = types
         ? self.selectedSite.dvrs.map(dvr => dvr.data)
         : [];
     },
+    get filteredSites() {
+      return self.sitesList.filter(site =>
+        site.name.toLowerCase().includes(self.siteFilter.toLowerCase())
+      );
+    },
+    get filteredDVRs() {
+      return self.selectedSiteDVRs.filter(dvr =>
+        dvr.name.toLowerCase().includes(self.dvrFilter.toLowerCase())
+      );
+    },
   }))
   .actions(self => ({
     parseSitesList(data, haveDVRs = false) {
@@ -100,7 +114,9 @@ export const SitesMapModel = types
         __DEV__ &&
           console.log('GOND Load sites list failed, data is not an array');
       }
-      return res;
+      return res.sort((siteA, siteB) =>
+        utils.compareStrings(siteA.name, siteB.name)
+      );
     },
     edit(_editedSite) {
       let site = self.sitesList.find(item => item.key == _editedSite.Key);
@@ -137,8 +153,14 @@ export const SitesMapModel = types
     selectSite(item) {
       self.selectedSite = item.key;
     },
+    setSiteFilter(value) {
+      self.siteFilter = value;
+    },
     selectDVR(item) {
       self.selectedDVR = item.kDVR;
+    },
+    setDVRFilter(value) {
+      self.dvrFilter = value;
     },
     getAllSites: flow(function* getAllSites() {
       self.isLoading = true;
@@ -176,8 +198,11 @@ export const SitesMapModel = types
 const sitesStore = SitesMapModel.create({
   sitesList: [],
   selectedSite: null,
+  siteFilter: '',
   selectedDVR: null,
+  dvrFilter: '',
   oamSites: [],
+  oamSiteFilter: '',
   isLoading: false,
 });
 

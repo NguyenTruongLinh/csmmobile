@@ -24,6 +24,14 @@ const TabIcons = [
 const TabLabels = [Labels.home, Labels.video, Labels.alarm, Labels.settings];
 
 export default class extends React.Component {
+  constructor(props) {
+    super(props);
+
+    if (typeof props.naviSetter == 'function') {
+      props.naviSetter(props.navigation);
+    }
+  }
+
   render() {
     const {navigation, state} = this.props;
     const currentIndex = state.index;

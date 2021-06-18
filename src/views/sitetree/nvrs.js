@@ -11,11 +11,13 @@ import {
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 
+import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import snackbar from '../../util/snackbar';
 
 import ROUTERS from '../../consts/routes';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
+import appStore from '../../stores/appStore';
 
 class NVRsView extends Component {
   constructor(props) {
@@ -26,6 +28,8 @@ class NVRsView extends Component {
   componentWillUnmount() {
     __DEV__ && console.log('SitesView componentWillUnmount');
     this._isMounted = false;
+
+    appStore.enableSearchbar(false);
   }
 
   componentDidMount() {
@@ -33,26 +37,26 @@ class NVRsView extends Component {
     if (__DEV__) console.log('SitesView componentDidMount');
 
     const {sitesStore, navigation} = this.props;
-    navigation.setOptions({
-      headerTitle: sitesStore.selectedSite
-        ? sitesStore.selectedSite.name
-        : 'No site was selected',
-    });
+    // navigation.setOptions({
+    //   headerTitle: sitesStore.selectedSite
+    //     ? sitesStore.selectedSite.name
+    //     : 'No site was selected',
+    // });
     // this.getSitesList();
   }
 
-  // getSitesList = async () => {
-  //   let res = await this.props.sitesStore.getAllSites();
-  //   if (!res) snackbar.handleGetDataFailed();
-  // };
+  onFilter = value => {
+    const {sitesStore} = this.props;
+    sitesStore.setDVRFilter(value);
+  };
 
-  onNVRSelected = () => {
+  onNVRSelected = item => {
     this.props.sitesStore.selectDVR(item);
     this.props.appStore.naviService.push(ROUTERS.VIDEO_CHANNELS);
+    this.props.appStore.enableSearchbar(false);
   };
 
   renderItem = ({item}) => {
-    console.log('GOND render site: ', item.name);
     const itemHeight = Dimensions.get('window').height / 16;
     return (
       <View style={{height: itemHeight + 1}}>
@@ -67,7 +71,7 @@ class NVRsView extends Component {
             borderBottomWidth: variables.borderWidthRow,
             borderColor: CMSColors.borderColorListRow,
           }}
-          onPress={this.onSiteSelected}>
+          onPress={() => this.onNVRSelected(item)}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
         </TouchableOpacity>
       </View>
@@ -75,9 +79,21 @@ class NVRsView extends Component {
   };
 
   render() {
-    const {sitesStore} = this.props;
+    const {appStore, sitesStore, navigation} = this.props;
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
+        <HeaderWithSearch
+          title={
+            sitesStore.selectedSite
+              ? sitesStore.selectedSite.name
+              : 'No site was selected'
+          }
+          showSearchBar={appStore.showSearchBar}
+          onChangeSearchText={this.onFilter}
+          searchValue={sitesStore.dvrFilter}
+          // backButton={false}
+          navigator={navigation}
+        />
         <View
           style={{
             backgroundColor: CMSColors.headerListRow,
@@ -99,8 +115,8 @@ class NVRsView extends Component {
         <FlatList
           ref={ref => (this.nvrsListRef = ref)}
           renderItem={this.renderItem}
-          keyExtractor={item => item.key}
-          data={sitesStore.selectedSiteDVRs}
+          keyExtractor={item => item.kDVR}
+          data={sitesStore.filteredDVRs}
           // onRefresh={this.getSitesList}
           // refreshing={
           //   sitesStore ? sitesStore.isLoading : false
@@ -111,4 +127,8 @@ class NVRsView extends Component {
   }
 }
 
-export default inject('appStore', 'sitesStore')(observer(NVRsView));
+export default inject(
+  'appStore',
+  'sitesStore',
+  'videoStore'
+)(observer(NVRsView));

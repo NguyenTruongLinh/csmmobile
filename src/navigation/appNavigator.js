@@ -170,12 +170,13 @@ const HomeNavigator = () => (
 );
 
 const BottomTab = createBottomTabNavigator();
-const CMSMainTab = () => (
+const CMSMainTab = navigatorSetter => (
   <BottomTab.Navigator
     initialRouteName={ROUTERS.HOME}
     headerMode="none"
+    backBehavior="none"
     tabBar={props => {
-      return <CMSTabbar {...props} />;
+      return <CMSTabbar naviSetter={navigatorSetter} {...props} />;
     }}>
     <BottomTab.Screen name={ROUTERS.HOME_NAVIGATOR} component={HomeNavigator} />
     <BottomTab.Screen name={ROUTERS.VIDEO_STACK} component={VideoStack} />
@@ -217,7 +218,7 @@ const AppNavigator = ({showIntro, isLoggedIn, isLoading, navigatorSetter}) => {
           />
         </IntroStack.Navigator>
       ) : isLoggedIn ? (
-        CMSMainTab()
+        CMSMainTab(navigatorSetter)
       ) : (
         <WelcomeStack.Navigator
           initialRouteName={ROUTERS.INTRO_WELCOME}

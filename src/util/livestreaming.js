@@ -1,26 +1,26 @@
 import {ROUTERS} from '../models/consts';
-import {VSCCommand, STREAMING_TYPES} from '../models/videoconsts';
+import {VSCCommand, CLOUD_TYPE} from '../models/videoconsts';
 import Snackbar from 'react-native-snackbar';
 import dayjs from 'dayjs';
 import CMSColors from '../styles/cmscolors';
 
-startSelectivePlayer = (cloudType, propsObj) => {
-  switch (cloudType) {
-    case STREAMING_TYPES.DEFAULT:
-    case STREAMING_TYPES.DIRECTION:
-      Actions[ROUTERS.LIVEVIDEOIOS](propsObj);
-      break;
-    case STREAMING_TYPES.HLS:
-      Actions[ROUTERS.LIVESTREAMING](propsObj);
-      break;
-    case STREAMING_TYPES.RTC:
-      Actions[ROUTERS.RTCSTREAMING](propsObj);
-      break;
-    default:
-      Actions[ROUTERS.LIVEVIDEOIOS](propsObj);
-      break;
-  }
-};
+// startSelectivePlayer = (cloudType, propsObj) => {
+//   switch (cloudType) {
+//     case CLOUD_TYPE.DEFAULT:
+//     case CLOUD_TYPE.DIRECTION:
+//       Actions[ROUTERS.LIVEVIDEOIOS](propsObj);
+//       break;
+//     case CLOUD_TYPE.HLS:
+//       Actions[ROUTERS.LIVESTREAMING](propsObj);
+//       break;
+//     case CLOUD_TYPE.RTC:
+//       Actions[ROUTERS.RTCSTREAMING](propsObj);
+//       break;
+//     default:
+//       Actions[ROUTERS.LIVEVIDEOIOS](propsObj);
+//       break;
+//   }
+// };
 
 showSnackbarMsg = (msg, backcolor = CMSColors.Success, actions = null) => {
   setTimeout(() => {
@@ -342,7 +342,7 @@ getServerStartOfDay = (dateInput, timezoneInfo) => {
 };
 
 module.exports = {
-  startSelectivePlayer,
+  // startSelectivePlayer,
   showSnackbarMsg,
   validateStreamInfo,
   getTransitionDSTDateByYear,

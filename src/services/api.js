@@ -201,7 +201,7 @@ class Api {
     header.set('Authorization', '3rd-auth ' + token);
     if (this.configToken && this.configToken.devId)
       header.set('devId', this.configToken.devId);
-    __DEV__ && console.log('api::_fetch url: ', url, 'header: ', header);
+    // __DEV__ && console.log('api::_fetch url: ', url, 'header: ', header);
     if (body === null || body === undefined)
       return fetch(url, {method: reqMethod, headers: header});
     else return fetch(url, {method: reqMethod, headers: header, body: body});

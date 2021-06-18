@@ -28,6 +28,13 @@ module.exports = StyleSheet.create({
     fontSize: 16,
     color: '#436D8F',
   },
+  buttonSearchHeader: {
+    width: 40,
+    height: 40,
+    paddingTop: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   // Component PullToRefreshListView
   PullToRefreshListView_Style: {
     marginTop: Platform.OS == 'ios' ? 1 : 1,

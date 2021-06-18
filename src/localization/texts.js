@@ -60,3 +60,7 @@ export const ActionMessages = {
   readLocalFailed: 'Cannot read local data!',
   saveLocalFailed: 'Cannot save local data!',
 };
+
+export const Comps = {
+  searchPlaceholder: 'Search...',
+};

@@ -35,7 +35,7 @@ import {getwindow, isNullOrUndef} from './util/general';
 import {ROUTERS, DateFormat, Store_Name} from './consts/misc';
 import APP_INFO from './consts/appInfo';
 
-import {STREAMING_TYPES} from './consts/video';
+import {CLOUD_TYPE} from './consts/video';
 import CMSColors from './styles/cmscolors';
 
 const {height, width} = getwindow(); //Dimensions.get('window')

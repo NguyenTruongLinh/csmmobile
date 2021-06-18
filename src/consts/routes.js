@@ -85,9 +85,9 @@ export const getHeaderTitle = route => {
       return 'Health'; // TODO: get from store
 
     case ROUTERS.VIDEO_REGIONS:
-      return 'Regions';
+      return 'All Regions';
     case ROUTERS.VIDEO_SITES:
-      return 'Sites';
+      return 'All Sites';
     case ROUTERS.VIDEO_NVRS:
       return 'NVRS';
     case ROUTERS.VIDEO_CHANNELS:
