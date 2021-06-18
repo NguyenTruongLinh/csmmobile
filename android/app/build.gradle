@@ -141,8 +141,8 @@ android {
         applicationId "com.i3international.cmsapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 30002
-        versionName "3.0.2"
+        versionCode 30003
+        versionName "3.0.3"
     }
     splits {
         abi {
