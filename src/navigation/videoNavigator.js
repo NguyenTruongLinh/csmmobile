@@ -39,7 +39,7 @@ export default function VideoStack() {
       <VStack.Screen
         name={ROUTERS.VIDEO_SITES}
         component={SitesView}
-        // options={{headerMode: 'none'}}
+        options={{headerLeft: () => {}}}
       />
       <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
       <VStack.Screen name={ROUTERS.VIDEO_CHANNELS} component={ChannelsView} />
