@@ -356,6 +356,8 @@ class LoginView extends Component {
   }
 }
 
+const dim = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   viewContainer: {
     flex: 1,
@@ -364,7 +366,7 @@ const styles = StyleSheet.create({
   },
   closeButtonContainer: {
     flex: 5,
-    marginTop: 16,
+    marginTop: dim.height > 700 ? 16 : 0,
     flexDirection: 'column',
     alignItems: 'flex-end',
   },
@@ -374,8 +376,9 @@ const styles = StyleSheet.create({
   },
   logo: {
     tintColor: CMSColors.Dark_Blue,
-    width: width * 0.5,
+    width: width * 0.45,
     height: '100%',
+    alignSelf: 'center',
   },
   logoContainer: {flex: 20},
   centerContent: {
@@ -388,15 +391,16 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 10,
-    paddingTop: 28,
+    paddingTop: dim.height > 700 ? 28 : 0,
+    alignItems: 'center',
   },
   textTitle: {fontSize: 24, fontWeight: 'normal'},
   textBold: {fontWeight: 'bold'},
-  textDesc: {fontSize: 16, paddingTop: 14},
-  inputsContainer: {alignItems: 'center'},
+  textDesc: {fontSize: 16, paddingTop: dim.height > 700 ? 14 : 0},
+  inputsContainer: {alignItems: 'center', marginTop: 21},
   buttonsContainer: {
     flex: 30,
-    // paddingTop: 20,
+    paddingTop: 20,
     alignItems: 'center',
     flexDirection: 'column',
   },

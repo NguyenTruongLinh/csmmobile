@@ -44,6 +44,8 @@ class WelcomeView extends Component {
 
   render() {
     const {width, height} = Dimensions.get('window');
+    console.log('GOND Dimension = ', Dimensions.get('window'));
+
     return (
       // <View style={{position: 'absolute'}}>
       <ImageBackground
@@ -59,21 +61,22 @@ class WelcomeView extends Component {
             flexDirection: 'column',
             paddingLeft: width * 0.1,
             paddingRight: width * 0.1,
+            paddingTop: height > 700 ? 28 : 0,
             backgroundColor: 'rgba(255, 255, 255, 0.85)',
           }}>
           <Image
             source={I3_Logo}
             style={{
-              flex: 15,
+              flex: 10,
               width: width * 0.5,
-              paddingTop: 84,
+              paddingTop: height * 0.14,
               tintColor: CMSColor.Dark_Blue,
             }}
             resizeMode="contain"
           />
           <View
             style={{
-              flex: 45,
+              flex: 50,
               flexDirection: 'column',
               width: width * 0.8,
               // borderColor: 'black',
@@ -103,7 +106,7 @@ class WelcomeView extends Component {
                 fontSize: 16,
                 flexWrap: 'wrap',
                 fontFamily: 'Roboto-Regular',
-                paddingTop: 48,
+                paddingTop: height > 700 ? 48 : 0,
               }}>
               {WelcomeTxt.description}
               <Text
@@ -122,7 +125,7 @@ class WelcomeView extends Component {
           <View style={{flex: 40}}>
             <Button
               enable={true}
-              style={{marginTop: 21}}
+              style={{marginTop: 35}}
               type={'primary'}
               caption={WelcomeTxt.login}
               onPress={this.onLogin}

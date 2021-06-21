@@ -12,7 +12,7 @@ export const Welcome = {
     'By signing up for your i3 cloud account you will be able to unlock multiple features like real-time alarms, POS integration, video streaming, health monitoring, and much more. ',
   contactLink: 'Contact i3 to sign up today.',
   login: 'LOGIN',
-  skip: 'Skip to stand alone remote app',
+  skip: 'Stand alone remote app',
 };
 
 export const Login = {
