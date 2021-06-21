@@ -14,6 +14,45 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		181728A02671CA7F002B413D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1817289E2671CA7F002B413D /* LaunchScreen.xib */; };
 		1822C9782666102F00BEF572 /* libswiftWebKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1822C9752666101A00BEF572 /* libswiftWebKit.tbd */; };
+		184BD7CA2680A89F003F7FDE /* ImcVideoReceiverConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 184BD7C72680A89F003F7FDE /* ImcVideoReceiverConnection.m */; };
+		184BD7CB2680A89F003F7FDE /* ImcRemoteConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 184BD7C82680A89F003F7FDE /* ImcRemoteConnection.m */; };
+		184BD7CC2680A89F003F7FDE /* ImcMobileCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 184BD7C92680A89F003F7FDE /* ImcMobileCommand.m */; };
+		184BD8E62680AD79003F7FDE /* codecf in Resources */ = {isa = PBXBuildFile; fileRef = 184BD8A62680AA5E003F7FDE /* codecf */; };
+		184BD8F12680ADE8003F7FDE /* CodecfDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 184BD8F02680ADE8003F7FDE /* CodecfDecoder.m */; };
+		184BD8FB2680AEEF003F7FDE /* libavcodec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8F42680AEEE003F7FDE /* libavcodec.a */; };
+		184BD8FC2680AEEF003F7FDE /* libavformat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8F52680AEEE003F7FDE /* libavformat.a */; };
+		184BD8FD2680AEEF003F7FDE /* libavutil.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8F62680AEEE003F7FDE /* libavutil.a */; };
+		184BD8FE2680AEEF003F7FDE /* libavdevice.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8F72680AEEE003F7FDE /* libavdevice.a */; };
+		184BD8FF2680AEF0003F7FDE /* libswresample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8F82680AEEE003F7FDE /* libswresample.a */; };
+		184BD9002680AEF0003F7FDE /* libswscale.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8F92680AEEE003F7FDE /* libswscale.a */; };
+		184BD9012680AEF0003F7FDE /* libavfilter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8FA2680AEEF003F7FDE /* libavfilter.a */; };
+		184BD9072680AFB7003F7FDE /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD9042680AF73003F7FDE /* libiconv.tbd */; };
+		185CB279268095CD000184DD /* AppStateView.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB274268095CD000184DD /* AppStateView.m */; };
+		185CB27A268095CD000184DD /* AppStateViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB276268095CD000184DD /* AppStateViewManager.m */; };
+		185CB27B268095CD000184DD /* AppStateEventEmitter.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB278268095CD000184DD /* AppStateEventEmitter.m */; };
+		185CB42D26809CF6000184DD /* ImcDecodeThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB37326809CF5000184DD /* ImcDecodeThread.m */; };
+		185CB42E26809CF6000184DD /* ImcEnvSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB37726809CF5000184DD /* ImcEnvSetting.m */; };
+		185CB42F26809CF6000184DD /* BDHost.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB37926809CF5000184DD /* BDHost.m */; };
+		185CB43026809CF6000184DD /* FFMpegFrameViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB37A26809CF5000184DD /* FFMpegFrameViewManager.m */; };
+		185CB43126809CF6000184DD /* ImcMainDisplayVideoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB37B26809CF5000184DD /* ImcMainDisplayVideoView.m */; };
+		185CB44326809CF6000184DD /* NSDate+Agenda.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB40B26809CF6000184DD /* NSDate+Agenda.m */; };
+		185CB44426809CF6000184DD /* ImcCameraList.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB40D26809CF6000184DD /* ImcCameraList.m */; };
+		185CB44526809CF6000184DD /* ImcGUIBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB40F26809CF6000184DD /* ImcGUIBase.m */; };
+		185CB44626809CF6000184DD /* ImcControllerThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41026809CF6000184DD /* ImcControllerThread.m */; };
+		185CB44726809CF6000184DD /* FFMpegFrameEventEmitter.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41326809CF6000184DD /* FFMpegFrameEventEmitter.m */; };
+		185CB44826809CF6000184DD /* ImcServerSettingAll.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41426809CF6000184DD /* ImcServerSettingAll.m */; };
+		185CB44926809CF6000184DD /* ImcDisplayChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41826809CF6000184DD /* ImcDisplayChannel.m */; };
+		185CB44A26809CF6000184DD /* NSString+AESCrypt.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41A26809CF6000184DD /* NSString+AESCrypt.m */; };
+		185CB44B26809CF6000184DD /* NSData+AESCrypt.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41B26809CF6000184DD /* NSData+AESCrypt.m */; };
+		185CB44C26809CF6000184DD /* GDataXMLNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41C26809CF6000184DD /* GDataXMLNode.m */; };
+		185CB44D26809CF6000184DD /* UncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41E26809CF6000184DD /* UncaughtExceptionHandler.m */; };
+		185CB44E26809CF6000184DD /* VideoFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB41F26809CF6000184DD /* VideoFrame.m */; };
+		185CB44F26809CF6000184DD /* ImcQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB42026809CF6000184DD /* ImcQueue.m */; };
+		185CB45026809CF6000184DD /* FFMpegFrameView.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB42126809CF6000184DD /* FFMpegFrameView.m */; };
+		185CB45126809CF6000184DD /* ImcImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB42326809CF6000184DD /* ImcImageView.m */; };
+		185CB45226809CF6000184DD /* ImcServerSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB42526809CF6000184DD /* ImcServerSetting.m */; };
+		185CB45326809CF6000184DD /* NSDate+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB42826809CF6000184DD /* NSDate+Utils.m */; };
+		185CB45426809CF6000184DD /* ImcConnectionServerList.m in Sources */ = {isa = PBXBuildFile; fileRef = 185CB42B26809CF6000184DD /* ImcConnectionServerList.m */; };
 		18D3E56426663843006AEE48 /* libBVLinearGradient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E54526663843006AEE48 /* libBVLinearGradient.a */; };
 		18D3E56526663843006AEE48 /* libCharts.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E54626663843006AEE48 /* libCharts.a */; };
 		18D3E56626663844006AEE48 /* libDoubleConversion.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E54726663843006AEE48 /* libDoubleConversion.a */; };
@@ -70,6 +109,76 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = CMSApp/main.m; sourceTree = "<group>"; };
 		1817289F2671CA7F002B413D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = CMSApp/Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		1822C9752666101A00BEF572 /* libswiftWebKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libswiftWebKit.tbd; path = usr/lib/swift/libswiftWebKit.tbd; sourceTree = SDKROOT; };
+		184BD7C42680A89F003F7FDE /* ImcVideoReceiverConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcVideoReceiverConnection.h; sourceTree = "<group>"; };
+		184BD7C52680A89F003F7FDE /* ImcRemoteConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcRemoteConnection.h; sourceTree = "<group>"; };
+		184BD7C62680A89F003F7FDE /* ImcMobileCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcMobileCommand.h; sourceTree = "<group>"; };
+		184BD7C72680A89F003F7FDE /* ImcVideoReceiverConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcVideoReceiverConnection.m; sourceTree = "<group>"; };
+		184BD7C82680A89F003F7FDE /* ImcRemoteConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcRemoteConnection.m; sourceTree = "<group>"; };
+		184BD7C92680A89F003F7FDE /* ImcMobileCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcMobileCommand.m; sourceTree = "<group>"; };
+		184BD8A62680AA5E003F7FDE /* codecf */ = {isa = PBXFileReference; lastKnownFileType = folder; path = codecf; sourceTree = "<group>"; };
+		184BD8F02680ADE8003F7FDE /* CodecfDecoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = CodecfDecoder.m; path = CMSApp/FFMpeg/codecf/CodecfDecoder.m; sourceTree = "<group>"; };
+		184BD8F42680AEEE003F7FDE /* libavcodec.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libavcodec.a; path = CMSApp/FFMpeg/codecf/ffmpeg3.2/lib/libavcodec.a; sourceTree = "<group>"; };
+		184BD8F52680AEEE003F7FDE /* libavformat.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libavformat.a; path = CMSApp/FFMpeg/codecf/ffmpeg3.2/lib/libavformat.a; sourceTree = "<group>"; };
+		184BD8F62680AEEE003F7FDE /* libavutil.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libavutil.a; path = CMSApp/FFMpeg/codecf/ffmpeg3.2/lib/libavutil.a; sourceTree = "<group>"; };
+		184BD8F72680AEEE003F7FDE /* libavdevice.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libavdevice.a; path = CMSApp/FFMpeg/codecf/ffmpeg3.2/lib/libavdevice.a; sourceTree = "<group>"; };
+		184BD8F82680AEEE003F7FDE /* libswresample.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libswresample.a; path = CMSApp/FFMpeg/codecf/ffmpeg3.2/lib/libswresample.a; sourceTree = "<group>"; };
+		184BD8F92680AEEE003F7FDE /* libswscale.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libswscale.a; path = CMSApp/FFMpeg/codecf/ffmpeg3.2/lib/libswscale.a; sourceTree = "<group>"; };
+		184BD8FA2680AEEF003F7FDE /* libavfilter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libavfilter.a; path = CMSApp/FFMpeg/codecf/ffmpeg3.2/lib/libavfilter.a; sourceTree = "<group>"; };
+		184BD9042680AF73003F7FDE /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
+		185CB273268095CC000184DD /* AppStateEventEmitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppStateEventEmitter.h; path = CMSApp/AppStateEventEmitter.h; sourceTree = "<group>"; };
+		185CB274268095CD000184DD /* AppStateView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppStateView.m; path = CMSApp/AppStateView.m; sourceTree = "<group>"; };
+		185CB275268095CD000184DD /* AppStateViewManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppStateViewManager.h; path = CMSApp/AppStateViewManager.h; sourceTree = "<group>"; };
+		185CB276268095CD000184DD /* AppStateViewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppStateViewManager.m; path = CMSApp/AppStateViewManager.m; sourceTree = "<group>"; };
+		185CB277268095CD000184DD /* AppStateView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppStateView.h; path = CMSApp/AppStateView.h; sourceTree = "<group>"; };
+		185CB278268095CD000184DD /* AppStateEventEmitter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppStateEventEmitter.m; path = CMSApp/AppStateEventEmitter.m; sourceTree = "<group>"; };
+		185CB37326809CF5000184DD /* ImcDecodeThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcDecodeThread.m; sourceTree = "<group>"; };
+		185CB37426809CF5000184DD /* GDataXMLNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GDataXMLNode.h; sourceTree = "<group>"; };
+		185CB37526809CF5000184DD /* NSData+AESCrypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+AESCrypt.h"; sourceTree = "<group>"; };
+		185CB37626809CF5000184DD /* NSString+AESCrypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+AESCrypt.h"; sourceTree = "<group>"; };
+		185CB37726809CF5000184DD /* ImcEnvSetting.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcEnvSetting.m; sourceTree = "<group>"; };
+		185CB37826809CF5000184DD /* ImcDisplayChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcDisplayChannel.h; sourceTree = "<group>"; };
+		185CB37926809CF5000184DD /* BDHost.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BDHost.m; sourceTree = "<group>"; };
+		185CB37A26809CF5000184DD /* FFMpegFrameViewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFMpegFrameViewManager.m; sourceTree = "<group>"; };
+		185CB37B26809CF5000184DD /* ImcMainDisplayVideoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcMainDisplayVideoView.m; sourceTree = "<group>"; };
+		185CB37C26809CF5000184DD /* MobileBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobileBase.h; sourceTree = "<group>"; };
+		185CB37D26809CF5000184DD /* FFMpegFrameView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFMpegFrameView.h; sourceTree = "<group>"; };
+		185CB40826809CF6000184DD /* ImcQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcQueue.h; sourceTree = "<group>"; };
+		185CB40926809CF6000184DD /* VideoFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoFrame.h; sourceTree = "<group>"; };
+		185CB40A26809CF6000184DD /* UncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UncaughtExceptionHandler.h; sourceTree = "<group>"; };
+		185CB40B26809CF6000184DD /* NSDate+Agenda.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+Agenda.m"; sourceTree = "<group>"; };
+		185CB40C26809CF6000184DD /* NSDate+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+Utils.h"; sourceTree = "<group>"; };
+		185CB40D26809CF6000184DD /* ImcCameraList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcCameraList.m; sourceTree = "<group>"; };
+		185CB40E26809CF6000184DD /* ImcServerSetting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcServerSetting.h; sourceTree = "<group>"; };
+		185CB40F26809CF6000184DD /* ImcGUIBase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcGUIBase.m; sourceTree = "<group>"; };
+		185CB41026809CF6000184DD /* ImcControllerThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcControllerThread.m; sourceTree = "<group>"; };
+		185CB41126809CF6000184DD /* Imcbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Imcbase.h; sourceTree = "<group>"; };
+		185CB41226809CF6000184DD /* ImcImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcImageView.h; sourceTree = "<group>"; };
+		185CB41326809CF6000184DD /* FFMpegFrameEventEmitter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFMpegFrameEventEmitter.m; sourceTree = "<group>"; };
+		185CB41426809CF6000184DD /* ImcServerSettingAll.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcServerSettingAll.m; sourceTree = "<group>"; };
+		185CB41526809CF6000184DD /* ImcConnectionServerList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcConnectionServerList.h; sourceTree = "<group>"; };
+		185CB41626809CF6000184DD /* BDHost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BDHost.h; sourceTree = "<group>"; };
+		185CB41726809CF6000184DD /* FFMpegFrameViewManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFMpegFrameViewManager.h; sourceTree = "<group>"; };
+		185CB41826809CF6000184DD /* ImcDisplayChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcDisplayChannel.m; sourceTree = "<group>"; };
+		185CB41926809CF6000184DD /* ImcEnvSetting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcEnvSetting.h; sourceTree = "<group>"; };
+		185CB41A26809CF6000184DD /* NSString+AESCrypt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+AESCrypt.m"; sourceTree = "<group>"; };
+		185CB41B26809CF6000184DD /* NSData+AESCrypt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+AESCrypt.m"; sourceTree = "<group>"; };
+		185CB41C26809CF6000184DD /* GDataXMLNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GDataXMLNode.m; sourceTree = "<group>"; };
+		185CB41D26809CF6000184DD /* ImcDecodeThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcDecodeThread.h; sourceTree = "<group>"; };
+		185CB41E26809CF6000184DD /* UncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UncaughtExceptionHandler.m; sourceTree = "<group>"; };
+		185CB41F26809CF6000184DD /* VideoFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoFrame.m; sourceTree = "<group>"; };
+		185CB42026809CF6000184DD /* ImcQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcQueue.m; sourceTree = "<group>"; };
+		185CB42126809CF6000184DD /* FFMpegFrameView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFMpegFrameView.m; sourceTree = "<group>"; };
+		185CB42226809CF6000184DD /* ImcMainDisplayVideoView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcMainDisplayVideoView.h; sourceTree = "<group>"; };
+		185CB42326809CF6000184DD /* ImcImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcImageView.m; sourceTree = "<group>"; };
+		185CB42426809CF6000184DD /* ImcControllerThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcControllerThread.h; sourceTree = "<group>"; };
+		185CB42526809CF6000184DD /* ImcServerSetting.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcServerSetting.m; sourceTree = "<group>"; };
+		185CB42626809CF6000184DD /* ImcGUIBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcGUIBase.h; sourceTree = "<group>"; };
+		185CB42726809CF6000184DD /* ImcCameraList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcCameraList.h; sourceTree = "<group>"; };
+		185CB42826809CF6000184DD /* NSDate+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+Utils.m"; sourceTree = "<group>"; };
+		185CB42926809CF6000184DD /* NSDate+Agenda.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+Agenda.h"; sourceTree = "<group>"; };
+		185CB42A26809CF6000184DD /* ImcServerSettingAll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcServerSettingAll.h; sourceTree = "<group>"; };
+		185CB42B26809CF6000184DD /* ImcConnectionServerList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImcConnectionServerList.m; sourceTree = "<group>"; };
+		185CB42C26809CF6000184DD /* FFMpegFrameEventEmitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFMpegFrameEventEmitter.h; sourceTree = "<group>"; };
 		18D3E3F8266614D2006AEE48 /* CMSApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = CMSApp.entitlements; path = CMSApp/CMSApp.entitlements; sourceTree = "<group>"; };
 		18D3E54526663843006AEE48 /* libBVLinearGradient.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libBVLinearGradient.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		18D3E54626663843006AEE48 /* libCharts.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libCharts.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,13 +248,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				184BD9012680AEF0003F7FDE /* libavfilter.a in Frameworks */,
+				184BD8FE2680AEEF003F7FDE /* libavdevice.a in Frameworks */,
 				1822C9782666102F00BEF572 /* libswiftWebKit.tbd in Frameworks */,
 				18D3E56626663844006AEE48 /* libDoubleConversion.a in Frameworks */,
 				18D3E57F26663845006AEE48 /* libRNSnackbar.a in Frameworks */,
+				184BD9002680AEF0003F7FDE /* libswscale.a in Frameworks */,
 				18D3E56D26663844006AEE48 /* libReact-Core.a in Frameworks */,
 				18D3E56B26663844006AEE48 /* libRCT-Folly.a in Frameworks */,
 				18D3E57326663844006AEE48 /* libReact-perflogger.a in Frameworks */,
+				184BD9072680AFB7003F7FDE /* libiconv.tbd in Frameworks */,
 				18D3E57E26663845006AEE48 /* libRNCharts.a in Frameworks */,
+				184BD8FB2680AEEF003F7FDE /* libavcodec.a in Frameworks */,
 				18D3E57026663844006AEE48 /* libReact-jsi.a in Frameworks */,
 				18D3E57726663844006AEE48 /* libReact-RCTLinking.a in Frameworks */,
 				18D3E56426663843006AEE48 /* libBVLinearGradient.a in Frameworks */,
@@ -154,6 +268,7 @@
 				18D3E56526663843006AEE48 /* libCharts.a in Frameworks */,
 				18D3E58026663846006AEE48 /* libRNVectorIcons.a in Frameworks */,
 				18D3E57826663845006AEE48 /* libReact-RCTNetwork.a in Frameworks */,
+				184BD8FD2680AEEF003F7FDE /* libavutil.a in Frameworks */,
 				18D3E56F26663844006AEE48 /* libReact-cxxreact.a in Frameworks */,
 				18D3E56E26663844006AEE48 /* libReact-CoreModules.a in Frameworks */,
 				18D3E57226663844006AEE48 /* libReact-jsinspector.a in Frameworks */,
@@ -162,7 +277,9 @@
 				18D3E57126663844006AEE48 /* libReact-jsiexecutor.a in Frameworks */,
 				18D3E57526663844006AEE48 /* libReact-RCTBlob.a in Frameworks */,
 				18D3E57C26663845006AEE48 /* libReact-RCTVibration.a in Frameworks */,
+				184BD8FC2680AEEF003F7FDE /* libavformat.a in Frameworks */,
 				18D3E57D26663845006AEE48 /* libReactCommon.a in Frameworks */,
+				184BD8FF2680AEF0003F7FDE /* libswresample.a in Frameworks */,
 				18D3E57A26663845006AEE48 /* libReact-RCTSettings.a in Frameworks */,
 				18D3E57B26663845006AEE48 /* libReact-RCTText.a in Frameworks */,
 				18D3E56826663844006AEE48 /* libglog.a in Frameworks */,
@@ -196,8 +313,15 @@
 		13B07FAE1A68108700A75B9A /* CMSApp */ = {
 			isa = PBXGroup;
 			children = (
+				185CB37226809CF5000184DD /* FFMpeg */,
 				1817289E2671CA7F002B413D /* LaunchScreen.xib */,
 				18D3E3F8266614D2006AEE48 /* CMSApp.entitlements */,
+				185CB273268095CC000184DD /* AppStateEventEmitter.h */,
+				185CB278268095CD000184DD /* AppStateEventEmitter.m */,
+				185CB277268095CD000184DD /* AppStateView.h */,
+				185CB274268095CD000184DD /* AppStateView.m */,
+				185CB275268095CD000184DD /* AppStateViewManager.h */,
+				185CB276268095CD000184DD /* AppStateViewManager.m */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -207,9 +331,88 @@
 			name = CMSApp;
 			sourceTree = "<group>";
 		};
+		184BD7C32680A89F003F7FDE /* Commanager */ = {
+			isa = PBXGroup;
+			children = (
+				184BD7C42680A89F003F7FDE /* ImcVideoReceiverConnection.h */,
+				184BD7C52680A89F003F7FDE /* ImcRemoteConnection.h */,
+				184BD7C62680A89F003F7FDE /* ImcMobileCommand.h */,
+				184BD7C72680A89F003F7FDE /* ImcVideoReceiverConnection.m */,
+				184BD7C82680A89F003F7FDE /* ImcRemoteConnection.m */,
+				184BD7C92680A89F003F7FDE /* ImcMobileCommand.m */,
+			);
+			path = Commanager;
+			sourceTree = "<group>";
+		};
+		185CB37226809CF5000184DD /* FFMpeg */ = {
+			isa = PBXGroup;
+			children = (
+				184BD8A62680AA5E003F7FDE /* codecf */,
+				184BD7C32680A89F003F7FDE /* Commanager */,
+				185CB37326809CF5000184DD /* ImcDecodeThread.m */,
+				185CB37426809CF5000184DD /* GDataXMLNode.h */,
+				185CB37526809CF5000184DD /* NSData+AESCrypt.h */,
+				185CB37626809CF5000184DD /* NSString+AESCrypt.h */,
+				185CB37726809CF5000184DD /* ImcEnvSetting.m */,
+				185CB37826809CF5000184DD /* ImcDisplayChannel.h */,
+				185CB37926809CF5000184DD /* BDHost.m */,
+				185CB37A26809CF5000184DD /* FFMpegFrameViewManager.m */,
+				185CB37B26809CF5000184DD /* ImcMainDisplayVideoView.m */,
+				185CB37C26809CF5000184DD /* MobileBase.h */,
+				185CB37D26809CF5000184DD /* FFMpegFrameView.h */,
+				185CB40826809CF6000184DD /* ImcQueue.h */,
+				185CB40926809CF6000184DD /* VideoFrame.h */,
+				185CB40A26809CF6000184DD /* UncaughtExceptionHandler.h */,
+				185CB40B26809CF6000184DD /* NSDate+Agenda.m */,
+				185CB40C26809CF6000184DD /* NSDate+Utils.h */,
+				185CB40D26809CF6000184DD /* ImcCameraList.m */,
+				185CB40E26809CF6000184DD /* ImcServerSetting.h */,
+				185CB40F26809CF6000184DD /* ImcGUIBase.m */,
+				185CB41026809CF6000184DD /* ImcControllerThread.m */,
+				185CB41126809CF6000184DD /* Imcbase.h */,
+				185CB41226809CF6000184DD /* ImcImageView.h */,
+				185CB41326809CF6000184DD /* FFMpegFrameEventEmitter.m */,
+				185CB41426809CF6000184DD /* ImcServerSettingAll.m */,
+				185CB41526809CF6000184DD /* ImcConnectionServerList.h */,
+				185CB41626809CF6000184DD /* BDHost.h */,
+				185CB41726809CF6000184DD /* FFMpegFrameViewManager.h */,
+				185CB41826809CF6000184DD /* ImcDisplayChannel.m */,
+				185CB41926809CF6000184DD /* ImcEnvSetting.h */,
+				185CB41A26809CF6000184DD /* NSString+AESCrypt.m */,
+				185CB41B26809CF6000184DD /* NSData+AESCrypt.m */,
+				185CB41C26809CF6000184DD /* GDataXMLNode.m */,
+				185CB41D26809CF6000184DD /* ImcDecodeThread.h */,
+				185CB41E26809CF6000184DD /* UncaughtExceptionHandler.m */,
+				185CB41F26809CF6000184DD /* VideoFrame.m */,
+				185CB42026809CF6000184DD /* ImcQueue.m */,
+				185CB42126809CF6000184DD /* FFMpegFrameView.m */,
+				185CB42226809CF6000184DD /* ImcMainDisplayVideoView.h */,
+				185CB42326809CF6000184DD /* ImcImageView.m */,
+				185CB42426809CF6000184DD /* ImcControllerThread.h */,
+				185CB42526809CF6000184DD /* ImcServerSetting.m */,
+				185CB42626809CF6000184DD /* ImcGUIBase.h */,
+				185CB42726809CF6000184DD /* ImcCameraList.h */,
+				185CB42826809CF6000184DD /* NSDate+Utils.m */,
+				185CB42926809CF6000184DD /* NSDate+Agenda.h */,
+				185CB42A26809CF6000184DD /* ImcServerSettingAll.h */,
+				185CB42B26809CF6000184DD /* ImcConnectionServerList.m */,
+				185CB42C26809CF6000184DD /* FFMpegFrameEventEmitter.h */,
+			);
+			name = FFMpeg;
+			path = CMSApp/FFMpeg;
+			sourceTree = "<group>";
+		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				184BD9042680AF73003F7FDE /* libiconv.tbd */,
+				184BD8F42680AEEE003F7FDE /* libavcodec.a */,
+				184BD8F72680AEEE003F7FDE /* libavdevice.a */,
+				184BD8FA2680AEEF003F7FDE /* libavfilter.a */,
+				184BD8F52680AEEE003F7FDE /* libavformat.a */,
+				184BD8F62680AEEE003F7FDE /* libavutil.a */,
+				184BD8F82680AEEE003F7FDE /* libswresample.a */,
+				184BD8F92680AEEE003F7FDE /* libswscale.a */,
 				18D3E54526663843006AEE48 /* libBVLinearGradient.a */,
 				18D3E54626663843006AEE48 /* libCharts.a */,
 				18D3E54726663843006AEE48 /* libDoubleConversion.a */,
@@ -293,6 +496,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				184BD8F02680ADE8003F7FDE /* CodecfDecoder.m */,
 				13B07FAE1A68108700A75B9A /* CMSApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* CMSAppTests */,
@@ -409,6 +613,7 @@
 			files = (
 				181728A02671CA7F002B413D /* LaunchScreen.xib in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				184BD8E62680AD79003F7FDE /* codecf in Resources */,
 				13ACFD0FDA86419C9B3610FE /* Roboto-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -542,8 +747,38 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				184BD8F12680ADE8003F7FDE /* CodecfDecoder.m in Sources */,
+				184BD7CA2680A89F003F7FDE /* ImcVideoReceiverConnection.m in Sources */,
+				185CB45426809CF6000184DD /* ImcConnectionServerList.m in Sources */,
+				185CB44526809CF6000184DD /* ImcGUIBase.m in Sources */,
+				185CB45026809CF6000184DD /* FFMpegFrameView.m in Sources */,
+				185CB44B26809CF6000184DD /* NSData+AESCrypt.m in Sources */,
+				185CB43126809CF6000184DD /* ImcMainDisplayVideoView.m in Sources */,
+				185CB45326809CF6000184DD /* NSDate+Utils.m in Sources */,
+				185CB45126809CF6000184DD /* ImcImageView.m in Sources */,
+				184BD7CC2680A89F003F7FDE /* ImcMobileCommand.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
+				185CB43026809CF6000184DD /* FFMpegFrameViewManager.m in Sources */,
+				185CB44C26809CF6000184DD /* GDataXMLNode.m in Sources */,
+				185CB44A26809CF6000184DD /* NSString+AESCrypt.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				185CB42E26809CF6000184DD /* ImcEnvSetting.m in Sources */,
+				185CB45226809CF6000184DD /* ImcServerSetting.m in Sources */,
+				184BD7CB2680A89F003F7FDE /* ImcRemoteConnection.m in Sources */,
+				185CB44426809CF6000184DD /* ImcCameraList.m in Sources */,
+				185CB279268095CD000184DD /* AppStateView.m in Sources */,
+				185CB44E26809CF6000184DD /* VideoFrame.m in Sources */,
+				185CB44926809CF6000184DD /* ImcDisplayChannel.m in Sources */,
+				185CB44F26809CF6000184DD /* ImcQueue.m in Sources */,
+				185CB44626809CF6000184DD /* ImcControllerThread.m in Sources */,
+				185CB27A268095CD000184DD /* AppStateViewManager.m in Sources */,
+				185CB44726809CF6000184DD /* FFMpegFrameEventEmitter.m in Sources */,
+				185CB44D26809CF6000184DD /* UncaughtExceptionHandler.m in Sources */,
+				185CB27B268095CD000184DD /* AppStateEventEmitter.m in Sources */,
+				185CB44826809CF6000184DD /* ImcServerSettingAll.m in Sources */,
+				185CB42D26809CF6000184DD /* ImcDecodeThread.m in Sources */,
+				185CB44326809CF6000184DD /* NSDate+Agenda.m in Sources */,
+				185CB42F26809CF6000184DD /* BDHost.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -627,9 +862,57 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CMSApp/CMSApp.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = SCBSNP7VE9;
 				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"${PODS_ROOT}/Headers/Public\"",
+					"\"${PODS_ROOT}/Headers/Public/BVLinearGradient\"",
+					"\"${PODS_ROOT}/Headers/Public/DoubleConversion\"",
+					"\"${PODS_ROOT}/Headers/Public/FBLazyVector\"",
+					"\"${PODS_ROOT}/Headers/Public/FBReactNativeSpec\"",
+					"\"${PODS_ROOT}/Headers/Public/RCT-Folly\"",
+					"\"${PODS_ROOT}/Headers/Public/RCTRequired\"",
+					"\"${PODS_ROOT}/Headers/Public/RCTTypeSafety\"",
+					"\"${PODS_ROOT}/Headers/Public/RNCAsyncStorage\"",
+					"\"${PODS_ROOT}/Headers/Public/RNCMaskedView\"",
+					"\"${PODS_ROOT}/Headers/Public/RNCharts\"",
+					"\"${PODS_ROOT}/Headers/Public/RNDeviceInfo\"",
+					"\"${PODS_ROOT}/Headers/Public/RNGestureHandler\"",
+					"\"${PODS_ROOT}/Headers/Public/RNReanimated\"",
+					"\"${PODS_ROOT}/Headers/Public/RNSVG\"",
+					"\"${PODS_ROOT}/Headers/Public/RNScreens\"",
+					"\"${PODS_ROOT}/Headers/Public/RNShare\"",
+					"\"${PODS_ROOT}/Headers/Public/RNSnackbar\"",
+					"\"${PODS_ROOT}/Headers/Public/RNVectorIcons\"",
+					"\"${PODS_ROOT}/Headers/Public/React\"",
+					"\"${PODS_ROOT}/Headers/Public/React-Core\"/**",
+					"\"${PODS_ROOT}/Headers/Public/React-RCTBlob\"",
+					"\"${PODS_ROOT}/Headers/Public/React-RCTText\"",
+					"\"${PODS_ROOT}/Headers/Public/React-callinvoker\"",
+					"\"${PODS_ROOT}/Headers/Public/React-cxxreact\"",
+					"\"${PODS_ROOT}/Headers/Public/React-jsi\"",
+					"\"${PODS_ROOT}/Headers/Public/React-jsiexecutor\"",
+					"\"${PODS_ROOT}/Headers/Public/React-jsinspector\"",
+					"\"${PODS_ROOT}/Headers/Public/React-perflogger\"",
+					"\"${PODS_ROOT}/Headers/Public/React-runtimeexecutor\"",
+					"\"${PODS_ROOT}/Headers/Public/ReactCommon\"",
+					"\"${PODS_ROOT}/Headers/Public/Yoga\"",
+					"\"${PODS_ROOT}/Headers/Public/glog\"",
+					"\"${PODS_ROOT}/Headers/Public/react-native-orientation-locker\"",
+					"\"${PODS_ROOT}/Headers/Public/react-native-safe-area-context\"",
+					"\"${PODS_ROOT}/Headers/Public/react-native-video\"",
+					"\"${PODS_ROOT}/Headers/Public/react-native-webrtc\"",
+					"\"${PODS_ROOT}/Headers/Public/rn-fetch-blob\"",
+					"\"$(PODS_ROOT)/boost-for-react-native\"",
+					"\"$(PODS_ROOT)/boost-for-react-native\"",
+					"\"$(PODS_ROOT)/glog\"",
+					"\"$(PODS_ROOT)/RCT-Folly\"",
+					"\"$(PODS_ROOT)/Headers/Private/React-Core\"",
+					"$(PROJECT_DIR)/CMSApp/FFMpeg/codecf/ffmpeg3.2/include",
+					"$(PROJECT_DIR)/CMSApp/FFMpeg/codecf",
+				);
 				INFOPLIST_FILE = CMSApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -638,6 +921,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/swift",
+					"$(PROJECT_DIR)/CMSApp/FFMpeg/codecf/ffmpeg3.2/lib",
 				);
 				MARKETING_VERSION = 3.0.0;
 				OTHER_LDFLAGS = (
@@ -661,9 +945,57 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CMSApp/CMSApp.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = SCBSNP7VE9;
 				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"${PODS_ROOT}/Headers/Public\"",
+					"\"${PODS_ROOT}/Headers/Public/BVLinearGradient\"",
+					"\"${PODS_ROOT}/Headers/Public/DoubleConversion\"",
+					"\"${PODS_ROOT}/Headers/Public/FBLazyVector\"",
+					"\"${PODS_ROOT}/Headers/Public/FBReactNativeSpec\"",
+					"\"${PODS_ROOT}/Headers/Public/RCT-Folly\"",
+					"\"${PODS_ROOT}/Headers/Public/RCTRequired\"",
+					"\"${PODS_ROOT}/Headers/Public/RCTTypeSafety\"",
+					"\"${PODS_ROOT}/Headers/Public/RNCAsyncStorage\"",
+					"\"${PODS_ROOT}/Headers/Public/RNCMaskedView\"",
+					"\"${PODS_ROOT}/Headers/Public/RNCharts\"",
+					"\"${PODS_ROOT}/Headers/Public/RNDeviceInfo\"",
+					"\"${PODS_ROOT}/Headers/Public/RNGestureHandler\"",
+					"\"${PODS_ROOT}/Headers/Public/RNReanimated\"",
+					"\"${PODS_ROOT}/Headers/Public/RNSVG\"",
+					"\"${PODS_ROOT}/Headers/Public/RNScreens\"",
+					"\"${PODS_ROOT}/Headers/Public/RNShare\"",
+					"\"${PODS_ROOT}/Headers/Public/RNSnackbar\"",
+					"\"${PODS_ROOT}/Headers/Public/RNVectorIcons\"",
+					"\"${PODS_ROOT}/Headers/Public/React\"",
+					"\"${PODS_ROOT}/Headers/Public/React-Core\"/**",
+					"\"${PODS_ROOT}/Headers/Public/React-RCTBlob\"",
+					"\"${PODS_ROOT}/Headers/Public/React-RCTText\"",
+					"\"${PODS_ROOT}/Headers/Public/React-callinvoker\"",
+					"\"${PODS_ROOT}/Headers/Public/React-cxxreact\"",
+					"\"${PODS_ROOT}/Headers/Public/React-jsi\"",
+					"\"${PODS_ROOT}/Headers/Public/React-jsiexecutor\"",
+					"\"${PODS_ROOT}/Headers/Public/React-jsinspector\"",
+					"\"${PODS_ROOT}/Headers/Public/React-perflogger\"",
+					"\"${PODS_ROOT}/Headers/Public/React-runtimeexecutor\"",
+					"\"${PODS_ROOT}/Headers/Public/ReactCommon\"",
+					"\"${PODS_ROOT}/Headers/Public/Yoga\"",
+					"\"${PODS_ROOT}/Headers/Public/glog\"",
+					"\"${PODS_ROOT}/Headers/Public/react-native-orientation-locker\"",
+					"\"${PODS_ROOT}/Headers/Public/react-native-safe-area-context\"",
+					"\"${PODS_ROOT}/Headers/Public/react-native-video\"",
+					"\"${PODS_ROOT}/Headers/Public/react-native-webrtc\"",
+					"\"${PODS_ROOT}/Headers/Public/rn-fetch-blob\"",
+					"\"$(PODS_ROOT)/boost-for-react-native\"",
+					"\"$(PODS_ROOT)/boost-for-react-native\"",
+					"\"$(PODS_ROOT)/glog\"",
+					"\"$(PODS_ROOT)/RCT-Folly\"",
+					"\"$(PODS_ROOT)/Headers/Private/React-Core\"",
+					"$(PROJECT_DIR)/CMSApp/FFMpeg/codecf/ffmpeg3.2/include",
+					"$(PROJECT_DIR)/CMSApp/FFMpeg/codecf",
+				);
 				INFOPLIST_FILE = CMSApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -672,6 +1004,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/swift",
+					"$(PROJECT_DIR)/CMSApp/FFMpeg/codecf/ffmpeg3.2/lib",
 				);
 				MARKETING_VERSION = 3.0.0;
 				OTHER_LDFLAGS = (

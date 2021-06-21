@@ -1,9 +1,9 @@
 #import <React/RCTBridgeDelegate.h>
 #import <UIKit/UIKit.h>
-#import "FFMpegFrameView.h"
+#import "FFMpeg/FFMpegFrameView.h"
 #import "AppStateEventEmitter.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, UNUserNotificationCenterDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate/*, UNUserNotificationCenterDelegate*/>
 {
   NSDictionary* timezoneDictionary;
 }

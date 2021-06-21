@@ -10,7 +10,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AVKit/AVKit.h>
 //#import <React/RCTComponent.h>
-#import "RCTEventEmitter.h"
+#import "React/RCTEventEmitter.h"
 #import "RCTBridgeModule.h"
 
 //@class RCTEventDispatcher;

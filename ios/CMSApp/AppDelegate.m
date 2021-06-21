@@ -5,7 +5,7 @@
 #import <React/RCTRootView.h>
 
 #import "Orientation.h"
-#import "FFMpegFrameView.h"
+#import "FFMpeg/FFMpegFrameView.h"
 #import "AppStateEventEmitter.h"
 
 #ifdef FB_SONARKIT_ENABLED
