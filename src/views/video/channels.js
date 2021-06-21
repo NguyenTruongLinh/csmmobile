@@ -203,6 +203,7 @@ class ChannelsView extends Component {
 
     return (
       <View
+        key={item.key}
         style={{
           flexDirection: 'row',
           height: videoWindow.height,
