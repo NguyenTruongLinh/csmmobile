@@ -7,7 +7,7 @@ import RegionsView from '../views/sitetree/regions';
 import SitesView from '../views/sitetree/sites';
 import NVRsView from '../views/sitetree/nvrs';
 
-import ChannelsView from '../views/video/channels';
+import ChannelsView from '../views/video/liveChannels';
 import ChannelsSettingView from '../views/video/channelsSetting';
 import VideoPlayerView from '../views/video/player';
 
@@ -23,7 +23,7 @@ export default function VideoStack() {
       screenOptions={({route, navigation}) => ({
         headerStyle: {
           // backgroundColor: CMSColors.White,
-          borderBottomWidth: 1,
+          borderBottomWidth: 3,
         },
         headerStatusBarHeight: variables.StatusBarHeight,
         headerTitleAlign: 'center',

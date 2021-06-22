@@ -5,8 +5,11 @@ import {
   Text,
   StatusBar,
   BackHandler,
+  StyleSheet,
   Image,
 } from 'react-native';
+
+import CMSColors from '../../styles/cmscolors';
 
 class ChannelsSettingView extends Component {
   constructor(props) {
@@ -22,8 +25,30 @@ class ChannelsSettingView extends Component {
   }
 
   render() {
-    return <View></View>;
+    return (
+      <View>
+        {/* <View style={styles.summaryContainer}>
+          <Text style={styles.summaryText}>
+            {this.channelsCount +
+              (this.channelsCount > 1 ? ' channels' : ' channel')}
+          </Text>
+        </View> */}
+      </View>
+    );
   }
 }
 
+const styles = StyleSheet.create({
+  summaryContainer: {
+    backgroundColor: CMSColors.headerListRow,
+    height: 35,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  summaryText: {
+    paddingLeft: 24,
+    textAlignVertical: 'center',
+    color: CMSColors.colorRow_options,
+  },
+});
 export default ChannelsSettingView;

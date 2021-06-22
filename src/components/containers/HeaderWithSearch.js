@@ -20,10 +20,9 @@ class HeaderWithSearch extends React.Component {
     title: PropTypes.string,
     onChangeSearchText: PropTypes.func,
     searchValue: PropTypes.string,
-    // onAndroidBackPress: PropTypes.func,
-    backButton: PropTypes.bool,
     navigator: PropTypes.object,
-    // showSearchBar: PropTypes.bool,
+    extraButton: PropTypes.func,
+    onClickExtraButton: PropTypes.func,
   };
 
   static defaultProps = {

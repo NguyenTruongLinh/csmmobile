@@ -1,5 +1,6 @@
 import React from 'react';
 import {Provider} from 'mobx-react';
+import {ModalPortal} from 'react-native-modals';
 
 import appStore from './stores/appStore';
 import userStore from './stores/user';
@@ -25,6 +26,7 @@ const Main = () => {
       // oamStore={oamStore}
     >
       <App />
+      <ModalPortal />
     </Provider>
   );
 };

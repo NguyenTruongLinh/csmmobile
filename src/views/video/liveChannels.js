@@ -6,22 +6,47 @@ import {
   Modal,
   Dimensions,
   StyleSheet,
-  ActivityIndicator,
+  Text,
   // BackHandler,
 } from 'react-native';
-
 import {inject, observer} from 'mobx-react';
+import {BottomModal, ModalContent} from 'react-native-modals';
+import {Searchbar} from 'react-native-paper';
 
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
 import RTCStreamingView from './rtc';
 import AuthenModal from '../../components/common/AuthenModal';
+import CMSAvatars from '../../components/containers/CMSAvatars';
+import InputTextIcon from '../../components/controls/InputTextIcon';
 
 import CMSColors from '../../styles/cmscolors';
 import videoStore from '../../stores/video';
 import {CLOUD_TYPE} from '../../consts/video';
 import sitesStore from '../../stores/sites';
-import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
+import ROUTERS from '../../consts/routes';
+import variables from '../../styles/variables';
+import commonStyles from '../../styles/commons.style';
+// import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
+import {Comps as CompTxt} from '../../localization/texts';
+
+const LayoutData = [
+  {
+    key: 'layout_2x2',
+    value: 2,
+    icon: 'grid-view-4',
+  },
+  {
+    key: 'layout_3x33',
+    value: 3,
+    icon: 'grid-view-9',
+  },
+  {
+    key: 'layout_4x4',
+    value: 4,
+    icon: 'grid-view-16',
+  },
+];
 
 class ChannelsView extends Component {
   constructor(props) {
@@ -34,10 +59,13 @@ class ChannelsView extends Component {
         width,
         height,
       },
-      viewsPerRow: 2,
+      gridLayout: 2,
       showAuthen: false,
+      showLayoutSelection: false,
       liveData: [],
     };
+    this.channelsCount = 0;
+    this.playerRefs = [];
   }
 
   componentWillUnmount() {
@@ -50,17 +78,62 @@ class ChannelsView extends Component {
     const {videoStore, sitesStore, navigation} = this.props;
     if (__DEV__)
       console.log('ChannelsView componentDidMount: ', sitesStore.selectedDVR);
+    this.setHeader();
 
-    // navigation.setOptions({
-    //   headerTitle: sitesStore.selectedDVR
-    //     ? sitesStore.selectedDVR.name
-    //     : 'No DVR was selected',
-    // });
     if (!sitesStore.selectedDVR) return;
     videoStore.selectDVR(sitesStore.selectedDVR);
 
     this.getChannelsInfo();
   }
+
+  setHeader = () => {
+    const {navigation} = this.props;
+    let gridIcon = 'grid-view-4';
+    switch (this.state.gridLayout) {
+      case 3:
+        gridIcon = 'grid-view-9';
+        break;
+      case 4:
+        gridIcon = 'grid-view-16';
+        break;
+    }
+
+    navigation.setOptions({
+      headerTitle: sitesStore.selectedDVR
+        ? sitesStore.selectedDVR.name
+        : 'No DVR was selected',
+      headerRight: () => (
+        <View style={styles.headerRight}>
+          <CMSAvatars
+            size={22}
+            onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
+            color={CMSColors.colorText}
+            styles={{
+              flex: 1,
+              width: 40,
+              height: 40,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            iconCustom="ic_settings_24px"
+          />
+          <CMSAvatars
+            size={22}
+            onPress={() => this.setState({showLayoutSelection: true})}
+            color={CMSColors.colorText}
+            styles={{
+              flex: 1,
+              width: 40,
+              height: 40,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            iconCustom={gridIcon}
+          />
+        </View>
+      ),
+    });
+  };
 
   getChannelsInfo = async () => {
     const {videoStore} = this.props;
@@ -72,7 +145,7 @@ class ChannelsView extends Component {
       newState.showAuthen = true;
     }
     if (res) {
-      newState.liveData = this.buildLiveData();
+      newState.liveData = this.buildLiveData(this.state.gridLayout);
     }
     this.setState(newState);
   };
@@ -81,7 +154,7 @@ class ChannelsView extends Component {
     this.props.videoStore.setNVRLoginInfo({username, password});
     this.setState({
       showAuthen: false,
-      liveData: this.buildLiveData(),
+      liveData: this.buildLiveData(this.state.gridLayout),
     });
   };
 
@@ -89,20 +162,27 @@ class ChannelsView extends Component {
     this.setState({showAuthen: false});
   };
 
-  buildLiveData = () => {
-    const {viewsPerRow} = this.state;
+  buildLiveData = gridLayout => {
+    // const {gridLayout} = this.state;
     const {videoStore} = this.props;
     const videoDataList = videoStore.buildVideoData();
-    __DEV__ && console.log('ChannelsView videoDataList: ', videoDataList);
+    __DEV__ &&
+      console.log(
+        'ChannelsView videoDataList: ',
+        videoDataList,
+        ', layout: ',
+        gridLayout
+      );
+    this.channelsCount = videoDataList.length;
     if (!videoDataList || !Array.isArray(videoDataList)) return [];
 
     let result = [];
-    let totalRow = Math.ceil(videoDataList.length / viewsPerRow);
+    let totalRow = Math.ceil(videoDataList.length / gridLayout);
 
     for (let row = 0; row < totalRow; row++) {
       let newRow = {key: 'videoRow_' + row, data: []};
-      for (let col = 0; col < viewsPerRow; col++) {
-        let index = row * viewsPerRow + col;
+      for (let col = 0; col < gridLayout; col++) {
+        let index = row * gridLayout + col;
         if (index < videoDataList.length)
           newRow.data.push(videoDataList[index]);
         else newRow.data.push({});
@@ -116,7 +196,7 @@ class ChannelsView extends Component {
 
   onLayout = event => {
     const {x, y, width, height} = event.nativeEvent.layout;
-    const {viewsPerRow} = this.state;
+    const {gridLayout} = this.state;
     __DEV__ && console.log('ChannelsView onLayout: ', event.nativeEvent);
     this.setState({
       viewableWindow: {
@@ -124,8 +204,8 @@ class ChannelsView extends Component {
         height,
       },
       videoWindow: {
-        width: width / viewsPerRow,
-        height: height / viewsPerRow,
+        width: width / gridLayout,
+        height: height / gridLayout,
       },
     });
   };
@@ -133,7 +213,7 @@ class ChannelsView extends Component {
   onFilter = value => {
     this.props.videoStore.setChannelFilter(value);
     this.setState({
-      liveData: this.buildLiveData(),
+      liveData: this.buildLiveData(this.state.gridLayout),
     });
   };
 
@@ -161,7 +241,7 @@ class ChannelsView extends Component {
         }}>
         <View style={[styles.modalcontainer]}>
           <AuthenModal
-            style={{flex: 0, width: 343, height: 303}}
+            style={styles.authenModal}
             onOK={this.onAuthenSubmit}
             onCancel={() => {
               this.setState({showAuthen: false}, () => {
@@ -177,6 +257,57 @@ class ChannelsView extends Component {
     );
   };
 
+  renderLayoutItem = ({item}) => {
+    const {height} = Dimensions.get('window');
+    const {viewableWindow} = this.state;
+
+    return (
+      <CMSAvatars
+        size={height * 0.07}
+        // style={{alignSelf: 'center'}}
+        onPress={() =>
+          this.setState(
+            {
+              gridLayout: item.value,
+              showLayoutSelection: false,
+              liveData: this.buildLiveData(item.value),
+              videoWindow: {
+                width: viewableWindow.width / item.value,
+                height: viewableWindow.height / item.value,
+              },
+            },
+            () => this.setHeader()
+          )
+        }
+        color={CMSColors.colorText}
+        // styles={{flex: 1}}
+        iconCustom={item.icon}
+      />
+    );
+  };
+
+  renderLayoutModal = () => {
+    const {width, height} = Dimensions.get('window');
+
+    return (
+      <BottomModal
+        visible={this.state.showLayoutSelection}
+        onTouchOutside={() => this.setState({showLayoutSelection: false})}
+        onSwipeOut={() => this.setState({showLayoutSelection: false})}
+        height={0.25}>
+        <ModalContent style={styles.layoutModalContainer}>
+          <Text style={styles.layoutModalTitle}>Division</Text>
+          <FlatList
+            contentContainerStyle={styles.layoutModalBody}
+            renderItem={this.renderLayoutItem}
+            data={LayoutData}
+            horizontal={true}
+          />
+        </ModalContent>
+      </BottomModal>
+    );
+  };
+
   renderRow = ({item}) => {
     const {viewableWindow, videoWindow} = this.state;
     // console.log(
@@ -189,13 +320,14 @@ class ChannelsView extends Component {
     for (let i = 0; i < item.data.length; i++) {
       playerViews.push(
         <View
-          style={{
-            flex: 1,
-            width: videoWindow.width,
-            height: videoWindow.height,
-            borderColor: 'black',
-            borderWidth: 1,
-          }}>
+          key={item.key + '_' + i}
+          style={[
+            styles.videoRow,
+            {
+              width: videoWindow.width,
+              height: videoWindow.height,
+            },
+          ]}>
           {this.renderVideoPlayer(item.data[i])}
         </View>
       );
@@ -256,21 +388,28 @@ class ChannelsView extends Component {
     // __DEV__ && console.log('GOND channels render data = ', this.state.liveData);
 
     return (
-      <View style={{flex: 1}} onLayout={this.onLayout}>
-        <HeaderWithSearch
-          title={
-            sitesStore.selectedDVR
-              ? sitesStore.selectedDVR.name
-              : 'No DVR was selected'
-          }
-          showSearchBar={appStore.showSearchBar}
-          onChangeSearchText={this.onFilter}
-          searchValue={videoStore.channelFilter}
-          // backButton={false}
-          navigator={navigation}
-        />
+      <View style={styles.screenContainer}>
+        {/* <Searchbar
+          // autoFocus
+          // onIconPress={() => appStore.enableSearchbar(false)}
+          icon={{}}
+          placeholder="Search..." //{CompTxt.searchPlaceholder}
+          value={videoStore.channelFilter}
+          onChangeText={this.onFilter}
+        /> */}
+        <View style={commonStyles.flatSearchBarContainer}>
+          <InputTextIcon
+            label=""
+            value={videoStore.channelFilter}
+            onChangeText={this.onFilter}
+            placeholder={CompTxt.searchPlaceholder}
+            iconCustom="searching-magnifying-glass"
+            disabled={false}
+            iconPosition="right"
+          />
+        </View>
         {authenModal}
-        <View style={{flexDirection: 'column'}}>
+        <View style={styles.videoListContainer} onLayout={this.onLayout}>
           <FlatList
             renderItem={this.renderRow}
             data={this.state.liveData}
@@ -279,17 +418,50 @@ class ChannelsView extends Component {
             refreshing={videoStore ? videoStore.isLoading : false}
           />
         </View>
+        {this.renderLayoutModal()}
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  screenContainer: {flex: 1, backgroundColor: CMSColors.White},
+  headerRight: {
+    flex: 1,
+    flexDirection: 'row',
+    alignContent: 'center',
+  },
   modalcontainer: {
     flex: 1,
     backgroundColor: CMSColors.PrimaryColor54,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  authenModal: {flex: 0, width: 343, height: 303},
+  videoListContainer: {flex: 1, flexDirection: 'column'},
+  videoRow: {
+    flex: 1,
+    borderColor: 'black',
+    borderWidth: 1,
+  },
+  layoutModalContainer: {
+    backgroundColor: CMSColors.White,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '80%',
+    // width: width,
+  },
+  layoutModalTitle: {
+    alignContent: 'center',
+    fontSize: 24,
+    fontWeight: '700',
+    paddingBottom: 25,
+  },
+  layoutModalBody: {
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingLeft: 35,
+    paddingRight: 35,
   },
 });
 

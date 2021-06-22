@@ -62,5 +62,5 @@ export const ActionMessages = {
 };
 
 export const Comps = {
-  searchPlaceholder: 'Search...',
+  searchPlaceholder: 'Search',
 };

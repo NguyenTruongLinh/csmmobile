@@ -35,6 +35,7 @@ module.exports = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  flatSearchBarContainer: {paddingLeft: 21},
   // Component PullToRefreshListView
   PullToRefreshListView_Style: {
     marginTop: Platform.OS == 'ios' ? 1 : 1,

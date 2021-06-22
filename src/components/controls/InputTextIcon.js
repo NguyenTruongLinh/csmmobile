@@ -32,6 +32,9 @@ export default class InputTextIcon extends PureComponent {
     errorColor: CMSColors.errorColor,
 
     disabled: false,
+    iconPosition: 'left',
+    revealable: false,
+    placeholder: '',
   };
 
   static propTypes = {
@@ -56,6 +59,9 @@ export default class InputTextIcon extends PureComponent {
     errorColor: PropTypes.string,
 
     disabled: PropTypes.bool,
+    iconPosition: PropTypes.oneOf(['left', 'right']),
+    revealable: PropTypes.bool,
+    placeholder: PropTypes.string,
   };
 
   constructor(props) {
@@ -220,6 +226,9 @@ export default class InputTextIcon extends PureComponent {
       textColor,
       errorColor,
       secureTextEntry,
+      revealable,
+      iconPosition,
+      placeholder,
       ...props
     } = this.props;
     let {focused, focus, error, errored, height, text = ''} = this.state;
@@ -288,7 +297,7 @@ export default class InputTextIcon extends PureComponent {
       <Icon
         name={icon}
         size={variable.fix_fontSize_Icon}
-        style={[{color: baseColor}, styles.icon]}
+        style={[{color: baseColor}, styles.icon, label ? {} : {paddingTop: 28}]}
         // onPress={() =>  __DEV__ && console.log('GOND icon name: ', icon)}
       />
     ) : null;
@@ -296,7 +305,7 @@ export default class InputTextIcon extends PureComponent {
       <IconCustom
         name={iconCustom}
         size={variable.fix_fontSize_Icon}
-        style={[{color: baseColor}, styles.icon]}
+        style={[{color: baseColor}, styles.icon, label ? {} : {paddingTop: 28}]}
         // onPress={() =>  __DEV__ && console.log('GOND icon customed name: ', iconCustom)}
       />
     ) : null;
@@ -306,8 +315,8 @@ export default class InputTextIcon extends PureComponent {
 
     return (
       <View style={{flexDirection: 'row', alignSelf: 'center'}}>
-        {CIcon}
-        {CIconCustom}
+        {iconPosition == 'left' && CIcon}
+        {iconPosition == 'left' && CIconCustom}
         <View
           onStartShouldSetResponder={() => true}
           onResponderRelease={this.onPress}
@@ -336,9 +345,11 @@ export default class InputTextIcon extends PureComponent {
             }}
             onBlur={this.onBlur}
             value={text}
+            placeholder={placeholder}
+            placeholderTextColor={baseColor}
             ref={ref => (this.inputRef = ref)}
             label={label}
-            labelFontSize={fontSize}
+            labelFontSize={label ? fontSize : 0}
             secureTextEntry={secureTextEntry && !this.state.revealHidden}
           />
           <Animated.View style={helperContainerStyle}>
@@ -357,7 +368,7 @@ export default class InputTextIcon extends PureComponent {
             <Counter {...{baseColor, errorColor, count, limit}} />
           </Animated.View>
         </View>
-        {this.props.secureTextEntry ? (
+        {secureTextEntry && revealable && iconPosition != 'right' ? (
           <IconCustom
             name={'turn-visibility-off-button'}
             size={variable.fix_fontSize_Icon}
@@ -368,6 +379,8 @@ export default class InputTextIcon extends PureComponent {
             }}
           />
         ) : null}
+        {iconPosition == 'right' && CIcon}
+        {iconPosition == 'right' && CIconCustom}
       </View>
     );
   }
