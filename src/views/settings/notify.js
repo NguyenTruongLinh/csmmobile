@@ -16,8 +16,8 @@ import Ripple from 'react-native-material-ripple';
 
 import Button from '../../components/controls/Button';
 import CMSAvatars from '../../components/containers/CMSAvatars';
-import ExceptionFilter from '../../components/settings/ExceptionFilter';
-import TemperatureFilter from '../../components/settings/TemperatureFilterModal';
+import ExceptionFilter from '../../components/views/ExceptionFilter';
+import TemperatureFilter from '../../components/views/TemperatureFilterModal';
 
 import {
   isNullOrUndef,
