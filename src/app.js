@@ -14,13 +14,12 @@ import {
 } from 'react-native';
 import {observer, inject} from 'mobx-react';
 import Orientation from 'react-native-orientation-locker';
-
-import Snackbar from 'react-native-snackbar';
 import DeviceInfo from 'react-native-device-info';
 
 import CMSIntroView from '../views/intro/cmsIntro';
 
 import AppNavigator from './navigation/appNavigator';
+import NotificationController from './notification/notificationController';
 // import navigationService from './navigation/navigationService';
 // import navigationStore from './stores/navigation';
 
@@ -71,6 +70,73 @@ class App extends React.Component {
     // this.pushController = undefined;
     this.appStateEventListener = null;
     // this.props.appStore.setLoading(true);
+    this.state = {
+      notificationController: null,
+    };
+  }
+
+  async componentDidMount() {
+    __DEV__ && console.log('GOND APP did mount');
+    AppState.addEventListener('change', this._handleAppStateChange);
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      this.keyboardDidShow
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      this.keyboardDidHide
+    );
+    this.allowRotation = await this.getAutoRotateState();
+    // this.props.publishRotationState(this.allowRotation);
+    if (Platform.OS === 'android')
+      this.checkAutoRotateTimer = setInterval(this.onCheckAutoRotateState, 100);
+
+    Orientation.addDeviceOrientationListener(this._orientationDidChange);
+    Orientation.lockToPortrait();
+    // BackHandler.addEventListener('hardwareBackPress', this.handleBack);
+    // let config = this.props.config;
+    // if (!config || !config.isLoaded) this.props.LoadConfig();
+
+    if (Platform.OS === 'ios') {
+      try {
+        const eventEmitter = new NativeEventEmitter(
+          NativeModules.AppStateEventEmitter
+        );
+        this.appStateEventListener = eventEmitter.addListener(
+          'onAppStateChange',
+          this.onAPNSTokenRefreshed
+        );
+      } catch (error) {
+        __DEV__ &&
+          console.log(
+            'GOND could not load native module: AppStateEventEmitter'
+          );
+      }
+    }
+
+    // autoLogin
+    this.props.appStore.setLoading(true);
+    await this.props.appStore.loadLocalData();
+    // await this.props.userStore.loadLocalData();
+    await this.props.userStore.shouldAutoLogin();
+    setTimeout(() => {
+      this.props.appStore.setLoading(false);
+      this.setState({notificationController: <NotificationController />});
+    }, 100);
+  }
+
+  componentWillUnmount() {
+    __DEV__ && console.log('app componentWillUnmount');
+    if (this.checkAutoRotateTimer) clearInterval(this.checkAutoRotateTimer);
+    AppState.removeEventListener('change', this._handleAppStateChange);
+    Orientation.removeDeviceOrientationListener(this._orientationDidChange);
+    //Forgetting to remove the listener will cause pop executes multiple times
+    // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+    if (Platform.OS === 'ios') {
+      this.appStateEventListener.remove();
+    }
   }
 
   getAutoRotateState = async () => {
@@ -285,67 +351,6 @@ class App extends React.Component {
     */
   };
 
-  async componentDidMount() {
-    AppState.addEventListener('change', this._handleAppStateChange);
-    this.keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      this.keyboardDidShow
-    );
-    this.keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      this.keyboardDidHide
-    );
-    this.allowRotation = await this.getAutoRotateState();
-    // this.props.publishRotationState(this.allowRotation);
-    if (Platform.OS === 'android')
-      this.checkAutoRotateTimer = setInterval(this.onCheckAutoRotateState, 100);
-
-    Orientation.addDeviceOrientationListener(this._orientationDidChange);
-    Orientation.lockToPortrait();
-    // BackHandler.addEventListener('hardwareBackPress', this.handleBack);
-    // let config = this.props.config;
-    // if (!config || !config.isLoaded) this.props.LoadConfig();
-
-    if (Platform.OS === 'ios') {
-      try {
-        const eventEmitter = new NativeEventEmitter(
-          NativeModules.AppStateEventEmitter
-        );
-        this.appStateEventListener = eventEmitter.addListener(
-          'onAppStateChange',
-          this.onAPNSTokenRefreshed
-        );
-      } catch (error) {
-        __DEV__ &&
-          console.log(
-            'GOND could not load native module: AppStateEventEmitter'
-          );
-      }
-    }
-
-    // autoLogin
-
-    this.props.appStore.setLoading(true);
-    await this.props.appStore.loadLocalData();
-    // await this.props.userStore.loadLocalData();
-    this.props.userStore.shouldAutoLogin();
-    setTimeout(() => this.props.appStore.setLoading(false), 1000);
-  }
-
-  componentWillUnmount() {
-    console.log('app componentWillUnmount');
-    if (this.checkAutoRotateTimer) clearInterval(this.checkAutoRotateTimer);
-    AppState.removeEventListener('change', this._handleAppStateChange);
-    Orientation.removeDeviceOrientationListener(this._orientationDidChange);
-    //Forgetting to remove the listener will cause pop executes multiple times
-    // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
-    if (Platform.OS === 'ios') {
-      this.appStateEventListener.remove();
-    }
-  }
-
   _handleAppStateChange = nextAppState => {
     __DEV__ &&
       console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
@@ -466,21 +471,23 @@ class App extends React.Component {
   }
   */
 
-  setNavigator(ref) {
+  setNavigator = ref => {
     __DEV__ && console.log('GOND set top navigator: ', ref);
     this.props.appStore.setNavigator(ref);
-  }
+  };
 
   render() {
-    let {showIntro, isLoading} = this.props.appStore;
+    const {showIntro, isLoading} = this.props.appStore;
+    const {notificationController} = this.state;
     // showIntro = true; // testing
     const {isLoggedIn} = this.props.userStore;
-    const navigatorSetter = this.setNavigator.bind(this);
+
     return AppNavigator({
       showIntro,
       isLoading,
       isLoggedIn,
-      navigatorSetter,
+      notificationController,
+      navigatorSetter: this.setNavigator,
     });
   }
 }

@@ -197,7 +197,13 @@ const WelcomeStack = createStackNavigator();
  * @param {bool} isLoggedIn
  * @returns ReactElement
  */
-const AppNavigator = ({showIntro, isLoggedIn, isLoading, navigatorSetter}) => {
+const AppNavigator = ({
+  showIntro,
+  isLoggedIn,
+  isLoading,
+  navigatorSetter,
+  notificationController,
+}) => {
   // __DEV__ && console.log('GOND NavContainer render, isLogin = ', isLoggedIn);
   return (
     <NavigationContainer
@@ -206,6 +212,7 @@ const AppNavigator = ({showIntro, isLoggedIn, isLoading, navigatorSetter}) => {
         // navigationService.setTopLevelNavigator(ref);
         if (typeof navigatorSetter == 'function') navigatorSetter(ref);
       }}>
+      {notificationController}
       {isLoading ? (
         <LoadingOverlay />
       ) : showIntro ? (

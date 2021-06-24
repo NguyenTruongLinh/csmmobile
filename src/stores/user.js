@@ -1,6 +1,5 @@
 import {types, flow} from 'mobx-state-tree';
 import {Alert} from 'react-native';
-import Snackbar from 'react-native-snackbar';
 
 import {MODULES, Orient} from '../consts/misc';
 import APP_INFO from '../consts/appInfo';
@@ -10,6 +9,7 @@ import {
   Route,
   Account as AccountRoute,
   Users as UserRoute,
+  FCM as FCMRoute,
 } from '../consts/apiRoutes';
 import {Login as LoginTxt} from '../localization/texts';
 import apiService from '../services/api';
@@ -187,13 +187,14 @@ const LoginModel = types
 
 const FCMModel = types
   .model({
-    fcmKey: types.string,
-    serverid: types.string,
+    token: types.string,
+    apnsToken: types.string,
+    serverId: types.string,
   })
   .actions(self => ({
-    parse(data) {
-      self.fcmKey = data.fcm;
-      self.serverid = data.serverid;
+    saveToken(fcmToken, apnsToken) {
+      self.token = fcmToken;
+      self.apnsToken = apnsToken;
     },
   }));
 
@@ -255,7 +256,7 @@ export const UserStoreModel = types
         }
       );
     },
-    // async login(domainname, username, password) {
+    // #region authorization
     login: flow(function* login(domainname, username, password) {
       appStore.setLoading(true);
       if (!appStore.deviceInfo || !appStore.deviceInfo.deviceId) {
@@ -363,12 +364,6 @@ export const UserStoreModel = types
         return false;
       }
     }),
-    didShowError() {
-      self.error = '';
-    },
-    loginError(errorMessage) {
-      self.error = errorMessage;
-    },
     passwordUpdated(data) {
       self.error = data.error;
       self.message = data.message;
@@ -426,35 +421,8 @@ export const UserStoreModel = types
       }
       return false;
     }),
-    onProfileUpdated(data) {
-      let {photo, profile, module} = data;
-      let user = state;
-      if (module && Array.isArray(module)) {
-        self.modules = [];
-        self.routes = [];
-        module.forEach(item => {
-          self.modules.push(getDefaultModule().parse(item));
-          if (item.FunctionName == MODULES.MODULE_SITE) {
-            self.routes = [...self.routes, ROUTERS.ALARM, ROUTERS.HEALTH];
-          } else if (item.FunctionName == MODULES.MODULE_REBAR) {
-            self.routes = [...self.routes, ROUTERS.POS];
-          }
-          self.routes.push(ROUTERS.OPTIONS);
-        });
-      } else {
-        self.routes = [ROUTERS.OPTIONS];
-      }
-
-      if (photo) self.avatar = photo;
-      if (profile) {
-        self.email = profile.Email;
-        self.firstName = profile.FName;
-        self.lastName = profile.LName;
-        self.isAdmin = profile.IsAdmin;
-        self.error = data.error;
-      }
-      return {...user};
-    },
+    // #endregion
+    // #region local data
     saveLocal: flow(function* saveLocal() {
       try {
         let data = self.user.data;
@@ -523,6 +491,46 @@ export const UserStoreModel = types
       appStore.setLoading(false);
       return self.isLoggedIn;
     }),
+    // #endregion
+    // #region FCM
+    saveToken(newToken) {
+      if (self.fcm.token != newToken) {
+        self.fcm.token = newToken;
+        self.registerToken();
+      }
+    },
+    registerToken: flow(function* registerToken() {
+      const data = {
+        fcm_token: self.fcm.token,
+        deviceid: appStore.deviceInfo.deviceId,
+        info: appStore.deviceInfo.deviceModel,
+        apns_token: self.fcm.apnsToken,
+        killstate: 0,
+      };
+      try {
+        const res = yield apiService.post(
+          FCMRoute.controller,
+          null,
+          null,
+          data
+        );
+        if (res.error || !res.Value) {
+          snackbarUtil.onMessage(
+            'Failed to connect to CMS server, please try again later!'
+          );
+          console.log('GOND register FCM token error: ', res);
+          return false;
+        }
+        console.log('GOND register FCM token res: ', res);
+        self.fcm.serverId = res.Value;
+        return true;
+      } catch (ex) {
+        console.log('GOND register FCM token failed: ', ex);
+        return false;
+      }
+    }),
+    // #endregion
+    // #region Settings:
     updateProfile: flow(function* updateProfile(data) {
       self.user.updateProfile(data);
       let res = yield apiService.put(
@@ -537,7 +545,35 @@ export const UserStoreModel = types
       __DEV__ && console.log('GOND update user profile save local: ', res);
       return res;
     }),
-    //* Settings:
+    onProfileUpdated(data) {
+      let {photo, profile, module} = data;
+      let user = state;
+      if (module && Array.isArray(module)) {
+        self.modules = [];
+        self.routes = [];
+        module.forEach(item => {
+          self.modules.push(getDefaultModule().parse(item));
+          if (item.FunctionName == MODULES.MODULE_SITE) {
+            self.routes = [...self.routes, ROUTERS.ALARM, ROUTERS.HEALTH];
+          } else if (item.FunctionName == MODULES.MODULE_REBAR) {
+            self.routes = [...self.routes, ROUTERS.POS];
+          }
+          self.routes.push(ROUTERS.OPTIONS);
+        });
+      } else {
+        self.routes = [ROUTERS.OPTIONS];
+      }
+
+      if (photo) self.avatar = photo;
+      if (profile) {
+        self.email = profile.Email;
+        self.firstName = profile.FName;
+        self.lastName = profile.LName;
+        self.isAdmin = profile.IsAdmin;
+        self.error = data.error;
+      }
+      return {...user};
+    },
     getNotifySettings: flow(function* getNotifySettings() {
       let res = yield apiService.get(
         AccountRoute.controller,
@@ -591,6 +627,7 @@ export const UserStoreModel = types
         return true;
       }
     }),
+    // #endregion
   }));
 
 const userStore = UserStoreModel.create({
@@ -599,7 +636,7 @@ const userStore = UserStoreModel.create({
   error: '',
   message: '',
   isLoggedIn: false,
-  fcm: FCMModel.create({fcmKey: '', serverid: ''}),
+  fcm: FCMModel.create({token: '', apnsToken: '', serverId: ''}),
   api: getDefaultAPI(),
   modules: [],
   routes: [],

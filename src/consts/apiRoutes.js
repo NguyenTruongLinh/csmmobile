@@ -1,4 +1,6 @@
-const _Account = {
+export const Route = '/api/3rd';
+
+export const Account = {
   controller: 'account',
   get: '',
   post: '',
@@ -9,49 +11,49 @@ const _Account = {
   updateNotifySettings: 'EditUserNotifySettings',
 };
 
-const _Alertype = {
+export const Alertype = {
   controller: 'alerttype',
   get: '',
   getAlertTypeVA: 'getalerttypeva',
 };
 
-const _Site = {
+export const Site = {
   controller: 'site',
   getAll: 'all=true',
   getAllWithDVR: '?all=true&dvr=true',
   getSiteOam: '?all=true&dvr=true&filter=pvm',
 };
 
-const _Alert = {
+export const Alert = {
   controller: 'alert',
   getByDvr: 'dvr',
   ignoreMutiAlertType: 'IgnoreMutiAlertType',
   ignoreMutiAlertSite: 'IgnoreMutiAlertSite',
 };
 
-const _DVR = {
+export const DVR = {
   controller: 'dvr',
   getConnection: 'infoconnectvideo',
   getChannels: 'channels',
   getAllChannels: 'getallchannels',
 };
 
-const _Users = {
+export const Users = {
   controller: 'users',
   updateProfile: 'updateprofile',
 };
 
-const _Exception = {
+export const Exception = {
   controller: 'exception',
   get: 'get',
   getTransactionTypes: 'GetTransactionTypes',
 };
 
-const _Channel = {
+export const Channel = {
   controller: 'channel',
 };
 
-const _ACConfig = {
+export const ACConfig = {
   controller: 'ACConfig',
   get: 'get',
   getRatingConfig: 'GetRatingConfig',
@@ -59,7 +61,7 @@ const _ACConfig = {
   setActivites: 'setActivites',
 };
 
-const _VSC = {
+export const VSC = {
   controller: 'VSC',
   requestVSCURL: 'RequestVSCURL',
   updateStream: 'Update',
@@ -71,23 +73,12 @@ const _VSC = {
   updateActiveChannels: 'UpdateVSCActiveChannel',
 };
 
-const _OAM = {
+export const OAM = {
   controller: 'PVM',
   getLastDoorCountData: 'GetLastDoorCountData',
   acknowledgePVMAlert: 'AcknowledgePVMAlert',
 };
 
-module.exports = {
-  Route: '/api/3rd',
-  Account: _Account,
-  Alertype: _Alertype,
-  Site: _Site,
-  Alert: _Alert,
-  DVR: _DVR,
-  Exception: _Exception,
-  Users: _Users,
-  Channel: _Channel,
-  ACConfig: _ACConfig,
-  VSC: _VSC,
-  OAM: _OAM,
+export const FCM = {
+  controller: 'fcm',
 };

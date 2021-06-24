@@ -36,7 +36,7 @@ exports.onMessage = (msg, backcolor, actions) => {
     Snackbar.show({
       text: msg,
       duration: Snackbar.LENGTH_LONG,
-      backgroundColor: backcolor, //CMSColors.Danger,
+      backgroundColor: backcolor ?? CMSColors.Danger,
       // onTimeOut: this.onSnackbarTimeout,
     });
   } else {
@@ -44,7 +44,7 @@ exports.onMessage = (msg, backcolor, actions) => {
     Snackbar.show({
       text: msg,
       duration: Snackbar.LENGTH_INDEFINITE,
-      backgroundColor: backcolor,
+      backgroundColor: backcolor ?? CMSColors.Danger,
       // onTimeOut: this.onSnackbarTimeout,
       action: {
         title: title,
