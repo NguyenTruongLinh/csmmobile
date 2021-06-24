@@ -138,12 +138,13 @@ class NotificationController extends React.Component {
   };
 
   onNotificationReceived = async message => {
-    __DEV__ && console.log('GOND Receveived notification: ', data);
+    const {data, messageId} = message;
+    __DEV__ && console.log('GOND Receveived notification: ', message);
+
     if (!this.validate(data)) {
       __DEV__ && console.log('GOND notification is not valid: ', data);
       return;
     }
-    const {data, messageId} = message;
     let {type, action, content} = data;
     if (!content && data.data) content = data.data;
 
