@@ -79,16 +79,14 @@ class NotificationController extends React.Component {
   createNotificationListeners = async () => {
     // This listener triggered when notification has been received in foreground
     messaging().onMessage(notification => {
-      const {data} = notification;
       __DEV__ && console.log('GOND Receveived notification: ', notification);
-      this.onNotificationReceived(data);
+      this.onNotificationReceived(notification);
     });
 
     messaging().setBackgroundMessageHandler(notification => {
       __DEV__ &&
         console.log('GOND Receveived background notification: ', notification);
-      const {data} = notification;
-      this.onNotificationReceived(data);
+      this.onNotificationReceived(notification);
     });
 
     // This listener triggered when app is in backgound and we click, tapped and opened notifiaction
@@ -118,7 +116,7 @@ class NotificationController extends React.Component {
 
   validate = data => {
     const {userStore} = this.props;
-    return !userStore.fcm.serverId || data.serverId == userStore.fcm.serverId;
+    return !userStore.fcm.serverId || data.serverid == userStore.fcm.serverId;
   };
 
   displayLocalNotification = ({id, title, body, messageId, data}) => {
@@ -139,8 +137,8 @@ class NotificationController extends React.Component {
 
   onNotificationReceived = async message => {
     const {data, messageId} = message;
-    __DEV__ && console.log('GOND Receveived notification: ', message);
 
+    __DEV__ && console.log('GOND onNotificationReceived: ', data);
     if (!this.validate(data)) {
       __DEV__ && console.log('GOND notification is not valid: ', data);
       return;
