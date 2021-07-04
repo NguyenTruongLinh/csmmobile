@@ -220,7 +220,7 @@ class DirectVideoView extends Component {
         });
       } else {
         this.setState({
-          controller: false,
+          // controller: false,
           fullscreen: true,
           width: width,
           height: height,
@@ -244,7 +244,8 @@ class DirectVideoView extends Component {
           style={{width: width, height: height}}
           resizeMode="stretch">
           {/* <View style={{width: width, height: height}}> */}
-          <Text style={{color: CMSColors.White}}>
+          <Text
+            style={{color: CMSColors.White, position: 'absolute', zIndex: 1}}>
             {serverInfo.name ?? 'Unknown'}
           </Text>
           <View
@@ -280,7 +281,7 @@ class DirectVideoView extends Component {
               />
             )}
           </View>
-          <View style={{}}>
+          <View style={{position: 'absolute', width: '100%', height: '100%'}}>
             {Platform.OS === 'ios' ? (
               <FFMpegFrameViewIOS
                 width={width}

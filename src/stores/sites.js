@@ -115,7 +115,7 @@ export const SitesMapModel = types
           console.log('GOND Load sites list failed, data is not an array');
       }
       return res.sort((siteA, siteB) =>
-        utils.compareStrings(siteA.name, siteB.name)
+        utils.compareStrings(siteA.name.toLowerCase(), siteB.name.toLowerCase())
       );
     },
     edit(_editedSite) {

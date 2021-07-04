@@ -19,7 +19,7 @@ export const VIDEO_MESSAGE = {
   MSG_CONNECTED_NVR: 'Connected.',
   MSG_CONNECTING_STREAM: 'Connecting to streaming service.',
   MSG_STREAM_CONNECTED: 'Connected.',
-  MSG_STREAM_ERROR: 'Stream error.',
+  MSG_STREAM_ERROR: 'Stream data error.',
   MSG_STREAM_TIMEOUT: 'Timeout.',
   MSG_NETWORK_FAILED: 'Network connection failed.',
   MSG_LOW_BUFFER: 'Buffer amount is low.',
@@ -76,6 +76,7 @@ export const STREAM_STATUS = {
   ERROR: 'Network Error.',
   TIMEOUT: 'Time out.',
   NOVIDEO: 'No video.',
+  DISCONNECTED: 'Disconnected.',
 };
 
 export const NATIVE_MESSAGE = {
@@ -168,6 +169,7 @@ export const endDST = 25;
 export const Limit_Time_Allow_Change_Live_Search = 1;
 export const HoursOnScreen = 4;
 
+export const DEFAULT_REGION = 'us-east-1';
 export const IS_FORCE_TURN = true;
 export const IS_OPEN_DATA_CHANNEL = true;
 export const USE_TRICKLE_ICE = true;

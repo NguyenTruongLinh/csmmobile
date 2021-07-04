@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {
   View,
   FlatList,
@@ -29,6 +29,7 @@ import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import {Comps as CompTxt} from '../../localization/texts';
+// import initRTCStream from './rtcConnection';
 
 const LayoutData = [
   {
@@ -48,7 +49,7 @@ const LayoutData = [
   },
 ];
 
-class ChannelsView extends Component {
+class ChannelsView extends React.Component {
   constructor(props) {
     super(props);
     this._isMounted = false;
@@ -71,9 +72,10 @@ class ChannelsView extends Component {
   componentWillUnmount() {
     __DEV__ && console.log('ChannelsView componentWillUnmount');
     this._isMounted = false;
+    this.props.videoStore.releaseStreams();
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     this._isMounted = true;
     const {videoStore, sitesStore, navigation} = this.props;
     if (__DEV__)
@@ -83,6 +85,8 @@ class ChannelsView extends Component {
     if (!sitesStore.selectedDVR) return;
     videoStore.selectDVR(sitesStore.selectedDVR);
 
+    // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
+    videoStore.setStreamReadyCallback(this.onStreamReady);
     this.getChannelsInfo();
   }
 
@@ -144,10 +148,24 @@ class ChannelsView extends Component {
     if (videoStore.needAuthen) {
       newState.showAuthen = true;
     }
-    if (res) {
+
+    // Streaming will call onStreamReady when finish initialization
+    if (
+      res &&
+      (videoStore.cloudType == CLOUD_TYPE.DEFAULT ||
+        videoStore.cloudType == CLOUD_TYPE.DIRECTION)
+    ) {
       newState.liveData = this.buildLiveData(this.state.gridLayout);
     }
     this.setState(newState);
+  };
+
+  // onReceiveStreamInfo = streamInfo => {
+  //   initRTCStream(streamInfo);
+  // };
+
+  onStreamReady = () => {
+    this.setState({liveData: this.buildLiveData(this.state.gridLayout)});
   };
 
   onAuthenSubmit = ({username, password}) => {
@@ -351,7 +369,7 @@ class ChannelsView extends Component {
     if (!item || Object.keys(item).length == 0) return null;
     const {videoWindow} = this.state;
 
-    const playerProps = {
+    let playerProps = {
       with: videoWindow.width,
       height: videoWindow.height,
     };
@@ -365,7 +383,8 @@ class ChannelsView extends Component {
         player = <HLSStreamingView {...playerProps} />;
         break;
       case CLOUD_TYPE.RTC:
-        player = <RTCStreamingView {...playerProps} />;
+        // playerProps = Object.assign({}, playerProps, item);
+        player = <RTCStreamingView {...playerProps} viewer={item} />;
         break;
     }
 

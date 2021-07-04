@@ -1,4 +1,17 @@
 module.exports = {
   assets: ['./src/assets/fonts'],
-  dependencies: {},
+  dependencies: {
+    'react-native-video': {
+      platforms: {
+        android: {
+          sourceDir: '../node_modules/react-native-video/android-exoplayer',
+        },
+      },
+    },
+    // 'react-native-flipper': {
+    //   platforms: {
+    //     ios: null,
+    //   },
+    // },
+  },
 };

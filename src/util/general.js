@@ -528,6 +528,10 @@ exports.getRandomId = () => {
   return uuid.v1().toString();
 };
 
+exports.getRandomClientId = () => {
+  return Math.random().toString(36).substring(2).toUpperCase();
+};
+
 exports.isValidHttpUrl = val => {
   // toString.call(val) === '[object URL]';
   try {
@@ -545,4 +549,11 @@ exports.compareArrays = (a, b) => {
 
 exports.compareStrings = (a, b) => {
   return a > b ? 1 : a < b ? -1 : 0;
+};
+
+exports.sleep = async (time = 1000) => {
+  console.log('GOND sleep time = ', time);
+  await new Promise(resolve => {
+    setTimeout(() => resolve(time), time);
+  });
 };

@@ -346,17 +346,20 @@ export const UserStoreModel = types
     }),
     getDataPostLogin: flow(function* getDataPostLogin() {
       try {
-        const [uPhotoRes, modulesRes, alertTypesRes] = yield Promise.all([
-          self.getUserPhoto(),
-          self.getPrivilege(),
-          self.getAlertTypesSettings(),
-        ]);
+        const [uPhotoRes, modulesRes, alertTypesRes, registerTokenRes] =
+          yield Promise.all([
+            self.getUserPhoto(),
+            self.getPrivilege(),
+            self.getAlertTypesSettings(),
+            self.registerToken(),
+          ]);
         __DEV__ &&
           console.log(
             'GOND getDataPostLogin ',
             uPhotoRes,
             modulesRes,
-            alertTypesRes
+            alertTypesRes,
+            registerTokenRes
           );
         return uPhotoRes && modulesRes; // && alertTypesRes;
       } catch (err) {
@@ -493,10 +496,12 @@ export const UserStoreModel = types
     }),
     // #endregion
     // #region FCM
-    saveToken(newToken) {
-      if (self.fcm.token != newToken) {
-        self.fcm.token = newToken;
-        self.registerToken();
+    saveToken(fcmToken, apnsToken) {
+      if (self.fcm.token != fcmToken) {
+        __DEV__ && console.log('GOND save token: ', fcmToken);
+        self.fcm.token = fcmToken;
+        self.fcm.apnsToken = apnsToken ?? '';
+        if (self.isLoggedIn) self.registerToken();
       }
     },
     registerToken: flow(function* registerToken() {

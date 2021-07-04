@@ -303,6 +303,13 @@ class Api {
     let requestHttpMethod = _Post;
     let request_content =
       value === null || value === undefined ? '' : JSON.stringify(value);
+    __DEV__ &&
+      console.log(
+        'GOND api::post url = ',
+        url,
+        ', content = ',
+        request_content
+      );
     let response = await this._fetch(url, requestHttpMethod, request_content);
     return this.parseResponse(response);
   }

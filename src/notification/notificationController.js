@@ -1,11 +1,10 @@
 import React from 'react';
-
+import {inject, observer} from 'mobx-react';
 import messaging from '@react-native-firebase/messaging';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import PushNotification from 'react-native-push-notification';
 
-import {inject, observer} from 'mobx-react';
-
+import {onVideoNotifEvent} from './video';
 import {NOTIFY_TYPE} from '../consts/misc';
 
 const CHANNEL_ID = 'commonCMS';
@@ -13,6 +12,10 @@ const CHANNEL_ID = 'commonCMS';
 class NotificationController extends React.Component {
   constructor(props) {
     super(props);
+
+    this.foregroundMessageListener = null;
+    this.lastMsgTime = '';
+    this.lastMsgId = '';
   }
 
   async componentDidMount() {
@@ -33,6 +36,13 @@ class NotificationController extends React.Component {
         console.log('GOND Push notificaiton createChannel returned ', created)
     );
     this.createNotificationListeners();
+  }
+
+  componentWillUnmount() {
+    if (this.foregroundMessageListener) {
+      // unsubscribe
+      this.foregroundMessageListener();
+    }
   }
 
   checkPermission = async () => {
@@ -78,8 +88,8 @@ class NotificationController extends React.Component {
 
   createNotificationListeners = async () => {
     // This listener triggered when notification has been received in foreground
-    messaging().onMessage(notification => {
-      __DEV__ && console.log('GOND Receveived notification: ', notification);
+    this.foregroundMessageListener = messaging().onMessage(notification => {
+      // __DEV__ && console.log('GOND Receveived notification: ', notification);
       this.onNotificationReceived(notification);
     });
 
@@ -116,7 +126,17 @@ class NotificationController extends React.Component {
 
   validate = data => {
     const {userStore} = this.props;
-    return !userStore.fcm.serverId || data.serverid == userStore.fcm.serverId;
+    __DEV__ && console.log('GOND NotifController validate: ', userStore.fcm);
+    if (!userStore.fcm) {
+      __DEV__ && console.log('GOND fcm not initialized yet ', userStore);
+    }
+    if (userStore.fcm.serverId && data.serverid != userStore.fcm.serverId)
+      return false;
+    if (data.msg_id === this.lastMsgId && data.msg_time === this.lastMsgTime)
+      return false;
+    this.lastMsgId = data.msg_id;
+    this.lastMsgTime = data.lastMsgTime;
+    return true;
   };
 
   displayLocalNotification = ({id, title, body, messageId, data}) => {
@@ -137,6 +157,7 @@ class NotificationController extends React.Component {
 
   onNotificationReceived = async message => {
     const {data, messageId} = message;
+    const {videoStore} = this.props;
 
     __DEV__ && console.log('GOND onNotificationReceived: ', data);
     if (!this.validate(data)) {
@@ -145,6 +166,7 @@ class NotificationController extends React.Component {
     }
     let {type, action, content} = data;
     if (!content && data.data) content = data.data;
+    if (typeof content === 'string') content = JSON.parse(content);
 
     let notif = null;
     switch (type) {
@@ -173,7 +195,7 @@ class NotificationController extends React.Component {
         // notif = onExceptionEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.STREAMING:
-        // onVideoEvent(action, content);
+        onVideoNotifEvent(videoStore, action, content);
         break;
       case NOTIFY_TYPE.PVM:
         // notif = onPVMEvent(dispatch,action, content);
@@ -193,4 +215,4 @@ class NotificationController extends React.Component {
   }
 }
 
-export default inject('appStore', 'userStore')(NotificationController);
+export default inject('userStore', 'videoStore')(NotificationController);

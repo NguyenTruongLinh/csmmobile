@@ -42,7 +42,7 @@ const CloudSettingData = [
     name: SettingsTxt.videoStreamName,
     description: SettingsTxt.videoStreamDesc,
     icon: Setting_Video_Cloud, // 'cloud',
-    value: true,
+    value: false,
   },
 ];
 
