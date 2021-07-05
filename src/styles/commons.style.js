@@ -1,7 +1,7 @@
 'use strict';
 import variable from './variables';
 import {StyleSheet, Platform} from 'react-native';
-import cmscolors from './cmscolors';
+import cmscolors, {transparent} from './cmscolors';
 
 module.exports = StyleSheet.create({
   rowsViewContainer: {
@@ -35,7 +35,10 @@ module.exports = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  flatSearchBarContainer: {paddingLeft: 21},
+  flatSearchBarContainer: {
+    paddingLeft: 21,
+    backgroundColor: cmscolors.White,
+  },
   // Component PullToRefreshListView
   PullToRefreshListView_Style: {
     marginTop: Platform.OS == 'ios' ? 1 : 1,

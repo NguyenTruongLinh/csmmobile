@@ -119,7 +119,7 @@ class ChannelsView extends React.Component {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            iconCustom="ic_settings_24px"
+            iconCustom="add-cam"
           />
           <CMSAvatars
             size={22}

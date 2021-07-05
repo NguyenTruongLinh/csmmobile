@@ -11,6 +11,7 @@ import {RTCView} from 'react-native-webrtc';
 
 import util, {normalize} from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
+import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {RTC_COMMANDS, STREAM_STATUS, VIDEO_MESSAGE} from '../../consts/video';
 
@@ -313,53 +314,18 @@ class RTCStreamingView extends Component {
           style={{width: width, height: height}}
           resizeMode="stretch">
           {/* <View style={{width: width, height: height}}> */}
-          <Text
-            style={{
-              color: CMSColors.White,
-              position: 'absolute',
-              zIndex: 1,
-            }}>
-            {channelName ?? 'Unknown'}
-          </Text>
-          <View
-            style={{
-              width: width,
-              height: height,
-              justifyContent: 'center',
-              alignContent: 'center',
-            }}>
-            <Text
-              style={{
-                width: width,
-                height: height * 0.8,
-                color: CMSColors.Danger,
-                alignSelf: 'center',
-                textAlignVertical: 'bottom',
-              }}>
-              {error}
-            </Text>
+          <Text style={styles.channelInfo}>{channelName ?? 'Unknown'}</Text>
+          <View style={styles.statusView}>
+            <Text style={styles.textMessge}>{error}</Text>
             {videoLoading && (
               <ActivityIndicator
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                style={styles.loadingIndicator}
                 size="large"
                 color="white"
               />
             )}
           </View>
-          <View
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-            }}>
+          <View style={styles.playerView}>
             {remoteStream ? (
               <RTCView
                 streamURL={remoteStream.toURL()}

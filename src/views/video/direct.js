@@ -19,6 +19,7 @@ import FFMpegFrameViewIOS from '../../components/native/videoios';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
+import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {NATIVE_MESSAGE} from '../../consts/video';
 
@@ -244,44 +245,18 @@ class DirectVideoView extends Component {
           style={{width: width, height: height}}
           resizeMode="stretch">
           {/* <View style={{width: width, height: height}}> */}
-          <Text
-            style={{color: CMSColors.White, position: 'absolute', zIndex: 1}}>
-            {serverInfo.name ?? 'Unknown'}
-          </Text>
-          <View
-            style={{
-              width: width,
-              height: height,
-              justifyContent: 'center',
-              alignContent: 'center',
-            }}>
-            <Text
-              style={{
-                width: width,
-                height: height * 0.8,
-                color: CMSColors.Danger,
-                alignSelf: 'center',
-                textAlignVertical: 'bottom',
-              }}>
-              {message}
-            </Text>
+          <Text style={styles.channelInfo}>{serverInfo.name ?? 'Unknown'}</Text>
+          <View style={styles.statusView}>
+            <Text style={styles.textMessge}>{message}</Text>
             {videoLoading && (
               <ActivityIndicator
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                style={styles.loadingIndicator}
                 size="large"
                 color="white"
               />
             )}
           </View>
-          <View style={{position: 'absolute', width: '100%', height: '100%'}}>
+          <View style={styles.playerView}>
             {Platform.OS === 'ios' ? (
               <FFMpegFrameViewIOS
                 width={width}

@@ -11,13 +11,16 @@ import {
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 
-import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
+// import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
+import InputTextIcon from '../../components/controls/InputTextIcon';
 import snackbar from '../../util/snackbar';
 
-import ROUTERS from '../../consts/routes';
+import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
-import appStore from '../../stores/appStore';
+import {Comps as CompTxt} from '../../localization/texts';
+import ROUTERS from '../../consts/routes';
+// import appStore from '../../stores/appStore';
 
 class NVRsView extends Component {
   constructor(props) {
@@ -29,7 +32,7 @@ class NVRsView extends Component {
     __DEV__ && console.log('SitesView componentWillUnmount');
     this._isMounted = false;
 
-    appStore.enableSearchbar(false);
+    // appStore.enableSearchbar(false);
   }
 
   componentDidMount() {
@@ -82,7 +85,7 @@ class NVRsView extends Component {
     const {appStore, sitesStore, navigation} = this.props;
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
-        <HeaderWithSearch
+        {/* <HeaderWithSearch
           title={
             sitesStore.selectedSite
               ? sitesStore.selectedSite.name
@@ -93,7 +96,18 @@ class NVRsView extends Component {
           searchValue={sitesStore.dvrFilter}
           // backButton={false}
           navigator={navigation}
-        />
+        /> */}
+        <View style={commonStyles.flatSearchBarContainer}>
+          <InputTextIcon
+            label=""
+            value={sitesStore.dvrFilter}
+            onChangeText={this.onFilter}
+            placeholder={CompTxt.searchPlaceholder}
+            iconCustom="searching-magnifying-glass"
+            disabled={false}
+            iconPosition="right"
+          />
+        </View>
         <View
           style={{
             backgroundColor: CMSColors.headerListRow,
