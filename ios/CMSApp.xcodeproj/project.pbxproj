@@ -12,12 +12,12 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		18108C6E26930018005EC03D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 18108C6D26930017005EC03D /* GoogleService-Info.plist */; };
 		181728A02671CA7F002B413D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1817289E2671CA7F002B413D /* LaunchScreen.xib */; };
 		1822C9782666102F00BEF572 /* libswiftWebKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1822C9752666101A00BEF572 /* libswiftWebKit.tbd */; };
 		184BD7CA2680A89F003F7FDE /* ImcVideoReceiverConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 184BD7C72680A89F003F7FDE /* ImcVideoReceiverConnection.m */; };
 		184BD7CB2680A89F003F7FDE /* ImcRemoteConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 184BD7C82680A89F003F7FDE /* ImcRemoteConnection.m */; };
 		184BD7CC2680A89F003F7FDE /* ImcMobileCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 184BD7C92680A89F003F7FDE /* ImcMobileCommand.m */; };
-		184BD8E62680AD79003F7FDE /* codecf in Resources */ = {isa = PBXBuildFile; fileRef = 184BD8A62680AA5E003F7FDE /* codecf */; };
 		184BD8F12680ADE8003F7FDE /* CodecfDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 184BD8F02680ADE8003F7FDE /* CodecfDecoder.m */; };
 		184BD8FB2680AEEF003F7FDE /* libavcodec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8F42680AEEE003F7FDE /* libavcodec.a */; };
 		184BD8FC2680AEEF003F7FDE /* libavformat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 184BD8F52680AEEE003F7FDE /* libavformat.a */; };
@@ -72,7 +72,6 @@
 		18D3E57626663844006AEE48 /* libReact-RCTImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55726663843006AEE48 /* libReact-RCTImage.a */; };
 		18D3E57726663844006AEE48 /* libReact-RCTLinking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55826663843006AEE48 /* libReact-RCTLinking.a */; };
 		18D3E57826663845006AEE48 /* libReact-RCTNetwork.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55926663843006AEE48 /* libReact-RCTNetwork.a */; };
-		18D3E57926663845006AEE48 /* libReact-RCTPushNotification.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55A26663843006AEE48 /* libReact-RCTPushNotification.a */; };
 		18D3E57A26663845006AEE48 /* libReact-RCTSettings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55B26663843006AEE48 /* libReact-RCTSettings.a */; };
 		18D3E57B26663845006AEE48 /* libReact-RCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55C26663843006AEE48 /* libReact-RCTText.a */; };
 		18D3E57C26663845006AEE48 /* libReact-RCTVibration.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55D26663843006AEE48 /* libReact-RCTVibration.a */; };
@@ -107,6 +106,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CMSApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CMSApp/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = CMSApp/main.m; sourceTree = "<group>"; };
+		18108C6D26930017005EC03D /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "CMSApp/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1817289F2671CA7F002B413D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = CMSApp/Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		1822C9752666101A00BEF572 /* libswiftWebKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libswiftWebKit.tbd; path = usr/lib/swift/libswiftWebKit.tbd; sourceTree = SDKROOT; };
 		184BD7C42680A89F003F7FDE /* ImcVideoReceiverConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImcVideoReceiverConnection.h; sourceTree = "<group>"; };
@@ -263,7 +263,6 @@
 				18D3E57026663844006AEE48 /* libReact-jsi.a in Frameworks */,
 				18D3E57726663844006AEE48 /* libReact-RCTLinking.a in Frameworks */,
 				18D3E56426663843006AEE48 /* libBVLinearGradient.a in Frameworks */,
-				18D3E57926663845006AEE48 /* libReact-RCTPushNotification.a in Frameworks */,
 				18D3E56C26663844006AEE48 /* libRCTTypeSafety.a in Frameworks */,
 				18D3E56526663843006AEE48 /* libCharts.a in Frameworks */,
 				18D3E58026663846006AEE48 /* libRNVectorIcons.a in Frameworks */,
@@ -313,6 +312,7 @@
 		13B07FAE1A68108700A75B9A /* CMSApp */ = {
 			isa = PBXGroup;
 			children = (
+				18108C6D26930017005EC03D /* GoogleService-Info.plist */,
 				185CB37226809CF5000184DD /* FFMpeg */,
 				1817289E2671CA7F002B413D /* LaunchScreen.xib */,
 				18D3E3F8266614D2006AEE48 /* CMSApp.entitlements */,
@@ -612,8 +612,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				181728A02671CA7F002B413D /* LaunchScreen.xib in Resources */,
+				18108C6E26930018005EC03D /* GoogleService-Info.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				184BD8E62680AD79003F7FDE /* codecf in Resources */,
 				13ACFD0FDA86419C9B3610FE /* Roboto-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -862,7 +862,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CMSApp/CMSApp.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = SCBSNP7VE9;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
@@ -945,7 +945,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CMSApp/CMSApp.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = SCBSNP7VE9;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (

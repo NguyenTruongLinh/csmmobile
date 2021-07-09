@@ -5,7 +5,7 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "postinstall": "node patcher.js && jetifier -r",
+    "postinstall": "node patcher.js && jetifier -r && rm -f ./node_modules/react-native-orientation-locker/react-native.config.js",
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
