@@ -13,6 +13,7 @@ import VideoPlayerView from '../views/video/player';
 
 import ROUTERS, {getHeaderTitle} from '../consts/routes';
 import variables from '../styles/variables';
+import CMSColors from '../styles/cmscolors';
 
 const VStack = createStackNavigator();
 
@@ -47,7 +48,25 @@ export default function VideoStack() {
         name={ROUTERS.VIDEO_CHANNELS_SETTING}
         component={ChannelsSettingView}
       />
-      <VStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
+      <VStack.Screen
+        name={ROUTERS.VIDEO_PLAYER}
+        component={VideoPlayerView}
+        options={({route, navigation}) => ({
+          headerLeft: () => (
+            <BackButton
+              navigator={navigation}
+              icon="clear-button"
+              color={CMSColors.White}
+            />
+          ),
+          headerStyle: {
+            backgroundColor: CMSColors.darkElement,
+          },
+          headerTitleStyle: {
+            color: CMSColors.White,
+          },
+        })}
+      />
     </VStack.Navigator>
   );
 }

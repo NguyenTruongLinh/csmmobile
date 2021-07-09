@@ -57,6 +57,7 @@ class RTCStreamingView extends Component {
     if (viewer.isDataChannelOpened) {
       __DEV__ && console.log('GOND dc opened send live cmd now ...');
       if (videoStore.isLive) {
+        this.sendRtcCommand(RTC_COMMANDS.TIMEZONE);
         this.sendRtcCommand(RTC_COMMANDS.LIVE);
       } else {
         // TODO: search in single player
@@ -172,6 +173,7 @@ class RTCStreamingView extends Component {
 
     switch (msg_type) {
       case RTC_COMMANDS.TIMEZONE: // 'timezone':
+        console.log('GOND RTCMessage timezone: ', data);
         break;
       case RTC_COMMANDS.TIMELINE: // 'timeline':
         break;

@@ -7,11 +7,11 @@ import {
   Dimensions,
   StyleSheet,
   Text,
+  TouchableOpacity,
   // BackHandler,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import {BottomModal, ModalContent} from 'react-native-modals';
-import {Searchbar} from 'react-native-paper';
 
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
@@ -61,7 +61,6 @@ class ChannelsView extends React.Component {
         height,
       },
       gridLayout: 2,
-      showAuthen: false,
       showLayoutSelection: false,
       liveData: [],
     };
@@ -146,7 +145,7 @@ class ChannelsView extends React.Component {
     res = res && (await videoStore.getDisplayingChannels());
     res = res && (await videoStore.getVideoInfos());
     if (videoStore.needAuthen) {
-      newState.showAuthen = true;
+      videoStore.displayAuthen(true);
     }
 
     // Streaming will call onStreamReady when finish initialization
@@ -165,19 +164,27 @@ class ChannelsView extends React.Component {
   // };
 
   onStreamReady = () => {
+    if (!this._isMounted) return;
     this.setState({liveData: this.buildLiveData(this.state.gridLayout)});
   };
 
   onAuthenSubmit = ({username, password}) => {
-    this.props.videoStore.setNVRLoginInfo({username, password});
+    if (!username || !password) return;
+    this.props.videoStore.setNVRLoginInfo(username, password);
+    this.props.videoStore.displayAuthen(false);
     this.setState({
-      showAuthen: false,
       liveData: this.buildLiveData(this.state.gridLayout),
     });
   };
 
   onAuthenCancel = () => {
-    this.setState({showAuthen: false});
+    this.props.videoStore.displayAuthen(false);
+  };
+
+  onChannelSelect = value => {
+    console.log('GOND select channel: ', value);
+    this.props.videoStore.selectChannel(value.channelNo);
+    this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
   };
 
   buildLiveData = gridLayout => {
@@ -236,7 +243,6 @@ class ChannelsView extends React.Component {
   };
 
   renderNVRAuthenModal = () => {
-    const {showAuthen} = this.state;
     const {videoStore} = this.props;
 
     return (
@@ -253,19 +259,15 @@ class ChannelsView extends React.Component {
           'landscape-left',
           'landscape-right',
         ]}
-        visible={showAuthen}
+        visible={videoStore.showAuthenModal}
         onRequestClose={() => {
-          this.setState({showAuthen: false});
+          this.setState(this.onAuthenCancel);
         }}>
         <View style={[styles.modalcontainer]}>
           <AuthenModal
             style={styles.authenModal}
             onOK={this.onAuthenSubmit}
-            onCancel={() => {
-              this.setState({showAuthen: false}, () => {
-                this.onAuthenCancel();
-              });
-            }}
+            onCancel={this.onAuthenCancel}
             username={videoStore.nvrUser}
             password={''}
             title={'NVR Authorization'}
@@ -346,7 +348,11 @@ class ChannelsView extends React.Component {
               height: videoWindow.height,
             },
           ]}>
-          {this.renderVideoPlayer(item.data[i])}
+          <TouchableOpacity
+            style={{width: '100%', height: '100%'}}
+            onPress={() => this.onChannelSelect(item.data[i])}>
+            {this.renderVideoPlayer(item.data[i])}
+          </TouchableOpacity>
         </View>
       );
     }
@@ -388,17 +394,7 @@ class ChannelsView extends React.Component {
         break;
     }
 
-    return (
-      <View
-        style={{
-          width: videoWindow.width,
-          height: videoWindow.height,
-          // borderColor: 'blue',
-          // borderWidth: 2,
-        }}>
-        {player}
-      </View>
-    );
+    return player;
   };
 
   render() {

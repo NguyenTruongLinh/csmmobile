@@ -6,11 +6,11 @@ import {View, Image, ActivityIndicator} from 'react-native';
 
 import apiService from '../../services/api';
 import {isNullOrUndef} from '../util/general';
+import {No_Image} from '../../consts/images';
 
 class CMSImage extends React.Component {
   constructor(props) {
     super(props);
-    __DEV__ && console.log('GOND CMSImage styleImage = ', props.styleImage);
     this.state = {
       image: null,
       isLoading: true,
@@ -55,16 +55,17 @@ class CMSImage extends React.Component {
           data.action,
           data.param
         );
+        // __DEV__ && console.log('GOND loadImageAsync res = ', resposne);
         let imgbase64 = resposne.data || '';
         if (imgbase64) return {uri: 'data:image/jpeg;base64,' + imgbase64};
-        else return data.no_img;
+        else return data.no_img ?? No_Image;
       } else return data;
     }
   };
 
   onLoadingCompleted(param, imgData) {
-    if (this.props.dataCompleteHandler && data && this._isMounted)
-      this.props.dataCompleteHandler(param, data);
+    if (this.props.dataCompleteHandler && imgData && this._isMounted)
+      this.props.dataCompleteHandler(param, imgData);
   }
 
   componentDidMount() {
@@ -89,23 +90,34 @@ class CMSImage extends React.Component {
   }
 
   render() {
-    const {styles, styleImage} = this.props;
+    const {styles, styleImage, resizeMode} = this.props;
+    const {image} = this.state;
+    // __DEV__ && console.log('GOND render CMSImage: ', image);
 
     return (
       <View style={styles}>
         {this.state.isLoading ? (
           <ActivityIndicator
             animating={true}
-            style={[{height: 20, paddingTop: 10}]}
+            style={{
+              height: 20,
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
             size="small"
             color="#039BE5"
           />
         ) : (
-          <Image style={[styleImage]} source={this.state.image} />
+          <Image style={styleImage} source={image} resizeMode={resizeMode} />
         )}
       </View>
     );
   }
 }
 
-module.exports = CMSImage;
+export default CMSImage;

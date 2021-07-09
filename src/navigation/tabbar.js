@@ -10,10 +10,8 @@ import {
 
 import {Tabbar as Labels} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
-import CMSStyleSheet from '../components/CMSStyleSheet';
-
-// const Icon = CMSStyleSheet.Icon;
-const IconCustom = CMSStyleSheet.IconCustom;
+import {IconCustom} from '../components/CMSStyleSheet';
+import ROUTERS from '../consts/routes';
 
 const TabIcons = [
   'ic_home_24px',
@@ -22,6 +20,7 @@ const TabIcons = [
   'ic_settings_24px',
 ];
 const TabLabels = [Labels.home, Labels.video, Labels.alarm, Labels.settings];
+const HideTabbarScreens = [ROUTERS.VIDEO_PLAYER];
 
 export default class extends React.Component {
   constructor(props) {
@@ -35,15 +34,24 @@ export default class extends React.Component {
   render() {
     const {navigation, state} = this.props;
     const currentIndex = state.index;
+    const currentRoute = state.routes[state.index];
     const {width, height} = Dimensions.get('window');
     const tabWidth = width / TabLabels.length;
 
-    //  __DEV__ && console.log(
-    //   'GOND createTabbar navigation = ',
-    //   navigation,
-    //   ', --- state = ',
-    //   state
-    // );
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND createTabbar navigation = ',
+    //     navigation,
+    //     ', --- state = ',
+    //     state
+    //   );
+    if (
+      currentRoute.state &&
+      HideTabbarScreens.includes(
+        currentRoute.state.routes[currentRoute.state.index].name
+      )
+    )
+      return null;
     return (
       <View style={[styles.container, {height: height / 10}]}>
         {state.routes.map((route, index) => {

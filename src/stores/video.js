@@ -2,6 +2,7 @@ import {flow, types, getSnapshot} from 'mobx-state-tree';
 
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
+import {LocalZone, DateTime} from 'luxon';
 
 import RTCStreamModel from './types/webrtc';
 
@@ -50,6 +51,9 @@ const DirectServerModel = types
     setLoginInfo(userName, password) {
       self.userName = userName;
       self.password = password;
+    },
+    setHD(value) {
+      self.hd = value;
     },
   }));
 const parseDirectServer = (server /*, channelNo, isLive*/) => {
@@ -149,7 +153,7 @@ export const VideoModel = types
     rtcConnection: types.maybeNull(RTCStreamModel),
     hlsStreams: types.array(HLSStreamModel),
     directConnection: types.maybeNull(DirectServerModel),
-    selectedStreamIndex: types.maybeNull(types.number),
+    selectedChannel: types.maybeNull(types.number),
 
     openStreamLock: types.boolean,
 
@@ -161,8 +165,13 @@ export const VideoModel = types
     nvrUser: types.maybeNull(types.string),
     nvrPassword: types.maybeNull(types.string),
     isLive: types.boolean,
+    isFullscreen: types.boolean,
+    isHD: types.boolean,
+    showAuthenModal: types.boolean,
     // hdMode: types.boolean,
     isSingleMode: types.boolean,
+    frameTime: types.string,
+    searchDate: types.maybeNull(types.string),
     // TODO: timestamp should use BigNumber?
     searchBegin: types.maybeNull(types.number),
     searchEnd: types.maybeNull(types.number),
@@ -171,10 +180,17 @@ export const VideoModel = types
     get isCloud() {
       return self.cloudType > CLOUD_TYPE.DIRECTION;
     },
-
     get activeChannels() {
       const res = self.allChannels.filter(ch => ch.isActive);
       return res; // res.map(ch => ch.data);
+    },
+    get displayChannels() {
+      if (
+        self.cloudType == CLOUD_TYPE.DIRECTION ||
+        self.cloudType == CLOUD_TYPE.DEFAULT
+      )
+        return self.allChannels;
+      return self.activeChannels;
     },
     get needAuthen() {
       return (
@@ -190,11 +206,43 @@ export const VideoModel = types
         )
         .map(ch => ({
           ...self.directConnection,
+          channelNo: ch.channelNo,
           channels: '' + ch.channelNo,
-          name: ch.name,
+          channelName: ch.name,
+          kChannel: ch.kChannel,
           byChannel: true,
           interval: DAY_INTERVAL,
         }));
+    },
+    get selectedChannelIndex() {
+      return self.displayChannels
+        ? self.displayChannels.findIndex(
+            ch => ch.channelNo === self.selectedChannel
+          )
+        : -1;
+    },
+    get selectedStream() {
+      if (util.isNullOrUndef(self.selectedChannel)) return {};
+      switch (self.cloudType) {
+        case CLOUD_TYPE.DEFAULT:
+        case CLOUD_TYPE.DIRECTION:
+          return self.directStreams.find(
+            s => s.channelNo == self.selectedChannel
+          );
+        case CLOUD_TYPE.HLS:
+          // TODO
+          return null;
+        case CLOUD_TYPE.RTC:
+          return self.rtcConnection.viewers.find(
+            v => v.channelNo == self.selectedChannel
+          );
+      }
+      return null;
+    },
+    get firstChannelNo() {
+      return self.allChannels && self.allChannels.length > 0
+        ? self.allChannels[0].channelNo
+        : 0;
     },
     // Build data for players
     // buildDirectData() {
@@ -238,7 +286,7 @@ export const VideoModel = types
     // let peerConnectionStatsInterval = null;
     // #region setters
     return {
-      setNVRLoginInfo({username, password}) {
+      setNVRLoginInfo(username, password) {
         self.nvrUser = username;
         self.nvrPassword = password;
         self.directConnection.setLoginInfo(username, password);
@@ -248,6 +296,7 @@ export const VideoModel = types
       },
       resetNVRAuthentication() {
         if (self.nvrUser) self.setNVRLoginInfo('', '');
+        self.showAuthenModal = true;
       },
       setLoading(value) {
         self.isLoading = value;
@@ -263,6 +312,62 @@ export const VideoModel = types
         __DEV__ && console.log('GOND streamReadyCallback ...');
         streamReadyCallback = fn;
       },
+      selectChannel(value) {
+        self.selectedChannel = value;
+      },
+      setFrameTime(value) {
+        if (typeof value == 'string') {
+          self.frameTime = value;
+        } else if (typeof value == 'number') {
+          // TODO: convert timezone
+        }
+      },
+      setSearchDate(value) {
+        if (typeof value == 'string') {
+          self.searchDate = value;
+        } else {
+          // TODO: convert timezone
+        }
+      },
+      displayAuthen(value) {
+        self.showAuthenModal = value;
+      },
+      switchLiveSearch(value) {
+        self.isLive = value === undefined ? !self.isLive : value;
+      },
+      switchHD(value) {
+        self.isHD = !self.isHD;
+      },
+      switchFullscreen(value) {
+        self.isFullscreen = !self.isFullscreen;
+      },
+      previousChannel() {
+        if (self.selectedChannelIndex > 0) {
+          self.selectedChannel =
+            self.displayChannels[self.selectedChannelIndex - 1].channelNo;
+        }
+      },
+      nextChannel() {
+        if (
+          self.selectedChannelIndex < self.displayChannels.length - 1 &&
+          self.selectedChannelIndex >= 0
+        )
+          self.selectedChannel =
+            self.displayChannels[self.selectedChannelIndex + 1].channelNo;
+      },
+      reset() {
+        self.selectedChannel = null;
+        self.searchBegin = null;
+        self.searchEnd = null;
+        self.frameTime = '';
+        self.searchDate = null;
+        self.isLoading = false;
+        self.isLive = true;
+        self.isFullscreen = false;
+        self.isHD = false;
+        self.showAuthenModal = false;
+      },
+
       // #endregion setters
       // #region settings
       getCloudSetting: flow(function* getCloudSetting() {
@@ -455,15 +560,17 @@ export const VideoModel = types
             {
               ID: apiService.configToken.devId,
               KDVR: self.kDVR,
-              ChannelNo: channelNo ?? self.allChannels[0].channelNo,
-              RequestMode: VSCCommand.LIVE,
+              ChannelNo: channelNo ?? self.firstChannelNo,
+              RequestMode: VSCCommand.TIMEZONE,
               isMobile: true,
             }
           );
           __DEV__ && console.log('GOND get DVR timezone: ', res);
         } catch (ex) {
           console.log('Could not get DVR timezone: ', ex);
+          return false;
         }
+        return true;
       }),
       getDaylist: flow(function* getDaylist() {}),
       getHLSInfos: flow(function* getHLSInfos(channel) {
@@ -526,23 +633,36 @@ export const VideoModel = types
           console.log('GOND getRTCInfo failed: ', ex);
         }
       }),
-      getVideoInfos: flow(function* getVideoInfos(channel) {
+      getVideoInfos: flow(function* getVideoInfos(channelNo) {
         console.log('GOND getVideoInfos');
+        let getInfoPromise = null;
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            return yield self.getDirectInfos(channel);
+            getInfoPromise = self.getDirectInfos(channelNo);
+            break;
           case CLOUD_TYPE.HLS:
-            return yield self.getHLSInfos(channel);
+            getInfoPromise = self.getHLSInfos(channelNo);
+            break;
           case CLOUD_TYPE.RTC:
-            return yield self.getRTCInfos(channel);
+            getInfoPromise = self.getRTCInfos(channelNo);
+            break;
+          default:
+            getInfoPromise = Promise.resolve(false);
+            __DEV__ &&
+              console.log(
+                'GOND cannot get video info invalid cloud type: ',
+                self.cloudType
+              );
+            break;
         }
-        __DEV__ &&
-          console.log(
-            'GOND cannot get video info invalid cloud type: ',
-            self.cloudType
-          );
-        return false;
+        // const [resInfo, resTimezone] = yield Promise.all([
+        //   getInfoPromise,
+        //   self.getDVRTimezone(channelNo),
+        // ]);
+
+        // return resInfo && resTimezone;
+        return yield getInfoPromise;
       }),
       onReceiveStreamInfo: flow(function* onReceiveStreamInfo(streamInfo) {
         __DEV__ && console.log('GOND onReceiveStreamInfo');
@@ -610,7 +730,6 @@ const videoStore = VideoModel.create({
   hlsStreams: [],
   // directStreams: [],
   directConnection: null,
-  singleStreamIndex: null,
   openStreamLock: false,
 
   channelFilter: '',
@@ -619,8 +738,12 @@ const videoStore = VideoModel.create({
   message: '',
   needResetConnection: false,
   isLive: true,
+  isFullscreen: false,
+  isHD: false,
+  showAuthenModal: false,
   // hdMode: false,
   isSingleMode: false,
+  frameTime: '',
   searchBegin: null,
   searchEnd: null,
 });

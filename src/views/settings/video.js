@@ -42,7 +42,7 @@ const CloudSettingData = [
     name: SettingsTxt.videoStreamName,
     description: SettingsTxt.videoStreamDesc,
     icon: Setting_Video_Cloud, // 'cloud',
-    value: false,
+    value: true,
   },
 ];
 
@@ -54,7 +54,7 @@ class VideosettingView extends Component {
 
     this.state = {
       isCloud: true,
-      selectedValue: true,
+      selectedValue: null,
       settingLoaded: false,
     };
   }
@@ -129,6 +129,7 @@ class VideosettingView extends Component {
   renderItem({item}) {
     if (!item) return;
     const {selectedValue} = this.state;
+    const {isLoading} = this.props.videoStore;
     const isChecked = selectedValue == item.value;
 
     const checkBox = isChecked ? (
@@ -144,7 +145,7 @@ class VideosettingView extends Component {
       <Ripple
         rippleOpacity={0.87}
         onPress={() => {
-          if (selectedValue != item.value && !this.props.videoStore.isLoading) {
+          if (selectedValue != item.value && !isLoading) {
             this.setState({selectedValue: item.value});
           }
         }}>

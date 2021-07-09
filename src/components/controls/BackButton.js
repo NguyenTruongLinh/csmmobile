@@ -6,6 +6,11 @@ import CMSAvatars from '../containers/CMSAvatars';
 import CMSColors from '../../styles/cmscolors';
 
 class BackButton extends React.Component {
+  static defaultProps = {
+    icon: 'keyboard-left-arrow-button',
+    color: CMSColors.SecondaryText,
+  };
+
   constructor(props) {
     super(props);
     if (!props.navigator) {
@@ -16,7 +21,7 @@ class BackButton extends React.Component {
   }
 
   render() {
-    const {navigator} = this.props;
+    const {navigator, icon, color} = this.props;
     return (
       <Ripple
         rippleCentered={true}
@@ -25,9 +30,12 @@ class BackButton extends React.Component {
         <View style={styles.icon}>
           <CMSAvatars
             size={20}
-            color={CMSColors.SecondaryText}
-            styles={[styles.contentIcon, {position: 'relative'}]}
-            iconCustom="keyboard-left-arrow-button"
+            color={color}
+            styles={[
+              styles.contentIcon,
+              {position: 'relative', paddingBottom: 14},
+            ]}
+            iconCustom={icon}
           />
         </View>
       </Ripple>

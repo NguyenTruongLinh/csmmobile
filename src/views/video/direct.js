@@ -148,6 +148,10 @@ class DirectVideoView extends Component {
         console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
         break;
       case NATIVE_MESSAGE.SVR_REJECT_ACCEPT:
+        this.setState({
+          message: 'Cannot connect to server',
+          videoLoading: false,
+        });
         break;
       case NATIVE_MESSAGE.LOGIN_MESSAGE_WRONG_SERVERID:
         this.setState({message: 'Wrong server ID'});
@@ -169,6 +173,15 @@ class DirectVideoView extends Component {
         this.setState({message: 'No video data', noVideo: true});
         break;
       case NATIVE_MESSAGE.SEARCH_FRAME_TIME:
+        if (value) {
+          const valueObj = JSON.parse(value);
+          this.setState({
+            videoLoading: false,
+          });
+          if (Array.isArray(valueObj) && valueObj.length > 0)
+            this.onFrameTime(valueObj[0]);
+          else console.log('GOND direct frame time not valid: ', valueObj);
+        }
         break;
       case NATIVE_MESSAGE.SERVER_CHANGED_CURRENT_USER:
         break;
@@ -199,7 +212,15 @@ class DirectVideoView extends Component {
     }
   };
 
-  onTimeFrame = (value, displayTime) => {};
+  onFrameTime = frameTime => {
+    const {videoStore} = this.props;
+    const {timestamp, value} = frameTime;
+    if (value) {
+      let formated = value.split(' ')[1];
+      formated = formated ? formated.split('.')[0] : value;
+      videoStore.setFrameTime(formated);
+    } else console.log('GOND direct frame time value not valid: ', frameTime);
+  };
 
   onLayout = event => {
     if (event == null || event.nativeEvent == null) return;
@@ -245,7 +266,9 @@ class DirectVideoView extends Component {
           style={{width: width, height: height}}
           resizeMode="stretch">
           {/* <View style={{width: width, height: height}}> */}
-          <Text style={styles.channelInfo}>{serverInfo.name ?? 'Unknown'}</Text>
+          <Text style={styles.channelInfo}>
+            {serverInfo.channelName ?? 'Unknown'}
+          </Text>
           <View style={styles.statusView}>
             <Text style={styles.textMessge}>{message}</Text>
             {videoLoading && (

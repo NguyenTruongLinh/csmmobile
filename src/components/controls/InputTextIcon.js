@@ -35,6 +35,7 @@ export default class InputTextIcon extends PureComponent {
     iconPosition: 'left',
     revealable: false,
     placeholder: '',
+    noBorder: false,
   };
 
   static propTypes = {
@@ -229,6 +230,7 @@ export default class InputTextIcon extends PureComponent {
       revealable,
       iconPosition,
       placeholder,
+      noBorder,
       ...props
     } = this.props;
     let {focused, focus, error, errored, height, text = ''} = this.state;
@@ -323,11 +325,13 @@ export default class InputTextIcon extends PureComponent {
           style={styles.flex}>
           <TextField
             style={[styles.input, inputStyle, style]}
-            selectionColor={tintColor}
+            selectionColor={noBorder ? CMSColors.transparent : tintColor}
+            tintColor={noBorder ? CMSColors.transparent : tintColor}
+            baseColor={noBorder ? CMSColors.transparent : baseColor}
             {...props}
             {...{
-              tintColor,
-              baseColor,
+              // tintColor,
+              // baseColor,
               errorColor,
               animationDuration,
               focused,

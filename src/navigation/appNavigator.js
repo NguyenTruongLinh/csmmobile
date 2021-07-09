@@ -175,6 +175,7 @@ const CMSMainTab = navigatorSetter => (
     initialRouteName={ROUTERS.HOME}
     headerMode="none"
     backBehavior="none"
+    // screenOptions={{unmountOnBlur: true}}
     tabBar={props => {
       return <CMSTabbar naviSetter={navigatorSetter} {...props} />;
     }}>

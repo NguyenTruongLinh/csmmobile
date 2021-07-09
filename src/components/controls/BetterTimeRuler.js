@@ -1,11 +1,15 @@
 import React, {PureComponent} from 'react';
 import {Dimensions, View, ScrollView, Text} from 'react-native';
 import CMSColors from '../../styles/cmscolors';
-import {STREAM_CONST, arrayof12HTime, arrayof24HTime} from '../../consts/video';
+import {
+  default24H,
+  startDST,
+  endDST,
+  arrayof12HTime,
+  arrayof24HTime,
+} from '../../consts/video';
 // import moment from 'moment';
 let isScrollingDrag = false;
-
-const {default24H, startDST, endDST} = STREAM_CONST;
 
 export default class TimeRuler extends PureComponent {
   static defaultProps = {

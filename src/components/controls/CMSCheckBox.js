@@ -1,14 +1,15 @@
 import React, {Component, PropTypes} from 'react';
 import {Text, View, StyleSheet, ScrollView} from 'react-native';
 
-import {Searchbar} from 'react-native-paper';
 import Ripple from 'react-native-material-ripple';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import InputTextIcon from './InputTextIcon';
 
 import {compareStrings} from '../../util/general';
 
 import {Icon, IconCustom} from '../CMSStyleSheet';
 import CMSColors from '../../styles/cmscolors';
+import {Comps as CompTxt} from '../../localization/texts';
 
 export default class CheckboxGroup extends Component {
   static defaultProps = {
@@ -208,18 +209,16 @@ export default class CheckboxGroup extends Component {
 
     const header = (
       <View style={styles.body_header}>
-        <Searchbar
+        <InputTextIcon
+          label=""
           ref={ref => (this.searchBar = ref)}
-          // data={this.props.checkboxes}
-          // focusOnLayout={false}
-          placeholder="Search..."
-          onChangeText={input => {
-            this._handleSearch(input);
-          }}
           value={this.state.filterValue}
-          style={{borderWidth: 0}}
-          // hideBack={true}
-          // showOnLoad={true}
+          onChangeText={this._handleSearch}
+          placeholder={CompTxt.searchPlaceholder}
+          iconCustom="searching-magnifying-glass"
+          disabled={false}
+          iconPosition="right"
+          noBorder={true}
         />
       </View>
     );

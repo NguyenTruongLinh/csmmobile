@@ -54,6 +54,8 @@ module.exports = {
   cellBorder: '#EEEEEE',
   darkBackground: '#183E63',
   borderColor: 'rgba(0, 0, 0, .38)',
+  darkElement: '#353535',
+  darkTheme: '#000000',
 
   errorColor: 'red',
   indicatorColor: 'rgb(245, 200, 10)',

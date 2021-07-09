@@ -28,6 +28,7 @@ import {
 // RTC viewer
 const ChannelConnectionModel = types
   .model({
+    kChannel: types.identifierNumber,
     channelNo: types.number,
     channelName: types.string,
     isDataChannelOpened: types.boolean,
@@ -488,6 +489,7 @@ const RTCStreamModel = types
     }),
     createConnection: flow(function* createConnection(ch, streamInfos) {
       const conn = ChannelConnectionModel.create({
+        kChannel: ch.kChannel,
         channelNo: ch.channelNo,
         channelName: ch.name,
         isDataChannelOpened: false,
