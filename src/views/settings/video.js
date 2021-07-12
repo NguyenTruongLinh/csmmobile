@@ -160,7 +160,7 @@ class VideosettingView extends Component {
                   : styles.rowButton_icon_uncheck,
               ]}
               disabled={true}
-              color={isChecked ? CMSColors.White : CMSColors.colorRow_options}
+              color={isChecked ? CMSColors.White : CMSColors.RowOptions}
               icon={item.icon}
             /> */}
             <Image source={item.icon} style={styles.rowButton_icon} />

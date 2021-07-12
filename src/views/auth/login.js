@@ -229,7 +229,7 @@ class LoginView extends Component {
                 iconCustom={'clear-button'}
                 iconSize={16}
                 iconStyleEnable={{
-                  color: CMSColors.colorText,
+                  color: CMSColors.ColorText,
                 }}
                 // iconStyleDisable={{}}
                 onPress={this.onBack}
@@ -414,10 +414,10 @@ const styles = StyleSheet.create({
   },
   content: {
     maxWidth: variable.deviceWidth > 370 ? 400 : variable.deviceWidth,
-    backgroundColor: CMSColors.transparent,
+    backgroundColor: CMSColors.Transparent,
   },
   captionStyle: {
-    color: CMSColors.textButtonLogin,
+    color: CMSColors.TextButtonLogin,
   },
 });
 

@@ -156,7 +156,7 @@ export default class MultiselectCheckBoxList extends Component {
           enableSort={this.props.enableSort}
           isSortAZ={this.state.isSortAZ}
           labelStyle={{
-            color: CMSColors.textSearch,
+            color: CMSColors.TextSearch,
           }}
           rowStyle={{
             flexDirection: 'row',
@@ -225,7 +225,7 @@ export default class MultiselectCheckBoxList extends Component {
 var styles = StyleSheet.create({
   RowHeader: {
     height: session_header_height,
-    backgroundColor: CMSColors.rowHeaderAccordion,
+    backgroundColor: CMSColors.RowHeaderAccordion,
     flexDirection: 'row',
     justifyContent: 'flex-start',
     borderBottomWidth: 0.5,
@@ -250,7 +250,7 @@ var styles = StyleSheet.create({
 
   icon_flag: {
     margin: 5,
-    backgroundColor: CMSColors.transparent,
+    backgroundColor: CMSColors.Transparent,
     justifyContent: 'center',
     alignItems: 'center',
     width: 40,
@@ -269,7 +269,7 @@ var styles = StyleSheet.create({
   },
 
   headerSites: {
-    backgroundColor: CMSColors.bgHeaderSites,
+    backgroundColor: CMSColors.BGHeaderSites,
     height: 40,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -290,6 +290,6 @@ var styles = StyleSheet.create({
   },
 
   countsite_text_empty: {
-    color: CMSColors.errorColor,
+    color: CMSColors.ErrorColor,
   },
 });

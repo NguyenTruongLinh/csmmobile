@@ -30,7 +30,7 @@ module.exports = StyleSheet.create({
   imageLogo: {
     flex: 1,
     alignItems: 'center',
-    //backgroundColor: CMSColors.transparent,
+    //backgroundColor: CMSColors.Transparent,
     //flexDirection:'row',
     justifyContent: 'flex-end',
   },
@@ -62,7 +62,7 @@ module.exports = StyleSheet.create({
   },
   content: {
     maxWidth: variable.deviceWidth > 370 ? 400 : variable.deviceWidth,
-    backgroundColor: CMSColors.transparent,
+    backgroundColor: CMSColors.Transparent,
   },
   loginbuttonContainer: {
     paddingTop: 20,
@@ -102,7 +102,7 @@ module.exports = StyleSheet.create({
     justifyContent: 'center',
   },
   captionStyle: {
-    color: CMSColors.textButtonLogin,
+    color: CMSColors.TextButtonLogin,
   },
   msgErr: {
     height: 50,

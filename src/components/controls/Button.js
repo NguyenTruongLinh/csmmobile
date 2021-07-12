@@ -266,7 +266,7 @@ var styles = StyleSheet.create({
 
   border: {
     borderWidth: 1,
-    borderColor: CMSColors.lightText,
+    borderColor: CMSColors.LightText,
     borderRadius: HEIGHT / 2,
   },
 
@@ -289,8 +289,8 @@ var styles = StyleSheet.create({
 
   Background: {
     //backgroundColor: 'rgba(0, 86, 145, 1)'
-    backgroundColor: CMSColors.primaryActive,
-    borderColor: CMSColors.primaryActive,
+    backgroundColor: CMSColors.PrimaryActive,
+    borderColor: CMSColors.PrimaryActive,
   },
 
   disableBackground: {
@@ -309,7 +309,7 @@ var styles = StyleSheet.create({
 
   flatCaption: {
     // color: 'rgba(0, 86, 145, 1)',
-    color: CMSColors.primaryActive,
+    color: CMSColors.PrimaryActive,
   },
   flatCaptionDisable: {
     color: 'rgb(156,156,156)',

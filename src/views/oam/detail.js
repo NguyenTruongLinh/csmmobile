@@ -89,7 +89,7 @@ class OAMDetailView extends Component {
   // _handleAppStateChange = nextAppState => {
   //   //console.log('GOND PVM detail handleAppStateChange this.state.appState: ', this.state.appState)
   //   if (
-  //     this.state.appState.match(/inactive|background/) &&
+  //     this.state.appState.match(/Inactive|background/) &&
   //     nextAppState === 'active'
   //   ) {
   //     if (this.props.api && this.props.selectedSite.KDVR > 0) {

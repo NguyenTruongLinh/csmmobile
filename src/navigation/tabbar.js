@@ -67,7 +67,7 @@ export default class extends React.Component {
                 name={TabIcons[index]}
                 size={30}
                 color={
-                  isSelected ? CMSColors.primaryActive : CMSColors.SecondaryText
+                  isSelected ? CMSColors.PrimaryActive : CMSColors.SecondaryText
                 }
               />
               {/* <Image
@@ -77,8 +77,8 @@ export default class extends React.Component {
                   alignSelf: 'center',
                   width: tabWidth * 0.8,
                   tintColor: isSelected
-                    ? CMSColors.primaryActive
-                    : CMSColors.inactive,
+                    ? CMSColors.PrimaryActive
+                    : CMSColors.Inactive,
                 }}
               /> */}
               <Text style={[styles.text, textStyle]}>{TabLabels[index]}</Text>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     color: CMSColors.PrimaryText,
   },
   textSelected: {
-    color: CMSColors.primaryActive,
+    color: CMSColors.PrimaryActive,
   },
   highlightContainer: {
     alignItems: 'center',

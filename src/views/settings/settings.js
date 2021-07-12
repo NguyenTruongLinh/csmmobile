@@ -96,7 +96,7 @@ class SettingsView extends Component {
               <IconCustom
                 name="keyboard-right-arrow-button"
                 size={16}
-                color={CMSColors.colorRow_options}
+                color={CMSColors.RowOptions}
               />
             </View>
           </Ripple>
@@ -106,7 +106,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="earth-grid-select-language-button"
                   size={20}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View> */}
               <View style={styles.domainContainer}>
@@ -127,7 +127,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="round-info-button"
                   size={20}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View> */}
               <Text style={styles.listText}>About</Text>
@@ -136,7 +136,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="keyboard-right-arrow-button"
                   size={16}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View>
             </View>
@@ -150,7 +150,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="notifications-button"
                   size={20}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View> */}
               <Text style={styles.listText}>Notification settings</Text>
@@ -159,7 +159,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="keyboard-right-arrow-button"
                   size={16}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View>
             </View>
@@ -173,7 +173,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="icon-dvr"
                   size={20}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View> */}
               <Text style={styles.listText}>Video settings</Text>
@@ -182,7 +182,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="keyboard-right-arrow-button"
                   size={16}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View>
             </View>
@@ -196,7 +196,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="logout"
                   size={20}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View> */}
               <Text style={styles.listText}>Logout</Text>
@@ -205,7 +205,7 @@ class SettingsView extends Component {
                 <IconCustom
                   name="keyboard-right-arrow-button"
                   size={16}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View>
             </View>
@@ -268,11 +268,11 @@ const styles = StyleSheet.create({
   userInfoText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: CMSColors.colorText,
+    color: CMSColors.ColorText,
   },
   userInfoSubText: {
     fontSize: 14,
-    color: CMSColors.colorText,
+    color: CMSColors.ColorText,
   },
   rowContainer: {
     height: 70,
@@ -306,13 +306,13 @@ const styles = StyleSheet.create({
     padding: 5,
     fontSize: 16,
     fontWeight: 'bold',
-    color: CMSColors.colorText,
+    color: CMSColors.ColorText,
   },
   listTextDomainTitle: {
     marginLeft: 15, //10,
     fontSize: 16,
     fontWeight: 'bold',
-    color: CMSColors.colorText,
+    color: CMSColors.ColorText,
   },
   listTextDomain: {
     marginLeft: 15, // 10,

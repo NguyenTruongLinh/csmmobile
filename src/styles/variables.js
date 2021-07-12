@@ -36,7 +36,7 @@ export default {
   horizoltalLine: (
     <View
       style={{
-        borderBottomColor: CMSColors.borderColor,
+        borderBottomColor: CMSColors.BorderColor,
         borderBottomWidth: line_border_height,
       }}
     />

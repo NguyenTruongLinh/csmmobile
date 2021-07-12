@@ -110,7 +110,7 @@ class ChannelsView extends React.Component {
           <CMSAvatars
             size={22}
             onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
-            color={CMSColors.colorText}
+            color={CMSColors.ColorText}
             styles={{
               flex: 1,
               width: 40,
@@ -123,7 +123,7 @@ class ChannelsView extends React.Component {
           <CMSAvatars
             size={22}
             onPress={() => this.setState({showLayoutSelection: true})}
-            color={CMSColors.colorText}
+            color={CMSColors.ColorText}
             styles={{
               flex: 1,
               width: 40,
@@ -299,7 +299,7 @@ class ChannelsView extends React.Component {
             () => this.setHeader()
           )
         }
-        color={CMSColors.colorText}
+        color={CMSColors.ColorText}
         // styles={{flex: 1}}
         iconCustom={item.icon}
       />

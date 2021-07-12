@@ -110,7 +110,7 @@ class AboutView extends Component {
                 <IconCustom
                   name="polocies"
                   size={20}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View>
 
@@ -119,7 +119,7 @@ class AboutView extends Component {
                 <IconCustom
                   name="keyboard-right-arrow-button"
                   size={16}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View>
             </View>
@@ -133,7 +133,7 @@ class AboutView extends Component {
                 <IconCustom
                   name="polocies"
                   size={20}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View>
 
@@ -142,7 +142,7 @@ class AboutView extends Component {
                 <IconCustom
                   name="keyboard-right-arrow-button"
                   size={16}
-                  color={CMSColors.colorRow_options}
+                  color={CMSColors.RowOptions}
                 />
               </View>
             </View>
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     padding: 5,
     fontSize: 16,
     fontWeight: 'bold',
-    color: CMSColors.colorText,
+    color: CMSColors.ColorText,
   },
   rowIconEnd: {
     width: 30,

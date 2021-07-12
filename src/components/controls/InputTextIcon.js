@@ -25,11 +25,11 @@ export default class InputTextIcon extends PureComponent {
     //fontSize: CMSStyleSheet.FontSize,
     fontSize: variable.fix_fontSire,
 
-    tintColor: CMSColors.borderActiveColor,
-    textColor: CMSColors.actionText,
-    baseColor: CMSColors.borderColor,
+    tintColor: CMSColors.BorderActiveColor,
+    textColor: CMSColors.ActionText,
+    baseColor: CMSColors.BorderColor,
 
-    errorColor: CMSColors.errorColor,
+    errorColor: CMSColors.ErrorColor,
 
     disabled: false,
     iconPosition: 'left',
@@ -313,7 +313,7 @@ export default class InputTextIcon extends PureComponent {
     ) : null;
     const revealIconStyle = this.state.revealHidden
       ? {}
-      : {color: CMSColors.primaryActive};
+      : {color: CMSColors.PrimaryActive};
 
     return (
       <View style={{flexDirection: 'row', alignSelf: 'center'}}>
@@ -325,9 +325,9 @@ export default class InputTextIcon extends PureComponent {
           style={styles.flex}>
           <TextField
             style={[styles.input, inputStyle, style]}
-            selectionColor={noBorder ? CMSColors.transparent : tintColor}
-            tintColor={noBorder ? CMSColors.transparent : tintColor}
-            baseColor={noBorder ? CMSColors.transparent : baseColor}
+            selectionColor={noBorder ? CMSColors.Transparent : tintColor}
+            tintColor={noBorder ? CMSColors.Transparent : tintColor}
+            baseColor={noBorder ? CMSColors.Transparent : baseColor}
             {...props}
             {...{
               // tintColor,

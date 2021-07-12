@@ -70,7 +70,7 @@ module.exports = StyleSheet.create({
   },
   nextContainer: {flex: 1, alignContent: 'flex-end'},
   nextButton: {
-    // backgroundColor: CMSColors.primaryActive,
+    // backgroundColor: CMSColors.PrimaryActive,
     // height: 63,
     // marginLeft: 49,
     // marginRight: 35,

@@ -40,7 +40,7 @@ class ChannelsSettingView extends Component {
 
 const styles = StyleSheet.create({
   summaryContainer: {
-    backgroundColor: CMSColors.headerListRow,
+    backgroundColor: CMSColors.HeaderListRow,
     height: 35,
     flexDirection: 'row',
     alignItems: 'center',
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   summaryText: {
     paddingLeft: 24,
     textAlignVertical: 'center',
-    color: CMSColors.colorRow_options,
+    color: CMSColors.RowOptions,
   },
 });
 export default ChannelsSettingView;

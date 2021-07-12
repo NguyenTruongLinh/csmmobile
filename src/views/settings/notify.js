@@ -276,7 +276,7 @@ class NotifySettingView extends React.Component {
           <TouchableOpacity
             style={{
               flex: 1 - ModalHeight_percent,
-              backgroundColor: CMSColors.borderColor,
+              backgroundColor: CMSColors.BorderColor,
             }}
             activeOpacity={1}
             onPress={this.onDismissModal}
@@ -317,7 +317,7 @@ class NotifySettingView extends React.Component {
           <TouchableOpacity
             style={{
               flex: 1 - ModalHeight_percent,
-              backgroundColor: CMSColors.borderColor,
+              backgroundColor: CMSColors.BorderColor,
             }}
             activeOpacity={1}
             onPress={this.onDismissModal}
@@ -417,9 +417,7 @@ class NotifySettingView extends React.Component {
               ]}
               disabled={true}
               color={
-                item.isCheck == true
-                  ? CMSColors.White
-                  : CMSColors.colorRow_options
+                item.isCheck == true ? CMSColors.White : CMSColors.RowOptions
               }
               iconCustom={getIconAlertType(item.id)}
             />

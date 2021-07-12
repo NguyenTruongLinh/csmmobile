@@ -570,7 +570,7 @@ export default class TimeRuler extends PureComponent {
                       borderTopWidth: 1,
                       borderTopColor: item.visible
                         ? 'gray'
-                        : CMSColors.inactiveText,
+                        : CMSColors.InactiveText,
                       borderLeftColor: 'gray',
                     }}>
                     {this._renderminutes(item)}
@@ -604,7 +604,7 @@ export default class TimeRuler extends PureComponent {
                   </View>
                   <Text
                     style={{
-                      color: item.visible ? item.color : CMSColors.inactiveText,
+                      color: item.visible ? item.color : CMSColors.InactiveText,
                       fontSize: this.props.fontSize,
                       left: -19,
                     }}>

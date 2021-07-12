@@ -50,13 +50,13 @@ const styles = StyleSheet.create({
   h1: {
     fontSize: normalize(24),
     lineHeight: normalize(27),
-    color: CMSColors.darkText,
+    color: CMSColors.DarkText,
     fontWeight: 'bold',
     letterSpacing: -1,
   },
   p: {
     fontSize: normalize(15),
     lineHeight: normalize(23),
-    color: CMSColors.lightText,
+    color: CMSColors.LightText,
   },
 });

@@ -90,7 +90,7 @@ class SitesView extends Component {
             justifyContent: 'flex-start',
             paddingLeft: 16,
             borderBottomWidth: variables.borderWidthRow,
-            borderColor: CMSColors.borderColorListRow,
+            borderColor: CMSColors.BorderColorListRow,
           }}
           onPress={() => this.onSiteSelected(item)}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
@@ -125,7 +125,7 @@ class SitesView extends Component {
         </View>
         <View
           style={{
-            backgroundColor: CMSColors.headerListRow,
+            backgroundColor: CMSColors.HeaderListRow,
             height: 35,
             flexDirection: 'row',
             alignItems: 'center',
@@ -134,7 +134,7 @@ class SitesView extends Component {
             style={{
               paddingLeft: 24,
               textAlignVertical: 'center',
-              color: CMSColors.colorRow_options,
+              color: CMSColors.RowOptions,
             }}>
             {this.props.sitesStore.sitesCount + ' sites'}
           </Text>

@@ -23,11 +23,11 @@ export default class InputText extends PureComponent {
 
     fontSize: CMSStyleSheet.FontSize,
 
-    tintColor: CMSColors.borderActiveColor,
-    textColor: CMSColors.actionText,
-    baseColor: CMSColors.borderColor,
+    tintColor: CMSColors.BorderActiveColor,
+    textColor: CMSColors.ActionText,
+    baseColor: CMSColors.BorderColor,
 
-    errorColor: CMSColors.errorColor,
+    errorColor: CMSColors.ErrorColor,
 
     disabled: false,
   };

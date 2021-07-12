@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   containIcon: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: CMSColors.transparent,
+    backgroundColor: CMSColors.Transparent,
   },
 
   rowStyleDefault: {

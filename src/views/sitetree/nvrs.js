@@ -72,7 +72,7 @@ class NVRsView extends Component {
             justifyContent: 'flex-start',
             paddingLeft: 16,
             borderBottomWidth: variables.borderWidthRow,
-            borderColor: CMSColors.borderColorListRow,
+            borderColor: CMSColors.BorderColorListRow,
           }}
           onPress={() => this.onNVRSelected(item)}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
@@ -110,7 +110,7 @@ class NVRsView extends Component {
         </View>
         <View
           style={{
-            backgroundColor: CMSColors.headerListRow,
+            backgroundColor: CMSColors.HeaderListRow,
             height: 35,
             flexDirection: 'row',
             alignItems: 'center',
@@ -119,7 +119,7 @@ class NVRsView extends Component {
             style={{
               paddingLeft: 24,
               textAlignVertical: 'center',
-              color: CMSColors.colorRow_options,
+              color: CMSColors.RowOptions,
             }}>
             {sitesStore.selectedSite
               ? sitesStore.selectedSite.dvrsCount + ' NVRs'

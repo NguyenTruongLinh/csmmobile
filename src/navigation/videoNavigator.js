@@ -60,7 +60,7 @@ export default function VideoStack() {
             />
           ),
           headerStyle: {
-            backgroundColor: CMSColors.darkElement,
+            backgroundColor: CMSColors.DarkElement,
           },
           headerTitleStyle: {
             color: CMSColors.White,

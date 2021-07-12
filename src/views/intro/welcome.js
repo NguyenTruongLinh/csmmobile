@@ -113,7 +113,7 @@ class WelcomeView extends Component {
                 style={{
                   // fontWeight: 'normal',
                   // fontSize: 16,
-                  color: CMSColor.primaryActive,
+                  color: CMSColor.PrimaryActive,
                 }}
                 onPress={() => {
                   Linking.openURL(APP_INFO.ContactUrl);

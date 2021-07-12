@@ -44,70 +44,71 @@ module.exports = {
   Dark_Gray_2: Dark_Gray_2,
   Dark_Gray_54: 'rgb(117,117,117)',
 
-  transparent: 'rgba(0,0,0,0)',
-  buttonRight: White,
+  Transparent: 'rgba(0,0,0,0)',
+  ButtonRight: White,
+  OpacityButton: 'rgba(255, 255, 255, 0.1)',
 
-  actionText: 'rgba(0,0,0,0.84)',
-  inactiveText: 'rgb(153,153,153)',
-  darkText: '#032250',
-  lightText: 'rgb(242,242,242)',
-  cellBorder: '#EEEEEE',
-  darkBackground: '#183E63',
-  borderColor: 'rgba(0, 0, 0, .38)',
-  darkElement: '#353535',
-  darkTheme: '#000000',
+  ActionText: 'rgba(0,0,0,0.84)',
+  InactiveText: 'rgb(153,153,153)',
+  DarkText: '#032250',
+  LightText: 'rgb(242,242,242)',
+  CellBorder: '#EEEEEE',
+  DarkBackground: '#183E63',
+  BorderColor: 'rgba(0, 0, 0, .38)',
+  DarkElement: '#353535',
+  DarkTheme: '#000000',
 
-  errorColor: 'red',
-  indicatorColor: 'rgb(245, 200, 10)',
-  backgroundChart: White,
-  backgroundModal: White,
+  ErrorColor: 'red',
+  IndicatorColor: 'rgb(245, 200, 10)',
+  BackgroundChart: White,
+  BackgroundModal: White,
 
   // Common
   Dark_Blue: Dark_Moderate_Blue,
   CopyRight: 'rgba(255, 255, 255, .87)',
-  borderShadow: '#828287',
+  BorderShadow: '#828287',
 
   //ActivityIndicator
   SpinnerColor: Vivid_Blue,
   ActivityIndicator_color_Login: White,
 
   //LOGIN
-  textButtonLogin: Dark_Moderate_Blue,
+  TextButtonLogin: Dark_Moderate_Blue,
 
   //SEARCH
-  textSearch: Dark_Moderate_Blue,
-  rowHeaderAccordion: 'rgba(216,216,216,0.00)',
+  TextSearch: Dark_Moderate_Blue,
+  RowHeaderAccordion: 'rgba(216,216,216,0.00)',
 
   //MODAL
-  modalheader: Matte_Black,
-  header_border: Very_Light_Gray,
-  modalfooter: Matte_Black,
-  footer_border: Very_Light_Gray,
+  ModalHeader: Matte_Black,
+  HeaderBorder: Very_Light_Gray,
+  ModalFooter: Matte_Black,
+  FooterBorder: Very_Light_Gray,
 
   //FILTER
-  bgHeaderSites: 'rgba(199,211,221,0.54)',
+  BGHeaderSites: 'rgba(199,211,221,0.54)',
 
   // LISTVIEW
-  underlayColor_Row: Very_Dark,
-  iconSiteListRow: Dark_Moderate_Blue,
-  iconUserListRow: Black,
-  btnNumberListRow: Bright_Red,
-  textNumberListRow: Very_Light_Gray_Mostly_White,
-  headerListRow: '#F7F7F7',
-  borderColorListRow: 'rgb(204, 204, 204)',
+  UnderlayColorRow: Very_Dark,
+  IconSiteListRow: Dark_Moderate_Blue,
+  IconUserListRow: Black,
+  BtnNumberListRow: Bright_Red,
+  TextNumberListRow: Very_Light_Gray_Mostly_White,
+  HeaderListRow: '#F7F7F7',
+  BorderColorListRow: 'rgb(204, 204, 204)',
 
   //OPTIONS
-  colorRow_options: '#757575',
-  colorText: Black,
+  RowOptions: '#757575',
+  ColorText: Black,
 
   //COMPONENT
-  borderActiveColor: Dark_Moderate_Blue,
-  iconButton: Very_Dark_Gray,
-  primaryActive: '#00AFFF',
-  inactive: '#DCE4EA',
+  BorderActiveColor: Dark_Moderate_Blue,
+  IconButton: Very_Dark_Gray,
+  PrimaryActive: '#00AFFF',
+  Inactive: '#DCE4EA',
 
   //Bottom Bar
-  backgroundBar: '#fff',
+  BackgroundBar: '#fff',
 
   //PVM
   pvm: {

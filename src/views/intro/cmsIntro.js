@@ -173,8 +173,8 @@ class CMSIntroView extends Component {
             data={IntroData}
             scrollX={this.scrollX}
             scrollOffset={this.scrollX}
-            inActiveDotColor={CMSColors.inactive}
-            activeDotColor={CMSColors.primaryActive}
+            inActiveDotColor={CMSColors.Inactive}
+            activeDotColor={CMSColors.PrimaryActive}
             strokeWidth={3}
           />
         </View>
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   },
   nextContainer: {flex: 1, alignContent: 'flex-end'},
   nextButton: {
-    // backgroundColor: CMSColors.primaryActive,
+    // backgroundColor: CMSColors.PrimaryActive,
     // height: 63,
     // marginLeft: 49,
     // marginRight: 35,

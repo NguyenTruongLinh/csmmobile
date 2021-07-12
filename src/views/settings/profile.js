@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
   },
   // buttonSave: {
   //   marginRight: 12,
-  //   backgroundColor: CMSColors.transparent,
+  //   backgroundColor: CMSColors.Transparent,
   //   height: 20,
   //   justifyContent: 'center',
   //   alignItems: 'center',

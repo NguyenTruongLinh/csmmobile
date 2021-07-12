@@ -145,9 +145,9 @@ const styles = StyleSheet.create({
 
   modal_footer: {
     height: footer_height,
-    backgroundColor: CMSColors.modalfooter,
+    backgroundColor: CMSColors.ModalFooter,
     borderTopWidth: 1,
-    borderColor: CMSColors.footer_border,
+    borderColor: CMSColors.FooterBorder,
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     height: footer_height,
     backgroundColor: CMSColors.White,
     borderTopWidth: 1,
-    borderColor: CMSColors.footer_border,
+    borderColor: CMSColors.FooterBorder,
     flexDirection: 'row',
     justifyContent: 'center',
   },
