@@ -1,4 +1,5 @@
 import React from 'react';
+import {Platform} from 'react-native';
 import {inject, observer} from 'mobx-react';
 import messaging from '@react-native-firebase/messaging';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
@@ -75,13 +76,17 @@ class NotificationController extends React.Component {
   getToken = async () => {
     const {userStore} = this.props;
     if (!userStore.fcm || !userStore.fcm.token) {
-      const [fcmToken, apnsToken] = await Promise.all([
-        messaging().getToken(),
-        messaging().getAPNSToken(),
-      ]);
-      if (fcmToken) {
-        // user has a device token
-        userStore.saveToken(fcmToken, apnsToken);
+      try {
+        const [fcmToken, apnsToken] = await Promise.all([
+          messaging().getToken(),
+          Platform.OS == 'ios' ? messaging().getAPNSToken() : Promise.resolve(),
+        ]);
+        if (fcmToken) {
+          // user has a device token
+          userStore.saveToken(fcmToken, apnsToken);
+        }
+      } catch (err) {
+        console.log('GOND Cannot get fcmToken:', err);
       }
     }
   };

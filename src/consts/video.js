@@ -159,6 +159,9 @@ export const arrayof12HTime = [
   '10:00 PM',
   '11:00 PM',
 ];
+export const HOURS_ON_SCREEN = 4;
+export const MINUTE_PER_HOUR = 60;
+export const SECONDS_PER_MINUTE = 60;
 
 export const USE_TIMESTAMP = true;
 

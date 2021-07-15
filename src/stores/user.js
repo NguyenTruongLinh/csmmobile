@@ -334,11 +334,16 @@ export const UserStoreModel = types
     },
     logout: flow(function* logOut() {
       if (!self.deleteLocal()) return false;
+      self.loginInfo = LoginModel.create({
+        domainname: self.domain,
+        username: '',
+        password: '',
+      });
       self.user = createAnonymousUser();
       self.error = '';
       self.message = '';
       self.isLoggedIn = false;
-      self.fcm = null;
+      self.fcm = FCMModel.create({token: '', apnsToken: '', serverId: ''});
       self.api = null;
       self.modules = [];
       self.routes = [];
@@ -363,6 +368,7 @@ export const UserStoreModel = types
           );
         return uPhotoRes && modulesRes; // && alertTypesRes;
       } catch (err) {
+        __DEV__ && console.log('GOND getDataPostLogin failed: ', err);
         snackbarUtil.handleGetDataFailed();
         return false;
       }
@@ -430,10 +436,11 @@ export const UserStoreModel = types
       try {
         let data = self.user.data;
         data.api = self.api.data;
+        data.domain = self.domain;
         let localUser = yield dbService.getFirstData(LocalDBName.user);
-        let res = null;
+
         if (!localUser) {
-          res = yield dbService.add(LocalDBName.user, data);
+          yield dbService.add(LocalDBName.user, data);
         } else {
           if (localUser.userId != data.userId) {
             __DEV__ &&
@@ -444,13 +451,14 @@ export const UserStoreModel = types
                 data
               );
           }
-          res = yield dbService.update(LocalDBName.user, data, {
+          yield dbService.update(LocalDBName.user, data, {
             userId: localUser.userId,
           });
         }
-        __DEV__ && console.log('GOND user update local: ', res);
-        return res;
+
+        return true;
       } catch (err) {
+        __DEV__ && console.log('GOND save data local failed: ', err);
         snackbarUtil.handleSaveLocalDataFailed(err);
         return false;
       }
@@ -462,10 +470,12 @@ export const UserStoreModel = types
     }),
     loadLocalData: flow(function* loadLocalData() {
       const savedData = yield dbService.getFirstData(LocalDBName.user);
+
       // __DEV__ && console.log('GOND user load local data: ', savedData);
       if (savedData && typeof savedData === 'object') {
         try {
           self.user = UserModel.create(savedData);
+          self.domain = savedData.domain ?? '';
           self.api = APIModel.create(savedData.api);
           self.setConfigApi();
           apiService.updateUserId(self.user.userId);
@@ -497,6 +507,9 @@ export const UserStoreModel = types
     // #endregion
     // #region FCM
     saveToken(fcmToken, apnsToken) {
+      if (!self.fcm) {
+        self.fcm = FCMModel.create({token: '', apnsToken: '', serverId: ''});
+      }
       if (self.fcm.token != fcmToken) {
         __DEV__ && console.log('GOND save token: ', fcmToken);
         self.fcm.token = fcmToken;
@@ -520,6 +533,7 @@ export const UserStoreModel = types
           data
         );
         if (res.error || !res.Value) {
+          __DEV__ && console.log('GOND registerToken failed: ', res);
           snackbarUtil.onMessage(
             'Failed to connect to CMS server, please try again later!'
           );
@@ -586,6 +600,7 @@ export const UserStoreModel = types
         AccountRoute.getNotifySettings
       );
       if (res.error) {
+        __DEV__ && console.log('GOND getNotifySetting failed: ', res.error);
         snackbarUtil.handleGetDataFailed();
         return false;
       } else {
@@ -616,6 +631,7 @@ export const UserStoreModel = types
       );
       // __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
       if (!res || res.error) {
+        __DEV__ && console.log('GOND getAlertTypesSetting failed: ', res);
         snackbarUtil.handleGetDataFailed();
         return false;
       } else {

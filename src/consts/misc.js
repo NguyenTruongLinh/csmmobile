@@ -8,6 +8,7 @@ export const ApiSetting = {
 };
 
 export const LocalDBName = {
+  domain: 'domain',
   user: 'users',
   alertConfig: 'alertconfigs',
   device: 'deviceid',
@@ -525,4 +526,12 @@ export const NOTIFY_TYPE = {
   PVM: 'PVM',
 };
 
-export const CALENDAR_DATE_FORMAT = 'YYYY-MM-DD';
+export const CALENDAR_DATE_FORMAT = 'yyyy-MM-dd';
+export const NVRPlayerConfig = {
+  RequestDateFormat: 'yyyy/MM/dd',
+  RequestTimeFormat: 'yyyy/MM/dd HH:mm:ss',
+  ResponseTimeFormat: 'yyyy/MM/dd hh:mm:ss.SSS',
+  TimeFormat: 'hh:mm',
+  FrameFormat: 'MM/dd/yyyy hh:mm:ss',
+  Search_Duration: 10 * 60,
+};

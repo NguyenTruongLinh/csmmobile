@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
+import {DateTime} from 'luxon';
 
 import FFMpegFrameView from '../../components/native/videonative';
 import FFMpegFrameViewIOS from '../../components/native/videoios';
@@ -22,6 +23,7 @@ import CMSColors from '../../styles/cmscolors';
 import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {NATIVE_MESSAGE} from '../../consts/video';
+import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 
 import {
   Video_State,
@@ -49,7 +51,12 @@ class DirectVideoView extends Component {
   }
 
   componentDidMount() {
-    __DEV__ && console.log('DirectStreamingView componentDidMount');
+    this._isMounted = true;
+    // __DEV__ &&
+    //   console.log(
+    //     'DirectStreamingView componentDidMount',
+    //     this.props.serverInfo
+    //   );
     if (Platform.OS === 'ios') {
       const eventEmitter = new NativeEventEmitter(
         NativeModules.FFMpegFrameEventEmitter
@@ -62,13 +69,18 @@ class DirectVideoView extends Component {
     const {serverInfo} = this.props;
 
     if (this.ffmpegPlayer && serverInfo) {
-      if (serverInfo.serverIP && serverInfo.port)
-        this.ffmpegPlayer.setNativeProps({startplayback: serverInfo});
-      else
+      if (
+        serverInfo.server.serverIP &&
+        serverInfo.server.port // &&
+        // !serverInfo.playing
+      ) {
+        this.ffmpegPlayer.setNativeProps({startplayback: serverInfo.playData});
+      } else {
         this.setState({
           message: 'Error: wrong server config',
           videoLoading: false,
         });
+      }
     }
   }
 
@@ -79,11 +91,14 @@ class DirectVideoView extends Component {
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }
+    this.ffmpegPlayer.setNativeProps({stop: true});
+    this._isMounted = false;
   }
 
   componentDidUpdate(prevProps) {
+    if (!this._isMounted) return;
     const prevServerInfo = prevProps.serverInfo;
-    const {serverInfo} = this.props;
+    const {serverInfo, hdMode, isLive, videoStore} = this.props;
 
     // __DEV__ &&
     //   console.log(
@@ -94,16 +109,44 @@ class DirectVideoView extends Component {
     //   );
 
     try {
-      if (
-        this.ffmpegPlayer &&
-        JSON.stringify(prevServerInfo) != JSON.stringify(serverInfo)
-      ) {
-        __DEV__ &&
-          console.log(
-            'GOND DirectPlayer did update, startplayback = ',
-            serverInfo
-          );
-        this.ffmpegPlayer.setNativeProps({startplayback: serverInfo});
+      if (this.ffmpegPlayer) {
+        if (
+          JSON.stringify({...prevServerInfo.playData}) !=
+          JSON.stringify({...serverInfo.playData})
+        ) {
+          __DEV__ &&
+            console.log('GOND DirectPlayer did update, startplayback = ', {
+              ...serverInfo,
+            });
+          this.ffmpegPlayer.setNativeProps({stop: true});
+          setTimeout(() => {
+            this.ffmpegPlayer &&
+              this.ffmpegPlayer.setNativeProps({
+                startplayback: serverInfo.playData,
+              });
+          }, 1000);
+        }
+        // if (pause != prevProps.pause) {
+        //   this.ffmpegPlayer.setNativeProps({pause: pause});
+        // }
+        if (hdMode != prevProps.hdMode) {
+          this.ffmpegPlayer.setNativeProps({hd: true});
+        }
+        if (isLive != prevProps.isLive) {
+          __DEV__ &&
+            console.log(
+              'GOND direct switch mode : ',
+              isLive ? 'live' : 'search'
+            );
+          this.ffmpegPlayer.setNativeProps({pause: true});
+          this.ffmpegPlayer.setNativeProps({
+            startplayback: {
+              ...serverInfo.playData,
+              searchMode: !isLive,
+              date: isLive ? '' : videoStore.searchDate,
+            },
+          });
+        }
       }
     } catch (err) {
       __DEV__ && console.log('GOND parseJSON error: ', err);
@@ -112,7 +155,7 @@ class DirectVideoView extends Component {
 
   onFrameChange = event => {
     let {msgid, value} = event; //.nativeEvent;
-    console.log('GOND onFFMpegFrameChange event = ', event.nativeEvent);
+    // console.log('GOND onFFMpegFrameChange event = ', event.nativeEvent);
     if (util.isNullOrUndef(msgid) && util.isNullOrUndef(value)) {
       if (event.nativeEvent) {
         msgid = event.nativeEvent.msgid;
@@ -129,7 +172,9 @@ class DirectVideoView extends Component {
   };
 
   onVideoMessage = (msgid, value) => {
-    console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+    const {videoStore} = this.props;
+    // console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+
     switch (msgid) {
       case NATIVE_MESSAGE.CONNECTING:
         this.setState({message: 'Connecting...'});
@@ -196,12 +241,56 @@ class DirectVideoView extends Component {
       case NATIVE_MESSAGE.PERMISSION_CHANNEL_DISABLE:
         break;
       case NATIVE_MESSAGE.RECORDING_DATE:
+        if (!value || !Array.isArray(value)) {
+          __DEV__ &&
+            console.log('GOND recording dates value is not an array: ', value);
+          return;
+        }
+        videoStore.setRecordingDates(value);
         break;
       case NATIVE_MESSAGE.TIME_DATA:
+        let timeData = null;
+        try {
+          timeData = JSON.parse(value);
+        } catch (err) {
+          __DEV__ && console.log('GOND parse timeline data failed: ', value);
+        }
+        if (!timeData || !Array.isArray(timeData)) {
+          __DEV__ && console.log('GOND timeline data is not an array: ', value);
+          return;
+        }
+        this.timeInterval = timeData;
+        console.log('GOND timeline: ', timeData);
+        if (timeData && Array.isArray) {
+          if (timeData[0] && timeData[0].begin) {
+            const beginOfDay = DateTime.fromSeconds(timeData[0].begin)
+              .toUTC()
+              .startOf('day');
+            if (
+              beginOfDay.toFormat(NVRPlayerConfig.RequestTimeFormat) !=
+              videoStore.searchDate
+            ) {
+              videoStore.setSearchDate(
+                beginOfDay.toFormat(NVRPlayerConfig.RequestTimeFormat)
+              );
+            }
+          }
+          videoStore.setTimeline(timeData);
+        }
         break;
       case NATIVE_MESSAGE.HOUR_DATA:
+        __DEV__ && console.log('GOND HOUR_DATA: ', value);
+        const data = JSON.parse(value);
+        if (data && Array.isArray(data)) {
+          const {hoursofDay, hourSpecial} = data[0];
+          videoStore.setHoursOfDay(hoursofDay);
+          videoStore.setDSTHour(hourSpecial);
+        } else {
+          __DEV__ && console.log('GOND HOUR_DATA is not valid: ', value);
+        }
         break;
       case NATIVE_MESSAGE.RULER_DST:
+        __DEV__ && console.log('GOND RULER_DST: ', value);
         break;
       case NATIVE_MESSAGE.UNKNOWN:
         break;
@@ -212,13 +301,50 @@ class DirectVideoView extends Component {
     }
   };
 
+  stop = value => {
+    if (this.ffmpegPlayer) {
+      this.ffmpegPlayer.setNativeProps({
+        stop: value === undefined ? true : !!value,
+      });
+    }
+  };
+
+  pause = value => {
+    if (this.ffmpegPlayer) {
+      this.ffmpegPlayer.setNativeProps({
+        pause: value === undefined ? true : !!value,
+      });
+    }
+  };
+
+  playAt = value => {
+    if (this.ffmpegPlayer) {
+      this.ffmpegPlayer.setNativeProps({
+        seekpos: {pos: value, hd: this.props.videoStore.hdMode},
+      });
+    }
+  };
+
   onFrameTime = frameTime => {
     const {videoStore} = this.props;
     const {timestamp, value} = frameTime;
     if (value) {
-      let formated = value.split(' ')[1];
-      formated = formated ? formated.split('.')[0] : value;
-      videoStore.setFrameTime(formated);
+      let [date, time] = value.split(' ');
+      time = time ? time.split('.')[0] : '';
+
+      // const formatedDate = date + ' 00:00:00';
+      // console.log(
+      //   'GOND timeframe date = ',
+      //   formatedDate,
+      //   ', search date = ',
+      //   videoStore.searchDate
+      // );
+      // if (formatedDate != videoStore.searchDate) {
+      //   videoStore.setSearchDate(formatedDate);
+      // }
+      console.log('GOND direct frame time : ', frameTime);
+      videoStore.setDisplayDateTime(date && time ? date + ' - ' + time : value);
+      videoStore.setFrameTime(value);
     } else console.log('GOND direct frame time value not valid: ', frameTime);
   };
 
@@ -286,6 +412,7 @@ class DirectVideoView extends Component {
                 height={height}
                 ref={ref => {
                   this.ffmpegPlayer = ref;
+                  // serverInfo.setNativeComponent(ref);
                 }}
                 onFFMPegFrameChange={this.onFrameChange}
               />
@@ -294,7 +421,10 @@ class DirectVideoView extends Component {
                 iterationCount={1}
                 width={width}
                 height={height}
-                ref={ref => (this.ffmpegPlayer = ref)}
+                ref={ref => {
+                  this.ffmpegPlayer = ref;
+                  // serverInfo.setNativeComponent(ref);
+                }}
                 onFFMPegFrameChange={this.onFrameChange}
               />
             )}

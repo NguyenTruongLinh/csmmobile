@@ -75,6 +75,10 @@ class RTCStreamingView extends Component {
     this._isMounted = false;
   }
 
+  stop = () => {};
+
+  pause = () => {};
+
   sendRtcCommand = cmd => {
     const {videoStore, viewer} = this.props;
     // if (this.needResetConnection) {

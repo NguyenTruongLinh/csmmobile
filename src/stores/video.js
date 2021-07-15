@@ -19,6 +19,7 @@ import {
   DEFAULT_REGION,
   STREAM_STATUS,
 } from '../consts/video';
+import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../consts/misc';
 
 const HLSStreamModel = types.model({
   sid: types.identifier,
@@ -27,7 +28,7 @@ const HLSStreamModel = types.model({
 
 const DirectServerModel = types
   .model({
-    serverIP: types.string,
+    serverIP: types.identifier,
     publicIP: types.string,
     name: types.maybeNull(types.string),
     port: types.number,
@@ -63,8 +64,9 @@ const parseDirectServer = (server /*, channelNo, isLive*/) => {
     name: server.name ?? '',
     port: server.Port,
     serverID: server.ServerID,
-    userName: server.UName,
-    password: server.PWD,
+    userName:
+      __DEV__ && server.ServerID == 'jackhome' ? 'i3admin' : server.UName,
+    password: __DEV__ && server.ServerID == 'jackhome' ? 'i3admin' : server.PWD,
     kDVR: server.KDVR,
     channels: '',
     searchMode: false,
@@ -77,9 +79,9 @@ const parseDirectServer = (server /*, channelNo, isLive*/) => {
 
 const ChannelModel = types
   .model({
-    channelNo: types.identifierNumber,
+    channelNo: types.number,
     kDVR: types.number,
-    kChannel: types.number,
+    kChannel: types.identifierNumber,
     videoSource: types.number,
     kAudioSource: types.number,
     kPTZ: types.number,
@@ -140,7 +142,72 @@ const parseChannel = (_channel, activeList = null) => {
   });
 };
 
-const TimezoneModel = types.model({});
+const DirectStreamModel = types
+  .model({
+    server: types.reference(DirectServerModel),
+    channel: types.reference(ChannelModel),
+    playing: types.boolean,
+  })
+  .views(self => ({
+    get playData() {
+      const {channelNo, name, kChannel} = self.channel;
+
+      return {
+        ...self.server,
+        channelNo,
+        channels: '' + channelNo,
+        channelName: name,
+        kChannel,
+        byChannel: true,
+        interval: DAY_INTERVAL,
+      };
+    },
+    get channelNo() {
+      return self.channel.channelNo;
+    },
+    get channelName() {
+      return self.channel.name;
+    },
+  }))
+  .volatile(() => ({
+    nativePlayer: null,
+  }))
+  .actions(self => ({
+    setPlay(value) {
+      self.playing = value;
+    },
+    setNativeComponent(value) {
+      self.nativePlayer = value;
+    },
+    setSearchDate(value) {
+      self.server.date = value;
+    },
+  }));
+
+// const TimezoneModel = types.model({});
+
+const TimelineModel = types.model({
+  id: types.number,
+  begin: types.number,
+  end: types.number,
+  time: types.number,
+  type: types.number,
+});
+
+const RecordingDateModel = types.model({
+  textColor: types.string,
+  dotColor: types.maybeNull(types.string),
+  marked: types.maybeNull(types.boolean),
+});
+
+DateTimeModel = types.model({
+  year: types.number,
+  month: types.number,
+  day: types.number,
+  hour: types.number,
+  minute: types.number,
+  timezoneOffset: types.number,
+});
 
 export const VideoModel = types
   .model({
@@ -153,6 +220,7 @@ export const VideoModel = types
     rtcConnection: types.maybeNull(RTCStreamModel),
     hlsStreams: types.array(HLSStreamModel),
     directConnection: types.maybeNull(DirectServerModel),
+    directStreams: types.array(DirectStreamModel),
     selectedChannel: types.maybeNull(types.number),
 
     openStreamLock: types.boolean,
@@ -166,16 +234,26 @@ export const VideoModel = types
     nvrPassword: types.maybeNull(types.string),
     isLive: types.boolean,
     isFullscreen: types.boolean,
-    isHD: types.boolean,
+    hdMode: types.boolean,
+    paused: types.boolean,
     showAuthenModal: types.boolean,
-    // hdMode: types.boolean,
     isSingleMode: types.boolean,
-    frameTime: types.string,
+    frameTime: types.number,
     searchDate: types.maybeNull(types.string),
+    displayDateTime: types.maybeNull(types.string),
+    // timezone: types.maybeNull(TimezoneModel),
+    timezoneOffset: types.maybeNull(types.number),
+    timeline: types.array(TimelineModel),
+    // timelinePos: types.maybeNull(types.number),
     // TODO: timestamp should use BigNumber?
     searchBegin: types.maybeNull(types.number),
     searchEnd: types.maybeNull(types.number),
+    hoursOfDay: types.number,
+    dstHour: types.number,
   })
+  .volatile(self => ({
+    recordingDates: {},
+  }))
   .views(self => ({
     get isCloud() {
       return self.cloudType > CLOUD_TYPE.DIRECTION;
@@ -199,21 +277,25 @@ export const VideoModel = types
         (!self.nvrUser || !self.nvrPassword)
       );
     },
-    get directStreams() {
-      return self.allChannels
-        .filter(ch =>
-          ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
-        )
-        .map(ch => ({
-          ...self.directConnection,
-          channelNo: ch.channelNo,
-          channels: '' + ch.channelNo,
-          channelName: ch.name,
-          kChannel: ch.kChannel,
-          byChannel: true,
-          interval: DAY_INTERVAL,
-        }));
-    },
+    // get directStreams() {
+    //   return self.allChannels
+    //     .filter(ch =>
+    //       ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
+    //     )
+    //     .map(ch => ({
+    //       ...self.directConnection,
+    //       channelNo: ch.channelNo,
+    //       channels: '' + ch.channelNo,
+    //       channelName: ch.name,
+    //       kChannel: ch.kChannel,
+    //       byChannel: true,
+    //       interval: DAY_INTERVAL,
+    //       // seekpos: self.isLive || !self.timelinePos ? undefined : {
+    //       //   pos: self.timelinePos,
+    //       //   HD: self.hdMode,
+    //       // }
+    //     }));
+    // },
     get selectedChannelIndex() {
       return self.displayChannels
         ? self.displayChannels.findIndex(
@@ -226,9 +308,21 @@ export const VideoModel = types
       switch (self.cloudType) {
         case CLOUD_TYPE.DEFAULT:
         case CLOUD_TYPE.DIRECTION:
-          return self.directStreams.find(
-            s => s.channelNo == self.selectedChannel
+          const server = self.directStreams.find(
+            s => s.channel.channelNo == self.selectedChannel
           );
+          return server || {};
+        // return {
+        //   ...server,
+        //   hd: self.hdMode,
+        //   searchMode: !self.isLive,
+        //   date:
+        //     self.searchDate ??
+        //     DateTime.local()
+        //       .setZone(self.timezone)
+        //       .startOf('day')
+        //       .toFormat(NVRPlayerConfig.RequestTimeFormat),
+        // };
         case CLOUD_TYPE.HLS:
           // TODO
           return null;
@@ -239,41 +333,42 @@ export const VideoModel = types
       }
       return null;
     },
+    get timezone() {
+      if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
+        return util.isNullOrUndef(self.timezoneOffse)
+          ? 0
+          : `UTC${self.timezoneOffset}`;
+      } else {
+        // TODO
+        return 0;
+      }
+    },
+    get dstDuration() {
+      return 24 - self.hoursOfDay;
+    },
+    get searchDateInSeconds() {
+      console.log(
+        'GOND searchDateInSeconds = ',
+        self.searchDate,
+        DateTime.fromFormat(
+          self.searchDate,
+          NVRPlayerConfig.RequestTimeFormat
+        ).setZone('UTC', {keepLocalTime: true})
+      );
+      return self.searchDate
+        ? DateTime.fromFormat(
+            self.searchDate,
+            NVRPlayerConfig.RequestTimeFormat
+          )
+            // .setZone(self.timezone /*, {keepLocalTime: true}*/)
+            .setZone('UTC', {keepLocalTime: true})
+            .toMillis() / 1000
+        : 0;
+    },
     get firstChannelNo() {
       return self.allChannels && self.allChannels.length > 0
         ? self.allChannels[0].channelNo
         : 0;
-    },
-    // Build data for players
-    // buildDirectData() {
-    //   return self.directStreams;
-    // },
-    buildHLSData() {
-      // TODO:
-    },
-    buildRTCData() {
-      console.log(
-        'GOND build RTC datachannels: ',
-        new Date(),
-        getSnapshot(self.rtcConnection.viewers)
-      );
-
-      return self.rtcConnection.viewers.filter(dc =>
-        dc.channelName.toLowerCase().includes(self.channelFilter.toLowerCase())
-      );
-    },
-    buildVideoData() {
-      switch (self.cloudType) {
-        case CLOUD_TYPE.DEFAULT:
-        case CLOUD_TYPE.DIRECTION:
-          // return self.buildDirectData();
-          return self.directStreams;
-        case CLOUD_TYPE.HLS:
-          return self.buildHLSData();
-        case CLOUD_TYPE.RTC:
-          return self.buildRTCData();
-      }
-      return [];
     },
   }))
   // .volatile(self => ({
@@ -289,7 +384,8 @@ export const VideoModel = types
       setNVRLoginInfo(username, password) {
         self.nvrUser = username;
         self.nvrPassword = password;
-        self.directConnection.setLoginInfo(username, password);
+        self.directConnection &&
+          self.directConnection.setLoginInfo(username, password);
       },
       setChannelFilter(value) {
         self.channelFilter = value;
@@ -317,29 +413,104 @@ export const VideoModel = types
       },
       setFrameTime(value) {
         if (typeof value == 'string') {
-          self.frameTime = value;
+          // TODO: convert
+          self.frameTime = DateTime.fromFormat(
+            value,
+            NVRPlayerConfig.ResponseTimeFormat,
+            {zone: 'utc'}
+          ).toSeconds();
         } else if (typeof value == 'number') {
-          // TODO: convert timezone
+          const dt = DateTime.fromSeconds(value, {zone: 'utc'});
+          console.log(
+            'GOND setFrameTime ',
+            dt.setZone(self.timezone).toSeconds()
+          );
+          self.frameTime = dt.setZone(self.timezone).toSeconds();
         }
       },
+      setDisplayDateTime(value) {
+        self.displayDateTime = value;
+      },
       setSearchDate(value) {
+        __DEV__ && console.log('GOND setSearchDate ', value);
         if (typeof value == 'string') {
           self.searchDate = value;
         } else {
           // TODO: convert timezone
         }
       },
+      setRecordingDates(value) {
+        const today = DateTime.now().toFormat(CALENDAR_DATE_FORMAT);
+        self.recordingDates = value.reduce((result, day) => {
+          if (day == today) {
+            result[day] = {
+              textColor: 'red',
+              dotColor: 'red',
+              marked: true,
+            };
+          } else
+            result[day] = {
+              textColor: 'red',
+            };
+          return result;
+        }, {});
+      },
+      setTimezone(value) {
+        if (util.isNullOrUndef(value)) {
+          __DEV__ && console.log('GOND setTimezone, is null: ', value);
+          return;
+        }
+        __DEV__ && console.log('GOND setTimezone ', value);
+        if (typeof value === 'number') {
+          self.timezoneOffset = value / (60 * 60 * 1000);
+        }
+        // TODO
+      },
+      setTimeline(value) {
+        if (!value || !Array.isArray(value)) {
+          __DEV__ && console.log('GOND setTimeline, not an array ', value);
+          return;
+        }
+        __DEV__ && console.log('GOND setTimeline ', value);
+        self.timeline = value.map(item => TimelineModel.create(item));
+        __DEV__ && console.log('GOND after settimeline ', self.timeline);
+        if (value[0] && value[0].timezone) {
+          self.setTimezone(value[0].timezone);
+        }
+      },
+      setHoursOfDay(value) {
+        self.hoursOfDay = value;
+      },
+      setDSTHour(value) {
+        self.dstHour = value;
+      },
       displayAuthen(value) {
         self.showAuthenModal = value;
       },
       switchLiveSearch(value) {
         self.isLive = value === undefined ? !self.isLive : value;
+        if (!self.isLive && !self.searchDate) {
+          console.log(
+            'GOND @@@ switchlivesearch ',
+            self.timezone,
+            DateTime.local().setZone(self.timezone)
+          );
+          self.searchDate = DateTime.local()
+            .setZone(self.timezone)
+            .startOf('day')
+            .toFormat(NVRPlayerConfig.RequestTimeFormat);
+        }
+      },
+      pauseAll(value) {
+        self.paused = value;
       },
       switchHD(value) {
-        self.isHD = !self.isHD;
+        self.hdMode = util.isNullOrUndef(value) ? !self.hdMode : value;
       },
       switchFullscreen(value) {
-        self.isFullscreen = !self.isFullscreen;
+        self.isFullscreen = util.isNullOrUndef(value)
+          ? !self.isFullscreen
+          : value;
       },
       previousChannel() {
         if (self.selectedChannelIndex > 0) {
@@ -359,16 +530,63 @@ export const VideoModel = types
         self.selectedChannel = null;
         self.searchBegin = null;
         self.searchEnd = null;
-        self.frameTime = '';
+        self.frameTime = 0;
         self.searchDate = null;
+        self.displayDateTime = '';
         self.isLoading = false;
         self.isLive = true;
         self.isFullscreen = false;
-        self.isHD = false;
+        self.hdMode = false;
         self.showAuthenModal = false;
       },
 
       // #endregion setters
+      // #region Build data
+      buildDirectData() {
+        self.directStreams = self.allChannels
+          .filter(ch =>
+            ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
+          )
+          .map(ch =>
+            DirectStreamModel.create({
+              server: self.directConnection,
+              channel: ch,
+              playing: false,
+            })
+          );
+
+        return self.directStreams;
+      },
+      buildHLSData() {
+        // TODO:
+      },
+      buildRTCData() {
+        console.log(
+          'GOND build RTC datachannels: ',
+          new Date(),
+          getSnapshot(self.rtcConnection.viewers)
+        );
+
+        return self.rtcConnection.viewers.filter(dc =>
+          dc.channelName
+            .toLowerCase()
+            .includes(self.channelFilter.toLowerCase())
+        );
+      },
+      buildVideoData() {
+        switch (self.cloudType) {
+          case CLOUD_TYPE.DEFAULT:
+          case CLOUD_TYPE.DIRECTION:
+            // return self.buildDirectData();
+            return self.buildDirectData();
+          case CLOUD_TYPE.HLS:
+            return self.buildHLSData();
+          case CLOUD_TYPE.RTC:
+            return self.buildRTCData();
+        }
+        return [];
+      },
+      // #endregion Build data
       // #region settings
       getCloudSetting: flow(function* getCloudSetting() {
         let res = undefined;
@@ -441,8 +659,7 @@ export const VideoModel = types
             self.isLoading = false;
             return false;
           }
-          self.allChannels = [];
-          res.forEach(ch => self.allChannels.push(parseChannel(ch)));
+          self.allChannels = res.map(ch => parseChannel(ch));
         } catch (err) {
           console.log('GOND cannot get channels info: ', err);
           snackbarUtil.handleGetDataFailed(err);
@@ -539,8 +756,16 @@ export const VideoModel = types
           self.directConnection = parseDirectServer(res);
 
           // get NVR user and password from first data:
-          self.nvrUser = self.directConnection.userName;
-          self.nvrPassword = self.directConnection.password;
+          if (
+            self.directConnection.userName &&
+            self.directConnection.password
+          ) {
+            self.nvrUser = self.directConnection.userName;
+            self.nvrPassword = self.directConnection.password;
+          } else if (self.nvrUser && self.nvrPassword) {
+            self.directConnection.userName = self.nvrUser;
+            self.directConnection.password = self.nvrPassword;
+          }
         } catch (err) {
           console.log('GOND cannot get direct video info: ', err);
           snackbarUtil.handleGetDataFailed(err);
@@ -739,13 +964,20 @@ const videoStore = VideoModel.create({
   needResetConnection: false,
   isLive: true,
   isFullscreen: false,
-  isHD: false,
+  hdMode: false,
+  paused: false,
   showAuthenModal: false,
   // hdMode: false,
   isSingleMode: false,
-  frameTime: '',
+  frameTime: 0,
   searchBegin: null,
   searchEnd: null,
+  hoursOfDay: 24,
+  dstHour: 0,
+  displayDateTime: '',
+  // timezone: null,
+  recordingDates: [],
+  timeline: [],
 });
 
 export default videoStore;

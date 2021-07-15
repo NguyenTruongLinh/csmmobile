@@ -52,6 +52,10 @@ class HLSStreamingView extends Component {
     // }
   }
 
+  stop = () => {};
+
+  pause = () => {};
+
   render() {
     return <View></View>;
   }

@@ -29,7 +29,6 @@ import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import {Comps as CompTxt} from '../../localization/texts';
-// import initRTCStream from './rtcConnection';
 
 const LayoutData = [
   {
@@ -72,13 +71,17 @@ class ChannelsView extends React.Component {
     __DEV__ && console.log('ChannelsView componentWillUnmount');
     this._isMounted = false;
     this.props.videoStore.releaseStreams();
+    this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
   }
 
   componentDidMount() {
     this._isMounted = true;
     const {videoStore, sitesStore, navigation} = this.props;
-    if (__DEV__)
+    if (__DEV__) {
       console.log('ChannelsView componentDidMount: ', sitesStore.selectedDVR);
+      // if (sitesStore.selectedDVR.name === 'jackhome')
+      //   videoStore.setNVRLoginInfo('i3admin', 'i3admin');
+    }
     this.setHeader();
 
     if (!sitesStore.selectedDVR) return;
@@ -86,6 +89,9 @@ class ChannelsView extends React.Component {
 
     // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
     videoStore.setStreamReadyCallback(this.onStreamReady);
+    this.unsubscribleFocusEvent = navigation.addListener('focus', () =>
+      this.pauseAll(false)
+    );
     this.getChannelsInfo();
   }
 
@@ -184,7 +190,14 @@ class ChannelsView extends React.Component {
   onChannelSelect = value => {
     console.log('GOND select channel: ', value);
     this.props.videoStore.selectChannel(value.channelNo);
-    this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
+    this.pauseAll(true);
+    setTimeout(() => {
+      this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
+    }, 200);
+  };
+
+  pauseAll = value => {
+    this.playerRefs.forEach(p => p && p.pause(value));
   };
 
   buildLiveData = gridLayout => {
@@ -383,14 +396,31 @@ class ChannelsView extends React.Component {
     switch (videoStore.cloudType) {
       case CLOUD_TYPE.DEFAULT:
       case CLOUD_TYPE.DIRECTION:
-        player = <DirectVideoView {...playerProps} serverInfo={item} />;
+        player = (
+          <DirectVideoView
+            {...playerProps}
+            serverInfo={item}
+            ref={ref => this.playerRefs.push(ref)}
+          />
+        );
         break;
       case CLOUD_TYPE.HLS:
-        player = <HLSStreamingView {...playerProps} />;
+        player = (
+          <HLSStreamingView
+            {...playerProps}
+            ref={ref => this.playerRefs.push(ref)}
+          />
+        );
         break;
       case CLOUD_TYPE.RTC:
         // playerProps = Object.assign({}, playerProps, item);
-        player = <RTCStreamingView {...playerProps} viewer={item} />;
+        player = (
+          <RTCStreamingView
+            {...playerProps}
+            viewer={item}
+            ref={ref => this.playerRefs.push(ref)}
+          />
+        );
         break;
     }
 
@@ -401,6 +431,7 @@ class ChannelsView extends React.Component {
     const authenModal = this.renderNVRAuthenModal();
     const {appStore, videoStore, navigation} = this.props;
     // __DEV__ && console.log('GOND channels render data = ', this.state.liveData);
+    this.playerRefs = [];
 
     return (
       <View style={styles.screenContainer}>

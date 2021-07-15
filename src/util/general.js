@@ -24,14 +24,6 @@ exports.normalize = function (size) {
   }
 };
 
-exports.NVRPlayerConfig = {
-  RequestTimeFormat: 'YYYY/MM/DD HH:mm:ss',
-  ResponseTimeFormat: 'YYYY/MM/DD HH:mm:ss.SSS',
-  TimeFormat: 'HH:mm',
-  FrameFormat: 'MM/DD/YYYY HH:mm:ss',
-  Search_Duration: 10 * 60,
-};
-
 exports.getwindow = () => {
   return Dimensions.get('window');
 };

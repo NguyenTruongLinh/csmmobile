@@ -213,7 +213,7 @@ const AppNavigator = ({
         // navigationService.setTopLevelNavigator(ref);
         if (typeof navigatorSetter == 'function') navigatorSetter(ref);
       }}>
-      {notificationController}
+      {isLoggedIn && notificationController}
       {isLoading ? (
         <LoadingOverlay />
       ) : showIntro ? (

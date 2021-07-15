@@ -119,10 +119,10 @@ class App extends React.Component {
     await this.props.appStore.loadLocalData();
     // await this.props.userStore.loadLocalData();
     await this.props.userStore.shouldAutoLogin();
-    setTimeout(() => {
-      this.props.appStore.setLoading(false);
-      this.setState({notificationController: <NotificationController />});
-    }, 100);
+    // setTimeout(() => {
+    //   this.props.appStore.setLoading(false);
+    //   this.setState({notificationController: <NotificationController />});
+    // }, 100);
   }
 
   componentWillUnmount() {
@@ -286,7 +286,7 @@ class App extends React.Component {
   //       return (
   //         <CMSAvatars
   //           size={20}
-  //           color={CMSColors.buttonRight}
+  //           color={CMSColors.ButtonRight}
   //           styles={styles.contentIcon_filter}
   //           onPress={this.onFilter.bind(this)}
   //           iconCustom="searching-magnifying-glass"
@@ -478,7 +478,8 @@ class App extends React.Component {
 
   render() {
     const {showIntro, isLoading} = this.props.appStore;
-    const {notificationController} = this.state;
+    // const {notificationController} = this.state;
+    const notificationController = <NotificationController />;
     // showIntro = true; // testing
     const {isLoggedIn} = this.props.userStore;
 

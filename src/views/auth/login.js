@@ -64,6 +64,7 @@ class LoginView extends Component {
   componentDidMount() {
     __DEV__ && console.log('LoginView componentDidMount');
     this.props.appStore.setLoading(false);
+    this.setState({domain: this.props.userStore.domain ?? ''});
   }
 
   componentWillUnmount() {
@@ -261,7 +262,7 @@ class LoginView extends Component {
                 <InputTextIcon
                   ref={r => (this._refs.domain = r)}
                   name="domain"
-                  value={this.state.domain}
+                  value={domain}
                   maxLength={60}
                   enablesReturnKeyAutomatically={true}
                   onEndEditing={this.onEndEditing}
