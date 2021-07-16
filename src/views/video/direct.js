@@ -52,11 +52,11 @@ class DirectVideoView extends Component {
 
   componentDidMount() {
     this._isMounted = true;
-    // __DEV__ &&
-    //   console.log(
-    //     'DirectStreamingView componentDidMount',
-    //     this.props.serverInfo
-    //   );
+    __DEV__ &&
+      console.log(
+        'DirectStreamingView componentDidMount , islive:',
+        this.props.serverInfo
+      );
     if (Platform.OS === 'ios') {
       const eventEmitter = new NativeEventEmitter(
         NativeModules.FFMpegFrameEventEmitter
@@ -66,7 +66,7 @@ class DirectVideoView extends Component {
         this.onChange
       );
     }
-    const {serverInfo} = this.props;
+    const {serverInfo, isLive, hdMode, videoStore} = this.props;
 
     if (this.ffmpegPlayer && serverInfo) {
       if (
@@ -74,7 +74,14 @@ class DirectVideoView extends Component {
         serverInfo.server.port // &&
         // !serverInfo.playing
       ) {
-        this.ffmpegPlayer.setNativeProps({startplayback: serverInfo.playData});
+        this.ffmpegPlayer.setNativeProps({
+          startplayback: {
+            ...serverInfo.playData,
+            searchMode: !isLive,
+            date: isLive ? '' : videoStore.searchDate,
+            hd: hdMode,
+          },
+        });
       } else {
         this.setState({
           message: 'Error: wrong server config',
@@ -120,7 +127,8 @@ class DirectVideoView extends Component {
             });
           this.ffmpegPlayer.setNativeProps({stop: true});
           setTimeout(() => {
-            this.ffmpegPlayer &&
+            this._isMounted &&
+              this.ffmpegPlayer &&
               this.ffmpegPlayer.setNativeProps({
                 startplayback: serverInfo.playData,
               });
@@ -144,6 +152,7 @@ class DirectVideoView extends Component {
               ...serverInfo.playData,
               searchMode: !isLive,
               date: isLive ? '' : videoStore.searchDate,
+              hd: hdMode,
             },
           });
         }
@@ -167,7 +176,7 @@ class DirectVideoView extends Component {
     }
     // console.log('GOND onFFMpegFrameChange, id = ', msgid, ' , val = ', value)
     setTimeout(() => {
-      this.onVideoMessage(msgid, value);
+      this._isMounted && this.onVideoMessage(msgid, value);
     }, 100);
   };
 
@@ -311,9 +320,21 @@ class DirectVideoView extends Component {
 
   pause = value => {
     if (this.ffmpegPlayer) {
-      this.ffmpegPlayer.setNativeProps({
-        pause: value === undefined ? true : !!value,
-      });
+      if (value === true || value == undefined)
+        this.ffmpegPlayer.setNativeProps({
+          pause: true,
+        });
+      else {
+        const {serverInfo, isLive, videoStore, hdMode} = this.props;
+        this.ffmpegPlayer.setNativeProps({
+          startplayback: {
+            ...serverInfo.playData,
+            searchMode: !isLive,
+            date: isLive ? '' : videoStore.searchDate,
+            hd: hdMode,
+          },
+        });
+      }
     }
   };
 
@@ -354,6 +375,8 @@ class DirectVideoView extends Component {
     //   console.log('GOND directplayer onlayout: ', event.nativeEvent.layout);
     let {width, height} = event.nativeEvent.layout;
     setTimeout(() => {
+      if (!this._isMounted) return;
+
       if (width <= height) {
         const videoRatio = width / height;
         if (videoRatio !== NATURAL_RATIO) {

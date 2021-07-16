@@ -45,8 +45,8 @@ class VideoPlayerView extends Component {
       showController: false,
       pause: false,
       seekpos: {},
-      width,
-      height,
+      sWidth: width,
+      sHeight: height,
     };
 
     this.timelineAutoScroll = true;
@@ -56,20 +56,9 @@ class VideoPlayerView extends Component {
   componentDidMount() {
     __DEV__ && console.log('VideoPlayerView componentDidMount');
     this._isMounted = true;
-    // if (Platform.OS === 'ios') {
-    //   const eventEmitter = new NativeEventEmitter(NativeModules.FFMpegFrameEventEmitter)
-    //   this.appStateEventListener = eventEmitter.addListener('onFFMPegFrameChange', this.onChange)
-    // }
 
+    Dimensions.addEventListener('change', this.onDimensionsChange);
     this.updateHeader();
-    // this.props.videoStore.pauseAll(true);
-    if (this.channelsScrollView) {
-      const chWidth = Dimensions.get('window').width / NUM_CHANNELS_ON_SCREEN;
-      this.channelsScrollView.scrollToOffset({
-        animated: true,
-        offset: chWidth * this.props.videoStore.selectedChannelIndex,
-      });
-    }
   }
 
   updateHeader = () => {
@@ -82,7 +71,7 @@ class VideoPlayerView extends Component {
   componentWillUnmount() {
     __DEV__ && console.log('VideoPlayerView componentWillUnmount');
     this._isMounted = false;
-    // Dimensions.removeEventListener('change', this.Dimension_handler);
+    Dimensions.removeEventListener('change', this.onDimensionsChange);
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
@@ -90,9 +79,9 @@ class VideoPlayerView extends Component {
     // this.props.videoStore.pauseAll(false);
   }
 
-  onLayout = event => {
-    const {width, height} = Dimensions.get('window');
-    this.setState({width, height});
+  onDimensionsChange = window => {
+    const {width, height} = window;
+    this.setState({sWidth: width, sHeight: height});
   };
 
   onSwitchLiveSearch = () => {
@@ -100,7 +89,7 @@ class VideoPlayerView extends Component {
     setTimeout(() => {
       this.props.videoStore.switchLiveSearch();
       this.updateHeader();
-    }, 2000);
+    }, 200);
   };
 
   handleChannelsScroll = event => {};
@@ -128,7 +117,7 @@ class VideoPlayerView extends Component {
     // TODO: handle DST
     // ---
 
-    let dwidth = this.state.width / HOURS_ON_SCREEN;
+    let dwidth = this.state.sWidth / HOURS_ON_SCREEN;
 
     this.ruler.scrollTo(hour * dwidth, 0);
   };
@@ -136,15 +125,15 @@ class VideoPlayerView extends Component {
 
   renderCalendar = () => {
     const {videoStore} = this.props;
-    const {width, height} = Dimensions.get('window');
+    const {sWidth, sHeight} = this.state;
 
     return (
       <View>
         <Modal
           visible={this.state.showCalendar}
           onTouchOutside={() => this.setState({showCalendar: false})}
-          width={width * 0.7}
-          height={height * 0.5}
+          width={sWidth * 0.7}
+          height={sHeight * 0.5}
           modalAnimation={new SlideAnimation({slideFrom: 'top'})}>
           <View style={styles.calendarContainer}>
             <CalendarList
@@ -167,14 +156,13 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {pause} = this.state;
-    const {width} = Dimensions.get('window');
-    const height = (width * 9) / 16;
+    const {pause, sWidth} = this.state;
+    const height = (sWidth * 9) / 16;
     // __DEV__ &&
     console.log('GOND renderVid player: ', videoStore.selectedStream);
 
     let playerProps = {
-      width: width,
+      width: sWidth,
       height: height,
       hdMode: videoStore.hdMode,
       isLive: videoStore.isLive,
@@ -212,13 +200,13 @@ class VideoPlayerView extends Component {
 
   renderDatetime = () => {
     const {displayDateTime, isLive, isFullscreen} = this.props.videoStore;
-    const {height} = Dimensions.get('window');
+    const {sHeight} = this.state;
 
     return isFullscreen ? null : (
       <TouchableOpacity
         style={styles.datetimeContainer}
         onPress={() => !isLive && this.setState({showCalendar: true})}>
-        <Text style={[styles.datetime, {fontSize: normalize(height * 0.04)}]}>
+        <Text style={[styles.datetime, {fontSize: normalize(sHeight * 0.04)}]}>
           {isLive ? displayDateTime.split(' - ')[1] ?? '' : displayDateTime}
           {/* {isLive ? null : <Text>{searchDate} - </Text>}
         <Text>{frameTime}</Text>*/}
@@ -239,8 +227,8 @@ class VideoPlayerView extends Component {
       nextChannel,
       previousChannel,
     } = this.props.videoStore;
-    const {height} = Dimensions.get('window');
-    const iconSize = normalize(height * 0.035);
+    const {sHeight} = this.state;
+    const iconSize = normalize(sHeight * 0.035);
 
     return (
       <View style={styles.controlsContainer}>
@@ -292,9 +280,9 @@ class VideoPlayerView extends Component {
 
   renderFeatureButtons = () => {
     const {videoStore} = this.props;
-    const {width, height} = Dimensions.get('window');
+    const {sWidth, sHeight} = this.state;
     // TODO add iconSize to state
-    const iconSize = normalize(height * 0.035);
+    const iconSize = normalize(sHeight * 0.035);
 
     return (
       <View style={styles.buttonsContainers}>
@@ -305,13 +293,13 @@ class VideoPlayerView extends Component {
               : 'videocam-filled-tool'
           }
           size={iconSize}
-          style={[styles.buttonStyle, {paddingRight: width * 0.05}]}
+          style={[styles.buttonStyle, {paddingRight: sWidth * 0.05}]}
           onPress={this.onSwitchLiveSearch}
         />
         <IconCustom
           name="camera"
           size={iconSize}
-          style={[styles.buttonStyle, {paddingRight: width * 0.05}]}
+          style={[styles.buttonStyle, {paddingRight: sWidth * 0.05}]}
           onPress={this.onTakeVideoSnapshot}
         />
         <IconCustom
@@ -323,7 +311,7 @@ class VideoPlayerView extends Component {
               color: videoStore.hdMode
                 ? CMSColors.PrimaryActive
                 : CMSColors.White,
-              paddingRight: width * 0.05,
+              paddingRight: sWidth * 0.05,
             },
           ]}
           onPress={() => videoStore.switchHD()}
@@ -331,7 +319,7 @@ class VideoPlayerView extends Component {
         <IconCustom
           name="switch-to-full-screen-button"
           size={iconSize}
-          style={[styles.buttonStyle, {paddingRight: width * 0.05}]}
+          style={[styles.buttonStyle, {paddingRight: sWidth * 0.05}]}
           onPress={() => videoStore.switchFullscreen()}
         />
       </View>
@@ -340,7 +328,7 @@ class VideoPlayerView extends Component {
 
   renderTimeline = () => {
     const {videoStore} = this.props;
-    const {width} = Dimensions.get('window');
+    const {sWidth} = this.state;
 
     return videoStore.isLive ? (
       <View style={{flex: 8}}></View>
@@ -380,7 +368,7 @@ class VideoPlayerView extends Component {
         <TimeOnTimeRuler
           // key="1"
           ref={r => (this.timeOnTimeline = r)}
-          styles={[styles.timeOnRuler, {left: width / 2 - 30}]}
+          styles={[styles.timeOnRuler, {left: sWidth / 2 - 30}]}
           backgroundColor={CMSColors.White}
         />
       </View>
@@ -390,10 +378,10 @@ class VideoPlayerView extends Component {
   renderChannelItem = ({item}) => {
     const isDummy = typeof item !== 'object' || Object.keys(item).length === 0;
     const {kChannel, channelNo, name} = item;
-    const {width} = Dimensions.get('window');
+    const {sWidth} = this.state;
     const {videoStore} = this.props;
     const isSelected = videoStore.selectedChannel == channelNo;
-    const imageW = (width / NUM_CHANNELS_ON_SCREEN) * (isSelected ? 1.2 : 1);
+    const imageW = (sWidth / NUM_CHANNELS_ON_SCREEN) * (isSelected ? 1.2 : 1);
     const borderStyle = isSelected
       ? {borderWidth: 2, borderColor: CMSColors.PrimaryActive}
       : {};
@@ -441,8 +429,10 @@ class VideoPlayerView extends Component {
   };
 
   renderChannelsList = () => {
-    const {isFullscreen, displayChannels} = this.props.videoStore;
+    const {isFullscreen, displayChannels, selectedChannelIndex} =
+      this.props.videoStore;
     // console.log('GOND renderChannelsList: ', displayChannels);
+    const itemWidth = this.state.sWidth / NUM_CHANNELS_ON_SCREEN;
 
     return isFullscreen ? null : (
       <View style={styles.channelsListContainer}>
@@ -451,7 +441,14 @@ class VideoPlayerView extends Component {
           style={{flex: 1}}
           data={[{}, {}, ...displayChannels, {}, {}]}
           renderItem={this.renderChannelItem}
-          keyExtractor={item => item.channelNo}
+          keyExtractor={(item, index) => item.channelNo ?? 'dummy' + index}
+          getItemLayout={(data, index) => ({
+            length: itemWidth,
+            offset: itemWidth * index,
+            index,
+          })}
+          initialNumToRender={displayChannels.length + 4}
+          initialScrollIndex={selectedChannelIndex}
           horizontal={true}
           onScroll={this.handleChannelsScroll}
         />
@@ -470,7 +467,7 @@ class VideoPlayerView extends Component {
     const controlButtons = this.renderControlButtons();
 
     return (
-      <View onLayout={this.onLayout} style={styles.screenContainer}>
+      <View style={styles.screenContainer}>
         {datetimeBox}
         <View style={styles.playerContainer}>
           <Swipe

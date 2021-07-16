@@ -65,6 +65,7 @@ class ChannelsView extends React.Component {
     };
     this.channelsCount = 0;
     this.playerRefs = [];
+    this.firstFocus = true;
   }
 
   componentWillUnmount() {
@@ -89,9 +90,14 @@ class ChannelsView extends React.Component {
 
     // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
     videoStore.setStreamReadyCallback(this.onStreamReady);
-    this.unsubscribleFocusEvent = navigation.addListener('focus', () =>
-      this.pauseAll(false)
-    );
+    this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
+      if (this.firstFocus) {
+        this.firstFocus = false;
+        return;
+      }
+      console.log('GOND live channels view on focused');
+      this.pauseAll(false);
+    });
     this.getChannelsInfo();
   }
 
@@ -391,6 +397,8 @@ class ChannelsView extends React.Component {
     let playerProps = {
       with: videoWindow.width,
       height: videoWindow.height,
+      isLive: true,
+      hdMode: false,
     };
     let player = null;
     switch (videoStore.cloudType) {

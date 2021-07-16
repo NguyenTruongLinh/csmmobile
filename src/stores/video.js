@@ -538,6 +538,10 @@ export const VideoModel = types
         self.isFullscreen = false;
         self.hdMode = false;
         self.showAuthenModal = false;
+        self.timeline = [];
+        self.timezoneOffset = 0;
+        self.hoursOfDay = 24;
+        self.dstHour = 0;
       },
 
       // #endregion setters
