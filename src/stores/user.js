@@ -343,6 +343,8 @@ export const UserStoreModel = types
       self.error = '';
       self.message = '';
       self.isLoggedIn = false;
+
+      self.unregisterToken();
       self.fcm = FCMModel.create({token: '', apnsToken: '', serverId: ''});
       self.api = null;
       self.modules = [];
@@ -513,7 +515,8 @@ export const UserStoreModel = types
       if (self.fcm.token != fcmToken) {
         __DEV__ && console.log('GOND save token: ', fcmToken);
         self.fcm.token = fcmToken;
-        self.fcm.apnsToken = apnsToken ?? '';
+
+        apnsToken && (self.fcm.apnsToken = apnsToken);
         if (self.isLoggedIn) self.registerToken();
       }
     },
@@ -545,6 +548,25 @@ export const UserStoreModel = types
         return true;
       } catch (ex) {
         console.log('GOND register FCM token failed: ', ex);
+        return false;
+      }
+    }),
+    unregisterToken: flow(function* unregisterToken() {
+      if (!appStore.deviceInfo.deviceId) return;
+
+      try {
+        const res = yield apiService.delete(
+          FCMRoute.controller,
+          appStore.deviceInfo.deviceId
+        );
+        if (res.error || !res.Value) {
+          __DEV__ && console.log('GOND unregisterToken failed: ', res);
+          return false;
+        }
+
+        return res;
+      } catch (ex) {
+        console.log('GOND unregister FCM token failed: ', ex);
         return false;
       }
     }),

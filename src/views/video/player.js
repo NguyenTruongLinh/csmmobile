@@ -3,7 +3,7 @@ import {
   View,
   StyleSheet,
   Text,
-  Image,
+  // Modal,
   Dimensions,
   Platform,
   StatusBar,
@@ -15,6 +15,7 @@ import {CalendarList} from 'react-native-calendars';
 import Modal, {ModalContent, SlideAnimation} from 'react-native-modals';
 
 import CMSImage from '../../components/containers/CMSImage';
+import CMSAvatars from '../../components/containers/CMSAvatars';
 import TimeRuler from '../../components/controls/BetterTimeRuler';
 import TimeOnTimeRuler from '../../components/controls/TimeOnTimeRuler';
 import Swipe from '../../components/controls/Swipe';
@@ -23,8 +24,13 @@ import HLSStreamingView from './hls';
 import RTCStreamingView from './rtc';
 import {IconCustom} from '../../components/CMSStyleSheet';
 
+import snackbar from '../../util/snackbar';
 import {normalize} from '../../util/general';
-import {CLOUD_TYPE, HOURS_ON_SCREEN} from '../../consts/video';
+import {
+  CLOUD_TYPE,
+  HOURS_ON_SCREEN,
+  CONTROLLER_TIMEOUT,
+} from '../../consts/video';
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
 import {DateTime} from 'luxon';
@@ -43,6 +49,7 @@ class VideoPlayerView extends Component {
     this.state = {
       showCalendar: false,
       showController: false,
+      videoLoading: true,
       pause: false,
       seekpos: {},
       sWidth: width,
@@ -51,6 +58,7 @@ class VideoPlayerView extends Component {
 
     this.timelineAutoScroll = true;
     this.timeOnTimeline = null;
+    this.isNoDataSearch = false;
   }
 
   componentDidMount() {
@@ -75,9 +83,51 @@ class VideoPlayerView extends Component {
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
-    this.props.videoStore.reset();
+    this.props.videoStore.resetVideoChannel();
     // this.props.videoStore.pauseAll(false);
   }
+
+  checkDataOnSearchDate = () => {
+    // dongpt: add no data (selected a day without data)
+    const recordingDates = {...(this.props.videoStore.recordingDates ?? {})};
+    let datesList = [];
+    if (typeof recordingDates == 'object') {
+      datesList = Object.keys(recordingDates);
+    }
+
+    let selectedDate =
+      this.props.videoStore.searchDate.toFormat(CALENDAR_DATE_FORMAT);
+    __DEV__ &&
+      console.log(
+        'GOND checkDataOnSearchDate selectedDate = ',
+        selectedDate,
+        '\n --- object = ',
+        this.props.videoStore.searchDate
+      );
+    // let selectedDate = USE_TIMESTAMP ? this.state.sdate.format('CALENDAR_DATE_FORMAT') : dayjs(this.searchDate * 1000).format('CALENDAR_DATE_FORMAT'); // .utcOffset(0)
+    if (
+      (!datesList && datesList.length <= 0) ||
+      datesList.indexOf(selectedDate) < 0
+    ) {
+      __DEV__ && console.log('GOND: checkDataOnSearchDate NOVIDEO');
+      this.isNoDataSearch = true;
+      this.pause();
+      snackbar.showMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA, true);
+      __DEV__ && console.log('GOND PAUSE 2 false');
+      // this.setState({
+      //   videoLoading: false,
+      //   canLiveSearch: true,
+      //   displayInfo: '',
+      //   paused: false,
+      //   connectionStatus: STREAM_STATUS.NOVIDEO,
+      // });
+      return false;
+    }
+
+    this.isNoDataSearch = false;
+    this.forceUpdate();
+    return true;
+  };
 
   onDimensionsChange = window => {
     const {width, height} = window;
@@ -94,6 +144,18 @@ class VideoPlayerView extends Component {
 
   handleChannelsScroll = event => {};
 
+  onSelectDate = value => {
+    // value = {year, month, day, timestamp, dateString}
+    __DEV__ && console.log('GOND onSelectDate: ', value);
+    this.props.videoStore.setSearchDate(value.dateString, CALENDAR_DATE_FORMAT);
+    if (this.checkDataOnSearchDate()) {
+      this.setState({showCalendar: false});
+    } else {
+      // this.pause();
+      this.setState({showCalendar: false});
+    }
+  };
+
   onSelectTime = () => {};
 
   onSwitchChannel = channelNo => {
@@ -103,6 +165,18 @@ class VideoPlayerView extends Component {
   onChannelSnapshotLoaded = (param, image) => {};
 
   onTakeVideoSnapshot = () => {};
+
+  onShowControlButtons = () => {
+    __DEV__ && console.log('GOND onShowControlButtons');
+    this.setState({showController: true}, () => {
+      __DEV__ && console.log('GOND onShowControlButtons already showed');
+      if (this.controllerTimeout) clearTimeout(this.controllerTimeout);
+      this.controllerTimeout = setTimeout(() => {
+        __DEV__ && console.log('GOND onShowControlButtons hidden');
+        if (this._isMounted) this.setState({showController: false});
+      }, CONTROLLER_TIMEOUT);
+    });
+  };
 
   /**
    * move Timeline to a specific time
@@ -128,44 +202,44 @@ class VideoPlayerView extends Component {
     const {sWidth, sHeight} = this.state;
 
     return (
-      <View>
-        <Modal
-          visible={this.state.showCalendar}
-          onTouchOutside={() => this.setState({showCalendar: false})}
-          width={sWidth * 0.7}
-          height={sHeight * 0.5}
-          modalAnimation={new SlideAnimation({slideFrom: 'top'})}>
-          <View style={styles.calendarContainer}>
-            <CalendarList
-              style={styles.calendar}
-              onDayPress={value => {
-                // value = {year, month, day, timestamp, dateString}
-                videoStore.setSearchDate(value.dateString);
-                this.setState({showCalendar: false});
-              }}
-              markedDates={videoStore.recordingDates}
-              disableMonthChange={false}
-              markingType={'period'}
-            />
-          </View>
-        </Modal>
-      </View>
+      // <View>
+      <Modal
+        visible={this.state.showCalendar}
+        onTouchOutside={() => this.setState({showCalendar: false})}
+        width={sWidth * 0.7}
+        height={sHeight * 0.5}
+        // modalAnimation={new SlideAnimation({slideFrom: 'top'})}
+      >
+        <View style={styles.calendarContainer}>
+          <CalendarList
+            style={styles.calendar}
+            onDayPress={this.onSelectDate}
+            onDayLongPress={__DEV__ ? this.onSelectDate : undefined} // debug only
+            markedDates={videoStore.recordingDates}
+            disableMonthChange={false}
+            markingType={'period'}
+          />
+        </View>
+      </Modal>
+      // </View>
     );
   };
 
   renderVideo = () => {
-    if (!this._isMounted) return;
+    // if (!this._isMounted) return;
     const {videoStore} = this.props;
     const {pause, sWidth} = this.state;
     const height = (sWidth * 9) / 16;
     // __DEV__ &&
-    console.log('GOND renderVid player: ', videoStore.selectedStream);
+    // console.log('GOND renderVid player: ', videoStore.selectedStream);
 
     let playerProps = {
       width: sWidth,
       height: height,
       hdMode: videoStore.hdMode,
       isLive: videoStore.isLive,
+      noVideo: videoStore.isLive ? false : this.isNoDataSearch,
+      searchDate: videoStore.searchDate,
     };
     let player = null;
     switch (videoStore.cloudType) {
@@ -286,42 +360,62 @@ class VideoPlayerView extends Component {
 
     return (
       <View style={styles.buttonsContainers}>
-        <IconCustom
-          name={
-            videoStore.isLive
-              ? 'searching-magnifying-glass'
-              : 'videocam-filled-tool'
-          }
-          size={iconSize}
-          style={[styles.buttonStyle, {paddingRight: sWidth * 0.05}]}
-          onPress={this.onSwitchLiveSearch}
-        />
-        <IconCustom
+        <View style={{padding: sWidth * 0.03}}>
+          <CMSAvatars
+            iconCustom={
+              videoStore.isLive
+                ? 'searching-magnifying-glass'
+                : 'videocam-filled-tool'
+            }
+            color={CMSColors.White}
+            size={iconSize}
+            style={[styles.buttonStyle, {paddingRight: sWidth * 0.05}]}
+            onPress={this.onSwitchLiveSearch}
+          />
+        </View>
+        {/* 
+        <View>
+        <CMSAvatars
           name="camera"
           size={iconSize}
           style={[styles.buttonStyle, {paddingRight: sWidth * 0.05}]}
           onPress={this.onTakeVideoSnapshot}
-        />
-        <IconCustom
-          name="hd"
-          size={iconSize}
-          style={[
-            styles.buttonStyle,
-            {
-              color: videoStore.hdMode
+        /> 
+        </View>*/}
+        <View style={{padding: sWidth * 0.03}}>
+          <CMSAvatars
+            iconCustom="hd"
+            color={
+              videoStore.hdMode === true
                 ? CMSColors.PrimaryActive
-                : CMSColors.White,
-              paddingRight: sWidth * 0.05,
-            },
-          ]}
-          onPress={() => videoStore.switchHD()}
-        />
-        <IconCustom
-          name="switch-to-full-screen-button"
-          size={iconSize}
-          style={[styles.buttonStyle, {paddingRight: sWidth * 0.05}]}
-          onPress={() => videoStore.switchFullscreen()}
-        />
+                : CMSColors.White
+            }
+            size={iconSize}
+            style={[
+              styles.buttonStyle,
+              {
+                width: iconSize,
+                height: iconSize,
+                // color: videoStore.hdMode
+                //   ? CMSColors.PrimaryActive
+                //   : CMSColors.White,
+                paddingRight: sWidth * 0.05,
+                borderWidth: 2,
+                borderColor: 'red',
+              },
+            ]}
+            onPress={() => videoStore.switchHD()}
+          />
+        </View>
+        <View style={{padding: sWidth * 0.03}}>
+          <CMSAvatars
+            iconCustom="switch-to-full-screen-button"
+            size={iconSize}
+            color={CMSColors.White}
+            style={[styles.buttonStyle, {paddingRight: sWidth * 0.05}]}
+            onPress={() => videoStore.switchFullscreen()}
+          />
+        </View>
       </View>
     );
   };
@@ -337,7 +431,7 @@ class VideoPlayerView extends Component {
         <View style={styles.rulerContainer}>
           <TimeRuler
             ref={r => (this.ruler = r)}
-            searchDate={videoStore.searchDateInSeconds}
+            searchDate={videoStore.searchDateInSeconds()} // if direct ('UTC', {keepLocalTime: true})
             height="80%"
             markerPosition="absolute"
             timeData={videoStore.timeline}
@@ -468,11 +562,16 @@ class VideoPlayerView extends Component {
 
     return (
       <View style={styles.screenContainer}>
+        {this.renderCalendar()}
         {datetimeBox}
-        <View style={styles.playerContainer}>
+        <View
+          style={styles.playerContainer}
+          // onLongPress={__DEV__ ? this.onShowControlButtons : undefined}
+        >
           <Swipe
             onSwipeLeft={() => videoStore.nextChannel()}
-            onSwipeRight={() => videoStore.previousChannel()}>
+            onSwipeRight={() => videoStore.previousChannel()}
+            onPress={this.onShowControlButtons}>
             {videoPlayer}
             {controlButtons}
           </Swipe>
@@ -480,7 +579,6 @@ class VideoPlayerView extends Component {
         {buttons}
         {timeline}
         {channelsList}
-        {this.renderCalendar()}
       </View>
     );
   }
@@ -513,8 +611,8 @@ const styles = StyleSheet.create({
   },
   calendar: {
     flex: 1,
-    width: '100%',
-    height: '100%',
+    // width: '100%',
+    // height: '100%',
   },
   playerContainer: {
     flex: 44,

@@ -247,8 +247,7 @@ export default class TimeRuler extends PureComponent {
 
   renderDST = (is24hour, hourBuildRuler, hourSpecial, rulerDST) => {
     // console.log('GOND TimeRuler renderDST! hourSpecial = ', hourSpecial)
-    this.timeData = this.props.timeData;
-    if (!this.timeData) return [];
+    if (!this.props.timeData) return [];
 
     if (Array.isArray(rulerDST) && rulerDST.length > 0) {
       let arrayofViews = rulerDST;
@@ -291,7 +290,6 @@ export default class TimeRuler extends PureComponent {
         // let start = j * minValue;
         // let end = start + (minValue - 1);
         let _objectValue = {};
-        // let hasData = this.timeData != null && this.timeData.length > 0;
         let long_start = searchDate + i * 3600 + j * minValue * 60;
         let long_end = long_start + minValue * 60 - 1;
         // __DEV__ &&
@@ -323,8 +321,7 @@ export default class TimeRuler extends PureComponent {
 
   _renderHours = is24hour => {
     // console.log('GOND TimeRuler _renderHours!')
-    this.timeData = this.props.timeData;
-    if (!this.timeData) return [];
+    if (!this.props.timeData) return [];
     let numofview = 24;
     let arrayofViews = [];
     // let _searchDateNow = new Date();
@@ -351,7 +348,6 @@ export default class TimeRuler extends PureComponent {
         // let start = j * minValue;
         // let end = start + (minValue - 1);
         let _objectValue = {};
-        // let hasData = this.timeData != null && this.timeData.length > 0;
         let long_start = searchDate + i * 3600 + j * minValue * 60;
         let long_end = long_start + minValue * 60 - 1;
         // __DEV__ &&

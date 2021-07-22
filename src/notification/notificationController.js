@@ -14,7 +14,7 @@ class NotificationController extends React.Component {
   constructor(props) {
     super(props);
 
-    this.foregroundMessageListener = null;
+    this.unsubscribeForegroundListioner = null;
     this.lastMsgTime = '';
     this.lastMsgId = '';
   }
@@ -40,9 +40,9 @@ class NotificationController extends React.Component {
   }
 
   componentWillUnmount() {
-    if (this.foregroundMessageListener) {
+    if (this.unsubscribeForegroundListioner) {
       // unsubscribe
-      this.foregroundMessageListener();
+      this.unsubscribeForegroundListioner();
     }
   }
 
@@ -92,11 +92,20 @@ class NotificationController extends React.Component {
   };
 
   createNotificationListeners = async () => {
-    // This listener triggered when notification has been received in foreground
-    this.foregroundMessageListener = messaging().onMessage(notification => {
-      // __DEV__ && console.log('GOND Receveived notification: ', notification);
-      this.onNotificationReceived(notification);
+    messaging().onTokenRefresh(newToken => {
+      __DEV__ && console.log('GOND FCM Token has been refreshed: ', newToken);
+      if (newToken) {
+        userStore.saveToken(fcmToken);
+      }
     });
+
+    // This listener triggered when notification has been received in foreground
+    this.unsubscribeForegroundListioner = messaging().onMessage(
+      notification => {
+        // __DEV__ && console.log('GOND Receveived notification: ', notification);
+        this.onNotificationReceived(notification);
+      }
+    );
 
     messaging().setBackgroundMessageHandler(notification => {
       __DEV__ &&

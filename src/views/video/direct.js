@@ -78,7 +78,7 @@ class DirectVideoView extends Component {
           startplayback: {
             ...serverInfo.playData,
             searchMode: !isLive,
-            date: isLive ? '' : videoStore.searchDate,
+            date: isLive ? '' : videoStore.searchDateString,
             hd: hdMode,
           },
         });
@@ -106,6 +106,7 @@ class DirectVideoView extends Component {
     if (!this._isMounted) return;
     const prevServerInfo = prevProps.serverInfo;
     const {serverInfo, hdMode, isLive, videoStore} = this.props;
+    if (!serverInfo || Object.keys(serverInfo).length == 0) return;
 
     // __DEV__ &&
     //   console.log(
@@ -151,7 +152,7 @@ class DirectVideoView extends Component {
             startplayback: {
               ...serverInfo.playData,
               searchMode: !isLive,
-              date: isLive ? '' : videoStore.searchDate,
+              date: isLive ? '' : videoStore.searchDateString,
               hd: hdMode,
             },
           });
@@ -182,7 +183,7 @@ class DirectVideoView extends Component {
 
   onVideoMessage = (msgid, value) => {
     const {videoStore} = this.props;
-    // console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+    __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
 
     switch (msgid) {
       case NATIVE_MESSAGE.CONNECTING:
@@ -274,17 +275,16 @@ class DirectVideoView extends Component {
           if (timeData[0] && timeData[0].begin) {
             const beginOfDay = DateTime.fromSeconds(timeData[0].begin)
               .toUTC()
-              .startOf('day');
-            if (
-              beginOfDay.toFormat(NVRPlayerConfig.RequestTimeFormat) !=
-              videoStore.searchDate
-            ) {
-              videoStore.setSearchDate(
-                beginOfDay.toFormat(NVRPlayerConfig.RequestTimeFormat)
-              );
+              .startOf('day')
+              .toFormat(NVRPlayerConfig.RequestTimeFormat);
+            if (beginOfDay != videoStore.searchDateString) {
+              videoStore.setSearchDate(beginOfDay);
             }
           }
           videoStore.setTimeline(timeData);
+          if (timeData[0] && timeData[0].timezone) {
+            self.setTimezone(timeData[0].timezone);
+          }
         }
         break;
       case NATIVE_MESSAGE.HOUR_DATA:
@@ -330,7 +330,7 @@ class DirectVideoView extends Component {
           startplayback: {
             ...serverInfo.playData,
             searchMode: !isLive,
-            date: isLive ? '' : videoStore.searchDate,
+            date: isLive ? '' : videoStore.searchDateString,
             hd: hdMode,
           },
         });
@@ -358,14 +358,14 @@ class DirectVideoView extends Component {
       //   'GOND timeframe date = ',
       //   formatedDate,
       //   ', search date = ',
-      //   videoStore.searchDate
+      //   videoStore.searchDateString
       // );
-      // if (formatedDate != videoStore.searchDate) {
+      // if (formatedDate != videoStore.searchDateString) {
       //   videoStore.setSearchDate(formatedDate);
       // }
       console.log('GOND direct frame time : ', frameTime);
       videoStore.setDisplayDateTime(date && time ? date + ' - ' + time : value);
-      videoStore.setFrameTime(value);
+      videoStore.setFrameTime(value, 'utc');
     } else console.log('GOND direct frame time value not valid: ', frameTime);
   };
 

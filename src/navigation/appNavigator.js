@@ -1,10 +1,7 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {
-  NavigationContainer,
-  getFocusedRouteNameFromRoute,
-} from '@react-navigation/native';
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 
 // import navigationService from './navigationService';
 // import {navigationStore} from '../stores/navigation';
@@ -52,6 +49,7 @@ import SettingsStack from './settingsNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
 import ROUTERS from '../consts/routes';
+import cmscolors from '../styles/cmscolors';
 
 // const getHeaderOptions = route => {
 //   const headerTitle = getHeaderTitle(route);
@@ -175,7 +173,11 @@ const CMSMainTab = navigatorSetter => (
     initialRouteName={ROUTERS.HOME}
     headerMode="none"
     backBehavior="none"
-    // screenOptions={{unmountOnBlur: true}}
+    sceneContainerStyle={{
+      flex: 1,
+      backgroundColor: 'white',
+    }}
+    screenOptions={{unmountOnBlur: true}}
     tabBar={props => {
       return <CMSTabbar naviSetter={navigatorSetter} {...props} />;
     }}>
@@ -208,6 +210,13 @@ const AppNavigator = ({
   // __DEV__ && console.log('GOND NavContainer render, isLogin = ', isLoggedIn);
   return (
     <NavigationContainer
+      // theme={{
+      //   ...DefaultTheme,
+      //   colors: {
+      //     ...DefaultTheme.colors,
+      //     background: cmscolors.White,
+      //   },
+      // }}
       ref={ref => {
         // __DEV__ && console.log('GOND NavContainer ref = ', ref);
         // navigationService.setTopLevelNavigator(ref);

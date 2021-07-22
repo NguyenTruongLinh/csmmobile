@@ -178,3 +178,5 @@ export const IS_OPEN_DATA_CHANNEL = true;
 export const USE_TRICKLE_ICE = true;
 export const STREAM_TIMEOUT = 30000;
 export const NATURAL_RATIO = 16 / 9;
+
+export const CONTROLLER_TIMEOUT = 3000; // 3 seconds

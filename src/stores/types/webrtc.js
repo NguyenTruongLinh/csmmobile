@@ -37,16 +37,17 @@ const ChannelConnectionModel = types
     isLoading: types.boolean,
     error: types.string,
     connectionStatus: types.string,
+    needResetConnection: types.boolean,
   })
   .volatile(self => ({
     signalingClient: null,
     peerConnection: null,
     dataChannel: null,
     remoteStream: null,
+    dataChannelEvents: {},
+    onConnectionFailed: null,
   }))
   .actions(self => {
-    let dataChannelEvents = null;
-
     return {
       setPeerConnection(conn) {
         self.peerConnection = conn;
@@ -58,15 +59,15 @@ const ChannelConnectionModel = types
         self.isDataChannelOpened = isOpened;
       },
       setDataChannelEvents({onOpen, onMessage, onError, onCLose, onLowBuffer}) {
+        self.dataChannelEvents = {
+          onOpen,
+          onMessage,
+          onError,
+          onCLose,
+          onLowBuffer,
+        };
         if (!self.dataChannel) {
           console.log('GOND setting dc events............ ');
-          dataChannelEvents = {
-            onOpen,
-            onMessage,
-            onError,
-            onCLose,
-            onLowBuffer,
-          };
           return;
         }
         self.dataChannel.onopen = onOpen;
@@ -75,11 +76,16 @@ const ChannelConnectionModel = types
         // self.dataChannel.onclose = onCLose;
         // self.dataChannel.onbufferedamountlow = onLowBuffer;
       },
-      setStreamStatus({isLoading, error, needReset, novideo}) {
+      setStreamStatus({isLoading, error, needReset, connectionStatus}) {
         self.isLoading = isLoading ?? self.isLoading;
         self.error = error ?? self.error;
         self.needResetConnection = needReset ?? self.needResetConnection;
-        self.novideo = novideo ?? self.novideo;
+        self.connectionStatus = connectionStatus ?? self.connectionStatus;
+        // self.novideo = novideo ?? self.novideo;
+      },
+      setConnectionFailedHandler(fn) {
+        if (typeof fn === 'function') self.onConnectionFailed = fn;
+        else console.log('ConnectionFailedHanlder value is not a function!');
       },
       initStream: flow(function* initStream({
         region,
@@ -206,7 +212,7 @@ const ChannelConnectionModel = types
 
         self.createPeerConnection({
           iceServers,
-          iceTransportPolicy: 'relay',
+          iceTransportPolicy: 'all',
         });
 
         // events
@@ -287,9 +293,9 @@ const ChannelConnectionModel = types
         __DEV__ && console.log('[GOND] Starting connection');
         self.signalingClient.open();
 
-        __DEV__ && console.log('[GOND] zzzzzzz before sleep ', new Date());
-        yield util.sleep(5000);
-        __DEV__ && console.log('[GOND] zzzzzzz after sleep ', new Date());
+        // __DEV__ && console.log('[GOND] zzzzzzz before sleep ', new Date());
+        yield util.sleep(2000);
+        // __DEV__ && console.log('[GOND] zzzzzzz after sleep ', new Date());
         return true;
       }),
       sendOffer: flow(function* sendOffer(reconnect) {
@@ -356,7 +362,7 @@ const ChannelConnectionModel = types
           if (peerConnection.iceConnectionState == 'connected') {
             //
           } else if (
-            peerConnection.iceConnectionState == 'disconnected' ||
+            // peerConnection.iceConnectionState == 'disconnected' ||
             peerConnection.iceConnectionState == 'failed'
           ) {
             // self.onReconnect(peerConnection._peerConnectionId);
@@ -366,6 +372,7 @@ const ChannelConnectionModel = types
               connectionStatus: STREAM_STATUS.DISCONNECTED,
               needResetConnection: true,
             });
+            self.onConnectionFailed && self.onConnectionFailed(self);
           }
         };
 
@@ -398,11 +405,11 @@ const ChannelConnectionModel = types
 
         self.dataChannel = self.peerConnection.createDataChannel(newId);
 
-        if (dataChannelEvents) {
+        if (self.dataChannelEvents) {
           __DEV__ && console.log('GOND dataChannelEvents now set: ', newId);
-          self.dataChannel.onopen = dataChannelEvents.onOpen;
-          self.dataChannel.onmessage = dataChannelEvents.onMessage;
-          self.dataChannel.onerror = dataChannelEvents.onError;
+          self.dataChannel.onopen = self.dataChannelEvents.onOpen;
+          self.dataChannel.onmessage = self.dataChannelEvents.onMessage;
+          self.dataChannel.onerror = self.dataChannelEvents.onError;
         } else {
           __DEV__ && console.log('GOND dataChannelEvents not set: ', newId);
           self.dataChannel.onopen = msg => {
@@ -428,6 +435,17 @@ const ChannelConnectionModel = types
           };
         }
       },
+      reconnect(connectionInfo) {
+        __DEV__ &&
+          console.log(
+            'GOND Reconnecting ..., channel: ',
+            self.channelName,
+            connectionInfo
+          );
+        self.release();
+        self.isLoading = true;
+        self.initStream(connectionInfo);
+      },
       release() {
         self.dataChannel && self.dataChannel.close();
         self.peerConnection && self.peerConnection.close();
@@ -450,6 +468,17 @@ const RTCStreamModel = types
   .volatile(self => ({
     configs: {},
   }))
+  .views(self => ({
+    get connectionInfo() {
+      return {
+        sid: self.sid,
+        region: self.region,
+        accessKeyId: self.accessKeyId,
+        secretAccessKey: self.secretAccessKey,
+        rtcChannelName: self.rtcChannelName,
+      };
+    },
+  }))
   .actions(self => ({
     initPeerConnections(conns) {
       __DEV__ && console.log('[GOND] initPeerConnections ', conns);
@@ -470,6 +499,11 @@ const RTCStreamModel = types
     createStreams: flow(function* createStreams(streamInfos, channels) {
       if (self.openStreamLock) false;
       self.openStreamLock = true;
+
+      self.sid = streamInfos.sid;
+      self.accessKeyId = streamInfos.accessKeyId;
+      self.secretAccessKey = streamInfos.secretAccessKey;
+      self.rtcChannelName = streamInfos.rtcChannelName;
 
       self.viewers = [];
       self.message = VIDEO_MESSAGE.MSG_CONNECTING_STREAM;
@@ -497,8 +531,13 @@ const RTCStreamModel = types
         isLoading: true,
         error: '',
         connectionStatus: STREAM_STATUS.CONNECTING,
+        needResetConnection: false,
       });
 
+      // TODO: improve this
+      conn.setConnectionFailedHandler(viewer => {
+        viewer.reconnect(self.connectionInfo);
+      });
       yield conn.initStream({...streamInfos, region: self.region});
       self.viewers.push(conn);
     }),

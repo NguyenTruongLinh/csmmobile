@@ -20,6 +20,7 @@ import {
   STREAM_STATUS,
 } from '../consts/video';
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../consts/misc';
+import {TIMEZONE_MAP} from '../consts/timezonesmap';
 
 const HLSStreamModel = types.model({
   sid: types.identifier,
@@ -146,10 +147,11 @@ const DirectStreamModel = types
   .model({
     server: types.reference(DirectServerModel),
     channel: types.reference(ChannelModel),
-    playing: types.boolean,
+    // playing: types.boolean,
   })
   .views(self => ({
     get playData() {
+      if (!self.server || !self.channel) return {};
       const {channelNo, name, kChannel} = self.channel;
 
       return {
@@ -184,13 +186,42 @@ const DirectStreamModel = types
     },
   }));
 
-// const TimezoneModel = types.model({});
+const DSTDateModel = types.model({
+  wYear: types.number,
+  wMonth: types.number,
+  wDayOfWeek: types.number,
+  wDay: types.number,
+  wHour: types.number,
+  wMinute: types.number,
+  wSecond: types.number,
+  // wMilliseconds: types.number,
+});
+const parseDSTDate = source => {
+  return DSTDateModel.create({
+    wYear: parseInt(source.wYear),
+    wMonth: parseInt(source.wMonth),
+    wDayOfWeek: parseInt(source.wDayOfWeek),
+    wDay: parseInt(source.wDay),
+    wHour: parseInt(source.wHour),
+    wMinute: parseInt(source.wMinute),
+    wSecond: parseInt(source.wSecond),
+  });
+};
+
+const TimezoneModel = types.model({
+  bias: types.number,
+  standardName: types.string,
+  daylightName: types.string,
+  daylightBias: types.number,
+  daylightDate: DSTDateModel,
+  standardDate: DSTDateModel,
+});
 
 const TimelineModel = types.model({
   id: types.number,
   begin: types.number,
   end: types.number,
-  time: types.number,
+  // time: types.number,
   type: types.number,
 });
 
@@ -228,28 +259,30 @@ export const VideoModel = types
     channelFilter: types.string,
     isLoading: types.boolean,
     error: types.string,
-    needResetConnection: types.boolean,
+    // needResetConnection: types.boolean,
     message: types.string,
     nvrUser: types.maybeNull(types.string),
     nvrPassword: types.maybeNull(types.string),
     isLive: types.boolean,
     isFullscreen: types.boolean,
     hdMode: types.boolean,
-    paused: types.boolean,
+    canSwitchMode: types.boolean,
+    // paused: types.boolean,
     showAuthenModal: types.boolean,
-    isSingleMode: types.boolean,
+    // isSingleMode: types.boolean,
     frameTime: types.number,
-    searchDate: types.maybeNull(types.string),
+    searchDate: types.maybeNull(types.frozen()),
     displayDateTime: types.maybeNull(types.string),
     // timezone: types.maybeNull(TimezoneModel),
-    timezoneOffset: types.maybeNull(types.number),
+    dvrTimezone: types.maybeNull(TimezoneModel),
+    timezoneOffset: types.maybeNull(types.number), // offset value
+    timezoneName: types.maybeNull(types.string), // IANA string
     timeline: types.array(TimelineModel),
     // timelinePos: types.maybeNull(types.number),
     // TODO: timestamp should use BigNumber?
     searchBegin: types.maybeNull(types.number),
     searchEnd: types.maybeNull(types.number),
-    hoursOfDay: types.number,
-    dstHour: types.number,
+    staticHoursOfDay: types.maybeNull(types.number),
   })
   .volatile(self => ({
     recordingDates: {},
@@ -335,35 +368,48 @@ export const VideoModel = types
     },
     get timezone() {
       if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
-        return util.isNullOrUndef(self.timezoneOffse)
-          ? 0
+        return util.isNullOrUndef(self.timezoneOffset)
+          ? 'local'
           : `UTC${self.timezoneOffset}`;
       } else {
-        // TODO
-        return 0;
+        return self.timezoneName ?? 'local';
       }
+    },
+    get hoursOfDay() {
+      if (
+        self.cloudType == CLOUD_TYPE.DIRECTION ||
+        (self.cloudType == CLOUD_TYPE.DEFAULT && self.staticHoursOfDay)
+      )
+        return self.staticHoursOfDay;
+
+      if (!self.searchDate) return 24;
+      let searchDateTomorrow = self.searchDate.plus({days: 1});
+      return (
+        (searchDateTomorrow.toSeconds() - self.searchDate.toSeconds()) / 3600
+      );
+    },
+    get dstHour() {
+      if (!self.dvrTimezone) return 0;
+      return self.dvrTimezone.daylightDate.wHour;
     },
     get dstDuration() {
       return 24 - self.hoursOfDay;
     },
-    get searchDateInSeconds() {
-      console.log(
-        'GOND searchDateInSeconds = ',
-        self.searchDate,
-        DateTime.fromFormat(
-          self.searchDate,
-          NVRPlayerConfig.RequestTimeFormat
-        ).setZone('UTC', {keepLocalTime: true})
-      );
-      return self.searchDate
-        ? DateTime.fromFormat(
-            self.searchDate,
-            NVRPlayerConfig.RequestTimeFormat
-          )
-            // .setZone(self.timezone /*, {keepLocalTime: true}*/)
-            .setZone('UTC', {keepLocalTime: true})
-            .toMillis() / 1000
-        : 0;
+    searchDateInSeconds(zone, options) {
+      // console.log('GOND searchDateInSeconds = ', self.searchDate);
+      if (!self.searchDate) {
+        self.searchDate = DateTime.now().setZone(self.timezone).startOf('day');
+      }
+      if (zone) {
+        return self.searchDate.setZone(zone, options).toSeconds();
+      }
+      return self.searchDate.toSeconds();
+    },
+    get searchDateString() {
+      if (!self.searchDate) {
+        self.searchDate = DateTime.now().setZone(self.timezone).startOf('day');
+      }
+      return self.searchDate.toFormat(NVRPlayerConfig.RequestTimeFormat);
     },
     get firstChannelNo() {
       return self.allChannels && self.allChannels.length > 0
@@ -411,7 +457,7 @@ export const VideoModel = types
       selectChannel(value) {
         self.selectedChannel = value;
       },
-      setFrameTime(value) {
+      setFrameTime(value, fromZone) {
         if (typeof value == 'string') {
           // TODO: convert
           self.frameTime = DateTime.fromFormat(
@@ -420,27 +466,46 @@ export const VideoModel = types
             {zone: 'utc'}
           ).toSeconds();
         } else if (typeof value == 'number') {
-          const dt = DateTime.fromSeconds(value, {zone: 'utc'});
-          console.log(
-            'GOND setFrameTime ',
-            dt.setZone(self.timezone).toSeconds()
-          );
-          self.frameTime = dt.setZone(self.timezone).toSeconds();
+          if (fromZone) {
+            const dt = DateTime.fromSeconds(value, fromZone);
+            console.log(
+              'GOND setFrameTime ',
+              dt.setZone(self.timezone).toSeconds()
+            );
+            self.frameTime = dt.setZone(self.timezone).toSeconds();
+          } else {
+            self.frameTime = value;
+          }
         }
       },
       setDisplayDateTime(value) {
         self.displayDateTime = value;
       },
-      setSearchDate(value) {
+      setSearchDate(value, format) {
         __DEV__ && console.log('GOND setSearchDate ', value);
         if (typeof value == 'string') {
-          self.searchDate = value;
+          self.searchDate = DateTime.fromFormat(
+            value,
+            format ?? NVRPlayerConfig.RequestTimeFormat
+          );
+          if (self.timezoneName) {
+            self.searchDate.setZone(self.timezoneName);
+          } else if (self.timezoneOffset) {
+            self.searchDate.setZone(`UTC${self.timezoneOffset}`);
+          }
+          // else : 'local'
         } else {
           // TODO: convert timezone
         }
       },
+      calculateSearchParams(startTime) {
+        DateTime.now().daysInMonth;
+      },
       setRecordingDates(value) {
-        const today = DateTime.now().toFormat(CALENDAR_DATE_FORMAT);
+        __DEV__ && console.log('&&& GOND setRecordingDates data = ', value);
+        const today = DateTime.now()
+          .setZone(self.timezone)
+          .toFormat(CALENDAR_DATE_FORMAT);
         self.recordingDates = value.reduce((result, day) => {
           if (day == today) {
             result[day] = {
@@ -454,6 +519,73 @@ export const VideoModel = types
             };
           return result;
         }, {});
+        __DEV__ &&
+          console.log('&&& GOND recordingDates = ', self.recordingDates);
+      },
+      buildTimezoneData(data) {
+        __DEV__ &&
+          console.log(
+            '&&& GOND buildTimezoneData data = ',
+            self.recordingDates
+          );
+        if (self.dvrTimezone && self.timezoneName) return;
+        let tzName = '';
+
+        if (Array.isArray(TIMEZONE_MAP[data.StandardName])) {
+          let parseSuccess = true;
+          let i = 0;
+          do {
+            tzName = '' + TIMEZONE_MAP[data.StandardName][i];
+            try {
+              const tmp = DateTime.local().setZone(tzName);
+              __DEV__ &&
+                console.log('&&& GOND buildTimezoneData parse success = ', tmp);
+            } catch {
+              i++;
+              parseSuccess = false;
+              // __DEV__ && console.log('&&& GOND buildTimezoneData parse failed = ', tzName)
+            }
+          } while (
+            parseSuccess === false &&
+            i < TIMEZONE_MAP[data.StandardName].length
+          );
+          parseSuccess === false && (tzName = DateTime.local().zoneName);
+        } else {
+          tzName = '' + TIMEZONE_MAP[data.StandardName];
+          try {
+            const tmp = DateTime.local().setZone(tzName);
+          } catch {
+            tzName = DateTime.local().zoneName;
+          }
+        }
+        self.timezoneName = tzName;
+        self.dvrTimezone = TimezoneModel.create({
+          bias: parseInt(data.Bias),
+          daylightBias: parseInt(data.DaylightBias),
+          standardName: data.StandardName,
+          daylightName: data.DaylightName,
+          daylightDate: parseDSTDate(data.DaylightDate),
+          standardDate: parseDSTDate(data.StandardDate),
+        });
+
+        // if (!data.DaylightDate || !data.StandardDate || data.DaylightDate.wYear == 0 || data.StandardDate.wYear == 0) {
+        // 	return {...data, unixDaylightDate: 0, unixStandardDate: 0, timezoneName: tzName}
+        // }
+        // const offset = (parseInt(data.Bias) - (new Date()).getTimezoneOffset()) * 60;
+        // __DEV__ && console.log('&&& GOND buildTimezoneData timezoneOffset = ', offset, ', Bias = ', data.Bias)
+        // __DEV__ && console.log('&&& GOND buildTimezoneData timezone name = ', tzName)
+
+        // const formatedDaylight = `${data.DaylightDate.wYear}-${data.DaylightDate.wMonth}-${data.DaylightDate.wDay} ${data.DaylightDate.wHour}:${data.DaylightDate.wMinute}:${data.DaylightDate.wSecond}`;
+        // const formatedStandard = `${data.StandardDate.wYear}-${data.StandardDate.wMonth}-${data.StandardDate.wDay} ${data.StandardDate.wHour}:${data.StandardDate.wMinute}:${data.StandardDate.wSecond}`;
+        // // __DEV__ && console.log('&&& GOND buildTimezoneData formatedDaylight = ', formatedDaylight, ', formatedStandard = ', formatedStandard);
+        // let unixDaylightDate = dayjs.tz(formatedDaylight, tzName).unix();
+        // let unixStandardDate = dayjs.tz(formatedStandard, tzName).unix();
+        // return {
+        // 	...data,
+        // 	unixDaylightDate: unixDaylightDate, // (daylightDate) / 1000 - parseInt(data.Bias), //dayjs(daylightDate).unix(),
+        // 	unixStandardDate: unixStandardDate, // (standardDate) / 1000 - parseInt(data.Bias), // dayjs(standardDate).unix(),
+        // 	timezoneName: tzName,
+        // }
       },
       setTimezone(value) {
         if (util.isNullOrUndef(value)) {
@@ -473,13 +605,10 @@ export const VideoModel = types
         }
         __DEV__ && console.log('GOND setTimeline ', value);
         self.timeline = value.map(item => TimelineModel.create(item));
-        __DEV__ && console.log('GOND after settimeline ', self.timeline);
-        if (value[0] && value[0].timezone) {
-          self.setTimezone(value[0].timezone);
-        }
+        // __DEV__ && console.log('GOND after settimeline ', self.timeline);
       },
       setHoursOfDay(value) {
-        self.hoursOfDay = value;
+        self.staticHoursOfDay = value;
       },
       setDSTHour(value) {
         self.dstHour = value;
@@ -492,18 +621,18 @@ export const VideoModel = types
         if (!self.isLive && !self.searchDate) {
           console.log(
             'GOND @@@ switchlivesearch ',
+
             self.timezone,
-            DateTime.local().setZone(self.timezone)
+            DateTime.now().setZone(self.timezone)
           );
-          self.searchDate = DateTime.local()
+          self.searchDate = DateTime.now()
             .setZone(self.timezone)
-            .startOf('day')
-            .toFormat(NVRPlayerConfig.RequestTimeFormat);
+            .startOf('day');
         }
       },
-      pauseAll(value) {
-        self.paused = value;
-      },
+      // pauseAll(value) {
+      //   self.paused = value;
+      // },
       switchHD(value) {
         self.hdMode = util.isNullOrUndef(value) ? !self.hdMode : value;
       },
@@ -526,7 +655,7 @@ export const VideoModel = types
           self.selectedChannel =
             self.displayChannels[self.selectedChannelIndex + 1].channelNo;
       },
-      reset() {
+      resetVideoChannel() {
         self.selectedChannel = null;
         self.searchBegin = null;
         self.searchEnd = null;
@@ -540,8 +669,26 @@ export const VideoModel = types
         self.showAuthenModal = false;
         self.timeline = [];
         self.timezoneOffset = 0;
-        self.hoursOfDay = 24;
-        self.dstHour = 0;
+      },
+      resetDVRInfo() {
+        self.kDVR = null;
+        self.allChannels = [];
+        self.activeChannels = [];
+
+        self.rtcConnection = null;
+        self.hlsStreams = [];
+        self.directConnection = null;
+        self.directStreams = [];
+        self.selectedChannel = null;
+        searchDate = null;
+
+        dvrTimezone = null;
+        timezoneOffset = null;
+        timezoneName = null;
+        timeline = [];
+
+        // searchBegin = null;
+        // searchEnd = null;
       },
 
       // #endregion setters
@@ -553,12 +700,13 @@ export const VideoModel = types
           )
           .map(ch =>
             DirectStreamModel.create({
-              server: self.directConnection,
-              channel: ch,
-              playing: false,
+              server: self.directConnection.serverIP,
+              channel: ch.kChannel,
+              // playing: false,
             })
           );
 
+        __DEV__ && console.log('GOND build direct data: ', self.directStreams);
         return self.directStreams;
       },
       buildHLSData() {
@@ -844,9 +992,9 @@ export const VideoModel = types
               KDVR: self.kDVR,
               ChannelNo:
                 channelNo ??
-                (self.allChannels && self.allChannels.length > 0
-                  ? self.allChannels[0].channelNo
-                  : 0),
+                (self.activeChannels && self.activeChannels.length > 0
+                  ? self.activeChannels[0].channelNo + 1
+                  : 1),
               RequestMode: VSCCommand.RCTLIVE,
               isMobile: true,
             }
@@ -923,6 +1071,7 @@ export const VideoModel = types
                   accessKeyId: streamInfo.access_key,
                   secretAccessKey: streamInfo.secret_key,
                   rtcChannelName: streamInfo.rtc_channel,
+                  sid: streamInfo.sid,
                 },
                 self.activeChannels
               );
@@ -965,19 +1114,18 @@ const videoStore = VideoModel.create({
   isLoading: false,
   error: '',
   message: '',
-  needResetConnection: false,
+  // needResetConnection: false,
   isLive: true,
   isFullscreen: false,
+  canSwitchMode: false,
   hdMode: false,
-  paused: false,
+  // paused: false,
   showAuthenModal: false,
   // hdMode: false,
   isSingleMode: false,
   frameTime: 0,
   searchBegin: null,
   searchEnd: null,
-  hoursOfDay: 24,
-  dstHour: 0,
   displayDateTime: '',
   // timezone: null,
   recordingDates: [],

@@ -39,11 +39,12 @@ const {width} = Dimensions.get('window');
 class LoginView extends Component {
   constructor(props) {
     super(props);
+    const {loginInfo} = props.userStore;
 
     this.state = {
       canLogin: false,
-      domain: '',
-      username: '',
+      domain: loginInfo ? loginInfo.domainname : '',
+      username: loginInfo ? loginInfo.username : '',
       password: '',
       errors: {
         domain: '',
@@ -64,7 +65,7 @@ class LoginView extends Component {
   componentDidMount() {
     __DEV__ && console.log('LoginView componentDidMount');
     this.props.appStore.setLoading(false);
-    this.setState({domain: this.props.userStore.domain ?? ''});
+    // this.setState({domain: this.props.userStore.loginInfo ?? ''});
   }
 
   componentWillUnmount() {

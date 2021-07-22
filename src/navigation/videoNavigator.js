@@ -24,7 +24,7 @@ export default function VideoStack() {
       screenOptions={({route, navigation}) => ({
         headerStyle: {
           // backgroundColor: CMSColors.White,
-          borderBottomWidth: 3,
+          borderBottomWidth: 1,
         },
         headerStatusBarHeight: variables.StatusBarHeight,
         headerTitleAlign: 'center',

@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
   all: {
     flexDirection: 'row',
     flex: 1,
+    backgroundColor: CMSColors.White,
     // backgroundColor: '#eee',
   },
   container: {

@@ -532,6 +532,7 @@ export const NVRPlayerConfig = {
   RequestTimeFormat: 'yyyy/MM/dd HH:mm:ss',
   ResponseTimeFormat: 'yyyy/MM/dd hh:mm:ss.SSS',
   TimeFormat: 'hh:mm',
-  FrameFormat: 'MM/dd/yyyy hh:mm:ss',
+  FrameFormat: 'MM/dd/yyyy - hh:mm:ss',
+  LiveFrameFormat: 'hh:mm:ss',
   Search_Duration: 10 * 60,
 };

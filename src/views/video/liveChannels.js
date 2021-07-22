@@ -72,6 +72,7 @@ class ChannelsView extends React.Component {
     __DEV__ && console.log('ChannelsView componentWillUnmount');
     this._isMounted = false;
     this.props.videoStore.releaseStreams();
+    this.props.videoStore.setChannelFilter('');
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
   }
 
@@ -195,6 +196,8 @@ class ChannelsView extends React.Component {
 
   onChannelSelect = value => {
     console.log('GOND select channel: ', value);
+    if (!value || Object.keys(value) == 0) return;
+
     this.props.videoStore.selectChannel(value.channelNo);
     this.pauseAll(true);
     setTimeout(() => {
@@ -227,9 +230,11 @@ class ChannelsView extends React.Component {
       let newRow = {key: 'videoRow_' + row, data: []};
       for (let col = 0; col < gridLayout; col++) {
         let index = row * gridLayout + col;
-        if (index < videoDataList.length)
+        if (index < videoDataList.length) {
           newRow.data.push(videoDataList[index]);
-        else newRow.data.push({});
+          __DEV__ &&
+            console.log('ChannelsView build video newRow.data: ', newRow);
+        } else newRow.data.push({});
       }
       result.push(newRow);
     }
@@ -368,7 +373,7 @@ class ChannelsView extends React.Component {
             },
           ]}>
           <TouchableOpacity
-            style={{width: '100%', height: '100%'}}
+            style={{width: '100%', height: '100%', borderWidth: 0}}
             onPress={() => this.onChannelSelect(item.data[i])}>
             {this.renderVideoPlayer(item.data[i])}
           </TouchableOpacity>

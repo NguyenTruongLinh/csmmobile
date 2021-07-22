@@ -22,22 +22,22 @@ import CMSColors from '../styles/cmscolors';
 //   }
 // };
 
-showSnackbarMsg = (msg, backcolor = CMSColors.Success, actions = null) => {
-  setTimeout(() => {
-    Snackbar.show({
-      text: msg,
-      duration: actions ? Snackbar.LENGTH_INDEFINITE : Snackbar.LENGTH_LONG,
-      backgroundColor: backcolor,
-      action: actions
-        ? {
-            title: actions.title,
-            color: actions.color,
-            onPress: actions.onPress,
-          }
-        : undefined,
-    });
-  }, 100);
-};
+// showSnackbarMsg = (msg, backcolor = CMSColors.Success, actions = null) => {
+//   setTimeout(() => {
+//     Snackbar.show({
+//       text: msg,
+//       duration: actions ? Snackbar.LENGTH_INDEFINITE : Snackbar.LENGTH_LONG,
+//       backgroundColor: backcolor,
+//       action: actions
+//         ? {
+//             title: actions.title,
+//             color: actions.color,
+//             onPress: actions.onPress,
+//           }
+//         : undefined,
+//     });
+//   }, 100);
+// };
 
 validateStreamInfo = (info, prevInfo) => {
   // console.log('GOND validateStreamInfo info.accessKeyId !== prevInfo.accessKeyId = ', info.accessKeyId !== prevInfo.accessKeyId,
@@ -343,7 +343,7 @@ getServerStartOfDay = (dateInput, timezoneInfo) => {
 
 module.exports = {
   // startSelectivePlayer,
-  showSnackbarMsg,
+  // showSnackbarMsg,
   validateStreamInfo,
   getTransitionDSTDateByYear,
   convertToLocalTime,
