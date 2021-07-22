@@ -447,6 +447,7 @@ class RTCStreamingView extends Component {
         }
         break;
       case RTC_COMMANDS.TIMESTAMP: // 'Timestamp':
+        if (videoStore.selectedChannel != viewer.channelNo) break;
         let currentTime = null;
         let timestamps = data.time.split('_');
         // __DEV__ &&

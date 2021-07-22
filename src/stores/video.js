@@ -370,7 +370,7 @@ export const VideoModel = types
       if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
         return util.isNullOrUndef(self.timezoneOffset)
           ? 'local'
-          : `UTC${self.timezoneOffset}`;
+          : `UTC${self.timezoneOffset == 0 ? '' : self.timezoneOffset}`;
       } else {
         return self.timezoneName ?? 'local';
       }
@@ -621,7 +621,6 @@ export const VideoModel = types
         if (!self.isLive && !self.searchDate) {
           console.log(
             'GOND @@@ switchlivesearch ',
-
             self.timezone,
             DateTime.now().setZone(self.timezone)
           );

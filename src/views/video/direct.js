@@ -145,7 +145,8 @@ class DirectVideoView extends Component {
           __DEV__ &&
             console.log(
               'GOND direct switch mode : ',
-              isLive ? 'live' : 'search'
+              isLive ? 'live' : 'search',
+              videoStore.searchDateString
             );
           this.ffmpegPlayer.setNativeProps({pause: true});
           this.ffmpegPlayer.setNativeProps({
@@ -182,7 +183,7 @@ class DirectVideoView extends Component {
   };
 
   onVideoMessage = (msgid, value) => {
-    const {videoStore} = this.props;
+    const {videoStore, serverInfo} = this.props;
     __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
 
     switch (msgid) {
@@ -229,13 +230,19 @@ class DirectVideoView extends Component {
         break;
       case NATIVE_MESSAGE.SEARCH_FRAME_TIME:
         if (value) {
-          const valueObj = JSON.parse(value);
-          this.setState({
-            videoLoading: false,
-          });
-          if (Array.isArray(valueObj) && valueObj.length > 0)
-            this.onFrameTime(valueObj[0]);
-          else console.log('GOND direct frame time not valid: ', valueObj);
+          try {
+            const valueObj = JSON.parse(value);
+            this.setState({
+              videoLoading: false,
+            });
+            if (videoStore.selectedChannel != serverInfo.channelNo) return;
+
+            if (Array.isArray(valueObj) && valueObj.length > 0)
+              this.onFrameTime(valueObj[0]);
+            else console.log('GOND direct frame time not valid: ', valueObj);
+          } catch {
+            console.log('GOND direct frame time not valid: ', valueObj);
+          }
         }
         break;
       case NATIVE_MESSAGE.SERVER_CHANGED_CURRENT_USER:
@@ -283,7 +290,7 @@ class DirectVideoView extends Component {
           }
           videoStore.setTimeline(timeData);
           if (timeData[0] && timeData[0].timezone) {
-            self.setTimezone(timeData[0].timezone);
+            videoStore.setTimezone(timeData[0].timezone);
           }
         }
         break;
