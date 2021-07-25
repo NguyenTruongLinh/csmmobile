@@ -64,3 +64,9 @@ export const ActionMessages = {
 export const Comps = {
   searchPlaceholder: 'Search',
 };
+
+export const Video = {
+  live: 'Live',
+  search: 'Search',
+  noVideo: 'No video',
+};

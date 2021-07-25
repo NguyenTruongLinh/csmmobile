@@ -44,6 +44,7 @@ export default class TimeRuler extends PureComponent {
     this.isSrolling = true;
     this.PressOut = true;
     this.searchDate = this.props.searchDate;
+    const {width, height} = Dimensions.get('window');
 
     this.Enum_RecordType = {
       EMPTY: 0,
@@ -68,11 +69,11 @@ export default class TimeRuler extends PureComponent {
       VA_Sensor_Motion: '#00B1FF',
     };
     this.state = {
-      widthMarker:
-        Dimensions.get('screen').width /
-        (this.props.numofHours * this.props.numofMin),
+      width,
+      height,
+      widthMarker: width / (this.props.numofHours * this.props.numofMin),
       numofMin: this.props.numofMin,
-      dwidth: Dimensions.get('screen').width / this.props.numofHours, //*this.props.numofHours*/)
+      dwidth: width / this.props.numofHours, //*this.props.numofHours*/)
       secondValue: this.props.numofHours * this.props.numofMin,
       onScroll: this.props.onScroll,
       labelhour: '',
@@ -215,10 +216,20 @@ export default class TimeRuler extends PureComponent {
   }
 
   _onDimensionChange = event => {
-    let d = Dimensions.get('screen').width;
+    // let d = Dimensions.get('screen').width;
+    // this.setState({
+    //   dwidth: d / this.props.numofHours,
+    //   widthMarker: d / (this.props.numofHours * this.props.numofMin),
+    // });
+  };
+
+  onLayout = event => {
+    const {width, height} = event.nativeEvent.layout;
     this.setState({
-      dwidth: d / this.props.numofHours,
-      widthMarker: d / (this.props.numofHours * this.props.numofMin),
+      width,
+      height,
+      dwidth: width / this.props.numofHours,
+      widthMarker: width / (this.props.numofHours * this.props.numofMin),
     });
   };
 
@@ -380,7 +391,7 @@ export default class TimeRuler extends PureComponent {
     if (item.visible == false) return <View />;
     let arrayofViews = [];
     let numOfSecs = this.props.numofMin;
-    let widthofViews = Dimensions.get('screen').width / this.state.secondValue;
+    // let widthofViews = Dimensions.get('screen').width / this.state.secondValue;
     let secWidth = this.state.dwidth / numOfSecs;
     let heightofView = 10;
     let heighofPaint = 5;
@@ -586,7 +597,8 @@ export default class TimeRuler extends PureComponent {
           flexDirection: 'column',
           alignItems: 'flex-start',
           justifyContent: 'flex-start',
-        }}>
+        }}
+        onLayout={this.onLayout}>
         <View
           style={{
             flex: 1,
