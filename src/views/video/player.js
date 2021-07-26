@@ -18,6 +18,7 @@ import Modal, {
   SlideAnimation,
 } from 'react-native-modals';
 import Orientation from 'react-native-orientation-locker';
+import TimePicker from 'react-native-24h-timepicker';
 
 import CMSImage from '../../components/containers/CMSImage';
 import CMSAvatars from '../../components/containers/CMSAvatars';
@@ -61,6 +62,9 @@ class VideoPlayerView extends Component {
       seekpos: {},
       sWidth: width,
       sHeight: height,
+      // selectedHour: '0',
+      // selectedMinute: '00',
+      // selectedSecond: '00',
     };
 
     this.timelineAutoScroll = true;
@@ -178,7 +182,22 @@ class VideoPlayerView extends Component {
     }
   };
 
-  onSelectTime = () => {};
+  onSetSearchTime = (hours, minutes, seconds) => {
+    const secondsValue =
+      parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+    __DEV__ &&
+      console.log(
+        'GOND onSetSearchTime: ',
+        hours,
+        ' : ',
+        minutes,
+        ' : ',
+        seconds,
+        ' = ',
+        secondsValue
+      );
+    this.playerRef.playAt(secondsValue);
+  };
 
   onSwitchChannel = channelNo => {
     this.props.videoStore.selectChannel(channelNo);
@@ -190,7 +209,7 @@ class VideoPlayerView extends Component {
 
   onShowControlButtons = () => {
     __DEV__ && console.log('GOND onShowControlButtons');
-    if (this.props.videoStore.isFullscreen) {
+    if (__DEV__ && this.props.videoStore.isFullscreen) {
       this.setState({showController: !this.state.showController});
     } else {
       this.setState({showController: true}, () => {
@@ -232,7 +251,7 @@ class VideoPlayerView extends Component {
       <Modal
         visible={this.state.showCalendar}
         onTouchOutside={() => this.setState({showCalendar: false})}
-        width={0.7}
+        width={videoStore.isFullscreen ? 0.4 : 0.7}
         height={videoStore.isFullscreen ? 0.8 : 0.5}
         modalAnimation={new SlideAnimation({slideFrom: 'top'})}>
         <View style={styles.calendarContainer}>
@@ -302,32 +321,15 @@ class VideoPlayerView extends Component {
     const {sWidth, sHeight, showController} = this.state;
 
     return videoStore.isFullscreen && showController ? (
-      <View
-        style={{
-          position: 'absolute',
-          flexDirection: 'row',
-          justifyContent: 'center',
-          x: 0,
-          y: 0,
-          width: sWidth,
-          height: '15%',
-          backgroundColor: CMSColors.PrimaryText,
-          opacity: 0.8,
-          zIndex: 1,
-        }}>
+      <View style={styles.headerContainerFullscreen}>
         <BackButton
           icon="clear-button"
           navigator={navigation}
           color={CMSColors.White}
-          style={{justifyContent: 'flex-start', paddingLeft: 20}}
+          style={styles.headerBack}
         />
-        <View style={{justifyContent: 'center', alignContent: 'center'}}>
-          <Text
-            style={{
-              fontSize: 24,
-              color: CMSColors.White,
-              paddingLeft: 20,
-            }}>
+        <View style={styles.headerTitleWrap}>
+          <Text style={styles.headerTitleText}>
             {videoStore.isLive ? VideoTxt.live : VideoTxt.search}
           </Text>
         </View>
@@ -338,49 +340,26 @@ class VideoPlayerView extends Component {
 
   renderFullscreenFooter = () => {
     const {videoStore} = this.props;
-    const {sWidth, sHeight, showController} = this.state;
-
-    // return (
-    //   <BottomModal
-    //     visible={isFullscreen && showController}
-    //     height={0.2}
-    //     overlayOpacity={0}
-    //     transparent={true}
-    //     width={1}
-    //     rounded={false}
-    //     backdropColor="transparent">
-    //     <View
-    //       style={{
-    //         flex: 1,
-    //         backgroundColor: CMSColors.PrimaryText,
-    //         opacity: 0.8,
-    //       }}></View>
-    //   </BottomModal>
-    // );
+    const {sHeight, showController} = this.state;
 
     return videoStore.isFullscreen && showController ? (
       <View
-        style={{
-          position: 'absolute',
-          flexDirection: 'row',
-          justifyContent: 'center',
-          left: 0,
-          top: sHeight * 0.8,
-          width: sWidth,
-          height: '20%',
-          backgroundColor: CMSColors.PrimaryText,
-          opacity: 0.8,
-          zIndex: 1,
-        }}>
+        style={[
+          styles.footerContainerFullscreen,
+          {
+            top: sHeight * 0.8,
+          },
+        ]}>
         <View style={{flex: 75, alignContent: 'flex-start'}}>
           {this.renderTimeline()}
         </View>
         <View
-          style={{
-            flex: 25,
-            justifyContent: 'center',
-            paddingBottom: (sHeight * 0.2 - iconSize) / 4,
-          }}>
+          style={[
+            styles.footerButtonsWrap,
+            {
+              paddingBottom: (sHeight * 0.2 - iconSize) / 4,
+            },
+          ]}>
           {this.renderFeatureButtons()}
         </View>
       </View>
@@ -390,25 +369,35 @@ class VideoPlayerView extends Component {
   renderDatetime = () => {
     const {displayDateTime, isLive, isFullscreen} = this.props.videoStore;
     const {sHeight} = this.state;
+    const [date, time] = displayDateTime.split(' - ');
+
+    const textStyle = [
+      styles.datetime,
+      {fontSize: normalize(isFullscreen ? 24 : 32)},
+    ];
 
     return (
-      <TouchableOpacity
-        style={
+      <View
+        style={[
           isFullscreen
             ? styles.datetimeContainerFullscreen
-            : styles.datetimeContainer
-        }
-        onPress={() => !isLive && this.setState({showCalendar: true})}>
-        <Text
-          style={[
-            styles.datetime,
-            {fontSize: normalize(isFullscreen ? 24 : 32)},
-          ]}>
-          {isLive ? displayDateTime.split(' - ')[1] ?? '' : displayDateTime}
-          {/* {isLive ? null : <Text>{searchDate} - </Text>}
-        <Text>{frameTime}</Text>*/}
-        </Text>
-      </TouchableOpacity>
+            : styles.datetimeContainer,
+          // {justifyContent: 'space-between', alignContent: 'center'},
+        ]}>
+        {isLive ? null : (
+          <TouchableOpacity
+            onPress={() => !isLive && this.setState({showCalendar: true})}>
+            <Text style={textStyle}>{date}</Text>
+          </TouchableOpacity>
+        )}
+        {isLive ? null : <Text style={textStyle}> - </Text>}
+        <TouchableOpacity
+          onPress={() =>
+            !isLive && this.timePickerRef && this.timePickerRef.open()
+          }>
+          <Text style={textStyle}>{time}</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -444,15 +433,11 @@ class VideoPlayerView extends Component {
         ) : (
           <View />
         )}
-        {isLive && !this.playerRef ? (
+        {!isLive && this.playerRef ? (
           <IconCustom
             name={this.state.pause ? 'play' : 'pause'}
             size={iconSize + 4}
-            style={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              color: CMSColors.White,
-            }}
+            style={styles.pauseButton}
             onPress={() => {
               const willPause = !this.state.pause;
               this.setState({pause: willPause});
@@ -488,12 +473,7 @@ class VideoPlayerView extends Component {
       <View
         style={
           videoStore.isFullscreen
-            ? {
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }
+            ? styles.buttonsContainersFullscreen
             : styles.buttonsContainers
         }>
         <View style={styles.buttonWrap}>
@@ -590,7 +570,14 @@ class VideoPlayerView extends Component {
         <TimeOnTimeRuler
           // key="1"
           ref={r => (this.timeOnTimeline = r)}
-          styles={[styles.timeOnRuler, {left: sWidth / 2 - 30}]}
+          styles={[
+            styles.timeOnRuler,
+            {
+              left: videoStore.isFullscreen
+                ? (sWidth * 0.75) / 2 - 30
+                : sWidth / 2 - 30,
+            },
+          ]}
           backgroundColor={CMSColors.White}
         />
       </View>
@@ -677,9 +664,28 @@ class VideoPlayerView extends Component {
     );
   };
 
+  renderTimePicker = () => {
+    return (
+      <TimePicker
+        ref={ref => {
+          this.timePickerRef = ref;
+        }}
+        onCancel={() => this.timePickerRef && this.timePickerRef.close()}
+        onConfirm={this.onSetSearchTime}
+      />
+    );
+  };
+
+  onNext = () => {
+    videoStore.nextChannel();
+  };
+
+  onPrevious = () => {
+    videoStore.previousChannel();
+  };
+
   render() {
-    const {videoStore} = this.props;
-    const {isFullscreen} = videoStore;
+    const {isFullscreen} = this.props.videoStore;
 
     const fullscreenHeader = this.renderFullscreenHeader();
     const fullscreenFooter = this.renderFullscreenFooter();
@@ -690,6 +696,7 @@ class VideoPlayerView extends Component {
     const timeline = isFullscreen ? null : this.renderTimeline();
     const controlButtons = this.renderControlButtons();
     const calendar = this.renderCalendar();
+    const timePicker = this.renderTimePicker();
 
     // __DEV__ && console.log('GOND FUllscreen header = ', fullscreenHeader);
 
@@ -704,8 +711,8 @@ class VideoPlayerView extends Component {
           // onLongPress={__DEV__ ? this.onShowControlButtons : undefined}
         >
           <Swipe
-            onSwipeLeft={() => videoStore.nextChannel()}
-            onSwipeRight={() => videoStore.previousChannel()}
+            onSwipeLeft={this.onNext}
+            onSwipeRight={this.onPrevious}
             onPress={this.onShowControlButtons}>
             {videoPlayer}
             {controlButtons}
@@ -714,6 +721,7 @@ class VideoPlayerView extends Component {
         {buttons}
         {timeline}
         {channelsList}
+        {timePicker}
       </View>
     );
   }
@@ -727,6 +735,7 @@ const styles = StyleSheet.create({
   },
   datetimeContainer: {
     flex: 10,
+    flexDirection: 'row',
     margin: 28,
     backgroundColor: CMSColors.DarkElement,
     justifyContent: 'center',
@@ -737,8 +746,9 @@ const styles = StyleSheet.create({
     // margin: 28,
     // backgroundColor: CMSColors.DarkElement,
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     paddingRight: 140,
   },
   datetime: {
@@ -778,12 +788,23 @@ const styles = StyleSheet.create({
     padding: 7,
     margin: 14,
   },
+  pauseButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: CMSColors.White,
+  },
   buttonsContainers: {
     flex: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     backgroundColor: CMSColors.DarkElement,
+  },
+  buttonsContainersFullscreen: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   buttonWrap: {
     paddingRight: 25,
@@ -834,6 +855,41 @@ const styles = StyleSheet.create({
   channelsListContainer: {
     flex: 30,
     justifyContent: 'center',
+  },
+  headerContainerFullscreen: {
+    position: 'absolute',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '15%',
+    backgroundColor: CMSColors.PrimaryText,
+    opacity: 0.8,
+    zIndex: 1,
+  },
+  headerBack: {justifyContent: 'flex-start', paddingLeft: 20},
+  headerTitleWrap: {justifyContent: 'center', alignContent: 'center'},
+  headerTitleText: {
+    fontSize: 24,
+    color: CMSColors.White,
+    paddingLeft: 20,
+  },
+  footerContainerFullscreen: {
+    position: 'absolute',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    left: 0,
+    width: '100%',
+    height: '20%',
+    backgroundColor: CMSColors.PrimaryText,
+    opacity: 0.8,
+    zIndex: 1,
+  },
+  footerButtonsWrap: {
+    flex: 25,
+    justifyContent: 'center',
+    paddingLeft: 20,
   },
 });
 
