@@ -73,13 +73,13 @@ class VideosettingView extends Component {
     }
   }
 
-  canSave() {
+  canSave = () => {
     return this.props.videoStore
       ? this.state.selectedValue != this.props.videoStore.isCloud
       : false;
-  }
+  };
 
-  refreshSaveButton() {
+  refreshSaveButton = () => {
     this.props.navigation.setOptions({
       headerRight: () => (
         <Button
@@ -92,9 +92,9 @@ class VideosettingView extends Component {
         />
       ),
     });
-  }
+  };
 
-  async getCloudSetting() {
+  getCloudSetting = async () => {
     const res = await this.props.videoStore.getCloudSetting();
     if (res) {
       this.setState({
@@ -103,9 +103,9 @@ class VideosettingView extends Component {
     } else {
       snackbar.handleGetDataFailed();
     }
-  }
+  };
 
-  async updateCloudSetting() {
+  updateCloudSetting = async () => {
     const res = this.props.videoStore.updateCloudSetting(
       this.state.selectedValue
     );
@@ -124,9 +124,9 @@ class VideosettingView extends Component {
     //   });
     // }
     snackbar.handleSaveResult(res);
-  }
+  };
 
-  renderItem({item}) {
+  renderItem = ({item}) => {
     if (!item) return;
     const {selectedValue} = this.state;
     const {isLoading} = this.props.videoStore;
@@ -173,7 +173,7 @@ class VideosettingView extends Component {
         </View>
       </Ripple>
     );
-  }
+  };
 
   render() {
     // let statusbar =
@@ -181,43 +181,6 @@ class VideosettingView extends Component {
 
     return (
       <View style={commonStyles.normalViewContainer}>
-        {/* <StatusBar
-          translucent={false}
-          backgroundColor={CMSColors.Dark_Blue}
-          barStyle="light-content"
-        />
-        {statusbar} */}
-        {/* <View style={styles.navbar_body}>
-          <View style={styles.navbar}>
-            <Ripple
-              rippleCentered={true}
-              style={styles.left}
-              onPress={this.onBack.bind(this)}>
-              <View style={styles.icon}>
-                <CMSAvatars
-                  size={20}
-                  color={CMSColors.SecondaryText}
-                  styles={styles.contentIcon}
-                  iconCustom="keyboard-left-arrow-button"
-                />
-              </View>
-              <View style={styles.title}>
-                <Text>{this.state.title}</Text>
-              </View>
-            </Ripple>
-            <View>
-              <Button
-                style={styles.buttonSave}
-                caption="SAVE"
-                enable={this.state.isChange}
-                onPress={this.UpdateVideoSetting}
-                styleCaption={styles.buttonSave_text}
-                type="flat"
-              />
-            </View>
-          </View>
-        </View> */}
-
         <View style={styles.firstContainer}>
           <FlatList
             data={CloudSettingData}

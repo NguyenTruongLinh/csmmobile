@@ -118,7 +118,8 @@ class App extends React.Component {
     this.props.appStore.setLoading(true);
     await this.props.appStore.loadLocalData();
     // await this.props.userStore.loadLocalData();
-    await this.props.userStore.shouldAutoLogin();
+    const isLoggedIn = await this.props.userStore.shouldAutoLogin();
+    if (isLoggedIn) this.props.videoStore.getCloudSetting();
     // setTimeout(() => {
     //   this.props.appStore.setLoading(false);
     //   this.setState({notificationController: <NotificationController />});
@@ -496,4 +497,4 @@ class App extends React.Component {
 Text.defaultProps = Text.defaultProps || {};
 Text.defaultProps.allowFontScaling = false;
 
-export default inject('appStore', 'userStore')(observer(App));
+export default inject('appStore', 'userStore', 'videoStore')(observer(App));

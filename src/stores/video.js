@@ -295,6 +295,9 @@ export const VideoModel = types
       const res = self.allChannels.filter(ch => ch.isActive);
       return res; // res.map(ch => ch.data);
     },
+    get activeChannelNos() {
+      return this.activeChannels.map(ch => ch.channelNo);
+    },
     get displayChannels() {
       if (
         self.cloudType == CLOUD_TYPE.DIRECTION ||
@@ -787,6 +790,33 @@ export const VideoModel = types
         }
         return true;
       }),
+      saveActiveChannels: flow(function* saveActiveChannels(channels) {
+        if (self.kDVR == null) return false;
+        self.isLoading = true;
+        let result = false;
+        try {
+          result = yield apiService.post(
+            VSC.controller,
+            self.kDVR,
+            VSC.updateActiveChannels,
+            {
+              Channels: channels,
+              ServerID: self.kDVR,
+            }
+          );
+          snackbarUtil.handleSaveResult(result);
+          if (!result.error) {
+            yield self.getActiveChannels();
+          }
+        } catch (err) {
+          __DEV__ && console.log('GOND save active channels error: ', err);
+          snackbarUtil.handleGetDataFailed(err);
+          self.isLoading = false;
+          return false;
+        }
+        self.isLoading = false;
+        return result.error ? false : true;
+      }),
       // #endregion settings
       // #region get channels
       getDvrChannels: flow(function* getDvrChannels(isGetAll = false) {
@@ -1088,7 +1118,7 @@ export const VideoModel = types
             break;
           case CLOUD_TYPE.RTC:
             self.openStreamLock = false;
-            self.rtcConnection.release();
+            self.rtcConnection && self.rtcConnection.release();
             break;
         }
       },

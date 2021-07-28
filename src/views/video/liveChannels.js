@@ -84,7 +84,7 @@ class ChannelsView extends React.Component {
       // if (sitesStore.selectedDVR.name === 'jackhome')
       //   videoStore.setNVRLoginInfo('i3admin', 'i3admin');
     }
-    this.setHeader();
+    this.setHeader(false);
 
     if (!sitesStore.selectedDVR) return;
     videoStore.selectDVR(sitesStore.selectedDVR);
@@ -96,14 +96,14 @@ class ChannelsView extends React.Component {
         this.firstFocus = false;
         return;
       }
-      console.log('GOND live channels view on focused');
+      __DEV__ && console.log('GOND live channels view on focused');
       this.pauseAll(false);
     });
     this.getChannelsInfo();
   }
 
-  setHeader = () => {
-    const {navigation} = this.props;
+  setHeader = enableSettingButton => {
+    const {navigation, videoStore} = this.props;
     let gridIcon = 'grid-view-4';
     switch (this.state.gridLayout) {
       case 3:
@@ -120,19 +120,23 @@ class ChannelsView extends React.Component {
         : 'No DVR was selected',
       headerRight: () => (
         <View style={styles.headerRight}>
-          <CMSAvatars
-            size={22}
-            onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
-            color={CMSColors.ColorText}
-            styles={{
-              flex: 1,
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            iconCustom="add-cam"
-          />
+          {videoStore.cloudType == CLOUD_TYPE.HLS ||
+          videoStore.cloudType == CLOUD_TYPE.RTC ? (
+            <CMSAvatars
+              size={22}
+              onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
+              color={CMSColors.ColorText}
+              disabled={!enableSettingButton}
+              styles={{
+                flex: 1,
+                width: 40,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              iconCustom="add-cam"
+            />
+          ) : null}
           <CMSAvatars
             size={22}
             onPress={() => this.setState({showLayoutSelection: true})}
@@ -156,6 +160,9 @@ class ChannelsView extends React.Component {
     let newState = {};
     let res = await videoStore.getCloudSetting();
     res = res && (await videoStore.getDisplayingChannels());
+    if (res) {
+      this.setHeader(true);
+    }
     res = res && (await videoStore.getVideoInfos());
     if (videoStore.needAuthen) {
       videoStore.displayAuthen(true);
@@ -474,7 +481,7 @@ class ChannelsView extends React.Component {
             data={this.state.liveData}
             keyExtractor={item => item.key}
             onRefresh={this.getChannelsInfo}
-            refreshing={videoStore ? videoStore.isLoading : false}
+            refreshing={videoStore.isLoading}
           />
         </View>
         {this.renderLayoutModal()}

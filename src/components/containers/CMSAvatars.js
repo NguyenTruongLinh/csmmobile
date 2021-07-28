@@ -8,6 +8,7 @@ import {View, Image} from 'react-native';
 
 import {Icon, IconCustom, MaterialIcons} from '../CMSStyleSheet';
 import Ripple from 'react-native-material-ripple';
+import cmscolors from '../../styles/cmscolors';
 
 // <!-- END MODULES -->
 // ----------------------------------------------------
@@ -79,7 +80,11 @@ class CMSAvatars extends React.Component {
     } else if (iconCustom) {
       content = (
         <View style={[styles]}>
-          <IconCustom color={color} size={size} name={iconCustom} />
+          <IconCustom
+            color={disabled ? cmscolors.Inactive : color}
+            size={size}
+            name={iconCustom}
+          />
         </View>
       );
     } else if (iconMaterial) {

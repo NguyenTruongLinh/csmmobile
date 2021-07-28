@@ -111,11 +111,8 @@ module.exports = {
   BackgroundBar: '#fff',
 
   //PVM
-  pvm: {
-    LiveButton: '#DB5451',
-    Green: '#449D43',
-    Yellow: '#F9A825',
-    Red: '#A72D2A',
-    White: '#FFF',
-  },
+  LiveButton: '#DB5451',
+  Green: '#449D43',
+  Yellow: '#F9A825',
+  Red: '#A72D2A',
 };
