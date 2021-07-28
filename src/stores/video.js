@@ -369,6 +369,18 @@ export const VideoModel = types
       }
       return null;
     },
+    get filteredChannels() {
+      return self.allChannels.filter(ch =>
+        ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
+      );
+    },
+    get filteredActiveChannels() {
+      return self.allChannels.filter(
+        ch =>
+          ch.isActive &&
+          ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
+      );
+    },
     get timezone() {
       if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
         return util.isNullOrUndef(self.timezoneOffset)

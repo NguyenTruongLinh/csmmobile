@@ -240,6 +240,7 @@ const ChannelConnectionModel = types
 
         self.signalingClient.on('iceCandidate', event => {
           // Add the ICE candidate received from the MASTER to the peer connection
+          if (!self.peerConnection) return;
           const iceCandidate = new RTCIceCandidate(event);
           // __DEV__ &&
           //   console.log(
@@ -299,8 +300,9 @@ const ChannelConnectionModel = types
         return true;
       }),
       sendOffer: flow(function* sendOffer(reconnect) {
-        if (!self.peerConnection) {
+        if (!self.peerConnection || !self.signalingClient) {
           console.log('GOND sendOffer failed, peer connection not available');
+          return;
         }
         const sdpOffer = yield self.peerConnection.createOffer({
           //offerToReceiveAudio: true,
@@ -323,6 +325,7 @@ const ChannelConnectionModel = types
         const peerConnection = new RTCPeerConnection(configs);
 
         peerConnection.addEventListener('icecandidate', event => {
+          if (!self.signalingClient) return;
           __DEV__ &&
             console.log('peerConnection: on icecandidate event: ', event);
           const {candidate} = event;
@@ -398,6 +401,7 @@ const ChannelConnectionModel = types
         self.peerConnection = peerConnection;
       },
       openDataChannel(/*callbackFn*/) {
+        if (!self.peerConnection) return;
         const newId = `kvsDataChannel${
           self.channelNo
         }_${util.getRandomClientId()}`;
@@ -413,12 +417,12 @@ const ChannelConnectionModel = types
         } else {
           __DEV__ && console.log('GOND dataChannelEvents not set: ', newId);
           self.dataChannel.onopen = msg => {
-            __DEV__ &&
-              console.log(
-                '[GOND] RTC.dataChannel.onopen peerId: ',
-                self.peerConnection._peerConnectionId,
-                msg
-              );
+            // __DEV__ &&
+            //   console.log(
+            //     '[GOND] RTC.dataChannel.onopen peerId: ',
+            //     self.peerConnection._peerConnectionId,
+            //     msg
+            //   );
             self.setDataChannelStatus(true);
             self.setStreamStatus({
               isLoading: false,

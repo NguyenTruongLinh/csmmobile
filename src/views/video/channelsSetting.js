@@ -60,7 +60,7 @@ class ChannelsSettingView extends Component {
     }
     this.setState({
       gridData: this.buildChannelsGridData(
-        videoStore.allChannels,
+        videoStore.filteredChannels,
         this.state.selectedChannels
       ),
     });
@@ -77,7 +77,7 @@ class ChannelsSettingView extends Component {
     //       );
     //     this.setState({
     //       selectedChannels: value,
-    //       gridData: this.buildChannelsGridData(videoStore.allChannels, value),
+    //       gridData: this.buildChannelsGridData(videoStore.filteredChannels, value),
     //     });
     //   }
     // );
@@ -120,7 +120,7 @@ class ChannelsSettingView extends Component {
       newState = {
         selectedChannels: videoStore.activeChannelNos,
         gridData: this.buildChannelsGridData(
-          videoStore.allChannels,
+          videoStore.filteredChannels,
           videoStore.activeChannelNos
         ),
       };
@@ -148,7 +148,7 @@ class ChannelsSettingView extends Component {
       {
         selectedChannels: updatedData,
         gridData: this.buildChannelsGridData(
-          this.props.videoStore.allChannels,
+          this.props.videoStore.filteredChannels,
           updatedData
         ),
       },
@@ -166,7 +166,16 @@ class ChannelsSettingView extends Component {
     );
   };
 
-  onFilter = value => {};
+  onFilter = value => {
+    const {videoStore} = this.props;
+    videoStore.setChannelFilter(value);
+    this.setState({
+      gridData: this.buildChannelsGridData(
+        videoStore.filteredChannels,
+        this.state.selectedChannels
+      ),
+    });
+  };
 
   buildChannelsGridData = (data, selected) => {
     // __DEV__ && console.log('GOND buildChannelsGridData channels: ', selected);

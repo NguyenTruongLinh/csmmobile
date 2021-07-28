@@ -552,6 +552,7 @@ class RTCStreamingView extends Component {
   };
 
   dataChannelOnLowBuffer = msg => {
+    if (!this._isMounted) return;
     console.log('[GOND] RTC.dataChannel.onbufferedamountlow: ', msg);
     this.props.viewer.setStreamStatus({error: VIDEO_MESSAGE.MSG_LOW_BUFFER});
   };
