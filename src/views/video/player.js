@@ -412,13 +412,8 @@ class VideoPlayerView extends Component {
       return null;
     }
 
-    const {
-      isLive,
-      selectedChannelIndex,
-      displayChannels,
-      nextChannel,
-      previousChannel,
-    } = this.props.videoStore;
+    const {isLive, selectedChannelIndex, displayChannels} =
+      this.props.videoStore;
     const {sHeight} = this.state;
     // const iconSize = normalize(28); // normalize(sHeight * 0.035);
 
@@ -428,7 +423,7 @@ class VideoPlayerView extends Component {
           <IconCustom
             name="keyboard-left-arrow-button"
             size={iconSize}
-            onPress={previousChannel}
+            onPress={this.onPrevious}
             style={[
               styles.controlButton,
               {
@@ -455,7 +450,7 @@ class VideoPlayerView extends Component {
           <IconCustom
             name="keyboard-right-arrow-button"
             size={iconSize}
-            onPress={nextChannel}
+            onPress={this.onNext}
             style={[
               styles.controlButton,
               {
@@ -683,11 +678,11 @@ class VideoPlayerView extends Component {
   };
 
   onNext = () => {
-    videoStore.nextChannel();
+    this.props.videoStore.nextChannel();
   };
 
   onPrevious = () => {
-    videoStore.previousChannel();
+    this.props.videoStore.previousChannel();
   };
 
   render() {
