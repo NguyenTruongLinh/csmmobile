@@ -47,6 +47,11 @@ const ChannelConnectionModel = types
     dataChannelEvents: {},
     onConnectionFailed: null,
   }))
+  .views(self => ({
+    needInit() {
+      return signalingClient == null;
+    },
+  }))
   .actions(self => {
     return {
       setPeerConnection(conn) {
@@ -240,7 +245,7 @@ const ChannelConnectionModel = types
 
         self.signalingClient.on('iceCandidate', event => {
           // Add the ICE candidate received from the MASTER to the peer connection
-          if (!self.peerConnection) return;
+          if (!self.isValidReference || !self.peerConnection) return;
           const iceCandidate = new RTCIceCandidate(event);
           // __DEV__ &&
           //   console.log(
@@ -273,7 +278,11 @@ const ChannelConnectionModel = types
         self.signalingClient.on('sdpAnswer', (answer, id) => {
           // __DEV__ &&
           //   console.log(`[GOND] sdpAnswer id ${id} `, answer);
-          if (!self.peerConnection || self.peerConnection.remoteDescription)
+          if (
+            !self.isValidReference ||
+            !self.peerConnection ||
+            self.peerConnection.remoteDescription
+          )
             return;
 
           // CHANGE 0 to audio and 1 to video
@@ -325,7 +334,7 @@ const ChannelConnectionModel = types
         const peerConnection = new RTCPeerConnection(configs);
 
         peerConnection.addEventListener('icecandidate', event => {
-          if (!self.signalingClient) return;
+          if (!self.isValidReference || !self.signalingClient) return;
           __DEV__ &&
             console.log('peerConnection: on icecandidate event: ', event);
           const {candidate} = event;
@@ -354,7 +363,7 @@ const ChannelConnectionModel = types
         });
 
         peerConnection.oniceconnectionstatechange = event => {
-          if (!peerConnection) return;
+          if (!self.isValidReference || !peerConnection) return;
           __DEV__ &&
             console.log(
               '[GOND] oniceconnectionstatechange : ',
@@ -386,7 +395,7 @@ const ChannelConnectionModel = types
         });
 
         peerConnection.onaddstream = event => {
-          if (!peerConnection || !event.stream) {
+          if (!self.isValidReference || !peerConnection || !event.stream) {
             __DEV__ &&
               console.log('[GOND] rtcStream created failed: ', event.stream);
             return;
@@ -401,7 +410,7 @@ const ChannelConnectionModel = types
         self.peerConnection = peerConnection;
       },
       openDataChannel(/*callbackFn*/) {
-        if (!self.peerConnection) return;
+        if (!self.isValidReference || !self.peerConnection) return;
         const newId = `kvsDataChannel${
           self.channelNo
         }_${util.getRandomClientId()}`;
@@ -518,14 +527,14 @@ const RTCStreamModel = types
         // self.viewers = channels.map(ch => {
 
         for (let i = 0; i < channels.length; i++) {
-          yield self.createConnection(channels[i], streamInfos);
+          yield self.createConnection(channels[i]);
         }
       } else {
-        self.createConnection(channels, streamInfos);
+        self.createConnection(channels);
       }
       self.openStreamLock = false;
     }),
-    createConnection: flow(function* createConnection(ch, streamInfos) {
+    createConnection: flow(function* createConnection(ch) {
       const conn = ChannelConnectionModel.create({
         kChannel: ch.kChannel,
         channelNo: ch.channelNo,
@@ -542,8 +551,20 @@ const RTCStreamModel = types
       conn.setConnectionFailedHandler(viewer => {
         viewer.reconnect(self.connectionInfo);
       });
-      yield conn.initStream({...streamInfos, region: self.region});
+      // if not active, will init stream later on search mode
+      if (ch.isActive)
+        yield conn.initStream({...self.connectionInfo, region: self.region});
       self.viewers.push(conn);
+    }),
+    createChannelConnection: flow(function* initChannelConnection(connection) {
+      // const conn = self.viewers.find(item => item.channelNo == channelNo);
+      connection.setConnectionFailedHandler(viewer => {
+        viewer.reconnect(self.connectionInfo);
+      });
+      yield connection.initStream({
+        ...self.connectionInfo,
+        region: self.region,
+      });
     }),
   }));
 

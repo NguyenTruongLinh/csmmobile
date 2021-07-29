@@ -161,10 +161,15 @@ class VideoPlayerView extends Component {
   };
 
   onSwitchLiveSearch = () => {
+    const {videoStore} = this.props;
     // if (this.playerRef) this.playerRef.pause(true);
+    videoStore.switchLiveSearch();
+    this.updateHeader();
     setTimeout(() => {
-      this.props.videoStore.switchLiveSearch();
-      this.updateHeader();
+      this.channelsScrollView.scrollToIndex({
+        animated: true,
+        index: videoStore.selectedChannelIndex,
+      });
     }, 200);
   };
 
@@ -200,7 +205,8 @@ class VideoPlayerView extends Component {
   };
 
   onSwitchChannel = channelNo => {
-    this.props.videoStore.selectChannel(channelNo);
+    const {videoStore} = this.props;
+    videoStore.selectChannel(channelNo);
   };
 
   onChannelSnapshotLoaded = (param, image) => {};

@@ -300,6 +300,7 @@ export const VideoModel = types
     },
     get displayChannels() {
       if (
+        !self.isLive ||
         self.cloudType == CLOUD_TYPE.DIRECTION ||
         self.cloudType == CLOUD_TYPE.DEFAULT
       )
@@ -471,6 +472,14 @@ export const VideoModel = types
       },
       selectChannel(value) {
         self.selectedChannel = value;
+        // if (self.cloudType == CLOUD_TYPE.RTC) {
+        //   if (self.selectedStream.needInit) {
+        //     self.rtcConnection.createChannelConnection(self.selectedStream);
+        //   }
+        // } else
+        // if (self.cloudType == CLOUD_TYPE.HLS) {
+        //   // TODO:
+        // }
       },
       setFrameTime(value, fromZone) {
         if (typeof value == 'string') {
@@ -1018,11 +1027,11 @@ export const VideoModel = types
           viewers: [],
         });
         try {
-          __DEV__ &&
-            console.log(
-              'GOND getRTCInfo allChannels: ',
-              getSnapshot(self.allChannels)
-            );
+          // __DEV__ &&
+          //   console.log(
+          //     'GOND getRTCInfo allChannels: ',
+          //     getSnapshot(self.allChannels)
+          //   );
           let res = yield apiService.post(
             VSC.controller,
             1,
@@ -1033,8 +1042,8 @@ export const VideoModel = types
               KDVR: self.kDVR,
               ChannelNo:
                 channelNo ??
-                (self.activeChannels && self.activeChannels.length > 0
-                  ? self.activeChannels[0].channelNo + 1
+                (self.allChannels && self.allChannels.length > 0
+                  ? self.allChannels[0].channelNo + 1
                   : 1),
               RequestMode: VSCCommand.RCTLIVE,
               isMobile: true,
@@ -1102,11 +1111,11 @@ export const VideoModel = types
                 self.rtcConnection.sid
               );
             if (streamInfo.sid === self.rtcConnection.sid) {
-              __DEV__ &&
-                console.log(
-                  `GOND channels filter ${self.channelFilter}, active: `,
-                  self.activeChannels
-                );
+              // __DEV__ &&
+              //   console.log(
+              //     `GOND channels filter ${self.channelFilter}, active: `,
+              //     self.activeChannels
+              //   );
               yield self.rtcConnection.createStreams(
                 {
                   accessKeyId: streamInfo.access_key,
@@ -1114,6 +1123,7 @@ export const VideoModel = types
                   rtcChannelName: streamInfo.rtc_channel,
                   sid: streamInfo.sid,
                 },
+                // self.allChannels
                 self.activeChannels
               );
               self.isLoading = false;
