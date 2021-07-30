@@ -245,7 +245,7 @@ const ChannelConnectionModel = types
 
         self.signalingClient.on('iceCandidate', event => {
           // Add the ICE candidate received from the MASTER to the peer connection
-          if (!self.isValidReference || !self.peerConnection) return;
+          if (!self.peerConnection) return;
           const iceCandidate = new RTCIceCandidate(event);
           // __DEV__ &&
           //   console.log(
@@ -278,11 +278,7 @@ const ChannelConnectionModel = types
         self.signalingClient.on('sdpAnswer', (answer, id) => {
           // __DEV__ &&
           //   console.log(`[GOND] sdpAnswer id ${id} `, answer);
-          if (
-            !self.isValidReference ||
-            !self.peerConnection ||
-            self.peerConnection.remoteDescription
-          )
+          if (!self.peerConnection || self.peerConnection.remoteDescription)
             return;
 
           // CHANGE 0 to audio and 1 to video
@@ -334,7 +330,7 @@ const ChannelConnectionModel = types
         const peerConnection = new RTCPeerConnection(configs);
 
         peerConnection.addEventListener('icecandidate', event => {
-          if (!self.isValidReference || !self.signalingClient) return;
+          if (!self.signalingClient) return;
           __DEV__ &&
             console.log('peerConnection: on icecandidate event: ', event);
           const {candidate} = event;
@@ -363,7 +359,7 @@ const ChannelConnectionModel = types
         });
 
         peerConnection.oniceconnectionstatechange = event => {
-          if (!self.isValidReference || !peerConnection) return;
+          if (!peerConnection) return;
           __DEV__ &&
             console.log(
               '[GOND] oniceconnectionstatechange : ',
@@ -395,7 +391,7 @@ const ChannelConnectionModel = types
         });
 
         peerConnection.onaddstream = event => {
-          if (!self.isValidReference || !peerConnection || !event.stream) {
+          if (!peerConnection || !event.stream) {
             __DEV__ &&
               console.log('[GOND] rtcStream created failed: ', event.stream);
             return;
@@ -410,7 +406,7 @@ const ChannelConnectionModel = types
         self.peerConnection = peerConnection;
       },
       openDataChannel(/*callbackFn*/) {
-        if (!self.isValidReference || !self.peerConnection) return;
+        if (!self.peerConnection) return;
         const newId = `kvsDataChannel${
           self.channelNo
         }_${util.getRandomClientId()}`;

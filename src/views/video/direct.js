@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
+// import {reaction} from 'mobx';
 import {DateTime} from 'luxon';
 
 import FFMpegFrameView from '../../components/native/videonative';
@@ -88,6 +89,9 @@ class DirectVideoView extends Component {
           videoLoading: false,
         });
       }
+    } else {
+      __DEV__ &&
+        console.log('GOND serverInfo not valid reference: ', {...serverInfo});
     }
   }
 
@@ -117,7 +121,7 @@ class DirectVideoView extends Component {
     //   );
 
     try {
-      if (this.ffmpegPlayer) {
+      if (this.ffmpegPlayer && serverInfo) {
         if (
           JSON.stringify({...prevServerInfo.playData}) !=
           JSON.stringify({...serverInfo.playData})
