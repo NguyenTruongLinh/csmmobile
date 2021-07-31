@@ -64,7 +64,7 @@ class DirectVideoView extends Component {
       );
       this.nativeVideoEventListener = eventEmitter.addListener(
         'onFFMPegFrameChange',
-        this.onChange
+        this.onNativeMessage
       );
     }
     const {serverInfo, isLive, hdMode, videoStore} = this.props;
@@ -168,7 +168,7 @@ class DirectVideoView extends Component {
     }
   }
 
-  onFrameChange = event => {
+  onNativeMessage = event => {
     let {msgid, value} = event; //.nativeEvent;
     // console.log('GOND onFFMpegFrameChange event = ', event.nativeEvent);
     if (util.isNullOrUndef(msgid) && util.isNullOrUndef(value)) {
@@ -448,7 +448,7 @@ class DirectVideoView extends Component {
                   this.ffmpegPlayer = ref;
                   // serverInfo.setNativeComponent(ref);
                 }}
-                onFFMPegFrameChange={this.onFrameChange}
+                onFFMPegFrameChange={this.onNativeMessage}
               />
             ) : (
               <FFMpegFrameView
@@ -459,7 +459,7 @@ class DirectVideoView extends Component {
                   this.ffmpegPlayer = ref;
                   // serverInfo.setNativeComponent(ref);
                 }}
-                onFFMPegFrameChange={this.onFrameChange}
+                onFFMPegFrameChange={this.onNativeMessage}
               />
             )}
           </View>

@@ -96,6 +96,9 @@ class VideoPlayerView extends Component {
     //   this.appStateEventListener.remove();
     // }
     this.props.videoStore.resetVideoChannel();
+    if (this.props.videoStore.isFullscreen) {
+      this.onFullscreenPress();
+    }
 
     // dongpt: TODO handle Orientation
     Orientation.lockToPortrait();
@@ -166,10 +169,11 @@ class VideoPlayerView extends Component {
     videoStore.switchLiveSearch();
     this.updateHeader();
     setTimeout(() => {
-      this.channelsScrollView.scrollToIndex({
-        animated: true,
-        index: videoStore.selectedChannelIndex,
-      });
+      this.channelsScrollView &&
+        this.channelsScrollView.scrollToIndex({
+          animated: true,
+          index: videoStore.selectedChannelIndex,
+        });
     }, 200);
   };
 
@@ -188,6 +192,7 @@ class VideoPlayerView extends Component {
   };
 
   onSetSearchTime = (hours, minutes, seconds) => {
+    if (!this.playerRef) return;
     const secondsValue =
       parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
     __DEV__ &&
@@ -549,11 +554,11 @@ class VideoPlayerView extends Component {
               this.timelineAutoScroll = false;
             }}
             onScrollBeginDrag={time => {
-              this.timeOnTimeline.setValue(time);
+              this.timeOnTimeline && this.timeOnTimeline.setValue(time);
             }}
             onPauseVideoScrolling={() => this.setState({pause: true})}
             setShowHideTimeOnTimeRule={value => {
-              this.timeOnTimeline.setShowHide(value);
+              this.timeOnTimeline && this.timeOnTimeline.setShowHide(value);
             }}
             onScroll={() => {}}
             onScrollEnd={(event, value) => {
@@ -561,7 +566,9 @@ class VideoPlayerView extends Component {
               if (this.playerRef) {
                 this.playerRef.pause();
                 setTimeout(
-                  () => this.playerRef.playAt(value.milisecondValue),
+                  () =>
+                    this.playerRef &&
+                    this.playerRef.playAt(value.milisecondValue),
                   500
                 );
               }
