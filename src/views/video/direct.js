@@ -170,7 +170,8 @@ class DirectVideoView extends Component {
 
   onNativeMessage = event => {
     let {msgid, value} = event; //.nativeEvent;
-    // console.log('GOND onFFMpegFrameChange event = ', event.nativeEvent);
+    // __DEV__ &&
+    //   console.log('GOND onFFMpegFrameChange event = ', event.nativeEvent);
     if (util.isNullOrUndef(msgid) && util.isNullOrUndef(value)) {
       if (event.nativeEvent) {
         msgid = event.nativeEvent.msgid;
@@ -188,7 +189,7 @@ class DirectVideoView extends Component {
 
   onVideoMessage = (msgid, value) => {
     const {videoStore, serverInfo} = this.props;
-    __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+    // __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
 
     switch (msgid) {
       case NATIVE_MESSAGE.CONNECTING:
@@ -205,7 +206,7 @@ class DirectVideoView extends Component {
         this.props.videoStore.resetNVRAuthentication();
         break;
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
-        console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+        console.log('GOND onDirectVideoMessage: login success');
         break;
       case NATIVE_MESSAGE.SVR_REJECT_ACCEPT:
         this.setState({
@@ -374,7 +375,7 @@ class DirectVideoView extends Component {
       // if (formatedDate != videoStore.searchDateString) {
       //   videoStore.setSearchDate(formatedDate);
       // }
-      console.log('GOND direct frame time : ', frameTime);
+      // __DEV__ && console.log('GOND direct frame time : ', frameTime);
       videoStore.setDisplayDateTime(date && time ? date + ' - ' + time : value);
       videoStore.setFrameTime(value, 'utc');
     } else console.log('GOND direct frame time value not valid: ', frameTime);
@@ -446,7 +447,6 @@ class DirectVideoView extends Component {
                 height={height}
                 ref={ref => {
                   this.ffmpegPlayer = ref;
-                  // serverInfo.setNativeComponent(ref);
                 }}
                 onFFMPegFrameChange={this.onNativeMessage}
               />
@@ -457,7 +457,6 @@ class DirectVideoView extends Component {
                 height={height}
                 ref={ref => {
                   this.ffmpegPlayer = ref;
-                  // serverInfo.setNativeComponent(ref);
                 }}
                 onFFMPegFrameChange={this.onNativeMessage}
               />

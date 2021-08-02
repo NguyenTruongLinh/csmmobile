@@ -288,7 +288,7 @@ const uint32_t numLayers = 24;
   NSString* daylightSavingTime = [NSString stringWithFormat:@"{\"hoursofDay\":%d,\"hourSpecial\":%d}",hoursofDay,hourSpecial];
   NSString* daylightSavingTimeJson = [NSString stringWithFormat:@"[%@]",daylightSavingTime];
   [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                          @"Id": [NSNumber numberWithUnsignedInteger:22],
+                                                                          @"msgid": [NSNumber numberWithUnsignedInteger:22],
                                                                           @"value":[NSString stringWithString:daylightSavingTimeJson],
                                                                           @"target": self.reactTag
                                                                           }];
@@ -346,7 +346,7 @@ const uint32_t numLayers = 24;
       isConnecting = YES;
       NSArray* buttonList = [NSArray arrayWithObjects:@"View channel list", @"Disconnect", nil];
     }
-    else if (connectedServers.count < MAX_SERVER_CONNECTION)
+    else //if (connectedServers.count < MAX_SERVER_CONNECTION)
     {
       [connectedServerList addObject:selectedServer];
       [self setChannels:channel];
@@ -354,7 +354,7 @@ const uint32_t numLayers = 24;
       [self setIsSearch:isSearch];
       /* Display the error to the user. */
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"Id": [NSNumber numberWithUnsignedInteger:3],
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:3],
                                                                               @"target": self.reactTag
                                                                               }];
       [self handleResponseMessage:IMC_MSG_CONNECTION_CONNECT fromView:self withData:selectedServer];
@@ -1608,7 +1608,7 @@ const uint32_t numLayers = 24;
   {
     /* Display the error to the user. */
     [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                            @"Id": [NSNumber numberWithUnsignedInteger:12],
+                                                                            @"msgid": [NSNumber numberWithUnsignedInteger:12],
                                                                             @"target": self.reactTag
                                                                             }];
     return YES;
@@ -1973,7 +1973,7 @@ const uint32_t numLayers = 24;
             dispatch_async(dispatch_get_main_queue(), ^{
               /* Display the error to the user. */
               [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                      @"Id": [NSNumber numberWithUnsignedInteger:9],
+                                                                                      @"msgid": [NSNumber numberWithUnsignedInteger:9],
                                                                                       @"target": self.reactTag
                                                                                       }];
               //do something
@@ -2181,7 +2181,7 @@ const uint32_t numLayers = 24;
     {
       /* Display the error to the user. */
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"Id": [NSNumber numberWithUnsignedInteger:15],
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:15],
                                                                               @"target": self.reactTag
                                                                               }];
     }
@@ -2190,7 +2190,7 @@ const uint32_t numLayers = 24;
     {
       /* Display the error to the user. */
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"Id": [NSNumber numberWithUnsignedInteger:14],
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:14],
                                                                               @"target": self.reactTag
                                                                               }];
     }
@@ -2202,7 +2202,7 @@ const uint32_t numLayers = 24;
       
       /* Display the error to the user. */
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"Id": [NSNumber numberWithUnsignedInteger:16],
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:16],
                                                                               @"target": self.reactTag
                                                                               }];
     }
@@ -2220,7 +2220,7 @@ const uint32_t numLayers = 24;
       [self updateDataDateList:(NSTimeZone*)updatedServer.serverTimezone];
       /* Display the error to the user. */
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"Id": [NSNumber numberWithUnsignedInteger:20],
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:20],
                                                                               @"value":[NSArray arrayWithArray:self.dataDateList],
                                                                               @"target": self.reactTag
                                                                               }];
@@ -2494,7 +2494,7 @@ const uint32_t numLayers = 24;
             if (![old isEqualToString:timeTextLabel]) {
               [UIView setAnimationsEnabled:NO];
               [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                      @"Id": [NSNumber numberWithUnsignedInteger:13],
+                                                                                      @"msgid": [NSNumber numberWithUnsignedInteger:13],
                                                                                       @"value": [NSString stringWithString: res],
                                                                                       @"target": self.reactTag
                                                                                       }];
@@ -2708,7 +2708,7 @@ const uint32_t numLayers = 24;
     NSString* contentJson = [NSString stringWithFormat:@"[%@]",[timeArr componentsJoinedByString:@","]];
     /* Display the error to the user. */
     [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                            @"Id": [NSNumber numberWithUnsignedInteger:21],
+                                                                            @"msgid": [NSNumber numberWithUnsignedInteger:21],
                                                                             @"value":[NSString stringWithString:contentJson],
                                                                             @"target": self.reactTag
                                                                             }];
@@ -2717,12 +2717,12 @@ const uint32_t numLayers = 24;
     NSString* contentJson = [NSString stringWithFormat:@"[]"];
     /* Display the error to the user. */
     [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                            @"Id": [NSNumber numberWithUnsignedInteger:21],
+                                                                            @"msgid": [NSNumber numberWithUnsignedInteger:21],
                                                                             @"value":[NSString stringWithString:contentJson],
                                                                             @"target": self.reactTag
                                                                             }];
     [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                            @"Id": [NSNumber numberWithUnsignedInteger:12],
+                                                                            @"msgid": [NSNumber numberWithUnsignedInteger:12],
                                                                             @"target": self.reactTag
                                                                             }];
   }
@@ -2821,7 +2821,7 @@ const uint32_t numLayers = 24;
         NSString* contentJson = [NSString stringWithFormat:@"[%@]",[arrHour componentsJoinedByString:@","]];
         /* Display the error to the user. */
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                @"Id": [NSNumber numberWithUnsignedInteger:23],
+                                                                                @"msgid": [NSNumber numberWithUnsignedInteger:23],
                                                                                 @"value":[NSString stringWithString:contentJson],
                                                                                 @"target": self.reactTag
                                                                                 }];
@@ -2831,7 +2831,7 @@ const uint32_t numLayers = 24;
       NSString* daylightSavingTime = [NSString stringWithFormat:@"{\"hoursofDay\":%d,\"hourSpecial\":%d}",hoursofDay,hourSpecial];
       NSString* daylightSavingTimeJson = [NSString stringWithFormat:@"[%@]",daylightSavingTime];
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"Id": [NSNumber numberWithUnsignedInteger:22],
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:22],
                                                                               @"value":[NSString stringWithString:daylightSavingTimeJson],
                                                                               @"target": self.reactTag
                                                                               }];
@@ -2892,7 +2892,7 @@ const uint32_t numLayers = 24;
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
         
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                @"Id": [NSNumber numberWithUnsignedInteger:13],
+                                                                                @"msgid": [NSNumber numberWithUnsignedInteger:13],
                                                                                 @"value": [NSString stringWithString: res],
                                                                                 @"target": self.reactTag
                                                                                 }];
@@ -2916,7 +2916,7 @@ const uint32_t numLayers = 24;
   }
   
   [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                          @"Id": [NSNumber numberWithUnsignedInteger:25],
+                                                                          @"msgid": [NSNumber numberWithUnsignedInteger:25],
                                                                           @"value": [NSString stringWithString:message],
                                                                           @"target": self.reactTag
                                                                           }];
@@ -2940,7 +2940,7 @@ const uint32_t numLayers = 24;
     {
       if(setting.isSearchable == false){
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                @"Id": [NSNumber numberWithUnsignedInteger:19],
+                                                                                @"msgid": [NSNumber numberWithUnsignedInteger:19],
                                                                                 @"target": self.reactTag
                                                                                 }];
       }
@@ -2951,7 +2951,7 @@ const uint32_t numLayers = 24;
       
       if(setting.isLiveViewable == false){
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                @"Id": [NSNumber numberWithUnsignedInteger:19],
+                                                                                @"msgid": [NSNumber numberWithUnsignedInteger:19],
                                                                                 @"target": self.reactTag
                                                                                 }];
       }
@@ -2978,7 +2978,7 @@ const uint32_t numLayers = 24;
       if( status == LOGIN_STATUS_SUCCEEDED )
       {
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                @"Id": [NSNumber numberWithUnsignedInteger:5],
+                                                                                @"msgid": [NSNumber numberWithUnsignedInteger:5],
                                                                                 @"target": self.reactTag
                                                                                 }];
       }
@@ -2991,7 +2991,7 @@ const uint32_t numLayers = 24;
             msg = [NSString stringWithFormat:@"Cannot connect to server %@", server.serverName];
             bShow = FALSE;
             [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                    @"Id": [NSNumber numberWithUnsignedInteger:9],
+                                                                                    @"msgid": [NSNumber numberWithUnsignedInteger:9],
                                                                                     @"target": self.reactTag
                                                                                     }];
             break;
@@ -2999,21 +2999,21 @@ const uint32_t numLayers = 24;
             //msg = @"Wrong username or password";
             bShow = FALSE;
             [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                    @"Id": [NSNumber numberWithUnsignedInteger:4],
+                                                                                    @"msgid": [NSNumber numberWithUnsignedInteger:4],
                                                                                     @"target": self.reactTag
                                                                                     }];
             break;
           case LOGIN_STATUS_WRONG_SERVERID:
             bShow = FALSE;
             [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                    @"Id": [NSNumber numberWithUnsignedInteger:7],
+                                                                                    @"msgid": [NSNumber numberWithUnsignedInteger:7],
                                                                                     @"target": self.reactTag
                                                                                     }];
             break;
           case LOGIN_STATUS_VIDEO_PORT_ERROR:
             bShow = FALSE;
             [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                    @"Id": [NSNumber numberWithUnsignedInteger:8],
+                                                                                    @"msgid": [NSNumber numberWithUnsignedInteger:8],
                                                                                     @"target": self.reactTag
                                                                                     }];
             break;
@@ -3026,7 +3026,7 @@ const uint32_t numLayers = 24;
         {
           //Display the error to the user.
           [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                  @"Id": [NSNumber numberWithUnsignedInteger:25],
+                                                                                  @"msgid": [NSNumber numberWithUnsignedInteger:25],
                                                                                   @"value": [NSString stringWithString:msg],
                                                                                   @"target": self.reactTag
                                                                                   }];
@@ -3091,7 +3091,7 @@ const uint32_t numLayers = 24;
       
       /* Display the error to the user. */
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"Id": [NSNumber numberWithUnsignedInteger:25],
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:25],
                                                                               @"value": [NSString stringWithString:message],
                                                                               @"target": self.reactTag
                                                                               }];
@@ -3105,7 +3105,7 @@ const uint32_t numLayers = 24;
     
     /* Display the error to the user. */
     [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                            @"Id": [NSNumber numberWithUnsignedInteger:25],
+                                                                            @"msgid": [NSNumber numberWithUnsignedInteger:25],
                                                                             @"value": [NSString stringWithString:message],
                                                                             @"target": self.reactTag
                                                                             }];
@@ -3117,7 +3117,7 @@ const uint32_t numLayers = 24;
     
     /* Display the error to the user. */
     [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                            @"Id": [NSNumber numberWithUnsignedInteger:25],
+                                                                            @"msgid": [NSNumber numberWithUnsignedInteger:25],
                                                                             @"value": [NSString stringWithString:message],
                                                                             @"target": self.reactTag
                                                                             }];

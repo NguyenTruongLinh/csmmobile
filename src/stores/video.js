@@ -283,6 +283,7 @@ export const VideoModel = types
     searchBegin: types.maybeNull(types.number),
     searchEnd: types.maybeNull(types.number),
     staticHoursOfDay: types.maybeNull(types.number),
+    forceDstHour: types.maybeNull(types.number),
   })
   .volatile(self => ({
     recordingDates: {},
@@ -635,7 +636,7 @@ export const VideoModel = types
         self.staticHoursOfDay = value;
       },
       setDSTHour(value) {
-        self.dstHour = value;
+        self.forceDstHour = value;
       },
       displayAuthen(value) {
         self.showAuthenModal = value;
