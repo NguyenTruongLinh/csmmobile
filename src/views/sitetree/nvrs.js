@@ -20,7 +20,6 @@ import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
 import {Comps as CompTxt} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
-// import appStore from '../../stores/appStore';
 
 class NVRsView extends Component {
   constructor(props) {
@@ -55,8 +54,8 @@ class NVRsView extends Component {
 
   onNVRSelected = item => {
     this.props.sitesStore.selectDVR(item);
-    this.props.appStore.naviService.push(ROUTERS.VIDEO_CHANNELS);
-    this.props.appStore.enableSearchbar(false);
+    this.props.navigation.push(ROUTERS.VIDEO_CHANNELS);
+    // this.props.appStore.enableSearchbar(false);
   };
 
   renderItem = ({item}) => {
@@ -82,7 +81,7 @@ class NVRsView extends Component {
   };
 
   render() {
-    const {appStore, sitesStore, navigation} = this.props;
+    const {/*appStore,*/ sitesStore, navigation} = this.props;
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
         {/* <HeaderWithSearch
@@ -142,7 +141,7 @@ class NVRsView extends Component {
 }
 
 export default inject(
-  'appStore',
+  // 'appStore',
   'sitesStore',
   'videoStore'
 )(observer(NVRsView));

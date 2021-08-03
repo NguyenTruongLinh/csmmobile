@@ -27,9 +27,9 @@ class SitesView extends Component {
     super(props);
     this._isMounted = false;
 
-    this.state = {
-      enableSearchbar: false,
-    };
+    // this.state = {
+    //   enableSearchbar: false,
+    // };
   }
 
   componentWillUnmount() {
@@ -60,16 +60,22 @@ class SitesView extends Component {
   };
 
   onBack = () => {
-    if (this.state.enableSearchbar) {
-      this.setState({enableSearchbar: false});
-    }
+    // if (this.state.enableSearchbar) {
+    //   this.setState({enableSearchbar: false});
+    // }
   };
 
   onSiteSelected = item => {
-    this.props.sitesStore.selectSite(item);
+    const {sitesStore, navigation} = this.props;
+    sitesStore.selectSite(item);
     // this.props.appStore.naviService.push(ROUTERS.VIDEO_NVRS);
-    this.props.navigation.push(ROUTERS.VIDEO_NVRS);
-    this.props.appStore.enableSearchbar(false);
+    if (item.dvrs.length == 1) {
+      sitesStore.selectDVR(item.dvrs[0]);
+      navigation.push(ROUTERS.VIDEO_CHANNELS);
+    } else {
+      navigation.push(ROUTERS.VIDEO_NVRS);
+    }
+    // this.props.appStore.enableSearchbar(false);
   };
 
   onFilter = value => {

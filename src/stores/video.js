@@ -753,7 +753,6 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            // return self.buildDirectData();
             return self.buildDirectData();
           case CLOUD_TYPE.HLS:
             return self.buildHLSData();
@@ -1092,6 +1091,9 @@ export const VideoModel = types
         // return resInfo && resTimezone;
         return yield getInfoPromise;
       }),
+      onLoginSuccess() {
+        streamReadyCallback && streamReadyCallback();
+      },
       onReceiveStreamInfo: flow(function* onReceiveStreamInfo(streamInfo) {
         __DEV__ && console.log('GOND onReceiveStreamInfo');
         switch (self.cloudType) {
@@ -1128,7 +1130,7 @@ export const VideoModel = types
                 self.activeChannels
               );
               self.isLoading = false;
-              streamReadyCallback();
+              streamReadyCallback && streamReadyCallback();
             }
         }
       }),

@@ -207,6 +207,7 @@ class DirectVideoView extends Component {
         break;
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
         console.log('GOND onDirectVideoMessage: login success');
+        this.props.videoStore.onLoginSuccess();
         break;
       case NATIVE_MESSAGE.SVR_REJECT_ACCEPT:
         this.setState({
@@ -322,10 +323,10 @@ class DirectVideoView extends Component {
     }
   };
 
-  stop = value => {
+  stop = () => {
     if (this.ffmpegPlayer) {
       this.ffmpegPlayer.setNativeProps({
-        stop: value === undefined ? true : !!value,
+        stop: true,
       });
     }
   };
@@ -392,24 +393,18 @@ class DirectVideoView extends Component {
       if (width <= height) {
         const videoRatio = width / height;
         if (videoRatio !== NATURAL_RATIO) {
-          height = parseInt((width * 9) / 16);
+          // height = parseInt((width * 9) / 16);
+          width = parseInt((height * 16) / 9);
           //console.log( _height);
         }
-        this.setState({
-          fullscreen: false,
-          width: width,
-          height: height,
-          status: '',
-        });
-      } else {
-        this.setState({
-          // controller: false,
-          fullscreen: true,
-          width: width,
-          height: height,
-          status: '',
-        });
       }
+      this.setState({
+        // controller: false,
+        fullscreen: true,
+        width: width,
+        height: height,
+        status: '',
+      });
     }, 100);
   };
 
@@ -443,8 +438,8 @@ class DirectVideoView extends Component {
           <View style={styles.playerView}>
             {Platform.OS === 'ios' ? (
               <FFMpegFrameViewIOS
-                width={width}
-                height={height}
+                width={this.state.width}
+                height={this.state.height}
                 ref={ref => {
                   this.ffmpegPlayer = ref;
                 }}
