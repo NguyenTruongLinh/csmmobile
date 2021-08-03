@@ -46,7 +46,7 @@ typedef enum
   ImcControllerThread* controllerThread;
   ImcDecodeThread* decoderThread;
   i3DisconnectWarningInfo* disconnectWarning;
-  NSMutableArray* connectedServerList;
+  // NSMutableArray* connectedServerList;
   i3ResumeDataInfo* resumeDataInfo;
   NSCondition* viewMaskLock;
   UIView* videoView;
@@ -58,6 +58,8 @@ typedef enum
   UIImage* defaultImg;
   CALayer* m_videoLayer;
 }
+
+@property (class) NSMutableArray* connectedServerList;
 
 @property (nonatomic) UIDeviceOrientation currentDeviceOrientation;
 @property (nonatomic) UIInterfaceOrientation currentInterfaceOrientation;
@@ -137,7 +139,7 @@ typedef NS_ENUM(NSUInteger, RESUME_VIEW_MODE)
 };
 
 @property NSMutableArray* channelsMapping;
-@property NSArray* connectedServerList;
+// @property NSArray* connectedServerList;
 @property NSInteger currentView;
 @property BOOL didShowDivisionView;
 @property BOOL mainStreamChannel;

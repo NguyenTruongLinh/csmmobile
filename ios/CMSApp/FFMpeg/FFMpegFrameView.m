@@ -78,6 +78,14 @@ const uint32_t numLayers = 24;
 
 @synthesize connectedServers, mainDisplayVideo, timer, isRotate, videoPlayerStatus, currentServer, chosenServerIndex, lastFrameInterval, mainViewRect, mainViewFullRect, currentSelectedFullScreenChannel, dateIntervalList, doesTodayHasData, chosenDay, chosenChannelIndex, channelsSearchDictionary, searchingDateInterval, channelListCollectonView, calTimezone, zoomLevel, calendar, searchFrameImage, lastResumeTime, m_dayType, hourSpecialDST, firstRunAlarm;
 
++ (NSMutableArray*) connectedServerList {
+  static NSMutableArray* s_connectedServers = nil;
+  if (s_connectedServers == nil) {
+    s_connectedServers = [[NSMutableArray alloc] init];
+  }
+  return s_connectedServers;
+};
+
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher{
   if((self = [super init])){
     _w = 0;
@@ -89,7 +97,7 @@ const uint32_t numLayers = 24;
     channelsMapping = [NSMutableArray array];
     mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
     mainDisplayVideo.fullscreenView = 0;
-    connectedServerList = [[NSMutableArray alloc] init];
+    // connectedServerList = [[NSMutableArray alloc] init];
     viewMaskLock = [[NSCondition alloc] init];
     channelsSearchDictionary = [NSMutableDictionary dictionary];
     isRotate = NO;
@@ -134,7 +142,7 @@ const uint32_t numLayers = 24;
     videoView = [[UIView alloc] initWithFrame:videoViewFrame];
     
     [mainDisplayVideo setdisplayRect:self.bounds withRootLayer:videoView.layer];
-    mainDisplayVideo.connectedServerList = connectedServerList;
+    mainDisplayVideo.connectedServerList = FFMpegFrameView.connectedServerList;
     
     [videoView setFrame:self.bounds];
     [self addSubview:videoView];
@@ -270,7 +278,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)resetParam{
-  [connectedServerList removeObject:currentServer];
+  [FFMpegFrameView.connectedServerList removeObject:currentServer];
   self.layer.contents = nil;
   //NSLog(@"Shark removeFromSuperview");
   [videoView removeFromSuperview];
@@ -309,8 +317,15 @@ const uint32_t numLayers = 24;
     NSDateFormatter* formatTimeDST = [[NSDateFormatter alloc] init];
     [formatTimeDST setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
     [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+    NSLog(@"GOND startPlayback ", startplayback);
     
-    ImcConnectedServer* selectedServer = [self setConnectionServer:startplayback];
+    ImcConnectedServer* selectedServer = [self getServerFromList:startplayback];
+    BOOL serverExist = YES;
+    if (selectedServer == nil) {
+      selectedServer = [self setConnectionServer:startplayback];
+      serverExist = NO;
+    }
+    
     NSString* channel = [self get_obj:startplayback for_key:@"channels"];
     BOOL by_channel = [[self get_obj:startplayback for_key:@"byChannel"] boolValue];
     BOOL isSearch = [[self get_obj: startplayback for_key:@"searchMode"] boolValue];
@@ -341,27 +356,52 @@ const uint32_t numLayers = 24;
       [self addSubview:videoView];
     }
     
-    if( selectedServer.connected )
+    NSLog(@"GOND &&& selectedServer.connected: %u", selectedServer.connected);
+    if( selectedServer.connected == CONNECTED )
     {
       isConnecting = YES;
       NSArray* buttonList = [NSArray arrayWithObjects:@"View channel list", @"Disconnect", nil];
     }
-    else //if (connectedServers.count < MAX_SERVER_CONNECTION)
+    else if (connectedServers.count < MAX_SERVER_CONNECTION)
     {
-      [connectedServerList addObject:selectedServer];
+      if (serverExist == NO) {
+        [FFMpegFrameView.connectedServerList addObject:selectedServer];
+      }
       [self setChannels:channel];
       [self setByChannel:by_channel];
       [self setIsSearch:isSearch];
-      /* Display the error to the user. */
-      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:3],
-                                                                              @"target": self.reactTag
-                                                                              }];
-      [self handleResponseMessage:IMC_MSG_CONNECTION_CONNECT fromView:self withData:selectedServer];
+      
+      if (selectedServer.connected == DISCONNECTED) {
+        /* Display the error to the user. */
+        [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                                @"msgid": [NSNumber numberWithUnsignedInteger:3],
+                                                                                @"target": self.reactTag
+                                                                                }];
+        [self handleResponseMessage:IMC_MSG_CONNECTION_CONNECT fromView:self withData:selectedServer];
+        NSLog(@"GOND &&& Start >>> CONNECTING");
+      }
+    } else {
+      NSLog(@"GOND connectedServers already full ...");
     }
     
     [self checkIsSearch];
   }
+}
+
+-(ImcConnectionServer *)getServerFromList: (NSDictionary *)server{
+  NSString* _server_addr = [self get_obj:server for_key:@"serverIP"];
+  NSString* _public_addr = [self get_obj:server for_key:@"publicIP"];
+  NSString* _serverID = [self get_obj:server for_key:@"serverID"];
+  
+  for(ImcConnectedServer* _server in FFMpegFrameView.connectedServerList) {
+    NSLog(@"GOND compare sv: %@, %@", _server.server_address, _server.serverID);
+    if ([_server.serverID isEqualToString:_serverID] && ([_server.server_address isEqualToString:_public_addr] || [_server.server_address isEqualToString:_server_addr ])) {
+      return _server;
+    }
+  }
+  NSLog(@"GOND server not exist yet: %@, %@, %@", _server_addr, _public_addr, _serverID);
+  
+  return nil;
 }
 
 -(ImcConnectionServer *)setConnectionServer: (NSDictionary *)server{
@@ -413,7 +453,7 @@ const uint32_t numLayers = 24;
   
   for (NSString* serverAddress in serverList)
   {
-    for (ImcConnectedServer* connectedServer in connectedServerList)
+    for (ImcConnectedServer* connectedServer in FFMpegFrameView.connectedServerList)
     {
       if ([serverAddress isEqualToString:connectedServer.server_address])
       {
@@ -430,17 +470,17 @@ const uint32_t numLayers = 24;
     }
   }
   
-  [connectedServerList removeObjectsInArray:deletedServer];
+  [FFMpegFrameView.connectedServerList removeObjectsInArray:deletedServer];
 }
 
 -(void)updateServerDisconnectState:(ImcConnectedServer *)server
 {
-  for(ImcConnectedServer* _server in connectedServerList)
+  for(ImcConnectedServer* _server in FFMpegFrameView.connectedServerList)
   {
     if( [server.server_address isEqualToString:_server.server_address] &&
        server.server_port == _server.server_port )
     {
-      _server.connected = FALSE;
+      _server.connected = DISCONNECTED; // FALSE;
       break;
     }
   }
@@ -525,9 +565,9 @@ const uint32_t numLayers = 24;
 -(void)setStop:(BOOL)stop{
   if(stop){
     videoPlayerStatus = STATE_STOP;
-    if(connectedServerList.count > 0)
+    if(FFMpegFrameView.connectedServerList.count > 0)
     {
-      for (ImcConnectedServer* connectedServer in connectedServerList)
+      for (ImcConnectedServer* connectedServer in FFMpegFrameView.connectedServerList)
       {
         [self updateServerDisconnectState:connectedServer];
       }
@@ -537,7 +577,7 @@ const uint32_t numLayers = 24;
       }
       
       [self handleResponseMessage:IMC_MSG_CONNECTION_DISCONNECT fromView:self withData:nil];
-      [connectedServerList removeAllObjects];
+      [FFMpegFrameView.connectedServerList removeAllObjects];
     }
     
     [mainDisplayVideo remoteAllLayers];
@@ -838,7 +878,7 @@ const uint32_t numLayers = 24;
       
       [decoderThread updateFrameQueueWhenFullScreen];
       
-      for( ImcConnectedServer* server in connectedServerList )
+      for( ImcConnectedServer* server in FFMpegFrameView.connectedServerList )
       {
         uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
         NSInteger fullscreenChannel = [self.mainDisplayVideo fullscreenChannelForServer:server.server_address andPort:server.server_port];
@@ -857,7 +897,7 @@ const uint32_t numLayers = 24;
         command = IMC_CMD_CONNECTION_DISCONNECT;
         //remove from connected server list
         ImcConnectedServer* foundServer = NULL;
-        for (ImcConnectedServer* connectedServer in connectedServerList) {
+        for (ImcConnectedServer* connectedServer in FFMpegFrameView.connectedServerList) {
           if( [server.server_address isEqualToString:connectedServer.server_address] &&
              server.server_port == connectedServer.server_port )
           {
@@ -876,9 +916,9 @@ const uint32_t numLayers = 24;
             }
           }
           
-          [connectedServerList removeObject:foundServer];
+          [FFMpegFrameView.connectedServerList removeObject:foundServer];
           
-          if (connectedServerList.count == 0 && self.mainDisplayVideo.fullscreenView != -1)
+          if (FFMpegFrameView.connectedServerList.count == 0 && self.mainDisplayVideo.fullscreenView != -1)
           {
             self.mainDisplayVideo.fullscreenView = -1;
           }
@@ -887,7 +927,7 @@ const uint32_t numLayers = 24;
             self.currentServer = nil;
           }
           
-          if (connectedServerList.count == 0) {
+          if (FFMpegFrameView.connectedServerList.count == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
               //do something
             });
@@ -897,7 +937,7 @@ const uint32_t numLayers = 24;
             //Disable Search And Tab if neccessay
             BOOL hasSearchMode = NO;
             
-            for (ImcConnectedServer* server in connectedServerList) {
+            for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
               if (server.serverVersion >= VERSION_3300 && server.hasAvailableSearchChannels) {
                 hasSearchMode = YES;
                 break;
@@ -917,7 +957,7 @@ const uint32_t numLayers = 24;
             }
           }
           
-          if (connectedServerList.count > 0) {
+          if (FFMpegFrameView.connectedServerList.count > 0) {
             [self.mainDisplayVideo updateChannelBufferWithDisconnectedServer:foundServer.server_address];
             [self handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:self withData:nil];
           }
@@ -943,7 +983,7 @@ const uint32_t numLayers = 24;
       [self.mainDisplayVideo getDisplaySize:&smallSize :&largeSize];
       [controllerThread updateDisplaySize:smallSize :largeSize];
       
-      for( ImcConnectedServer* server in connectedServerList )
+      for( ImcConnectedServer* server in FFMpegFrameView.connectedServerList )
       {
         if ([server.server_address isEqualToString:(NSString*)responseData]) {
           uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
@@ -968,7 +1008,7 @@ const uint32_t numLayers = 24;
         {
           ImcScreenDisplay* screen = [[self.mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
           
-          for (ImcConnectedServer* server in connectedServerList) {
+          for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
             
             if ([server.server_address isEqualToString:(NSString*)responseData])
             {
@@ -990,7 +1030,7 @@ const uint32_t numLayers = 24;
       [self.mainDisplayVideo getDisplaySize:&smallSize :&largeSize];
       [controllerThread updateDisplaySize:smallSize :largeSize];
       [controllerThread updateLayout:self.mainDisplayVideo.currentDiv];
-      for( ImcConnectedServer* server in connectedServerList )
+      for( ImcConnectedServer* server in FFMpegFrameView.connectedServerList )
       {
         uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
         [controllerThread updateServerDisplayMask:server.server_address :server.server_port :displayChannelMask];
@@ -1012,7 +1052,7 @@ const uint32_t numLayers = 24;
     case IMC_MSG_LIVE_VIEW_SETTING_SAVE:
     {
       ImcConnectedServer* activeServer = (ImcConnectedServer*)responseData;
-      for(ImcConnectedServer* server in connectedServerList)
+      for(ImcConnectedServer* server in FFMpegFrameView.connectedServerList)
       {
         if( [activeServer.server_address isEqualToString:server.server_address] &&
            activeServer.server_port == server.server_port )
@@ -1027,7 +1067,7 @@ const uint32_t numLayers = 24;
     case IMC_MSG_MAIN_VIEW_TO_LIVE_VIEW:
     {
       __block BOOL hasSearchMode = FALSE;
-      [connectedServerList enumerateObjectsUsingBlock: ^(id object, NSUInteger idx, BOOL* stop){
+      [FFMpegFrameView.connectedServerList enumerateObjectsUsingBlock: ^(id object, NSUInteger idx, BOOL* stop){
         
         if([(ImcConnectedServer*)object hasAvailableSearchChannels])
         {
@@ -1046,7 +1086,7 @@ const uint32_t numLayers = 24;
       {
         if(resumeDataInfo.numProcessServer==0)
         {
-          if(connectedServerList.count==0) // no connected server
+          if(FFMpegFrameView.connectedServerList.count==0) // no connected server
           {
             dispatch_async(dispatch_get_main_queue(), ^{
               
@@ -1055,7 +1095,7 @@ const uint32_t numLayers = 24;
           else
           {
             __block ImcConnectedServer* found_server = nil;
-            [connectedServerList enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [FFMpegFrameView.connectedServerList enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
               ImcConnectedServer* server = (ImcConnectedServer*)obj;
               if([server.server_address isEqualToString:resumeDataInfo.playbackInfo.selectedSvrAddress] &&
                  server.server_port == resumeDataInfo.playbackInfo.selectedSvrPort )
@@ -1066,7 +1106,7 @@ const uint32_t numLayers = 24;
             }];
             
             NSMutableArray* newServerList = [NSMutableArray array];
-            for (ImcConnectedServer* server in connectedServerList) {
+            for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
               if (server.serverVersion >= VERSION_3300)
               {
                 [newServerList addObject:server];
@@ -1299,7 +1339,7 @@ const uint32_t numLayers = 24;
 
 -(void)disableResumeMode
 {
-  if (connectedServerList.count == 0) {
+  if (FFMpegFrameView.connectedServerList.count == 0) {
     for (ImcScreenDisplay* screen in [self.mainDisplayVideo getDisplayScreens]) {
       [self.mainDisplayVideo resetScreen:screen.screenIndex];
     }
@@ -1535,7 +1575,7 @@ const uint32_t numLayers = 24;
   [decoderThread setVideoMode:NO_VIDEO];
   
   NSMutableArray* newServerList = [NSMutableArray array];
-  for (ImcConnectedServer* server in connectedServerList) {
+  for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
     if (server.serverVersion >= VERSION_3300)
     {
       [newServerList addObject:server];
@@ -1567,7 +1607,7 @@ const uint32_t numLayers = 24;
         if ([server.server_address isEqualToString:serverAddress])
         {
           self.currentServer = server;
-          self.chosenServerIndex = [connectedServerList indexOfObject:server];
+          self.chosenServerIndex = [FFMpegFrameView.connectedServerList indexOfObject:server];
           
           [server.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
@@ -1727,7 +1767,7 @@ const uint32_t numLayers = 24;
       if( status.connectionStatus == LOGIN_STATUS_SUCCEEDED )
       {
         BOOL needToAdd = TRUE;
-        for (ImcConnectedServer* connectedServer in connectedServerList) {
+        for (ImcConnectedServer* connectedServer in FFMpegFrameView.connectedServerList) {
           if ([connectedServer.server_address isEqualToString:server.server_address]) {
             //Update server version from parse header
             connectedServer.serverVersion = server.serverVersion;
@@ -1737,7 +1777,7 @@ const uint32_t numLayers = 24;
         }
         
         if (needToAdd) {
-          [connectedServerList addObject:server];
+          [FFMpegFrameView.connectedServerList addObject:server];
         }
         
         [self responseConnectingServer:server :status.connectionStatus];
@@ -1756,10 +1796,10 @@ const uint32_t numLayers = 24;
           serverAddress = server.server_address;
         }
         
-        for (ImcConnectedServer* connectedServer in connectedServerList) {
+        for (ImcConnectedServer* connectedServer in FFMpegFrameView.connectedServerList) {
           if ([serverAddress isEqualToString:connectedServer.server_address]) {
             
-            [connectedServerList removeObject:connectedServer];
+            [FFMpegFrameView.connectedServerList removeObject:connectedServer];
             //needToRemove = YES;
             break;
           }
@@ -1793,7 +1833,7 @@ const uint32_t numLayers = 24;
     {
       ImcConnectedServer* updatedServer = parameter;
       
-      for(ImcConnectedServer* server in connectedServerList )
+      for(ImcConnectedServer* server in FFMpegFrameView.connectedServerList )
       {
         if( [server.server_address isEqualToString:updatedServer.server_address] && (server.server_port == updatedServer.server_port) )
         {
@@ -1832,7 +1872,7 @@ const uint32_t numLayers = 24;
     case IMC_CMD_UPDATE_CHANNEL_CONFIG:
     {
       ImcChannelConfig* guiChannelConfig = (ImcChannelConfig*)parameter;
-      for(ImcConnectedServer* server in connectedServerList )
+      for(ImcConnectedServer* server in FFMpegFrameView.connectedServerList )
       {
         if( [server.server_address isEqualToString:guiChannelConfig.serverAddress] &&
            (server.server_port == guiChannelConfig.serverPort) )
@@ -1867,7 +1907,7 @@ const uint32_t numLayers = 24;
       }
       
       if(_isSeacrh == NO){
-        if (connectedServerList.count > 0) {
+        if (FFMpegFrameView.connectedServerList.count > 0) {
           [controllerThread startTransferingVideo];
           [self startVideo];
           [decoderThread setVideoMode:LIVE_VIDEO];
@@ -1899,9 +1939,9 @@ const uint32_t numLayers = 24;
     {
       ImcConnectedServer* disconnectedServer = parameter;
       ImcConnectedServer* foundServer = nil;
-      for ( int index = 0; index < connectedServerList.count; index++ )
+      for ( int index = 0; index < FFMpegFrameView.connectedServerList.count; index++ )
       {
-        ImcConnectedServer* server = [connectedServerList objectAtIndex:index];
+        ImcConnectedServer* server = [FFMpegFrameView.connectedServerList objectAtIndex:index];
         if( [server.server_address isEqualToString:disconnectedServer.server_address] &&
            server.server_port == disconnectedServer.server_port )
         {
@@ -1914,13 +1954,13 @@ const uint32_t numLayers = 24;
       {
         
         [self.mainDisplayVideo removeScreenForServer:foundServer.server_address andPort:foundServer.server_port];
-        [connectedServerList removeObject:foundServer];
+        [FFMpegFrameView.connectedServerList removeObject:foundServer];
         dispatch_async(dispatch_get_main_queue(), ^{
           [self onShowDisconnectedMsg:foundServer];
         });
         
         
-        if (connectedServerList.count == 0) {
+        if (FFMpegFrameView.connectedServerList.count == 0) {
           dispatch_async(dispatch_get_main_queue(), ^{
             //do something
           });
@@ -1930,7 +1970,7 @@ const uint32_t numLayers = 24;
           //Disable Search And Tab if neccessay
           BOOL hasSearchMode = NO;
           
-          for (ImcConnectedServer* server in connectedServerList) {
+          for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
             if (server.serverVersion >= VERSION_3300) {
               hasSearchMode = YES;
               break;
@@ -1964,11 +2004,11 @@ const uint32_t numLayers = 24;
         if (didConnect) {
           
           [self.mainDisplayVideo removeScreenForServer:disconnectedServer.server_address andPort:disconnectedServer.server_port];
-          [connectedServerList removeObject:disconnectedServer];
+          [FFMpegFrameView.connectedServerList removeObject:disconnectedServer];
           [self onShowDisconnectedMsg:disconnectedServer];
           
           //Change to MainView Tab
-          if (connectedServerList.count == 0)
+          if (FFMpegFrameView.connectedServerList.count == 0)
           {
             dispatch_async(dispatch_get_main_queue(), ^{
               /* Display the error to the user. */
@@ -1984,7 +2024,7 @@ const uint32_t numLayers = 24;
             //Disable Search And Tab if neccessay
             BOOL hasSearchMode = NO;
             
-            for (ImcConnectedServer* server in connectedServerList) {
+            for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
               if (server.serverVersion >= VERSION_3300) {
                 hasSearchMode = YES;
                 break;
@@ -2007,7 +2047,7 @@ const uint32_t numLayers = 24;
         else
         {
           [self responseConnectingServer:disconnectedServer :LOGIN_STATUS_CANNOT_CONNECT];
-          if (connectedServerList.count == 0) {
+          if (FFMpegFrameView.connectedServerList.count == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
               //do something
             });
@@ -2042,7 +2082,7 @@ const uint32_t numLayers = 24;
         {
           if (videoFrame.frameMode == SNAPSHOT) {
             
-            for (ImcConnectedServer* server in connectedServerList) {
+            for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
               if ([server.server_address isEqualToString:videoFrame.serverAddress]) {
                 if (videoFrame.channelIndex >= 0 && videoFrame.channelIndex < server.channelConfigs.count) {
                   ChannelSetting* setting = (ChannelSetting*)[server.channelConfigs objectAtIndex:videoFrame.channelIndex];
@@ -2084,7 +2124,7 @@ const uint32_t numLayers = 24;
         NSMutableArray* channelListNeedToDisplay = [NSMutableArray array];
         NSInteger sourceIndex = -1;
         
-        for (ImcConnectedServer* server in connectedServerList) {
+        for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
           if ([server.server_address isEqualToString:serverAddress]) {
             
             for (ChannelSetting* channel in server.channelConfigs) {
@@ -2210,7 +2250,7 @@ const uint32_t numLayers = 24;
     case IMC_CMD_SEARCH_UPDATE_DATA_DATE:
     {
       ImcConnectedServer* updatedServer = parameter;
-      for (ImcConnectedServer* server in connectedServerList) {
+      for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
         if ([server.server_address isEqualToString:updatedServer.server_address]) {
           server.serverTimezone = updatedServer.serverTimezone;
           server.availableDataDateList = updatedServer.availableDataDateList;
@@ -2247,7 +2287,7 @@ const uint32_t numLayers = 24;
     case IMC_CMD_UPDATE_SETTING_SERVER:
     {
       ImcConnectedServer* updatedServer = parameter;
-      for (ImcConnectedServer* server in connectedServerList) {
+      for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
         if ([server.server_address isEqualToString:updatedServer.server_address]) {
           server.serverTimezone = updatedServer.serverTimezone;
           currentServer = server;
@@ -2268,7 +2308,7 @@ const uint32_t numLayers = 24;
         NSMutableArray* channelListNeedToDisplay = [NSMutableArray array];
         NSInteger sourceIndex = -1;
         
-        for (ImcConnectedServer* server in connectedServerList) {
+        for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
           if ([server.server_address isEqualToString:serverAddress]) {
             
             //channelList = [NSMutableArray arrayWithArray:server.channelConfigs];
@@ -2335,7 +2375,7 @@ const uint32_t numLayers = 24;
           NSMutableArray* channelListNeedToDisplay = [NSMutableArray array];
           NSInteger sourceIndex = -1;
           
-          for (ImcConnectedServer* server in connectedServerList) {
+          for (ImcConnectedServer* server in FFMpegFrameView.connectedServerList) {
             if ([server.server_address isEqualToString:serverAddress]) {
               
               //channelList = [NSMutableArray arrayWithArray:server.channelConfigs];
@@ -2857,7 +2897,7 @@ const uint32_t numLayers = 24;
     ImcScreenDisplay* screen = [[mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
     if ([screen.serverAddress isEqualToString:displayFrame.serverAddress] && screen.channelIndex!= -1 && displayFrame.channelIndex == screen.channelIndex)
     {
-      NSLog(@"Shark test live 2");
+      //NSLog(@"Shark test live 2");
       //do something
       //[self showMainSubBtnIfNeeded];
     }
@@ -2905,7 +2945,7 @@ const uint32_t numLayers = 24;
 
 -(void)onShowDisconnectedMsg : (ImcConnectedServer*)server
 {
-  self.connectedServers = connectedServerList;
+  self.connectedServers = FFMpegFrameView.connectedServerList;
   
   NSString* message = [NSString stringWithFormat:@"Disconnect from server %@",server.serverName];
   
@@ -2921,7 +2961,7 @@ const uint32_t numLayers = 24;
                                                                           @"target": self.reactTag
                                                                           }];
   
-  if (connectedServerList.count > 0) {
+  if (FFMpegFrameView.connectedServerList.count > 0) {
     [self.mainDisplayVideo updateChannelBufferWithDisconnectedServer:server.server_address];
     [self handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:self withData:nil];
   }
@@ -3156,7 +3196,7 @@ const uint32_t numLayers = 24;
 
 @implementation i3ResumeDataInfo
 
-@synthesize channelsMapping, connectedServerList, currentView, didShowDivisionView, mainSubStreamList, mainStreamChannel,current_mode,playbackInfo,numProcessServer;
+@synthesize channelsMapping, /*connectedServerList,*/ currentView, didShowDivisionView, mainSubStreamList, mainStreamChannel,current_mode,playbackInfo,numProcessServer;
 
 -(i3ResumeDataInfo*)init
 {
@@ -3164,7 +3204,7 @@ const uint32_t numLayers = 24;
   
   if (self) {
     channelsMapping = [NSMutableArray array];
-    connectedServerList = nil;
+    // connectedServerList = nil;
     currentView = -2;
     didShowDivisionView = NO;
     mainSubStreamList = [NSArray array];
