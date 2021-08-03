@@ -424,13 +424,6 @@ typedef NS_ENUM(NSUInteger, IMC_VIDEO_MODE)
   SEARCH_VIDEO = 2,
 };
 
-typedef NS_ENUM(NSUInteger, IMC_STATUS)
-{
-  DISCONNECTED = 0,
-  CONNECTING,
-  CONNECTED
-};
-
 //---------------------------------------------------------------------------
 // region declare command parameter object
 @interface ImcCommand : NSObject {
@@ -467,8 +460,7 @@ typedef NS_ENUM(NSUInteger, IMC_STATUS)
 @property (nonatomic, retain) NSString* favoriteGroupName;
 @property (nonatomic, retain) NSString* fullAddress;
 @property (nonatomic, retain) NSString* public_address;
-// @property (readwrite)           BOOL    connected;
-@property (readwrite)           IMC_STATUS    connected;
+@property (readwrite)           BOOL    connected;
 @property NSMutableArray* groupNames;
 @property NSInteger serverVersion;
 @property NSMutableArray* availableDataDateList;

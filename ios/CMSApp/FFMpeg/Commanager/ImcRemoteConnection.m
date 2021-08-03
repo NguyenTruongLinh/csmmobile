@@ -83,8 +83,6 @@
     return FALSE;
   }
   
-  serverInfo.connected = CONNECTING;
-  NSLog(@"GOND &&& CONNECTING");
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     if(!dataQueue)
       dataQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -858,8 +856,7 @@
           {
             GDataXMLElement* connectionIndexNode = (GDataXMLElement*)[doc.rootElement attributeForName:@"connectionIndex"];
             connectionIndex = [[connectionIndexNode stringValue] integerValue];
-            serverInfo.connected = CONNECTED; // TRUE;
-            NSLog(@"GOND &&& CONNECTED...");
+            serverInfo.connected = TRUE;
             
             // connect successfull
             if(loginTimer)
@@ -876,7 +873,7 @@
           else
           {
             connectionIndex = -1;
-            serverInfo.connected = DISCONNECTED; //FALSE;
+            serverInfo.connected = FALSE;
           }
           getLoginStatus = (connectionStatus == MOBILE_LOGIN_MESSAGE_SUCCEEDED);
           ImcConnectionStatus* status = [[ImcConnectionStatus alloc] initWithParam:self:(int32_t)connectionIndex :(int32_t)connectionStatus];

@@ -115,7 +115,7 @@
     server_port     = IMC_DEFAULT_SERVER_PORT;
     username        = @"";
     password        = @"";
-    connected       = DISCONNECTED; //FALSE;
+    connected       = FALSE;
     groupName       = @"";
     public_address  = @"";
     groupNames = [NSMutableArray array];
