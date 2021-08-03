@@ -521,7 +521,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   //@autoreleasepool
   {
-    //NSLog(@"Shark drawLayer");
+    NSLog(@"GOND drawLayer");
     UIGraphicsPushContext(ctx);
     //    if (logoImage != [UIImage imageNamed:@"Mobile_Logo1"]) {
     //        logoImage = [UIImage imageNamed:@"Mobile_Logo1"];
@@ -556,6 +556,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           
         }
         
+        /*
         UIImage* alarmImage;
         
         if (isIphone) {
@@ -565,6 +566,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
         {
           alarmImage = [UIImage imageNamed:@"alarm_160"];
         }
+        */
         
         
         
@@ -578,7 +580,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           frameRect = CGRectMake((view.frame.origin.x + view.frame.size.width - 40), view.frame.origin.y, 40, 40);
         }
         
-        
+        // dongpt: remove alarm
+        /*
         if (screen.hasAlarmIcon) {
           
           if (layer.sublayers == nil) {
@@ -600,6 +603,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           //[alarmImage drawInRect:frameRect];
         }
         else
+        */
         {
           if (layer.sublayers != nil) {
             for (CALayer* subLayer in layer.sublayers) {
@@ -609,6 +613,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           screen.hasAlarmIcon = FALSE;
         }
         
+        // dongpt: remove alarm
+        /*
         if (screen.isAlarmTrigger) {
           
           CALayer* sublayer = [CALayer layer];
@@ -645,6 +651,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           [layer addSublayer:sublayer];
           [sublayer display];
         }
+        */
         
         
         displayFont = [UIFont systemFontOfSize:fontSize];
@@ -697,6 +704,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           }
         }
         
+        // dongpt: remove text
+        /*
         if( screen.serverAddress )
         {
           if (screen.resolutionHeight != -1 && screen.resolutionWidth != -1) {
@@ -727,6 +736,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
         [[UIColor whiteColor] set];
         CGPoint displayScreenPos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + 5);
         //[_screenString drawAtPoint:displayScreenPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
+        */
 #if DEBUG
         if (screen.frameRate != -1) {
           CGPoint displayFrameRatePos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + view.frame.size.height/3);
@@ -747,8 +757,6 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
       }
       else if( fullscreenView == -1 )
       {
-        
-        
         CGFloat fontSize = 12 - currentDiv;
         if( !isIphone )
           fontSize += 2;
@@ -786,7 +794,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           }
         }
         
-        
+        // dongpt: remove tapscreen
+        /*
         if (singleTapScreenIndex.count > 0) {
           NSInteger tapScreenIndex = ((NSNumber*)[singleTapScreenIndex lastObject]).integerValue;
           if (tapScreenIndex >= 0 && tapScreenIndex < IMC_MAX_CHANNEL) {
@@ -811,6 +820,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
             }
           }
         }
+        */
         
         
         if (layer.sublayers != nil) {
@@ -819,6 +829,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           }
         }
         
+        // dongpt: remove alarm
+        /*
         UIImage* alarmImage;
         
         if (isIphone) {
@@ -915,6 +927,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           }
           screen.hasAlarmIcon = FALSE;
         }
+        */
         
         
         
@@ -982,6 +995,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           
         }
 #endif
+        // dongpt: remove text
+        /*
         NSString* _screenString = [NSString stringWithFormat:@"Screen %zd", view.screenIndex+1];
         //[[UIColor whiteColor] set];
         CGPoint displayScreenPos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + 5);
@@ -1010,6 +1025,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
             //displayString = nil;
           }
         }
+        */
         
         CGContextSetStrokeColorWithColor(ctx, [[UIColor blackColor] CGColor]);
         CGContextStrokeRectWithWidth(ctx, view.frame, 0.5);
@@ -1243,7 +1259,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
       //
       //            }
       
-      [singleTapScreenIndex addObject:@(currentScreen.screenIndex)];
+      // dongpt: remove tapscreen
+      // [singleTapScreenIndex addObject:@(currentScreen.screenIndex)];
       
       
       currentScreen.hasAlarmIcon = FALSE;
