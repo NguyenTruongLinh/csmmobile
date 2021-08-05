@@ -201,7 +201,7 @@ class ChannelsView extends React.Component {
       (videoStore.cloudType == CLOUD_TYPE.DEFAULT ||
         videoStore.cloudType == CLOUD_TYPE.DIRECTION)
     ) {
-      newState.liveData = this.buildLiveData(this.state.gridLayout, true);
+      newState.liveData = this.buildLiveData(this.state.gridLayout /*, true*/);
       // __DEV__ && console.log('GOND show first channels 1!');
       // this.showAllTimeout = setTimeout(() => {
       //   __DEV__ && console.log('GOND show all channels... 1');
@@ -219,6 +219,8 @@ class ChannelsView extends React.Component {
   onStreamReady = () => {
     if (!this._isMounted) return;
     this.setState({liveData: this.buildLiveData(this.state.gridLayout)});
+    // dongpt: any side effect?
+    videoStore.setStreamReadyCallback(null);
   };
 
   onAuthenSubmit = ({username, password}) => {
@@ -241,7 +243,7 @@ class ChannelsView extends React.Component {
     // }
     __DEV__ && console.log('GOND show first channels 2!');
     this.setState({
-      liveData: this.buildLiveData(this.state.gridLayout, true),
+      liveData: this.buildLiveData(this.state.gridLayout /*, true*/),
     });
   };
 

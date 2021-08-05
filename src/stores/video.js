@@ -464,7 +464,7 @@ export const VideoModel = types
         self.kDVR = value.kDVR;
       },
       setStreamReadyCallback(fn) {
-        if (!fn || typeof fn !== 'function') {
+        if (fn && typeof fn !== 'function') {
           console.log('GOND set streamReadyCallback is not a function!');
           return;
         }
@@ -592,25 +592,6 @@ export const VideoModel = types
           daylightDate: parseDSTDate(data.DaylightDate),
           standardDate: parseDSTDate(data.StandardDate),
         });
-
-        // if (!data.DaylightDate || !data.StandardDate || data.DaylightDate.wYear == 0 || data.StandardDate.wYear == 0) {
-        // 	return {...data, unixDaylightDate: 0, unixStandardDate: 0, timezoneName: tzName}
-        // }
-        // const offset = (parseInt(data.Bias) - (new Date()).getTimezoneOffset()) * 60;
-        // __DEV__ && console.log('&&& GOND buildTimezoneData timezoneOffset = ', offset, ', Bias = ', data.Bias)
-        // __DEV__ && console.log('&&& GOND buildTimezoneData timezone name = ', tzName)
-
-        // const formatedDaylight = `${data.DaylightDate.wYear}-${data.DaylightDate.wMonth}-${data.DaylightDate.wDay} ${data.DaylightDate.wHour}:${data.DaylightDate.wMinute}:${data.DaylightDate.wSecond}`;
-        // const formatedStandard = `${data.StandardDate.wYear}-${data.StandardDate.wMonth}-${data.StandardDate.wDay} ${data.StandardDate.wHour}:${data.StandardDate.wMinute}:${data.StandardDate.wSecond}`;
-        // // __DEV__ && console.log('&&& GOND buildTimezoneData formatedDaylight = ', formatedDaylight, ', formatedStandard = ', formatedStandard);
-        // let unixDaylightDate = dayjs.tz(formatedDaylight, tzName).unix();
-        // let unixStandardDate = dayjs.tz(formatedStandard, tzName).unix();
-        // return {
-        // 	...data,
-        // 	unixDaylightDate: unixDaylightDate, // (daylightDate) / 1000 - parseInt(data.Bias), //dayjs(daylightDate).unix(),
-        // 	unixStandardDate: unixStandardDate, // (standardDate) / 1000 - parseInt(data.Bias), // dayjs(standardDate).unix(),
-        // 	timezoneName: tzName,
-        // }
       },
       setTimezone(value) {
         if (util.isNullOrUndef(value)) {

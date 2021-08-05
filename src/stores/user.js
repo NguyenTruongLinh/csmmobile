@@ -653,8 +653,8 @@ export const UserStoreModel = types
       );
       // __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
       if (!res || res.error) {
-        __DEV__ && console.log('GOND getAlertTypesSetting failed: ', res);
-        snackbarUtil.handleGetDataFailed();
+        __DEV__ && console.log('!!! GOND getAlertTypesSetting failed: ', res);
+        // snackbarUtil.handleGetDataFailed();
         return false;
       } else {
         if (!Array.isArray(res)) {

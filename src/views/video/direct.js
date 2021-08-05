@@ -123,11 +123,14 @@ class DirectVideoView extends Component {
     try {
       if (this.ffmpegPlayer && serverInfo) {
         if (
-          JSON.stringify({...prevServerInfo.playData}) !=
-          JSON.stringify({...serverInfo.playData})
+          // JSON.stringify({...prevServerInfo.playData}) !=
+          // JSON.stringify({...serverInfo.playData})
+          prevServerInfo.playData.userName != serverInfo.playData.userName ||
+          prevServerInfo.playData.password != serverInfo.playData.password
         ) {
+          this.setState({message: ''});
           __DEV__ &&
-            console.log('GOND DirectPlayer did update, startplayback = ', {
+            console.log('GOND DirectPlayer login ... ', {
               ...serverInfo,
             });
           this.ffmpegPlayer.setNativeProps({stop: true});
@@ -196,7 +199,8 @@ class DirectVideoView extends Component {
         this.setState({message: 'Connecting...'});
         break;
       case NATIVE_MESSAGE.CONNECTED:
-        this.setState({videoLoading: false, message: ''});
+        __DEV__ && console.log('GOND onDirectVideoMessage: Connected');
+        this.setState({message: 'Connected'});
         break;
       case NATIVE_MESSAGE.LOGIN_MESSAGE:
         this.setState({message: value});
@@ -206,12 +210,12 @@ class DirectVideoView extends Component {
         this.props.videoStore.resetNVRAuthentication();
         break;
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
-        console.log('GOND onDirectVideoMessage: login success');
-        this.props.videoStore.onLoginSuccess();
+        __DEV__ && console.log('GOND onDirectVideoMessage: login success');
+        // this.props.videoStore.onLoginSuccess();
         break;
       case NATIVE_MESSAGE.SVR_REJECT_ACCEPT:
         this.setState({
-          message: 'Cannot connect to server',
+          message: 'Server reject accepted',
           videoLoading: false,
         });
         break;
@@ -238,9 +242,11 @@ class DirectVideoView extends Component {
         if (value) {
           try {
             const valueObj = JSON.parse(value);
-            this.setState({
-              videoLoading: false,
-            });
+            if (this.state.videoLoading)
+              this.setState({
+                videoLoading: false,
+                message: '',
+              });
             if (videoStore.selectedChannel != serverInfo.channelNo) return;
 
             if (Array.isArray(valueObj) && valueObj.length > 0)
@@ -411,6 +417,8 @@ class DirectVideoView extends Component {
   render() {
     const {width, height, serverInfo} = this.props;
     const {message, videoLoading, noVideo} = this.state;
+    // __DEV__ &&
+    //   console.log('GOND direct render channel: ', serverInfo.channelName);
 
     return (
       <View
