@@ -26,7 +26,7 @@
   CGRect frame;
   CALayer* rootLayer;
   CGFloat scaleValue;
-  UIImage* ptzIcon;
+  // UIImage* ptzIcon;
   CGPoint translationPoint;
   
   NSMutableArray* alarmTriggerRetain;

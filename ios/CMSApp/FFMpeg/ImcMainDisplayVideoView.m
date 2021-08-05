@@ -29,8 +29,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
   if( self )
   {
     // draw logo
-    logoImage = [UIImage imageNamed:@"Mobile_Logo1"];
-    ptzIcon = [UIImage imageNamed:@"PtzIcon"];
+    logoImage = nil; // [UIImage imageNamed:@"Mobile_Logo1"];
+    // ptzIcon = [UIImage imageNamed:@"PtzIcon"];
     
     // Initialization code
     if( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone )
@@ -153,9 +153,9 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 
 - (void) initDisplayRectwithDiv:(IMC_DIVISION_MODE)div
 {
-  IMC_DIVISION_MODE maxDivSupport = IMC_DIV_64;
-  if( isIphone )
-    maxDivSupport = IMC_DIV_16;
+  IMC_DIVISION_MODE maxDivSupport = 1; // IMC_DIV_64;
+  // if( isIphone )
+  //   maxDivSupport = IMC_DIV_16;
   if( div > maxDivSupport )
     div = maxDivSupport;
   float stepWidth = frame.size.width/div;
@@ -196,6 +196,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   for(CALayer* layer in displayLayers )
   {
+    NSLog(@"GOND remoe all layers");
     layer.sublayers = nil;
     [layer removeFromSuperlayer];
     
@@ -211,9 +212,9 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 
 -(void) updateDivision:(IMC_DIVISION_MODE)div
 {
-  IMC_DIVISION_MODE maxDivSupport = IMC_DIV_64;
-  if( isIphone )
-    maxDivSupport = IMC_DIV_16;
+  IMC_DIVISION_MODE maxDivSupport = 1; //IMC_DIV_64;
+  // if( isIphone )
+  //   maxDivSupport = IMC_DIV_16;
   
   if( div > maxDivSupport )
     return;
@@ -373,7 +374,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
             {
               //screen.displayImage = [UIImage imageWithCGImage:displayFrame.videoFrame.CGImage];
               //screen.displayImage = nil;
-              //NSLog(@"Shark screen displayImage");
+              // NSLog(@"GOND Fullscreen set displayImage");
               screen.displayImage = [[UIImage alloc] initWithCGImage:displayFrame.videoFrame.CGImage];
               //screen.frameRate = -1;
               //NSLog(@"1.Add Video Frame for Channel Index:", displayFrame.channelIndex);
@@ -481,9 +482,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
                 if (displayFrame.videoFrame.CGImage) {
                   //@autoreleasepool
                   {
-                    
                     screen.displayImage = [[UIImage alloc] initWithCGImage:displayFrame.videoFrame.CGImage];
-                    //NSLog(@"Add Video Frame for Channel Index:", displayFrame.channelIndex);
+                    // NSLog(@"GOND Add Video Frame for Channel Index: ", displayFrame.channelIndex);
                   }
                 }
                 else if (displayFrame.videoFrame.CIImage)
@@ -521,7 +521,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   //@autoreleasepool
   {
-    NSLog(@"GOND drawLayer");
+    // NSLog(@"GOND drawLayer");
     UIGraphicsPushContext(ctx);
     //    if (logoImage != [UIImage imageNamed:@"Mobile_Logo1"]) {
     //        logoImage = [UIImage imageNamed:@"Mobile_Logo1"];
@@ -532,6 +532,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
       CGContextClearRect(ctx, layer.frame);
       //needToClearScreen = FALSE;
     }
+    // NSLog(@"GOND drawLayer inCtx sublayers = ", layer.sublayers.count);
     
     NSInteger index = [displayLayers indexOfObject:layer];
     if( index >= 0 && index < currentDiv*currentDiv)
@@ -624,7 +625,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           
           NSLog(@"Full screen view ID: %ld", (long)screen.viewIndex);
           
-          sublayer.contents = (__bridge id)(alarmImage.CGImage);
+          sublayer.contents=  (__bridge id)(alarmImage.CGImage);
           
           
           screen.isAlarmTrigger = FALSE;
@@ -666,6 +667,40 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
         
         if( screen.displayImage )
         {
+          CALayer* sublayer = [CALayer layer];
+          CGRect displayRect;
+          
+          if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
+          {
+            CGSize imageSize = screen.displayImage.size;
+            if( imageSize.width/imageSize.height > 1.8 && imageSize.width <= 720)
+              imageSize.height *= 2;
+            displayRect = [self callDisplayRect:view.frame :imageSize :FALSE];
+          }
+          else // STRETCH Mode
+            displayRect = view.frame;
+
+          if (screen.displayImage.CGImage) {
+            // NSLog(@"GOND draw frame in fullscreen: %f x %f", displayRect.size.width, displayRect.size.height);
+            sublayer.contents = (__bridge id)([screen getScaledImage].CGImage); // (screen.displayImage.CGImage);
+            sublayer.frame = displayRect;
+            layer.sublayers = nil;
+            [layer addSublayer:sublayer];
+            // [sublayer display];
+            // NSLog(@"GOND drawLayer added sublayers = %lu", layer.sublayers.count);
+          }
+		  
+		      if([screen needDrawScreen])
+          {
+            screen.lastDisplayImage = screen.displayImage;
+            screen.lastUpdateTime = [NSDate date];
+          }
+          else if([screen timeFromLastUpdate] > TIME_REFRESS_IMAGE)
+          {
+            screen.displayImage = logoImage;
+            screen.lastUpdateTime = [NSDate date];
+          }
+          /*
           CGRect displayRect;
           
           if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
@@ -685,9 +720,12 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
               //@autoreleasepool
               {
                 UIImage* viewImage = [screen getScaledImage];
-                if(viewImage!=nil&&viewImage.size.width>0&&viewImage.size.height>0)
+                // UIImageView *viewImage = [[UIImageView alloc]initWithFrame:displayRect];
+                if (viewImage != nil && viewImage.size.width > 0 && viewImage.size.height > 0) {
                   //NSLog(@"---Draw Layer for channel: ",screen.channelIndex);
                   [viewImage drawInRect:displayRect];
+                  // [viewImage setImage:[screen getScaledImage]];
+                }
                 //viewImage = nil;
               }
               if([screen needDrawScreen])
@@ -702,6 +740,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
               }
             }
           }
+        */
         }
         
         // dongpt: remove text
@@ -736,7 +775,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
         [[UIColor whiteColor] set];
         CGPoint displayScreenPos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + 5);
         //[_screenString drawAtPoint:displayScreenPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
-        */
+
 #if DEBUG
         if (screen.frameRate != -1) {
           CGPoint displayFrameRatePos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + view.frame.size.height/3);
@@ -754,6 +793,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           NSLog(@"");
         }
 #endif
+*/
       }
       else if( fullscreenView == -1 )
       {
@@ -934,6 +974,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
         
         if( screen.displayImage  )
         {
+          CALayer* sublayer = [CALayer layer];
           CGRect displayRect;
           if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
           {
@@ -945,14 +986,26 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           }
           else // STRETCH mode
             displayRect = view.frame;
-          
-          if(screen.displayImage && (screen.displayImage.CGImage || screen.displayImage.CIImage) && screen.displayImage.size.height > 0 && screen.displayImage.size.width > 0 && screen.displayImage.size.width < 4096 && screen.displayImage.size.height < 4096)
-          {
-            UIImage* viewImage = [screen getScaledImage];
-            //NSLog(@"---Draw Layer for channel: ",screen.channelIndex);
-            [viewImage drawInRect:displayRect];
-            //viewImage = nil;
+
+          // NSLog(@"GOND draw frame in rect 1");
+          // layer.sublayers = nil;
+          if (screen.displayImage.CGImage) {
+            // NSLog(@"GOND draw frame in rect 2");
+            sublayer.contents = (__bridge id)(screen.displayImage.CGImage);
+            sublayer.frame = displayRect;
+            [layer addSublayer:sublayer];
+            // [sublayer display];
           }
+          
+          // if(screen.displayImage && (screen.displayImage.CGImage || screen.displayImage.CIImage) && screen.displayImage.size.height > 0 && screen.displayImage.size.width > 0 && screen.displayImage.size.width < 4096 && screen.displayImage.size.height < 4096)
+          // {
+          //   UIImage* viewImage = [screen getScaledImage];
+          //   //NSLog(@"---Draw Layer for channel: ",screen.channelIndex);
+          //   [viewImage drawInRect:displayRect];
+
+          //   // UIImageView *viewImage = [[UIImageView alloc]initWithFrame:displayRect];
+          //   // [viewImage setImage:[screen getScaledImage ]];
+          // }
           if([screen needDrawScreen])
           {
             screen.lastDisplayImage = screen.displayImage;
@@ -965,13 +1018,13 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           }
         }
         
-        if( screen.enablePtz && screen.showPtzIcon)
-        {
-          [ptzIcon drawInRect:view.ptzIconRect];
-        }
-        
+        // if( screen.enablePtz && screen.showPtzIcon)
+        // {
+        //   [ptzIcon drawInRect:view.ptzIconRect];
+        // }
+/*
 #if DEBUG
-        if (screen.frameRate != -1 /*&& screen.resolutionHeight != 0*/)
+        if (screen.frameRate != -1) //&& screen.resolutionHeight != 0)
         {
           CGPoint displayFrameRatePos = CGPointMake(view.frame.origin.x + 2, view.frame.origin.y + view.frame.size.height/2);
           NSString* rate = [NSString stringWithFormat:@"%zd", screen.frameRate];
@@ -995,6 +1048,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
           
         }
 #endif
+*/
         // dongpt: remove text
         /*
         NSString* _screenString = [NSString stringWithFormat:@"Screen %zd", view.screenIndex+1];
@@ -1376,7 +1430,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
     {
       [layer setTransform:CATransform3DScale(CATransform3DIdentity, 1.0, 1.0, 1.0)];
     }
-    
+    NSLog(@"GOND swiper left");
     layer.sublayers = nil;
     dispatch_async(dispatch_get_main_queue(), ^{
       [layer setNeedsDisplay];
@@ -1525,7 +1579,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
     {
       [layer setTransform:CATransform3DScale(CATransform3DIdentity, 1.0, 1.0, 1.0)];
     }
-    
+    NSLog(@"GOND swipe right");
     layer.sublayers = nil;
     dispatch_async(dispatch_get_main_queue(), ^{
       [layer setNeedsDisplay];
@@ -2525,7 +2579,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
       //alarmTriggerMappingCount[screenDisplay.viewIndex] = 5;
       
       //liveViewController.mainView;
-      
+      // NSLog(@"GOND alarm flashing");
       layer.sublayers = nil;
       
       CALayer* sublayer = [[CALayer alloc] init];
@@ -2651,6 +2705,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
             
             CALayer* layer = [displayLayers objectAtIndex:shiftedScreen.viewIndex];
             layer.sublayers = nextLayer.sublayers;
+            // NSLog(@"GOND remove screen at idx %ld", screenIndex);
             nextLayer.sublayers = nil;
             dispatch_async(dispatch_get_main_queue(),^{
               [layer setNeedsDisplay];
@@ -2775,6 +2830,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
       
       if (sourceScreen.viewIndex >=0 && sourceScreen.viewIndex < maxDisplayChannels) {
         CALayer* sourceScreenLayer = [displayLayers objectAtIndex:sourceScreen.viewIndex];
+        // NSLog(@"GOND insertscreen at index 1");
         shiftScreenLayer.sublayers = sourceScreenLayer.sublayers;
       }
       
@@ -2843,6 +2899,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
         screen.isEnable = shiftedScreen.isEnable;
         screen.hasSubStream = shiftedScreen.hasSubStream;
         
+        // NSLog(@"GOND insertscreen at index 2");
         layer.sublayers = shiftScreenLayer.sublayers;
         
         if (screen.screenIndex != IMC_MAX_CHANNEL - 1) {
