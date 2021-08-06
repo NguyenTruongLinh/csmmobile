@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  AppState,
   // BackHandler,
 } from 'react-native';
 // import {reaction} from 'mobx';
@@ -22,7 +23,6 @@ import CMSAvatars from '../../components/containers/CMSAvatars';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 
 import CMSColors from '../../styles/cmscolors';
-import videoStore from '../../stores/video';
 import {CLOUD_TYPE} from '../../consts/video';
 import sitesStore from '../../stores/sites';
 import ROUTERS from '../../consts/routes';
@@ -72,9 +72,11 @@ class ChannelsView extends React.Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('ChannelsView componentWillUnmount');
+    const {videoStore} = this.props;
     this._isMounted = false;
-    this.props.videoStore.releaseStreams();
-    this.props.videoStore.setChannelFilter('');
+    AppState.removeEventListener('change', this.handleAppStateChange);
+    videoStore.releaseStreams();
+    videoStore.setChannelFilter('');
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     this.stopAll();
     videoStore.setStreamReadyCallback(null);
@@ -89,6 +91,7 @@ class ChannelsView extends React.Component {
       //   videoStore.setNVRLoginInfo('i3admin', 'i3admin');
     }
     this.setHeader(false);
+    AppState.addEventListener('change', this.handleAppStateChange);
 
     if (!sitesStore.selectedDVR) return;
     videoStore.selectDVR(sitesStore.selectedDVR);
@@ -126,6 +129,19 @@ class ChannelsView extends React.Component {
 
     this.getChannelsInfo();
   }
+
+  handleAppStateChange = nextAppState => {
+    __DEV__ &&
+      console.log('GOND handleAppStateChange nextAppState: ', nextAppState);
+    // if (nextAppState === 'active' && this.appState) {
+    //   if (this.appState.match(/inactive|background/)) {
+    //     this.pauseAll(false);
+    //   }
+    // } else {
+    //   this.pauseAll(true);
+    // }
+    this.appState = nextAppState;
+  };
 
   setHeader = enableSettingButton => {
     const {navigation, videoStore} = this.props;
@@ -220,13 +236,14 @@ class ChannelsView extends React.Component {
     if (!this._isMounted) return;
     this.setState({liveData: this.buildLiveData(this.state.gridLayout)});
     // dongpt: any side effect?
-    videoStore.setStreamReadyCallback(null);
+    this.props.videoStore.setStreamReadyCallback(null);
   };
 
   onAuthenSubmit = ({username, password}) => {
     if (!username || !password) return;
-    this.props.videoStore.setNVRLoginInfo(username, password);
-    this.props.videoStore.displayAuthen(false);
+    const {videoStore} = this.props;
+    videoStore.setNVRLoginInfo(username, password);
+    videoStore.displayAuthen(false);
 
     // if (
     //   videoStore.cloudType == CLOUD_TYPE.DEFAULT ||
@@ -468,6 +485,7 @@ class ChannelsView extends React.Component {
     // __DEV__ && console.log('GOND renderVid player: ', item);
     if (!item || Object.keys(item).length == 0) return null;
     const {videoWindow} = this.state;
+    const {videoStore} = this.props;
 
     let playerProps = {
       with: videoWindow.width,

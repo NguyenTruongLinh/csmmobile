@@ -184,7 +184,7 @@ class DirectVideoView extends Component {
         return;
       }
     }
-    // console.log('GOND onFFMpegFrameChange, id = ', msgid, ' , val = ', value)
+
     setTimeout(() => {
       this._isMounted && this.onVideoMessage(msgid, value);
     }, 100);

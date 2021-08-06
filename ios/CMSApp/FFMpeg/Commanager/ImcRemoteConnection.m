@@ -982,6 +982,11 @@
 
 - (int)sendData:(NSData *)data
 {
+  UIApplicationState state = [[UIApplication sharedApplication] applicationState];
+  if (state == UIApplicationStateBackground || state == UIApplicationStateInactive)
+  {
+    return SOCKET_SEND_ERROR;
+  }
   __block SOCKET_SEND_STATUS status =  SOCKET_SEND_SUCCESS;
   dispatch_async(dataQueue, ^{
     int sentBytes = 0;

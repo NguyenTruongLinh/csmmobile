@@ -6,7 +6,7 @@ import {
   // Modal,
   Dimensions,
   Platform,
-  StatusBar,
+  AppState,
   TouchableOpacity,
   FlatList,
 } from 'react-native';
@@ -77,6 +77,7 @@ class VideoPlayerView extends Component {
     this._isMounted = true;
 
     Dimensions.addEventListener('change', this.onDimensionsChange);
+    AppState.addEventListener('change', this.handleAppStateChange);
     this.updateHeader();
   }
 
@@ -92,6 +93,7 @@ class VideoPlayerView extends Component {
     __DEV__ && console.log('VideoPlayerView componentWillUnmount');
     this._isMounted = false;
     Dimensions.removeEventListener('change', this.onDimensionsChange);
+    AppState.removeEventListener('change', this.handleAppStateChange);
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
@@ -103,6 +105,20 @@ class VideoPlayerView extends Component {
     // dongpt: TODO handle Orientation
     Orientation.lockToPortrait();
   }
+
+  handleAppStateChange = nextAppState => {
+    __DEV__ &&
+      console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
+    if (nextAppState === 'active' && this.appState) {
+      if (this.appState.match(/inactive|background/)) {
+        // todo: check is already paused to not resume video
+        this.playerRef.pause(false);
+      }
+    } else {
+      this.playerRef.pause(true);
+    }
+    this.appState = nextAppState;
+  };
 
   checkDataOnSearchDate = () => {
     // dongpt: add no data (selected a day without data)
