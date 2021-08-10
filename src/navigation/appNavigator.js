@@ -13,10 +13,6 @@ import LoginView from '../views/auth/login';
 
 import HomeView from '../views/home/home';
 
-import AlarmsLiveView from '../views/alarms/live';
-import AlarmsSearchView from '../views/alarms/search';
-import AlarmDetailView from '../views/alarms/detail';
-
 import HealthView from '../views/health/health';
 import HealthDetailView from '../views/health/healthDetail';
 import AlertsView from '../views/health/alerts';
@@ -46,6 +42,7 @@ import OAMDetailView from '../views/oam/detail';
 
 import VideoStack from './videoNavigator';
 import SettingsStack from './settingsNavigator';
+import AlarmStack from './alarmNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
 import ROUTERS from '../consts/routes';
@@ -66,14 +63,14 @@ import cmscolors from '../styles/cmscolors';
 //   };
 // };
 
-const AStack = createStackNavigator();
-const AlarmStack = () => (
-  <AStack.Navigator initialRouteName={ROUTERS.ALARM_LIVE} headerMode="none">
-    <AStack.Screen name={ROUTERS.ALARM_LIVE} component={AlarmsLiveView} />
-    <AStack.Screen name={ROUTERS.ALARM_SEARCH} component={AlarmsSearchView} />
-    <AStack.Screen name={ROUTERS.ALARM_DETAIL} component={AlarmDetailView} />
-  </AStack.Navigator>
-);
+// const AStack = createStackNavigator();
+// const AlarmStack = () => (
+//   <AStack.Navigator initialRouteName={ROUTERS.ALARM_LIVE} headerMode="none">
+//     <AStack.Screen name={ROUTERS.ALARM_LIVE} component={AlarmsLiveView} />
+//     <AStack.Screen name={ROUTERS.ALARM_SEARCH} component={AlarmsSearchView} />
+//     <AStack.Screen name={ROUTERS.ALARM_DETAIL} component={AlarmDetailView} />
+//   </AStack.Navigator>
+// );
 
 // const VStack = createStackNavigator();
 // const VideoStack = () => (

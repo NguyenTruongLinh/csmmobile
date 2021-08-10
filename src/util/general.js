@@ -493,7 +493,7 @@ exports.findItems = (collection, key, value) => {
   }));
 };
 
-exports.Capitalize = (str, Special) => {
+exports.capitalize = (str, Special) => {
   if (!str) return '';
   if (!Special) Special = ' ';
   var pieces = str.split(Special);
@@ -548,4 +548,15 @@ exports.sleep = async (time = 1000) => {
   await new Promise(resolve => {
     setTimeout(() => resolve(time), time);
   });
+};
+
+exports.isBase64Encoded = value => {
+  if (!value || typeof value != 'string' || value == '' || value.trim() == '')
+    return false;
+  try {
+    atob(value);
+    return true;
+  } catch {
+    return false;
+  }
 };

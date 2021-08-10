@@ -1,4 +1,4 @@
-import {flow, types} from 'mobx-state-tree';
+import {flow, types, applySnapshot} from 'mobx-state-tree';
 // import SiteStore from './sites';
 import BigNumber from 'bignumber.js';
 import BigNumberPrimitive from './types/bignumber';
@@ -149,17 +149,7 @@ const ExceptionTypeModel = types
   })
   .views(self => ({
     get data() {
-      return {
-        id: self.id,
-        name: self.name,
-        desc: self.desc,
-        flagTime: self.flagTime,
-        typeWeight: self.typeWeight,
-        color: self.color,
-        isSystem: self.isSystem,
-        readOnly: self.readOnly,
-        userId: self.userId,
-      };
+      return {...self};
     },
   }));
 
@@ -209,14 +199,20 @@ export const POSModel = types
       // __DEV__ &&
       //   console.log('GOND self.exceptionTypes = ', self.exceptionTypes);
     }),
+    cleanUp() {
+      applySnapshot(self, storeDefault);
+    },
   }));
-const exceptionStore = POSModel.create({
+
+const storeDefault = {
   showChartView: true,
   param: null,
   searchSiteText: '',
   // isBackFromFCM: types.boolean(false),
   exceptionsGroupBySite: [],
   exceptionTypes: [],
-});
+};
+
+const exceptionStore = POSModel.create(storeDefault);
 
 export default exceptionStore;

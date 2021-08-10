@@ -11,7 +11,7 @@ export const Account = {
   updateNotifySettings: 'EditUserNotifySettings',
 };
 
-export const Alertype = {
+export const AlertType = {
   controller: 'alerttype',
   get: '',
   getAlertTypeVA: 'getalerttypeva',
@@ -29,6 +29,7 @@ export const Alert = {
   getByDvr: 'dvr',
   ignoreMutiAlertType: 'IgnoreMutiAlertType',
   ignoreMutiAlertSite: 'IgnoreMutiAlertSite',
+  imageTime: 'imagetime',
 };
 
 export const DVR = {

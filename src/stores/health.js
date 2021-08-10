@@ -1,4 +1,4 @@
-import {types} from 'mobx-state-tree';
+import {types, applySnapshot} from 'mobx-state-tree';
 
 const AlertModel = types.model({
   id: types.identifierNumber,
@@ -63,14 +63,20 @@ export const HealthModel = types
     // Group alert by site
     get alertSiteList() {},
   }))
-  .actions(self => ({}));
+  .actions(self => ({
+    cleanUp() {
+      applySnapshot(self, storeDefault);
+    },
+  }));
 
-const healthStore = HealthModel.create({
+const storeDefault = {
   alertsList: [],
   alertTypes: [],
   date: '',
   alertDetailView: null,
   activeDVRAlert: null,
-});
+};
+
+const healthStore = HealthModel.create(storeDefault);
 
 export default healthStore;

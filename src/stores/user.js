@@ -332,7 +332,7 @@ export const UserStoreModel = types
       }
       self.isLoggedIn = false;
     },
-    logout: flow(function* logOut() {
+    logout: flow(function* logout() {
       if (!self.deleteLocal()) return false;
       self.loginInfo = LoginModel.create({
         domainname: self.domain,

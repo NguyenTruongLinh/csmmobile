@@ -33,7 +33,24 @@ class SettingsView extends Component {
   }
 
   onLogout = () => {
-    this.props.userStore && this.props.userStore.logout();
+    const {
+      userStore,
+      videoStore,
+      alarmStore,
+      healthStore,
+      oamStore,
+      siteStore,
+      posStore,
+    } = this.props;
+    this.props;
+    if (userStore.logout()) {
+      videoStore.cleanUp();
+      alarmStore.cleanUp();
+      healthStore.cleanUp();
+      oamStore.cleanUp();
+      siteStore.cleanUp();
+      posStore.cleanUp();
+    }
   };
 
   toProfile = () => {
@@ -330,4 +347,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('userStore', 'appStore')(observer(SettingsView));
+export default inject(
+  'userStore',
+  'appStore',
+  'videoStore',
+  'alarmStore',
+  'healthStore',
+  'oamStore',
+  'sitesStore'
+)(observer(SettingsView));

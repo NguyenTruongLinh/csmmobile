@@ -66,6 +66,7 @@ export const OAMModel = types
         // lastData: previousData,
       });
     },
+    cleanUp() {},
   }));
 
 const oamStore = OAMModel.create({

@@ -1,4 +1,4 @@
-import {flow, types, getSnapshot} from 'mobx-state-tree';
+import {flow, types, getSnapshot, applySnapshot} from 'mobx-state-tree';
 
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
@@ -372,11 +372,13 @@ export const VideoModel = types
       return null;
     },
     get filteredChannels() {
+      if (!self.channelFilter) return self.allChannels;
       return self.allChannels.filter(ch =>
         ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
       );
     },
     get filteredActiveChannels() {
+      if (!self.channelFilter) return self.activeChannels;
       return self.allChannels.filter(
         ch =>
           ch.isActive &&
@@ -1128,10 +1130,13 @@ export const VideoModel = types
             break;
         }
       },
+      cleanUp() {
+        applySnapshot(self, storeDefault);
+      },
     };
   });
 
-const videoStore = VideoModel.create({
+const storeDefault = {
   kDVR: null,
 
   allChannels: [],
@@ -1165,6 +1170,8 @@ const videoStore = VideoModel.create({
   // timezone: null,
   recordingDates: [],
   timeline: [],
-});
+};
+
+const videoStore = VideoModel.create(storeDefault);
 
 export default videoStore;

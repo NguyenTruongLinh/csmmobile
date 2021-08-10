@@ -162,10 +162,10 @@ export const StatusComponet = {
   NODATA: 'NODATA',
 };
 export const DateFormat = {
-  Alert_Date: 'MM/DD/YYYY HH:mm:ss',
-  AlertDetail_Date: 'MM/DD/YYYY HH:mm:ss', //"MMM DD, YYYY HH:mm:ss"
-  POS_Filter_Date: 'MM/DD/YYYY',
-  TranDate: 'MM/DD/YYYY HH:mm:ss',
+  Alert_Date: 'MM/dd/yyyy HH:mm:ss',
+  AlertDetail_Date: 'MM/dd/yyyy HH:mm:ss', //"MMM DD, YYYY HH:mm:ss"
+  POS_Filter_Date: 'MM/dd/yyyy',
+  TranDate: 'MM/dd/yyyy HH:mm:ss',
 };
 
 export const Domain = {
@@ -530,9 +530,9 @@ export const CALENDAR_DATE_FORMAT = 'yyyy-MM-dd';
 export const NVRPlayerConfig = {
   RequestDateFormat: 'yyyy/MM/dd',
   RequestTimeFormat: 'yyyy/MM/dd HH:mm:ss',
-  ResponseTimeFormat: 'yyyy/MM/dd hh:mm:ss.SSS',
-  TimeFormat: 'hh:mm',
-  FrameFormat: 'MM/dd/yyyy - hh:mm:ss',
-  LiveFrameFormat: 'hh:mm:ss',
+  ResponseTimeFormat: 'yyyy/MM/dd HH:mm:ss.SSS',
+  TimeFormat: 'HH:mm',
+  FrameFormat: 'MM/dd/yyyy - HH:mm:ss',
+  LiveFrameFormat: 'HH:mm:ss',
   Search_Duration: 10 * 60,
 };

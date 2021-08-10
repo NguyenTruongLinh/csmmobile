@@ -7,9 +7,9 @@ import userStore from './stores/user';
 import videoStore from './stores/video';
 import alarmStore from './stores/alarm';
 import posStore from './stores/pos';
-// import oamStore from './stores/oam';
+import oamStore from './stores/oam';
 import sitesStore from './stores/sites';
-// import healthStore from './stores/health';
+import healthStore from './stores/health';
 import App from './app';
 
 const Main = () => {
@@ -22,9 +22,8 @@ const Main = () => {
       videoStore={videoStore}
       alarmStore={alarmStore}
       posStore={posStore}
-      // healthStore={healthStore}
-      // oamStore={oamStore}
-    >
+      healthStore={healthStore}
+      oamStore={oamStore}>
       <App />
       <ModalPortal />
     </Provider>

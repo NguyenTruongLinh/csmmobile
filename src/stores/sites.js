@@ -1,4 +1,4 @@
-import {types, flow} from 'mobx-state-tree';
+import {types, flow, applySnapshot} from 'mobx-state-tree';
 
 import {Route, Site as SiteRoute} from '../consts/apiRoutes';
 import {Login as LoginTxt} from '../localization/texts';
@@ -193,9 +193,12 @@ export const SitesMapModel = types
       }
       return true;
     }),
+    cleanUp() {
+      applySnapshot(self, storeDefault);
+    },
   }));
 
-const sitesStore = SitesMapModel.create({
+const storeDefault = {
   sitesList: [],
   selectedSite: null,
   siteFilter: '',
@@ -204,6 +207,8 @@ const sitesStore = SitesMapModel.create({
   oamSites: [],
   oamSiteFilter: '',
   isLoading: false,
-});
+};
+
+const sitesStore = SitesMapModel.create(storeDefault);
 
 export default sitesStore;
