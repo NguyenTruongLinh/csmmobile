@@ -39,7 +39,7 @@ class SettingsView extends Component {
       alarmStore,
       healthStore,
       oamStore,
-      siteStore,
+      sitesStore,
       posStore,
     } = this.props;
     this.props;
@@ -48,7 +48,7 @@ class SettingsView extends Component {
       alarmStore.cleanUp();
       healthStore.cleanUp();
       oamStore.cleanUp();
-      siteStore.cleanUp();
+      sitesStore.cleanUp();
       posStore.cleanUp();
     }
   };

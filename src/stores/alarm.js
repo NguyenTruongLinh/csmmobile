@@ -82,21 +82,25 @@ const AlarmData = types
     getSnapshot: flow(function* getSnapshot() {
       if (!self.snapshot || self.snapshot.length == 0)
         return {url_thumnail: No_Image};
+      const isTempSDAlert =
+        util.isTemperatureAlert(self.kAlertType) ||
+        util.isSDAlert(self.kAlertType);
       try {
         const res = yield apiService.getBase64Stream(
           Alert.controller,
-          self.snapshot[0].time,
-          Alert.imageTime,
+          String(isTempSDAlert ? self.kAlertEvent : self.snapshot[0].time),
+          isTempSDAlert ? Alert.image : Alert.imageTime,
           {
             thumb: true,
             kdvr: self.kDVR,
             ch: self.snapshot[0].channel,
+            next: null,
             download: false,
           }
         );
 
         if (res && res.status == 200) {
-          __DEV__ && console.log('GOND get alarm thumbnail success: ', res);
+          // __DEV__ && console.log('GOND get alarm thumbnail success: ', res);
           return {base64_thumnail: res.data};
         } else {
           __DEV__ && console.log('GOND get alarm thumbnail failed: ', res);

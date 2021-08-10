@@ -30,6 +30,7 @@ export const Alert = {
   ignoreMutiAlertType: 'IgnoreMutiAlertType',
   ignoreMutiAlertSite: 'IgnoreMutiAlertSite',
   imageTime: 'imagetime',
+  image: 'image',
 };
 
 export const DVR = {

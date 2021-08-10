@@ -242,6 +242,7 @@ class Api {
 
     let requestHttpMethod = _get;
     try {
+      __DEV__ && console.log('GOND api::getBase64Stream url = ', url);
       let request = this._fetchBlob(url, requestHttpMethod);
 
       return request
