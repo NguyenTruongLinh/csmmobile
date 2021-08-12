@@ -371,7 +371,7 @@ export const UserStoreModel = types
         return uPhotoRes && modulesRes; // && alertTypesRes;
       } catch (err) {
         __DEV__ && console.log('GOND getDataPostLogin failed: ', err);
-        snackbarUtil.handleGetDataFailed();
+        snackbarUtil.handleRequestFailed();
         return false;
       }
     }),
@@ -623,7 +623,7 @@ export const UserStoreModel = types
       );
       if (res.error) {
         __DEV__ && console.log('GOND getNotifySetting failed: ', res.error);
-        snackbarUtil.handleGetDataFailed();
+        snackbarUtil.handleRequestFailed();
         return false;
       } else {
         // __DEV__ && console.log('GOND getNotifySettings: ', res);
@@ -654,7 +654,7 @@ export const UserStoreModel = types
       // __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
       if (!res || res.error) {
         __DEV__ && console.log('!!! GOND getAlertTypesSetting failed: ', res);
-        // snackbarUtil.handleGetDataFailed();
+        // snackbarUtil.handleRequestFailed();
         return false;
       } else {
         if (!Array.isArray(res)) {

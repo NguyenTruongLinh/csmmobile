@@ -63,10 +63,15 @@ export const ActionMessages = {
 
 export const Comps = {
   searchPlaceholder: 'Search',
+  notePlaceholder: 'Please click here to add notes',
 };
 
 export const Video = {
   live: 'Live',
   search: 'Search',
   noVideo: 'No video',
+};
+
+export const Alarm = {
+  eventTime: 'Event time',
 };

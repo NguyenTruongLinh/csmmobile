@@ -191,7 +191,7 @@ export const POSModel = types
 
       // __DEV__ && console.log('GOND exceptionTypes = ', res);
       if (!res || res.error) {
-        snackbar.handleGetDataFailed();
+        snackbar.handleRequestFailed();
       }
       self.exceptionTypes = Array.isArray(res)
         ? res.map(item => parseExceptionType(item))

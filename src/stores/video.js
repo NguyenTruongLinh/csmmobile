@@ -796,6 +796,12 @@ export const VideoModel = types
       }),
       saveActiveChannels: flow(function* saveActiveChannels(channels) {
         if (self.kDVR == null) return false;
+        if (channels.length > self.maxReadyChannels) {
+          snackbarUtil.onMessage(
+            'Save error: only support ' + self.maxReadyChannels + ' channels'
+          );
+          return false;
+        }
         self.isLoading = true;
         let result = false;
         try {
@@ -814,7 +820,7 @@ export const VideoModel = types
           }
         } catch (err) {
           __DEV__ && console.log('GOND save active channels error: ', err);
-          snackbarUtil.handleGetDataFailed(err);
+          snackbarUtil.handleRequestFailed(err);
           self.isLoading = false;
           return false;
         }
@@ -839,7 +845,7 @@ export const VideoModel = types
           if (res.error) {
             __DEV__ &&
               console.log('GOND cannot get channels info: ', res.error);
-            snackbarUtil.handleGetDataFailed(res.error);
+            snackbarUtil.handleRequestFailed(res.error);
             self.error = res.error;
             self.isLoading = false;
             return false;
@@ -847,7 +853,7 @@ export const VideoModel = types
           self.allChannels = res.map(ch => parseChannel(ch));
         } catch (err) {
           console.log('GOND cannot get channels info: ', err);
-          snackbarUtil.handleGetDataFailed(err);
+          snackbarUtil.handleRequestFailed(err);
           self.isLoading = false;
           return false;
         }
@@ -883,18 +889,18 @@ export const VideoModel = types
               ' && ',
               resAll.error
             );
-            snackbarUtil.handleGetDataFailed(resActive.error || resAll.error);
+            snackbarUtil.handleRequestFailed(resActive.error || resAll.error);
             self.error = resActive.error || resAll.error;
             self.isLoading = false;
             return false;
           }
-          self.maxReadyChannels = resActive.MaxReadyChannels;
+          self.maxReadyChannels = resActive.MaxReadyChannels ?? 0;
           self.allChannels = resAll.map(ch =>
             parseChannel(ch, resActive.Channels)
           );
         } catch (err) {
           console.log('GOND cannot get active channels info: ', err);
-          snackbarUtil.handleGetDataFailed(err);
+          snackbarUtil.handleRequestFailed(err);
           self.isLoading = false;
           return false;
         }
@@ -953,7 +959,7 @@ export const VideoModel = types
           }
         } catch (err) {
           console.log('GOND cannot get direct video info: ', err);
-          snackbarUtil.handleGetDataFailed(err);
+          snackbarUtil.handleRequestFailed(err);
           self.isLoading = false;
           return false;
         }

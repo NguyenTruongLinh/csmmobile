@@ -56,7 +56,7 @@ class SitesView extends Component {
 
   getSitesList = async () => {
     let res = await this.props.sitesStore.getAllSites();
-    if (!res) snackbar.handleGetDataFailed();
+    if (!res) snackbar.handleRequestFailed();
   };
 
   onBack = () => {

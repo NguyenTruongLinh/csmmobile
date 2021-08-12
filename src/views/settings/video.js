@@ -101,7 +101,7 @@ class VideosettingView extends Component {
         selectedValue: this.props.videoStore.isCloud,
       });
     } else {
-      snackbar.handleGetDataFailed();
+      snackbar.handleRequestFailed();
     }
   };
 

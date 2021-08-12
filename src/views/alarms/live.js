@@ -19,6 +19,7 @@ import CMSColors from '../../styles/cmscolors';
 
 import {Comps as CompTxt} from '../../localization/texts';
 import {AlertType_Support} from '../../consts/misc';
+import ROUTERS from '../../consts/routes';
 
 const Timer_Get_Image = 3000;
 const thumb_size = {width: 60, height: 60};
@@ -61,6 +62,7 @@ class AlarmsLiveView extends Component {
     const {alarmStore, navigation} = this.props;
 
     alarmStore.selectAlarm(alarm);
+    navigation.push(ROUTERS.ALARM_DETAIL);
   };
 
   // onDimensionChange = event => {

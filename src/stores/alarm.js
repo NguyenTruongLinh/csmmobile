@@ -5,8 +5,10 @@ import snackbarUtil from '../util/snackbar';
 import util from '../util/general';
 
 import {No_Image} from '../consts/images';
-import {AlertType_Support} from '../consts/misc';
+import {AlertTypes, AlertType_Support} from '../consts/misc';
 import {ACConfig, Alert, AlertType} from '../consts/apiRoutes';
+
+const ID_Canned_Message = 5;
 
 const AlarmRate = types.model({
   rateId: types.identifierNumber,
@@ -18,12 +20,50 @@ const AlarmTypeVA = types.model({
   name: types.string,
 });
 
-const AlarmSnapshot = types.model({
-  channel: types.number,
-  time: types.number,
-  fileName: types.string,
-  channelName: types.string,
-});
+const AlarmSnapshot = types
+  .model({
+    channelNo: types.number,
+    time: types.number,
+    fileName: types.maybeNull(types.string),
+    channelName: types.string,
+    image: types.maybeNull(types.frozen()),
+    isLoading: types.boolean,
+  })
+  .actions(self => ({
+    getImage: flow(function* getImage(kDVR, kAlertEvent, isTempSDAlert) {
+      if (self.channelNo < 0 || self.time == 0) {
+        self.image = {url_thumnail: No_Image};
+        return;
+      }
+      self.isLoading = true;
+      try {
+        const res = yield apiService.getBase64Stream(
+          Alert.controller,
+          String(isTempSDAlert ? kAlertEvent : self.time),
+          isTempSDAlert ? Alert.image : Alert.imageTime,
+          {
+            thumb: true,
+            kdvr: kDVR,
+            ch: self.channelNo,
+            next: null,
+            download: false,
+          }
+        );
+
+        if (res && res.status == 200) {
+          // __DEV__ && console.log('GOND get snapshot image success: ', res);
+          self.image = {base64_thumnail: res.data};
+        } else {
+          __DEV__ && console.log('GOND get snapshot image failed: ', res);
+          self.image = {url_thumnail: No_Image};
+        }
+      } catch (err) {
+        __DEV__ && console.log('GOND get snapshot image error: ', err);
+        self.image = {url_thumnail: No_Image};
+      }
+      self.isLoading = false;
+    }),
+  }));
 
 const AlarmAddress = types.model({
   addressLine1: types.maybeNull(types.string),
@@ -69,31 +109,84 @@ const AlarmData = types
     temperatureImage: types.maybeNull(types.string),
     kAlertType: types.number,
     kDVR: types.number,
+    time: types.string,
     timezone: types.string,
     dVRUser: types.maybeNull(types.string),
     description: types.string,
-    time: types.string,
-    channel: types.number,
+    channelNo: types.number,
     alertType: types.string,
-    chanMask: types.number, // BigInt
+    chanMask: types.maybeNull(types.frozen(BigNumber)),
     thumb: types.maybeNull(types.frozen()),
   })
+  .views(self => ({
+    get snapshotItems() {
+      let res = self.snapshot.map(ss => ({
+        channelNo: ss.channelNo,
+        channelName: ss.channelName,
+        imageTime: ss.time,
+      }));
+      switch (self.alertType) {
+        case AlertTypes.DVR_Sensor_Triggered:
+          res.filter(
+            ss =>
+              ss.imageTime <= self.imageTime + 1 &&
+              ss.imageTime >= self.imageTime - 1
+          );
+          res.sort(
+            (a, b) =>
+              a.channelNo < b.channelNo ||
+              (a.channelNo == b.channelNo && a.imageTime < b.imageTime)
+          );
+          break;
+        case AlertTypes.DVR_VA_detection:
+          if (res.length == 0) {
+            res = [
+              {
+                channelNo: self.channelNo,
+                channelName: 'Channel ' + (self.channelNo + 1),
+                imageTime: undefined,
+              },
+            ];
+          }
+          break;
+        case AlertTypes.TEMPERATURE_OUT_OF_RANGE:
+        case AlertTypes.TEMPERATURE_NOT_WEAR_MASK:
+        case AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY:
+        case AlertTypes.SOCIAL_DISTANCE:
+          res = [
+            {
+              channelNo: self.channelNo,
+              channelName: 'Channel ' + (self.channelNo + 1),
+              imageTime: res.length > 0 ? res[0].imageTime : undefined,
+            },
+          ];
+          break;
+      }
+      return res;
+    },
+    get isTemperatureAlert() {
+      return util.isTemperatureAlert(self.kAlertType);
+    },
+    get isSDAlert() {
+      return util.isSDAlert(self.kAlertType);
+    },
+    get isTempSDAlert() {
+      return self.isTemperatureAlert || self.isSDAlert;
+    },
+  }))
   .actions(self => ({
-    getSnapshot: flow(function* getSnapshot() {
+    getThumbnail: flow(function* getThumbnail() {
       if (!self.snapshot || self.snapshot.length == 0)
         return {url_thumnail: No_Image};
-      const isTempSDAlert =
-        util.isTemperatureAlert(self.kAlertType) ||
-        util.isSDAlert(self.kAlertType);
       try {
         const res = yield apiService.getBase64Stream(
           Alert.controller,
-          String(isTempSDAlert ? self.kAlertEvent : self.snapshot[0].time),
-          isTempSDAlert ? Alert.image : Alert.imageTime,
+          String(self.isTempSDAlert ? self.kAlertEvent : self.snapshot[0].time),
+          self.isTempSDAlert ? Alert.image : Alert.imageTime,
           {
             thumb: true,
             kdvr: self.kDVR,
-            ch: self.snapshot[0].channel,
+            ch: self.snapshot[0].channelNo,
             next: null,
             download: false,
           }
@@ -110,8 +203,48 @@ const AlarmData = types
       }
       return {url_thumnail: No_Image};
     }),
+    loadSnapshotImages(index) {
+      if (index) {
+        if (index > 0 && index < self.snapshot.length) {
+          self.snapshot[index].getImage(
+            self.kDVR,
+            self.kAlertEvent,
+            self.isTempSDAlert
+          );
+        }
+      } else {
+        if (self.snapshot && self.snapshot.length > 0) {
+          self.snapshot.forEach(ss =>
+            ss.getImage(self.kDVR, self.kAlertEvent, self.isTempSDAlert)
+          );
+        } else {
+          self.snapshot = [AlarmSnapshot.create(defaultSnapshot)];
+        }
+      }
+    },
+    addSnapshot: flow(function* snapshot(snap) {
+      if (!snap.Time || !snap.Channel) return;
+      self.snapshot.push(
+        AlarmSnapshot.create({
+          time: snap.Time,
+          channelNo: snap.Channel,
+          fileName: snap.FileName ?? 'snap_' + snap.Channel + '_' + snap.Time,
+          channelName:
+            snap.ChannelName && snap.ChannelName.length > 0
+              ? snap.ChannelName
+              : util.isNullOrUndef(snap.Channel)
+              ? 'No Channel'
+              : 'Channel ' + (snap.Channel + 1),
+          isLoading: false,
+        })
+      );
+    }),
     setThumbnail(value) {
       self.thumb = value;
+    },
+    update({rateId, note}) {
+      self.rate = rateId;
+      self.note = note;
     },
   }));
 
@@ -147,6 +280,14 @@ export const AlarmModel = types
           item.siteName.toLowerCase().includes(self.filterText) ||
           item.alertType.toLowerCase().includes(self.filterText) ||
           item.description.toLowerCase().includes(self.filterText)
+      );
+    },
+    getRate(id) {
+      return (
+        self.rateConfig.find(item => item.rateId == id) ?? {
+          rateId: -1,
+          rateName: '',
+        }
       );
     },
   }))
@@ -206,10 +347,10 @@ export const AlarmModel = types
           self.liveAlarms = res.map(item => {
             if (!item.SnapShot || item.SnapShot.length <= 0) {
               let channelsList = [];
-              let {imageTime, chanMask, channel} = item;
+              let {ImageTime, ChanMask, Channel} = item;
               item.SnapShot = [];
               if (chanMask != 0) {
-                let str = BigNumber(chanMask).toString(2);
+                let str = BigNumber(ChanMask).toString(2);
                 let len = str.length;
                 let index = -1;
                 for (let i = len - 1; i >= 0; i--) {
@@ -218,16 +359,14 @@ export const AlarmModel = types
                     channelsList.push(index);
                   }
                 }
-              } else channelsList.push(channel);
+              } else channelsList.push(Channel);
 
-              channelsList.forEach(element => {
-                item.SnapShot.push({
-                  Channel: element,
-                  Time: imageTime,
-                  FileName: '',
-                  ChannelName: 'Channel ' + (element + 1),
-                });
-              });
+              item.SnapShot = channelsList.map(ch => ({
+                Channel: ch,
+                Time: ImageTime,
+                FileName: '',
+                ChannelName: null,
+              }));
             }
 
             const alarm = AlarmData.create({
@@ -237,7 +376,7 @@ export const AlarmModel = types
               status: item.Status,
               updateTime: item.UpdateTime,
               rate: item.Rate,
-              note: item.Note,
+              note: item.Note ?? '',
               image: item.Image,
               imageTime: item.ImageTime,
               thumbnail: item.Thumbnail,
@@ -247,14 +386,23 @@ export const AlarmModel = types
               siteName: item.SiteName,
               serverIP: item.ServerIP,
               dtUpdateTime: item.dtUpdateTime,
-              snapshot: item.SnapShot.map(ss =>
-                AlarmSnapshot.create({
-                  channel: ss.Channel,
-                  time: ss.Time,
-                  fileName: ss.FileName,
-                  channelName: ss.ChannelName,
-                })
-              ),
+              snapshot:
+                item.SnapShot && Array.isArray(item.SnapShot)
+                  ? item.SnapShot.map(ss =>
+                      AlarmSnapshot.create({
+                        channelNo: ss.Channel,
+                        time: ss.Time,
+                        fileName: ss.FileName,
+                        channelName:
+                          ss.ChannelName && ss.ChannelName.length > 0
+                            ? ss.ChannelName
+                            : util.isNullOrUndef(ss.Channel)
+                            ? 'No Channel'
+                            : 'Channel ' + (ss.Channel + 1),
+                        isLoading: false,
+                      })
+                    )
+                  : [AlarmSnapshot.create(defaultSnapshot)],
               address: AlarmAddress.create({
                 addressLine1: item.Address.AddressLine1,
                 addressLine2: item.Address.AddressLine2,
@@ -278,9 +426,9 @@ export const AlarmModel = types
               dVRUser: item.DVRUser,
               description: item.Description,
               time: item.Time,
-              channel: item.Channel,
+              channelNo: parseInt(item.Channel),
               alertType: item.AlertType,
-              chanMask: item.ChanMask,
+              chanMask: item.ChanMask ? BigNumber(item.ChanMask) : null,
             });
 
             return alarm;
@@ -300,10 +448,40 @@ export const AlarmModel = types
       self.isLoading = false;
       return resConfig && resVAAlert && resAlarms;
     }),
+    onNewSnapshot() {},
+    updateSelectedAlarm: flow(function* ({rate, note}) {
+      const rateId = rate == -1 ? ID_Canned_Message : rate;
+      self.selectedAlarm.update({rateId, note});
+      try {
+        const res = apiService.put(
+          Alert.controller,
+          String(self.selectedAlarm.kAlertEvent),
+          '',
+          {
+            KAlertEvent: self.selectedAlarm.kAlertEvent,
+            KAlertType: self.selectedAlarm.kAlertType,
+            Note: note,
+            Rate: rateId,
+          }
+        );
+        snackbarUtil.handleSaveResult(res);
+      } catch (err) {
+        __DEV__ && console.log('GOND update alarm error: ', err);
+        snackbarUtil.handleRequestFailed();
+      }
+    }),
     cleanUp() {
       applySnapshot(self, storeDefault);
     },
   }));
+
+const defaultSnapshot = {
+  channelNo: -1,
+  time: 0,
+  channelName: 'No Channel',
+  isLoading: false,
+  image: {url_thumnail: No_Image},
+};
 
 const storeDefault = {
   isLoading: false,

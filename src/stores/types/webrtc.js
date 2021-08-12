@@ -173,11 +173,11 @@ const ChannelConnectionModel = types
 
         // Get ICE server configuration
         const iceServers = [];
-        if (IS_FORCE_TURN) {
-          iceServers.push({
-            urls: `stun:stun.kinesisvideo.${region}.amazonaws.com:443`,
-          });
-        }
+        // if (IS_FORCE_TURN) {
+        //   iceServers.push({
+        //     urls: `stun:stun.kinesisvideo.${region}.amazonaws.com:443`,
+        //   });
+        // }
 
         const getIceServerConfigResponse =
           yield kinesisVideoSignalingChannelsClient.getIceServerConfig({
@@ -189,13 +189,30 @@ const ChannelConnectionModel = types
             '[GOND] ICE getIceServerConfigResponse: ',
             getIceServerConfigResponse
           );
-        getIceServerConfigResponse.IceServerList.forEach(iceServer =>
+        // dongpt: only get first turn server
+        const serversList = getIceServerConfigResponse
+          ? getIceServerConfigResponse.IceServerList
+          : [];
+        if (Array.isArray(serversList) && serversList.length > 0) {
+          const iceServer = serversList[0];
           iceServers.push({
             urls: iceServer.Uris,
             username: iceServer.Username,
             credential: iceServer.Password,
-          })
-        );
+          });
+        } else {
+          iceServers.push({
+            urls: `stun:stun.kinesisvideo.${region}.amazonaws.com:443`,
+          });
+        }
+
+        // getIceServerConfigResponse.IceServerList.forEach(iceServer =>
+        //   iceServers.push({
+        //     urls: iceServer.Uris,
+        //     username: iceServer.Username,
+        //     credential: iceServer.Password,
+        //   })
+        // );
         // }
         __DEV__ && console.log('[GOND] - ICE servers: ', iceServers);
 

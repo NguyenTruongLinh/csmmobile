@@ -11,15 +11,15 @@ const showMessage = (message, isError = true) => {
 };
 
 exports.handleSaveResult = (result, errorMessage) => {
-  if (result.error) {
+  if (result.status == 200 || !result.error) {
+    showMessage(ActionMessages.saveSuccess, false);
+  } else {
     __DEV__ && console.log('GOND save error: ', result.error);
     showMessage(errorMessage || ActionMessages.saveFail, true);
-  } else {
-    showMessage(ActionMessages.saveSuccess, false);
   }
 };
 
-exports.handleGetDataFailed = error => {
+exports.handleRequestFailed = error => {
   showMessage(ActionMessages.getDataFailed, true);
 };
 
