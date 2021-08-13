@@ -20,6 +20,7 @@ import {DateTime} from 'luxon';
 import TransThumb from '../../components/views/TransThumb';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -33,7 +34,7 @@ import {
 import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
 
 const ID_Canned_Message = 5;
-const CONTENT_INFO_HEIGHT = 68;
+const CONTENT_INFO_HEIGHT = 92;
 
 class AlarmDetailView extends Component {
   constructor(props) {
@@ -184,58 +185,7 @@ class AlarmDetailView extends Component {
     }
   };
 
-  renderNoteInput = () => {
-    return (
-      <View style={{flexDirection: 'column'}}>
-        <Text style={{color: CMSColors.InactiveText, paddingLeft: 25}}>
-          Note
-        </Text>
-        <TextInput
-          style={styles.inputNote}
-          underlineColorAndroid={CMSColors.transparent}
-          multiline={true}
-          allowFontScaling={true}
-          // numberOfLines={4}
-          onChangeText={this.onNoteChange}
-          autoCorrect={false}
-          enablesReturnKeyAutomatically={true}
-          value={this.state.note}
-          maxLength={250}
-          placeholder={ComponentTxt.notePlaceholder}
-        />
-      </View>
-    );
-  };
-
-  renderRating = () => {
-    const {rateId} = this.state.rating;
-
-    return (
-      <View
-        style={{
-          borderWidth: 0,
-          flexDirection: 'column',
-          paddingTop: variable.inputPaddingLeft,
-          paddingBottom: variable.inputPaddingLeft,
-          justifyContent: 'center',
-          alignItems: 'center', //height: 56,
-          // borderBottomWidth: 1,
-          // borderColor: CMSColors.DividerColor54,
-        }}>
-        <AirbnbRating
-          type="star"
-          showRating={false}
-          ratingCount={5}
-          defaultRating={rateId == -1 ? rateId : 5 - rateId}
-          size={30}
-          allowEmpty={true}
-          onFinishRating={this.onRatingChange}
-        />
-        {/* <Text   numberOfLines={1} >{msg_info}</Text> */}
-        <Text style={{padding: 8}}>{this.state.rating.rateName}</Text>
-      </View>
-    );
-  };
+  gotoVideo = isLive => {};
 
   renderViolationGroup = (imgSize, coordinateList) => {
     return (
@@ -265,6 +215,31 @@ class AlarmDetailView extends Component {
         </Svg>
       </View>
     );
+  };
+
+  renderAlertStatus = () => {
+    let {status} = this.props.alarmStore.selectedAlarm;
+    if (status == 1)
+      return (
+        <View style={styles.statusContainer}>
+          <View
+            style={{
+              justifyContent: 'center',
+              paddingRight: variable.inputPaddingLeft,
+            }}>
+            <IconCustom
+              name={'check-symbol'}
+              size={12}
+              color={CMSColors.White}
+            />
+          </View>
+          <Text
+            numberOfLines={1}
+            style={{fontSize: 12, color: CMSColors.White}}>
+            {AlarmTxt.process}
+          </Text>
+        </View>
+      );
   };
 
   renderImage = ({item}) => {
@@ -326,12 +301,12 @@ class AlarmDetailView extends Component {
     let {description, kAlertTypeVA, kAlertType, isSDAlert} =
       this.props.alarmStore.selectedAlarm;
 
-    __DEV__ && console.log('GOND infoDesc: ', description);
+    // __DEV__ && console.log('GOND infoDesc: ', description);
     if (kAlertType != AlertTypes.DVR_VA_detection) {
       if (isSDAlert) {
         return description.split(',')[0] + ': Social distance';
       }
-      __DEV__ && console.log('GOND infoDesc not change');
+      // __DEV__ && console.log('GOND infoDesc not change');
       return description;
     }
 
@@ -470,6 +445,7 @@ class AlarmDetailView extends Component {
           </View>
           {isIncreaseTemp ? null : cmsUserInfo}
         </View>
+        {this.renderVideoButtons()}
       </View>
     );
   };
@@ -573,6 +549,7 @@ class AlarmDetailView extends Component {
             </View>
           </View>
         </View>
+        {this.renderVideoButtons()}
       </View>
     );
   };
@@ -629,29 +606,87 @@ class AlarmDetailView extends Component {
   };
   */
 
-  renderAlertStatus = () => {
-    let {status} = this.props.alarmStore.selectedAlarm;
-    if (status == 1)
-      return (
-        <View style={styles.statusContainer}>
-          <View
-            style={{
-              justifyContent: 'center',
-              paddingRight: variable.inputPaddingLeft,
-            }}>
-            <IconCustom
-              name={'check-symbol'}
-              size={12}
-              color={CMSColors.White}
-            />
-          </View>
-          <Text
-            numberOfLines={1}
-            style={{fontSize: 12, color: CMSColors.White}}>
-            Process
-          </Text>
+  renderVideoButtons = () => {
+    return (
+      <View
+        style={{
+          flex: 3,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <CMSTouchableIcon
+            iconCustom="searching-magnifying-glass"
+            size={28}
+            onPress={this.gotoVideo(false)}
+            color={CMSColors.ColorText}
+          />
         </View>
-      );
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <CMSTouchableIcon
+            iconCustom="videocam-filled-tool"
+            size={28}
+            onPress={this.gotoVideo(true)}
+            color={CMSColors.ColorText}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  renderNoteInput = () => {
+    return (
+      <View style={{flexDirection: 'column'}}>
+        <Text style={{color: CMSColors.InactiveText, paddingLeft: 25}}>
+          Note
+        </Text>
+        <TextInput
+          style={styles.inputNote}
+          underlineColorAndroid={CMSColors.transparent}
+          multiline={true}
+          allowFontScaling={true}
+          // numberOfLines={4}
+          onChangeText={this.onNoteChange}
+          autoCorrect={false}
+          enablesReturnKeyAutomatically={true}
+          value={this.state.note}
+          maxLength={250}
+          placeholder={ComponentTxt.notePlaceholder}
+          placeholderTextColor={CMSColors.InactiveText}
+        />
+      </View>
+    );
+  };
+
+  renderRating = () => {
+    const {rateId} = this.state.rating;
+
+    return (
+      <View
+        style={{
+          borderWidth: 0,
+          flexDirection: 'column',
+          paddingTop: variable.inputPaddingLeft,
+          paddingBottom: variable.inputPaddingLeft,
+          justifyContent: 'center',
+          alignItems: 'center', //height: 56,
+          // borderBottomWidth: 1,
+          // borderColor: CMSColors.DividerColor54,
+        }}>
+        <AirbnbRating
+          type="star"
+          showRating={false}
+          ratingCount={5}
+          defaultRating={rateId == -1 ? rateId : 5 - rateId}
+          size={30}
+          allowEmpty={true}
+          onFinishRating={this.onRatingChange}
+        />
+        {/* <Text   numberOfLines={1} >{msg_info}</Text> */}
+        <Text style={{padding: 8}}>{this.state.rating.rateName}</Text>
+      </View>
+    );
   };
 
   render() {
@@ -752,7 +787,7 @@ const styles = StyleSheet.create({
     bottom: variable.contentPadding,
   },
   leftInfoContainer: {
-    flex: 1,
+    flex: 7,
     flexDirection: 'row',
     alignItems: 'center',
   },

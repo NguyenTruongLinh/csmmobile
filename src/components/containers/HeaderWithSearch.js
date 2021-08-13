@@ -7,7 +7,7 @@ import {inject, observer} from 'mobx-react';
 import {Searchbar} from 'react-native-paper';
 import Orientation from 'react-native-orientation-locker';
 
-import CMSAvatars from './CMSAvatars';
+import CMSTouchableIcon from './CMSTouchableIcon';
 import BackButton from '../controls/BackButton';
 
 import CMSColors from '../../styles/cmscolors';
@@ -106,7 +106,7 @@ class HeaderWithSearch extends React.Component {
       : {
           headerTitle: title,
           headerRight: () => (
-            <CMSAvatars
+            <CMSTouchableIcon
               size={22}
               onPress={() => appStore.enableSearchbar(true)}
               color={CMSColors.DarkPrimaryColor}

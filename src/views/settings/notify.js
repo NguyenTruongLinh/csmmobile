@@ -15,7 +15,7 @@ import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
 
 import Button from '../../components/controls/Button';
-import CMSAvatars from '../../components/containers/CMSAvatars';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import ExceptionFilter from '../../components/views/ExceptionFilter';
 import TemperatureFilter from '../../components/views/TemperatureFilterModal';
 
@@ -352,7 +352,7 @@ class NotifySettingView extends React.Component {
               {this.state.selectedExceptions.length}
             </Text>
           </View>
-          <CMSAvatars
+          <CMSTouchableIcon
             size={24}
             disabled={true}
             iconCustom="ic_flag_black_48px"
@@ -370,7 +370,7 @@ class NotifySettingView extends React.Component {
               {this.state.temperatureAlarmSelected.length}
             </Text>
           </View>
-          <CMSAvatars
+          <CMSTouchableIcon
             size={24}
             disabled={true}
             iconCustom="notifications-button"
@@ -407,7 +407,7 @@ class NotifySettingView extends React.Component {
         onPress={() => this.onSelectNotifyItem(item)}>
         <View style={styles.rowList}>
           <View style={styles.rowButton_contain_icon}>
-            <CMSAvatars
+            <CMSTouchableIcon
               size={24}
               styles={[
                 styles.rowButton_icon,
@@ -485,7 +485,7 @@ class NotifySettingView extends React.Component {
               style={styles.left}
               onPress={this.onBack.bind(this)}>
               <View style={styles.icon}>
-                <CMSAvatars
+                <CMSTouchableIcon
                   size={20}
                   color={CMSColors.SecondaryText}
                   styles={styles.contentIcon}

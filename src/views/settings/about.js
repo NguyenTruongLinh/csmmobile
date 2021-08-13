@@ -65,7 +65,7 @@ class AboutView extends Component {
               style={styles.left}
               onPress={this.onBack.bind(this)}>
               <View style={styles.icon}>
-                <CMSAvatars
+                <CMSTouchableIcon
                   size={20}
                   color={CMSColors.SecondaryText}
                   styles={styles.contentIcon}

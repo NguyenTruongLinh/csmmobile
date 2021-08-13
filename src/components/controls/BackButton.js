@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import Ripple from 'react-native-material-ripple';
 
-import CMSAvatars from '../containers/CMSAvatars';
+import CMSTouchableIcon from '../containers/CMSTouchableIcon';
 import CMSColors from '../../styles/cmscolors';
 
 class BackButton extends React.Component {
@@ -28,7 +28,7 @@ class BackButton extends React.Component {
         style={styles.left}
         onPress={() => navigator && navigator.goBack()}>
         <View style={styles.icon}>
-          <CMSAvatars
+          <CMSTouchableIcon
             size={20}
             color={color}
             styles={[

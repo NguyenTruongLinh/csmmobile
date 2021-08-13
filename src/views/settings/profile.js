@@ -16,7 +16,7 @@ import {profileConstraints} from '../../util/constraints.js';
 import InputText from '../../components/controls/InputText';
 import Button from '../../components/controls/Button';
 import CMSImage from '../../components/containers/CMSImage';
-import CMSAvatars from '../../components/containers/CMSAvatars';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
 import {Account} from '../../consts/apiRoutes';
 import CMSColors from '../../styles/cmscolors';
@@ -150,7 +150,7 @@ class ProfileView extends React.Component {
     let AvatarUser;
     if (user) {
       AvatarUser = (
-        <CMSAvatars
+        <CMSTouchableIcon
           disabled={true}
           size={30}
           styles={styles.avatar}

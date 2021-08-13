@@ -19,7 +19,7 @@ import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
 import RTCStreamingView from './rtc';
 import AuthenModal from '../../components/common/AuthenModal';
-import CMSAvatars from '../../components/containers/CMSAvatars';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 
 import CMSColors from '../../styles/cmscolors';
@@ -163,7 +163,7 @@ class ChannelsView extends React.Component {
         <View style={styles.headerRight}>
           {videoStore.cloudType == CLOUD_TYPE.HLS ||
           videoStore.cloudType == CLOUD_TYPE.RTC ? (
-            <CMSAvatars
+            <CMSTouchableIcon
               size={22}
               onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
               color={CMSColors.ColorText}
@@ -178,7 +178,7 @@ class ChannelsView extends React.Component {
               iconCustom="add-cam"
             />
           ) : null}
-          <CMSAvatars
+          <CMSTouchableIcon
             size={22}
             onPress={() => this.setState({showLayoutSelection: true})}
             color={CMSColors.ColorText}
@@ -393,7 +393,7 @@ class ChannelsView extends React.Component {
     const {viewableWindow} = this.state;
 
     return (
-      <CMSAvatars
+      <CMSTouchableIcon
         size={height * 0.07}
         // style={{alignSelf: 'center'}}
         onPress={() =>

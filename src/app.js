@@ -23,7 +23,7 @@ import NotificationController from './notification/notificationController';
 // import navigationService from './navigation/navigationService';
 // import navigationStore from './stores/navigation';
 
-// import CMSAvatars from './components/CMSAvatars';
+// import CMSTouchableIcon from './components/CMSTouchableIcon';
 // import CMSModal from './components/CMSModal';
 // import CMSBottomBar from './components/CMSBottomBar';
 // import CMSNavBarCustom from './components/CMSNavBarCustom';
@@ -285,7 +285,7 @@ class App extends React.Component {
   //   if (user && user.isAuth) {
   //     if (Actions.currentScene === ROUTERS.POS) {
   //       return (
-  //         <CMSAvatars
+  //         <CMSTouchableIcon
   //           size={20}
   //           color={CMSColors.ButtonRight}
   //           styles={styles.contentIcon_filter}

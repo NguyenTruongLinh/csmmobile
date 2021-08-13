@@ -9,7 +9,7 @@ import Ripple from 'react-native-material-ripple';
 import {Account} from '../../consts/apiRoutes';
 
 import CMSColors from '../../styles/cmscolors';
-import CMSAvatars from '../../components/containers/CMSAvatars';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSImage from '../../components/containers/CMSImage';
 
 import CMSStyleSheet from '../../components/CMSStyleSheet';
@@ -80,7 +80,7 @@ class SettingsView extends Component {
     // __DEV__ && console.log('GOND setting UserPhoto: ', user);
 
     let avatar = user ? (
-      <CMSAvatars
+      <CMSTouchableIcon
         disabled={true}
         size={30}
         styles={styles.avatar}

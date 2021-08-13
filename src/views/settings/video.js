@@ -13,7 +13,7 @@ import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
 
 import Button from '../../components/controls/Button';
-import CMSAvatars from '../../components/containers/CMSAvatars';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import {Icon} from '../../components/CMSStyleSheet';
 
 import snackbar from '../util/snackbar';
@@ -151,7 +151,7 @@ class VideosettingView extends Component {
         }}>
         <View style={styles.rowList}>
           <View style={styles.rowButton_contain_icon}>
-            {/* <CMSAvatars
+            {/* <CMSTouchableIcon
               size={24}
               styles={[
                 styles.rowButton_icon,

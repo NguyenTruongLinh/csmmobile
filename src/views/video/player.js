@@ -21,7 +21,7 @@ import Orientation from 'react-native-orientation-locker';
 import TimePicker from 'react-native-24h-timepicker';
 
 import CMSImage from '../../components/containers/CMSImage';
-import CMSAvatars from '../../components/containers/CMSAvatars';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import TimeRuler from '../../components/controls/BetterTimeRuler';
 import BackButton from '../../components/controls/BackButton';
 import TimeOnTimeRuler from '../../components/controls/TimeOnTimeRuler';
@@ -499,7 +499,7 @@ class VideoPlayerView extends Component {
             : styles.buttonsContainers
         }>
         <View style={styles.buttonWrap}>
-          <CMSAvatars
+          <CMSTouchableIcon
             iconCustom={
               videoStore.isLive
                 ? 'searching-magnifying-glass'
@@ -513,7 +513,7 @@ class VideoPlayerView extends Component {
         </View>
         {/* 
         <View style={styles.buttonWrap}>
-        <CMSAvatars
+        <CMSTouchableIcon
           name="camera"
           size={iconSize}
           style={styles.buttonStyle}
@@ -521,7 +521,7 @@ class VideoPlayerView extends Component {
         /> 
         </View>*/}
         <View style={styles.buttonWrap}>
-          <CMSAvatars
+          <CMSTouchableIcon
             iconCustom="hd"
             color={
               videoStore.hdMode === true
@@ -534,7 +534,7 @@ class VideoPlayerView extends Component {
           />
         </View>
         <View style={styles.buttonWrap}>
-          <CMSAvatars
+          <CMSTouchableIcon
             iconCustom={
               videoStore.isFullscreen
                 ? 'out-fullscreen'

@@ -13,7 +13,7 @@ import cmscolors from '../../styles/cmscolors';
 // <!-- END MODULES -->
 // ----------------------------------------------------
 
-class CMSAvatars extends React.Component {
+class CMSTouchableIcon extends React.Component {
   //const TYPES = ['circle', 'square'];
   static propTypes = {
     type: PropTypes.string,
@@ -109,4 +109,4 @@ class CMSAvatars extends React.Component {
   }
 }
 
-module.exports = CMSAvatars;
+module.exports = CMSTouchableIcon;

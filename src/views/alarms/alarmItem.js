@@ -9,7 +9,7 @@ import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import {BigNumber} from 'bignumber.js';
 
-import CMSAvatars from '../../components/containers/CMSAvatars';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import variable from '../../styles/variables';
@@ -293,7 +293,7 @@ class AlarmItem extends React.Component {
     // }
 
     return data.snapshot.length == 0 || _isTempAlert || _isSDAlert ? (
-      <CMSAvatars
+      <CMSTouchableIcon
         size={size}
         disabled={true}
         color={color}
@@ -316,7 +316,7 @@ class AlarmItem extends React.Component {
             resizeMode="contain"
           />
         </View>
-        <CMSAvatars
+        <CMSTouchableIcon
           size={18}
           disabled={true}
           color={CMSColors.White}

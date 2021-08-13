@@ -4,7 +4,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import BackButton from '../components/controls/BackButton';
 import Ripple from 'react-native-material-ripple';
-import CMSAvatars from '../components/containers/CMSAvatars';
+import CMSTouchableIcon from '../components/containers/CMSTouchableIcon';
 
 import AlarmsLiveView from '../views/alarms/live';
 import AlarmsSearchView from '../views/alarms/search';
@@ -54,7 +54,7 @@ export default function AlarmStack() {
                   alignItems: 'center',
                   padding: 5,
                 }}>
-                <CMSAvatars
+                <CMSTouchableIcon
                   size={20}
                   color="black"
                   styles={{position: 'relative', paddingBottom: 14}}
