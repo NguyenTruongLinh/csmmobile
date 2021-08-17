@@ -3,7 +3,7 @@ import {types, flow} from 'mobx-state-tree';
 import apiService from '../services/api';
 import dbService from '../services/localdb';
 import NavigationService from '../navigation/navigationService';
-import {NavigationModel} from '../stores/navigation';
+// import {NavigationModel} from '../stores/navigation';
 import snackbarUtil from '../util/snackbar';
 
 const DeviceInfo = types.model({
@@ -92,7 +92,7 @@ const appStore = types
     isLoading: false,
     naviService: NavigationService.create({
       _navigator: null,
-      _navStore: NavigationModel.create({paramsMap: {}}),
+      // _navStore: NavigationModel.create({paramsMap: {}}),
     }),
     showSearchBar: false,
   });

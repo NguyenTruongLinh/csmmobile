@@ -354,5 +354,6 @@ export default inject(
   'alarmStore',
   'healthStore',
   'oamStore',
-  'sitesStore'
+  'sitesStore',
+  'posStore'
 )(observer(SettingsView));

@@ -74,4 +74,5 @@ export const Video = {
 
 export const Alarm = {
   eventTime: 'Event time',
+  process: 'Process',
 };

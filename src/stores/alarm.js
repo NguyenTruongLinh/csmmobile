@@ -248,6 +248,67 @@ const AlarmData = types
     },
   }));
 
+export const parseAlarmData = item =>
+  AlarmData.create({
+    kAlertEvent: item.KAlertEvent,
+    kAlertTypeVA: item.KAlertTypeVA,
+    cmsUser: item.CMSUser,
+    status: item.Status,
+    updateTime: item.UpdateTime,
+    rate: item.Rate,
+    note: item.Note ?? '',
+    image: item.Image,
+    imageTime: item.ImageTime,
+    thumbnail: item.Thumbnail,
+    severity: item.Severity,
+    serverID: item.ServerID,
+    site: item.Site,
+    siteName: item.SiteName,
+    serverIP: item.ServerIP,
+    dtUpdateTime: item.dtUpdateTime,
+    snapshot:
+      item.SnapShot && Array.isArray(item.SnapShot)
+        ? item.SnapShot.map(ss =>
+            AlarmSnapshot.create({
+              channelNo: ss.Channel,
+              time: ss.Time,
+              fileName: ss.FileName,
+              channelName:
+                ss.ChannelName && ss.ChannelName.length > 0
+                  ? ss.ChannelName
+                  : util.isNullOrUndef(ss.Channel)
+                  ? 'No Channel'
+                  : 'Channel ' + (ss.Channel + 1),
+              isLoading: false,
+            })
+          )
+        : [AlarmSnapshot.create(defaultSnapshot)],
+    address: AlarmAddress.create({
+      addressLine1: item.Address.AddressLine1,
+      addressLine2: item.Address.AddressLine2,
+      city: item.Address.City,
+      stateProvince: item.Address.StateProvince,
+      country: item.Address.Country,
+      zipCode: item.Address.ZipCode,
+    }),
+    isManual: item.IsManual,
+    actionName: item.ActionName,
+    extra:
+      item.Extra && Array.isArray(item.Extra)
+        ? item.Extra.map(ex => ExtraData.create({key: ex.Key, value: ex.Value}))
+        : [],
+    temperatureImage: item.TemperatureImage,
+    kAlertType: item.KAlertType,
+    kDVR: item.KDVR,
+    timezone: item.TimeZone,
+    dVRUser: item.DVRUser,
+    description: item.Description,
+    time: item.Time,
+    channelNo: parseInt(item.Channel),
+    alertType: item.AlertType,
+    chanMask: item.ChanMask ? BigNumber(item.ChanMask) : null,
+  });
+
 const AlarmTime = types.model({
   stime: types.number,
   etime: types.number,
@@ -270,6 +331,7 @@ export const AlarmModel = types
     filterParams: types.maybeNull(AlarmFilterParams),
     alarmPage: types.string,
     selectedAlarm: types.maybeNull(types.reference(AlarmData)),
+    notifiedAlarm: types.maybeNull(AlarmData),
   })
   .views(self => ({
     get filteredLiveData() {
@@ -296,7 +358,18 @@ export const AlarmModel = types
       self.filterText = value.toLowerCase();
     },
     selectAlarm(alarm) {
-      self.selectedAlarm = alarm.kAlertEvent;
+      // __DEV__ && console.log('GOND selectAlarm: ', kAlertEvent);
+      if (!alarm || util.isNullOrUndef(alarm.kAlertEvent)) {
+        __DEV__ && console.log('GOND selectAlarm failed');
+        return false;
+      }
+      if (self.liveAlarms.find(item => item.kAlertEvent == alarm.kAlertEvent)) {
+        self.selectedAlarm = alarm.kAlertEvent;
+      } else {
+        self.notifiedAlarm = alarm;
+        self.selectedAlarm = self.notifiedAlarm.kAlertEvent;
+      }
+      return true;
     },
     getConfigs: flow(function* getConfigs() {
       try {
@@ -337,6 +410,7 @@ export const AlarmModel = types
       }
     }),
     getAlarms: flow(function* getAlarms(params) {
+      self.isLoading = true;
       try {
         const res = yield apiService.get(Alert.controller, null, null, params);
         __DEV__ && console.log('GOND get getAlarms: ', res);
@@ -349,7 +423,7 @@ export const AlarmModel = types
               let channelsList = [];
               let {ImageTime, ChanMask, Channel} = item;
               item.SnapShot = [];
-              if (chanMask != 0) {
+              if (ChanMask != 0) {
                 let str = BigNumber(ChanMask).toString(2);
                 let len = str.length;
                 let index = -1;
@@ -369,67 +443,7 @@ export const AlarmModel = types
               }));
             }
 
-            const alarm = AlarmData.create({
-              kAlertEvent: item.KAlertEvent,
-              kAlertTypeVA: item.KAlertTypeVA,
-              cmsUser: item.CMSUser,
-              status: item.Status,
-              updateTime: item.UpdateTime,
-              rate: item.Rate,
-              note: item.Note ?? '',
-              image: item.Image,
-              imageTime: item.ImageTime,
-              thumbnail: item.Thumbnail,
-              severity: item.Severity,
-              serverID: item.ServerID,
-              site: item.Site,
-              siteName: item.SiteName,
-              serverIP: item.ServerIP,
-              dtUpdateTime: item.dtUpdateTime,
-              snapshot:
-                item.SnapShot && Array.isArray(item.SnapShot)
-                  ? item.SnapShot.map(ss =>
-                      AlarmSnapshot.create({
-                        channelNo: ss.Channel,
-                        time: ss.Time,
-                        fileName: ss.FileName,
-                        channelName:
-                          ss.ChannelName && ss.ChannelName.length > 0
-                            ? ss.ChannelName
-                            : util.isNullOrUndef(ss.Channel)
-                            ? 'No Channel'
-                            : 'Channel ' + (ss.Channel + 1),
-                        isLoading: false,
-                      })
-                    )
-                  : [AlarmSnapshot.create(defaultSnapshot)],
-              address: AlarmAddress.create({
-                addressLine1: item.Address.AddressLine1,
-                addressLine2: item.Address.AddressLine2,
-                city: item.Address.City,
-                stateProvince: item.Address.StateProvince,
-                country: item.Address.Country,
-                zipCode: item.Address.ZipCode,
-              }),
-              isManual: item.IsManual,
-              actionName: item.ActionName,
-              extra:
-                item.Extra && Array.isArray(item.Extra)
-                  ? item.Extra.map(ex =>
-                      ExtraData.create({key: ex.Key, value: ex.Value})
-                    )
-                  : [],
-              temperatureImage: item.TemperatureImage,
-              kAlertType: item.KAlertType,
-              kDVR: item.KDVR,
-              timezone: item.TimeZone,
-              dVRUser: item.DVRUser,
-              description: item.Description,
-              time: item.Time,
-              channelNo: parseInt(item.Channel),
-              alertType: item.AlertType,
-              chanMask: item.ChanMask ? BigNumber(item.ChanMask) : null,
-            });
+            const alarm = parseAlarmData(item);
 
             return alarm;
           });
@@ -437,6 +451,7 @@ export const AlarmModel = types
       } catch (err) {
         __DEV__ && console.log('GOND get getAlarms error: ', err);
       }
+      self.isLoading = false;
     }),
     getLiveData: flow(function* getLiveData(params) {
       self.isLoading = true;
@@ -448,8 +463,11 @@ export const AlarmModel = types
       self.isLoading = false;
       return resConfig && resVAAlert && resAlarms;
     }),
-    onNewSnapshot() {},
+    onNewSnapshot(alarm) {
+      __DEV__ && console.log('GOND onAlarm NewSnapshot: ', alarm);
+    },
     updateSelectedAlarm: flow(function* ({rate, note}) {
+      self.isLoading = true;
       const rateId = rate == -1 ? ID_Canned_Message : rate;
       self.selectedAlarm.update({rateId, note});
       try {
@@ -469,6 +487,7 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND update alarm error: ', err);
         snackbarUtil.handleRequestFailed();
       }
+      self.isLoading = false;
     }),
     cleanUp() {
       applySnapshot(self, storeDefault);

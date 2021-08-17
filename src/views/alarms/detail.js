@@ -618,7 +618,7 @@ class AlarmDetailView extends Component {
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <CMSTouchableIcon
             iconCustom="searching-magnifying-glass"
-            size={28}
+            size={26}
             onPress={this.gotoVideo(false)}
             color={CMSColors.ColorText}
           />
@@ -626,7 +626,7 @@ class AlarmDetailView extends Component {
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <CMSTouchableIcon
             iconCustom="videocam-filled-tool"
-            size={28}
+            size={26}
             onPress={this.gotoVideo(true)}
             color={CMSColors.ColorText}
           />
@@ -696,7 +696,7 @@ class AlarmDetailView extends Component {
     const {imgSize} = this.state;
     return (
       <View style={styles.container} onLayout={this.onLayout}>
-        <KeyboardAwareScrollView ref="scroll">
+        <KeyboardAwareScrollView>
           <View style={{flex: 1, height: imgSize.height, flexDirection: 'row'}}>
             <FlatList
               pagingEnabled={true}

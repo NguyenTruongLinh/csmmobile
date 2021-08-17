@@ -1,11 +1,11 @@
 import {CommonActions, StackActions} from '@react-navigation/native';
 import {types} from 'mobx-state-tree';
 
-import {
-  RouteParams,
-  // navigationStore,
-  NavigationModel,
-} from '../stores/navigation';
+// import {
+//   RouteParams,
+//   navigationStore,
+//   NavigationModel,
+// } from '../stores/navigation';
 
 // let this._navigator;
 // let _navStore = navigationStore;
@@ -13,10 +13,10 @@ import {
 const NavigationService = types
   .model({
     _navigator: types.frozen(),
-    _navStore: NavigationModel,
+    // _navStore: NavigationModel,
   })
   .actions(self => ({
-    setTopLevelNavigator(navigatorRef) {
+    setTopLevelNavigator(navigatorRef, route) {
       if (!navigatorRef) return;
       __DEV__ && console.log('GOND setTopNav ref = ', navigatorRef);
       self._navigator = navigatorRef;
@@ -32,22 +32,22 @@ const NavigationService = types
      * @param {object = {params, key}} options
      */
     navigate(routeName, options) {
-      const {params, key} = options || {params: undefined, key: undefined};
-      if (params || key) {
-        const routeParams = RouteParams.create({routeKey: key, params: params});
-        self._navStore.setParamsForRoute(routeParams);
-      }
-      self._navigator.dispatch(
-        CommonActions.navigate({
-          name: routeName,
-          key,
-          params,
-        })
-      );
+      // const {params, key} = options || {params: undefined, key: undefined};
+      // if (params || key) {
+      //   const routeParams = RouteParams.create({routeKey: key, params: params});
+      //   // self._navStore.setParamsForRoute(routeParams);
+      // }
+      // self._navigator.dispatch(
+      //   CommonActions.navigate({
+      //     name: routeName,
+      //     key,
+      //     params,
+      //   })
+      // );
+      self._navigator.navigate(routeName, options);
     },
 
     push(routeName, params) {
-      console.log('navigator', self._navigator);
       if (
         self._navigator._navigation &&
         typeof self._navigator._navigation.push == 'function'
@@ -98,37 +98,41 @@ const NavigationService = types
       );
     },
 
-    getCurrentRouteName(navigationState) {
-      if (!navigationState) {
+    getCurrentRouteName() {
+      __DEV__ && console.log('GOND getCurrentRouteName ', self._navigator);
+      const {getCurrentRoute} = self._navigator;
+      if (!getCurrentRoute || typeof getCurrentRoute != 'function') {
+        __DEV__ &&
+          console.log(
+            'GOND getCurrentRouteName failed, not available ',
+            self._navigator
+          );
         return null;
       }
-
-      const route = navigationState.routes[navigationState.index];
-
-      if (route.routes) {
-        return getCurrentRouteName(route);
-      }
-
-      return route.routeName;
+      const currentRoute = getCurrentRoute();
+      __DEV__ && console.log('GOND getCurrentRouteName = ', currentRoute);
+      return currentRoute ? currentRoute.name : '';
     },
 
-    showLoading() {
-      // self._navStore.setLoading(true);
-    },
+    // showLoading() {
+    //   // self._navStore.setLoading(true);
+    // },
 
-    hideLoading() {
-      // self._navStore.setLoading(false);
-    },
-    setSequenceNavigate(screenName) {
-      subNavigations = screenName || '';
-    },
-    sequenceNavigate() {
-      if (subNavigations) {
-        navigate(subNavigations);
-      }
+    // hideLoading() {
+    //   // self._navStore.setLoading(false);
+    // },
 
-      subNavigations = '';
-    },
+    // setSequenceNavigate(screenName) {
+    //   subNavigations = screenName || '';
+    // },
+
+    // sequenceNavigate() {
+    //   if (subNavigations) {
+    //     navigate(subNavigations);
+    //   }
+
+    //   subNavigations = '';
+    // },
   }));
 
 // const naviService = new NavigationService();
