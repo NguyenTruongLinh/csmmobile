@@ -43,7 +43,7 @@ export default class TimeRuler extends PureComponent {
     this.color = ['pink', 'orange', 'blue', 'green', '00ff00'];
     this.isSrolling = true;
     this.PressOut = true;
-    this.searchDate = this.props.searchDate;
+    // this.searchDate = this.props.searchDate;
     const {width, height} = Dimensions.get('window');
 
     this.Enum_RecordType = {
@@ -345,7 +345,7 @@ export default class TimeRuler extends PureComponent {
       ? this.props.searchDate
       : new Date() / 1000;
     const minValue = 60 / this.props.numofMin;
-    __DEV__ && console.log('GOND renderHours searchDate = ', searchDate);
+    // __DEV__ && console.log('GOND renderHours searchDate = ', searchDate);
     for (let i = 0; i < numofview; i++) {
       let value = i;
       let objectValue = {
@@ -504,12 +504,15 @@ export default class TimeRuler extends PureComponent {
     let decimalminutes = (decimalhour - hour) * 60;
     let minutes = Math.floor(decimalminutes);
     let seconds = Math.floor((decimalminutes - minutes) * 60);
+    __DEV__ &&
+      console.log('GOND === TimeRuler _onSrollEnd: ', this.props.searchDate);
     if (this.props.onScrollEnd) {
       this.props.onScrollEnd(event, {
         hour: hour,
         minutes: minutes,
         seconds: seconds,
-        milisecondValue: hour * 3600 + minutes * 60 + seconds,
+        timestamp:
+          /*this.props.searchDate +*/ hour * 3600 + minutes * 60 + seconds,
       });
       this.isSrolling = true;
       this.PressOut = true;
@@ -562,7 +565,7 @@ export default class TimeRuler extends PureComponent {
         hour--;
       }
 
-      //this.props.onScrollBeginDrag({hour:hour,minutes:minutes,seconds:seconds, milisecondValue: (hour*3600+minutes*60+seconds) });
+      //this.props.onScrollBeginDrag({hour:hour,minutes:minutes,seconds:seconds, timestamp: (hour*3600+minutes*60+seconds) });
       this.props.onScrollBeginDrag(
         this.formatTime(hour) +
           ':' +

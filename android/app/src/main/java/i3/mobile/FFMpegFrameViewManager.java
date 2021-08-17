@@ -111,9 +111,9 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         // do nothing
         int pos = source.getInt("pos");
         boolean HD = false;
-        if( source.hasKey("HD")) {
+        if( source.hasKey("hd")) {
             try {
-                HD = source.getBoolean("HD");
+                HD = source.getBoolean("hd");
             }
             catch (Exception ex){
                 HD = false;
@@ -204,7 +204,7 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         Log.i("GOND", "setStart 7");
     }
 
-    @ReactProp(name = "hdmode")
+    @ReactProp(name = "hd")
     public void setHD(FFMpegFrameView view,@Nullable Boolean HDMode){
         if(HDMode != null)
             view.ViewHD(HDMode);

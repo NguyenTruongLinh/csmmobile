@@ -249,9 +249,9 @@ class DirectVideoView extends Component {
               });
             if (videoStore.selectedChannel != serverInfo.channelNo) return;
 
-            if (Array.isArray(valueObj) && valueObj.length > 0)
+            if (Array.isArray(valueObj) && valueObj.length > 0) {
               this.onFrameTime(valueObj[0]);
-            else console.log('GOND direct frame time not valid: ', valueObj);
+            } else console.log('GOND direct frame time not valid: ', valueObj);
           } catch {
             console.log('GOND direct frame time not valid: ', valueObj);
           }
@@ -358,10 +358,15 @@ class DirectVideoView extends Component {
   };
 
   playAt = value => {
+    // const localValue = value - this.props.videoStore.directTimeDiff;
+    __DEV__ && console.log('GOND direct playAt: ', value);
     if (this.ffmpegPlayer) {
       this.ffmpegPlayer.setNativeProps({
         seekpos: {pos: value, hd: this.props.videoStore.hdMode},
       });
+      // setTimeout(() => this.ffmpegPlayer && this.pause(false), 200);
+    } else {
+      __DEV__ && console.log('GOND direct playAt ffmpegPlayer not available!');
     }
   };
 
@@ -382,9 +387,16 @@ class DirectVideoView extends Component {
       // if (formatedDate != videoStore.searchDateString) {
       //   videoStore.setSearchDate(formatedDate);
       // }
-      // __DEV__ && console.log('GOND direct frame time : ', frameTime);
+      __DEV__ && console.log('GOND direct frame time : ', frameTime);
       videoStore.setDisplayDateTime(date && time ? date + ' - ' + time : value);
       videoStore.setFrameTime(value, 'utc');
+      // const timeDiff =
+      //   timestamp -
+      //   DateTime.fromFormat(value, NVRPlayerConfig.ResponseTimeFormat, {
+      //     zone: 'utc',
+      //   }).toSeconds();
+      // __DEV__ && console.log('GOND direct time diff: ', timeDiff);
+      // videoStore.setDirectTimeDiff(timeDiff);
     } else console.log('GOND direct frame time value not valid: ', frameTime);
   };
 

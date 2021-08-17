@@ -287,6 +287,7 @@ export const VideoModel = types
   })
   .volatile(self => ({
     recordingDates: {},
+    directTimeDiff: 0,
   }))
   .views(self => ({
     get isCloud() {
@@ -422,7 +423,17 @@ export const VideoModel = types
       if (zone) {
         return self.searchDate.setZone(zone, options).toSeconds();
       }
-      return self.searchDate.toSeconds();
+      if (
+        self.cloudType == CLOUD_TYPE.DEFAULT ||
+        self.cloudType == CLOUD_TYPE.DIRECTION
+      ) {
+        console.log('GOND searchDateInSeconds timezone ', self.timezone);
+        return self.searchDate
+          .setZone('utc', {keepLocalTime: true})
+          .toSeconds();
+      } else {
+        return self.searchDate.toSeconds();
+      }
     },
     get searchDateString() {
       if (!self.searchDate) {
@@ -504,6 +515,9 @@ export const VideoModel = types
             self.frameTime = value;
           }
         }
+      },
+      setDirectTimeDiff(value) {
+        self.directTimeDiff = value;
       },
       setDisplayDateTime(value) {
         self.displayDateTime = value;

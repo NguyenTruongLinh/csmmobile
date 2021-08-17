@@ -580,13 +580,15 @@ class VideoPlayerView extends Component {
             onScrollEnd={(event, value) => {
               __DEV__ && console.log('GOND onTimeline sliding end: ', value);
               if (this.playerRef) {
-                this.playerRef.pause();
-                setTimeout(
-                  () =>
-                    this.playerRef &&
-                    this.playerRef.playAt(value.milisecondValue),
-                  500
-                );
+                // this.playerRef.pause();
+                setTimeout(() => {
+                  if (this.playerRef) {
+                    this.playerRef.playAt(value.timestamp);
+                  }
+                }, 100);
+              } else {
+                __DEV__ &&
+                  console.log('GOND playAt failed playerRef not available!');
               }
             }}
           />
