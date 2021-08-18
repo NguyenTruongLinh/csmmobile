@@ -509,6 +509,7 @@ class VideoPlayerView extends Component {
             size={iconSize}
             // style={styles.buttonStyle}
             onPress={this.onSwitchLiveSearch}
+            disabled={videoStore.isLoading || !this.playerRef}
           />
         </View>
         {/* 
@@ -531,6 +532,7 @@ class VideoPlayerView extends Component {
             size={iconSize}
             // style={styles.buttonStyle}
             onPress={() => videoStore.switchHD()}
+            disabled={videoStore.isLoading || !this.playerRef}
           />
         </View>
         <View style={styles.buttonWrap}>

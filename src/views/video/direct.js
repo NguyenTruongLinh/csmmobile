@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
-// import {reaction} from 'mobx';
+import {reaction} from 'mobx';
 import {DateTime} from 'luxon';
 
 import FFMpegFrameView from '../../components/native/videonative';
@@ -75,14 +75,7 @@ class DirectVideoView extends Component {
         serverInfo.server.port // &&
         // !serverInfo.playing
       ) {
-        this.ffmpegPlayer.setNativeProps({
-          startplayback: {
-            ...serverInfo.playData,
-            searchMode: !isLive,
-            date: isLive ? '' : videoStore.searchDateString,
-            hd: hdMode,
-          },
-        });
+        this.setNativePlayback();
       } else {
         this.setState({
           message: 'Error: wrong server config',
@@ -93,6 +86,19 @@ class DirectVideoView extends Component {
       __DEV__ &&
         console.log('GOND serverInfo not valid reference: ', {...serverInfo});
     }
+
+    // reactions:
+    // this.unsubscribeReaction = reaction(
+    //   () => videoStore.searchDateString,
+    //   (value, previousValue) => {
+    //     __DEV__ &&
+    //       console.log('GOND searchDate changed ', previousValue, ' -> ', value);
+    //     if (value && !previousValue) {
+    //       this.pause();
+    //       setTimeout(() => this.setNativePlayback(), 1000);
+    //     }
+    //   }
+    // );
   }
 
   componentWillUnmount() {
@@ -104,12 +110,13 @@ class DirectVideoView extends Component {
     }
     this.ffmpegPlayer.setNativeProps({stop: true});
     this._isMounted = false;
+    // this.unsubscribeReaction();
   }
 
   componentDidUpdate(prevProps) {
     if (!this._isMounted) return;
     const prevServerInfo = prevProps.serverInfo;
-    const {serverInfo, hdMode, isLive, videoStore} = this.props;
+    const {serverInfo, hdMode, isLive, searchDate, videoStore} = this.props;
     if (!serverInfo || Object.keys(serverInfo).length == 0) return;
 
     // __DEV__ &&
@@ -122,25 +129,21 @@ class DirectVideoView extends Component {
 
     try {
       if (this.ffmpegPlayer && serverInfo) {
+        let willPlayback = false;
         if (
           // JSON.stringify({...prevServerInfo.playData}) !=
           // JSON.stringify({...serverInfo.playData})
           prevServerInfo.playData.userName != serverInfo.playData.userName ||
-          prevServerInfo.playData.password != serverInfo.playData.password
+          prevServerInfo.playData.password != serverInfo.playData.password ||
+          prevServerInfo.playData.channelNo != serverInfo.playData.channelNo ||
+          prevServerInfo.playData.kChannel != serverInfo.playData.kChannel
         ) {
           this.setState({message: ''});
           __DEV__ &&
             console.log('GOND DirectPlayer login ... ', {
               ...serverInfo,
             });
-          this.ffmpegPlayer.setNativeProps({stop: true});
-          setTimeout(() => {
-            this._isMounted &&
-              this.ffmpegPlayer &&
-              this.ffmpegPlayer.setNativeProps({
-                startplayback: serverInfo.playData,
-              });
-          }, 1000);
+          willPlayback = true;
         }
         // if (pause != prevProps.pause) {
         //   this.ffmpegPlayer.setNativeProps({pause: pause});
@@ -148,6 +151,7 @@ class DirectVideoView extends Component {
         if (hdMode != prevProps.hdMode) {
           this.ffmpegPlayer.setNativeProps({hd: true});
         }
+
         if (isLive != prevProps.isLive) {
           __DEV__ &&
             console.log(
@@ -155,20 +159,46 @@ class DirectVideoView extends Component {
               isLive ? 'live' : 'search',
               videoStore.searchDateString
             );
-          this.ffmpegPlayer.setNativeProps({pause: true});
-          this.ffmpegPlayer.setNativeProps({
-            startplayback: {
-              ...serverInfo.playData,
-              searchMode: !isLive,
-              date: isLive ? '' : videoStore.searchDateString,
-              hd: hdMode,
-            },
-          });
+          willPlayback = true;
+        }
+        if (searchDate != prevProps.searchDate) {
+          __DEV__ &&
+            console.log(
+              'GOND searchDate changed ',
+              prevProps.searchDate,
+              ' -> ',
+              searchDate
+            );
+          willPlayback = true;
+        }
+
+        // Finally:
+        if (willPlayback) {
+          this.pause();
+          setTimeout(() => {
+            this.setNativePlayback();
+          }, 1000);
         }
       }
     } catch (err) {
-      __DEV__ && console.log('GOND parseJSON error: ', err);
+      __DEV__ && console.log('GOND update playback failed: ', err);
     }
+  }
+
+  setNativePlayback(paramsObject) {
+    if (!this._isMounted || !this.ffmpegPlayer) return;
+    const {serverInfo, videoStore} = this.props;
+    const playbackInfo = {
+      ...serverInfo.playData,
+      searchMode: !videoStore.isLive,
+      date: videoStore.isLive ? undefined : videoStore.searchDateString,
+      hd: videoStore.hdMode,
+      ...paramsObject,
+    };
+    __DEV__ && console.log('GOND setNativePlayback, info = ', playbackInfo);
+    this.ffmpegPlayer.setNativeProps({
+      startplayback: playbackInfo,
+    });
   }
 
   onNativeMessage = event => {

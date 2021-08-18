@@ -417,29 +417,24 @@ export const VideoModel = types
     },
     searchDateInSeconds(zone, options) {
       // console.log('GOND searchDateInSeconds = ', self.searchDate);
-      if (!self.searchDate) {
-        self.searchDate = DateTime.now().setZone(self.timezone).startOf('day');
-      }
+      const searchDate =
+        self.searchDate ?? DateTime.now().setZone(self.timezone).startOf('day');
       if (zone) {
-        return self.searchDate.setZone(zone, options).toSeconds();
+        return searchDate.setZone(zone, options).toSeconds();
       }
       if (
         self.cloudType == CLOUD_TYPE.DEFAULT ||
         self.cloudType == CLOUD_TYPE.DIRECTION
       ) {
-        console.log('GOND searchDateInSeconds timezone ', self.timezone);
-        return self.searchDate
-          .setZone('utc', {keepLocalTime: true})
-          .toSeconds();
+        return searchDate.setZone('utc', {keepLocalTime: true}).toSeconds();
       } else {
-        return self.searchDate.toSeconds();
+        return searchDate.toSeconds();
       }
     },
     get searchDateString() {
-      if (!self.searchDate) {
-        self.searchDate = DateTime.now().setZone(self.timezone).startOf('day');
-      }
-      return self.searchDate.toFormat(NVRPlayerConfig.RequestTimeFormat);
+      const searchDate =
+        self.searchDate ?? DateTime.now().setZone(self.timezone).startOf('day');
+      return searchDate.toFormat(NVRPlayerConfig.RequestTimeFormat);
     },
     get firstChannelNo() {
       return self.allChannels && self.allChannels.length > 0
@@ -481,7 +476,7 @@ export const VideoModel = types
           console.log('GOND set streamReadyCallback is not a function!');
           return;
         }
-        __DEV__ && console.log('GOND streamReadyCallback ...');
+        // __DEV__ && console.log('GOND streamReadyCallback ...');
         streamReadyCallback = fn;
       },
       selectChannel(value) {

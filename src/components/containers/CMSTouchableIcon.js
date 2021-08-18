@@ -24,6 +24,7 @@ class CMSTouchableIcon extends React.Component {
     color: PropTypes.string,
     onPress: PropTypes.func,
     styles: Image.propTypes.style,
+    disabled: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -74,7 +75,11 @@ class CMSTouchableIcon extends React.Component {
     } else if (icon) {
       content = (
         <View style={[styles]}>
-          <Icon color={color} size={size} name={icon} />
+          <Icon
+            color={disabled ? cmscolors.Inactive : color}
+            size={size}
+            name={icon}
+          />
         </View>
       );
     } else if (iconCustom) {
@@ -90,7 +95,11 @@ class CMSTouchableIcon extends React.Component {
     } else if (iconMaterial) {
       content = (
         <View style={[styles]}>
-          <MaterialIcons color={color} size={size} name={iconMaterial} />
+          <MaterialIcons
+            color={disabled ? cmscolors.Inactive : color}
+            size={size}
+            name={iconMaterial}
+          />
         </View>
       );
     } else {
