@@ -3,7 +3,6 @@ import {
   View,
   FlatList,
   Platform,
-  Modal,
   Dimensions,
   StyleSheet,
   Text,
@@ -13,7 +12,8 @@ import {
 } from 'react-native';
 // import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
-import {BottomModal, ModalContent} from 'react-native-modals';
+// import {BottomModal, ModalContent} from 'react-native-modals';
+import Modal from 'react-native-modal';
 
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
@@ -395,7 +395,6 @@ class ChannelsView extends React.Component {
     return (
       <CMSTouchableIcon
         size={height * 0.07}
-        // style={{alignSelf: 'center'}}
         onPress={() =>
           this.setState(
             {
@@ -411,7 +410,7 @@ class ChannelsView extends React.Component {
           )
         }
         color={CMSColors.ColorText}
-        // styles={{flex: 1}}
+        // styles={{height: height * 0.07}}
         iconCustom={item.icon}
       />
     );
@@ -421,21 +420,48 @@ class ChannelsView extends React.Component {
     const {width, height} = Dimensions.get('window');
 
     return (
-      <BottomModal
-        visible={this.state.showLayoutSelection}
-        onTouchOutside={() => this.setState({showLayoutSelection: false})}
-        onSwipeOut={() => this.setState({showLayoutSelection: false})}
-        height={0.25}>
-        <ModalContent style={styles.layoutModalContainer}>
-          <Text style={styles.layoutModalTitle}>Division</Text>
-          <FlatList
-            contentContainerStyle={styles.layoutModalBody}
-            renderItem={this.renderLayoutItem}
-            data={LayoutData}
-            horizontal={true}
-          />
-        </ModalContent>
-      </BottomModal>
+      // <BottomModal
+      //   visible={this.state.showLayoutSelection}
+      //   onTouchOutside={() => this.setState({showLayoutSelection: false})}
+      //   onSwipeOut={() => this.setState({showLayoutSelection: false})}
+      //   height={0.25}>
+      //   <ModalContent style={styles.layoutModalContainer}>
+      //     <Text style={styles.layoutModalTitle}>Division</Text>
+      //     <FlatList
+      //       contentContainerStyle={styles.layoutModalBody}
+      //       renderItem={this.renderLayoutItem}
+      //       data={LayoutData}
+      //       horizontal={true}
+      //     />
+      //   </ModalContent>
+      // </BottomModal>
+      <Modal
+        isVisible={this.state.showLayoutSelection}
+        onBackdropPress={() => this.setState({showLayoutSelection: false})}
+        // onSwipeOut={() => this.setState({showFilterModal: false})}
+        onBackButtonPress={() => this.setState({showLayoutSelection: false})}
+        backdropOpacity={0.1}
+        style={{
+          ...styles.layoutModalContainer,
+          marginBottom: 0,
+          marginTop: height * 0.75,
+          marginLeft: 0,
+          marginRight: 0,
+          borderTopLeftRadius: 12,
+          borderTopRightRadius: 12,
+          alignItems: 'center',
+        }}>
+        <Text style={styles.layoutModalTitle}>Division</Text>
+        <FlatList
+          contentContainerStyle={styles.layoutModalBody}
+          renderItem={this.renderLayoutItem}
+          data={LayoutData}
+          horizontal={true}
+          style={{
+            paddingBottom: height * 0.07,
+          }}
+        />
+      </Modal>
     );
   };
 
@@ -595,7 +621,7 @@ const styles = StyleSheet.create({
     backgroundColor: CMSColors.White,
     justifyContent: 'center',
     alignItems: 'center',
-    height: '80%',
+    // height: '80%',
     // width: width,
   },
   layoutModalTitle: {
@@ -603,6 +629,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     paddingBottom: 25,
+    paddingTop: 25,
   },
   layoutModalBody: {
     flex: 1,
