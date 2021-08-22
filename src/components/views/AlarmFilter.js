@@ -300,7 +300,8 @@ export default class AlarmFilter extends Component {
       <ScrollView
         horizontal={true}
         showsHorizontalScrollIndicator={false}
-        automaticallyAdjustContentInsets={false}>
+        automaticallyAdjustContentInsets={false}
+        style={{flex: 1}}>
         <View style={styles.contentHeader_FilterMore}>
           <View style={[styles.addMoreButtonContainer, {paddingLeft: 15}]}>
             <Button
@@ -662,9 +663,10 @@ export default class AlarmFilter extends Component {
       }
       case FilterMore.Sites: {
         let {sites} = this.props;
+        // __DEV__ && console.log('GOND AlarmFilter sites: ', sites);
         if (util.isNullOrUndef(sites)) break;
 
-        let ds_Sites = Sites.map(x => {
+        let ds_Sites = sites.map(x => {
           return {id: x.Key, name: x.name};
         });
         cmp = this.renderCombox('Sites', item, ds_Sites);
@@ -691,9 +693,14 @@ export default class AlarmFilter extends Component {
       case FilterMore.Rating: {
         let {alarmConfig} = this.props;
         if (util.isNullOrUndef(alarmConfig)) break;
+        /* __DEV__ &&
+          console.log(
+            'GOND FilterMore rating alarmConfig = ',
+            alarmConfig
+          ); */
 
         let ds_Rating = alarmConfig.map(x => {
-          return {id: x.RateID, name: x.RateName};
+          return {id: x.rateID, name: x.rateName};
         });
         cmp = this.renderCombox('Rating', item, ds_Rating);
         break;
@@ -701,6 +708,8 @@ export default class AlarmFilter extends Component {
       case FilterMore.VA: {
         let {alertTypesVA} = this.props;
         if (util.isNullOrUndef(alertTypesVA)) break;
+        // __DEV__ &&
+        //   console.log('GOND FilterMore VA alertTypesVA = ', alertTypesVA, item);
         //getAlertTypeVA
         let ds_Video_Analytics = alertTypesVA
           .filter(
@@ -712,6 +721,8 @@ export default class AlarmFilter extends Component {
               name: x.id == 8 ? 'Ai Detection' : util.getAlertTypeVA(x.id),
             };
           });
+        // __DEV__ &&
+        //   console.log('GOND FilterMore VA build data = ', ds_Video_Analytics);
         //let ds_Video_Analytics = alertTypesVA;
         cmp = this.renderCombox('Video Analytics', item, ds_Video_Analytics);
         break;
@@ -739,7 +750,7 @@ export default class AlarmFilter extends Component {
     if (!this.state.filterMore || this.state.filterMore.length == 0) return;
 
     return (
-      <View style={{flex: 1}}>
+      <View style={{flex: 9}}>
         <FlatList
           // viewType={PullToRefreshListView.constants.viewType.listView}
           // contentContainerStyle={[

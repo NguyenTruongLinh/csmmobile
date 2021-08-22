@@ -56,6 +56,13 @@ class AlarmDetailView extends Component {
   async componentDidMount() {
     const {alarmStore} = this.props;
     __DEV__ && console.log('AlarmDetail componentDidMount');
+
+    if (!alarmStore.vaConfig || alarmStore.vaConfig.length == 0) {
+      alarmStore.getVAConfigs();
+    }
+    if (!alarmStore.rateConfig || alarmStore.rateConfig.length == 0) {
+      alarmStore.getConfigs();
+    }
     this.refreshHeader();
     alarmStore.selectedAlarm.loadSnapshotImages();
   }

@@ -78,19 +78,17 @@ export default class CheckList extends Component {
 
   render() {
     return (
-      <View>
-        <FlatList
-          // contentContainerStyle={[
-          //   styles_cmp.PullToRefreshListView_content,
-          //   {backgroundColor: CMSColors.White},
-          // ]}
-          // style={[styles_cmp.PullToRefreshListView_Style]}
-          // enableEmptySections={true}
-          data={this.state.dataSource}
-          renderItem={this.renderRow}
-          keyExtractor={item => item.id}
-        />
-      </View>
+      <FlatList
+        // contentContainerStyle={[
+        //   styles_cmp.PullToRefreshListView_content,
+        //   {backgroundColor: CMSColors.White},
+        // ]}
+        // style={[styles_cmp.PullToRefreshListView_Style]}
+        // enableEmptySections={true}
+        data={this.state.dataSource}
+        renderItem={this.renderRow}
+        keyExtractor={(item, index) => item.id ?? 'k_' + index}
+      />
     );
   }
 }

@@ -374,7 +374,10 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND selectAlarm failed');
         return false;
       }
-      if (self.liveAlarms.find(item => item.kAlertEvent == alarm.kAlertEvent)) {
+      if (
+        self.liveAlarms.find(item => item.kAlertEvent == alarm.kAlertEvent) ||
+        self.searchAlarms.find(item => item.kAlertEvent == alarm.kAlertEvent)
+      ) {
         self.selectedAlarm = alarm.kAlertEvent;
       } else {
         self.notifiedAlarm = alarm;
@@ -404,23 +407,23 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND get alarm configs error: ', err);
       }
     }),
-    getVAAlert: flow(function* getVAAlert() {
+    getVAConfigs: flow(function* getVAConfigs() {
       try {
         const res = yield apiService.get(
           AlertType.controller,
           apiService.configToken.userId ?? 0,
           AlertType.getAlertTypeVA
         );
-        __DEV__ && console.log('GOND get getVAAlert: ', res);
+        __DEV__ && console.log('GOND get getVAConfigs: ', res);
         if (res.error) {
-          __DEV__ && console.log('GOND get getVAAlert failed: ', res.error);
+          __DEV__ && console.log('GOND get getVAConfigs failed: ', res.error);
         } else {
           self.vaConfig = res.map(item =>
             AlarmTypeVA.create({id: item.Id, name: item.Name})
           );
         }
       } catch (err) {
-        __DEV__ && console.log('GOND get getVAAlert error: ', err);
+        __DEV__ && console.log('GOND get getVAConfigs error: ', err);
       }
     }),
     getAlarms: flow(function* getAlarms(params, isSearch) {
@@ -481,7 +484,7 @@ export const AlarmModel = types
       self.isLoading = true;
       const [resConfig, resVAAlert, resAlarms] = yield Promise.all([
         self.getConfigs(),
-        self.getVAAlert(),
+        self.getVAConfigs(),
         self.getAlarms(params),
       ]);
       self.isLoading = false;

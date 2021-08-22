@@ -131,7 +131,7 @@ class NotifySettingView extends React.Component {
     result.push(posExceptions);
     result.push(temperatureAlerts);
     result.push(sdAlerts);
-    // let AlertTypeFilter = _.filter(AlertTypes, function(x) { return x.id != 37 && x.id != 107 && x.id != 108 });
+    // let AlertTypeFilter = AlertTypes.filter(x => (x.id != 37 && x.id != 107 && x.id != 108));
     // console.log('GOND *** AlertTypes = ', AlertTypes);
     let AlertTypeFilter = alertTypes.filter(
       x =>

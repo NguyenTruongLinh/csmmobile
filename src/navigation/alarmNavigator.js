@@ -19,7 +19,7 @@ const AStack = createStackNavigator();
 export default function AlarmStack() {
   return (
     <AStack.Navigator
-      initialRouteName={ROUTERS.ALARM_SEARCH} // {ROUTERS.ALARM_LIVE}
+      initialRouteName={ROUTERS.ALARM_LIVE} // {ROUTERS.ALARM_LIVE}
       headerMode="screen"
       screenOptions={({route, navigation}) => ({
         headerStyle: {

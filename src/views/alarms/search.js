@@ -26,6 +26,7 @@ import CMSColors from '../../styles/cmscolors';
 import {Comps as CompTxt} from '../../localization/texts';
 import {
   AlertType_Support,
+  AlertTypes,
   FilterMore,
   FilterParamNames,
   DateFormat,
@@ -44,7 +45,7 @@ class AlarmsSearchView extends Component {
     const {filterParams} = props.alarmStore;
 
     this.state = {
-      showFilterModal: true,
+      showFilterModal: false,
       from: filterParams
         ? DateTime.fromFormat(filterParams.sdate, DateFormat.QuerryDateTime)
         : DateTime.local(),
@@ -60,7 +61,14 @@ class AlarmsSearchView extends Component {
 
   componentDidMount() {
     __DEV__ && console.log('AlarmsSearch componentDidMount');
-    this.props.sitesStore.getAllSites();
+    const {sitesStore, alarmStore} = this.props;
+    sitesStore.getAllSites();
+    if (!alarmStore.vaConfig || alarmStore.vaConfig.length == 0) {
+      alarmStore.getVAConfigs();
+    }
+    if (!alarmStore.rateConfig || alarmStore.rateConfig.length == 0) {
+      alarmStore.getConfigs();
+    }
   }
 
   componentWillUnmount() {
@@ -81,11 +89,9 @@ class AlarmsSearchView extends Component {
       if (params.vty) {
         let baty;
         if (params.aty) {
-          baty =
-            _.includes(params.aty, AlertTypes.DVR_VA_detection.toString()) ==
-            true
-              ? params.aty
-              : _.join([params.aty, AlertTypes.DVR_VA_detection], ',');
+          baty = params.aty.includes(AlertTypes.DVR_VA_detection.toString())
+            ? params.aty
+            : params.aty + ',' + AlertTypes.DVR_VA_detection;
         } else {
           baty = AlertTypes.DVR_VA_detection.toString();
         }
@@ -98,7 +104,8 @@ class AlarmsSearchView extends Component {
 
   onSubmitFilter = isOk => {
     if (isOk) {
-      let {from, to, params} = this.state;
+      const {from, to, params} = this.state;
+      const {alarmStore} = this.props;
       let sTime = '000000';
       let eTime = '235959';
       if (params) {
@@ -112,12 +119,12 @@ class AlarmsSearchView extends Component {
 
       let newParams = {
         ...params,
-        sdate: DateTime(from).toFormat('yyyyMMdd') + sTime,
-        edate: DateTime(to).toFormat('yyyyMMdd') + eTime,
+        sdate: from.toFormat('yyyyMMdd') + sTime,
+        edate: to.toFormat('yyyyMMdd') + eTime,
       };
 
       __DEV__ && console.log('GOND AlarmFilter onSubmit: ', newParams);
-      this.props.applyParamFilter(newParams);
+      alarmStore.getAlarms(newParams, true);
     }
 
     this.setState({showFilterModal: false});
@@ -159,7 +166,7 @@ class AlarmsSearchView extends Component {
       case FilterMore.Status: {
         newParams = {
           ...this.state.params,
-          sta: _.join(data, ','),
+          sta: data.join(','),
         };
         this.setState({params: newParams});
         break;
@@ -167,7 +174,7 @@ class AlarmsSearchView extends Component {
       case FilterMore.Sites: {
         newParams = {
           ...this.state.params,
-          sid: _.join(data, ','),
+          sid: data.join(','),
         };
         this.setState({params: newParams});
         break;
@@ -234,7 +241,7 @@ class AlarmsSearchView extends Component {
       case FilterMore.AlertType: {
         newParams = {
           ...this.state.params,
-          aty: _.join(data, ','),
+          aty: data.join(','),
         };
         this.setState({params: newParams});
         break;
@@ -242,7 +249,7 @@ class AlarmsSearchView extends Component {
       case FilterMore.Rating: {
         newParams = {
           ...this.state.params,
-          ara: _.join(data, ','),
+          ara: data.join(','),
         };
         this.setState({params: newParams});
         break;
@@ -250,7 +257,7 @@ class AlarmsSearchView extends Component {
       case FilterMore.VA: {
         newParams = {
           ...this.state.params,
-          vty: _.join(data, ','),
+          vty: data.join(','),
         };
         this.setState({params: newParams});
         break;
