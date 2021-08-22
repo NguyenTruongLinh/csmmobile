@@ -357,23 +357,29 @@ class ChannelsView extends React.Component {
     const {videoStore} = this.props;
 
     return (
+      // <Modal
+      //   animationType={'slide'}
+      //   transparent={true}
+      //   isDisabled={false}
+      //   backdrop={true}
+      //   coverScreen={true}
+      //   supportedOrientations={[
+      //     'portrait',
+      //     'landscape',
+      //     'portrait-upside-down',
+      //     'landscape-left',
+      //     'landscape-right',
+      //   ]}
+      //   visible={videoStore.showAuthenModal}
+      //   onRequestClose={() => {
+      //     this.setState(this.onAuthenCancel);
+      //   }}>
       <Modal
-        animationType={'slide'}
-        transparent={true}
-        isDisabled={false}
-        backdrop={true}
-        coverScreen={true}
-        supportedOrientations={[
-          'portrait',
-          'landscape',
-          'portrait-upside-down',
-          'landscape-left',
-          'landscape-right',
-        ]}
-        visible={videoStore.showAuthenModal}
-        onRequestClose={() => {
-          this.setState(this.onAuthenCancel);
-        }}>
+        isVisible={videoStore.showAuthenModal}
+        onBackdropPress={() => this.onAuthenCancel()}
+        onBackButtonPress={() => this.onAuthenCancel()}
+        backdropOpacity={0}
+        style={{margin: 0}}>
         <View style={[styles.modalcontainer]}>
           <AuthenModal
             style={styles.authenModal}

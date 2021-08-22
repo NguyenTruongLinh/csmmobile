@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   Text,
-  // Modal,
   Dimensions,
   Platform,
   AppState,
@@ -12,7 +11,8 @@ import {
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import {CalendarList} from 'react-native-calendars';
-import Modal, {SlideAnimation} from 'react-native-modals';
+// import Modal, {SlideAnimation} from 'react-native-modals';
+import Modal from 'react-native-modal';
 import Orientation from 'react-native-orientation-locker';
 import TimePicker from 'react-native-24h-timepicker';
 
@@ -140,7 +140,7 @@ class VideoPlayerView extends Component {
     ) {
       __DEV__ && console.log('GOND: checkDataOnSearchDate NOVIDEO');
       this.isNoDataSearch = true;
-      this.pause();
+      this.playerRef.pause();
       snackbar.showMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA, true);
       __DEV__ && console.log('GOND PAUSE 2 false');
       // this.setState({
@@ -198,7 +198,7 @@ class VideoPlayerView extends Component {
     if (this.checkDataOnSearchDate()) {
       this.setState({showCalendar: false});
     } else {
-      // this.pause();
+      // this.playerRef.pause();
       this.setState({showCalendar: false});
     }
   };
@@ -267,16 +267,26 @@ class VideoPlayerView extends Component {
 
   renderCalendar = () => {
     const {videoStore} = this.props;
-    // const {sWidth, sHeight} = this.state;
+    const {sWidth, sHeight} = this.state;
 
     return (
-      // <View>
+      // <Modal
+      //   visible={this.state.showCalendar}
+      //   onTouchOutside={() => this.setState({showCalendar: false})}
+      //   width={videoStore.isFullscreen ? 0.4 : 0.7}
+      //   height={videoStore.isFullscreen ? 0.8 : 0.5}
+      //   modalAnimation={new SlideAnimation({slideFrom: 'top'})}>
       <Modal
-        visible={this.state.showCalendar}
-        onTouchOutside={() => this.setState({showCalendar: false})}
-        width={videoStore.isFullscreen ? 0.4 : 0.7}
-        height={videoStore.isFullscreen ? 0.8 : 0.5}
-        modalAnimation={new SlideAnimation({slideFrom: 'top'})}>
+        isVisible={this.state.showCalendar}
+        onBackdropPress={() => this.setState({showCalendar: false})}
+        onBackButtonPress={() => this.setState({showCalendar: false})}
+        backdropOpacity={0.1}
+        style={{
+          marginVertical: videoStore.isFullscreen
+            ? sHeight * 0.35
+            : sHeight * 0.2,
+          borderRadius: 7,
+        }}>
         <View style={styles.calendarContainer}>
           <CalendarList
             style={styles.calendar}
@@ -288,7 +298,6 @@ class VideoPlayerView extends Component {
           />
         </View>
       </Modal>
-      // </View>
     );
   };
 

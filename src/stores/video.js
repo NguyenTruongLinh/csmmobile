@@ -340,7 +340,7 @@ export const VideoModel = types
         ? self.displayChannels.findIndex(
             ch => ch.channelNo === self.selectedChannel
           )
-        : -1;
+        : 0;
     },
     get selectedStream() {
       if (util.isNullOrUndef(self.selectedChannel)) return {};
