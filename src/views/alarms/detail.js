@@ -457,55 +457,6 @@ class AlarmDetailView extends Component {
     );
   };
 
-  // renderActionButton = (buttonType, offsetY = 0) => {
-  //   let btn_size = 40;
-  //   let icon_size = 20;
-  //   let padding = variable.contentPadding;
-  //   let iconName = '';
-  //   let buttonColor = CMSColors.White;
-  //   switch (buttonType) {
-  //     case BUTTON_TYPE.LIVE:
-  //       iconName = 'videocam-filled-tool';
-  //       buttonColor = CMSColors.Danger;
-  //       break;
-  //     case BUTTON_TYPE.SEARCH:
-  //       iconName = 'searching-magnifying-glass';
-  //       buttonColor = CMSColors.Warning;
-  //       break;
-  //   }
-  //   return (
-  //     <ActionButton
-  //       onPress={() => {
-  //         this.goLiveSearch(buttonType);
-  //       }}
-  //       renderIcon={() => (
-  //         <IconCustom
-  //           size={icon_size}
-  //           name={iconName}
-  //           color={CMSColors.White}
-  //         />
-  //       )}
-  //       buttonColor={buttonColor}
-  //       buttonTextStyle={{padding: 0}}
-  //       size={btn_size}
-  //       zIndex={1}
-  //       shadowStyle={{
-  //         shadowOpacity: 0.35,
-  //         shadowOffset: {
-  //           width: 0,
-  //           height: 1,
-  //         },
-  //         shadowColor: CMSColors.borderColor,
-  //         shadowRadius: 2,
-  //         elevation: 2,
-  //       }}
-  //       position="right"
-  //       degrees={0}
-  //       offsetX={padding}
-  //       offsetY={offsetY + padding}></ActionButton>
-  //   );
-  // };
-
   renderInfo = index => {
     const {selectedAlarm} = this.props.alarmStore;
 
@@ -560,58 +511,6 @@ class AlarmDetailView extends Component {
       </View>
     );
   };
-
-  /*
-  renderIndicator = () => {
-    let {data, width, height} = this.state;
-    if (!data || !Array.isArray(data) || data.length < 2) return;
-    this.scrollX = new Animated.Value(0); // this will be the scroll location of our ScrollView
-    let style = null;
-    if (width < height) {
-      this.position = Animated.divide(this.scrollX, width);
-      style = styles.Indicator;
-    } else {
-      let v_height = this.state.viewableWindow.height;
-      let img_width = this.state.imgSize.width; //util.getImageSize({ width: parseInt(width/2) , height: v_height}).width;
-      this.position = Animated.divide(this.scrollX, img_width);
-      style = {
-        flexDirection: 'column',
-        position: 'absolute',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        left: 0,
-        right: 0,
-        bottom: 30,
-      };
-    }
-
-    return (
-      <View style={styles.Indicator}>
-        {data.map((_, i) => {
-          let opacity = this.position.interpolate({
-            inputRange: [i - 1, i, i + 1], // each dot will need to have an opacity of 1 when position is equal to their index (i)
-            outputRange: [0.3, 1, 0.3], // when position is not i, the opacity of the dot will animate to 0.3
-            extrapolate: 'clamp', // this will prevent the opacity of the dots from going outside of the outputRange (i.e. opacity will not be less than 0.3)
-          });
-          return (
-            <Animated.View
-              key={i}
-              style={{
-                opacity,
-                height: 5,
-                width: 5,
-                backgroundColor: '#595959',
-                margin: 5,
-                borderRadius: 5,
-              }}
-            />
-          );
-        })}
-      </View>
-    );
-  };
-  */
 
   renderVideoButtons = () => {
     return (
@@ -856,4 +755,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('alarmStore')(observer(AlarmDetailView));
+export default inject('alarmStore', 'videoStore')(observer(AlarmDetailView));

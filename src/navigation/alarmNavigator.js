@@ -9,6 +9,7 @@ import CMSTouchableIcon from '../components/containers/CMSTouchableIcon';
 import AlarmsLiveView from '../views/alarms/live';
 import AlarmsSearchView from '../views/alarms/search';
 import AlarmDetailView from '../views/alarms/detail';
+import VideoPlayerView from '../views/video/player';
 
 import ROUTERS, {getHeaderTitle} from '../consts/routes';
 import variables from '../styles/variables';
@@ -55,10 +56,10 @@ export default function AlarmStack() {
                   padding: 5,
                 }}>
                 <CMSTouchableIcon
-                  size={20}
+                  size={24}
                   color="black"
-                  styles={{position: 'relative', paddingBottom: 14}}
-                  iconCustom="filter" //TODO
+                  styles={{position: 'relative'}}
+                  iconCustom="search_solid_advancedfind"
                 />
               </View>
             </Ripple>
@@ -67,6 +68,7 @@ export default function AlarmStack() {
       />
       <AStack.Screen name={ROUTERS.ALARM_SEARCH} component={AlarmsSearchView} />
       <AStack.Screen name={ROUTERS.ALARM_DETAIL} component={AlarmDetailView} />
+      <AStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
     </AStack.Navigator>
   );
 }

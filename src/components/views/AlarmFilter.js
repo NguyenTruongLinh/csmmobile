@@ -310,7 +310,7 @@ export default class AlarmFilter extends Component {
                 hasStatus ? '' : styles.button_FilterMore_Add_None,
               ]}
               caption="Status"
-              iconCustom="added"
+              iconCustom="i-add"
               iconsize={18}
               type={hasStatus ? 'primary' : 'flat'}
               enable={true}
@@ -326,7 +326,7 @@ export default class AlarmFilter extends Component {
                 hasSites ? '' : styles.button_FilterMore_Add_None,
               ]}
               caption="Site ID"
-              iconCustom="added"
+              iconCustom="i-add"
               iconsize={18}
               type={hasSites ? 'primary' : 'flat'}
               enable={true}
@@ -342,7 +342,7 @@ export default class AlarmFilter extends Component {
                 hasTime ? '' : styles.button_FilterMore_Add_None,
               ]}
               caption="Time"
-              iconCustom="added"
+              iconCustom="i-add"
               iconsize={18}
               type={hasTime ? 'primary' : 'flat'}
               enable={true}
@@ -363,7 +363,7 @@ export default class AlarmFilter extends Component {
                 hasAlertType ? '' : styles.button_FilterMore_Add_None,
               ]}
               caption="Alert Type"
-              iconCustom="added"
+              iconCustom="i-add"
               iconsize={18}
               type={hasAlertType ? 'primary' : 'flat'}
               enable={true}
@@ -379,7 +379,7 @@ export default class AlarmFilter extends Component {
                 hasRating ? '' : styles.button_FilterMore_Add_None,
               ]}
               caption="Rating"
-              iconCustom="added"
+              iconCustom="i-add"
               iconsize={18}
               type={hasRating ? 'primary' : 'flat'}
               enable={true}
@@ -395,7 +395,7 @@ export default class AlarmFilter extends Component {
                 hasVA ? '' : styles.button_FilterMore_Add_None,
               ]}
               caption="Video Analytics"
-              iconCustom="added"
+              iconCustom="i-add"
               iconsize={18}
               type={hasVA ? 'primary' : 'flat'}
               enable={true}
@@ -802,24 +802,28 @@ export default class AlarmFilter extends Component {
             style={[
               styles.button_FilterMore,
               this.state.panel == Panels.FilterMore
-                ? {}
+                ? {color: CMSColors.White}
                 : styles.button_FilterMore_None,
             ]}
-            captionStyle={{
-              fontSize: 28,
-              textAlignVertical: 'center',
-              textAlign: 'center',
-              includeFontPadding: false,
-              color:
-                this.state.panel == Panels.FilterMore
-                  ? CMSColors.White
-                  : CMSColors.PrimaryActive,
-            }}
-            captionCustom="+"
-            // iconCustom="added"
-            // iconsize={18}
+            // captionStyle={{
+            //   fontSize: 28,
+            //   textAlignVertical: 'center',
+            //   textAlign: 'center',
+            //   includeFontPadding: false,
+            //   color:
+            //     this.state.panel == Panels.FilterMore
+            //       ? CMSColors.White
+            //       : CMSColors.PrimaryActive,
+            // }}
+            // captionCustom="+"
+            iconCustom="i-add"
+            iconsize={18}
+            color={
+              this.state.panel == Panels.FilterMore
+                ? CMSColors.White
+                : CMSColors.PrimaryActive
+            }
             type={'flat'}
-            enable={true}
             onPress={() => {
               isFirst = true;
               this.setState({panel: Panels.FilterMore});
