@@ -84,9 +84,12 @@ class AlarmItem extends React.Component {
   renderTime = () => {
     let {timezone} = this.props.data;
     if (!timezone) return null;
-    // __DEV__ && console.log('GOND renderAlarm time: ', timezone);
-    let str_time = DateTime.fromISO(timezone).toFormat(DateFormat.Alert_Date);
-    return this.renderIconText(str_time, 'clock-with-white-face');
+    // __DEV__ && console.log('GOND renderAlarmItem time: ', timezone);
+    let formatedTime = DateTime.fromISO(timezone, {zone: 'utc'}).toFormat(
+      DateFormat.Alert_Date
+    );
+    // __DEV__ && console.log('GOND renderAlarmItem time output: ', formatedTime);
+    return this.renderIconText(formatedTime, 'clock-with-white-face');
   };
 
   renderSite = () => {

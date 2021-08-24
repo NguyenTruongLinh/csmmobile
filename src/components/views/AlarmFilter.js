@@ -311,7 +311,7 @@ export default class AlarmFilter extends Component {
               ]}
               caption="Status"
               iconCustom="i-add"
-              iconsize={18}
+              iconSize={18}
               type={hasStatus ? 'primary' : 'flat'}
               enable={true}
               onPress={() => {
@@ -327,7 +327,7 @@ export default class AlarmFilter extends Component {
               ]}
               caption="Site ID"
               iconCustom="i-add"
-              iconsize={18}
+              iconSize={18}
               type={hasSites ? 'primary' : 'flat'}
               enable={true}
               onPress={() => {
@@ -343,7 +343,7 @@ export default class AlarmFilter extends Component {
               ]}
               caption="Time"
               iconCustom="i-add"
-              iconsize={18}
+              iconSize={18}
               type={hasTime ? 'primary' : 'flat'}
               enable={true}
               onPress={() => {
@@ -364,7 +364,7 @@ export default class AlarmFilter extends Component {
               ]}
               caption="Alert Type"
               iconCustom="i-add"
-              iconsize={18}
+              iconSize={18}
               type={hasAlertType ? 'primary' : 'flat'}
               enable={true}
               onPress={() => {
@@ -380,7 +380,7 @@ export default class AlarmFilter extends Component {
               ]}
               caption="Rating"
               iconCustom="i-add"
-              iconsize={18}
+              iconSize={18}
               type={hasRating ? 'primary' : 'flat'}
               enable={true}
               onPress={() => {
@@ -396,7 +396,7 @@ export default class AlarmFilter extends Component {
               ]}
               caption="Video Analytics"
               iconCustom="i-add"
-              iconsize={18}
+              iconSize={18}
               type={hasVA ? 'primary' : 'flat'}
               enable={true}
               onPress={() => {
@@ -440,7 +440,7 @@ export default class AlarmFilter extends Component {
         break;
       }
       case FilterMore.Time: {
-        //res = params.time;
+        // res = params.time;
         break;
       }
       case FilterMore.AlertType: {
@@ -667,7 +667,7 @@ export default class AlarmFilter extends Component {
         if (util.isNullOrUndef(sites)) break;
 
         let ds_Sites = sites.map(x => {
-          return {id: x.Key, name: x.name};
+          return {id: x.key, name: x.name};
         });
         cmp = this.renderCombox('Sites', item, ds_Sites);
         break;
@@ -817,13 +817,17 @@ export default class AlarmFilter extends Component {
             // }}
             // captionCustom="+"
             iconCustom="i-add"
-            iconsize={18}
-            color={
-              this.state.panel == Panels.FilterMore
-                ? CMSColors.White
-                : CMSColors.PrimaryActive
-            }
+            iconSize={24}
+            iconStyleEnable={{
+              textAlign: 'center',
+              color:
+                this.state.panel == Panels.FilterMore
+                  ? CMSColors.White
+                  : CMSColors.PrimaryActive,
+              paddingLeft: 4,
+            }}
             type={'flat'}
+            enable={true}
             onPress={() => {
               isFirst = true;
               this.setState({panel: Panels.FilterMore});
@@ -913,7 +917,7 @@ const styles = StyleSheet.create({
     // backgroundColor: CMSColors.White_Smoke,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 0.5,
+    borderWidth: 1,
     borderColor: CMSColors.PrimaryActive,
     backgroundColor: CMSColors.White,
     // width: 32,

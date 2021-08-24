@@ -3,6 +3,7 @@ import {
   View,
   StyleSheet,
   Text,
+  Image,
   Dimensions,
   Platform,
   AppState,
@@ -10,11 +11,13 @@ import {
   FlatList,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
+import {reaction} from 'mobx';
 import {CalendarList} from 'react-native-calendars';
 // import Modal, {SlideAnimation} from 'react-native-modals';
 import Modal from 'react-native-modal';
 import Orientation from 'react-native-orientation-locker';
 import TimePicker from 'react-native-24h-timepicker';
+import {DateTime} from 'luxon';
 
 import CMSImage from '../../components/containers/CMSImage';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
@@ -37,6 +40,7 @@ import {
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
 import {Video as VideoTxt} from '../../localization/texts';
+import {NVR_Play_NoVideo_Image} from '../../consts/images';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
 const iconSize = normalize(28);
@@ -70,11 +74,37 @@ class VideoPlayerView extends Component {
 
   componentDidMount() {
     __DEV__ && console.log('VideoPlayerView componentDidMount');
+    const {videoStore} = this.props;
     this._isMounted = true;
 
     Dimensions.addEventListener('change', this.onDimensionsChange);
     AppState.addEventListener('change', this.handleAppStateChange);
     this.updateHeader();
+    // this.unsubSearchTimeReaction = reaction(
+    //   () => videoStore.searchPlayTime,
+    //   (value, previousValue) => {
+    //     if (!videoStore.isLive) {
+    //       const searchTime = DateTime.fromISO(value, {
+    //         zone: 'utc',
+    //       });
+    //       __DEV__ &&
+    //         console.log(
+    //           'GOND on searchPlayTime reaction ',
+    //           value,
+    //           ' -> ',
+    //           previousValue,
+    //           '/n - DateTime = ',
+    //           searchTime
+    //         );
+
+    //       this.onSetSearchTime(
+    //         searchTime.hour,
+    //         searchTime.minute,
+    //         searchTime.second
+    //       );
+    //     }
+    //   }
+    // );
   }
 
   updateHeader = () => {
@@ -93,13 +123,19 @@ class VideoPlayerView extends Component {
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
-    this.props.videoStore.resetVideoChannel();
-    if (this.props.videoStore.isFullscreen) {
+    const {videoStore} = this.props;
+
+    if (videoStore.isSingleMode) {
+      videoStore.releaseStreams();
+    }
+    if (videoStore.isFullscreen) {
       this.onFullscreenPress();
     }
+    videoStore.resetVideoChannel();
 
     // dongpt: TODO handle Orientation
     Orientation.lockToPortrait();
+    // this.unsubSearchTimeReaction();
   }
 
   handleAppStateChange = nextAppState => {
@@ -157,6 +193,32 @@ class VideoPlayerView extends Component {
     this.forceUpdate();
     return true;
   };
+
+  // onVideoReady = () => {
+  //   // TODO: get nvr timezone first
+  //   const {videoStore} = this.props;
+  //   __DEV__ && console.log('GOND onVideoReady', videoStore.searchPlayTime);
+  //   videoStore.setStreamReadyCallback(null);
+  //   if (videoStore.isLive) {
+  //     // Did it auto play?
+  //   } else if (this.playerRef) {
+  //     if (videoStore.searchPlayTime) {
+  //       // this.playerRef.playAt(videoStore.searchPlayTimeBySeconds);
+  //       const searchTime = DateTime.fromISO(videoStore.searchPlayTime, {
+  //         zone: 'utc',
+  //       });
+  //       __DEV__ && console.log('GOND onVideoReady 2 ', searchTime);
+
+  //       this.onSetSearchTime(
+  //         searchTime.hour,
+  //         searchTime.minute,
+  //         searchTime.second
+  //       );
+  //     } // else {
+  //     // this.playerRef.playAt(0);
+  //     // }
+  //   }
+  // };
 
   onDimensionsChange = ({window}) => {
     const {width, height} = window;
@@ -307,7 +369,15 @@ class VideoPlayerView extends Component {
     const {pause, sWidth, sHeight} = this.state;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
     // __DEV__ &&
-    // console.log('GOND renderVid player: ', videoStore.selectedStream);
+    console.log('GOND renderVid player: ', videoStore.selectedStream);
+    if (!videoStore.selectedStream) {
+      return (
+        <Image
+          style={{width: sWidth, height: height}}
+          source={NVR_Play_NoVideo_Image}
+        />
+      );
+    }
 
     let playerProps = {
       width: sWidth,
@@ -316,6 +386,7 @@ class VideoPlayerView extends Component {
       isLive: videoStore.isLive,
       noVideo: videoStore.isLive ? false : this.isNoDataSearch,
       searchDate: videoStore.searchDate,
+      searchPlayTime: videoStore.searchPlayTime,
     };
     let player = null;
     switch (videoStore.cloudType) {

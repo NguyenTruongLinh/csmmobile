@@ -488,6 +488,7 @@ const RTCStreamModel = types
     accessKeyId: types.string,
     secretAccessKey: types.string,
     rtcChannelName: types.string,
+    singleChannelNo: types.maybeNull(types.number),
 
     viewers: types.array(ChannelConnectionModel),
   })
@@ -520,8 +521,13 @@ const RTCStreamModel = types
       self.viewers.forEach(viewer => {
         viewer.release();
       });
+      self.singleChannelNo = null;
       self.viewers = [];
     },
+    /**
+     * @param {Object{sid, accessKeyId, secretAccessKey, rtcChannelName}} streamInfos: WebRTC connection info
+     * @param {Array | ChannelModel} channels
+     */
     createStreams: flow(function* createStreams(streamInfos, channels) {
       if (self.openStreamLock) false;
       self.openStreamLock = true;

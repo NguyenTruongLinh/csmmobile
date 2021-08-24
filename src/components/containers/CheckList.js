@@ -40,7 +40,14 @@ export default class CheckList extends Component {
         rippleOpacity={0.87}
         onPress={() => {
           const {selected} = this.state;
-          if (this.state.selected.includes(item.id)) {
+          // __DEV__ &&
+          //   console.log(
+          //     'GOND CheckList onSelected: ',
+          //     item,
+          //     ', current: ',
+          //     selected
+          //   );
+          if (selected.includes(item.id)) {
             let newSelected = selected.filter(e => e != item.id);
             this.props.onAddMoreParams(newSelected);
             this.setState({

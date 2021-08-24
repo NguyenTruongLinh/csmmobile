@@ -49,6 +49,8 @@ class DirectVideoView extends Component {
       message: '',
       noVideo: false,
     };
+    // should set search time from alert/exception
+    this.shouldSetTime = true;
   }
 
   componentDidMount() {
@@ -67,7 +69,7 @@ class DirectVideoView extends Component {
         this.onNativeMessage
       );
     }
-    const {serverInfo, isLive, hdMode, videoStore} = this.props;
+    const {serverInfo, isLive, hdMode, videoStore, searchPlayTime} = this.props;
 
     if (this.ffmpegPlayer && serverInfo) {
       if (
@@ -75,6 +77,12 @@ class DirectVideoView extends Component {
         serverInfo.server.port // &&
         // !serverInfo.playing
       ) {
+        // if (!isLive && searchPlayTime) {
+        //   const searchTime = DateTime.fromISO(videoStore.searchPlayTime, {
+        //     zone: 'utc',
+        //   }).toFormat(NVRPlayerConfig.RequestTimeFormat);
+        //   this.setNativePlayback({date: searchTime});
+        // } else
         this.setNativePlayback();
       } else {
         this.setState({
@@ -116,7 +124,8 @@ class DirectVideoView extends Component {
   componentDidUpdate(prevProps) {
     if (!this._isMounted) return;
     const prevServerInfo = prevProps.serverInfo;
-    const {serverInfo, hdMode, isLive, searchDate, videoStore} = this.props;
+    const {serverInfo, hdMode, isLive, searchDate, searchPlayTime, videoStore} =
+      this.props;
     if (!serverInfo || Object.keys(serverInfo).length == 0) return;
 
     // __DEV__ &&
@@ -221,7 +230,7 @@ class DirectVideoView extends Component {
   };
 
   onVideoMessage = (msgid, value) => {
-    const {videoStore, serverInfo} = this.props;
+    const {videoStore, serverInfo, searchPlayTime} = this.props;
     // __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
 
     switch (msgid) {
@@ -242,6 +251,20 @@ class DirectVideoView extends Component {
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
         __DEV__ && console.log('GOND onDirectVideoMessage: login success');
         // this.props.videoStore.onLoginSuccess();
+        // if (!videoStore.isLive && searchPlayTime) {
+        //   setTimeout(() => {
+        //     if (this._isMounted && this.ffmpegPlayer) {
+        //       const searchTime = DateTime.fromISO(videoStore.searchPlayTime, {
+        //         zone: 'utc',
+        //       });
+        //       const secondsValue =
+        //         searchTime.toSeconds() - searchTime.startOf('day').toSeconds();
+        //       __DEV__ &&
+        //         console.log('GOND on play search at time: ', secondsValue);
+        //       this.playAt(secondsValue);
+        //     }
+        //   }, 100);
+        // }
         break;
       case NATIVE_MESSAGE.SVR_REJECT_ACCEPT:
         this.setState({
@@ -334,6 +357,27 @@ class DirectVideoView extends Component {
           if (timeData[0] && timeData[0].timezone) {
             videoStore.setTimezone(timeData[0].timezone);
           }
+
+          // dongpt: set play time from alert/exception after receiving timeline
+          if (!videoStore.isLive && this.shouldSetTime && searchPlayTime) {
+            setTimeout(() => {
+              if (this._isMounted && this.ffmpegPlayer) {
+                const searchTime = DateTime.fromISO(searchPlayTime, {
+                  zone: 'utc',
+                });
+                const secondsValue =
+                  searchTime.toSeconds() -
+                  searchTime.startOf('day').toSeconds();
+                __DEV__ &&
+                  console.log(
+                    'GOND Direct on play search at time: ',
+                    secondsValue
+                  );
+                this.playAt(secondsValue);
+              }
+            }, 100);
+            this.shouldSetTime = false;
+          }
         }
         break;
       case NATIVE_MESSAGE.HOUR_DATA:
@@ -387,6 +431,10 @@ class DirectVideoView extends Component {
     }
   };
 
+  /**
+   *
+   * @param {number} value : number of seconds from beginning of day
+   */
   playAt = value => {
     // const localValue = value - this.props.videoStore.directTimeDiff;
     __DEV__ && console.log('GOND direct playAt: ', value);

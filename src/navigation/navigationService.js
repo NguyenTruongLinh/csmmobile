@@ -99,7 +99,7 @@ const NavigationService = types
     },
 
     getCurrentRouteName() {
-      __DEV__ && console.log('GOND getCurrentRouteName ', self._navigator);
+      // __DEV__ && console.log('GOND getCurrentRouteName ', self._navigator);
       const {getCurrentRoute} = self._navigator;
       if (!getCurrentRoute || typeof getCurrentRoute != 'function') {
         __DEV__ &&
@@ -110,7 +110,7 @@ const NavigationService = types
         return null;
       }
       const currentRoute = getCurrentRoute();
-      __DEV__ && console.log('GOND getCurrentRouteName = ', currentRoute);
+      // __DEV__ && console.log('GOND getCurrentRouteName = ', currentRoute);
       return currentRoute ? currentRoute.name : '';
     },
 

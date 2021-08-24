@@ -32,6 +32,7 @@ import {
   Alarm as AlarmTxt,
 } from '../../localization/texts';
 import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
+import ROUTERS from '../../consts/routes';
 
 const ID_Canned_Message = 5;
 const CONTENT_INFO_HEIGHT = 92;
@@ -192,7 +193,14 @@ class AlarmDetailView extends Component {
     }
   };
 
-  gotoVideo = isLive => {};
+  gotoVideo = isLive => {
+    const {alarmStore, videoStore, navigation} = this.props;
+
+    videoStore.onAlarmPlay(isLive, alarmStore.selectedAlarm);
+    setTimeout(() => {
+      navigation.push(ROUTERS.VIDEO_PLAYER);
+    }, 200);
+  };
 
   renderViolationGroup = (imgSize, coordinateList) => {
     return (
@@ -347,7 +355,9 @@ class AlarmDetailView extends Component {
     const strTime =
       typeof item.key === 'string'
         ? item.key
-        : DateTime.fromISO(item.key).toFormat(DateFormat.AlertDetail_Date);
+        : DateTime.fromISO(item.key, {zone: 'utc'}).toFormat(
+            DateFormat.AlertDetail_Date
+          );
     const iconSize = 16;
     return this.state.alertType ===
       AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY ? (
@@ -463,9 +473,9 @@ class AlarmDetailView extends Component {
     if (selectedAlarm.isTemperatureAlert) return this.renderTemperatureInfo();
     const padding = variable.contentPadding;
 
-    let strTime = DateTime.fromISO(selectedAlarm.timezone).toFormat(
-      DateFormat.AlertDetail_Date
-    );
+    let strTime = DateTime.fromISO(selectedAlarm.timezone, {
+      zone: 'utc',
+    }).toFormat(DateFormat.AlertDetail_Date);
 
     let cmsUserInfo = selectedAlarm.cmsUser ? (
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -525,7 +535,7 @@ class AlarmDetailView extends Component {
           <CMSTouchableIcon
             iconCustom="searching-magnifying-glass"
             size={26}
-            onPress={this.gotoVideo(false)}
+            onPress={() => this.gotoVideo(false)}
             color={CMSColors.ColorText}
           />
         </View>
@@ -533,7 +543,7 @@ class AlarmDetailView extends Component {
           <CMSTouchableIcon
             iconCustom="videocam-filled-tool"
             size={26}
-            onPress={this.gotoVideo(true)}
+            onPress={() => this.gotoVideo(true)}
             color={CMSColors.ColorText}
           />
         </View>

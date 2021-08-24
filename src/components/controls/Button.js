@@ -91,7 +91,7 @@ class Button extends Component {
         </Text>
       );
     }
-    return (
+    return caption ? (
       <Text
         style={[
           styles.caption,
@@ -99,7 +99,7 @@ class Button extends Component {
         ]}>
         {caption}
       </Text>
-    );
+    ) : null;
   }
 
   /**

@@ -102,9 +102,8 @@ class CMSTouchableIcon extends React.Component {
           />
         </View>
       );
-    } else {
-      content = null;
     }
+
     let numOpacity = isHidden == true ? 0 : 0.87;
     return (
       <Ripple

@@ -269,9 +269,10 @@ export const VideoModel = types
     canSwitchMode: types.boolean,
     // paused: types.boolean,
     showAuthenModal: types.boolean,
-    // isSingleMode: types.boolean,
+    isSingleMode: types.boolean,
     frameTime: types.number,
     searchDate: types.maybeNull(types.frozen()),
+    searchPlayTime: types.maybeNull(types.string),
     displayDateTime: types.maybeNull(types.string),
     // timezone: types.maybeNull(TimezoneModel),
     dvrTimezone: types.maybeNull(TimezoneModel),
@@ -336,21 +337,26 @@ export const VideoModel = types
     //     }));
     // },
     get selectedChannelIndex() {
-      return self.displayChannels
-        ? self.displayChannels.findIndex(
+      return self.allChannels
+        ? self.allChannels.findIndex(
             ch => ch.channelNo === self.selectedChannel
           )
         : 0;
     },
+    get selectedChannelData() {
+      return self.allChannels
+        ? self.allChannels.find(ch => ch.channelNo === self.selectedChannel)
+        : null;
+    },
     get selectedStream() {
-      if (util.isNullOrUndef(self.selectedChannel)) return {};
+      if (util.isNullOrUndef(self.selectedChannel)) return null;
       switch (self.cloudType) {
         case CLOUD_TYPE.DEFAULT:
         case CLOUD_TYPE.DIRECTION:
           const server = self.directStreams.find(
             s => s.channel.channelNo == self.selectedChannel
           );
-          return server || {};
+          return server ?? null;
         // return {
         //   ...server,
         //   hd: self.hdMode,
@@ -441,6 +447,15 @@ export const VideoModel = types
         ? self.allChannels[0].channelNo
         : 0;
     },
+    get searchPlayTimeBySeconds() {
+      return (
+        DateTime.fromFormat(
+          self.searchPlayTime,
+          NVRPlayerConfig.RequestTimeFormat,
+          self.timezone ? {zone: self.timezone} : undefined
+        ).toSeconds() - self.searchDate.toSeconds()
+      );
+    },
   }))
   // .volatile(self => ({
   //   streamReadyCallback: null,
@@ -469,7 +484,10 @@ export const VideoModel = types
         self.isLoading = value;
       },
       selectDVR(value) {
-        self.kDVR = value.kDVR;
+        if (util.isNullOrUndef(value)) return;
+        if (typeof value === 'object' && Object.keys(value).includes('kDVR'))
+          self.kDVR = value.kDVR;
+        else if (typeof value == 'number') self.kDVR = value;
       },
       setStreamReadyCallback(fn) {
         if (fn && typeof fn !== 'function') {
@@ -671,12 +689,17 @@ export const VideoModel = types
           self.selectedChannel =
             self.displayChannels[self.selectedChannelIndex + 1].channelNo;
       },
+      setPlayTimeForSearch(value) {
+        self.searchPlayTime = value;
+      },
       resetVideoChannel() {
+        self.isSingleMode = false;
         self.selectedChannel = null;
         self.searchBegin = null;
         self.searchEnd = null;
         self.frameTime = 0;
         self.searchDate = null;
+        self.searchPlayTime = null;
         self.displayDateTime = '';
         self.isLoading = false;
         self.isLive = true;
@@ -686,41 +709,38 @@ export const VideoModel = types
         self.timeline = [];
         self.timezoneOffset = 0;
       },
-      resetDVRInfo() {
-        self.kDVR = null;
-        self.allChannels = [];
-        self.activeChannels = [];
-
-        self.rtcConnection = null;
-        self.hlsStreams = [];
-        self.directConnection = null;
-        self.directStreams = [];
-        self.selectedChannel = null;
-        searchDate = null;
-
-        dvrTimezone = null;
-        timezoneOffset = null;
-        timezoneName = null;
-        timeline = [];
-
-        // searchBegin = null;
-        // searchEnd = null;
-      },
-
       // #endregion setters
       // #region Build data
-      buildDirectData() {
-        self.directStreams = self.allChannels
-          .filter(ch =>
-            ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
-          )
-          .map(ch =>
+      buildDirectData(channelNo) {
+        if (channelNo) {
+          __DEV__ &&
+            console.log(
+              'GOND build direct data select channel: ',
+              channelNo,
+              getSnapshot(self.allChannels),
+              ' selectedData = ',
+              self.selectedChannelData
+            );
+          self.directStreams = [
             DirectStreamModel.create({
               server: self.directConnection.serverIP,
-              channel: ch.kChannel,
+              channel: self.selectedChannelData,
               // playing: false,
-            })
-          );
+            }),
+          ];
+        } else {
+          self.directStreams = self.allChannels
+            .filter(ch =>
+              ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
+            )
+            .map(ch =>
+              DirectStreamModel.create({
+                server: self.directConnection.serverIP,
+                channel: ch.kChannel,
+                // playing: false,
+              })
+            );
+        }
 
         __DEV__ && console.log('GOND build direct data: ', self.directStreams);
         return self.directStreams;
@@ -728,7 +748,7 @@ export const VideoModel = types
       buildHLSData() {
         // TODO:
       },
-      buildRTCData() {
+      buildRTCData(channelNo) {
         console.log(
           'GOND build RTC datachannels: ',
           new Date(),
@@ -741,15 +761,15 @@ export const VideoModel = types
             .includes(self.channelFilter.toLowerCase())
         );
       },
-      buildVideoData() {
+      buildVideoData(channel) {
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            return self.buildDirectData();
+            return self.buildDirectData(channel);
           case CLOUD_TYPE.HLS:
-            return self.buildHLSData();
+            return self.buildHLSData(channel);
           case CLOUD_TYPE.RTC:
-            return self.buildRTCData();
+            return self.buildRTCData(channel);
         }
         return [];
       },
@@ -928,13 +948,13 @@ export const VideoModel = types
       }),
       // #endregion get channels
       // #region direct connection
-      getDirectInfos: flow(function* getDirectInfo(channel) {
+      getDirectInfos: flow(function* getDirectInfo(channelNo) {
         self.isLoading = true;
         __DEV__ && console.log('GOND getDirectInfos 1');
-        if (!self.allChannels || self.allChannels.length <= 0) {
-          yield self.getDvrChannels();
-          __DEV__ && console.log('GOND getDirectInfos 2');
-        }
+        // if (!self.allChannels || self.allChannels.length <= 0) {
+        //   yield self.getDvrChannels();
+        //   __DEV__ && console.log('GOND getDirectInfos 2');
+        // }
         if (self.allChannels.length <= 0) {
           self.directConnection = null;
           self.isLoading = false;
@@ -949,7 +969,7 @@ export const VideoModel = types
             DVR.getConnection,
             {
               kdvr: self.kDVR,
-              channelno: self.allChannels[0].channelNo,
+              channelno: channelNo ?? self.allChannels[0].channelNo,
             }
           );
           __DEV__ && console.log('GOND direct connect infos: ', res);
@@ -973,6 +993,7 @@ export const VideoModel = types
           return false;
         }
         self.isLoading = false;
+
         return true;
       }),
       // #endregion direct connection
@@ -1000,10 +1021,10 @@ export const VideoModel = types
       getDaylist: flow(function* getDaylist() {}),
       getHLSInfos: flow(function* getHLSInfos(channel) {
         self.isLoading = true;
-        __DEV__ && console.log('GOND getDirectInfos 1');
+        __DEV__ && console.log('GOND getHLSInfos 1');
         if (!self.activeChannels || self.activeChannels.length <= 0) {
           yield self.getActiveChannels();
-          __DEV__ && console.log('GOND getDirectInfos 2');
+          __DEV__ && console.log('GOND getHLSInfos 2');
         }
         yield self.getDVRTimezone();
         if (self.activeChannels.length <= 0) {
@@ -1022,6 +1043,7 @@ export const VideoModel = types
           accessKeyId: '',
           secretAccessKey: '',
           rtcChannelName: '',
+          singleChannelNo: channelNo ?? null,
           viewers: [],
         });
         try {
@@ -1038,11 +1060,11 @@ export const VideoModel = types
               sid: self.rtcConnection.sid,
               ID: apiService.configToken.devId,
               KDVR: self.kDVR,
-              ChannelNo:
-                channelNo ??
-                (self.allChannels && self.allChannels.length > 0
-                  ? self.allChannels[0].channelNo + 1
-                  : 1),
+              ChannelNo: channelNo
+                ? channelNo + 1
+                : self.allChannels && self.allChannels.length > 0
+                ? self.allChannels[0].channelNo + 1
+                : 1,
               RequestMode: VSCCommand.RCTLIVE,
               isMobile: true,
             }
@@ -1061,6 +1083,25 @@ export const VideoModel = types
       getVideoInfos: flow(function* getVideoInfos(channelNo) {
         console.log('GOND getVideoInfos');
         let getInfoPromise = null;
+        if (!self.allChannels || self.allChannels.length <= 0) {
+          let res = yield self.getDisplayingChannels();
+          if (!res || self.allChannels.length == 0) {
+            __DEV__ &&
+              console.log('GOND getVideoInfos get channels info failed');
+            return false;
+          }
+          if (
+            !util.isNullOrUndef(channelNo) &&
+            self.allChannels.findIndex(ch => ch.channelNo == channelNo) < 0
+          ) {
+            __DEV__ &&
+              console.log(
+                `GOND getVideoInfos channel ${channelNo} not existed or has been removed!`
+              );
+            self.message = `Channel ${channelNo} not existed or has been removed!`;
+            return false;
+          }
+        }
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
@@ -1089,9 +1130,9 @@ export const VideoModel = types
         // return resInfo && resTimezone;
         return yield getInfoPromise;
       }),
-      onLoginSuccess() {
-        streamReadyCallback && streamReadyCallback();
-      },
+      // onLoginSuccess() {
+      //   streamReadyCallback && streamReadyCallback();
+      // },
       onReceiveStreamInfo: flow(function* onReceiveStreamInfo(streamInfo) {
         __DEV__ && console.log('GOND onReceiveStreamInfo');
         switch (self.cloudType) {
@@ -1125,11 +1166,45 @@ export const VideoModel = types
                   sid: streamInfo.sid,
                 },
                 // self.allChannels
-                self.activeChannels
+                self.rtcConnection.singleChannelNo
+                  ? self.selectedChannelData
+                  : self.activeChannels
               );
               self.isLoading = false;
               streamReadyCallback && streamReadyCallback();
             }
+        }
+      }),
+      onAlarmPlay: flow(function* onAlarmPlay(isLive, alarmData) {
+        __DEV__ && console.log('GOND onAlarmPlay: ', alarmData);
+        self.kDVR = alarmData.kDVR;
+        self.isLive = isLive;
+        self.isSingleMode = true;
+        !isLive && (self.searchPlayTime = alarmData.timezone);
+        self.searchDate = DateTime.fromISO(alarmData.timezone, {
+          zone: 'utc',
+        }).startOf('day');
+        __DEV__ &&
+          console.log(
+            'GOND onAlarmPlay time input: ',
+            alarmData.timezone,
+            '\n searchDate: ',
+            self.searchDate
+          );
+
+        yield self.getVideoInfos(alarmData.channelNo);
+        self.selectedChannel = alarmData.channelNo;
+        if (self.selectedChannelData == null) {
+          __DEV__ &&
+            console.log(
+              'GOND onAlarmPlay channels has been removed or not existed!'
+            );
+          self.error = 'Channel is not existed or has been removed!';
+          return;
+        } else {
+          // dongpt: only Direct need to be build?
+          self.buildVideoData(alarmData.channelNo);
+          streamReadyCallback && streamReadyCallback();
         }
       }),
       releaseStreams() {

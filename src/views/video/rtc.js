@@ -51,6 +51,7 @@ class RTCStreamingView extends Component {
       startTs: 0,
       endTs: 0,
     };
+    this.shouldSetTime = true;
   }
 
   componentDidMount() {
@@ -158,7 +159,7 @@ class RTCStreamingView extends Component {
   };
 
   timeDataConverter = value => {
-    __DEV__ && console.log('GOND convert time: ', value);
+    // __DEV__ && console.log('GOND convert time: ', value);
     const timezoneName = this.props.videoStore.timezone ?? 'local';
     return {
       id: 0,
@@ -316,15 +317,16 @@ class RTCStreamingView extends Component {
   };
 
   dataChannelOnMessage = msg => {
-    // __DEV__ && console.log('GOND dataChannel onMessage: ', msg);
+    __DEV__ && console.log('GOND dataChannel onMessage: ', msg);
     if (!this._isMounted) return;
 
     const msgObj =
       typeof msg.data == 'string' ? JSON.parse(msg.data) : msg.data;
     const {msg_type, data} = msgObj;
-    const {videoStore, viewer, searchTime, noVideo} = this.props;
+    const {videoStore, viewer, searchTime, searchPlayTime, noVideo} =
+      this.props;
 
-    if (data.error_code || data.status == 'FAIL') {
+    if ((data.error_code && data.error_code != '0') || data.status == 'FAIL') {
       viewer.setStreamStatus({
         isLoading: false,
         error: data.description ?? 'unknow error',
@@ -515,7 +517,7 @@ class RTCStreamingView extends Component {
               isLoading: false,
               // novideo: true,
               connectionStatus: STREAM_STATUS.ERROR,
-              error: data.description ?? 'unknow error',
+              error: data.description ?? 'Unknow error',
               // displayInfo: '',
             });
           return;
@@ -535,6 +537,23 @@ class RTCStreamingView extends Component {
           // novideo: false,
           error: '',
         });
+
+        if (!videoStore.isLive && this.shouldSetTime && searchPlayTime) {
+          setTimeout(() => {
+            if (this._isMounted && viewer) {
+              const searchTime = DateTime.fromISO(searchPlayTime, {
+                zone: videoStore.timezone,
+              });
+              this.setState(
+                {
+                  startTs: searchTime.toSeconds(),
+                },
+                () => this.startPlayback()
+              );
+            }
+          }, 100);
+          this.shouldSetTime = false;
+        }
         return;
       default:
         console.log(

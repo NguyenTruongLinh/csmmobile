@@ -102,6 +102,11 @@ class AlarmsSearchView extends Component {
     }
   };
 
+  formatTimeParam = (time, type) => {
+    let hour = time > 9 ? time : '0' + time;
+    return type === 'stime' ? hour + '0000' : hour + '5959';
+  };
+
   onSubmitFilter = isOk => {
     if (isOk) {
       const {from, to, params} = this.state;
@@ -109,11 +114,12 @@ class AlarmsSearchView extends Component {
       let sTime = '000000';
       let eTime = '235959';
       if (params) {
+        const {time} = params;
         sTime = params.time
-          ? this.renderFormatTime(time.stime, 'stime')
+          ? this.formatTimeParam(time.stime, 'stime')
           : '000000';
         eTime = params.time
-          ? this.renderFormatTime(time.etime, 'etime')
+          ? this.formatTimeParam(time.etime, 'etime')
           : '235959';
       }
 
