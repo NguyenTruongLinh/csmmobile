@@ -269,20 +269,32 @@ export const parseAlarmData = item =>
     snapshot:
       item.SnapShot && Array.isArray(item.SnapShot)
         ? item.SnapShot.map(ss =>
-            AlarmSnapshot.create({
-              channelNo: ss.Channel,
-              time: ss.Time,
-              fileName: ss.FileName,
-              channelName:
-                ss.ChannelName && ss.ChannelName.length > 0
-                  ? ss.ChannelName
-                  : util.isNullOrUndef(ss.Channel)
-                  ? 'No Channel'
-                  : 'Channel ' + (ss.Channel + 1),
-              isLoading: false,
-            })
+            ss
+              ? AlarmSnapshot.create({
+                  channelNo: ss.Channel,
+                  time: ss.Time,
+                  fileName: ss.FileName,
+                  channelName:
+                    ss.ChannelName && ss.ChannelName.length > 0
+                      ? ss.ChannelName
+                      : util.isNullOrUndef(ss.Channel)
+                      ? 'No Channel'
+                      : 'Channel ' + (ss.Channel + 1),
+                  isLoading: false,
+                })
+              : AlarmSnapshot.create({
+                  ...defaultSnapshot,
+                  channelNo: item.Channel,
+                  channelName: 'Channel ' + (item.Channel + 1),
+                })
           )
-        : [AlarmSnapshot.create(defaultSnapshot)],
+        : [
+            AlarmSnapshot.create({
+              ...defaultSnapshot,
+              channelNo: item.Channel,
+              channelName: 'Channel ' + (item.Channel + 1),
+            }),
+          ],
     address: AlarmAddress.create({
       addressLine1: item.Address.AddressLine1,
       addressLine2: item.Address.AddressLine2,

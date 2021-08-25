@@ -13,6 +13,7 @@ import {types} from 'mobx-state-tree';
 const NavigationService = types
   .model({
     _navigator: types.frozen(),
+    isReady: types.boolean,
     // _navStore: NavigationModel,
   })
   .actions(self => ({
@@ -20,6 +21,10 @@ const NavigationService = types
       if (!navigatorRef) return;
       __DEV__ && console.log('GOND setTopNav ref = ', navigatorRef);
       self._navigator = navigatorRef;
+    },
+    onReady(isReady) {
+      __DEV__ && console.log('GOND ON NAVIGATION READY!');
+      self.isReady = isReady == undefined ? true : isReady;
     },
 
     // setNavigationStore(store) {

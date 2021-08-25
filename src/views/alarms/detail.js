@@ -79,10 +79,10 @@ class AlarmDetailView extends Component {
     const canSave =
       note != selectedAlarm.note || rating.rateId != selectedAlarm.rate;
     const currentSnapshot = selectedAlarm.snapshot[activeIndex] ?? {
-      channelName: '',
+      channelName: 'Channel ' + (selectedAlarm.channelNo + 1),
     };
 
-    __DEV__ &&
+    /* __DEV__ &&
       console.log(
         'GOND canSave: note ',
         currentSnapshot,
@@ -96,7 +96,7 @@ class AlarmDetailView extends Component {
         selectedAlarm.rate,
         ' > ',
         rating.rateId != selectedAlarm.rate
-      );
+      );*/
 
     this.props.navigation.setOptions({
       headerRight: () => (

@@ -3,15 +3,14 @@ import {Platform} from 'react-native';
 import {inject, observer} from 'mobx-react';
 import {useRoute} from '@react-navigation/native';
 import messaging from '@react-native-firebase/messaging';
-// import PushNotificationIOS from '@react-native-community/push-notification-ios';
-// import PushNotification from 'react-native-push-notification';
-import notifee, {EventType} from '@notifee/react-native';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
+import PushNotification, {Importance} from 'react-native-push-notification';
 
 import {onVideoNotifEvent} from './video';
 import {onAlarmEvent, onOpenAlarmEvent} from './alarm';
 import {NOTIFY_TYPE} from '../consts/misc';
 
-const CHANNEL_ID = 'commonCMS';
+const CHANNEL_ID = 'CMS_Channel';
 
 class NotificationController extends React.Component {
   constructor(props) {
@@ -31,12 +30,15 @@ class NotificationController extends React.Component {
       return;
     }
 
-    const created = await notifee.createChannel({
-      id: CHANNEL_ID,
-      name: 'CMS',
-      vibration: true,
-    });
-    __DEV__ && console.log('GOND Push notificaiton createChannel ', created);
+    PushNotification.createChannel(
+      {
+        channelId: CHANNEL_ID,
+        channelName: 'CMS',
+        importance: Importance.HIGH,
+      },
+      created =>
+        console.log('GOND Push notificaiton createChannel returned ', created)
+    );
     this.createNotificationListeners();
   }
 
@@ -93,6 +95,8 @@ class NotificationController extends React.Component {
   };
 
   createNotificationListeners = async () => {
+    const {appStore, alarmStore, videoStore, userStore} = this.props;
+
     messaging().onTokenRefresh(newToken => {
       __DEV__ && console.log('GOND FCM Token has been refreshed: ', newToken);
       if (newToken) {
@@ -104,14 +108,26 @@ class NotificationController extends React.Component {
     this.unsubscribeForegroundListioner = messaging().onMessage(
       notification => {
         // __DEV__ && console.log('GOND Receveived notification: ', notification);
-        this.onNotificationReceived(notification);
+        NotificationController.onNotificationReceived({
+          appStore,
+          alarmStore,
+          videoStore,
+          userStore,
+          message: notification,
+        });
       }
     );
 
     messaging().setBackgroundMessageHandler(async notification => {
       __DEV__ &&
         console.log('GOND Receveived background notification: ', notification);
-      this.onNotificationReceived(notification);
+      NotificationController.onNotificationReceived({
+        appStore,
+        alarmStore,
+        videoStore,
+        userStore,
+        message: notification,
+      });
     });
 
     // This listener triggered when app is in backgound and we click, tapped and opened notifiaction
@@ -121,7 +137,13 @@ class NotificationController extends React.Component {
           'GOND on open notification from background:',
           remoteMessage
         );
-      this.onNotificationOpened(remoteMessage.notification);
+      NotificationController.onNotificationOpened({
+        appStore,
+        alarmStore,
+        videoStore,
+        userStore,
+        message: remoteMessage.notification,
+      });
     });
 
     // This listener triggered when app is closed and we click,tapped and opened notification
@@ -135,10 +157,17 @@ class NotificationController extends React.Component {
               remoteMessage.notification
             );
           // setInitialRoute(remoteMessage.data.type); // e.g. "Settings"
-          this.onNotificationOpened(remoteMessage.notification);
+          NotificationController.onNotificationOpened({
+            appStore,
+            alarmStore,
+            videoStore,
+            userStore,
+            message: remoteMessage.notification,
+          });
         }
       });
 
+    /*
     notifee.onForegroundEvent(({type, detail}) => {
       if (type == EventType.PRESS) {
         this.onNotificationOpened(detail.notification);
@@ -168,6 +197,7 @@ class NotificationController extends React.Component {
         );
       this.onNotificationOpened(initialNotification.notification);
     }
+    */
   };
 
   validate = data => {
@@ -178,7 +208,13 @@ class NotificationController extends React.Component {
       return false;
     }
     if (userStore.fcm.serverId && data.serverid != userStore.fcm.serverId) {
-      __DEV__ && console.log('GOND fcm serverid not match ');
+      __DEV__ &&
+        console.log(
+          'GOND fcm serverid not match :',
+          data.serverid,
+          ' != ',
+          userStore.fcm.serverId
+        );
       return false;
     }
     if (data.msg_id === this.lastMsgId && data.msg_time === this.lastMsgTime) {
@@ -190,32 +226,33 @@ class NotificationController extends React.Component {
     return true;
   };
 
-  displayLocalNotification = ({id, title, body, messageId, data}) => {
-    /*
+  static displayLocalNotification = ({id, title, body, messageId, data}) => {
     let idNumber = typeof id == 'number' ? id : parseInt(id, 16);
     idNumber = isNaN(idNumber) ? undefined : idNumber;
-    if (idNumber) PushNotification.cancelLocalNotifications({idNumber});
+    if (idNumber) PushNotification.cancelLocalNotification({idNumber});
 
     const notificationRequest = {
-      channelId: CHANNEL_ID,
-      category: CHANNEL_ID,
       id: idNumber,
       vibration: 500,
       title: title,
-      message: Platform.OS == 'android' ? encodeURI(body) : body,
+      message: /*Platform.OS == 'android' ? encodeURI(body) :*/ body,
       messageId: messageId,
       userInfo: data,
+      invokeApp: true,
       // for android:
+      channelId: CHANNEL_ID,
       largeIcon: 'noti_icon',
       smallIcon: 'noti_icon',
+      // for iOS:
+      category: CHANNEL_ID,
     };
     console.log('GOND displayLocalNotification: ', notificationRequest);
 
-    Platform.OS === 'ios'
-      ? PushNotificationIOS.addNotificationRequest(notificationRequest)
-      : PushNotification.presentLocalNotification(notificationRequest);
-      */
+    // Platform.OS === 'ios'
+    // ? PushNotificationIOS.addNotificationRequest(notificationRequest) :
+    PushNotification.presentLocalNotification(notificationRequest);
 
+    /*
     const strId = typeof id == 'string' ? id : String(id);
     if (strId) notifee.cancelNotification(strId);
     console.log('GOND displayLocalNotification: ', data);
@@ -240,14 +277,22 @@ class NotificationController extends React.Component {
         },
       },
     });
+    */
   };
 
-  onNotificationReceived = async message => {
+  static onNotificationReceived = async ({
+    videoStore,
+    alarmStore,
+    appStore,
+    message,
+    shouldValidate,
+  }) => {
     const {data, messageId} = message;
-    const {videoStore, alarmStore, appStore} = this.props;
+    // const {videoStore, alarmStore, appStore} = this.props;
+    const naviService = appStore ? appStore.naviService : null;
 
-    // __DEV__ && console.log('GOND onNotificationReceived: ', data);
-    if (!this.validate(data)) {
+    __DEV__ && console.log('GOND onNotificationReceived: ', data);
+    if (shouldValidate && !this.validate(data)) {
       __DEV__ && console.log('GOND notification is not valid: ', data);
       return;
     }
@@ -283,7 +328,7 @@ class NotificationController extends React.Component {
         // notif = onAlertEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.ALARM:
-        notif = onAlarmEvent(alarmStore, appStore.naviService, action, content);
+        notif = onAlarmEvent(alarmStore, naviService, action, content);
         break;
       case NOTIFY_TYPE.EXCEPTION:
         // notif = onExceptionEvent(dispatch, action, content);
@@ -298,7 +343,7 @@ class NotificationController extends React.Component {
 
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
-      this.displayLocalNotification({
+      NotificationController.displayLocalNotification({
         ...notif,
         messageId,
         id: data.msg_id,
@@ -307,8 +352,14 @@ class NotificationController extends React.Component {
     }
   };
 
-  onNotificationOpened(message) {
+  static onNotificationOpened = ({
+    // videoStore,
+    alarmStore,
+    appStore,
+    message,
+  }) => {
     __DEV__ && console.log('GOND onNotificationOpened message = ', message);
+    const {naviService} = appStore ?? {};
     if (!message || (!message.content && !message.data)) {
       console.log('GOND OnOpenNotifyHandler message content not exist');
       return;
@@ -325,7 +376,7 @@ class NotificationController extends React.Component {
         console.log('GOND1 OnOpenNotifyHandler content not found: ', msgData);
       return;
     }
-    const {appStore, alarmStore} = this.props;
+    // const {appStore, alarmStore} = this.props;
 
     switch (type) {
       case NOTIFY_TYPE.SITE:
@@ -343,7 +394,7 @@ class NotificationController extends React.Component {
         // onOpenAlertEvent( dispatch,action, content, noti_disable);
         break;
       case NOTIFY_TYPE.ALARM:
-        onOpenAlarmEvent(alarmStore, appStore.naviService, action, content);
+        onOpenAlarmEvent(alarmStore, naviService, action, content);
         break;
       case NOTIFY_TYPE.EXCEPTION:
         // onOpenExceptionEvent( dispatch,action, content, noti_disable);
@@ -360,7 +411,7 @@ class NotificationController extends React.Component {
           );
         break;
     }
-  }
+  };
 
   render() {
     return null;

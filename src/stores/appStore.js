@@ -92,6 +92,7 @@ const appStore = types
     isLoading: false,
     naviService: NavigationService.create({
       _navigator: null,
+      isReady: false,
       // _navStore: NavigationModel.create({paramsMap: {}}),
     }),
     showSearchBar: false,

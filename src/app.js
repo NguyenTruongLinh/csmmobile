@@ -70,9 +70,6 @@ class App extends React.Component {
     // this.pushController = undefined;
     this.appStateEventListener = null;
     // this.props.appStore.setLoading(true);
-    this.state = {
-      notificationController: null,
-    };
   }
 
   async componentDidMount() {
@@ -442,7 +439,6 @@ class App extends React.Component {
 
   render() {
     const {showIntro, isLoading} = this.props.appStore;
-    // const {notificationController} = this.state;
     const notificationController = <NotificationController />;
     // showIntro = true; // testing
     const {isLoggedIn} = this.props.userStore;

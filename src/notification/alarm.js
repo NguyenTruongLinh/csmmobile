@@ -18,13 +18,13 @@ export function onAlarmEvent(alarmStore, navigator, action, content) {
   if (!alert) return;
 
   let noti = null;
-  const currentRoute = navigator.getCurrentRouteName();
+  const currentRoute = navigator ? navigator.getCurrentRouteName() : '';
 
   switch (action) {
     case NOTIFY_ACTION.ADD:
       if (currentRoute == ROUTERS.ALARM_LIVE) {
         // reloadAlarms(dispatch);
-        alarmStore.getAlarms({aty: AlertType_Support});
+        alarmStore && alarmStore.getAlarms({aty: AlertType_Support});
       } else {
         let strAlertType = String(alert.KAlertType);
         const msg = AlertNames[strAlertType]
@@ -39,7 +39,7 @@ export function onAlarmEvent(alarmStore, navigator, action, content) {
       break;
     case NOTIFY_ACTION.NEWIMAGE:
       // if (currentRoute == ROUTERS.ALARM_DETAIL) {
-      alarmStore.onNewSnapshot(alert);
+      alarmStore && alarmStore.onNewSnapshot(alert);
       // }
       break;
     case NOTIFY_ACTION.EDIT:
@@ -49,7 +49,7 @@ export function onAlarmEvent(alarmStore, navigator, action, content) {
     case NOTIFY_ACTION.REFRESH:
       if (currentRoute == ROUTERS.ALARM_LIVE) {
         __DEV__ && console.log('GOND Parse alarm notification refresh...');
-        alarmStore.getAlarms({aty: AlertType_Support});
+        alarmStore && alarmStore.getAlarms({aty: AlertType_Support});
       } // else {
       //   // TEST
       //   let strAlertType = String(alert.KAlertType);

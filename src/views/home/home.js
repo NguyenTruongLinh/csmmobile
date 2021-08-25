@@ -3,6 +3,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {View, Text, Image} from 'react-native';
+import {inject, observer} from 'mobx-react';
 
 import CMSStyleSheet from '../../components/CMSStyleSheet';
 
@@ -16,6 +17,8 @@ class HomeView extends Component {
 
   componentDidMount() {
     if (__DEV__) console.log('Home componentDidMount');
+    const {appStore} = this.props;
+    appStore.naviService && appStore.naviService.onReady();
   }
 
   render() {
@@ -23,4 +26,4 @@ class HomeView extends Component {
   }
 }
 
-export default HomeView;
+export default inject('appStore')(observer(HomeView));
