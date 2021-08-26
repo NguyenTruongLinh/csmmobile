@@ -209,9 +209,9 @@ class ChannelsSettingView extends Component {
   };
 
   renderChannelItem = channel => {
-    // __DEV__ && console.log('GOND renderChannelItem: ', channel);
-    return channel == {} ? (
-      <View />
+    __DEV__ && console.log('GOND renderChannelItem: ', channel);
+    return Object.keys(channel).length == 0 ? (
+      <View key="ch_none" style={{flex: 1}} />
     ) : (
       <TouchableOpacity
         key={channel.kChannel}
