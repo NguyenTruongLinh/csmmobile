@@ -541,8 +541,8 @@ class DirectVideoView extends Component {
           <View style={styles.playerView}>
             {Platform.OS === 'ios' ? (
               <FFMpegFrameViewIOS
-                width={width} // {this.state.width}
-                height={height} // {this.state.height}
+                width={this.state.width} // {this.state.width}
+                height={this.state.height} // {this.state.height}
                 ref={ref => {
                   this.ffmpegPlayer = ref;
                 }}
