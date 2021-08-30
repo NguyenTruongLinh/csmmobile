@@ -1832,6 +1832,7 @@ const uint32_t numLayers = 24;
     case IMC_CMD_UPDATE_CHANNEL_CONFIG:
     {
       ImcChannelConfig* guiChannelConfig = (ImcChannelConfig*)parameter;
+      
       for(ImcConnectedServer* server in connectedServerList )
       {
         if( [server.server_address isEqualToString:guiChannelConfig.serverAddress] &&
@@ -2857,7 +2858,7 @@ const uint32_t numLayers = 24;
     ImcScreenDisplay* screen = [[mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
     if ([screen.serverAddress isEqualToString:displayFrame.serverAddress] && screen.channelIndex!= -1 && displayFrame.channelIndex == screen.channelIndex)
     {
-      NSLog(@"Shark test live 2");
+      // NSLog(@"Shark test live 2");
       //do something
       //[self showMainSubBtnIfNeeded];
     }

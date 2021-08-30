@@ -1264,6 +1264,8 @@ const NSUInteger kMaxCommand = 50;
               [delegate handleCommand:IMC_CMD_DECODE_SEARCH_FRAME :frameInfo];
           }
         }
+		// dongpt: add nil
+        frame = nil;
       }
     }
       break;

@@ -988,6 +988,11 @@
     return SOCKET_SEND_ERROR;
   }
   __block SOCKET_SEND_STATUS status =  SOCKET_SEND_SUCCESS;
+  if(!dataQueue)
+  {
+    NSLog(@"GOND socket cannot send status dataQueue nil");
+    return SOCKET_SEND_ERROR;
+  }
   dispatch_async(dataQueue, ^{
     int sentBytes = 0;
     NSInteger length = data.length;
@@ -1539,6 +1544,8 @@
           }
           if( delegate )
             [delegate handleCommand:IMC_CMD_DECODE_FRAME :newFrame];
+          // dongpt: add nil
+		  newFrame = nil;
           break;
         }
       }

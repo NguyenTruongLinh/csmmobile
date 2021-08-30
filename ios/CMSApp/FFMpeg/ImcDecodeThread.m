@@ -81,6 +81,8 @@
             //encodedFrame = nil;
         }
         [encodedFrames enqueue:frame];
+		// dongpt: add nil
+        encodedFrame = nil;
     }
     else
     {
@@ -373,12 +375,15 @@
                                         else
                                             videoFrame.frameMode = encodingFrame.videoFrameInfo.frameMode;
                                         [delegate handleCommand:IMC_CMD_DISPLAY_VIDEO :videoFrame];
+                                        // dongpt: add nil
+										videoFrame = nil;
                                     }
                                 }
-                                else
-                                {
+								// dongpt: nil anyway
+                                // else
+                                // {
                                     decodedFrame = nil;
-                                }
+                                // }
                             }
                                 break;
                             case MJPEG_CODEC:
@@ -437,12 +442,15 @@
                                                 if(((FrameHeaderEx*)encodingFrame.header).snapshotImage)
                                                     videoFrame.frameMode = SNAPSHOT;
                                                 [delegate handleCommand:IMC_CMD_DISPLAY_VIDEO :videoFrame];
+												// dongpt: add nil
+                                                videoFrame = nil;
                                             }
                                             else
                                             {
                                                 NSLog(@"Invalid Image");
                                             }
-                                            
+											// dongpt: add nil
+                                            decodedFrame = nil;
                                         }
                                         
                                     }
@@ -455,9 +463,9 @@
                         }
                         
                     }
-                                        frameData =  nil;
-                                        encodingFrame.frameData = nil;
-                                        encodingFrame = nil;
+                    frameData =  nil;
+                    encodingFrame.frameData = nil;
+                    encodingFrame = nil;
                 }
             }
         }

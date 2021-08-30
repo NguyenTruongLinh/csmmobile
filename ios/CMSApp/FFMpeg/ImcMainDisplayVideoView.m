@@ -387,7 +387,6 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
               //NSLog(@"Shark screen displayImage 22222");
               //screen.displayImage = nil;
               screen.displayImage = [[UIImage alloc] initWithCIImage:displayFrame.videoFrame.CIImage];
-              
             }
             //NSLog(@"2.Add Video Frame for Channel Index:", displayFrame.channelIndex);
           }
@@ -521,7 +520,6 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   //@autoreleasepool
   {
-    // NSLog(@"GOND drawLayer");
     UIGraphicsPushContext(ctx);
     //    if (logoImage != [UIImage imageNamed:@"Mobile_Logo1"]) {
     //        logoImage = [UIImage imageNamed:@"Mobile_Logo1"];
@@ -529,17 +527,22 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
     
     if( needToClearScreen )
     {
+      // NSLog(@"GOND CGContextClearRect");
       CGContextClearRect(ctx, layer.frame);
       //needToClearScreen = FALSE;
     }
     // NSLog(@"GOND drawLayer inCtx sublayers = ", layer.sublayers.count);
     
     NSInteger index = [displayLayers indexOfObject:layer];
+    NSLog(@"GOND drawLayer fullscreenView = %d, index = %d", fullscreenView, index);
     if( index >= 0 && index < currentDiv*currentDiv)
     {
       UIFont* displayFont;
-      if( fullscreenView >= 0 && fullscreenView == index )
+	  // dongpt: CMSMobile display only 1 screen per reactnative view anyway
+      // if( fullscreenView >= 0 && fullscreenView == index )
+      if( fullscreenView >= 0)
       {
+        // NSLog(@"GOND drawRect fullscreenView = %d", fullscreenView);
         ImcViewDisplay* view = [displayViews objectAtIndex:fullscreenView];
         ImcScreenDisplay* screen = [displayScreens objectAtIndex:fullscreenIndex];
         CGFloat fontSize = 15;
@@ -682,9 +685,15 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 
           if (screen.displayImage.CGImage) {
             // NSLog(@"GOND draw frame in fullscreen: %f x %f", displayRect.size.width, displayRect.size.height);
+            // NSLog(@"GOND draw frame in rect fullscreen");
             sublayer.contents = (__bridge id)([screen getScaledImage].CGImage); // (screen.displayImage.CGImage);
             sublayer.frame = displayRect;
-            layer.sublayers = nil;
+            // layer.sublayers = nil;
+			// dongpt: add nil
+            for (CALayer* oldsublayer in layer.sublayers) {
+              oldsublayer.contents = nil;
+              [oldsublayer removeFromSuperlayer];
+            }
             [layer addSublayer:sublayer];
             // [sublayer display];
             // NSLog(@"GOND drawLayer added sublayers = %lu", layer.sublayers.count);
@@ -795,297 +804,302 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 #endif
 */
       }
-      else if( fullscreenView == -1 )
-      {
-        CGFloat fontSize = 12 - currentDiv;
-        if( !isIphone )
-          fontSize += 2;
+      // For CMSMobile now only display 1 channel per reactnative view
+//       else if( fullscreenView == -1 )
+//       {
+//         CGFloat fontSize = 12 - currentDiv;
+//         if( !isIphone )
+//           fontSize += 2;
         
-        CGFloat height = fontSize + 2;
-        displayFont = [UIFont systemFontOfSize:fontSize];
-        ImcViewDisplay* view = [displayViews objectAtIndex:index];
+//         CGFloat height = fontSize + 2;
+//         displayFont = [UIFont systemFontOfSize:fontSize];
+//         ImcViewDisplay* view = [displayViews objectAtIndex:index];
         
-        ImcScreenDisplay* screen = [displayScreens objectAtIndex:view.screenIndex];
+//         ImcScreenDisplay* screen = [displayScreens objectAtIndex:view.screenIndex];
         
-        //Update ratio for this view
+//         //Update ratio for this view
         
-        CGFloat layerRatio = layer.frame.size.width/layer.frame.size.height;
+//         CGFloat layerRatio = layer.frame.size.width/layer.frame.size.height;
         
-        CGRect frameRect;
+//         CGRect frameRect;
         
-        if( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone )
-        {
-          if (layerRatio  >= 1) {
-            frameRect = CGRectMake(layer.frame.origin.x + layer.frame.size.width * 5/6, layer.frame.origin.y, layer.frame.size.width/layerRatio/3.5, layer.frame.size.height/3.5);
-          }
-          else
-          {
-            frameRect = CGRectMake(layer.frame.origin.x + layer.frame.size.width * 2/3 * (1.6 - layerRatio), layer.frame.origin.y, layer.frame.size.width/4.5, layer.frame.size.height/4.5*layerRatio);
-          }
-        }
-        else
-        {
-          if (layerRatio  >= 1) {
-            frameRect = CGRectMake(layer.frame.origin.x + layer.frame.size.width * 5/6, layer.frame.origin.y, layer.frame.size.width/layerRatio/5, layer.frame.size.height/5);
-          }
-          else
-          {
-            frameRect = CGRectMake(layer.frame.origin.x + layer.frame.size.width * 4/5 * (1.6 - layerRatio), layer.frame.origin.y, layer.frame.size.width/5, layer.frame.size.height/5 * layerRatio);
-          }
-        }
+//         if( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone )
+//         {
+//           if (layerRatio  >= 1) {
+//             frameRect = CGRectMake(layer.frame.origin.x + layer.frame.size.width * 5/6, layer.frame.origin.y, layer.frame.size.width/layerRatio/3.5, layer.frame.size.height/3.5);
+//           }
+//           else
+//           {
+//             frameRect = CGRectMake(layer.frame.origin.x + layer.frame.size.width * 2/3 * (1.6 - layerRatio), layer.frame.origin.y, layer.frame.size.width/4.5, layer.frame.size.height/4.5*layerRatio);
+//           }
+//         }
+//         else
+//         {
+//           if (layerRatio  >= 1) {
+//             frameRect = CGRectMake(layer.frame.origin.x + layer.frame.size.width * 5/6, layer.frame.origin.y, layer.frame.size.width/layerRatio/5, layer.frame.size.height/5);
+//           }
+//           else
+//           {
+//             frameRect = CGRectMake(layer.frame.origin.x + layer.frame.size.width * 4/5 * (1.6 - layerRatio), layer.frame.origin.y, layer.frame.size.width/5, layer.frame.size.height/5 * layerRatio);
+//           }
+//         }
         
-        // dongpt: remove tapscreen
-        /*
-        if (singleTapScreenIndex.count > 0) {
-          NSInteger tapScreenIndex = ((NSNumber*)[singleTapScreenIndex lastObject]).integerValue;
-          if (tapScreenIndex >= 0 && tapScreenIndex < IMC_MAX_CHANNEL) {
-            ImcScreenDisplay* lastTapScreen = [displayScreens objectAtIndex:tapScreenIndex];
-            if (lastTapScreen.viewIndex >= 0 && lastTapScreen.viewIndex < maxDisplayChannels) {
-              CALayer* lastTapScreenLayer = [displayLayers objectAtIndex:lastTapScreen.viewIndex];
+//         // dongpt: remove tapscreen
+//         /*
+//         if (singleTapScreenIndex.count > 0) {
+//           NSInteger tapScreenIndex = ((NSNumber*)[singleTapScreenIndex lastObject]).integerValue;
+//           if (tapScreenIndex >= 0 && tapScreenIndex < IMC_MAX_CHANNEL) {
+//             ImcScreenDisplay* lastTapScreen = [displayScreens objectAtIndex:tapScreenIndex];
+//             if (lastTapScreen.viewIndex >= 0 && lastTapScreen.viewIndex < maxDisplayChannels) {
+//               CALayer* lastTapScreenLayer = [displayLayers objectAtIndex:lastTapScreen.viewIndex];
               
-              for (CALayer* allLayers in displayLayers) {
-                allLayers.borderWidth = 0.0f;
-              }
-              lastTapScreenLayer.borderColor = [UIColor redColor].CGColor;
+//               for (CALayer* allLayers in displayLayers) {
+//                 allLayers.borderWidth = 0.0f;
+//               }
+//               lastTapScreenLayer.borderColor = [UIColor redColor].CGColor;
               
-              if (currentDiv > 0 && currentDiv < IMC_DIV_25) {
-                lastTapScreenLayer.borderWidth = (4.0f/currentDiv);
-              }
-              else if (currentDiv > 0)
-              {
-                lastTapScreenLayer.borderWidth = (4.0f/IMC_DIV_16);
-              }
+//               if (currentDiv > 0 && currentDiv < IMC_DIV_25) {
+//                 lastTapScreenLayer.borderWidth = (4.0f/currentDiv);
+//               }
+//               else if (currentDiv > 0)
+//               {
+//                 lastTapScreenLayer.borderWidth = (4.0f/IMC_DIV_16);
+//               }
               
-              [singleTapScreenIndex removeAllObjects];
-            }
-          }
-        }
-        */
+//               [singleTapScreenIndex removeAllObjects];
+//             }
+//           }
+//         }
+//         */
         
         
-        if (layer.sublayers != nil) {
-          for (CALayer* subLayer in layer.sublayers) {
-            subLayer.frame = frameRect;
-          }
-        }
+//         if (layer.sublayers != nil) {
+//           for (CALayer* subLayer in layer.sublayers) {
+//             subLayer.frame = frameRect;
+//           }
+//         }
         
-        // dongpt: remove alarm
-        /*
-        UIImage* alarmImage;
+//         // dongpt: remove alarm
+//         /*
+//         UIImage* alarmImage;
         
-        if (isIphone) {
+//         if (isIphone) {
           
-          alarmImage = [UIImage imageNamed:@"mobile_alarm_icon_80"];
-        }
-        else
-        {
-          if (currentDiv > 0 && currentDiv < IMC_DIV_16) {
-            alarmImage = [UIImage imageNamed:@"mobile_alarm_icon_80"];
-          }
-          else if (currentDiv > 0 && currentDiv < IMC_DIV_49)
-          {
-            alarmImage = [UIImage imageNamed:@"alarm_40"];
-          }
-          else if (currentDiv > 0)
-          {
-            alarmImage = [UIImage imageNamed:@"alarm_20"];
-          }
+//           alarmImage = [UIImage imageNamed:@"mobile_alarm_icon_80"];
+//         }
+//         else
+//         {
+//           if (currentDiv > 0 && currentDiv < IMC_DIV_16) {
+//             alarmImage = [UIImage imageNamed:@"mobile_alarm_icon_80"];
+//           }
+//           else if (currentDiv > 0 && currentDiv < IMC_DIV_49)
+//           {
+//             alarmImage = [UIImage imageNamed:@"alarm_40"];
+//           }
+//           else if (currentDiv > 0)
+//           {
+//             alarmImage = [UIImage imageNamed:@"alarm_20"];
+//           }
           
-        }
+//         }
         
-        if (screen.isAlarmTrigger)
-        {
+//         if (screen.isAlarmTrigger)
+//         {
           
-          CAKeyframeAnimation *opacityAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
+//           CAKeyframeAnimation *opacityAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
           
-          opacityAnimation.values = [NSArray arrayWithObjects:@1.0, @0.0,@1.0, @0.0, @1.0,@0.0,@1.0,@0.0,@1.0,@0.0,@1.0,@0.0,@0.0,@1.0,@0.0,@1.0, nil];
-          opacityAnimation.duration = 2.0f;
-          opacityAnimation.repeatCount = 2.0f;
-          opacityAnimation.calculationMode = kCAAnimationPaced;
+//           opacityAnimation.values = [NSArray arrayWithObjects:@1.0, @0.0,@1.0, @0.0, @1.0,@0.0,@1.0,@0.0,@1.0,@0.0,@1.0,@0.0,@0.0,@1.0,@0.0,@1.0, nil];
+//           opacityAnimation.duration = 2.0f;
+//           opacityAnimation.repeatCount = 2.0f;
+//           opacityAnimation.calculationMode = kCAAnimationPaced;
           
           
-          if (layer.sublayers == nil) {
-            CALayer* sublayer = [CALayer layer];
+//           if (layer.sublayers == nil) {
+//             CALayer* sublayer = [CALayer layer];
             
-            sublayer.frame = frameRect;
-            sublayer.contents = (__bridge id)(alarmImage.CGImage);
+//             sublayer.frame = frameRect;
+//             sublayer.contents = (__bridge id)(alarmImage.CGImage);
             
-            [sublayer removeAllAnimations];
-            [sublayer addAnimation:opacityAnimation forKey:@"opacity"];
-            //[alarmImage drawInRect:frameRect];
+//             [sublayer removeAllAnimations];
+//             [sublayer addAnimation:opacityAnimation forKey:@"opacity"];
+//             //[alarmImage drawInRect:frameRect];
             
-            [layer addSublayer:sublayer];
-            [layer actionForKey:@"kCATransition"];
-            //[sublayer display];
-            //[sublayer.contents drawInRect:frameRect];
+//             [layer addSublayer:sublayer];
+//             [layer actionForKey:@"kCATransition"];
+//             //[sublayer display];
+//             //[sublayer.contents drawInRect:frameRect];
             
-          }
-          else
-          {
+//           }
+//           else
+//           {
             
-            for (CALayer* subLayer in layer.sublayers) {
+//             for (CALayer* subLayer in layer.sublayers) {
               
-              //subLayer.frame = frameRect;
+//               //subLayer.frame = frameRect;
               
-              [subLayer removeAllAnimations];
-              [subLayer addAnimation:opacityAnimation forKey:@"opacity"];
-              [layer actionForKey:@"kCATransition"];
-              //[subLayer display];
-              //[subLayer.contents drawInRect:frameRect];
-            }
+//               [subLayer removeAllAnimations];
+//               [subLayer addAnimation:opacityAnimation forKey:@"opacity"];
+//               [layer actionForKey:@"kCATransition"];
+//               //[subLayer display];
+//               //[subLayer.contents drawInRect:frameRect];
+//             }
             
-          }
+//           }
           
-          screen.isAlarmTrigger = FALSE;
+//           screen.isAlarmTrigger = FALSE;
           
-          screen.hasAlarmIcon = YES;
+//           screen.hasAlarmIcon = YES;
           
-        }
-        else if (screen.hasAlarmIcon) {
-          if (layer.sublayers == nil) {
-            CALayer* sublayer = [CALayer layer];
-            sublayer.contents = (__bridge id)(alarmImage.CGImage);
-            sublayer.frame = frameRect;
+//         }
+//         else if (screen.hasAlarmIcon) {
+//           if (layer.sublayers == nil) {
+//             CALayer* sublayer = [CALayer layer];
+//             sublayer.contents = (__bridge id)(alarmImage.CGImage);
+//             sublayer.frame = frameRect;
             
-            [layer addSublayer:sublayer];
-          }
-          else
-          {
-            for (CALayer* subLayer in layer.sublayers) {
+//             [layer addSublayer:sublayer];
+//           }
+//           else
+//           {
+//             for (CALayer* subLayer in layer.sublayers) {
               
-              subLayer.contents = (__bridge id)(alarmImage.CGImage);
-              subLayer.frame = frameRect;
-            }
-          }
-        }
-        else
-        {
-          if (layer.sublayers != nil) {
-            for (CALayer* subLayer in layer.sublayers) {
-              subLayer.contents = nil;
-            }
-          }
-          screen.hasAlarmIcon = FALSE;
-        }
-        */
+//               subLayer.contents = (__bridge id)(alarmImage.CGImage);
+//               subLayer.frame = frameRect;
+//             }
+//           }
+//         }
+//         else
+//         {
+//           if (layer.sublayers != nil) {
+//             for (CALayer* subLayer in layer.sublayers) {
+//               subLayer.contents = nil;
+//             }
+//           }
+//           screen.hasAlarmIcon = FALSE;
+//         }
+//         */
         
         
         
         
-        if( screen.displayImage  )
-        {
-          CALayer* sublayer = [CALayer layer];
-          CGRect displayRect;
-          if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
-          {
-            BOOL cropImage = (screen.displayImage == logoImage) ? FALSE : TRUE;
-            CGSize imageSize = screen.displayImage.size;
-            if( cropImage && imageSize.width/imageSize.height > 1.8 &&imageSize.width <= 720)
-              imageSize.height *= 2;
-            displayRect = [self callDisplayRect:view.frame :imageSize :cropImage];
-          }
-          else // STRETCH mode
-            displayRect = view.frame;
+//         if( screen.displayImage  )
+//         {
+//           CALayer* sublayer = [CALayer layer];
+//           CGRect displayRect;
+//           if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
+//           {
+//             BOOL cropImage = (screen.displayImage == logoImage) ? FALSE : TRUE;
+//             CGSize imageSize = screen.displayImage.size;
+//             if( cropImage && imageSize.width/imageSize.height > 1.8 &&imageSize.width <= 720)
+//               imageSize.height *= 2;
+//             displayRect = [self callDisplayRect:view.frame :imageSize :cropImage];
+//           }
+//           else // STRETCH mode
+//             displayRect = view.frame;
 
-          // NSLog(@"GOND draw frame in rect 1");
-          // layer.sublayers = nil;
-          if (screen.displayImage.CGImage) {
-            // NSLog(@"GOND draw frame in rect 2");
-            sublayer.contents = (__bridge id)(screen.displayImage.CGImage);
-            sublayer.frame = displayRect;
-            [layer addSublayer:sublayer];
-            // [sublayer display];
-          }
+//           // NSLog(@"GOND draw frame in rect 1");
+//           // layer.sublayers = nil;
+//           if (screen.displayImage.CGImage) {
+//             NSLog(@"GOND draw frame in rect 2");
+//             sublayer.contents = (__bridge id)(screen.displayImage.CGImage);
+//             sublayer.frame = displayRect;
+//             for (CALayer* oldsublayer in layer.sublayers) {
+//               oldsublayer.contents = nil;
+//               [oldsublayer removeFromSuperlayer];
+//             }
+//             [layer addSublayer:sublayer];
+//             // [sublayer display];
+//           }
           
-          // if(screen.displayImage && (screen.displayImage.CGImage || screen.displayImage.CIImage) && screen.displayImage.size.height > 0 && screen.displayImage.size.width > 0 && screen.displayImage.size.width < 4096 && screen.displayImage.size.height < 4096)
-          // {
-          //   UIImage* viewImage = [screen getScaledImage];
-          //   //NSLog(@"---Draw Layer for channel: ",screen.channelIndex);
-          //   [viewImage drawInRect:displayRect];
+//           // if(screen.displayImage && (screen.displayImage.CGImage || screen.displayImage.CIImage) && screen.displayImage.size.height > 0 && screen.displayImage.size.width > 0 && screen.displayImage.size.width < 4096 && screen.displayImage.size.height < 4096)
+//           // {
+//           //   UIImage* viewImage = [screen getScaledImage];
+//           //   //NSLog(@"---Draw Layer for channel: ",screen.channelIndex);
+//           //   [viewImage drawInRect:displayRect];
 
-          //   // UIImageView *viewImage = [[UIImageView alloc]initWithFrame:displayRect];
-          //   // [viewImage setImage:[screen getScaledImage ]];
-          // }
-          if([screen needDrawScreen])
-          {
-            screen.lastDisplayImage = screen.displayImage;
-            screen.lastUpdateTime = [NSDate date];
-          }
-          else if([screen timeFromLastUpdate] > TIME_REFRESS_IMAGE)
-          {
-            screen.displayImage = logoImage;
-            screen.lastUpdateTime = [NSDate date];
-          }
-        }
+//           //   // UIImageView *viewImage = [[UIImageView alloc]initWithFrame:displayRect];
+//           //   // [viewImage setImage:[screen getScaledImage ]];
+//           // }
+//           if([screen needDrawScreen])
+//           {
+//             screen.lastDisplayImage = screen.displayImage;
+//             screen.lastUpdateTime = [NSDate date];
+//           }
+//           else if([screen timeFromLastUpdate] > TIME_REFRESS_IMAGE)
+//           {
+//             screen.displayImage = logoImage;
+//             screen.lastUpdateTime = [NSDate date];
+//           }
+//         }
         
-        // if( screen.enablePtz && screen.showPtzIcon)
-        // {
-        //   [ptzIcon drawInRect:view.ptzIconRect];
-        // }
-/*
-#if DEBUG
-        if (screen.frameRate != -1) //&& screen.resolutionHeight != 0)
-        {
-          CGPoint displayFrameRatePos = CGPointMake(view.frame.origin.x + 2, view.frame.origin.y + view.frame.size.height/2);
-          NSString* rate = [NSString stringWithFormat:@"%zd", screen.frameRate];
+//         // if( screen.enablePtz && screen.showPtzIcon)
+//         // {
+//         //   [ptzIcon drawInRect:view.ptzIconRect];
+//         // }
+// /*
+// #if DEBUG
+//         if (screen.frameRate != -1) //&& screen.resolutionHeight != 0)
+//         {
+//           CGPoint displayFrameRatePos = CGPointMake(view.frame.origin.x + 2, view.frame.origin.y + view.frame.size.height/2);
+//           NSString* rate = [NSString stringWithFormat:@"%zd", screen.frameRate];
           
-          //frameRate = [NSString stringWithFormat:@"", screen.frameRate];
+//           //frameRate = [NSString stringWithFormat:@"", screen.frameRate];
           
-          //[[UIColor redColor] set];
-          UIFont* frameRatedisplayFont = nil;
-          if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
-            frameRatedisplayFont = [UIFont systemFontOfSize:15];
-          }
-          else
-          {
-            frameRatedisplayFont = [UIFont systemFontOfSize:18];
-          }
+//           //[[UIColor redColor] set];
+//           UIFont* frameRatedisplayFont = nil;
+//           if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
+//             frameRatedisplayFont = [UIFont systemFontOfSize:15];
+//           }
+//           else
+//           {
+//             frameRatedisplayFont = [UIFont systemFontOfSize:18];
+//           }
           
-          //[rate drawAtPoint:displayFrameRatePos withAttributes:@{NSFontAttributeName:frameRatedisplayFont,NSForegroundColorAttributeName:[UIColor redColor]}];
+//           //[rate drawAtPoint:displayFrameRatePos withAttributes:@{NSFontAttributeName:frameRatedisplayFont,NSForegroundColorAttributeName:[UIColor redColor]}];
           
-          [[UIColor whiteColor] set];
-          //[layer performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+//           [[UIColor whiteColor] set];
+//           //[layer performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
           
-        }
-#endif
-*/
-        // dongpt: remove text
-        /*
-        NSString* _screenString = [NSString stringWithFormat:@"Screen %zd", view.screenIndex+1];
-        //[[UIColor whiteColor] set];
-        CGPoint displayScreenPos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + 5);
-        //[_screenString drawAtPoint:displayScreenPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
+//         }
+// #endif
+// */
+//         // dongpt: remove text
+//         /*
+//         NSString* _screenString = [NSString stringWithFormat:@"Screen %zd", view.screenIndex+1];
+//         //[[UIColor whiteColor] set];
+//         CGPoint displayScreenPos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + 5);
+//         //[_screenString drawAtPoint:displayScreenPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
         
-        CGPoint displayPos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + view.frame.size.height - height);
+//         CGPoint displayPos = CGPointMake(view.frame.origin.x + 5, view.frame.origin.y + view.frame.size.height - height);
         
-        //if( screen.serverAddress )
-        //    [screen.serverAddress drawAtPoint:displayPos withFont:displayFont];
-        //        if( screen.serverName )
-        //          [screen.serverName drawAtPoint:displayPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
-        //        else
-        //          [screen.serverAddress drawAtPoint:displayPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
+//         //if( screen.serverAddress )
+//         //    [screen.serverAddress drawAtPoint:displayPos withFont:displayFont];
+//         //        if( screen.serverName )
+//         //          [screen.serverName drawAtPoint:displayPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
+//         //        else
+//         //          [screen.serverAddress drawAtPoint:displayPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
         
-        if( screen.channelIndex >= 0 )
-        {
-          NSString* _displayString = nil;
-          if( screen.cameraName )
-            _displayString = [NSString stringWithFormat:@"%@",screen.cameraName ];
-          else if( screen.channelIndex >= 0 )
-            _displayString = [NSString stringWithFormat:@"Channel %zd",screen.channelIndex+1];
-          displayPos.y -= height;
-          if( _displayString )
-          {
-            //[_displayString drawAtPoint:displayPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
-            //displayString = nil;
-          }
-        }
-        */
+//         if( screen.channelIndex >= 0 )
+//         {
+//           NSString* _displayString = nil;
+//           if( screen.cameraName )
+//             _displayString = [NSString stringWithFormat:@"%@",screen.cameraName ];
+//           else if( screen.channelIndex >= 0 )
+//             _displayString = [NSString stringWithFormat:@"Channel %zd",screen.channelIndex+1];
+//           displayPos.y -= height;
+//           if( _displayString )
+//           {
+//             //[_displayString drawAtPoint:displayPos withAttributes:@{NSFontAttributeName:displayFont,NSForegroundColorAttributeName:[UIColor whiteColor]}];
+//             //displayString = nil;
+//           }
+//         }
+//         */
         
-        CGContextSetStrokeColorWithColor(ctx, [[UIColor blackColor] CGColor]);
-        CGContextStrokeRectWithWidth(ctx, view.frame, 0.5);
-        view.needDisplay = false;
+//         CGContextSetStrokeColorWithColor(ctx, [[UIColor blackColor] CGColor]);
+//         CGContextStrokeRectWithWidth(ctx, view.frame, 0.5);
+//         view.needDisplay = false;
         
-      }
+//       }
       
     }
     if(needToClearScreen)

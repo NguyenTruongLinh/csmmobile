@@ -424,6 +424,7 @@
           }
         }
       }
+      // free(data);
       current_state = get_cmd;
       sizeWillRead = 2;
     }
@@ -436,7 +437,11 @@
       if( newFrame && parent)
       {
         [parent postEncodedFrame:newFrame];
+		// dongpt: add nil
+        newFrame = nil;
       }
+	  // dongpt: add nil
+      data = nil;
       current_state = get_cmd;
       sizeWillRead = 2;
     }
