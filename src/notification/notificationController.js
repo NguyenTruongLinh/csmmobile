@@ -53,12 +53,18 @@ class NotificationController extends React.Component {
     let enabled = await messaging().hasPermission();
     console.log('GOND checkPermission notif:', enabled);
     // If Premission granted proceed towards token fetch
-    if (enabled) {
-      this.getToken();
-    } else {
+    // if (enabled) {
+    //   this.getToken();
+    // } else {
+    //   // If permission hasn’t been granted to our app, request user in requestPermission method.
+    //   enabled = await this.requestPermission();
+    // }
+
+    if (!enabled) {
       // If permission hasn’t been granted to our app, request user in requestPermission method.
       enabled = await this.requestPermission();
     }
+    enabled && this.getToken();
     return enabled;
   };
 
@@ -87,6 +93,7 @@ class NotificationController extends React.Component {
         if (fcmToken) {
           // user has a device token
           userStore.saveToken(fcmToken, apnsToken);
+          // messaging().registerDeviceForRemoteMessages();
         }
       } catch (err) {
         console.log('GOND Cannot get fcmToken:', err);
@@ -107,7 +114,7 @@ class NotificationController extends React.Component {
     // This listener triggered when notification has been received in foreground
     this.unsubscribeForegroundListioner = messaging().onMessage(
       notification => {
-        // __DEV__ && console.log('GOND Receveived notification: ', notification);
+        __DEV__ && console.log('GOND Received notification: ', notification);
         NotificationController.onNotificationReceived({
           appStore,
           alarmStore,
@@ -229,7 +236,7 @@ class NotificationController extends React.Component {
   static displayLocalNotification = ({id, title, body, messageId, data}) => {
     let idNumber = typeof id == 'number' ? id : parseInt(id, 16);
     idNumber = isNaN(idNumber) ? undefined : idNumber;
-    if (idNumber) PushNotification.cancelLocalNotification({idNumber});
+    if (idNumber) PushNotification.cancelLocalNotification(idNumber);
 
     const notificationRequest = {
       id: idNumber,
@@ -243,15 +250,16 @@ class NotificationController extends React.Component {
       channelId: CHANNEL_ID,
       largeIcon: 'noti_icon',
       smallIcon: 'noti_icon',
+      actions: [],
       // for iOS:
+      alertAction: 'view',
       category: CHANNEL_ID,
     };
     // console.log('GOND displayLocalNotification: ', notificationRequest);
 
-    // Platform.OS === 'ios'
-    // ? PushNotificationIOS.addNotificationRequest(notificationRequest) :
-    PushNotification.presentLocalNotification(notificationRequest);
-
+    Platform.OS === 'ios'
+      ? PushNotification.localNotification(notificationRequest)
+      : PushNotification.presentLocalNotification(notificationRequest);
     /*
     const strId = typeof id == 'string' ? id : String(id);
     if (strId) notifee.cancelNotification(strId);
@@ -298,9 +306,10 @@ class NotificationController extends React.Component {
     }
     let {type, action, content} = data;
     if (!content && data.data) content = data.data;
-    if (typeof content === 'string') {
+    let contentObj = content;
+    if (typeof contentObj === 'string') {
       try {
-        content = JSON.parse(content);
+        contentObj = JSON.parse(content);
       } catch (ex) {
         __DEV__ &&
           console.log('GOND Parse notification content failed: ', content);
@@ -315,7 +324,7 @@ class NotificationController extends React.Component {
       case NOTIFY_TYPE.DVR:
         notif = {
           title: 'DVR configuration.',
-          body: 'DVR: ' + content.Name + ' has changed.',
+          body: 'DVR: ' + contentObj.Name + ' has changed.',
         };
         break;
       case NOTIFY_TYPE.USER:
@@ -328,13 +337,13 @@ class NotificationController extends React.Component {
         // notif = onAlertEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.ALARM:
-        notif = onAlarmEvent(alarmStore, naviService, action, content);
+        notif = onAlarmEvent(alarmStore, naviService, action, contentObj);
         break;
       case NOTIFY_TYPE.EXCEPTION:
         // notif = onExceptionEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.STREAMING:
-        onVideoNotifEvent(videoStore, action, content);
+        onVideoNotifEvent(videoStore, action, contentObj);
         break;
       case NOTIFY_TYPE.PVM:
         // notif = onPVMEvent(dispatch,action, content);
@@ -343,6 +352,9 @@ class NotificationController extends React.Component {
 
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
+      if (Platform.OS === 'ios') {
+        content = content.replace(/null/g, '""'); // content.split('null').join('');
+      }
       NotificationController.displayLocalNotification({
         ...notif,
         messageId,

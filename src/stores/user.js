@@ -540,7 +540,10 @@ export const UserStoreModel = types
           snackbarUtil.onMessage(
             'Failed to connect to CMS server, please try again later!'
           );
-          console.log('GOND register FCM token error: ', res);
+          return false;
+        }
+        if (res.Key != 'OK') {
+          __DEV__ && console.log('GOND registerToken failed: ', res);
           return false;
         }
         console.log('GOND register FCM token res: ', res);
