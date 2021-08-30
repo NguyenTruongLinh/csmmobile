@@ -22,6 +22,8 @@ export const Site = {
   getAll: 'all=true',
   getAllWithDVR: '?all=true&dvr=true',
   getSiteOam: '?all=true&dvr=true&filter=pvm',
+  getAllRegions: 'getallregions',
+  getRegionSites: 'getregions',
 };
 
 export const Alert = {

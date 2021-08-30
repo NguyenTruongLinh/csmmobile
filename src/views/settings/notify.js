@@ -345,7 +345,7 @@ class NotifySettingView extends React.Component {
     let iconL = null;
     let filterModal = <View></View>;
     if (item.id == 222) {
-      item.isCheck = this.state.selectedExceptions.length > 0 ? true : false;
+      item.isCheck = this.state.selectedExceptions.length > 0; // ? true : false;
       let filer_modal = this.render_FilterModel();
       iconL = (
         <View style={[styles.containIcon, styles.rowButton_contain_icon]}>
@@ -356,7 +356,7 @@ class NotifySettingView extends React.Component {
           </View>
           <CMSTouchableIcon
             size={24}
-            disabled={true}
+            disabled={this.state.selectedExceptions.length == 0}
             iconCustom="ic_flag_black_48px"
           />
         </View>
@@ -374,7 +374,7 @@ class NotifySettingView extends React.Component {
           </View>
           <CMSTouchableIcon
             size={24}
-            disabled={true}
+            disabled={this.state.temperatureAlarmSelected.length == 0}
             iconCustom="notifications-button"
           />
         </View>
@@ -463,9 +463,10 @@ class NotifySettingView extends React.Component {
   };
 
   updateNotifySettings() {
+    const {selectedNotifies, selectedExceptions} = this.state;
     this.props.userStore.updateNotifySettings({
-      selectedNotifies: this.state.selectedNotifies,
-      selectedExceptions: this.state.selectedExceptions,
+      selectedNotifies,
+      selectedExceptions,
     });
   }
 

@@ -246,7 +246,7 @@ class NotificationController extends React.Component {
       // for iOS:
       category: CHANNEL_ID,
     };
-    console.log('GOND displayLocalNotification: ', notificationRequest);
+    // console.log('GOND displayLocalNotification: ', notificationRequest);
 
     // Platform.OS === 'ios'
     // ? PushNotificationIOS.addNotificationRequest(notificationRequest) :
@@ -291,7 +291,7 @@ class NotificationController extends React.Component {
     // const {videoStore, alarmStore, appStore} = this.props;
     const naviService = appStore ? appStore.naviService : null;
 
-    __DEV__ && console.log('GOND onNotificationReceived: ', data);
+    // __DEV__ && console.log('GOND onNotificationReceived: ', data);
     if (shouldValidate && !this.validate(data)) {
       __DEV__ && console.log('GOND notification is not valid: ', data);
       return;

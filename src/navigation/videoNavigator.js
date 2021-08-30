@@ -20,7 +20,7 @@ const VStack = createStackNavigator();
 export default function VideoStack() {
   return (
     <VStack.Navigator
-      initialRouteName={ROUTERS.VIDEO_SITES} //{ROUTERS.VIDEO_REGIONS}
+      initialRouteName={ROUTERS.VIDEO_REGIONS} //{ROUTERS.VIDEO_REGIONS}
       screenOptions={({route, navigation}) => ({
         headerStyle: {
           // backgroundColor: CMSColors.White,
@@ -36,11 +36,15 @@ export default function VideoStack() {
       //   headerShown: false,
       // })}
     >
-      <VStack.Screen name={ROUTERS.VIDEO_REGIONS} component={RegionsView} />
+      <VStack.Screen
+        name={ROUTERS.VIDEO_REGIONS}
+        component={RegionsView}
+        options={{headerLeft: () => {}}}
+      />
       <VStack.Screen
         name={ROUTERS.VIDEO_SITES}
         component={SitesView}
-        options={{headerLeft: () => {}}}
+        // options={{headerLeft: () => {}}}
       />
       <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
       <VStack.Screen name={ROUTERS.VIDEO_CHANNELS} component={ChannelsView} />

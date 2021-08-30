@@ -36,14 +36,14 @@ class SitesView extends Component {
     __DEV__ && console.log('SitesView componentWillUnmount');
     this._isMounted = false;
     this.props.sitesStore.setSiteFilter('');
-    BackHandler.removeEventListener('hardwareBackPress', this.onBack);
+    // BackHandler.removeEventListener('hardwareBackPress', this.onBack);
   }
 
   componentDidMount() {
     this._isMounted = true;
     if (__DEV__) console.log('SitesView componentDidMount');
 
-    BackHandler.addEventListener('hardwareBackPress', this.onBack);
+    // BackHandler.addEventListener('hardwareBackPress', this.onBack);
     // const backEventHandler = e => {
     //   console.log('GOND navigation event: ', e);
     //   if (this.state.enableSearchbar && typeof e.preventDefault == 'function') {
@@ -51,7 +51,7 @@ class SitesView extends Component {
     //     e.preventDefault();
     //   }
     // };
-    this.getSitesList();
+    if (!this.props.sitesStore.selectedRegion) this.getSitesList();
   }
 
   getSitesList = async () => {
@@ -59,11 +59,11 @@ class SitesView extends Component {
     if (!res) snackbar.handleRequestFailed();
   };
 
-  onBack = () => {
-    // if (this.state.enableSearchbar) {
-    //   this.setState({enableSearchbar: false});
-    // }
-  };
+  // onBack = () => {
+  //   if (this.state.enableSearchbar) {
+  //     this.setState({enableSearchbar: false});
+  //   }
+  // };
 
   onSiteSelected = item => {
     const {sitesStore, navigation} = this.props;
@@ -142,14 +142,14 @@ class SitesView extends Component {
               textAlignVertical: 'center',
               color: CMSColors.RowOptions,
             }}>
-            {this.props.sitesStore.sitesCount + ' sites'}
+            {sitesStore.filteredSites.length + ' sites'}
           </Text>
         </View>
         <FlatList
           ref={ref => (this.sitesListRef = ref)}
           renderItem={this.renderItem}
           keyExtractor={item => item.key}
-          data={this.props.sitesStore.filteredSites}
+          data={sitesStore.filteredSites}
           onRefresh={this.getSitesList}
           refreshing={
             this.props.sitesStore ? this.props.sitesStore.isLoading : false

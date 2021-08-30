@@ -639,7 +639,10 @@ export const UserStoreModel = types
         AccountRoute.controller,
         self.user.userId,
         AccountRoute.updateNotifySettings,
-        newSetting
+        JSON.stringify({
+          NotifySelected: newSetting.selectedNotifies,
+          ExceptionSelected: newSetting.selectedExceptions,
+        })
       );
       // __DEV__ && console.log('GOND updateNotifySettings: ', res);
       snackbarUtil.handleSaveResult(res);
