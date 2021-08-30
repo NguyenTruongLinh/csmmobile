@@ -67,6 +67,7 @@ class ChannelsView extends React.Component {
     // this.channelsCount = 0;
     this.playerRefs = [];
     this.firstFocus = true;
+    this.channelsData = [];
     // this.showAllTimeout = null;
   }
 
@@ -218,12 +219,6 @@ class ChannelsView extends React.Component {
         videoStore.cloudType == CLOUD_TYPE.DIRECTION)
     ) {
       newState.liveData = this.buildLiveData(this.state.gridLayout /*, true*/);
-      // __DEV__ && console.log('GOND show first channels 1!');
-      // this.showAllTimeout = setTimeout(() => {
-      //   __DEV__ && console.log('GOND show all channels... 1');
-      //   this.onStreamReady();
-      //   this.showAllTimeout = null;
-      // }, 3000);
     }
     this.setState(newState);
   };
@@ -245,19 +240,6 @@ class ChannelsView extends React.Component {
     videoStore.setNVRLoginInfo(username, password);
     videoStore.displayAuthen(false);
 
-    // if (
-    //   videoStore.cloudType == CLOUD_TYPE.DEFAULT ||
-    //   videoStore.cloudType == CLOUD_TYPE.DIRECTION
-    // ) {
-    //   if (this.showAllTimeout) {
-    //     clearTimeout(this.showAllTimeout);
-    //   }
-    //   this.showAllTimeout = setTimeout(() => {
-    //     __DEV__ && console.log('GOND show all channels... 2');
-    //     this.onStreamReady();
-    //     this.showAllTimeout = null;
-    //   }, 3000);
-    // }
     __DEV__ && console.log('GOND show first channels 2!');
     this.setState({
       liveData: this.buildLiveData(this.state.gridLayout /*, true*/),
@@ -287,10 +269,16 @@ class ChannelsView extends React.Component {
     this.playerRefs.forEach(p => p && p.stop());
   };
 
-  buildLiveData = (gridLayout, isFirst = false) => {
+  buildLiveData = (
+    gridLayout,
+    noRebuildChannels = false /*, isFirst = false*/
+  ) => {
     // const {gridLayout} = this.state;
     const {videoStore} = this.props;
-    const videoDataList = videoStore.buildVideoData();
+    const videoDataList =
+      noRebuildChannels && this.channelsData.length > 0
+        ? this.channelsData
+        : videoStore.buildVideoData();
     __DEV__ &&
       console.log(
         'ChannelsView videoDataList: ',
@@ -298,17 +286,18 @@ class ChannelsView extends React.Component {
         ', layout: ',
         gridLayout
       );
-    // this.channelsCount = videoDataList.length;
+    this.channelsData = videoDataList;
+
     if (!videoDataList || !Array.isArray(videoDataList)) return [];
-    if (isFirst) {
-      let newRow = {key: 'videoRow_0', data: []};
-      for (let i = 0; i < gridLayout; i++) {
-        if (i == 0) {
-          newRow.data.push(videoDataList[i]);
-        } else newRow.data.push({});
-      }
-      return [newRow];
-    }
+    // if (isFirst) {
+    //   let newRow = {key: 'videoRow_0', data: []};
+    //   for (let i = 0; i < gridLayout; i++) {
+    //     if (i == 0) {
+    //       newRow.data.push(videoDataList[i]);
+    //     } else newRow.data.push({});
+    //   }
+    //   return [newRow];
+    // }
 
     let result = [];
     let totalRow = Math.ceil(videoDataList.length / gridLayout);
@@ -477,7 +466,7 @@ class ChannelsView extends React.Component {
           <TouchableOpacity
             style={{width: '100%', height: '100%', borderWidth: 0}}
             onPress={() => this.onChannelSelect(item.data[i])}>
-            {this.renderVideoPlayer(item.data[i])}
+            {this.renderVideoPlayer(item.data[i], i)}
           </TouchableOpacity>
         </View>
       );
@@ -496,9 +485,15 @@ class ChannelsView extends React.Component {
     );
   };
 
-  renderVideoPlayer = item => {
+  renderVideoPlayer = (item, index) => {
     // __DEV__ && console.log('GOND renderVid player: ', item);
-    if (!item || Object.keys(item).length == 0) return null;
+    if (!item || Object.keys(item).length == 0)
+      return (
+        <View
+          key={'ch_none_' + index}
+          style={{flex: 1, backgroundColor: 'black'}}
+        />
+      );
     const {videoWindow} = this.state;
     const {videoStore} = this.props;
 

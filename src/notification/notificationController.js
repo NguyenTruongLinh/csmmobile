@@ -93,7 +93,6 @@ class NotificationController extends React.Component {
         if (fcmToken) {
           // user has a device token
           userStore.saveToken(fcmToken, apnsToken);
-          // messaging().registerDeviceForRemoteMessages();
         }
       } catch (err) {
         console.log('GOND Cannot get fcmToken:', err);

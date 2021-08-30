@@ -171,15 +171,9 @@ const DirectStreamModel = types
       return self.channel.name;
     },
   }))
-  .volatile(() => ({
-    nativePlayer: null,
-  }))
   .actions(self => ({
     setPlay(value) {
       self.playing = value;
-    },
-    setNativeComponent(value) {
-      self.nativePlayer = value;
     },
     setSearchDate(value) {
       self.server.date = value;
@@ -858,6 +852,40 @@ export const VideoModel = types
       }),
       // #endregion settings
       // #region get channels
+      refreshChannelsList(newList) {
+        if (self.allChannels.length == newList.length) {
+          const fnSort = (a, b) => a.channelNo < b.channelNo;
+          const arrayAllChannels = [...self.allChannels].sort(fnSort);
+          const arrCompareChannels = [...newList].sort(fnSort);
+          let isDiff = false;
+          for (let i = 0; i < arrayAllChannels.length; i++) {
+            __DEV__ &&
+              console.log(
+                'GOND - Compare channels: ',
+                JSON.stringify(getSnapshot(arrayAllChannels[i])),
+                ' >< ',
+                JSON.stringify(getSnapshot(arrCompareChannels[i]))
+              );
+            if (
+              JSON.stringify(getSnapshot(arrayAllChannels[i])) !=
+              JSON.stringify(getSnapshot(arrCompareChannels[i]))
+            ) {
+              isDiff = true;
+              break;
+            }
+          }
+
+          if (!isDiff) {
+            __DEV__ &&
+              console.log(
+                'GOND - getDVRChannels: channels list not change keep it still!'
+              );
+            return;
+          }
+        }
+        self.allChannels.forEach(ch => ch.release());
+        self.allChannels = newList;
+      },
       getDvrChannels: flow(function* getDvrChannels(isGetAll = false) {
         if (!self.kDVR) {
           console.log('GOND Could not get channels info, no dvr selected');
@@ -879,7 +907,8 @@ export const VideoModel = types
             self.isLoading = false;
             return false;
           }
-          self.allChannels = res.map(ch => parseChannel(ch));
+          const newChannelsList = res.map(ch => parseChannel(ch));
+          self.refreshChannelsList(newChannelsList);
         } catch (err) {
           console.log('GOND cannot get channels info: ', err);
           snackbarUtil.handleRequestFailed(err);
@@ -924,9 +953,11 @@ export const VideoModel = types
             return false;
           }
           self.maxReadyChannels = resActive.MaxReadyChannels ?? 0;
-          self.allChannels = resAll.map(ch =>
+
+          const newChannelsList = resAll.map(ch =>
             parseChannel(ch, resActive.Channels)
           );
+          self.refreshChannelsList(newChannelsList);
         } catch (err) {
           console.log('GOND cannot get active channels info: ', err);
           snackbarUtil.handleRequestFailed(err);

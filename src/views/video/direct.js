@@ -116,7 +116,7 @@ class DirectVideoView extends Component {
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }
-    this.ffmpegPlayer.setNativeProps({stop: true});
+    this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps({stop: true});
     this._isMounted = false;
     // this.unsubscribeReaction();
   }
@@ -195,7 +195,11 @@ class DirectVideoView extends Component {
   }
 
   setNativePlayback(paramsObject) {
-    if (!this._isMounted || !this.ffmpegPlayer) return;
+    if (!this._isMounted || !this.ffmpegPlayer) {
+      __DEV__ &&
+        console.log('GOND direct setNativePlayback failed ', this.ffmpegPlayer);
+      return;
+    }
     const {serverInfo, videoStore} = this.props;
     const playbackInfo = {
       ...serverInfo.playData,
@@ -207,6 +211,7 @@ class DirectVideoView extends Component {
     __DEV__ && console.log('GOND setNativePlayback, info = ', playbackInfo);
     this.ffmpegPlayer.setNativeProps({
       startplayback: playbackInfo,
+      fullscreen: 1,
     });
   }
 
@@ -536,8 +541,8 @@ class DirectVideoView extends Component {
           <View style={styles.playerView}>
             {Platform.OS === 'ios' ? (
               <FFMpegFrameViewIOS
-                width={this.state.width}
-                height={this.state.height}
+                width={width} // {this.state.width}
+                height={height} // {this.state.height}
                 ref={ref => {
                   this.ffmpegPlayer = ref;
                 }}
