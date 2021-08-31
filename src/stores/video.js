@@ -66,7 +66,7 @@ const parseDirectServer = (server /*, channelNo, isLive*/) => {
     port: server.Port,
     serverID: server.ServerID,
     userName: server.UName,
-    password: server.PWD, // util.AES_decrypt(server.PWD, apiService.configToken.apiKey),
+    password: util.AES_decrypt(server.PWD, apiService.configToken.apiKey),
     kDVR: server.KDVR,
     channels: '',
     searchMode: false,
@@ -882,7 +882,6 @@ export const VideoModel = types
             return;
           }
         }
-        self.allChannels.forEach(ch => ch.release());
         self.allChannels = newList;
       },
       getDvrChannels: flow(function* getDvrChannels(isGetAll = false) {

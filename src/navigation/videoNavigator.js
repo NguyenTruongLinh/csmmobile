@@ -39,7 +39,7 @@ export default function VideoStack() {
       <VStack.Screen
         name={ROUTERS.VIDEO_REGIONS}
         component={RegionsView}
-        options={{headerLeft: () => {}}}
+        options={{headerLeft: () => null}}
       />
       <VStack.Screen
         name={ROUTERS.VIDEO_SITES}

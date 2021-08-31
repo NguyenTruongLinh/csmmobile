@@ -587,6 +587,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignContent: 'center',
+    marginBottom: 5,
   },
   modalcontainer: {
     flex: 1,

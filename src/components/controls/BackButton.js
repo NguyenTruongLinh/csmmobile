@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     marginLeft: 10,
-    marginTop: 2,
+    // marginTop: 2,
     alignItems: 'center',
   },
   icon: {
