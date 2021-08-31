@@ -31,7 +31,10 @@ class RegionsView extends Component {
 
   getRegionsList = async () => {
     let res = await this.props.sitesStore.getSiteTree();
-    if (!res) snackbar.handleRequestFailed();
+    if (!res) {
+      // snackbar.handleRequestFailed();
+      this.props.navigation.navigate(ROUTERS.VIDEO_SITES);
+    }
   };
 
   onBack = () => {

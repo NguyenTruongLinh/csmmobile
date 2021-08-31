@@ -13,6 +13,7 @@ import {inject, observer} from 'mobx-react';
 
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import InputTextIcon from '../../components/controls/InputTextIcon';
+import BackButton from '../../components/controls/BackButton';
 
 import snackbar from '../../util/snackbar';
 
@@ -51,7 +52,12 @@ class SitesView extends Component {
     //     e.preventDefault();
     //   }
     // };
-    if (!this.props.sitesStore.selectedRegion) this.getSitesList();
+    if (!this.props.sitesStore.selectedRegion) {
+      this.getSitesList();
+      this.props.navigation.setOptions({
+        headerLeft: () => null,
+      });
+    }
   }
 
   getSitesList = async () => {

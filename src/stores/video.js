@@ -65,9 +65,8 @@ const parseDirectServer = (server /*, channelNo, isLive*/) => {
     name: server.name ?? '',
     port: server.Port,
     serverID: server.ServerID,
-    userName:
-      __DEV__ && server.ServerID == 'jackhome' ? 'i3admin' : server.UName,
-    password: __DEV__ && server.ServerID == 'jackhome' ? 'i3admin' : server.PWD,
+    userName: server.UName,
+    password: server.PWD, // util.AES_decrypt(server.PWD, apiService.configToken.apiKey),
     kDVR: server.KDVR,
     channels: '',
     searchMode: false,
