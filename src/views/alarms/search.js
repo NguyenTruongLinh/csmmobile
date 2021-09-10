@@ -45,7 +45,7 @@ class AlarmsSearchView extends Component {
     const {filterParams} = props.alarmStore;
 
     this.state = {
-      showFilterModal: false,
+      showFilterModal: true,
       from: filterParams
         ? DateTime.fromFormat(filterParams.sdate, DateFormat.QuerryDateTime)
         : DateTime.local(),

@@ -16,9 +16,11 @@ import snackbarUtil from '../../util/snackbar';
 import CMSColors from '../../styles/cmscolors';
 import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
-import {RTC_COMMANDS, STREAM_STATUS, VIDEO_MESSAGE} from '../../consts/video';
+import {RTC_COMMANDS, VIDEO_MESSAGE} from '../../consts/video';
 import {TIMEZONE_MAP} from '../../consts/timezonesmap';
 import {NVRPlayerConfig} from '../../consts/misc';
+
+import {STREAM_STATUS} from '../../localization/texts';
 
 class RTCStreamingView extends Component {
   static propTypes = {
@@ -636,7 +638,7 @@ class RTCStreamingView extends Component {
           <View style={styles.playerView}>
             {remoteStream && !noVideo ? (
               <RTCView
-                streamURL={remoteStream.toURL()}
+                streamUrl={remoteStream.toURL()}
                 objectFit={'cover'}
                 style={{width: width, height: height}}
                 // width={width}

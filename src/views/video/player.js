@@ -368,8 +368,8 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     const {pause, sWidth, sHeight} = this.state;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
-    // __DEV__ &&
-    console.log('GOND renderVid player: ', videoStore.selectedStream);
+    __DEV__ &&
+      console.log('GOND renderVid player: ', videoStore.selectedStream);
     if (!videoStore.selectedStream) {
       return (
         <Image
@@ -402,7 +402,11 @@ class VideoPlayerView extends Component {
         break;
       case CLOUD_TYPE.HLS:
         player = (
-          <HLSStreamingView {...playerProps} ref={r => (this.playerRef = r)} />
+          <HLSStreamingView
+            {...playerProps}
+            ref={r => (this.playerRef = r)}
+            streamData={videoStore.selectedStream}
+          />
         );
         break;
       case CLOUD_TYPE.RTC:

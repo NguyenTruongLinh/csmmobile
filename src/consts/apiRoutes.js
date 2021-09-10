@@ -68,6 +68,7 @@ export const ACConfig = {
 export const VSC = {
   controller: 'VSC',
   requestVSCURL: 'RequestVSCURL',
+  getMultiURL: 'GetMultiURL',
   updateStream: 'Update',
   getHLSStream: 'GetHLSStream',
   cloud: 'Cloud',

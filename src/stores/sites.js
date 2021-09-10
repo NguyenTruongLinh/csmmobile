@@ -291,40 +291,57 @@ export const SitesMapModel = types
     }),
     getSiteTree: flow(function* getOAMSites() {
       self.startLoad();
-      const [resRegions, resSites] = yield Promise.all([
-        apiService.get(
-          SiteRoute.controller,
-          apiService.configToken.userId ?? 0,
-          SiteRoute.getAllRegions
-        ),
-        self.getAllSites(),
-      ]);
-      if (resRegions && resSites) {
-        // TODO: Map sites to region by key, can improve?
-        // self.sitesList.forEach(s => {
-        //   if (s.regionKey) {
-        //     const region = self.regionsList.find(reg => reg.key == s.regionKey);
-        //     if (region) region.push(s.key);
-        //   }
-        // });
-        self.regionsList = resRegions.map(r => {
-          const region = parseRegion(r);
-          const sites = r.SitesOfRegion;
-          if (sites && Array.isArray(sites) && sites.length > 0) {
-            sites.forEach(_site => {
-              if (self.sitesList.find(s => s.key == _site.siteKey)) {
-                region.pushSite(_site.siteKey);
-              } else {
-                __DEV__ &&
-                  console.log('GOND site not exist in sitesList: ', _site);
-              }
-            });
+      try {
+        const [resRegions, resSites] = yield Promise.all([
+          apiService.get(
+            SiteRoute.controller,
+            apiService.configToken.userId ?? 0,
+            SiteRoute.getAllRegions
+          ),
+          self.getAllSites(),
+        ]);
+        __DEV__ && console.log('GOND get regions: ', resRegions);
+        if (resRegions && resSites) {
+          // TODO: Map sites to region by key, can improve?
+          // self.sitesList.forEach(s => {
+          //   if (s.regionKey) {
+          //     const region = self.regionsList.find(reg => reg.key == s.regionKey);
+          //     if (region) region.push(s.key);
+          //   }
+          // });
+          if (Array.isArray(resRegions)) {
+            self.regionsList = resRegions
+              .map(r => {
+                const region = parseRegion(r);
+                const sites = r.SitesOfRegion;
+                if (sites && Array.isArray(sites) && sites.length > 0) {
+                  sites.forEach(_site => {
+                    if (self.sitesList.find(s => s.key == _site.siteKey)) {
+                      region.pushSite(_site.siteKey);
+                    } else {
+                      __DEV__ &&
+                        console.log(
+                          'GOND site not exist in sitesList: ',
+                          _site
+                        );
+                    }
+                  });
+                }
+                return region;
+              })
+              .filter(r => r.sites && r.sites.length > 0);
+          } else if (
+            typeof resRegions == 'object' &&
+            Object.keys(resRegions).length > 0
+          ) {
           }
-          return region;
-        });
-        __DEV__ && console.log('GOND get site tree result: ', self.regionsList);
-        self.endLoad();
-        return true;
+          __DEV__ &&
+            console.log('GOND get site tree result: ', self.regionsList);
+          self.endLoad();
+          return true;
+        }
+      } catch (err) {
+        __DEV__ && console.log('GOND get site tree failed: ', err);
       }
       self.endLoad();
       return false;

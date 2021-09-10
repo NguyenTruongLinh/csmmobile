@@ -526,9 +526,10 @@ exports.getRandomClientId = () => {
 
 exports.isValidHttpUrl = val => {
   // toString.call(val) === '[object URL]';
+  __DEV__ && console.log('GOND isValidHttpUrl: ', val);
   try {
-    const url = new URL(val);
-    return val.startsWith('http:://') || val.startsWith('https://');
+    new URL(val);
+    return val.startsWith('http://') || val.startsWith('https://');
   } catch (err) {
     __DEV__ && console.log('GOND not valid url: ', err);
     return false;

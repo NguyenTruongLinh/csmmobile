@@ -525,6 +525,7 @@ export const NOTIFY_ACTION = {
   PWD_CHANGE: 'PWD_CHANGE',
   NEWIMAGE: 'NEWIMAGE',
   STREAM_CREATED: 'STREAM_CREATED', // dongpt: for livestreaming
+  STREAM_NEW: 'STREAM_NEW', // dongpt: for HLS
   WARNING: 'WARNING', // dongpt: for PVM (OAM)
 };
 

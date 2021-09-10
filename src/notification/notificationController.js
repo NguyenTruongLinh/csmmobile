@@ -303,7 +303,7 @@ class NotificationController extends React.Component {
       __DEV__ && console.log('GOND notification is not valid: ', data);
       return;
     }
-    let {type, action, content} = data;
+    let {type, action, content, cmd} = data;
     if (!content && data.data) content = data.data;
     let contentObj = content;
     if (typeof contentObj === 'string') {
@@ -312,6 +312,7 @@ class NotificationController extends React.Component {
       } catch (ex) {
         __DEV__ &&
           console.log('GOND Parse notification content failed: ', content);
+        return;
       }
     }
 
@@ -342,7 +343,7 @@ class NotificationController extends React.Component {
         // notif = onExceptionEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.STREAMING:
-        onVideoNotifEvent(videoStore, action, contentObj);
+        onVideoNotifEvent(videoStore, action, contentObj, cmd);
         break;
       case NOTIFY_TYPE.PVM:
         // notif = onPVMEvent(dispatch,action, content);

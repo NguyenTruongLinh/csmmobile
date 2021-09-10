@@ -10,6 +10,18 @@ export const VSCCommand = {
   STOP: 99,
 };
 
+export const VSCCommandString = {
+  LIVE: 'LIVE',
+  SEARCH: 'SEARCH',
+  TIMELINE: 'TIMELINE',
+  DAYLIST: 'DAYLIST',
+  LIVEHD: 'LIVEHD',
+  SEARCHHD: 'SEARCHHD',
+  TIMEZONE: 'TIMEZONE',
+  RCTLIVE: 'RCTLIVE',
+  STOP: 'STOP',
+};
+
 export const VIDEO_MESSAGE = {
   MSG_GET_CONNECTION: 'Getting connection.',
   MSG_GET_CONNECTION_ERROR: 'Cannot get info from CMS server. Error: ',
@@ -67,17 +79,17 @@ export const RTC_COMMANDS = {
   TEXTOVERLAY: 'TO',
 };
 
-export const STREAM_STATUS = {
-  DONE: '',
-  WAITING: 'Waiting for connection...',
-  CONNECTING: 'Connecting...',
-  CONNECTED: 'Connected.',
-  BUFFERING: 'Buffering...',
-  ERROR: 'Network Error.',
-  TIMEOUT: 'Time out.',
-  NOVIDEO: 'No video.',
-  DISCONNECTED: 'Disconnected.',
-};
+// export const STREAM_STATUS = {
+//   DONE: '',
+//   WAITING: 'Waiting for connection...',
+//   CONNECTING: 'Connecting...',
+//   CONNECTED: 'Connected.',
+//   BUFFERING: 'Buffering...',
+//   ERROR: 'Network Error.',
+//   TIMEOUT: 'Time out.',
+//   NOVIDEO: 'No video.',
+//   DISCONNECTED: 'Disconnected.',
+// };
 
 export const NATIVE_MESSAGE = {
   CONNECTING: 1,
@@ -178,5 +190,25 @@ export const IS_OPEN_DATA_CHANNEL = true;
 export const USE_TRICKLE_ICE = true;
 export const STREAM_TIMEOUT = 30000;
 export const NATURAL_RATIO = 16 / 9;
+export const HLS_MIN_EXPIRE_TIME = 300;
+export const HLS_MAX_EXPIRE_TIME = 43200;
 
 export const CONTROLLER_TIMEOUT = 3000; // 3 seconds
+
+export const LAYOUT_DATA = [
+  {
+    key: 'layout_2x2',
+    value: 2,
+    icon: 'grid-view-4',
+  },
+  {
+    key: 'layout_3x33',
+    value: 3,
+    icon: 'grid-view-9',
+  },
+  {
+    key: 'layout_4x4',
+    value: 4,
+    icon: 'grid-view-16',
+  },
+];

@@ -23,36 +23,37 @@ import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 
 import CMSColors from '../../styles/cmscolors';
-import {CLOUD_TYPE} from '../../consts/video';
+import {CLOUD_TYPE, LAYOUT_DATA} from '../../consts/video';
 import sitesStore from '../../stores/sites';
 import ROUTERS from '../../consts/routes';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import {Comps as CompTxt} from '../../localization/texts';
+import videoStore from '../../stores/video';
 
-const LayoutData = [
-  {
-    key: 'layout_2x2',
-    value: 2,
-    icon: 'grid-view-4',
-  },
-  {
-    key: 'layout_3x33',
-    value: 3,
-    icon: 'grid-view-9',
-  },
-  {
-    key: 'layout_4x4',
-    value: 4,
-    icon: 'grid-view-16',
-  },
-];
+// const LayoutData = [
+//   {
+//     key: 'layout_2x2',
+//     value: 2,
+//     icon: 'grid-view-4',
+//   },
+//   {
+//     key: 'layout_3x33',
+//     value: 3,
+//     icon: 'grid-view-9',
+//   },
+//   {
+//     key: 'layout_4x4',
+//     value: 4,
+//     icon: 'grid-view-16',
+//   },
+// ];
 
 class ChannelsView extends React.Component {
   constructor(props) {
     super(props);
-    this._isMounted = false;
+    const {gridLayout} = props.videoStore;
     const {width, height} = Dimensions.get('window');
 
     this.state = {
@@ -60,11 +61,16 @@ class ChannelsView extends React.Component {
         width,
         height,
       },
-      gridLayout: 2,
+      videoWindow: {
+        width: width / gridLayout,
+        height: height / gridLayout,
+      },
+      // gridLayout: 2,
       showLayoutSelection: false,
-      liveData: [],
+      // liveData: [],
     };
     // this.channelsCount = 0;
+    this._isMounted = false;
     this.playerRefs = [];
     this.firstFocus = true;
     this.channelsData = [];
@@ -80,7 +86,7 @@ class ChannelsView extends React.Component {
     videoStore.setChannelFilter('');
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     this.stopAll();
-    videoStore.setStreamReadyCallback(null);
+    // videoStore.setStreamReadyCallback(null);
   }
 
   componentDidMount() {
@@ -98,7 +104,7 @@ class ChannelsView extends React.Component {
     videoStore.selectDVR(sitesStore.selectedDVR);
 
     // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
-    videoStore.setStreamReadyCallback(this.onStreamReady);
+    // videoStore.setStreamReadyCallback(this.onStreamReady);
     this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
       if (this.firstFocus) {
         this.firstFocus = false;
@@ -147,7 +153,7 @@ class ChannelsView extends React.Component {
   setHeader = enableSettingButton => {
     const {navigation, videoStore} = this.props;
     let gridIcon = 'grid-view-4';
-    switch (this.state.gridLayout) {
+    switch (videoStore.gridLayout) {
       case 3:
         gridIcon = 'grid-view-9';
         break;
@@ -199,7 +205,7 @@ class ChannelsView extends React.Component {
 
   getChannelsInfo = async () => {
     const {videoStore} = this.props;
-    let newState = {};
+    // let newState = {};
     let res = await videoStore.getCloudSetting();
     res = res && (await videoStore.getDisplayingChannels());
     if (res) {
@@ -213,26 +219,26 @@ class ChannelsView extends React.Component {
     }
 
     // Streaming will call onStreamReady when finish initialization
-    if (
-      res &&
-      (videoStore.cloudType == CLOUD_TYPE.DEFAULT ||
-        videoStore.cloudType == CLOUD_TYPE.DIRECTION)
-    ) {
-      newState.liveData = this.buildLiveData(this.state.gridLayout /*, true*/);
-    }
-    this.setState(newState);
+    // if (
+    //   res &&
+    //   (videoStore.cloudType == CLOUD_TYPE.DEFAULT ||
+    //     videoStore.cloudType == CLOUD_TYPE.DIRECTION)
+    // ) {
+    //   newState.liveData = this.buildLiveData(videoStore.gridLayout /*, true*/);
+    // }
+    // this.setState(newState);
   };
 
   // onReceiveStreamInfo = streamInfo => {
   //   initRTCStream(streamInfo);
   // };
 
-  onStreamReady = () => {
-    if (!this._isMounted) return;
-    this.setState({liveData: this.buildLiveData(this.state.gridLayout)});
-    // dongpt: any side effect?
-    this.props.videoStore.setStreamReadyCallback(null);
-  };
+  // onStreamReady = () => {
+  //   if (!this._isMounted) return;
+  //   this.setState({liveData: this.buildLiveData(this.state.gridLayout)});
+  //   // dongpt: any side effect?
+  //   // this.props.videoStore.setStreamReadyCallback(null);
+  // };
 
   onAuthenSubmit = ({username, password}) => {
     if (!username || !password) return;
@@ -241,9 +247,9 @@ class ChannelsView extends React.Component {
     videoStore.displayAuthen(false);
 
     __DEV__ && console.log('GOND show first channels 2!');
-    this.setState({
-      liveData: this.buildLiveData(this.state.gridLayout /*, true*/),
-    });
+    // this.setState({
+    //   liveData: this.buildLiveData(this.state.gridLayout /*, true*/),
+    // });
   };
 
   onAuthenCancel = () => {
@@ -254,7 +260,9 @@ class ChannelsView extends React.Component {
     __DEV__ && console.log('GOND select channel: ', value);
     if (!value || Object.keys(value) == 0) return;
 
-    this.props.videoStore.selectChannel(value.channelNo);
+    this.props.videoStore.selectChannel(
+      value.channelNo ?? value.channel.channelNo
+    );
     this.pauseAll(true);
     setTimeout(() => {
       this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
@@ -269,59 +277,59 @@ class ChannelsView extends React.Component {
     this.playerRefs.forEach(p => p && p.stop());
   };
 
-  buildLiveData = (
-    gridLayout,
-    noRebuildChannels = false /*, isFirst = false*/
-  ) => {
-    // const {gridLayout} = this.state;
-    const {videoStore} = this.props;
-    const videoDataList =
-      noRebuildChannels && this.channelsData.length > 0
-        ? this.channelsData
-        : videoStore.buildVideoData();
-    __DEV__ &&
-      console.log(
-        'ChannelsView videoDataList: ',
-        videoDataList,
-        ', layout: ',
-        gridLayout
-      );
-    this.channelsData = videoDataList;
+  // buildLiveData = (
+  //   gridLayout,
+  //   noRebuildChannels = false /*, isFirst = false*/
+  // ) => {
+  //   // const {gridLayout} = this.state;
+  //   const {videoStore} = this.props;
+  //   const videoDataList =
+  //     noRebuildChannels && this.channelsData.length > 0
+  //       ? this.channelsData
+  //       : videoStore.buildVideoData();
+  //   __DEV__ &&
+  //     console.log(
+  //       'ChannelsView videoDataList: ',
+  //       videoDataList,
+  //       ', layout: ',
+  //       gridLayout
+  //     );
+  //   this.channelsData = videoDataList;
 
-    if (!videoDataList || !Array.isArray(videoDataList)) return [];
-    // if (isFirst) {
-    //   let newRow = {key: 'videoRow_0', data: []};
-    //   for (let i = 0; i < gridLayout; i++) {
-    //     if (i == 0) {
-    //       newRow.data.push(videoDataList[i]);
-    //     } else newRow.data.push({});
-    //   }
-    //   return [newRow];
-    // }
+  //   if (!videoDataList || !Array.isArray(videoDataList)) return [];
+  //   // if (isFirst) {
+  //   //   let newRow = {key: 'videoRow_0', data: []};
+  //   //   for (let i = 0; i < gridLayout; i++) {
+  //   //     if (i == 0) {
+  //   //       newRow.data.push(videoDataList[i]);
+  //   //     } else newRow.data.push({});
+  //   //   }
+  //   //   return [newRow];
+  //   // }
 
-    let result = [];
-    let totalRow = Math.ceil(videoDataList.length / gridLayout);
+  //   let result = [];
+  //   let totalRow = Math.ceil(videoDataList.length / gridLayout);
 
-    for (let row = 0; row < totalRow; row++) {
-      let newRow = {key: 'videoRow_' + row, data: []};
-      for (let col = 0; col < gridLayout; col++) {
-        let index = row * gridLayout + col;
-        if (index < videoDataList.length) {
-          newRow.data.push(videoDataList[index]);
-          __DEV__ &&
-            console.log('ChannelsView build video newRow.data: ', newRow);
-        } else newRow.data.push({});
-      }
-      result.push(newRow);
-    }
+  //   for (let row = 0; row < totalRow; row++) {
+  //     let newRow = {key: 'videoRow_' + row, data: []};
+  //     for (let col = 0; col < gridLayout; col++) {
+  //       let index = row * gridLayout + col;
+  //       if (index < videoDataList.length) {
+  //         newRow.data.push(videoDataList[index]);
+  //         __DEV__ &&
+  //           console.log('ChannelsView build video newRow.data: ', newRow);
+  //       } else newRow.data.push({});
+  //     }
+  //     result.push(newRow);
+  //   }
 
-    __DEV__ && console.log('ChannelsView build video data: ', result);
-    return result;
-  };
+  //   __DEV__ && console.log('ChannelsView build video data: ', result);
+  //   return result;
+  // };
 
   onLayout = event => {
     const {x, y, width, height} = event.nativeEvent.layout;
-    const {gridLayout} = this.state;
+    const {gridLayout} = this.props.videoStore; // this.state;
     __DEV__ && console.log('ChannelsView onLayout: ', event.nativeEvent);
     this.setState({
       viewableWindow: {
@@ -337,9 +345,9 @@ class ChannelsView extends React.Component {
 
   onFilter = value => {
     this.props.videoStore.setChannelFilter(value);
-    this.setState({
-      liveData: this.buildLiveData(this.state.gridLayout),
-    });
+    // this.setState({
+    //   liveData: this.buildLiveData(this.state.gridLayout),
+    // });
   };
 
   renderNVRAuthenModal = () => {
@@ -373,20 +381,21 @@ class ChannelsView extends React.Component {
     return (
       <CMSTouchableIcon
         size={height * 0.07}
-        onPress={() =>
+        onPress={() => {
+          videoStore.setGridLayout(item.value);
           this.setState(
             {
-              gridLayout: item.value,
+              // gridLayout: item.value,
               showLayoutSelection: false,
-              liveData: this.buildLiveData(item.value),
+              // liveData: this.buildLiveData(item.value),
               videoWindow: {
                 width: viewableWindow.width / item.value,
                 height: viewableWindow.height / item.value,
               },
             },
             () => this.setHeader()
-          )
-        }
+          );
+        }}
         color={CMSColors.ColorText}
         // styles={{height: height * 0.07}}
         iconCustom={item.icon}
@@ -433,7 +442,7 @@ class ChannelsView extends React.Component {
         <FlatList
           contentContainerStyle={styles.layoutModalBody}
           renderItem={this.renderLayoutItem}
-          data={LayoutData}
+          data={LAYOUT_DATA}
           horizontal={true}
           style={{
             paddingBottom: height * 0.07,
@@ -445,12 +454,12 @@ class ChannelsView extends React.Component {
 
   renderRow = ({item}) => {
     const {viewableWindow, videoWindow} = this.state;
-    // console.log(
-    //   'GOND renderRow viewableWindow = ',
-    //   viewableWindow,
-    //   ', item = ',
-    //   item
-    // );
+    console.log(
+      'GOND renderRow videoWindow = ',
+      videoWindow,
+      ', item = ',
+      item
+    );
     const playerViews = [];
     for (let i = 0; i < item.data.length; i++) {
       playerViews.push(
@@ -486,7 +495,7 @@ class ChannelsView extends React.Component {
   };
 
   renderVideoPlayer = (item, index) => {
-    // __DEV__ && console.log('GOND renderVid player: ', item);
+    __DEV__ && console.log('GOND renderVid liveChannels: ', item);
     if (!item || Object.keys(item).length == 0)
       return (
         <View
@@ -502,6 +511,7 @@ class ChannelsView extends React.Component {
       height: videoWindow.height,
       isLive: true,
       hdMode: false,
+      // streamStatus: item.streamStatus,
     };
     let player = null;
     switch (videoStore.cloudType) {
@@ -516,9 +526,13 @@ class ChannelsView extends React.Component {
         );
         break;
       case CLOUD_TYPE.HLS:
+        __DEV__ && console.log('GOND renderVid HLS: ', item.streamUrl);
         player = (
           <HLSStreamingView
             {...playerProps}
+            // streamUrl={item.streamUrl}
+            // channel={item.channel}
+            streamData={item}
             ref={ref => this.playerRefs.push(ref)}
           />
         );
@@ -569,7 +583,7 @@ class ChannelsView extends React.Component {
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           <FlatList
             renderItem={this.renderRow}
-            data={this.state.liveData}
+            data={videoStore.videoData} // {this.state.liveData}
             keyExtractor={item => item.key}
             onRefresh={this.getChannelsInfo}
             refreshing={videoStore.isLoading}

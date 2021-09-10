@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {
   View,
   StyleSheet,
@@ -32,7 +32,7 @@ import {
   NATURAL_RATIO,
 } from '../../consts/video';
 
-class DirectVideoView extends Component {
+class DirectVideoView extends React.Component {
   static defaultProps = {
     enableSwitchChannel: true,
     serverInfo: {},
@@ -211,7 +211,7 @@ class DirectVideoView extends Component {
     __DEV__ && console.log('GOND setNativePlayback, info = ', playbackInfo);
     this.ffmpegPlayer.setNativeProps({
       startplayback: playbackInfo,
-      fullscreen: 1,
+      // fullscreen: 1,
     });
   }
 
@@ -501,7 +501,7 @@ class DirectVideoView extends Component {
       }
       this.setState({
         // controller: false,
-        fullscreen: true,
+        // fullscreen: true,
         width: width,
         height: height,
         status: '',

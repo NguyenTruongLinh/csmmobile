@@ -20,10 +20,12 @@ import util from '../util/general';
 import {
   VIDEO_MESSAGE,
   DEFAULT_REGION,
-  STREAM_STATUS,
+  // STREAM_STATUS,
   IS_FORCE_TURN,
   USE_TRICKLE_ICE,
 } from '../consts/video';
+
+import {STREAM_STATUS} from '../../localization/texts';
 
 // RTC viewer
 const ChannelConnectionModel = types
@@ -50,6 +52,14 @@ const ChannelConnectionModel = types
   .views(self => ({
     needInit() {
       return signalingClient == null;
+    },
+    get streamStatus() {
+      const {isLoading, connectionStatus, error} = self;
+      return {
+        isLoading,
+        connectionStatus,
+        error,
+      };
     },
   }))
   .actions(self => {

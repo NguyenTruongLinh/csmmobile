@@ -73,6 +73,20 @@ export const Video = {
   live: 'Live',
   search: 'Search',
   noVideo: 'No video',
+  channelError: 'Channel not found!',
+};
+
+export const STREAM_STATUS = {
+  DONE: '',
+  WAITING: 'Waiting for connection...',
+  CONNECTING: 'Connecting...',
+  RECONNECTING: 'Reconnecting...',
+  CONNECTED: 'Connected.',
+  BUFFERING: 'Buffering...',
+  ERROR: 'Network Error.',
+  TIMEOUT: 'Time out.',
+  NOVIDEO: 'No video.',
+  DISCONNECTED: 'Disconnected.',
 };
 
 export const Alarm = {

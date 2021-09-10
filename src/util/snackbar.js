@@ -31,7 +31,11 @@ exports.handleSaveLocalDataFailed = error => {
   showMessage(ActionMessages.saveLocalFailed, true);
 };
 
-exports.onMessage = (msg, backcolor, actions) => {
+exports.onError = message => {
+  showMessage(message, true);
+};
+
+const onMessage = (msg, backcolor, actions) => {
   if (!actions) {
     Snackbar.show({
       text: msg,
@@ -54,3 +58,6 @@ exports.onMessage = (msg, backcolor, actions) => {
     });
   }
 };
+
+exports.onMessage = onMessage;
+exports.onActionMessage = onMessage;
