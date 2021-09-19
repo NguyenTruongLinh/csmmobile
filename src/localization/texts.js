@@ -74,6 +74,7 @@ export const Video = {
   search: 'Search',
   noVideo: 'No video',
   channelError: 'Channel not found!',
+  authenTitle: 'NVR Authorization',
 };
 
 export const STREAM_STATUS = {

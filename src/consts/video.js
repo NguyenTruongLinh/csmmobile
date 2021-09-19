@@ -171,6 +171,8 @@ export const arrayof12HTime = [
   '10:00 PM',
   '11:00 PM',
 ];
+export const BEGIN_OF_DAY_STRING = '00:00:00';
+export const END_OF_DAY_STRING = '23:59:59';
 export const HOURS_ON_SCREEN = 4;
 export const MINUTE_PER_HOUR = 60;
 export const SECONDS_PER_MINUTE = 60;

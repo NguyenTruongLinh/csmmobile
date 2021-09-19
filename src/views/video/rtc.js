@@ -181,25 +181,25 @@ class RTCStreamingView extends Component {
     };
   };
 
-  fillRange = (start, end) => {
-    return Array(end - start + 1)
-      .fill()
-      .map((item, index) => start + index);
-  };
+  // fillRange = (start, end) => {
+  //   return Array(end - start + 1)
+  //     .fill()
+  //     .map((item, index) => start + index);
+  // };
 
-  generateFullTimeline = timestamp => {
-    let result = [];
-    for (let i = 0; i < timestamp.length; i++) {
-      // if (USE_TIMESTAMP) {
-      // 	result = result.concat(this.fillRange(timestamp[i].begin_sv,timestamp[i].end_sv))
-      // } else {
-      result = result.concat(
-        this.fillRange(timestamp[i].begin, timestamp[i].end)
-      );
-      // }
-    }
-    return result;
-  };
+  // generateFullTimeline = timestamp => {
+  //   let result = [];
+  //   for (let i = 0; i < timestamp.length; i++) {
+  //     // if (USE_TIMESTAMP) {
+  //     // 	result = result.concat(this.fillRange(timestamp[i].begin_sv,timestamp[i].end_sv))
+  //     // } else {
+  //     result = result.concat(
+  //       this.fillRange(timestamp[i].begin, timestamp[i].end)
+  //     );
+  //     // }
+  //   }
+  //   return result;
+  // };
 
   startPlayback = (showMessage = false) => {
     const {viewer} = this.props;
@@ -395,7 +395,7 @@ class RTCStreamingView extends Component {
             // novideo: false,
           });
           videoStore.setTimeline(timeInterval);
-          this.fullTimeline = this.generateFullTimeline(timeInterval);
+          // this.fullTimeline = this.generateFullTimeline(timeInterval);
         } catch (ex) {
           console.log(
             '%c [GOND] RTC.dataChannel.onerror: ',
@@ -579,7 +579,8 @@ class RTCStreamingView extends Component {
   };
 
   onTimeFrame = value => {
-    const {videoStore, isLive} = this.props;
+    const {videoStore, viewer} = this.props;
+    if (videoStore.selectedChannel != viewer.channelNo) return;
     const dt = DateTime.fromSeconds(value).setZone(videoStore.timezone);
     videoStore.setDisplayDateTime(dt.toFormat(NVRPlayerConfig.FrameFormat));
 

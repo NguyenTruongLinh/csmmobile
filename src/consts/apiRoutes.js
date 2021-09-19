@@ -71,6 +71,7 @@ export const VSC = {
   getMultiURL: 'GetMultiURL',
   updateStream: 'Update',
   getHLSStream: 'GetHLSStream',
+  getHLSData: 'GetStreamData',
   cloud: 'Cloud',
   setting: 'Setting',
   activeChannels: 'ActiveChannels',

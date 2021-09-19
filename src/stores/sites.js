@@ -330,10 +330,13 @@ export const SitesMapModel = types
                 return region;
               })
               .filter(r => r.sites && r.sites.length > 0);
-          } else if (
-            typeof resRegions == 'object' &&
-            Object.keys(resRegions).length > 0
-          ) {
+          } else {
+            __DEV__ &&
+              console.log(
+                'GOND get site tree region data is not valid: ',
+                resRegions
+              );
+            return false;
           }
           __DEV__ &&
             console.log('GOND get site tree result: ', self.regionsList);

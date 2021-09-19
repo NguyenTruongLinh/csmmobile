@@ -18,7 +18,8 @@ import Modal from 'react-native-modal';
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
 import RTCStreamingView from './rtc';
-import AuthenModal from '../../components/common/AuthenModal';
+// import AuthenModal from '../../components/common/AuthenModal';
+import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 
@@ -29,7 +30,7 @@ import ROUTERS from '../../consts/routes';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
-import {Comps as CompTxt} from '../../localization/texts';
+import {Comps as CompTxt, Video as VideoTxt} from '../../localization/texts';
 import videoStore from '../../stores/video';
 
 // const LayoutData = [
@@ -105,14 +106,14 @@ class ChannelsView extends React.Component {
 
     // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
     // videoStore.setStreamReadyCallback(this.onStreamReady);
-    this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
-      if (this.firstFocus) {
-        this.firstFocus = false;
-        return;
-      }
-      __DEV__ && console.log('GOND live channels view on focused');
-      this.pauseAll(false);
-    });
+    // this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
+    //   if (this.firstFocus) {
+    //     this.firstFocus = false;
+    //     return;
+    //   }
+    //   __DEV__ && console.log('GOND live channels view on focused');
+    //   this.pauseAll(false);
+    // });
 
     // reaction(
     //   () => videoStore.showAuthenModal,
@@ -211,6 +212,7 @@ class ChannelsView extends React.Component {
     if (res) {
       this.setHeader(true);
     }
+
     res = res && (await videoStore.getVideoInfos());
     if (videoStore.needAuthen) {
       __DEV__ && console.log('GOND need authen ->');
@@ -246,7 +248,7 @@ class ChannelsView extends React.Component {
     videoStore.setNVRLoginInfo(username, password);
     videoStore.displayAuthen(false);
 
-    __DEV__ && console.log('GOND show first channels 2!');
+    // __DEV__ && console.log('GOND show first channels 2!');
     // this.setState({
     //   liveData: this.buildLiveData(this.state.gridLayout /*, true*/),
     // });
@@ -261,17 +263,17 @@ class ChannelsView extends React.Component {
     if (!value || Object.keys(value) == 0) return;
 
     this.props.videoStore.selectChannel(
-      value.channelNo ?? value.channel.channelNo
+      value.channelNo // ?? value.channel.channelNo
     );
-    this.pauseAll(true);
+    // this.pauseAll(true);
     setTimeout(() => {
       this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
     }, 200);
   };
 
-  pauseAll = value => {
-    this.playerRefs.forEach(p => p && p.pause(value));
-  };
+  // pauseAll = value => {
+  //   this.playerRefs.forEach(p => p && p.pause(value));
+  // };
 
   stopAll = () => {
     this.playerRefs.forEach(p => p && p.stop());
@@ -350,29 +352,29 @@ class ChannelsView extends React.Component {
     // });
   };
 
-  renderNVRAuthenModal = () => {
-    const {videoStore} = this.props;
+  // renderNVRAuthenModal = () => {
+  //   const {videoStore} = this.props;
 
-    return (
-      <Modal
-        isVisible={videoStore.showAuthenModal}
-        onBackdropPress={() => this.onAuthenCancel()}
-        onBackButtonPress={() => this.onAuthenCancel()}
-        backdropOpacity={0}
-        style={{margin: 0}}>
-        <View style={[styles.modalcontainer]}>
-          <AuthenModal
-            style={styles.authenModal}
-            onOK={this.onAuthenSubmit}
-            onCancel={this.onAuthenCancel}
-            username={videoStore.nvrUser}
-            password={''}
-            title={'NVR Authorization'}
-          />
-        </View>
-      </Modal>
-    );
-  };
+  //   return (
+  //     <Modal
+  //       isVisible={videoStore.showAuthenModal}
+  //       onBackdropPress={videoStore.onAuthenCancel}
+  //       onBackButtonPress={videoStore.onAuthenCancel}
+  //       backdropOpacity={0}
+  //       style={{margin: 0}}>
+  //       <View style={[styles.modalcontainer]}>
+  //         <AuthenModal
+  //           style={styles.authenModal}
+  //           onOK={videoStore.onAuthenSubmit}
+  //           onCancel={videoStore.onAuthenCancel}
+  //           username={videoStore.nvrUser}
+  //           password={''}
+  //           title={VideoTxt.authenTitle}
+  //         />
+  //       </View>
+  //     </Modal>
+  //   );
+  // };
 
   renderLayoutItem = ({item}) => {
     const {height} = Dimensions.get('window');
@@ -495,7 +497,7 @@ class ChannelsView extends React.Component {
   };
 
   renderVideoPlayer = (item, index) => {
-    __DEV__ && console.log('GOND renderVid liveChannels: ', item);
+    // __DEV__ && console.log('GOND renderVid liveChannels: ', item);
     if (!item || Object.keys(item).length == 0)
       return (
         <View
@@ -526,14 +528,15 @@ class ChannelsView extends React.Component {
         );
         break;
       case CLOUD_TYPE.HLS:
-        __DEV__ && console.log('GOND renderVid HLS: ', item.streamUrl);
+        __DEV__ && console.log('GOND renderVid HLS: ', item.targetUrl);
         player = (
           <HLSStreamingView
             {...playerProps}
-            // streamUrl={item.streamUrl}
             // channel={item.channel}
             streamData={item}
             ref={ref => this.playerRefs.push(ref)}
+            // streamUrl={item.targetUrl.url} //{item.targetUrl ? item.targetUrl.url : null}
+            timezone={videoStore.timezone}
           />
         );
         break;
@@ -553,7 +556,7 @@ class ChannelsView extends React.Component {
   };
 
   render() {
-    const authenModal = this.renderNVRAuthenModal();
+    // const authenModal = this.renderNVRAuthenModal();
     const {appStore, videoStore, navigation} = this.props;
     // __DEV__ && console.log('GOND channels render data = ', this.state.liveData);
     this.playerRefs = [];
@@ -579,7 +582,8 @@ class ChannelsView extends React.Component {
             iconPosition="right"
           />
         </View>
-        {authenModal}
+        {/* {authenModal} */}
+        <NVRAuthenModal />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           <FlatList
             renderItem={this.renderRow}
@@ -603,13 +607,13 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     marginBottom: 5,
   },
-  modalcontainer: {
-    flex: 1,
-    backgroundColor: CMSColors.PrimaryColor54,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  authenModal: {flex: 0, width: 343, height: 303},
+  // modalcontainer: {
+  //   flex: 1,
+  //   backgroundColor: CMSColors.PrimaryColor54,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
+  // authenModal: {flex: 0, width: 343, height: 303},
   videoListContainer: {flex: 1, flexDirection: 'column'},
   videoRow: {
     flex: 1,

@@ -96,17 +96,23 @@ class DirectVideoView extends React.Component {
     }
 
     // reactions:
-    // this.unsubscribeReaction = reaction(
-    //   () => videoStore.searchDateString,
-    //   (value, previousValue) => {
-    //     __DEV__ &&
-    //       console.log('GOND searchDate changed ', previousValue, ' -> ', value);
-    //     if (value && !previousValue) {
-    //       this.pause();
-    //       setTimeout(() => this.setNativePlayback(), 1000);
-    //     }
-    //   }
-    // );
+    this.unsubscribeReaction = reaction(
+      () => videoStore.selectedChannel,
+      (value, previousValue) => {
+        // __DEV__ &&
+        //   console.log('GOND directPlayer selectedChannel changed ', previousValue, ' -> ', value);
+        if (value != null && previousValue == null) {
+          if (value != serverInfo.channelNo) {
+            this.pause(true);
+          }
+        } else if (
+          (value == null && previousValue != null) ||
+          value == serverInfo.channelNo
+        ) {
+          this.pause(false);
+        }
+      }
+    );
   }
 
   componentWillUnmount() {
@@ -118,14 +124,21 @@ class DirectVideoView extends React.Component {
     }
     this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps({stop: true});
     this._isMounted = false;
-    // this.unsubscribeReaction();
+    this.unsubscribeReaction();
   }
 
   componentDidUpdate(prevProps) {
     if (!this._isMounted) return;
     const prevServerInfo = prevProps.serverInfo;
-    const {serverInfo, hdMode, isLive, searchDate, searchPlayTime, videoStore} =
-      this.props;
+    const {
+      serverInfo,
+      hdMode,
+      isLive,
+      searchDate,
+      // searchPlayTime,
+      paused,
+      videoStore,
+    } = this.props;
     if (!serverInfo || Object.keys(serverInfo).length == 0) return;
 
     // __DEV__ &&
@@ -180,6 +193,9 @@ class DirectVideoView extends React.Component {
             );
           willPlayback = true;
         }
+        if (paused != prevProps.paused) {
+          this.pause(paused);
+        }
 
         // Finally:
         if (willPlayback) {
@@ -200,12 +216,12 @@ class DirectVideoView extends React.Component {
         console.log('GOND direct setNativePlayback failed ', this.ffmpegPlayer);
       return;
     }
-    const {serverInfo, videoStore} = this.props;
+    const {serverInfo, videoStore, isLive, hdMode} = this.props;
     const playbackInfo = {
       ...serverInfo.playData,
-      searchMode: !videoStore.isLive,
-      date: videoStore.isLive ? undefined : videoStore.searchDateString,
-      hd: videoStore.hdMode,
+      searchMode: !isLive,
+      date: isLive ? undefined : videoStore.searchDateString,
+      hd: hdMode,
       ...paramsObject,
     };
     __DEV__ && console.log('GOND setNativePlayback, info = ', playbackInfo);

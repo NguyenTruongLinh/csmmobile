@@ -10,6 +10,7 @@ module.exports = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignContent: 'center',
+    zIndex: 1,
   },
   textMessge: {
     width: '100%',

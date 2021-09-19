@@ -193,13 +193,15 @@ class AlarmDetailView extends Component {
     }
   };
 
-  gotoVideo = isLive => {
+  gotoVideo = async isLive => {
     const {alarmStore, videoStore, navigation} = this.props;
 
-    videoStore.onAlarmPlay(isLive, alarmStore.selectedAlarm);
-    setTimeout(() => {
-      navigation.push(ROUTERS.VIDEO_PLAYER);
-    }, 200);
+    let res = await videoStore.onAlarmPlay(isLive, alarmStore.selectedAlarm);
+
+    res &&
+      setTimeout(() => {
+        navigation.push(ROUTERS.VIDEO_PLAYER);
+      }, 200);
   };
 
   renderViolationGroup = (imgSize, coordinateList) => {

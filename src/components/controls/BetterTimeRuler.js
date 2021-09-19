@@ -186,11 +186,15 @@ export default class TimeRuler extends PureComponent {
   };
 
   componentDidMount() {
-    Dimensions.addEventListener('change', this._onDimensionChange);
+    this.dimensionsChangeEvtSub = Dimensions.addEventListener(
+      'change',
+      this._onDimensionChange
+    );
   }
 
   componentWillUnmount() {
-    Dimensions.removeEventListener('change', this._onDimensionChange);
+    // Dimensions.removeEventListener('change', this._onDimensionChange);
+    this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
   }
 
   componentDidUpdate(prevProps) {
@@ -210,7 +214,7 @@ export default class TimeRuler extends PureComponent {
       // TODO: handle DST
       // ---
 
-      console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
+      // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
       this.scrollTo(sec * secWidth, 0);
     }
   }

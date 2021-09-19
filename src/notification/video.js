@@ -2,6 +2,7 @@ import {NOTIFY_ACTION} from '../consts/misc';
 // import {CLOUD_TYPE, VSCCommandString} from '../consts/video';
 
 export function onVideoNotifEvent(videoStore, action, content, cmd) {
+  if (!videoStore) return;
   __DEV__ && console.log('GOND onVideoNotifEvent ', action, content);
   switch (action) {
     case NOTIFY_ACTION.STREAM_CREATED:

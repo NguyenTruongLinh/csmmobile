@@ -41,6 +41,7 @@ import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
 import {Video as VideoTxt} from '../../localization/texts';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
+import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
 const iconSize = normalize(28);
@@ -58,7 +59,7 @@ class VideoPlayerView extends Component {
       showCalendar: false,
       showController: false,
       videoLoading: true,
-      pause: false,
+      // pause: false,
       seekpos: {},
       sWidth: width,
       sHeight: height,
@@ -77,7 +78,10 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     this._isMounted = true;
 
-    Dimensions.addEventListener('change', this.onDimensionsChange);
+    this.dimensionsChangeEvtSub = Dimensions.addEventListener(
+      'change',
+      this.onDimensionsChange
+    );
     AppState.addEventListener('change', this.handleAppStateChange);
     this.updateHeader();
     // this.unsubSearchTimeReaction = reaction(
@@ -118,7 +122,8 @@ class VideoPlayerView extends Component {
   componentWillUnmount() {
     __DEV__ && console.log('VideoPlayerView componentWillUnmount');
     this._isMounted = false;
-    Dimensions.removeEventListener('change', this.onDimensionsChange);
+    // Dimensions.removeEventListener('change', this.onDimensionsChange);
+    this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
     AppState.removeEventListener('change', this.handleAppStateChange);
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
@@ -141,33 +146,36 @@ class VideoPlayerView extends Component {
   handleAppStateChange = nextAppState => {
     __DEV__ &&
       console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
+    const {videoStore} = this.props;
     if (nextAppState === 'active' && this.appState) {
       if (this.appState.match(/inactive|background/)) {
         // todo: check is already paused to not resume video
-        this.playerRef.pause(false);
+        // this.playerRef.pause(false);
+        videoStore.pause(false);
       }
     } else {
-      this.playerRef.pause(true);
+      // this.playerRef.pause(true);
+      videoStore.pause(true);
     }
     this.appState = nextAppState;
   };
 
   checkDataOnSearchDate = () => {
     // dongpt: add no data (selected a day without data)
+    const {videoStore} = this.props;
     const recordingDates = {...(this.props.videoStore.recordingDates ?? {})};
     let datesList = [];
     if (typeof recordingDates == 'object') {
       datesList = Object.keys(recordingDates);
     }
 
-    let selectedDate =
-      this.props.videoStore.searchDate.toFormat(CALENDAR_DATE_FORMAT);
+    let selectedDate = videoStore.searchDate.toFormat(CALENDAR_DATE_FORMAT);
     __DEV__ &&
       console.log(
         'GOND checkDataOnSearchDate selectedDate = ',
         selectedDate,
         '\n --- object = ',
-        this.props.videoStore.searchDate
+        videoStore.searchDate
       );
     // let selectedDate = USE_TIMESTAMP ? this.state.sdate.format('CALENDAR_DATE_FORMAT') : dayjs(this.searchDate * 1000).format('CALENDAR_DATE_FORMAT'); // .utcOffset(0)
     if (
@@ -176,7 +184,8 @@ class VideoPlayerView extends Component {
     ) {
       __DEV__ && console.log('GOND: checkDataOnSearchDate NOVIDEO');
       this.isNoDataSearch = true;
-      this.playerRef.pause();
+      // this.playerRef.pause();
+      videoStore.pause(true);
       snackbar.showMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA, true);
       __DEV__ && console.log('GOND PAUSE 2 false');
       // this.setState({
@@ -239,9 +248,10 @@ class VideoPlayerView extends Component {
 
   onSwitchLiveSearch = () => {
     const {videoStore} = this.props;
-    // if (this.playerRef) this.playerRef.pause(true);
     videoStore.switchLiveSearch();
     this.updateHeader();
+    // if (this.playerRef) this.playerRef.pause(true);
+    videoStore.pause(true);
     setTimeout(() => {
       this.channelsScrollView &&
         this.channelsScrollView.scrollToIndex({
@@ -308,6 +318,24 @@ class VideoPlayerView extends Component {
     }
   };
 
+  onTimelineScrollEnd = (event, value) => {
+    __DEV__ && console.log('GOND onTimeline sliding end: ', value);
+    if (this.playerRef) {
+      // this.playerRef.pause();
+      if (this.timelineScrollTimeout) {
+        clearTimeout(this.timelineScrollTimeout);
+      }
+      this.timelineScrollTimeout = setTimeout(() => {
+        if (this.playerRef) {
+          this.playerRef.playAt(value.timestamp);
+        }
+        this.timelineScrollTimeout = null;
+      }, 500);
+    } else {
+      __DEV__ && console.log('GOND playAt failed playerRef not available!');
+    }
+  };
+
   /**
    * move Timeline to a specific time
    * @param {luxon || moment} time
@@ -366,11 +394,12 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
+    const {selectedStream} = videoStore;
     const {pause, sWidth, sHeight} = this.state;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
-    __DEV__ &&
-      console.log('GOND renderVid player: ', videoStore.selectedStream);
-    if (!videoStore.selectedStream) {
+    // __DEV__ &&
+    //   console.log('GOND renderVid player: ', videoStore.selectedStream);
+    if (!selectedStream) {
       return (
         <Image
           style={{width: sWidth, height: height}}
@@ -387,6 +416,7 @@ class VideoPlayerView extends Component {
       noVideo: videoStore.isLive ? false : this.isNoDataSearch,
       searchDate: videoStore.searchDate,
       searchPlayTime: videoStore.searchPlayTime,
+      paused: videoStore.paused,
     };
     let player = null;
     switch (videoStore.cloudType) {
@@ -396,7 +426,7 @@ class VideoPlayerView extends Component {
           <DirectVideoView
             {...playerProps}
             ref={r => (this.playerRef = r)}
-            serverInfo={videoStore.selectedStream}
+            serverInfo={selectedStream}
           />
         );
         break;
@@ -405,7 +435,14 @@ class VideoPlayerView extends Component {
           <HLSStreamingView
             {...playerProps}
             ref={r => (this.playerRef = r)}
-            streamData={videoStore.selectedStream}
+            streamData={selectedStream}
+            // streamUrl={
+            //   selectedStream.targetUrl
+            //     ? videoStore.selectedStream.targetUrl.url
+            //     : null
+            // }
+            // streamUrl={selectedStream.streamUrl}
+            timezone={videoStore.timezone}
           />
         );
         break;
@@ -414,7 +451,7 @@ class VideoPlayerView extends Component {
           <RTCStreamingView
             {...playerProps}
             ref={r => (this.playerRef = r)}
-            viewer={videoStore.selectedStream}
+            viewer={selectedStream}
           />
         );
         break;
@@ -513,8 +550,8 @@ class VideoPlayerView extends Component {
       return null;
     }
 
-    const {isLive, selectedChannelIndex, displayChannels} =
-      this.props.videoStore;
+    const {videoStore} = this.props;
+    const {isLive, selectedChannelIndex, displayChannels, paused} = videoStore;
     const {sHeight} = this.state;
     // const iconSize = normalize(28); // normalize(sHeight * 0.035);
 
@@ -537,13 +574,14 @@ class VideoPlayerView extends Component {
         )}
         {!isLive && this.playerRef ? (
           <IconCustom
-            name={this.state.pause ? 'play' : 'pause'}
+            name={paused ? 'play' : 'pause'}
             size={iconSize + 4}
             style={styles.pauseButton}
             onPress={() => {
-              const willPause = !this.state.pause;
-              this.setState({pause: willPause});
-              this.playerRef.pause(willPause);
+              // const willPause = paused;
+              // this.setState({pause: willPause});
+              // this.playerRef.pause();
+              videoStore.pause();
             }}
           />
         ) : null}
@@ -589,7 +627,7 @@ class VideoPlayerView extends Component {
             size={iconSize}
             // style={styles.buttonStyle}
             onPress={this.onSwitchLiveSearch}
-            disabled={videoStore.isLoading || !this.playerRef}
+            // disabled={videoStore.isLoading || !this.playerRef}
           />
         </View>
         {/* 
@@ -654,25 +692,13 @@ class VideoPlayerView extends Component {
             onScrollBeginDrag={time => {
               this.timeOnTimeline && this.timeOnTimeline.setValue(time);
             }}
-            onPauseVideoScrolling={() => this.setState({pause: true})}
+            // onPauseVideoScrolling={() => this.setState({pause: true})}
+            onPauseVideoScrolling={() => videoStore.pause(true)}
             setShowHideTimeOnTimeRule={value => {
               this.timeOnTimeline && this.timeOnTimeline.setShowHide(value);
             }}
             onScroll={() => {}}
-            onScrollEnd={(event, value) => {
-              __DEV__ && console.log('GOND onTimeline sliding end: ', value);
-              if (this.playerRef) {
-                // this.playerRef.pause();
-                setTimeout(() => {
-                  if (this.playerRef) {
-                    this.playerRef.playAt(value.timestamp);
-                  }
-                }, 100);
-              } else {
-                __DEV__ &&
-                  console.log('GOND playAt failed playerRef not available!');
-              }
-            }}
+            onScrollEnd={this.onTimelineScrollEnd}
           />
         </View>
         <TimeOnTimeRuler
@@ -746,7 +772,8 @@ class VideoPlayerView extends Component {
   };
 
   renderChannelsList = () => {
-    const {displayChannels, selectedChannelIndex} = this.props.videoStore;
+    const {allChannels, selectedChannelIndex, selectedStream} =
+      this.props.videoStore;
     // console.log('GOND renderChannelsList: ', displayChannels);
     const itemWidth = this.state.sWidth / NUM_CHANNELS_ON_SCREEN;
 
@@ -755,7 +782,7 @@ class VideoPlayerView extends Component {
         <FlatList
           ref={r => (this.channelsScrollView = r)}
           style={{flex: 1}}
-          data={[{}, {}, ...displayChannels, {}, {}]}
+          data={[{}, {}, ...allChannels, {}, {}]}
           renderItem={this.renderChannelItem}
           keyExtractor={(item, index) => item.channelNo ?? 'dummy' + index}
           getItemLayout={(data, index) => ({
@@ -763,8 +790,10 @@ class VideoPlayerView extends Component {
             offset: itemWidth * index,
             index,
           })}
-          initialNumToRender={displayChannels.length + 4}
-          initialScrollIndex={selectedChannelIndex}
+          initialNumToRender={allChannels.length + 4}
+          initialScrollIndex={
+            selectedStream.channelNo == null ? undefined : selectedChannelIndex
+          }
           horizontal={true}
           onScroll={this.handleChannelsScroll}
         />
@@ -793,7 +822,8 @@ class VideoPlayerView extends Component {
   };
 
   render() {
-    const {isFullscreen} = this.props.videoStore;
+    const {videoStore} = this.props;
+    const {isFullscreen} = videoStore;
 
     const fullscreenHeader = this.renderFullscreenHeader();
     const fullscreenFooter = this.renderFullscreenFooter();
@@ -814,6 +844,7 @@ class VideoPlayerView extends Component {
         {fullscreenFooter}
         {calendar}
         {datetimeBox}
+        <NVRAuthenModal store={videoStore} />
         <View
           style={styles.playerContainer}
           // onLongPress={__DEV__ ? this.onShowControlButtons : undefined}

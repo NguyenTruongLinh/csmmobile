@@ -525,13 +525,15 @@ exports.getRandomClientId = () => {
 };
 
 exports.isValidHttpUrl = val => {
+  if (!val || val.length == 0) return;
   // toString.call(val) === '[object URL]';
+
   __DEV__ && console.log('GOND isValidHttpUrl: ', val);
   try {
     new URL(val);
     return val.startsWith('http://') || val.startsWith('https://');
   } catch (err) {
-    __DEV__ && console.log('GOND not valid url: ', err);
+    __DEV__ && console.log('GOND *** not valid url: ', err);
     return false;
   }
 };
@@ -544,10 +546,10 @@ exports.compareStrings = (a, b) => {
   return a > b ? 1 : a < b ? -1 : 0;
 };
 
-exports.sleep = async (time = 1000) => {
-  console.log('GOND sleep time = ', time);
+exports.sleep = async (ms = 1000) => {
+  console.log('GOND sleep time = ', ms);
   await new Promise(resolve => {
-    setTimeout(() => resolve(time), time);
+    setTimeout(resolve, ms);
   });
 };
 
