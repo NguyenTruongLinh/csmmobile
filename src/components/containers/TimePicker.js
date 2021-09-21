@@ -74,7 +74,7 @@ export default class TimePicker extends Component {
         onPress={() => {
           this.setState({
             selected: item.id,
-            dataSource: ds.cloneWithRows(this.buildListData(item.id)),
+            dataSource: this.buildListData(item.id),
           });
           if (this._scrollView) {
             let newY = parseInt(index * 40 - 40);
