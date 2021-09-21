@@ -148,10 +148,11 @@ const DirectStreamModel = types
       self.server.date = value;
     },
     setStreamStatus({connectionStatus, error, isLoading, needReset}) {
-      connectionStatus && (self.connectionStatus = connectionStatus);
-      isLoading && (self.isLoading = isLoading);
-      needReset && (self.needReset = needReset);
-      error && (self.error = error);
+      connectionStatus != undefined &&
+        (self.connectionStatus = connectionStatus);
+      isLoading != undefined && (self.isLoading = isLoading);
+      needReset != undefined && (self.needReset = needReset);
+      error != undefined && (self.error = error);
     },
   }));
 
@@ -232,6 +233,7 @@ export const VideoModel = types
     message: types.string,
     nvrUser: types.maybeNull(types.string),
     nvrPassword: types.maybeNull(types.string),
+    isAuthenticated: types.optional(types.boolean, false),
     isLive: types.boolean,
     isFullscreen: types.boolean,
     hdMode: types.boolean,
@@ -532,10 +534,6 @@ export const VideoModel = types
       setChannelFilter(value) {
         self.channelFilter = value;
       },
-      resetNVRAuthentication() {
-        if (self.nvrUser) self.setNVRLoginInfo('', '');
-        self.showAuthenModal = true;
-      },
       setLoading(value) {
         self.isLoading = value;
       },
@@ -723,6 +721,14 @@ export const VideoModel = types
       },
       displayAuthen(value) {
         self.showAuthenModal = value;
+      },
+      resetNVRAuthentication() {
+        if (self.isAuthenticated) return;
+        if (self.nvrUser) self.setNVRLoginInfo('', '');
+        self.showAuthenModal = true;
+      },
+      onLoginSuccess() {
+        if (!self.isAuthenticated) self.isAuthenticated = true;
       },
       onAuthenSubmit({username, password}) {
         // __DEV__ && console.log('GOND onAuthenSubmit ', {username, password});
@@ -1929,6 +1935,9 @@ export const VideoModel = types
             }
             break;
         }
+        self.nvrUser = null;
+        self.nvrPassword = null;
+        self.isAuthenticated = false;
         self.allChannels = [];
       },
       cleanUp() {

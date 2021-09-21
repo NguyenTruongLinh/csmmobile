@@ -92,10 +92,15 @@ const ChannelConnectionModel = types
         // self.dataChannel.onbufferedamountlow = onLowBuffer;
       },
       setStreamStatus({isLoading, error, needReset, connectionStatus}) {
-        self.isLoading = isLoading ?? self.isLoading;
-        self.error = error ?? self.error;
-        self.needResetConnection = needReset ?? self.needResetConnection;
-        self.connectionStatus = connectionStatus ?? self.connectionStatus;
+        connectionStatus != undefined &&
+          (self.connectionStatus = connectionStatus);
+        isLoading != undefined && (self.isLoading = isLoading);
+        needReset != undefined && (self.needResetConnection = needReset);
+        error != undefined && (self.error = error);
+        // self.isLoading = isLoading ?? self.isLoading;
+        // self.error = error ?? self.error;
+        // self.needResetConnection = needReset ?? self.needResetConnection;
+        // self.connectionStatus = connectionStatus ?? self.connectionStatus;
         // self.novideo = novideo ?? self.novideo;
       },
       setConnectionFailedHandler(fn) {

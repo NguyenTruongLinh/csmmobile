@@ -336,6 +336,15 @@ class VideoPlayerView extends Component {
     }
   };
 
+  onAuthenSubmit = (username, password) => {
+    if (
+      this.playerRef &&
+      this.playerRef.onLoginInfoChanged &&
+      typeof this.playerRef.onLoginInfoChanged == 'function'
+    )
+      this.playerRef.onLoginInfoChanged(username, password);
+  };
+
   /**
    * move Timeline to a specific time
    * @param {luxon || moment} time
@@ -845,7 +854,7 @@ class VideoPlayerView extends Component {
         {fullscreenFooter}
         {calendar}
         {datetimeBox}
-        <NVRAuthenModal store={videoStore} />
+        <NVRAuthenModal onSubmit={this.onAuthenSubmit} />
         <View
           style={styles.playerContainer}
           // onLongPress={__DEV__ ? this.onShowControlButtons : undefined}

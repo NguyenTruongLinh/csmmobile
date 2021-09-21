@@ -241,20 +241,32 @@ class ChannelsView extends React.Component {
   //   // this.props.videoStore.setStreamReadyCallback(null);
   // };
 
-  onAuthenSubmit = ({username, password}) => {
-    if (!username || !password) return;
-    const {videoStore} = this.props;
-    videoStore.setNVRLoginInfo(username, password);
-    videoStore.displayAuthen(false);
+  // onAuthenSubmit = ({username, password}) => {
+  //   if (!username || !password) return;
+  //   const {videoStore} = this.props;
+  //   videoStore.setNVRLoginInfo(username, password);
+  //   videoStore.displayAuthen(false);
 
-    // __DEV__ && console.log('GOND show first channels 2!');
-    // this.setState({
-    //   liveData: this.buildLiveData(this.state.gridLayout /*, true*/),
-    // });
-  };
+  //   // __DEV__ && console.log('GOND show first channels 2!');
+  //   // this.setState({
+  //   //   liveData: this.buildLiveData(this.state.gridLayout /*, true*/),
+  //   // });
+  // };
 
-  onAuthenCancel = () => {
-    this.props.videoStore.displayAuthen(false);
+  // onAuthenCancel = () => {
+  //   this.props.videoStore.displayAuthen(false);
+  // };
+
+  onAuthenSubmit = (username, password) => {
+    this.playerRefs.forEach(p => {
+      if (
+        p &&
+        p.onLoginInfoChanged &&
+        typeof p.onLoginInfoChanged == 'function'
+      ) {
+        p.onLoginInfoChanged(username, password);
+      }
+    });
   };
 
   onChannelSelect = value => {
@@ -585,7 +597,7 @@ class ChannelsView extends React.Component {
           />
         </View>
         {/* {authenModal} */}
-        <NVRAuthenModal />
+        <NVRAuthenModal onSubmit={this.onAuthenSubmit} />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           <FlatList
             renderItem={this.renderRow}

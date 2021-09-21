@@ -13,6 +13,14 @@ class NVRAuthenModal extends React.Component {
     super(props);
   }
 
+  onAuthenSubmit = ({username, password}) => {
+    const {videoStore, onSubmit} = this.props;
+    videoStore.onAuthenSubmit({username, password});
+    if (onSubmit && typeof onSubmit == 'function') {
+      onSubmit(username, password);
+    }
+  };
+
   render() {
     const {videoStore} = this.props;
 
@@ -26,7 +34,7 @@ class NVRAuthenModal extends React.Component {
         <View style={[styles.modalcontainer]}>
           <AuthenModal
             style={styles.authenModal}
-            onOK={videoStore.onAuthenSubmit}
+            onOK={this.onAuthenSubmit}
             onCancel={videoStore.onAuthenCancel}
             username={videoStore.nvrUser}
             password={''}
