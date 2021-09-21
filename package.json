@@ -42,7 +42,7 @@
     "mobx-state-tree": "^5.0.1",
     "prop-types": "^15.7.2",
     "react": "17.0.1",
-    "react-native": "0.64.0",
+    "react-native": "0.64.2",
     "react-native-24h-timepicker": "github:phungthanhdong/react-native-24h-timepicker#master",
     "react-native-animated-pagination-dots": "^0.1.72",
     "react-native-calendars": "^1.1264.0",

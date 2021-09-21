@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
+import {reaction} from 'mobx';
 import Video from 'react-native-video';
 import {DateTime} from 'luxon';
 
@@ -49,14 +50,14 @@ class HLSStreamingView extends React.Component {
     this._isMounted = false;
     this.frameTime = 0;
     this.tsIndex = -1;
+    this.reactions = [];
   }
 
   componentDidMount() {
     __DEV__ &&
       console.log('HLSStreamingView componentDidMount', this.props.streamData);
     this._isMounted = true;
-
-    // this.scheduleCheckStream();
+    this.initReactions();
   }
 
   componentWillUnmount() {
@@ -65,6 +66,7 @@ class HLSStreamingView extends React.Component {
     if (this.checkStreamTO) {
       clearTimeout(this.checkStreamTO);
     }
+    this.reactions.forEach(unsubsribe => unsubsribe());
     // Dimensions.removeEventListener('change', this.Dimension_handler);
     // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
     // if (Platform.OS === 'ios') {
@@ -72,55 +74,50 @@ class HLSStreamingView extends React.Component {
     // }
   }
 
-  // static getDerivedStateFromProps(nextProps, prevState) {
-  //   console.log('GOND HLS getDerivedStateFromProps...');
-  //   // if (nextProps.streamUrl != prevState.streamUrl)
-  //   //   return {streamUrl: nextProps.streamUrl};
-  //   // return {};
-  //   const {isLive, hdMode, streamData, videoStore} = nextProps;
-  //   const {searchPlayTimeLuxon, timezone} = videoStore;
-  //   // const streamUrl = isLive
-  //   //   ? hdMode
-  //   //     ? streamData.streamUrl.liveHD
-  //   //     : streamData.streamUrl.live
-  //   //   : hdMode
-  //   //   ? streamData.streamUrl.searchHD
-  //   //   : streamData.streamUrl.search;
-  //   const streamUrl = streamData.targetUrl.url;
-  //   if (__DEV__ && videoStore.selectedChannel == streamData.channelNo)
-  //     console.log(
-  //       'GOND HLS getDerivedStateFromProps: ',
-  //       streamUrl,
-  //       ' <> ',
-  //       prevState.streamUrl
-  //     );
-  //   if (timezone && timezone != prevState.timeBeginPlaying.zone.name) {
-  //     __DEV__ &&
-  //       console.log(
-  //         `GOND HLS getDerivedStateFromProps: timezone changed: ${timezone} <= `,
-  //         prevState.timeBeginPlaying.zone
-  //       );
-  //     return {timeBeginPlaying: prevState.timeBeginPlaying.setZone(timezone)};
-  //   }
+  initReactions = () => {
+    const {streamData, videoStore} = this.props;
+    this.reactions = [
+      reaction(
+        () => streamData.streamUrl,
+        newUrl => {
+          if (newUrl != this.state.streamUrl) {
+            if (util.isValidHttpUrl(newUrl)) {
+              __DEV__ &&
+                console.log(
+                  'HLSStreamingView newURL time: ',
+                  videoStore.searchPlayTimeLuxon
+                );
+              this.setState({
+                streamUrl: newUrl,
+                timeBeginPlaying: videoStore.isLive
+                  ? DateTime.now().setZone(videoStore.timezone)
+                  : videoStore.searchPlayTimeLuxon,
+              });
+              // reset these value everytimes streamUrl changed
+              this.frameTime = 0;
+              this.tsIndex = -1;
+              if (videoStore.paused) videoStore.pause(false);
+            } else {
+              // TODO: handle invalid url
+            }
+          }
+        }
+      ),
+      reaction(
+        () => videoStore.timezone,
+        newTimezone => {
+          const {timeBeginPlaying} = this.state;
+          if (newTimezone != timeBeginPlaying.zone.name) {
+            this.setState({
+              timeBeginPlaying: prevState.timeBeginPlaying.setZone(timezone),
+            });
+          }
+        }
+      ),
+    ];
+  };
 
-  //   if (streamUrl && streamUrl.length > 0 && streamUrl != prevState.streamUrl) {
-  //     if (__DEV__ && videoStore.selectedChannel == streamData.channelNo)
-  //       console.log('GOND HLS getDerivedStateFromProps: streamUrl changed');
-  //     videoStore.pause(false);
-  //     return {
-  //       // videoLoading: false,
-  //       // message: '',
-  //       streamUrl,
-  //       timeBeginPlaying: isLive
-  //         ? DateTime.now().setZone(timezone)
-  //         : searchPlayTimeLuxon,
-  //       // paused: false,
-  //     };
-  //   }
-
-  //   return {};
-  // }
-
+  /*
   static getDerivedStateFromProps(nextProps, prevState) {
     console.log('GOND HLS getDerivedStateFromProps...', nextProps);
     const {streamData, timezone, isLive, videoStore} = nextProps;
@@ -151,42 +148,7 @@ class HLSStreamingView extends React.Component {
     }
     return nextState;
   }
-
-  componentDidUpdate(prevProps, prevState) {}
-
-  // scheduleCheckStream = () => {
-  //   if (this.checkStreamTO) {
-  //     clearTimeout(this.checkStreamTO);
-  //   }
-  //   this.checkStreamTO = setTimeout(
-  //     () => this.onCheckStreamAvailable(),
-  //     STREAM_TIMEOUT
-  //   );
-  // };
-
-  // onCheckStreamAvailable = () => {
-  //   if (this._isMounted) {
-  //     const {streamData} = this.props;
-  //     const {streamUrl} = streamData;
-  //     __DEV__ &&
-  //       console.log(
-  //         'GOND HLS onCheckStreamAvailable: ',
-  //         streamUrl,
-  //         ' - ',
-  //         streamUrl.startsWith('https://')
-  //       );
-  //     if (
-  //       !streamUrl ||
-  //       streamUrl.length <= 0 ||
-  //       !streamUrl.startsWith('https://')
-  //     ) {
-  //       this.props.streamData.setStreamStatus({
-  //         isLoading: false,
-  //         connectionStatus: STREAM_STATUS.TIMEOUT,
-  //       });
-  //     }
-  //   }
-  // };
+  */
 
   onLayout = event => {
     if (event == null || event.nativeEvent == null || !this._isMounted) return;
@@ -234,11 +196,24 @@ class HLSStreamingView extends React.Component {
   };
 
   onProgress = data => {
-    const {isLive, videoStore, streamData} = this.props;
+    const {isLive, videoStore, streamData, singlePlayer} = this.props;
+    if (!singlePlayer) return;
+
     const {hlsTimestamps} = videoStore;
     const {timeBeginPlaying} = this.state;
+
+    if (
+      streamData.isLoading ||
+      streamData.connectionStatus != STREAM_STATUS.DONE
+    ) {
+      streamData.setStreamStatus({
+        isLoading: false,
+        connectionStatus: STREAM_STATUS.DONE,
+      });
+    }
+
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
-    if (this.frameTime == 0) {
+    if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
       this.frameTime = timeBeginPlaying.toSeconds();
       if (!isLive) {
         this.tsIndex = hlsTimestamps.findIndex(t => t >= this.frameTime);
@@ -251,13 +226,13 @@ class HLSStreamingView extends React.Component {
     } else {
       if (isLive) {
         if (Platform.OS == 'ios') {
-          this.frameTime += data.currentTime;
+          this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
         } else {
           this.frameTime += 1;
         }
       } else if (this.tsIndex < hlsTimestamps.length) {
         if (Platform.OS == 'ios') {
-          this.frameTime += data.currentTime;
+          this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
           if (
             this.frameTime <= hlsTimestamps[this.tsIndex + 1] &&
             this.frameTime > hlsTimestamps[this.tsIndex]
@@ -316,7 +291,7 @@ class HLSStreamingView extends React.Component {
   };
 
   stop = () => {
-    this.props.videoStore.stopHLSStream;
+    this.props.videoStore.stopHLSStream();
   };
 
   pause = willPause => {
