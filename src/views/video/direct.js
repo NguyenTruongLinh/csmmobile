@@ -51,6 +51,7 @@ class DirectVideoView extends React.Component {
     };
     // should set search time from alert/exception
     this.shouldSetTime = true;
+    this.reactions = [];
   }
 
   componentDidMount() {
@@ -96,23 +97,25 @@ class DirectVideoView extends React.Component {
     }
 
     // reactions:
-    this.unsubscribeReaction = reaction(
-      () => videoStore.selectedChannel,
-      (value, previousValue) => {
-        // __DEV__ &&
-        //   console.log('GOND directPlayer selectedChannel changed ', previousValue, ' -> ', value);
-        if (value != null && previousValue == null) {
-          if (value != serverInfo.channelNo) {
-            this.pause(true);
+    this.reactions = [
+      reaction(
+        () => videoStore.selectedChannel,
+        (value, previousValue) => {
+          // __DEV__ &&
+          //   console.log('GOND directPlayer selectedChannel changed ', previousValue, ' -> ', value);
+          if (value != null && previousValue == null) {
+            if (value != serverInfo.channelNo) {
+              this.pause(true);
+            }
+          } else if (
+            (value == null && previousValue != null) ||
+            value == serverInfo.channelNo
+          ) {
+            this.pause(false);
           }
-        } else if (
-          (value == null && previousValue != null) ||
-          value == serverInfo.channelNo
-        ) {
-          this.pause(false);
         }
-      }
-    );
+      ),
+    ];
   }
 
   componentWillUnmount() {
@@ -124,7 +127,7 @@ class DirectVideoView extends React.Component {
     }
     this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps({stop: true});
     this._isMounted = false;
-    this.unsubscribeReaction();
+    this.reactions.forEach(unsubsribe => unsubsribe());
   }
 
   componentDidUpdate(prevProps) {
@@ -138,7 +141,11 @@ class DirectVideoView extends React.Component {
       // searchPlayTime,
       paused,
       videoStore,
+      singlePlayer,
+      // username,
+      // password,
     } = this.props;
+
     if (!serverInfo || Object.keys(serverInfo).length == 0) return;
 
     // __DEV__ &&
@@ -170,8 +177,11 @@ class DirectVideoView extends React.Component {
         // if (pause != prevProps.pause) {
         //   this.ffmpegPlayer.setNativeProps({pause: pause});
         // }
+        // These following only use on single player view
+        if (!singlePlayer) return;
+
         if (hdMode != prevProps.hdMode) {
-          this.ffmpegPlayer.setNativeProps({hd: true});
+          this.ffmpegPlayer.setNativeProps({hd: hdMode});
         }
 
         if (isLive != prevProps.isLive) {
@@ -366,6 +376,7 @@ class DirectVideoView extends React.Component {
         console.log('GOND timeline: ', timeData);
         if (timeData && Array.isArray) {
           if (timeData[0] && timeData[0].begin) {
+            console.log('GOND timeline first time: ', timeData[0].begin);
             const beginOfDay = DateTime.fromSeconds(timeData[0].begin)
               .toUTC()
               .startOf('day')
@@ -545,7 +556,9 @@ class DirectVideoView extends React.Component {
             {serverInfo.channelName ?? 'Unknown'}
           </Text>
           <View style={styles.statusView}>
-            <Text style={styles.textMessge}>{message}</Text>
+            <View style={styles.textContainer}>
+              <Text style={[styles.textMessage]}>{message}</Text>
+            </View>
             {videoLoading && (
               <ActivityIndicator
                 style={styles.loadingIndicator}

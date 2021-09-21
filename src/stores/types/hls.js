@@ -312,8 +312,8 @@ export default HLSStreamModel = types
         if (self.isLoading && !self.isURLAcquired) {
           __DEV__ &&
             console.log(
-              `GOND === it timeout s = ${s.targetUrl.sid}, ch = `,
-              s.channelName
+              `GOND === it timeout:  ${self.targetUrl.sid}, ch = `,
+              self.channelName
             );
           self.setStreamStatus({
             connectionStatus: STREAM_STATUS.TIMEOUT,

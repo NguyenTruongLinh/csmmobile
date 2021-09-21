@@ -6,6 +6,7 @@ import {
   Image,
   ImageBackground,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import Video from 'react-native-video';
@@ -249,10 +250,24 @@ class HLSStreamingView extends React.Component {
       }
     } else {
       if (isLive) {
-        this.frameTime += 1;
+        if (Platform.OS == 'ios') {
+          this.frameTime += data.currentTime;
+        } else {
+          this.frameTime += 1;
+        }
       } else if (this.tsIndex < hlsTimestamps.length) {
-        this.tsIndex++;
-        this.frameTime = hlsTimestamps[this.tsIndex];
+        if (Platform.OS == 'ios') {
+          this.frameTime += data.currentTime;
+          if (
+            this.frameTime <= hlsTimestamps[this.tsIndex + 1] &&
+            this.frameTime > hlsTimestamps[this.tsIndex]
+          )
+            this.tsIndex++;
+          this.frameTime = hlsTimestamps[this.tsIndex];
+        } else {
+          this.tsIndex++;
+          this.frameTime = hlsTimestamps[this.tsIndex];
+        }
       }
     }
 
@@ -273,15 +288,21 @@ class HLSStreamingView extends React.Component {
     //     );
     // }
 
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND HLS onProgress: frameTime = ',
-    //     this.frameTime,
-    //     ', tz = ',
-    //     videoStore.timezone,
-    //     ', DT = ',
-    //     DateTime.fromSeconds(this.frameTime)
-    //   );
+    __DEV__ &&
+      console.log(
+        'GOND HLS onProgress: channel: ',
+        streamData.channelName,
+        ', currentTime = ',
+        data.currentTime,
+        ', frameTime = ',
+        this.frameTime,
+        ', tz = ',
+        videoStore.timezone,
+        ', DT = ',
+        DateTime.fromSeconds(this.frameTime).toFormat(
+          NVRPlayerConfig.RequestTimeFormat
+        )
+      );
     videoStore.setDisplayDateTime(
       DateTime.fromSeconds(this.frameTime, {
         zone: videoStore.timezone,
@@ -335,7 +356,9 @@ class HLSStreamingView extends React.Component {
           {/* <View style={{width: width, height: height}}> */}
           <Text style={styles.channelInfo}>{channel.name ?? 'Unknown'}</Text>
           <View style={styles.statusView}>
-            <Text style={styles.textMessge}>{connectionStatus}</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.textMessage}>{connectionStatus}</Text>
+            </View>
             {isLoading && (
               <ActivityIndicator
                 style={styles.loadingIndicator}

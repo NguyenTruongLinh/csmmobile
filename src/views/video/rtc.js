@@ -627,7 +627,9 @@ class RTCStreamingView extends Component {
           {/* <View style={{width: width, height: height}}> */}
           <Text style={styles.channelInfo}>{channelName ?? 'Unknown'}</Text>
           <View style={styles.statusView}>
-            <Text style={styles.textMessge}>{error}</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.textMessage}>{error}</Text>
+            </View>
             {isLoading && (
               <ActivityIndicator
                 style={styles.loadingIndicator}

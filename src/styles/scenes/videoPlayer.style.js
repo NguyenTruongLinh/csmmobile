@@ -12,12 +12,25 @@ module.exports = StyleSheet.create({
     alignContent: 'center',
     zIndex: 1,
   },
-  textMessge: {
+  textContainer: {
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    height: '100%',
+  },
+  textMessage: {
     width: '100%',
-    height: '80%',
+    height: '15%',
     color: CMSColors.Danger,
     alignSelf: 'center',
-    textAlignVertical: 'bottom',
+    // ...Platform.select({
+    //   ios: {
+    //     height: '15%',
+    //   },
+    //   android: {
+    //     width: '100%',
+    //     textAlignVertical: 'bottom',
+    //   },
+    // }),
   },
   loadingIndicator: {
     position: 'absolute',

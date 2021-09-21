@@ -31,7 +31,6 @@ import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import {Comps as CompTxt, Video as VideoTxt} from '../../localization/texts';
-import videoStore from '../../stores/video';
 
 // const LayoutData = [
 //   {
@@ -497,7 +496,7 @@ class ChannelsView extends React.Component {
   };
 
   renderVideoPlayer = (item, index) => {
-    // __DEV__ && console.log('GOND renderVid liveChannels: ', item);
+    // __DEV__ && console.log('GOND renderVid liveChannels ', item);
     if (!item || Object.keys(item).length == 0)
       return (
         <View
@@ -516,6 +515,7 @@ class ChannelsView extends React.Component {
       // streamStatus: item.streamStatus,
     };
     let player = null;
+    // __DEV__ && console.log('GOND renderVid password ', videoStore.nvrPassword);
     switch (videoStore.cloudType) {
       case CLOUD_TYPE.DEFAULT:
       case CLOUD_TYPE.DIRECTION:
@@ -523,6 +523,8 @@ class ChannelsView extends React.Component {
           <DirectVideoView
             {...playerProps}
             serverInfo={item}
+            // username={videoStore.nvrUser}
+            // password={videoStore.nvrPassword}
             ref={ref => this.playerRefs.push(ref)}
           />
         );

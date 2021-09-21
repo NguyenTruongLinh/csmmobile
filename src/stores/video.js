@@ -62,6 +62,7 @@ const DirectServerModel = types
   }))
   .actions(self => ({
     setLoginInfo(userName, password) {
+      __DEV__ && console.log('GOND setLoginInfo for ', self.serverID);
       self.userName = userName;
       self.password = password;
     },
@@ -113,6 +114,12 @@ const DirectStreamModel = types
         interval: DAY_INTERVAL,
       };
     },
+    get userName() {
+      return self.server ? self.server.userName : '';
+    },
+    get password() {
+      return self.server ? self.server.password : '';
+    },
     get channelNo() {
       if (!self.channel) return null;
       return self.channel.channelNo;
@@ -120,6 +127,9 @@ const DirectStreamModel = types
     get channelName() {
       if (!self.channel) return '';
       return self.channel.name;
+    },
+    get kChannel() {
+      return self.channel ? self.channel.kChannel : -1;
     },
     get streamStatus() {
       const {isLoading, connectionStatus, error} = self;
@@ -715,7 +725,9 @@ export const VideoModel = types
         self.showAuthenModal = value;
       },
       onAuthenSubmit({username, password}) {
+        // __DEV__ && console.log('GOND onAuthenSubmit ', {username, password});
         if (!username || !password) return;
+        // __DEV__ && console.log('GOND onAuthenSubmit 2');
         self.setNVRLoginInfo(username, password);
         self.displayAuthen(false);
       },

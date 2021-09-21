@@ -417,6 +417,7 @@ class VideoPlayerView extends Component {
       searchDate: videoStore.searchDate,
       searchPlayTime: videoStore.searchPlayTime,
       paused: videoStore.paused,
+      singlePlayer: true,
     };
     let player = null;
     switch (videoStore.cloudType) {
