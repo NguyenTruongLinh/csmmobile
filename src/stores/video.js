@@ -1502,6 +1502,7 @@ export const VideoModel = types
       // }),
       onHLSInfoResponse(info, cmd) {
         __DEV__ && console.log(`GOND on HLS response ${cmd}: `, info);
+        if (!self.hlsStreams || self.hlsStreams.length == 0) return;
         if (info.status == 'FAIL') {
           const target = self.hlsStreams.find(s => s.targetUrl.sid == info.sid);
           target.setStreamStatus({

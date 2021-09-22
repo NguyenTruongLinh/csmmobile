@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
+import {reaction} from 'mobx';
 import {RTCView} from 'react-native-webrtc';
 import {DateTime} from 'luxon';
 
@@ -54,6 +55,7 @@ class RTCStreamingView extends Component {
       endTs: 0,
     };
     this.shouldSetTime = true;
+    this.reactions = [];
   }
 
   componentDidMount() {
@@ -62,6 +64,7 @@ class RTCStreamingView extends Component {
     this._isMounted = true;
     const {viewer, videoStore} = this.props;
 
+    this.initReactions();
     viewer.setDataChannelEvents({
       onOpen: this.dataChannelOnOpen,
       onMessage: this.dataChannelOnMessage,
@@ -94,8 +97,56 @@ class RTCStreamingView extends Component {
     //   this.appStateEventListener.remove();
     // }
     this._isMounted = false;
+
+    this.reactions.forEach(unsubscribe => unsubscribe());
   }
 
+  initReactions = () => {
+    const {videoStore, viewer} = this.props;
+
+    this.reactions = [
+      reaction(
+        () => videoStore.isLive,
+        isLive => {
+          if (videoStore.dvrTimezone && this._isMounted) {
+            this.pause();
+            setTimeout(() => {
+              if (isLive) {
+                this.startPlayback(true);
+              } else {
+                this.sendRtcCommand(RTC_COMMANDS.DAYLIST);
+                setTimeout(
+                  () =>
+                    this._isMounted &&
+                    this.sendRtcCommand(RTC_COMMANDS.TIMELINE),
+                  500
+                );
+              }
+            }, 500);
+          }
+        }
+      ),
+      reaction(
+        () => videoStore.hdMode,
+        () => this._isMounted && this.startPlayback()
+      ),
+      reaction(
+        () => videoStore.searchDate,
+        () => {
+          if (!isLive && this._isMounted) {
+            this.pause();
+            setTimeout(
+              () =>
+                this._isMounted && this.sendRtcCommand(RTC_COMMANDS.TIMELINE),
+              500
+            );
+          }
+        }
+      ),
+    ];
+  };
+
+  /*
   componentDidUpdate(prevProps, prevState) {
     if (!this._isMounted) return;
     const {hdMode, isLive, videoStore, viewer, searchDate} = this.props;
@@ -130,6 +181,7 @@ class RTCStreamingView extends Component {
       );
     }
   }
+  */
 
   stop = () => {};
 

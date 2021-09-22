@@ -264,12 +264,20 @@ export default class AlarmFilter extends Component {
     //     // selected: true,
     //   };
     // }
-
+    const today = DateTime.now().toFormat(DateFormat.CalendarDate);
+    let markedData = {};
+    markedData[today] = {
+      marked: true,
+      dotColor: 'red',
+    };
+    markedData = {...markedData, ...this.state.dateRange};
+    __DEV__ && console.log('GOND today marked: ', markedData);
     return (
       <CalendarList
         markingType={'period'}
         onDayPress={this.onDayPress}
-        markedDates={this.state.dateRange}
+        markedDates={markedData}
+        // markedDates={this.state.dateRange}
         hideExtraDays={true}
       />
     );

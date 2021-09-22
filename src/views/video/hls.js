@@ -109,7 +109,9 @@ class HLSStreamingView extends React.Component {
           const {timeBeginPlaying} = this.state;
           if (newTimezone != timeBeginPlaying.zone.name) {
             this.setState({
-              timeBeginPlaying: prevState.timeBeginPlaying.setZone(timezone),
+              timeBeginPlaying: this.state.timeBeginPlaying.setZone(
+                videoStore.timezone
+              ),
             });
           }
         }

@@ -390,6 +390,7 @@ class ChannelsView extends React.Component {
   renderLayoutItem = ({item}) => {
     const {height} = Dimensions.get('window');
     const {viewableWindow} = this.state;
+    const {videoStore} = this.props;
 
     return (
       <CMSTouchableIcon
@@ -614,7 +615,7 @@ class ChannelsView extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  screenContainer: {flex: 1, backgroundColor: CMSColors.White},
+  screenContainer: {flex: 1, backgroundColor: 'black'},
   headerRight: {
     flex: 1,
     flexDirection: 'row',

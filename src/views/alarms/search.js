@@ -48,10 +48,10 @@ class AlarmsSearchView extends Component {
       showFilterModal: true,
       from: filterParams
         ? DateTime.fromFormat(filterParams.sdate, DateFormat.QuerryDateTime)
-        : DateTime.local(),
+        : DateTime.now().minus({days: 1}),
       to: filterParams
         ? DateTime.fromFormat(filterParams.edate, DateFormat.QuerryDateTime)
-        : DateTime.local(),
+        : DateTime.now().minus({days: 1}),
       // selectedSites: [], // props.selectedsite? props.selectedsite: [],
       params: filterParams ?? {},
       width,
@@ -76,11 +76,11 @@ class AlarmsSearchView extends Component {
   }
 
   buildSearchParam = () => {
-    let {params} = this.props.alarmStore;
-    if (!params) {
+    let {params} = this.state;
+    if (!params || Object.keys(params).length == 0) {
       return {
-        sdate: DateTime().toFormat('yyyyMMdd000000'),
-        edate: DateTime().toFormat('yyyyMMdd235959'),
+        sdate: DateTime.now().toFormat('yyyyMMdd000000'),
+        edate: DateTime.now().toFormat('yyyyMMdd235959'),
         aty: AlertType_Support,
       };
     } else {
@@ -130,7 +130,12 @@ class AlarmsSearchView extends Component {
       };
 
       __DEV__ && console.log('GOND AlarmFilter onSubmit: ', newParams);
-      alarmStore.getAlarms(newParams, true);
+      this.setState(
+        {
+          params: newParams,
+        },
+        () => alarmStore.getAlarms(this.buildSearchParam(), true)
+      );
     }
 
     this.setState({showFilterModal: false});
@@ -139,7 +144,7 @@ class AlarmsSearchView extends Component {
   refreshData = () => {
     const {alarmStore} = this.props;
 
-    alarmStore.getLiveData(this.buildRequestParams());
+    alarmStore.getAlarms(this.buildSearchParam(), true);
   };
 
   onFilter = value => {
@@ -167,11 +172,13 @@ class AlarmsSearchView extends Component {
   };
 
   onAddMoreParams = (data, filterType) => {
+    const {params} = this.state;
     let newParams;
+
     switch (filterType) {
       case FilterMore.Status: {
         newParams = {
-          ...this.state.params,
+          ...params,
           sta: data.join(','),
         };
         this.setState({params: newParams});
@@ -179,14 +186,13 @@ class AlarmsSearchView extends Component {
       }
       case FilterMore.Sites: {
         newParams = {
-          ...this.state.params,
+          ...params,
           sid: data.join(','),
         };
         this.setState({params: newParams});
         break;
       }
       case FilterMore.Time: {
-        let {params} = this.state;
         if (!params) {
           let timeNe;
           if (data.type == 'stime')
@@ -200,7 +206,7 @@ class AlarmsSearchView extends Component {
               etime: data.time,
             };
           newParams = {
-            ...this.state.params,
+            ...params,
             time: timeNe,
           };
         } else {
@@ -218,7 +224,7 @@ class AlarmsSearchView extends Component {
                 etime: data.time,
               };
             newParams = {
-              ...this.state.params,
+              ...params,
               time: timeN,
             };
           } else {
@@ -235,7 +241,7 @@ class AlarmsSearchView extends Component {
               };
             }
             newParams = {
-              ...this.state.params,
+              ...params,
               time: timeU,
             };
           }
@@ -246,7 +252,7 @@ class AlarmsSearchView extends Component {
       }
       case FilterMore.AlertType: {
         newParams = {
-          ...this.state.params,
+          ...params,
           aty: data.join(','),
         };
         this.setState({params: newParams});
@@ -254,7 +260,7 @@ class AlarmsSearchView extends Component {
       }
       case FilterMore.Rating: {
         newParams = {
-          ...this.state.params,
+          ...params,
           ara: data.join(','),
         };
         this.setState({params: newParams});
@@ -262,7 +268,7 @@ class AlarmsSearchView extends Component {
       }
       case FilterMore.VA: {
         newParams = {
-          ...this.state.params,
+          ...params,
           vty: data.join(','),
         };
         this.setState({params: newParams});

@@ -5,6 +5,8 @@ import Ripple from 'react-native-material-ripple';
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 
+const LINE_HEIGHT = 40;
+
 export default class TimePicker extends Component {
   constructor(props) {
     super(props);
@@ -30,8 +32,9 @@ export default class TimePicker extends Component {
       });
 
       setTimeout(() => {
-        let newY = parseInt(selected * 40 - 40);
-        this._scrollView.scrollTo({y: newY, animated: true});
+        // let newY = parseInt(selected * LINE_HEIGHT - LINE_HEIGHT);
+        // this._scrollView.scrollTo({y: newY, animated: true});
+        this._scrollView.scrollToIndex({index: selected, animated: true});
       }, 100);
     }
   }
@@ -62,8 +65,12 @@ export default class TimePicker extends Component {
     if (item.isCheck == true) {
       setTimeout(() => {
         if (this._scrollView) {
-          let newY = parseInt(this.state.selected * 40 - 40);
-          this._scrollView.scrollTo({y: newY, animated: true});
+          // let newY = parseInt(this.state.selected * LINE_HEIGHT - LINE_HEIGHT);
+          // this._scrollView.scrollTo({y: newY, animated: true});
+          this._scrollView.scrollToIndex({
+            index: this.state.selected,
+            animated: true,
+          });
         }
       }, 10);
     }
@@ -77,8 +84,12 @@ export default class TimePicker extends Component {
             dataSource: this.buildListData(item.id),
           });
           if (this._scrollView) {
-            let newY = parseInt(index * 40 - 40);
-            this._scrollView.scrollTo({y: newY, animated: true});
+            // let newY = parseInt((index - 1) * LINE_HEIGHT);
+            // this._scrollView.scrollTo({y: newY, animated: true});
+            this._scrollView.scrollToIndex({
+              index: this.state.selected,
+              animated: true,
+            });
           }
           this.props.setParamTime(item.id);
         }}>
@@ -131,22 +142,25 @@ export default class TimePicker extends Component {
             <Text style={[styles.title_time]}>Second</Text>
           </View>
         </View>
-        <ScrollView
+        {/* <ScrollView
           style={{zIndex: 1}}
           ref={e => {
             this._scrollView = e;
-          }}>
-          <FlatList
-            // contentContainerStyle={[
-            //   styles_cmp.PullToRefreshListView_content,
-            //   {backgroundColor: CMSColors.White},
-            // ]}
-            // style={[styles_cmp.PullToRefreshListView_Style]}
-            data={this.state.dataSource}
-            renderItem={this.renderRow}
-            keyExtractor={item => item.id}
-          />
-        </ScrollView>
+          }}> */}
+        <FlatList
+          style={{zIndex: 1}}
+          ref={r => (this._scrollView = r)}
+          data={this.state.dataSource}
+          renderItem={this.renderRow}
+          keyExtractor={item => item.id}
+          getItemLayout={(data, index) => ({
+            length: LINE_HEIGHT,
+            offset: LINE_HEIGHT * (index - 1),
+            index,
+          })}
+          // initialScrollIndex={}
+        />
+        {/* </ScrollView> */}
       </View>
     );
   }
@@ -157,7 +171,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: CMSColors.White,
-    height: 40,
+    height: LINE_HEIGHT,
   },
 
   rowButton_contain_name: {
