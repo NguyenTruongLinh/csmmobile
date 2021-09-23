@@ -259,6 +259,7 @@ class AlarmsSearchView extends Component {
         break;
       }
       case FilterMore.Rating: {
+        // __DEV__ && console.log('GOND on add Rating: ', data);
         newParams = {
           ...params,
           ara: data.join(','),
@@ -326,7 +327,7 @@ class AlarmsSearchView extends Component {
       );
     }
     return (
-      <View style={[styles.modal_footer_Apply, {flex: 20}]}>
+      <View style={[styles.modal_footer_Apply, {flex: 15}]}>
         <View style={styles.content_button_cancel}>
           <Button
             style={styles.button_cancel}
@@ -358,12 +359,12 @@ class AlarmsSearchView extends Component {
   modalContent = () => {
     const {alarmStore, sitesStore} = this.props;
     const {from, to, params} = this.state;
-    __DEV__ &&
-      console.log(
-        `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
+    //   );
     return (
-      <View style={{flex: 70}}>
+      <View style={{flex: 75}}>
         <AlarmFilter
           dateFrom={from}
           dateTo={to}

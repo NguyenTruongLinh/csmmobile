@@ -189,19 +189,23 @@ export default class AlarmFilter extends Component {
         ' to = ',
         dateTo
       );
+    const selectedDate = DateTime.fromISO(dateString);
+    // Disable future selection
+    if (selectedDate > DateTime.now()) return;
+
     if (
       dateFrom.startOf('day').toSeconds() == dateTo.startOf('day').toSeconds()
     ) {
       __DEV__ && console.log('GOND AlarmFilter day pressed date from == to ');
       this.props.onDateChange({
         from: dateFrom,
-        to: DateTime.fromISO(dateString),
+        to: selectedDate,
       });
     } else {
       __DEV__ && console.log('GOND AlarmFilter day pressed diff from != to ');
       this.props.onDateChange({
-        from: DateTime.fromISO(dateString),
-        to: DateTime.fromISO(dateString),
+        from: selectedDate,
+        to: selectedDate,
       });
     }
   };
@@ -264,12 +268,20 @@ export default class AlarmFilter extends Component {
     //     // selected: true,
     //   };
     // }
-    const today = DateTime.now().toFormat(DateFormat.CalendarDate);
+    const today = DateTime.now();
     let markedData = {};
-    markedData[today] = {
+    markedData[today.toFormat(DateFormat.CalendarDate)] = {
       marked: true,
       dotColor: 'red',
     };
+    let futureDay = today.plus({days: 1});
+    while (futureDay.month == today.month) {
+      markedData[futureDay.toFormat(DateFormat.CalendarDate)] = {
+        textColor: CMSColors.InactiveText,
+      };
+      futureDay = futureDay.plus({days: 1});
+    }
+
     markedData = {...markedData, ...this.state.dateRange};
     __DEV__ && console.log('GOND today marked: ', markedData);
     return (
@@ -279,6 +291,7 @@ export default class AlarmFilter extends Component {
         markedDates={markedData}
         // markedDates={this.state.dateRange}
         hideExtraDays={true}
+        futureScrollRange={0}
       />
     );
   };
@@ -701,15 +714,13 @@ export default class AlarmFilter extends Component {
       case FilterMore.Rating: {
         let {alarmConfig} = this.props;
         if (util.isNullOrUndef(alarmConfig)) break;
-        /* __DEV__ &&
-          console.log(
-            'GOND FilterMore rating alarmConfig = ',
-            alarmConfig
-          ); */
+        __DEV__ &&
+          console.log('GOND FilterMore rating alarmConfig = ', alarmConfig);
 
-        let ds_Rating = alarmConfig.map(x => {
-          return {id: x.rateID, name: x.rateName};
-        });
+        let ds_Rating = alarmConfig.map(x => ({
+          id: x.rateId,
+          name: x.rateName,
+        }));
         cmp = this.renderCombox('Rating', item, ds_Rating);
         break;
       }
@@ -750,26 +761,12 @@ export default class AlarmFilter extends Component {
     );
   };
 
-  // renderLoading=( viewstate)=>{
-  //   return( <RefreshBubbleState {...viewstate}/>);
-  // }
-
   renderListFilter = () => {
     if (!this.state.filterMore || this.state.filterMore.length == 0) return;
 
     return (
       <View style={{flex: 9}}>
         <FlatList
-          // viewType={PullToRefreshListView.constants.viewType.listView}
-          // contentContainerStyle={[
-          //   styles_cmp.PullToRefreshListView_content,
-          //   {
-          //     backgroundColor: CMSColors.DividerColor24_HEX,
-          //     paddingLeft: 15,
-          //     paddingRight: 15,
-          //   },
-          // ]}
-          // style={[styles_cmp.PullToRefreshListView_Style]}
           data={this.state.filterMore} // {this.state.dataSource}
           renderItem={this.renderRow}
           // onRefresh={this.onRefresh}
@@ -859,14 +856,14 @@ export default class AlarmFilter extends Component {
           {this.renderDate()}
         </View>
       ) : (
-        <View style={[styles.contentBody, {paddingBottom: 48}]}>
+        <View style={[styles.contentBody /*, {paddingBottom: 48}*/]}>
           {this.renderFilterMore()}
           {this.renderListFilter()}
         </View>
       );
 
     return (
-      <View>
+      <View style={{flex: 1}}>
         {/* <Accordion
             ref="collapsible"
             key='1'
@@ -876,7 +873,6 @@ export default class AlarmFilter extends Component {
             renderContent={this._renderContent.bind(this)} /> */}
 
         {contentHeader}
-        {/* <ScrollView >{contentBody}</ScrollView> */}
         {contentBody}
       </View>
     );
@@ -885,6 +881,7 @@ export default class AlarmFilter extends Component {
 
 const styles = StyleSheet.create({
   contentHeader: {
+    flex: 15,
     paddingLeft: 10,
     height: 45,
     flexDirection: 'row',
@@ -949,6 +946,7 @@ const styles = StyleSheet.create({
   },
 
   contentBody: {
+    flex: 85,
     backgroundColor: CMSColors.White, // CMSColors.DividerColor24_HEX,
     height: '100%',
   },

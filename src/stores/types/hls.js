@@ -285,6 +285,7 @@ export default HLSStreamModel = types
           connectionStatus: STREAM_STATUS.ERROR,
           error: err.message,
         });
+        setTimeout(() => self.reconnect(), 200);
         return false;
       }
 
