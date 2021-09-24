@@ -100,6 +100,8 @@ module.exports = {
   //OPTIONS
   RowOptions: '#757575',
   ColorText: Black,
+  IconButton: Black,
+  DisabledIconButton: 'rgba(0, 0, 0, 0.35)',
 
   //COMPONENT
   BorderActiveColor: Dark_Moderate_Blue,

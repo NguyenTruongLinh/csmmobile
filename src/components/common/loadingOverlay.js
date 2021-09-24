@@ -20,7 +20,7 @@ class LoadingOverlay extends React.Component {
           {
             height: Dimensions.get('window').height,
             backgroundColor:
-              this.props.backgroundColor || CMSColors.PrimaryActive,
+              this.props.backgroundColor ?? CMSColors.PrimaryActive,
           })
         }>
         <ActivityIndicator
@@ -36,6 +36,7 @@ class LoadingOverlay extends React.Component {
 const styles = StyleSheet.create({
   centerIndicator: {
     flex: 1,
+    // backgroundColor: 'transparent',
   },
   container: {
     flex: 1,

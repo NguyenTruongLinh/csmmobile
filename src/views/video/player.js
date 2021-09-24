@@ -804,6 +804,7 @@ class VideoPlayerView extends Component {
           initialScrollIndex={
             selectedStream.channelNo == null ? undefined : selectedChannelIndex
           }
+          refreshing={!selectedStream}
           horizontal={true}
           onScroll={this.handleChannelsScroll}
         />

@@ -424,13 +424,28 @@ export const VideoModel = types
         : 0;
     },
     get searchPlayTimeLuxon() {
-      return self.searchPlayTime
-        ? DateTime.fromFormat(
-            self.searchPlayTime,
-            NVRPlayerConfig.RequestTimeFormat,
-            self.timezone ? {zone: self.timezone} : undefined
-          )
-        : self.searchDate;
+      if (self.searchPlayTime) {
+        let result = DateTime.fromFormat(
+          self.searchPlayTime,
+          NVRPlayerConfig.RequestTimeFormat,
+          self.timezone ? {zone: self.timezone} : undefined
+        );
+        if (!result.isValid) {
+          result = DateTime.fromISO(self.searchPlayTime).setZone(self.timezone);
+        }
+
+        if (!result.isValid) {
+          __DEV__ &&
+            console.log(
+              'GOND search play time: invalid time input format ',
+              self.searchPlayTime
+            );
+          return null;
+        }
+        return result;
+      } else {
+        return self.searchDate;
+      }
     },
     get searchPlayTimeBySeconds() {
       return self.searchPlayTime
@@ -863,7 +878,7 @@ export const VideoModel = types
       },
       // #endregion Build data
       // #region settings
-      getCloudSetting: flow(function* getCloudSetting() {
+      getCloudSetting: flow(function* () {
         let res = undefined;
         self.isLoading = true;
         try {
@@ -979,7 +994,7 @@ export const VideoModel = types
         }
         self.allChannels = newList; //.map(ch => ch);
       },
-      getDvrChannels: flow(function* getDvrChannels(isGetAll = false) {
+      getDvrChannels: flow(function* (isGetAll = false) {
         if (!self.kDVR) {
           console.log('GOND Could not get channels info, no dvr selected');
         }
@@ -991,7 +1006,8 @@ export const VideoModel = types
             '' + self.kDVR,
             isGetAll ? DVR.getAllChannels : DVR.getChannels
           );
-          __DEV__ && console.log('GOND get channels info: ', res);
+          __DEV__ &&
+            console.log(`GOND get channels info (GetAll = ${isGetAll}): `, res);
           if (res.error) {
             __DEV__ &&
               console.log('GOND cannot get channels info: ', res.error);
@@ -1880,8 +1896,8 @@ export const VideoModel = types
           console.log(
             'GOND onAlarmPlay time input: ',
             alarmData.timezone,
-            '\n searchDate: ',
-            self.searchDate
+            '\n searchPlayTime: ',
+            self.searchPlayTime
           );
         yield self.getDvrChannels();
 
@@ -1895,7 +1911,7 @@ export const VideoModel = types
           snackbarUtil.onError(VideoTxt.channelError);
           return false;
         }
-        self.getVideoInfos(alarmData.channelNo);
+        yield self.getVideoInfos(alarmData.channelNo);
 
         // else {
         //   // dongpt: only Direct need to be build?

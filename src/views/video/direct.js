@@ -286,12 +286,13 @@ class DirectVideoView extends React.Component {
   */
 
   setNativePlayback(willPause = false, paramsObject = {}) {
-    if (!this._isMounted || !this.ffmpegPlayer) {
+    const {serverInfo, videoStore} = this.props;
+    if (!this._isMounted || !this.ffmpegPlayer || !serverInfo.server) {
       __DEV__ &&
         console.log('GOND direct setNativePlayback failed ', this.ffmpegPlayer);
       return;
     }
-    const {serverInfo, videoStore} = this.props;
+
     const {isLive, hdMode, searchDateString} = videoStore;
     const playbackInfo = {
       ...serverInfo.playData,
@@ -305,11 +306,17 @@ class DirectVideoView extends React.Component {
       userName: playbackInfo.userName,
       password: playbackInfo.password,
     };
-    __DEV__ && console.log('GOND setNativePlayback, info = ', playbackInfo);
+    __DEV__ &&
+      console.log(
+        'GOND setNativePlayback, info = ',
+        playbackInfo,
+        '=== sv: ',
+        serverInfo
+      );
     if (willPause) {
       this.pause();
       setTimeout(() => {
-        if (this._isMounted && this.ffmpegPlayer) {
+        if (this._isMounted && this.ffmpegPlayer && serverInfo.server) {
           this.ffmpegPlayer.setNativeProps({
             startplayback: playbackInfo,
           });
@@ -578,13 +585,14 @@ class DirectVideoView extends React.Component {
   };
 
   pause = value => {
-    if (this.ffmpegPlayer) {
+    const {serverInfo, isLive, videoStore, hdMode} = this.props;
+
+    if (this._isMounted && this.ffmpegPlayer && serverInfo.server) {
       if (value === true || value == undefined)
         this.ffmpegPlayer.setNativeProps({
           pause: true,
         });
       else {
-        const {serverInfo, isLive, videoStore, hdMode} = this.props;
         this.ffmpegPlayer.setNativeProps({
           startplayback: {
             ...serverInfo.playData,

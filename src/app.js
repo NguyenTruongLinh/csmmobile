@@ -112,11 +112,18 @@ class App extends React.Component {
     }
 
     // autoLogin
+    // if (isLoggedIn) this.props.videoStore.getCloudSetting();
+    this.props.userStore.addAuthenticationEventListeners({
+      onLogin: () => {
+        __DEV__ && console.log('GOND onLogin called');
+        this.props.videoStore.getCloudSetting();
+      },
+    });
+
     this.props.appStore.setLoading(true);
     await this.props.appStore.loadLocalData();
     // await this.props.userStore.loadLocalData();
     const isLoggedIn = await this.props.userStore.shouldAutoLogin();
-    if (isLoggedIn) this.props.videoStore.getCloudSetting();
     // setTimeout(() => {
     //   this.props.appStore.setLoading(false);
     //   this.setState({notificationController: <NotificationController />});

@@ -65,6 +65,7 @@ class CMSTouchableIcon extends React.Component {
       styles,
       isHidden,
       disabled,
+      disabledColor,
     } = this.props;
 
     let content;
@@ -76,7 +77,7 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <Icon
-            color={disabled ? cmscolors.Inactive : color}
+            color={disabled ? disabledColor ?? cmscolors.Inactive : color}
             size={size}
             name={icon}
           />
@@ -86,7 +87,7 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <IconCustom
-            color={disabled ? cmscolors.Inactive : color}
+            color={disabled ? disabledColor ?? cmscolors.Inactive : color}
             size={size}
             name={iconCustom}
           />
@@ -96,7 +97,7 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <MaterialIcons
-            color={disabled ? cmscolors.Inactive : color}
+            color={disabled ? disabledColor ?? cmscolors.Inactive : color}
             size={size}
             name={iconMaterial}
           />

@@ -21,6 +21,7 @@ import TransThumb from '../../components/views/TransThumb';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
+import LoadingOverlay from '../../components/common/loadingOverlay';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -50,6 +51,7 @@ class AlarmDetailView extends Component {
       viewableWindow: {width, height},
       imgSize: this.getImageSize(width, height),
       activeIndex: 0,
+      isLoading: false,
     };
     this.scrollX = new Animated.Value(0);
   }
@@ -193,15 +195,18 @@ class AlarmDetailView extends Component {
     }
   };
 
-  gotoVideo = async isLive => {
-    const {alarmStore, videoStore, navigation} = this.props;
+  gotoVideo = isLive => {
+    const {alarmStore, videoStore, appStore, navigation} = this.props;
 
-    let res = await videoStore.onAlarmPlay(isLive, alarmStore.selectedAlarm);
+    this.setState({isLoading: true}, async () => {
+      let res = await videoStore.onAlarmPlay(isLive, alarmStore.selectedAlarm);
 
-    res &&
-      setTimeout(() => {
-        navigation.push(ROUTERS.VIDEO_PLAYER);
-      }, 200);
+      res &&
+        setTimeout(() => {
+          navigation.push(ROUTERS.VIDEO_PLAYER);
+          this.setState({isLoading: false});
+        }, 200);
+    });
   };
 
   renderViolationGroup = (imgSize, coordinateList) => {
@@ -525,6 +530,7 @@ class AlarmDetailView extends Component {
   };
 
   renderVideoButtons = () => {
+    const {isLoading} = this.state;
     return (
       <View
         style={{
@@ -538,7 +544,9 @@ class AlarmDetailView extends Component {
             iconCustom="searching-magnifying-glass"
             size={26}
             onPress={() => this.gotoVideo(false)}
-            color={CMSColors.ColorText}
+            color={CMSColors.IconButton}
+            disabledColor={CMSColors.DisabledIconButton}
+            disabled={isLoading}
           />
         </View>
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -546,7 +554,9 @@ class AlarmDetailView extends Component {
             iconCustom="videocam-filled-tool"
             size={26}
             onPress={() => this.gotoVideo(true)}
-            color={CMSColors.ColorText}
+            color={CMSColors.IconButton}
+            disabledColor={CMSColors.DisabledIconButton}
+            disabled={isLoading}
           />
         </View>
       </View>

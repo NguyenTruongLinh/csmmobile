@@ -240,6 +240,10 @@ export const UserStoreModel = types
     //
     settings: types.maybeNull(UserSettingsModel),
   })
+  .volatile(self => ({
+    onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
+    onLogout: () => __DEV__ && console.log('GOND onLogout event not defined!'),
+  }))
   .actions(self => ({
     setConfigApi() {
       apiService.updateConfig(
@@ -257,6 +261,12 @@ export const UserStoreModel = types
       );
     },
     // #region authorization
+    addAuthenticationEventListeners({onLogin, onLogout}) {
+      if (onLogin != undefined && typeof onLogin == 'function')
+        self.onLogin = onLogin;
+      if (onLogout != undefined && typeof onLogout == 'function')
+        self.onLogout = onLogout;
+    },
     login: flow(function* login(domainname, username, password) {
       appStore.setLoading(true);
       if (!appStore.deviceInfo || !appStore.deviceInfo.deviceId) {
@@ -334,6 +344,8 @@ export const UserStoreModel = types
     },
     logout: flow(function* logout() {
       if (!self.deleteLocal()) return false;
+      self.onLogout();
+
       self.loginInfo = LoginModel.create({
         domainname: self.domain,
         username: '',
@@ -352,6 +364,7 @@ export const UserStoreModel = types
       return true;
     }),
     getDataPostLogin: flow(function* getDataPostLogin() {
+      self.onLogin();
       try {
         const [uPhotoRes, modulesRes, alertTypesRes, registerTokenRes] =
           yield Promise.all([

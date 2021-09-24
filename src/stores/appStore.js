@@ -53,8 +53,8 @@ const appStore = types
     skipIntro() {
       self.showIntro = false;
     },
-    setLoading(val) {
-      self.isLoading = val || false;
+    setLoading(val = true) {
+      self.isLoading = val;
     },
     loadLocalData: flow(function* loadLocalData() {
       try {
