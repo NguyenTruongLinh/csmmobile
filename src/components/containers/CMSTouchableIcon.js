@@ -12,6 +12,7 @@ import cmscolors from '../../styles/cmscolors';
 
 // <!-- END MODULES -->
 // ----------------------------------------------------
+const PRESS_DELAY_TIME = 1000;
 
 class CMSTouchableIcon extends React.Component {
   //const TYPES = ['circle', 'square'];
@@ -34,6 +35,30 @@ class CMSTouchableIcon extends React.Component {
     isscale: false,
   };
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      disabled: props.disabled,
+    };
+  }
+
+  componentDidMount() {
+    this._isMounted = true;
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const {disabled} = nextProps;
+    if (disabled != prevState.disabled) {
+      return {disabled};
+    }
+    return {};
+  }
+
   getCubes(size) {
     let borderRd;
     switch (this.props.type) {
@@ -53,6 +78,19 @@ class CMSTouchableIcon extends React.Component {
     };
   }
 
+  onPress = () => {
+    const {onPress} = this.props;
+
+    this.setState({disabled: true}, () => {
+      onPress();
+      setTimeout(() => {
+        if (this.state.disabled) {
+          this.setState({disabled: false});
+        }
+      }, PRESS_DELAY_TIME);
+    });
+  };
+
   render() {
     const {
       icon,
@@ -64,9 +102,10 @@ class CMSTouchableIcon extends React.Component {
       onPress,
       styles,
       isHidden,
-      disabled,
       disabledColor,
     } = this.props;
+
+    const {disabled} = this.state;
 
     let content;
     if (image) {
