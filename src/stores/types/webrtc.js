@@ -16,6 +16,8 @@ import {
   RTCSessionDescription,
 } from 'react-native-webrtc';
 
+import ChannelModel from './channel';
+
 import util from '../util/general';
 import {
   VIDEO_MESSAGE,
@@ -30,9 +32,11 @@ import {STREAM_STATUS} from '../../localization/texts';
 // RTC viewer
 const ChannelConnectionModel = types
   .model({
-    kChannel: types.identifierNumber,
-    channelNo: types.number,
-    channelName: types.string,
+    id: types.optional(types.identifier, () => util.getRandomClientId()),
+    channel: ChannelModel,
+    // kChannel: types.identifierNumber,
+    // channelNo: types.number,
+    // channelName: types.string,
     isDataChannelOpened: types.boolean,
     // isIceCandidateOK: types.boolean,
 
@@ -60,6 +64,15 @@ const ChannelConnectionModel = types
         connectionStatus,
         error,
       };
+    },
+    get kChannel() {
+      return self.channel.kChannel;
+    },
+    get channelNo() {
+      return self.channel.channelNo;
+    },
+    get channelName() {
+      return self.channel.name;
     },
   }))
   .actions(self => {
@@ -136,7 +149,7 @@ const ChannelConnectionModel = types
           console.log('[GOND] describeSignalingChannelResponse error: ', error);
           self.isLoading = false;
           self.error = VIDEO_MESSAGE.MSG_NETWORK_FAILED;
-          self.openStreamLock = false;
+          // self.openStreamLock = false;
           // self.needResetConnection = true;
           return false;
         }
@@ -543,9 +556,10 @@ const RTCStreamModel = types
      * @param {Object{sid, accessKeyId, secretAccessKey, rtcChannelName}} streamInfos: WebRTC connection info
      * @param {Array | ChannelModel} channels
      */
-    createStreams: flow(function* createStreams(streamInfos, channels) {
-      if (self.openStreamLock) false;
-      self.openStreamLock = true;
+    // createStreams: flow(function* createStreams(streamInfos, channels) {
+    createStreams(streamInfos, channels) {
+      // if (self.openStreamLock) false;
+      // self.openStreamLock = true;
 
       self.sid = streamInfos.sid;
       self.accessKeyId = streamInfos.accessKeyId;
@@ -561,18 +575,22 @@ const RTCStreamModel = types
         // self.viewers = channels.map(ch => {
 
         for (let i = 0; i < channels.length; i++) {
-          yield self.createConnection(channels[i]);
+          // yield self.createConnection(channels[i]);
+          self.viewers.push(self.createConnection(channels[i]));
         }
       } else {
-        self.createConnection(channels);
+        // self.createConnection(channels)
+        self.viewers.push(self.createConnection(channels));
       }
-      self.openStreamLock = false;
-    }),
-    createConnection: flow(function* createConnection(ch) {
+      // self.openStreamLock = false;
+    },
+    // createConnection: flow(function* createConnection(ch) {
+    createConnection(ch) {
       const conn = ChannelConnectionModel.create({
-        kChannel: ch.kChannel,
-        channelNo: ch.channelNo,
-        channelName: ch.name,
+        channel: ch,
+        // kChannel: ch.kChannel,
+        // channelNo: ch.channelNo,
+        // channelName: ch.name,
         isDataChannelOpened: false,
 
         isLoading: true,
@@ -582,14 +600,17 @@ const RTCStreamModel = types
       });
 
       // TODO: improve this
-      conn.setConnectionFailedHandler(viewer => {
-        viewer.reconnect(self.connectionInfo);
+      conn.setConnectionFailedHandler(v => {
+        v.reconnect(self.connectionInfo);
       });
       // if not active, will init stream later on search mode
-      if (ch.isActive)
-        yield conn.initStream({...self.connectionInfo, region: self.region});
-      self.viewers.push(conn);
-    }),
+      if (ch.isActive) {
+        // yield conn.initStream({...self.connectionInfo, region: self.region});
+        conn.initStream({...self.connectionInfo, region: self.region});
+      }
+      // self.viewers.push(conn);
+      return conn;
+    },
     createChannelConnection: flow(function* initChannelConnection(connection) {
       // const conn = self.viewers.find(item => item.channelNo == channelNo);
       connection.setConnectionFailedHandler(viewer => {

@@ -17,7 +17,8 @@ import {
   DEFAULT_REGION,
   HLS_MAX_EXPIRE_TIME,
   STREAM_TIMEOUT,
-} from '../consts/video';
+  VSCCommandString,
+} from '../../consts/video';
 import {STREAM_STATUS} from '../localization/texts';
 
 const HLSURLModel = types
@@ -64,7 +65,7 @@ const HLSURLModel = types
 
 export default HLSStreamModel = types
   .model({
-    id: types.identifier,
+    id: types.optional(types.identifier, () => util.getRandomId()),
     // streamUrl: types.optional(HLSURLModel, () => HLSURLModel.create()),
     liveUrl: types.optional(HLSURLModel, () => HLSURLModel.create()),
     liveHDUrl: types.optional(HLSURLModel, () => HLSURLModel.create()),
@@ -81,11 +82,14 @@ export default HLSStreamModel = types
     error: types.maybeNull(types.string),
     needReset: types.optional(types.boolean, false),
 
+    // sync values from videoStore
     isLive: types.optional(types.boolean, false),
     isHD: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     streamTimeout: null,
+    // timeline: null,
+    // timestamps: null,
   }))
   .views(self => ({
     get channelNo() {
@@ -146,14 +150,33 @@ export default HLSStreamModel = types
     setHD(isHD) {
       self.isHD = isHD;
     },
-    setUrl(url) {
+    setChannel(value) {
+      self.channel = value;
+    },
+    setUrl(url, mode) {
       // const {live, liveHD, search, searchHD} = value;
       __DEV__ &&
         console.log(
           `GOND setUrl: ${url}, live: ${self.isLive}, hd: ${self.isHD}`
         );
       // const tartget = self.getTargetUrl(isLive, isHD);
-      self.targetUrl.set({url});
+      switch (mode) {
+        case undefined:
+          self.targetUrl.set({url});
+          break;
+        case VSCCommandString.LIVE:
+          self.liveUrl.set({url});
+          break;
+        case VSCCommandString.LIVEHD:
+          self.liveHDUrl.set({url});
+          break;
+        case VSCCommandString.SEARCH:
+          self.searchUrl.set({url});
+          break;
+        case VSCCommandString.SEARCHHD:
+          self.searchHDUrl.set({url});
+          break;
+      }
       // self.streamUrl.set(
       //   isLive
       //     ? isHD
@@ -164,6 +187,20 @@ export default HLSStreamModel = types
       //     : {search: url}
       // );
       // self.streamUrl = value;
+    },
+    getUrl(mode) {
+      switch (mode) {
+        case undefined:
+          return self.targetUrl;
+        case VSCCommandString.LIVE:
+          return self.liveUrl;
+        case VSCCommandString.LIVEHD:
+          return self.liveHDUrl;
+        case VSCCommandString.SEARCH:
+          return self.searchUrl;
+        case VSCCommandString.SEARCHHD:
+          return self.searchHDUrl;
+      }
     },
     setUrls(object) {
       if (typeof object != 'object' && Object.keys(object).length == 0) return;
@@ -196,6 +233,10 @@ export default HLSStreamModel = types
       needReset != undefined && (self.needReset = needReset);
       error != undefined && (self.error = error);
     },
+    // setTimelines(timeline, timestamp) {
+    //   self.timeline = timeline;
+    //   self.timestamps = timestamp;
+    // },
     getHLSStreamUrl: flow(function* (info) {
       if (info) self.setAWSInfo(info);
 
@@ -285,8 +326,9 @@ export default HLSStreamModel = types
           connectionStatus: STREAM_STATUS.ERROR,
           error: err.message,
         });
-        setTimeout(() => self.reconnect(), 200);
-        return false;
+        // setTimeout(() => self.reconnect(), 200);
+        // return false;
+        return self.reconnect();
       }
 
       self.setStreamStatus({
@@ -297,13 +339,15 @@ export default HLSStreamModel = types
       return true;
     }),
     reconnect() {
+      if (self.connectionStatus == STREAM_STATUS.TIMEOUT)
+        return Promise.resolve(false);
       self.setUrl(null);
       self.setStreamStatus({
         isLoading: true,
         connectionStatus: STREAM_STATUS.RECONNECTING,
       });
-      self.getHLSStreamUrl(null);
       self.scheduleCheckTimeout();
+      return self.getHLSStreamUrl(null);
     },
     scheduleCheckTimeout(time) {
       if (self.streamTimeout) clearTimeout(self.streamTimeout);

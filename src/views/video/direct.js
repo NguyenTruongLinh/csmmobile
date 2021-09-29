@@ -132,16 +132,20 @@ class DirectVideoView extends React.Component {
           // __DEV__ &&
           //   console.log('GOND directPlayer selectedChannel changed ', previousValue, ' -> ', value);
           // const {serverInfo, singlePlayer} = this.props;
-          if (value != null && previousValue == null) {
-            if (!singlePlayer) {
-              this.pause(true);
+          if (!singlePlayer) {
+            if (value != null && previousValue == null) {
+              // if (!singlePlayer) {
+              //   this.pause(true);
+              // }
+              this.stop();
+            } else if (
+              value == null &&
+              previousValue != null // ||
+              // value == serverInfo.channelNo
+            ) {
+              // this.pause(false);
+              this.startplayback;
             }
-          } else if (
-            value == null &&
-            previousValue != null // ||
-            // value == serverInfo.channelNo
-          ) {
-            this.pause(false);
           }
         }
       ),
@@ -161,13 +165,19 @@ class DirectVideoView extends React.Component {
               'GOND Direct switch mode: isLive = ',
               videoStore.isLive
             );
-          singlePlayer && this.setNativePlayback(true);
+          if (singlePlayer) {
+            this.pause(true);
+            setTimeout(() => this.setNativePlayback(true), 500);
+          }
         }
       ),
       reaction(
         () => videoStore.searchDate,
         (searchDate, prevSearchDate) => {
-          singlePlayer && this.setNativePlayback(true);
+          if (singlePlayer) {
+            this.pause(true);
+            setTimeout(() => this.setNativePlayback(true), 500);
+          }
         }
       ),
       reaction(
@@ -286,14 +296,14 @@ class DirectVideoView extends React.Component {
   */
 
   setNativePlayback(willPause = false, paramsObject = {}) {
-    const {serverInfo, videoStore} = this.props;
+    const {serverInfo, videoStore, isLive, hdMode} = this.props;
     if (!this._isMounted || !this.ffmpegPlayer || !serverInfo.server) {
       __DEV__ &&
         console.log('GOND direct setNativePlayback failed ', this.ffmpegPlayer);
       return;
     }
 
-    const {isLive, hdMode, searchDateString} = videoStore;
+    const {searchDateString} = videoStore;
     const playbackInfo = {
       ...serverInfo.playData,
       searchMode: !isLive,
@@ -349,7 +359,7 @@ class DirectVideoView extends React.Component {
   };
 
   onVideoMessage = (msgid, value) => {
-    const {videoStore, serverInfo, searchPlayTime} = this.props;
+    const {videoStore, serverInfo, searchPlayTime, isLive} = this.props;
     // __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
 
     switch (msgid) {
@@ -532,7 +542,7 @@ class DirectVideoView extends React.Component {
           }
 
           // dongpt: set play time from alert/exception after receiving timeline
-          if (!videoStore.isLive && this.shouldSetTime && searchPlayTime) {
+          if (!isLive && this.shouldSetTime && searchPlayTime) {
             setTimeout(() => {
               if (this._isMounted && this.ffmpegPlayer) {
                 const searchTime = DateTime.fromISO(searchPlayTime, {

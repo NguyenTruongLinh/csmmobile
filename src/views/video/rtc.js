@@ -663,7 +663,8 @@ class RTCStreamingView extends Component {
       this.props.viewer;
     const {width, height} = this.props;
     // const {error} = this.state;
-    const noVideo = connectionStatus === STREAM_STATUS.NOVIDEO;
+    const noVideo =
+      connectionStatus === STREAM_STATUS.NOVIDEO || videoStore.noVideo;
     __DEV__ &&
       console.log(
         'GOND RTCPlayer render: ',

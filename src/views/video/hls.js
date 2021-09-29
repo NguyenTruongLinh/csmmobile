@@ -35,22 +35,24 @@ class HLSStreamingView extends React.Component {
 
   constructor(props) {
     super(props);
+    const {videoStore, streamData} = props;
 
     this.state = {
       // message: '',
       // videoLoading: true,
-      streamUrl: props.streamData.streamUrl,
+      streamUrl: streamData.streamUrl,
       // streamUrl: props.streamUrl.targetUrl
       //   ? props.streamData.targetUrl.url
       //   : null,
       urlParams: '',
-      timeBeginPlaying: DateTime.now().setZone(props.timezone),
+      timeBeginPlaying: DateTime.now().setZone(videoStore.timezone),
       // paused: false,
     };
     this._isMounted = false;
     this.frameTime = 0;
     this.tsIndex = -1;
     this.reactions = [];
+    this.shouldResume = false;
   }
 
   componentDidMount() {
@@ -75,28 +77,44 @@ class HLSStreamingView extends React.Component {
   }
 
   initReactions = () => {
-    const {streamData, videoStore} = this.props;
+    // streamData could be changed
+    const {/*streamData,*/ videoStore, singlePlayer} = this.props;
     this.reactions = [
       reaction(
-        () => streamData.streamUrl,
+        () => this.props.streamData.streamUrl,
         newUrl => {
-          if (newUrl != this.state.streamUrl) {
+          if (this.props.isLive != this.props.streamData.isLive) {
+            __DEV__ &&
+              console.log('HLSStreamingView streamUrl not set: ', this.props);
+            return;
+          }
+          __DEV__ && console.log('HLSStreamingView newUrl: ', newUrl);
+          if (!videoStore.noVideo && newUrl != this.state.streamUrl) {
             if (util.isValidHttpUrl(newUrl)) {
               __DEV__ &&
                 console.log(
                   'HLSStreamingView newURL time: ',
-                  videoStore.searchPlayTimeLuxon
+                  videoStore.searchPlayTimeLuxon,
+                  ', isLive: ',
+                  this.props.isLive
                 );
               this.setState({
                 streamUrl: newUrl,
-                timeBeginPlaying: videoStore.isLive
+                timeBeginPlaying: this.props.isLive
                   ? DateTime.now().setZone(videoStore.timezone)
                   : videoStore.searchPlayTimeLuxon,
               });
               // reset these value everytimes streamUrl changed
               this.frameTime = 0;
               this.tsIndex = -1;
-              if (videoStore.paused) videoStore.pause(false);
+              if (videoStore.paused) {
+                videoStore.pause(false);
+              }
+              if (!this.props.isLive && singlePlayer) {
+                __DEV__ && console.log('HLSStreamingView newUrl seek');
+                // this.player.seek(0);
+                this.shouldResume = true;
+              }
             } else {
               // TODO: handle invalid url
             }
@@ -114,6 +132,16 @@ class HLSStreamingView extends React.Component {
               ),
             });
           }
+        }
+      ),
+      reaction(
+        () => videoStore.selectedChannel,
+        newChannel => {
+          __DEV__ &&
+            console.log('HLSStreamingView channel changed: ', newChannel);
+          // if (this.props.singlePlayer) {
+          //   if (videoStore.paused) videoStore.pause(false);
+          // }
         }
       ),
     ];
@@ -170,6 +198,23 @@ class HLSStreamingView extends React.Component {
     // }, 100);
   };
 
+  onReady = event => {
+    __DEV__ && console.log('GOND HLS onReady: ', event);
+    const {streamData, videoStore} = this.props;
+
+    if (this.shouldResume) {
+      this.shouldResume = false;
+      // videoStore.pause(true);
+      // setTimeout(() => this._isMounted && videoStore.pause(false), 3000);
+      setTimeout(() => {
+        if (this._isMounted) {
+          videoStore.pause(true);
+          setTimeout(() => this._isMounted && videoStore.pause(false), 1000);
+        }
+      }, 1000);
+    }
+  };
+
   onBuffer = event => {
     __DEV__ && console.log('GOND HLS onBuffer: ', event);
     const {streamData} = this.props;
@@ -217,10 +262,20 @@ class HLSStreamingView extends React.Component {
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
       this.frameTime = timeBeginPlaying.toSeconds();
+      __DEV__ &&
+        console.log(
+          'GOND HLS onProgress: this.frameTime = ',
+          this.frameTime,
+          timeBeginPlaying
+        );
       if (!isLive) {
         this.tsIndex = hlsTimestamps.findIndex(t => t >= this.frameTime);
         if (this.tsIndex < 0) {
-          __DEV__ && console.log('GOND HLS::SEARCH WRONG TIMESTAMP: ');
+          __DEV__ &&
+            console.log(
+              'GOND HLS::SEARCH WRONG TIMESTAMP: hlsTimestamps = ',
+              hlsTimestamps
+            );
         } else {
           this.frameTime = hlsTimestamps[this.tsIndex];
         }
@@ -315,14 +370,14 @@ class HLSStreamingView extends React.Component {
     const {width, height, streamData, streamStatus, videoStore} = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
-    const {streamUrl, urlParams, pause} = this.state;
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND HLS render: ',
-    //     isLoading,
-    //     ', status: ',
-    //     connectionStatus
-    //   );
+    const {streamUrl, urlParams} = this.state;
+    __DEV__ &&
+      console.log(
+        'GOND HLS render: ',
+        videoStore.paused
+        // ', status: ',
+        // connectionStatus
+      );
 
     return (
       <View onLayout={this.onLayout}>
@@ -346,7 +401,9 @@ class HLSStreamingView extends React.Component {
           </View>
           <View style={styles.playerView}>
             {
-              /*!isLoading &&*/ streamUrl && streamUrl.length > 0 ? (
+              /*!isLoading &&*/ streamUrl &&
+              streamUrl.length > 0 &&
+              !videoStore.noVideo ? (
                 <Video
                   style={[{width: width, height: height}]}
                   hls={true}
@@ -359,6 +416,7 @@ class HLSStreamingView extends React.Component {
                     this.player = ref;
                   }}
                   progressUpdateInterval={1000} // 1 seconds per onProgress called
+                  onReadyForDisplay={this.onReady}
                   onBuffer={this.onBuffer}
                   onError={this.onError}
                   onProgress={this.onProgress}
