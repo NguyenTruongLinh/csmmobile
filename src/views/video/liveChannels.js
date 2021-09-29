@@ -279,7 +279,7 @@ class ChannelsView extends React.Component {
     // this.pauseAll(true);
     setTimeout(() => {
       this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
-    }, 200);
+    }, 500);
   };
 
   // pauseAll = value => {
@@ -407,7 +407,10 @@ class ChannelsView extends React.Component {
                 height: viewableWindow.height / item.value,
               },
             },
-            () => this.setHeader()
+            () => {
+              this.videoListRef.scrollToOffset({animated: false, offset: 0});
+              this.setHeader();
+            }
           );
         }}
         color={CMSColors.ColorText}
@@ -601,6 +604,7 @@ class ChannelsView extends React.Component {
         <NVRAuthenModal onSubmit={this.onAuthenSubmit} />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           <FlatList
+            ref={r => (this.videoListRef = r)}
             renderItem={this.renderRow}
             data={videoStore.videoData} // {this.state.liveData}
             keyExtractor={item => item.key}
