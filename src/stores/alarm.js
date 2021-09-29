@@ -85,7 +85,8 @@ const ExtraData = types.model({
 
 const AlarmData = types
   .model({
-    kAlertEvent: types.identifierNumber,
+    id: types.optional(types.identifier, () => util.getRandomId()),
+    kAlertEvent: types.number,
     kAlertTypeVA: types.number,
     cmsUser: types.maybeNull(types.string),
     status: types.number,
@@ -250,6 +251,7 @@ const AlarmData = types
 
 export const parseAlarmData = item =>
   AlarmData.create({
+    // id: util.getRandomId(),
     kAlertEvent: item.KAlertEvent,
     kAlertTypeVA: item.KAlertTypeVA,
     cmsUser: item.CMSUser,
@@ -390,10 +392,10 @@ export const AlarmModel = types
         self.liveAlarms.find(item => item.kAlertEvent == alarm.kAlertEvent) ||
         self.searchAlarms.find(item => item.kAlertEvent == alarm.kAlertEvent)
       ) {
-        self.selectedAlarm = alarm.kAlertEvent;
+        self.selectedAlarm = alarm;
       } else {
         self.notifiedAlarm = alarm;
-        self.selectedAlarm = self.notifiedAlarm.kAlertEvent;
+        self.selectedAlarm = self.notifiedAlarm;
       }
       return true;
     },

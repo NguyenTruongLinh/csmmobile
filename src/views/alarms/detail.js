@@ -57,7 +57,7 @@ class AlarmDetailView extends Component {
   }
 
   async componentDidMount() {
-    const {alarmStore} = this.props;
+    const {alarmStore, videoStore} = this.props;
     __DEV__ && console.log('AlarmDetail componentDidMount');
 
     if (!alarmStore.vaConfig || alarmStore.vaConfig.length == 0) {
@@ -68,6 +68,9 @@ class AlarmDetailView extends Component {
     }
     this.refreshHeader();
     alarmStore.selectedAlarm.loadSnapshotImages();
+
+    // Preload video streaming: Live mode
+    let res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm);
   }
 
   componentWillUnmount() {
@@ -196,17 +199,17 @@ class AlarmDetailView extends Component {
   };
 
   gotoVideo = isLive => {
-    const {alarmStore, videoStore, appStore, navigation} = this.props;
+    const {/*alarmStore, videoStore, appStore,*/ navigation} = this.props;
 
-    this.setState({isLoading: true}, async () => {
-      let res = await videoStore.onAlarmPlay(isLive, alarmStore.selectedAlarm);
+    // this.setState({isLoading: true}, async () => {
+    //   let res = await videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
 
-      res &&
-        setTimeout(() => {
-          navigation.push(ROUTERS.VIDEO_PLAYER);
-          this.setState({isLoading: false});
-        }, 200);
-    });
+    res &&
+      setTimeout(() => {
+        navigation.push(ROUTERS.VIDEO_PLAYER);
+        this.setState({isLoading: false});
+      }, 200);
+    // });
   };
 
   renderViolationGroup = (imgSize, coordinateList) => {
