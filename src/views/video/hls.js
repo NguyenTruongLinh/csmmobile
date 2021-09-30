@@ -111,8 +111,7 @@ class HLSStreamingView extends React.Component {
                 videoStore.pause(false);
               }
               if (!this.props.isLive && singlePlayer) {
-                __DEV__ && console.log('HLSStreamingView newUrl seek');
-                // this.player.seek(0);
+                __DEV__ && console.log('HLSStreamingView should resume');
                 this.shouldResume = true;
               }
             } else {
@@ -290,11 +289,40 @@ class HLSStreamingView extends React.Component {
       } else if (this.tsIndex < hlsTimestamps.length) {
         if (Platform.OS == 'ios') {
           this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
-          if (
-            this.frameTime <= hlsTimestamps[this.tsIndex + 1] &&
-            this.frameTime > hlsTimestamps[this.tsIndex]
-          )
-            this.tsIndex++;
+          let idx = this.tsIndex;
+          if (this.frameTime > hlsTimestamps[idx]) {
+            while (idx < hlsTimestamps.length) {
+              if (
+                this.frameTime < hlsTimestamps[idx + 1] &&
+                this.frameTime >= hlsTimestamps[idx]
+              ) {
+                this.tsIndex = idx;
+                break;
+              }
+              idx++;
+            }
+          } else {
+            while (idx > 0) {
+              if (
+                this.frameTime > hlsTimestamps[idx - 1] &&
+                this.frameTime <= hlsTimestamps[idx]
+              ) {
+                this.tsIndex = idx;
+                break;
+              }
+              idx--;
+            }
+          } /* else {
+            __DEV__ &&
+              console.log(
+                'GOND HLS::SEARCH timestamp index mismatch ',
+                hlsTimestamps[this.tsIndex],
+                ', ',
+                this.frameTime,
+                ', ',
+                hlsTimestamps[this.tsIndex + 1]
+              );
+          } */
           this.frameTime = hlsTimestamps[this.tsIndex];
         } else {
           this.tsIndex++;
@@ -328,8 +356,10 @@ class HLSStreamingView extends React.Component {
         data.currentTime,
         ', frameTime = ',
         this.frameTime,
-        ', tz = ',
-        videoStore.timezone,
+        // ', tz = ',
+        // videoStore.timezone,
+        ', tsIndex: ',
+        this.tsIndex,
         ', DT = ',
         DateTime.fromSeconds(this.frameTime).toFormat(
           NVRPlayerConfig.RequestTimeFormat
@@ -367,7 +397,8 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, streamStatus, videoStore} = this.props;
+    const {width, height, streamData, streamStatus, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams} = this.state;
@@ -411,7 +442,7 @@ class HLSStreamingView extends React.Component {
                   //source={{uri:this.state.url,type:'application/x-mpegURL'}}
                   source={{uri: streamUrl + urlParams, type: 'm3u8'}}
                   // paused={this.state.paused}
-                  paused={videoStore.paused}
+                  paused={singlePlayer ? videoStore.paused : false}
                   ref={ref => {
                     this.player = ref;
                   }}
@@ -425,8 +456,8 @@ class HLSStreamingView extends React.Component {
                     __DEV__ && console.log('GOND HLS onTimedMetadata', event);
                   }}
                   onPlaybackRateChange={data => {
-                    __DEV__ &&
-                      console.log('GOND HLS onPlaybackRateChange: ', data);
+                    // __DEV__ &&
+                    //   console.log('GOND HLS onPlaybackRateChange: ', data);
                   }}
                   muted={true}
                   volume={0}
@@ -434,9 +465,15 @@ class HLSStreamingView extends React.Component {
                   selectedTextTrack={{type: 'disabled'}}
                   rate={1.0}
                   automaticallyWaitsToMinimizeStalling={false}
-                  preferredForwardBufferDuration={2}
+                  // preferredForwardBufferDuration={2}
                   playInBackground={true}
                   playWhenInactive={true}
+                  onPlaybackStalled={() =>
+                    __DEV__ && console.log('GOND HLS onPlaybackStalled')
+                  }
+                  onPlaybackResume={() =>
+                    __DEV__ && console.log('GOND HLS onPlaybackResume')
+                  }
                 />
               ) : null
             }
