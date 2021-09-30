@@ -45,11 +45,13 @@ class DirectVideoView extends React.Component {
     this.nativeVideoEventListener = null;
     this.ffmpegPlayer = null;
 
-    // this.state = {
-    //   videoLoading: true,
-    //   message: '',
-    //   noVideo: false,
-    // };
+    this.state = {
+      //   videoLoading: true,
+      //   message: '',
+      //   noVideo: false,
+      width: props.width,
+      height: props.height,
+    };
     // should set search time from alert/exception
     this.shouldSetTime = true;
     this.reactions = [];
@@ -184,6 +186,13 @@ class DirectVideoView extends React.Component {
         () => videoStore.paused,
         (paused, prevPaused) => {
           singlePlayer && this.pause(paused);
+        }
+      ),
+      reaction(
+        () => videoStore.gridLayout,
+        () => {
+          this.stop();
+          setTimeout(() => this.setNativePlayback(), 1000);
         }
       ),
     ];
@@ -698,7 +707,7 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo} = this.props;
+    const {width, height, serverInfo, noVideo} = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
@@ -729,28 +738,30 @@ class DirectVideoView extends React.Component {
               />
             )}
           </View>
-          <View style={styles.playerView}>
-            {Platform.OS === 'ios' ? (
-              <FFMpegFrameViewIOS
-                width={this.state.width} // {this.state.width}
-                height={this.state.height} // {this.state.height}
-                ref={ref => {
-                  this.ffmpegPlayer = ref;
-                }}
-                onFFMPegFrameChange={this.onNativeMessage}
-              />
-            ) : (
-              <FFMpegFrameView
-                iterationCount={1}
-                width={width}
-                height={height}
-                ref={ref => {
-                  this.ffmpegPlayer = ref;
-                }}
-                onFFMPegFrameChange={this.onNativeMessage}
-              />
-            )}
-          </View>
+          {noVideo ? null : (
+            <View style={styles.playerView}>
+              {Platform.OS === 'ios' ? (
+                <FFMpegFrameViewIOS
+                  width={this.state.width} // {this.state.width}
+                  height={this.state.height} // {this.state.height}
+                  ref={ref => {
+                    this.ffmpegPlayer = ref;
+                  }}
+                  onFFMPegFrameChange={this.onNativeMessage}
+                />
+              ) : (
+                <FFMpegFrameView
+                  iterationCount={1}
+                  width={width}
+                  height={height}
+                  ref={ref => {
+                    this.ffmpegPlayer = ref;
+                  }}
+                  onFFMPegFrameChange={this.onNativeMessage}
+                />
+              )}
+            </View>
+          )}
           {/* </View> */}
         </ImageBackground>
       </View>
