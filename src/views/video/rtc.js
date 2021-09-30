@@ -102,13 +102,13 @@ class RTCStreamingView extends Component {
   }
 
   initReactions = () => {
-    const {videoStore, viewer} = this.props;
+    const {videoStore, viewer, singlePlayer} = this.props;
 
     this.reactions = [
       reaction(
         () => videoStore.isLive,
         isLive => {
-          if (videoStore.dvrTimezone && this._isMounted) {
+          if (videoStore.dvrTimezone && this._isMounted && singlePlayer) {
             this.pause();
             setTimeout(() => {
               if (isLive) {
@@ -128,16 +128,18 @@ class RTCStreamingView extends Component {
       ),
       reaction(
         () => videoStore.hdMode,
-        () => this._isMounted && this.startPlayback()
+        () => this._isMounted && singlePlayer && this.startPlayback()
       ),
       reaction(
         () => videoStore.searchDate,
         () => {
-          if (!isLive && this._isMounted) {
+          if (!this.props.isLive && this._isMounted) {
             this.pause();
             setTimeout(
               () =>
-                this._isMounted && this.sendRtcCommand(RTC_COMMANDS.TIMELINE),
+                this._isMounted &&
+                singlePlayer &&
+                this.sendRtcCommand(RTC_COMMANDS.TIMELINE),
               500
             );
           }
@@ -664,11 +666,13 @@ class RTCStreamingView extends Component {
     const {width, height} = this.props;
     // const {error} = this.state;
     const noVideo =
-      connectionStatus === STREAM_STATUS.NOVIDEO || videoStore.noVideo;
+      connectionStatus === STREAM_STATUS.NOVIDEO || this.props.noVideo;
     __DEV__ &&
       console.log(
         'GOND RTCPlayer render: ',
-        remoteStream && remoteStream.toURL()
+        remoteStream && remoteStream.toURL(),
+        ', noVideo = ',
+        noVideo
       );
 
     return (

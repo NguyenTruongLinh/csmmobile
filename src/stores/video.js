@@ -447,20 +447,16 @@ export const VideoModel = types
               'GOND search play time: invalid time input format ',
               self.searchPlayTime
             );
-          return null;
+          return self.searchDate;
         }
-        return result;
+        return self.isAlertPlay ? result.minus({seconds: 1}) : result;
       } else {
         return self.searchDate;
       }
     },
     get searchPlayTimeBySeconds() {
       return self.searchPlayTime
-        ? DateTime.fromFormat(
-            self.searchPlayTime,
-            NVRPlayerConfig.RequestTimeFormat,
-            self.timezone ? {zone: self.timezone} : undefined
-          ).toSeconds() - self.searchDate.toSeconds()
+        ? searchPlayTimeLuxon.toSeconds() - self.searchDate.toSeconds()
         : 0;
     },
     get directData() {
@@ -2002,7 +1998,7 @@ export const VideoModel = types
           //     `GOND channels filter ${self.channelFilter}, active: `,
           //     self.activeChannels
           //   );
-          yield self.rtcConnection.createStreams(
+          /*yield*/ self.rtcConnection.createStreams(
             {
               accessKeyId: streamInfo.access_key,
               secretAccessKey: streamInfo.secret_key,
@@ -2105,7 +2101,9 @@ export const VideoModel = types
         self.kDVR = alarmData.kDVR;
         self.isLive = isLive;
         self.isSingleMode = true;
-        !isLive && (self.searchPlayTime = alarmData.timezone);
+        if (!isLive) {
+          self.searchPlayTime = alarmData.timezone;
+        }
         self.searchDate = DateTime.fromISO(alarmData.timezone, {
           zone: 'utc',
         }).startOf('day');
@@ -2129,8 +2127,7 @@ export const VideoModel = types
           return false;
         }
         // Get timezone first
-        // yield self.getVideoInfos(alarmData.channelNo);
-        yield self.getDVRTimezone(alarmData.channelNo);
+        yield self.getVideoInfos(alarmData.channelNo);
 
         // else {
         //   // dongpt: only Direct need to be build?

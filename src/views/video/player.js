@@ -71,7 +71,7 @@ class VideoPlayerView extends Component {
 
     this.timelineAutoScroll = true;
     this.timeOnTimeline = null;
-    this.isNoDataSearch = false;
+    // this.isNoDataSearch = false;
   }
 
   componentDidMount() {
@@ -183,7 +183,7 @@ class VideoPlayerView extends Component {
       datesList.indexOf(selectedDate) < 0
     ) {
       __DEV__ && console.log('GOND: checkDataOnSearchDate NOVIDEO');
-      this.isNoDataSearch = true;
+      // this.isNoDataSearch = true;
       // this.playerRef.pause();
       videoStore.pause(true);
       videoStore.selectedStream &&
@@ -205,7 +205,7 @@ class VideoPlayerView extends Component {
       return false;
     }
 
-    this.isNoDataSearch = false;
+    // this.isNoDataSearch = false;
     this.forceUpdate();
     return true;
   };
@@ -465,7 +465,7 @@ class VideoPlayerView extends Component {
       height: height,
       hdMode: videoStore.hdMode,
       isLive: videoStore.isLive,
-      noVideo: videoStore.isLive ? false : this.isNoDataSearch,
+      noVideo: videoStore.isLive ? false : videoStore.noVideo, // this.isNoDataSearch,
       searchDate: videoStore.searchDate,
       searchPlayTime: videoStore.searchPlayTime,
       paused: videoStore.paused,

@@ -89,7 +89,7 @@ class HLSStreamingView extends React.Component {
             return;
           }
           __DEV__ && console.log('HLSStreamingView newUrl: ', newUrl);
-          if (!videoStore.noVideo && newUrl != this.state.streamUrl) {
+          if (!this.props.noVideo && newUrl != this.state.streamUrl) {
             if (util.isValidHttpUrl(newUrl)) {
               __DEV__ &&
                 console.log(
@@ -397,7 +397,7 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, streamStatus, videoStore, singlePlayer} =
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
       this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
@@ -434,7 +434,7 @@ class HLSStreamingView extends React.Component {
             {
               /*!isLoading &&*/ streamUrl &&
               streamUrl.length > 0 &&
-              !videoStore.noVideo ? (
+              !noVideo ? (
                 <Video
                   style={[{width: width, height: height}]}
                   hls={true}

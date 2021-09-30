@@ -270,10 +270,11 @@ class ChannelsView extends React.Component {
   };
 
   onChannelSelect = value => {
+    const {videoStore} = this.props;
     __DEV__ && console.log('GOND select channel: ', value);
-    if (!value || Object.keys(value) == 0) return;
+    if (!value || Object.keys(value) == 0 || videoStore.selectedChannel) return;
 
-    this.props.videoStore.selectChannel(
+    videoStore.selectChannel(
       value.channelNo // ?? value.channel.channelNo
     );
     // this.pauseAll(true);

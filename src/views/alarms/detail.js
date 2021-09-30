@@ -204,11 +204,11 @@ class AlarmDetailView extends Component {
     // this.setState({isLoading: true}, async () => {
     //   let res = await videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
 
-    res &&
-      setTimeout(() => {
-        navigation.push(ROUTERS.VIDEO_PLAYER);
-        this.setState({isLoading: false});
-      }, 200);
+    // res &&
+    setTimeout(() => {
+      navigation.push(ROUTERS.VIDEO_PLAYER);
+      this.setState({isLoading: false});
+    }, 200);
     // });
   };
 

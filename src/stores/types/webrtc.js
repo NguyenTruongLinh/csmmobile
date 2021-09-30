@@ -33,7 +33,7 @@ import {STREAM_STATUS} from '../../localization/texts';
 const ChannelConnectionModel = types
   .model({
     id: types.optional(types.identifier, () => util.getRandomClientId()),
-    channel: ChannelModel,
+    channel: types.reference(ChannelModel),
     // kChannel: types.identifierNumber,
     // channelNo: types.number,
     // channelName: types.string,
@@ -120,7 +120,7 @@ const ChannelConnectionModel = types
         if (typeof fn === 'function') self.onConnectionFailed = fn;
         else console.log('ConnectionFailedHanlder value is not a function!');
       },
-      initStream: flow(function* initStream({
+      initStream: flow(function* ({
         region,
         accessKeyId,
         secretAccessKey,
@@ -522,6 +522,7 @@ const RTCStreamModel = types
   })
   .volatile(self => ({
     configs: {},
+    // openStreamLock: false,
   }))
   .views(self => ({
     get connectionInfo() {
@@ -556,71 +557,113 @@ const RTCStreamModel = types
      * @param {Object{sid, accessKeyId, secretAccessKey, rtcChannelName}} streamInfos: WebRTC connection info
      * @param {Array | ChannelModel} channels
      */
-    // createStreams: flow(function* createStreams(streamInfos, channels) {
     createStreams(streamInfos, channels) {
-      // if (self.openStreamLock) false;
-      // self.openStreamLock = true;
+      // if (self.openStreamLock) reurn;
 
       self.sid = streamInfos.sid;
       self.accessKeyId = streamInfos.accessKeyId;
       self.secretAccessKey = streamInfos.secretAccessKey;
       self.rtcChannelName = streamInfos.rtcChannelName;
 
-      self.viewers = [];
+      // self.viewers = [];
       self.message = VIDEO_MESSAGE.MSG_CONNECTING_STREAM;
 
       if (Array.isArray(channels)) {
         __DEV__ &&
           console.log('[GOND] - creating streams for channels: ', channels);
-        // self.viewers = channels.map(ch => {
 
-        for (let i = 0; i < channels.length; i++) {
-          // yield self.createConnection(channels[i]);
-          self.viewers.push(self.createConnection(channels[i]));
-        }
+        self.viewers = channels.map(ch => {
+          const conn = ChannelConnectionModel.create({
+            channel: ch,
+            isDataChannelOpened: false,
+
+            isLoading: true,
+            error: '',
+            connectionStatus: STREAM_STATUS.CONNECTING,
+            needResetConnection: false,
+          });
+          conn.setConnectionFailedHandler(v => {
+            v.reconnect(self.connectionInfo);
+          });
+
+          return conn;
+        });
+
+        self.initMultiStreams();
+      } else if (ChannelModel.is(channels)) {
+        const conn = ChannelConnectionModel.create({
+          channel: channels,
+          isDataChannelOpened: false,
+
+          isLoading: true,
+          error: '',
+          connectionStatus: STREAM_STATUS.CONNECTING,
+          needResetConnection: false,
+        });
+        conn.setConnectionFailedHandler(v => {
+          v.reconnect(self.connectionInfo);
+        });
+
+        conn.initStream({
+          ...self.connectionInfo,
+          region: self.region,
+        });
+        self.viewers.push(conn);
       } else {
-        // self.createConnection(channels)
-        self.viewers.push(self.createConnection(channels));
+        console.log(
+          'GOND *** ERROR *** on create RTC connection: given channel is not a valid ChannelModel!'
+        );
       }
       // self.openStreamLock = false;
     },
-    // createConnection: flow(function* createConnection(ch) {
-    createConnection(ch) {
-      const conn = ChannelConnectionModel.create({
-        channel: ch,
-        // kChannel: ch.kChannel,
-        // channelNo: ch.channelNo,
-        // channelName: ch.name,
-        isDataChannelOpened: false,
+    // createConnection(ch) {
+    //   const conn = ChannelConnectionModel.create({
+    //     channel: ch,
+    //     // kChannel: ch.kChannel,
+    //     // channelNo: ch.channelNo,
+    //     // channelName: ch.name,
+    //     isDataChannelOpened: false,
 
-        isLoading: true,
-        error: '',
-        connectionStatus: STREAM_STATUS.CONNECTING,
-        needResetConnection: false,
-      });
+    //     isLoading: true,
+    //     error: '',
+    //     connectionStatus: STREAM_STATUS.CONNECTING,
+    //     needResetConnection: false,
+    //   });
 
-      // TODO: improve this
-      conn.setConnectionFailedHandler(v => {
-        v.reconnect(self.connectionInfo);
-      });
-      // if not active, will init stream later on search mode
-      if (ch.isActive) {
-        // yield conn.initStream({...self.connectionInfo, region: self.region});
-        conn.initStream({...self.connectionInfo, region: self.region});
+    //   // TODO: improve this
+    //   conn.setConnectionFailedHandler(v => {
+    //     v.reconnect(self.connectionInfo);
+    //   });
+    //   // if not active, will init stream later on search mode
+    //   if (ch.isActive) {
+    //     // yield conn.initStream({...self.connectionInfo, region: self.region});
+    //     conn.initStream({...self.connectionInfo, region: self.region});
+    //   }
+    //   return conn;
+    // },
+    initMultiStreams: flow(function* () {
+      // if (self.openStreamLock) return;
+      // self.openStreamLock = true;
+
+      for (let i = 0; i < self.viewers.length; i++) {
+        yield self.viewers[i].initStream({
+          ...self.connectionInfo,
+          region: self.region,
+        });
       }
-      // self.viewers.push(conn);
-      return conn;
-    },
-    createChannelConnection: flow(function* initChannelConnection(connection) {
-      // const conn = self.viewers.find(item => item.channelNo == channelNo);
-      connection.setConnectionFailedHandler(viewer => {
-        viewer.reconnect(self.connectionInfo);
-      });
-      yield connection.initStream({
-        ...self.connectionInfo,
-        region: self.region,
-      });
+
+      // self.openStreamLock = false;
     }),
+    // createChannelConnection(connection) {
+    //   // const conn = self.viewers.find(item => item.channelNo == channelNo);
+    //   connection.setConnectionFailedHandler(viewer => {
+    //     viewer.reconnect(self.connectionInfo);
+    //   });
+    //   connection.initStream({
+    //     ...self.connectionInfo,
+    //     region: self.region,
+    //   });
+    // },
   }));
 
 export default RTCStreamModel;
