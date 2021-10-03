@@ -237,7 +237,7 @@ export default HLSStreamModel = types
     //   self.timeline = timeline;
     //   self.timestamps = timestamp;
     // },
-    getHLSStreamUrl: flow(function* (info) {
+    getHLSStreamUrl: flow(function* (info, cmd) {
       if (info) self.setAWSInfo(info);
 
       // Step 1: Configure SDK Clients
@@ -313,7 +313,7 @@ export default HLSStreamModel = types
           });
 
         __DEV__ && console.log('GOND Get Streaming Session URL: ', response);
-        self.setUrl(response.HLSStreamingSessionURL);
+        self.setUrl(response.HLSStreamingSessionURL, cmd);
         // Is it needed?
         if (self.streamTimeout) clearTimeout(self.streamTimeout);
         __DEV__ &&

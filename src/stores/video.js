@@ -432,13 +432,14 @@ export const VideoModel = types
     },
     get searchPlayTimeLuxon() {
       if (self.searchPlayTime) {
+        const timezone = self.isAlertPlay ? 'utc' : self.timezone;
         let result = DateTime.fromFormat(
           self.searchPlayTime,
           NVRPlayerConfig.RequestTimeFormat,
-          self.timezone ? {zone: self.timezone} : undefined
+          {zone: timezone}
         );
         if (!result.isValid) {
-          result = DateTime.fromISO(self.searchPlayTime).setZone(self.timezone);
+          result = DateTime.fromISO(self.searchPlayTime, {zone: timezone});
         }
 
         if (!result.isValid) {
@@ -593,65 +594,6 @@ export const VideoModel = types
             self.selectedStream.setHD(false);
           }
         }
-        // if (self.cloudType == CLOUD_TYPE.RTC) {
-        //   if (self.selectedStream.needInit) {
-        //     self.rtcConnection.createChannelConnection(self.selectedStream);
-        //   }
-        // } else
-
-        /*
-        // TODO: beautify it
-        if (self.cloudType == CLOUD_TYPE.HLS && !self.isAlertPlay) {
-          const found = self.hlsStreams.find(s => s.channelNo == value);
-          __DEV__ &&
-            console.log(
-              'GOND HLS on change channels, found?: ',
-              getSnapshot(found)
-            );
-
-          // save data to stream
-          if (found) {
-            self.selectedHLSStream = HLSStreamModel.create({
-              ...getSnapshot(found),
-              id: util.getRandomId(),
-              // channel: foundChannel,
-            });
-            __DEV__ &&
-              console.log(
-                'GOND HLS on change channels 1: ',
-                self.selectedHLSStream,
-                found.channel
-              );
-            self.selectedHLSStream.setChannel(found.channel);
-            __DEV__ &&
-              console.log(
-                'GOND HLS on change channels 2: ',
-                self.selectedHLSStream
-              );
-
-            if (self.isLive && self.selectedHLSStream.isURLAcquired) {
-              __DEV__ &&
-                console.log(
-                  'GOND HLS on change channels, data url already acquired: ',
-                  getSnapshot(self.selectedHLSStream.targetUrl)
-                );
-            } else {
-              self.getHLSInfos({channelNo: value, timeline: !self.isLive});
-            }
-          } else {
-            self.selectedHLSStream = HLSStreamModel.create({
-              // id: util.getRandomId(),
-              channel: foundChannel,
-              isLoading: true,
-
-              connectionStatus: STREAM_STATUS.CONNECTING,
-              isHD: self.hdMode,
-              isLive: self.isLive,
-            });
-            self.getHLSInfos({channelNo: value, timeline: !self.isLive});
-          }
-        }
-        */
 
         const foundStream = self.hlsStreams.find(s => s.channelNo == value);
         if (!foundStream) {
@@ -905,7 +847,7 @@ export const VideoModel = types
         }
 
         if (self.cloudType == CLOUD_TYPE.HLS) {
-          console.log('GOND @@@ switchlivesearch HLS');
+          __DEV__ && console.log('GOND @@@ switchlivesearch HLS');
           if (self.selectedStream) {
             self.selectedStream.setLive(self.isLive);
           }
@@ -922,6 +864,7 @@ export const VideoModel = types
       // },
       switchHD(value) {
         self.hdMode = util.isNullOrUndef(value) ? !self.hdMode : value;
+        __DEV__ && console.log('GOND on switch HD: ', self.hdMode);
 
         if (self.noVideo) {
           self.setNoVideo(false);
@@ -1592,19 +1535,63 @@ export const VideoModel = types
       //     }
       //   }, STREAM_TIMEOUT);
       // },
-      onHLSTimeChanged: flow(function* (dateChanged) {
-        if (self.cloudType != CLOUD_TYPE.HLS || self.isLive) return;
+      /**
+       *
+       * @param time (DateTime)
+       */
+      onHLSTimeChanged: flow(function* (time) {
+        if (self.cloudType != CLOUD_TYPE.HLS || self.isLive) {
+          console.log(
+            'GOND onHLSTimeChanged * Failed: not a valid mode or cloud type'
+          );
+          return;
+        }
+        if (!DateTime.isDateTime(time)) {
+          console.log(
+            'GOND onHLSTimeChanged * Failed: time is not a valid luxon DateTime'
+          );
+          return;
+        }
         self.selectedStream.setStreamStatus({
           connectionStatus: STREAM_STATUS.CONNECTING,
           isLoading: true,
         });
 
-        let params = {channelNo: self.selectedChannel};
-        if (dateChanged) {
-          // yield self.getTimeline(channelNo, self.selectedStream.targetUrl.sid);
-          params = {...params, timeline: true};
+        requestParams = [
+          {
+            ID: apiService.configToken.devId,
+            sid: self.selectedStream.targetUrl.sid,
+            KDVR: self.kDVR,
+            ChannelNo: self.selectedChannel + 1,
+            RequestMode: self.hdMode ? VSCCommand.SEARCHHD : VSCCommand.SEARCH,
+            isMobile: true,
+            RequestDate: self.searchDate.toFormat(
+              NVRPlayerConfig.HLSRequestDateFormat
+            ),
+            BeginTime: time.toFormat(NVRPlayerConfig.HLSRequestTimeFormat),
+            EndTime: END_OF_DAY_STRING,
+          },
+        ];
+
+        try {
+          let res = yield apiService.post(
+            VSC.controller,
+            1,
+            VSC.getMultiURL,
+            requestParams
+          );
+          __DEV__ && console.log(`GOND get multi HLS URL: `, res);
+        } catch (error) {
+          console.log(`Could not get HLS video info: ${error}`);
+          snackbarUtil.handleRequestFailed(error);
+          return false;
         }
-        self.getHLSInfos(params);
+
+        // if (dateChanged) {
+        //   // yield self.getTimeline(channelNo, self.selectedStream.targetUrl.sid);
+        //   params = {...params, timeline: true};
+        // }
+        // self.getHLSInfos(params);
 
         // const timeParams = {
         //   RequestDate: self.searchDate.toFormat(
@@ -1755,7 +1742,7 @@ export const VideoModel = types
             return;
             // }
           }
-          const result = yield target.getHLSStreamUrl(info);
+          const result = yield target.getHLSStreamUrl(info, cmd);
           if (target.isLoading) {
             target.setStreamStatus({
               isLoading: false,
@@ -1820,7 +1807,7 @@ export const VideoModel = types
           __DEV__ && console.log('GOND convert time value not valid: ', value);
           return null;
         }
-        const timezoneName = self.timezone ?? DateTime.local().zone.name;
+        const timezoneName = self.timezone; // ?? DateTime.local().zone.name;
         return {
           id: 0,
           type: value.type,
@@ -2101,9 +2088,9 @@ export const VideoModel = types
         self.kDVR = alarmData.kDVR;
         self.isLive = isLive;
         self.isSingleMode = true;
-        if (!isLive) {
-          self.searchPlayTime = alarmData.timezone;
-        }
+        // if (!isLive) {
+        self.searchPlayTime = alarmData.timezone;
+        // }
         self.searchDate = DateTime.fromISO(alarmData.timezone, {
           zone: 'utc',
         }).startOf('day');
@@ -2112,7 +2099,10 @@ export const VideoModel = types
             'GOND onAlertPlay time input: ',
             alarmData.timezone,
             '\n searchPlayTime: ',
-            self.searchPlayTime
+            self.searchPlayTime,
+            self.searchPlayTimeLuxon,
+            '- iso: ',
+            DateTime.fromISO(self.searchPlayTime)
           );
         yield self.getDvrChannels();
 

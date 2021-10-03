@@ -517,6 +517,10 @@ class RTCStreamingView extends Component {
         //     '\n - time 1 = ',
         //     DateTime.fromSeconds(parseInt(timestamps[1]))
         //   );
+        this.props.viewer.setStreamStatus({
+          isLoading: false,
+          connectionStatus: STREAM_STATUS.DONE,
+        });
         try {
           currentTime =
             typeof data.time === 'string'
@@ -685,7 +689,7 @@ class RTCStreamingView extends Component {
           <Text style={styles.channelInfo}>{channelName ?? 'Unknown'}</Text>
           <View style={styles.statusView}>
             <View style={styles.textContainer}>
-              <Text style={styles.textMessage}>{error}</Text>
+              <Text style={styles.textMessage}>{connectionStatus}</Text>
             </View>
             {isLoading && (
               <ActivityIndicator
@@ -695,7 +699,7 @@ class RTCStreamingView extends Component {
               />
             )}
           </View>
-          <View style={styles.playerView}>
+          <View style={[styles.playerView, {backgroundColor: 'green'}]}>
             {remoteStream && !noVideo ? (
               <RTCView
                 streamUrl={remoteStream.toURL()}

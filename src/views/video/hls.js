@@ -53,6 +53,7 @@ class HLSStreamingView extends React.Component {
     this.tsIndex = -1;
     this.reactions = [];
     this.shouldResume = false;
+    this.lastSearchTime = 0;
   }
 
   componentDidMount() {
@@ -102,7 +103,7 @@ class HLSStreamingView extends React.Component {
                 streamUrl: newUrl,
                 timeBeginPlaying: this.props.isLive
                   ? DateTime.now().setZone(videoStore.timezone)
-                  : videoStore.searchPlayTimeLuxon,
+                  : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
               });
               // reset these value everytimes streamUrl changed
               this.frameTime = 0;
@@ -120,30 +121,53 @@ class HLSStreamingView extends React.Component {
           }
         }
       ),
-      reaction(
-        () => videoStore.timezone,
-        newTimezone => {
-          const {timeBeginPlaying} = this.state;
-          if (newTimezone != timeBeginPlaying.zone.name) {
-            this.setState({
-              timeBeginPlaying: this.state.timeBeginPlaying.setZone(
-                videoStore.timezone
-              ),
-            });
-          }
-        }
-      ),
-      reaction(
-        () => videoStore.selectedChannel,
-        newChannel => {
-          __DEV__ &&
-            console.log('HLSStreamingView channel changed: ', newChannel);
-          // if (this.props.singlePlayer) {
-          //   if (videoStore.paused) videoStore.pause(false);
-          // }
-        }
-      ),
     ];
+
+    if (singlePlayer) {
+      this.reactions = [
+        ...this.reactions,
+        reaction(
+          () => videoStore.timezone,
+          newTimezone => {
+            const {timeBeginPlaying} = this.state;
+            if (newTimezone != timeBeginPlaying.zone.name) {
+              this.setState({
+                timeBeginPlaying: this.state.timeBeginPlaying.setZone(
+                  videoStore.timezone
+                ),
+              });
+            }
+          }
+        ),
+        reaction(
+          () => videoStore.selectedChannel,
+          newChannel => {
+            __DEV__ &&
+              console.log('HLSStreamingView channel changed: ', newChannel);
+            this.lastSearchTime = 0;
+            // if (this.props.singlePlayer) {
+            //   if (videoStore.paused) videoStore.pause(false);
+            // }
+          }
+        ),
+        reaction(
+          () => videoStore.isLive,
+          isLive => {
+            // __DEV__ &&
+            //   console.log('HLSStreamingView switch mode isLive: ', isLive);
+            this.lastSearchTime = 0;
+          }
+        ),
+        reaction(
+          () => videoStore.hdMode,
+          isHD => {
+            // __DEV__ &&
+            //   console.log('HLSStreamingView switch mode isHD: ', isHD);
+            this.lastSearchTime = this.frameTime;
+          }
+        ),
+      ];
+    }
   };
 
   /*
@@ -236,8 +260,9 @@ class HLSStreamingView extends React.Component {
     // this.setState({
     //   message: 'Reconnecting',
     // });
-    this.frameTime = 0;
+    // this.frameTime = 0;
     // TODO: new search time
+    if (!isLive) this.lastSearchTime = this.frameTime;
     streamData.reconnect(isLive, hdMode);
   };
 
@@ -389,11 +414,12 @@ class HLSStreamingView extends React.Component {
     const {videoStore} = this.props;
     const time = videoStore.searchDate.plus({seconds: value});
     __DEV__ && console.log('GOND HLS playAt: ', value, ' - ', time);
+    this.lastSearchTime = time.toSeconds();
 
-    videoStore.setPlayTimeForSearch(
-      time.toFormat(NVRPlayerConfig.RequestTimeFormat)
-    );
-    videoStore.onHLSTimeChanged();
+    // videoStore.setPlayTimeForSearch(
+    //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
+    // );
+    videoStore.onHLSTimeChanged(time);
   };
 
   render() {

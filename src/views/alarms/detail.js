@@ -74,7 +74,12 @@ class AlarmDetailView extends Component {
   }
 
   componentWillUnmount() {
+    const {alarmStore, videoStore} = this.props;
     __DEV__ && console.log('AlarmDetail componentWillUnmount');
+
+    alarmStore.onExitAlarmDetail();
+    videoStore.onExitSinglePlayer();
+    videoStore.releaseStreams();
   }
 
   refreshHeader = () => {
@@ -199,12 +204,16 @@ class AlarmDetailView extends Component {
   };
 
   gotoVideo = isLive => {
-    const {/*alarmStore, videoStore, appStore,*/ navigation} = this.props;
+    const {alarmStore, videoStore, navigation} = this.props;
 
     // this.setState({isLoading: true}, async () => {
     //   let res = await videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
 
     // res &&
+    videoStore.switchLiveSearch(false);
+    if (!isLive) {
+      videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
+    }
     setTimeout(() => {
       navigation.push(ROUTERS.VIDEO_PLAYER);
       this.setState({isLoading: false});

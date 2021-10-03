@@ -41,6 +41,8 @@ class CMSTouchableIcon extends React.Component {
     this.state = {
       disabled: props.disabled,
     };
+
+    this.onPressTimeout = null;
   }
 
   componentDidMount() {
@@ -54,10 +56,19 @@ class CMSTouchableIcon extends React.Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     const {disabled} = nextProps;
     if (disabled != prevState.disabled) {
+      // __DEV__ && console.log('GOND TouchIcon get disbaled: ', disabled);
       return {disabled};
     }
     return {};
   }
+
+  // componentDidUpdate(prevProps) {
+  //   if (prevProps.disabled != this.props.disabled && this.onPressTimeout) {
+  //     __DEV__ && console.log('GOND TouchIcon cancel Timeout');
+  //     clearTimeout(this.onPressTimeout);
+  //     this.onPressTimeout = null;
+  //   }
+  // }
 
   getCubes(size) {
     let borderRd;
@@ -83,8 +94,11 @@ class CMSTouchableIcon extends React.Component {
 
     this.setState({disabled: true}, () => {
       onPress();
-      setTimeout(() => {
-        if (this.state.disabled) {
+
+      this.onPressTimeout = setTimeout(() => {
+        // __DEV__ && console.log('GOND TouchIcon onPressTimeout');
+        if (this.state.disabled && !this.props.disabled) {
+          // __DEV__ && console.log('GOND TouchIcon onPressTimeout >>>');
           this.setState({disabled: false});
         }
       }, PRESS_DELAY_TIME);
@@ -99,13 +113,15 @@ class CMSTouchableIcon extends React.Component {
       color,
       size,
       image,
-      onPress,
+      // onPress,
       styles,
       isHidden,
       disabledColor,
     } = this.props;
 
     const {disabled} = this.state;
+    // __DEV__ &&
+    //   console.log('GOND touch icon color: ', color, ', disabled: ', disabled);
 
     let content;
     if (image) {
@@ -116,7 +132,7 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <Icon
-            color={disabled ? disabledColor ?? cmscolors.Inactive : color}
+            color={disabled ? disabledColor ?? cmscolors.Dark_Gray : color}
             size={size}
             name={icon}
           />
@@ -126,7 +142,7 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <IconCustom
-            color={disabled ? disabledColor ?? cmscolors.Inactive : color}
+            color={disabled ? disabledColor ?? cmscolors.Dark_Gray : color}
             size={size}
             name={iconCustom}
           />
@@ -136,7 +152,7 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <MaterialIcons
-            color={disabled ? disabledColor ?? cmscolors.Inactive : color}
+            color={disabled ? disabledColor ?? cmscolors.Dark_Gray : color}
             size={size}
             name={iconMaterial}
           />
@@ -150,7 +166,7 @@ class CMSTouchableIcon extends React.Component {
         disabled={disabled ? disabled : false}
         rippleCentered={true}
         rippleOpacity={numOpacity}
-        onPress={onPress}>
+        onPress={this.onPress}>
         {content}
       </Ripple>
     );

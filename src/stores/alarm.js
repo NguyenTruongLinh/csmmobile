@@ -442,6 +442,11 @@ export const AlarmModel = types
     }),
     getAlarms: flow(function* getAlarms(params, isSearch) {
       self.isLoading = true;
+      if (isSearch) {
+        self.searchAlarms = [];
+      } else {
+        self.liveAlarms = [];
+      }
       try {
         const res = yield apiService.get(Alert.controller, null, null, params);
         __DEV__ &&
@@ -494,7 +499,7 @@ export const AlarmModel = types
       }
       self.isLoading = false;
     }),
-    getLiveData: flow(function* getLiveData(params) {
+    getLiveData: flow(function* (params) {
       self.isLoading = true;
       const [resConfig, resVAAlert, resAlarms] = yield Promise.all([
         self.getConfigs(),
@@ -530,6 +535,9 @@ export const AlarmModel = types
       }
       self.isLoading = false;
     }),
+    onExitAlarmDetail() {
+      self.selectedAlarm = null;
+    },
     cleanUp() {
       applySnapshot(self, storeDefault);
     },

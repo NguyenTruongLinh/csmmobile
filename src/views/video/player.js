@@ -137,7 +137,7 @@ class VideoPlayerView extends Component {
     if (videoStore.isFullscreen) {
       this.onFullscreenPress();
     }
-    videoStore.onExitSinglePlayer();
+    if (!videoStore.isAlertPlay) videoStore.onExitSinglePlayer();
 
     // dongpt: TODO handle Orientation
     Orientation.lockToPortrait();
@@ -696,14 +696,19 @@ class VideoPlayerView extends Component {
           <CMSTouchableIcon
             iconCustom="hd"
             color={
-              videoStore.hdMode === true
+              // CMSColors.PrimaryActive
+              videoStore.hdMode == true
                 ? CMSColors.PrimaryActive
                 : CMSColors.White
             }
             size={iconSize}
             // style={styles.buttonStyle}
             onPress={() => videoStore.switchHD()}
-            disabled={videoStore.isLoading || !this.playerRef}
+            disabled={
+              !videoStore.selectedStream ||
+              // videoStore.selectedStream.isLoading ||
+              !this.playerRef
+            }
           />
         </View>
         <View style={styles.buttonWrap}>
