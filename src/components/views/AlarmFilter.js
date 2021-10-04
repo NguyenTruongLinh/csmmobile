@@ -272,6 +272,7 @@ export default class AlarmFilter extends Component {
     let markedData = {};
     markedData[today.toFormat(DateFormat.CalendarDate)] = {
       marked: true,
+      textColor: CMSColors.ColorText,
       dotColor: 'red',
     };
     let futureDay = today.plus({days: 1});
@@ -283,7 +284,7 @@ export default class AlarmFilter extends Component {
     }
 
     markedData = {...markedData, ...this.state.dateRange};
-    __DEV__ && console.log('GOND today marked: ', markedData);
+    // __DEV__ && console.log('GOND today marked: ', markedData);
     return (
       <CalendarList
         markingType={'period'}
@@ -727,8 +728,8 @@ export default class AlarmFilter extends Component {
       case FilterMore.VA: {
         let {alertTypesVA} = this.props;
         if (util.isNullOrUndef(alertTypesVA)) break;
-        // __DEV__ &&
-        //   console.log('GOND FilterMore VA alertTypesVA = ', alertTypesVA, item);
+        __DEV__ &&
+          console.log('GOND FilterMore VA alertTypesVA = ', alertTypesVA, item);
         //getAlertTypeVA
         let ds_Video_Analytics = alertTypesVA
           .filter(

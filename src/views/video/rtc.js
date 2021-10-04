@@ -505,6 +505,11 @@ class RTCStreamingView extends Component {
         }
         break;
       case RTC_COMMANDS.TIMESTAMP: // 'Timestamp':
+        this.props.viewer.setStreamStatus({
+          isLoading: false,
+          connectionStatus: STREAM_STATUS.DONE,
+        });
+
         if (videoStore.selectedChannel != viewer.channelNo) break;
         let currentTime = null;
         let timestamps = data.time.split('_');
@@ -517,10 +522,6 @@ class RTCStreamingView extends Component {
         //     '\n - time 1 = ',
         //     DateTime.fromSeconds(parseInt(timestamps[1]))
         //   );
-        this.props.viewer.setStreamStatus({
-          isLoading: false,
-          connectionStatus: STREAM_STATUS.DONE,
-        });
         try {
           currentTime =
             typeof data.time === 'string'
@@ -680,6 +681,16 @@ class RTCStreamingView extends Component {
       );
 
     return (
+      // <RTCView
+      //   streamUrl={remoteStream.toURL()}
+      //   objectFit={'cover'}
+      //   style={{width: width, height: height}}
+      //   // width={width}
+      //   // height={height}
+      //   ref={ref => {
+      //     this.player = ref;
+      //   }}
+      // />
       <View onLayout={this.onLayout}>
         <ImageBackground
           source={NVR_Play_NoVideo_Image}
@@ -699,10 +710,10 @@ class RTCStreamingView extends Component {
               />
             )}
           </View>
-          <View style={[styles.playerView, {backgroundColor: 'green'}]}>
+          <View style={[styles.playerView]}>
             {remoteStream && !noVideo ? (
               <RTCView
-                streamUrl={remoteStream.toURL()}
+                streamURL={remoteStream.toURL()}
                 objectFit={'cover'}
                 style={{width: width, height: height}}
                 // width={width}

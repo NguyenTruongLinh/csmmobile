@@ -85,6 +85,8 @@ class AlarmDetailView extends Component {
   refreshHeader = () => {
     const {alarmStore} = this.props;
     const {selectedAlarm} = alarmStore;
+    if (!selectedAlarm) return;
+
     const {rating, note, activeIndex} = this.state;
     const canSave =
       note != selectedAlarm.note || rating.rateId != selectedAlarm.rate;
@@ -654,7 +656,7 @@ class AlarmDetailView extends Component {
                 offset: imgSize.width * index,
                 index,
               })}
-              data={selectedAlarm.snapshot}
+              data={selectedAlarm ? selectedAlarm.snapshot : []}
               renderItem={this.renderImage}
               onScroll={this.handleScroll}
               keyExtractor={(item, index) =>
@@ -673,7 +675,7 @@ class AlarmDetailView extends Component {
                 paddingBottom: 5,
               }}>
               <LiquidLike
-                data={selectedAlarm.snapshot}
+                data={selectedAlarm ? selectedAlarm.snapshot : []}
                 scrollX={this.scrollX}
                 scrollOffset={this.scrollX}
                 inActiveDotColor={CMSColors.Inactive}
