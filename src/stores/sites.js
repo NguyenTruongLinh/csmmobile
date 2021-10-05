@@ -239,6 +239,9 @@ export const SitesMapModel = types
     selectDVR(item) {
       self.selectedDVR = item.kDVR;
     },
+    deselectDVR() {
+      self.selectedDVR = null;
+    },
     setDVRFilter(value) {
       self.dvrFilter = value;
     },

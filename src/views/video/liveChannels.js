@@ -86,7 +86,7 @@ class ChannelsView extends React.Component {
     this.appStateEvtSub && this.appStateEvtSub.remove();
     videoStore.releaseStreams();
     videoStore.setChannelFilter('');
-    sitesStore.selectDVR(null);
+    sitesStore.deselectDVR();
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     // this.stopAll();
     // videoStore.setStreamReadyCallback(null);

@@ -147,7 +147,7 @@ class DirectVideoView extends React.Component {
               // value == serverInfo.channelNo
             ) {
               // this.pause(false);
-              this.startplayback();
+              this.setNativePlayback();
             }
           }
         }
