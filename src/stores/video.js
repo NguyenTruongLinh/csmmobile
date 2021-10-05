@@ -13,6 +13,7 @@ import apiService from '../services/api';
 import snackbarUtil from '../util/snackbar';
 import {VSC, DVR} from '../consts/apiRoutes';
 import util from '../util/general';
+import {numberValue} from '../util/types';
 import {
   CLOUD_TYPE,
   DAY_INTERVAL,
@@ -250,7 +251,7 @@ export const VideoModel = types
     dvrTimezone: types.maybeNull(TimezoneModel),
     timezoneOffset: types.maybeNull(types.number), // offset value
     timezoneName: types.maybeNull(types.string), // IANA string
-    timeline: types.array(TimelineModel),
+    // timeline: types.array(TimelineModel),
     // hlsTimestamps: types.array(types.number),
     // timelinePos: types.maybeNull(types.number),
     // TODO: timestamp should use BigNumber?
@@ -263,6 +264,7 @@ export const VideoModel = types
   })
   .volatile(self => ({
     recordingDates: {},
+    timeline: [],
     hlsTimestamps: [],
     // selectedHLSStream: null,
     directTimeDiff: 0,
@@ -626,12 +628,13 @@ export const VideoModel = types
         return true;
       },
       setFrameTime(value, fromZone) {
+        __DEV__ && console.log('GOND setFrameTime ', value);
         if (typeof value == 'string') {
           // TODO: convert
           self.frameTime = DateTime.fromFormat(
             value,
             NVRPlayerConfig.ResponseTimeFormat,
-            {zone: 'utc'}
+            {zone: fromZone ?? 'utc'}
           ).toSeconds();
         } else if (typeof value == 'number') {
           if (fromZone) {
@@ -789,15 +792,23 @@ export const VideoModel = types
         // TODO
       },
       setTimeline(value) {
-        if (TimelineModel.is(value)) {
-          self.timeline = TimelineModel.create(getSnapshot(value));
-        }
+        // if (TimelineModel.is(value)) {
+        //   self.timeline = TimelineModel.create(getSnapshot(value));
+        // }
         if (!value || !Array.isArray(value)) {
           __DEV__ && console.log('GOND setTimeline, not an array ', value);
           return;
         }
         __DEV__ && console.log('GOND setTimeline ', value);
-        self.timeline = value.map(item => TimelineModel.create(item));
+        self.timeline = value.map(item =>
+          // TimelineModel.create({
+          ({
+            id: numberValue(item.id),
+            begin: numberValue(item.begin),
+            end: numberValue(item.end),
+            type: numberValue(item.type),
+          })
+        );
         // __DEV__ && console.log('GOND after settimeline ', self.timeline);
       },
       setHoursOfDay(value) {

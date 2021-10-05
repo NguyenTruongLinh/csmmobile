@@ -85,7 +85,7 @@ class ChannelsView extends React.Component {
     videoStore.releaseStreams();
     videoStore.setChannelFilter('');
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
-    this.stopAll();
+    // this.stopAll();
     // videoStore.setStreamReadyCallback(null);
   }
 

@@ -131,9 +131,9 @@ class VideoPlayerView extends Component {
     // }
     const {videoStore} = this.props;
 
-    if (videoStore.isSingleMode) {
-      videoStore.releaseStreams();
-    }
+    // if (videoStore.isSingleMode) {
+    //   videoStore.releaseStreams();
+    // }
     if (videoStore.isFullscreen) {
       this.onFullscreenPress();
     }
