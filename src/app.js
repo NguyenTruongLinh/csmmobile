@@ -74,7 +74,10 @@ class App extends React.Component {
 
   async componentDidMount() {
     __DEV__ && console.log('GOND APP did mount');
-    AppState.addEventListener('change', this._handleAppStateChange);
+    this.appStateEvtListener = AppState.addEventListener(
+      'change',
+      this._handleAppStateChange
+    );
     this.keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       this.keyboardDidShow
@@ -133,7 +136,8 @@ class App extends React.Component {
   componentWillUnmount() {
     __DEV__ && console.log('app componentWillUnmount');
     if (this.checkAutoRotateTimer) clearInterval(this.checkAutoRotateTimer);
-    AppState.removeEventListener('change', this._handleAppStateChange);
+    // AppState.removeEventListener('change', this._handleAppStateChange);
+    this.appStateEvtListener && this.appStateEvtListener.remove();
     Orientation.removeDeviceOrientationListener(this._orientationDidChange);
     //Forgetting to remove the listener will cause pop executes multiple times
     // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);

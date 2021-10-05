@@ -53,8 +53,11 @@ class NVRsView extends Component {
   };
 
   onNVRSelected = item => {
-    this.props.sitesStore.selectDVR(item);
-    this.props.navigation.push(ROUTERS.VIDEO_CHANNELS);
+    const {sitesStore, navigation} = this.props;
+
+    if (sitesStore.selectedDVR) return; // prevent double click
+    sitesStore.selectDVR(item);
+    navigation.push(ROUTERS.VIDEO_CHANNELS);
     // this.props.appStore.enableSearchbar(false);
   };
 

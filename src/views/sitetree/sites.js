@@ -76,6 +76,7 @@ class SitesView extends Component {
     sitesStore.selectSite(item);
     // this.props.appStore.naviService.push(ROUTERS.VIDEO_NVRS);
     if (item.dvrs.length == 1) {
+      if (sitesStore.selectedDVR) return; // prevent double click
       sitesStore.selectDVR(item.dvrs[0]);
       navigation.push(ROUTERS.VIDEO_CHANNELS);
     } else {

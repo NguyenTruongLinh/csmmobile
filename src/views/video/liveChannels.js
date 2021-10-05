@@ -23,6 +23,7 @@ import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 
+import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import {CLOUD_TYPE, LAYOUT_DATA} from '../../consts/video';
 import sitesStore from '../../stores/sites';
@@ -79,11 +80,13 @@ class ChannelsView extends React.Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('ChannelsView componentWillUnmount');
-    const {videoStore} = this.props;
+    const {videoStore, sitesStore} = this.props;
     this._isMounted = false;
-    AppState.removeEventListener('change', this.handleAppStateChange);
+    // AppState.removeEventListener('change', this.handleAppStateChange);
+    this.appStateEvtSub && this.appStateEvtSub.remove();
     videoStore.releaseStreams();
     videoStore.setChannelFilter('');
+    sitesStore.selectDVR(null);
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     // this.stopAll();
     // videoStore.setStreamReadyCallback(null);
@@ -98,9 +101,15 @@ class ChannelsView extends React.Component {
       //   videoStore.setNVRLoginInfo('i3admin', 'i3admin');
     }
     this.setHeader(false);
-    AppState.addEventListener('change', this.handleAppStateChange);
+    this.appStateEvtSub = AppState.addEventListener(
+      'change',
+      this.handleAppStateChange
+    );
 
-    if (!sitesStore.selectedDVR) return;
+    if (util.isNullOrUndef(sitesStore.selectedDVR)) {
+      // this.props.navigation.pop();
+      return;
+    }
     videoStore.selectDVR(sitesStore.selectedDVR);
 
     // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
