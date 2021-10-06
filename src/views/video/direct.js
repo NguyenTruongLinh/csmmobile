@@ -528,16 +528,29 @@ class DirectVideoView extends React.Component {
         }
         break;
       case NATIVE_MESSAGE.SERVER_CHANGED_CURRENT_USER:
-        break;
+      // break;
       case NATIVE_MESSAGE.SERVER_CHANGED_SERVER_INFO:
-        break;
+      // break;
       case NATIVE_MESSAGE.SERVER_CHANGED_PORTS:
+        serverInfo.setStreamStatus({
+          isLoading: false,
+          connectionStatus: STREAM_STATUS.CHANGED,
+        });
         break;
       case NATIVE_MESSAGE.SERVER_RECORDING_ONLY:
         break;
       case NATIVE_MESSAGE.SERVER_CHANNEL_DISABLE:
+        serverInfo.setStreamStatus({
+          isLoading: false,
+          connectionStatus: STREAM_STATUS.DISABLED,
+        });
         break;
       case NATIVE_MESSAGE.PERMISSION_CHANNEL_DISABLE:
+        __DEV__ && console.log('GOND Direct video: PERMISSION_CHANNEL_DISABLE');
+        serverInfo.setStreamStatus({
+          isLoading: false,
+          connectionStatus: STREAM_STATUS.NO_PERMISSION,
+        });
         break;
       case NATIVE_MESSAGE.RECORDING_DATE:
         if (!singlePlayer || !value || !Array.isArray(value)) {

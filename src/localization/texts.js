@@ -90,6 +90,9 @@ export const STREAM_STATUS = {
   TIMEOUT: 'Time out.',
   NOVIDEO: 'No video.',
   DISCONNECTED: 'Disconnected.',
+  NO_PERMISSION: "You don't have permission",
+  DISABLED: 'Channel disabled',
+  CHANGED: 'Server info changed',
 };
 
 export const Alarm = {
