@@ -75,6 +75,8 @@ export const Video = {
   noVideo: 'No video',
   channelError: 'Channel not found!',
   authenTitle: 'NVR Authorization',
+  SELECT_CHANNEL_1: 'Please press ',
+  SELECT_CHANNEL_2: ' to select channels',
 };
 
 export const STREAM_STATUS = {
@@ -95,7 +97,7 @@ export const STREAM_STATUS = {
   CHANGED: 'Server info changed',
 };
 
-export const Alarm = {
-  eventTime: 'Event time',
-  process: 'Process',
+export const ALARM = {
+  EVENT_TIME: 'Event time',
+  PROCESS: 'Process',
 };

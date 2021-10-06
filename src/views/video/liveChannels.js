@@ -22,6 +22,7 @@ import RTCStreamingView from './rtc';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import InputTextIcon from '../../components/controls/InputTextIcon';
+import {IconCustom} from '../../components/CMSStyleSheet';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -613,14 +614,36 @@ class ChannelsView extends React.Component {
         {/* {authenModal} */}
         <NVRAuthenModal onSubmit={this.onAuthenSubmit} />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
-          <FlatList
-            ref={r => (this.videoListRef = r)}
-            renderItem={this.renderRow}
-            data={videoStore.videoData} // {this.state.liveData}
-            keyExtractor={item => item.key}
-            onRefresh={this.getChannelsInfo}
-            refreshing={videoStore.isLoading}
-          />
+          {videoStore.isLoading ||
+          !videoStore.isCloud ||
+          videoStore.videoData.length > 0 ? (
+            <FlatList
+              ref={r => (this.videoListRef = r)}
+              renderItem={this.renderRow}
+              data={videoStore.videoData} // {this.state.liveData}
+              keyExtractor={item => item.key}
+              onRefresh={this.getChannelsInfo}
+              refreshing={videoStore.isLoading}
+            />
+          ) : (
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'white',
+                flexDirection: 'row',
+                // paddingLeft: 20,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Text>{VideoTxt.SELECT_CHANNEL_1}</Text>
+              <IconCustom
+                name="add-cam"
+                size={22}
+                color={CMSColors.ColorText}
+              />
+              <Text>{VideoTxt.SELECT_CHANNEL_2}</Text>
+            </View>
+          )}
         </View>
         {this.renderLayoutModal()}
       </View>

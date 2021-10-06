@@ -30,10 +30,11 @@ import variable from '../../styles/variables';
 import {
   Comps as ComponentTxt,
   Settings as SettingsTxt,
-  Alarm as AlarmTxt,
+  ALARM as ALARM_TXT,
 } from '../../localization/texts';
 import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
+import {reaction} from 'mobx';
 
 const ID_Canned_Message = 5;
 const CONTENT_INFO_HEIGHT = 92;
@@ -54,10 +55,13 @@ class AlarmDetailView extends Component {
       isLoading: false,
     };
     this.scrollX = new Animated.Value(0);
+    this.reactions = [];
+    this._isMounted = false;
   }
 
   async componentDidMount() {
     const {alarmStore, videoStore} = this.props;
+    this._isMounted = true;
     __DEV__ && console.log('AlarmDetail componentDidMount');
 
     if (!alarmStore.vaConfig || alarmStore.vaConfig.length == 0) {
@@ -68,6 +72,7 @@ class AlarmDetailView extends Component {
     }
     this.refreshHeader();
     alarmStore.selectedAlarm.loadSnapshotImages();
+    this.initReactions();
 
     // Preload video streaming: Live mode
     let res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm);
@@ -76,11 +81,27 @@ class AlarmDetailView extends Component {
   componentWillUnmount() {
     const {alarmStore, videoStore} = this.props;
     __DEV__ && console.log('AlarmDetail componentWillUnmount');
+    this._isMounted = false;
 
     alarmStore.onExitAlarmDetail();
     videoStore.onExitSinglePlayer();
     videoStore.releaseStreams();
+    this.reactions.forEach(unsubscribe => unsubscribe());
   }
+
+  initReactions = () => {
+    const {alarmStore, navigation} = this.props;
+    this.reactions = [
+      reaction(
+        () => alarmStore.selectedAlarm,
+        (newValue, previousValue) => {
+          if (newValue == null && this._isMounted) {
+            navigation.goBack();
+          }
+        }
+      ),
+    ];
+  };
 
   refreshHeader = () => {
     const {alarmStore} = this.props;
@@ -212,7 +233,7 @@ class AlarmDetailView extends Component {
     //   let res = await videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
 
     // res &&
-    videoStore.switchLiveSearch(false);
+    videoStore.switchLiveSearch(isLive);
     if (!isLive) {
       videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
     }
@@ -254,7 +275,10 @@ class AlarmDetailView extends Component {
   };
 
   renderAlertStatus = () => {
-    let {status} = this.props.alarmStore.selectedAlarm;
+    const {selectedAlarm} = this.props.alarmStore;
+    if (selectedAlarm == null) return;
+
+    let {status} = selectedAlarm;
     if (status == 1)
       return (
         <View style={styles.statusContainer}>
@@ -272,7 +296,7 @@ class AlarmDetailView extends Component {
           <Text
             numberOfLines={1}
             style={{fontSize: 12, color: CMSColors.White}}>
-            {AlarmTxt.process}
+            {ALARM_TXT.PROCESS}
           </Text>
         </View>
       );
@@ -280,6 +304,7 @@ class AlarmDetailView extends Component {
 
   renderImage = ({item}) => {
     const {selectedAlarm} = this.props.alarmStore;
+    if (selectedAlarm == null) return;
     const alertStatus = this.renderAlertStatus();
     let violationGroup = null;
     __DEV__ && console.log('GOND renderImage: ', item);
@@ -334,8 +359,9 @@ class AlarmDetailView extends Component {
   };
 
   renderInfoDescription = () => {
-    let {description, kAlertTypeVA, kAlertType, isSDAlert} =
-      this.props.alarmStore.selectedAlarm;
+    const {selectedAlarm} = this.props.alarmStore;
+    if (selectedAlarm == null) return;
+    let {description, kAlertTypeVA, kAlertType, isSDAlert} = selectedAlarm;
 
     // __DEV__ && console.log('GOND infoDesc: ', description);
     if (kAlertType != AlertTypes.DVR_VA_detection) {
@@ -441,7 +467,7 @@ class AlarmDetailView extends Component {
 
   renderTemperatureInfo = () => {
     const {selectedAlarm} = this.props.alarmStore;
-    if (!selectedAlarm || !selectedAlarm.extra) return null;
+    if (selectedAlarm == null || !selectedAlarm.extra) return null;
 
     const isIncreaseTemp =
       selectedAlarm.kAlertType === AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY;
@@ -490,6 +516,7 @@ class AlarmDetailView extends Component {
 
   renderInfo = index => {
     const {selectedAlarm} = this.props.alarmStore;
+    if (selectedAlarm == null) return;
 
     if (selectedAlarm.isTemperatureAlert) return this.renderTemperatureInfo();
     const padding = variable.contentPadding;
@@ -633,6 +660,7 @@ class AlarmDetailView extends Component {
 
   render() {
     const {selectedAlarm} = this.props.alarmStore;
+    if (selectedAlarm == null) return <View />;
     // const indicator = this.renderIndicator();
 
     const {imgSize} = this.state;

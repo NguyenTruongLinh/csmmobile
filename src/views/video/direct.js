@@ -128,47 +128,20 @@ class DirectVideoView extends React.Component {
   initReactions = () => {
     const {videoStore, singlePlayer} = this.props;
 
-    this.reactions = [
-      reaction(
-        () => videoStore.selectedChannel,
-        (value, previousValue) => {
-          // __DEV__ &&
-          //   console.log('GOND directPlayer selectedChannel changed ', previousValue, ' -> ', value);
-          // const {serverInfo, singlePlayer} = this.props;
-          if (!singlePlayer) {
-            if (value != null && previousValue == null) {
-              // if (!singlePlayer) {
-              //   this.pause(true);
-              // }
-              this.stop();
-            } else if (
-              value == null &&
-              previousValue != null // ||
-              // value == serverInfo.channelNo
-            ) {
-              // this.pause(false);
-              this.setNativePlayback();
-            }
-          }
-        }
-      ),
-      reaction(
-        () => videoStore.gridLayout,
-        () => {
-          __DEV__ &&
-            console.log(
-              'GOND on gridLayout changed: ',
-              this.props.serverInfo.channelName
-            );
-          this.stop();
-          setTimeout(() => this.setNativePlayback(), 1000);
-        }
-      ),
-    ];
-
+    // this.reactions = [];
     if (singlePlayer) {
+      // __DEV__ && console.log('GOND direct init singlePlayer reactions');
       this.reactions = [
-        ...this.reactions,
+        // ...this.reactions,
+        reaction(
+          () => videoStore.selectedChannel,
+          newChannelNo => {
+            this.stop();
+            __DEV__ &&
+              console.log('GOND direct on Channel changed: ', newChannelNo);
+            setTimeout(() => this.setNativePlayback(), 1000);
+          }
+        ),
         reaction(
           () => videoStore.hdMode,
           hdMode => {
@@ -185,9 +158,8 @@ class DirectVideoView extends React.Component {
                 videoStore.isLive
               );
             // if (singlePlayer) {
-            this.pause(true);
             // this.stop();
-            setTimeout(() => this.setNativePlayback(true), 1000);
+            this.setNativePlayback(true);
             // }
           }
         ),
@@ -195,9 +167,8 @@ class DirectVideoView extends React.Component {
           () => videoStore.searchDate,
           (searchDate, prevSearchDate) => {
             // if (singlePlayer) {
-            this.pause(true);
             // this.stop();
-            setTimeout(() => this.setNativePlayback(true), 1000);
+            this.setNativePlayback(true);
             // }
           }
         ),
@@ -206,6 +177,51 @@ class DirectVideoView extends React.Component {
           (paused, prevPaused) => {
             // singlePlayer &&
             this.pause(paused);
+          }
+        ),
+      ];
+    } else {
+      this.reactions = [
+        reaction(
+          () => videoStore.selectedChannel,
+          (value, previousValue) => {
+            // __DEV__ &&
+            //   console.log('GOND directPlayer selectedChannel changed ', previousValue, ' -> ', value);
+            // const {serverInfo, singlePlayer} = this.props;
+            // if (!singlePlayer) {
+            if (value != null && previousValue == null) {
+              // if (!singlePlayer) {
+              //   this.pause(true);
+              // }
+              __DEV__ &&
+                console.log(
+                  'GOND on selectedChannel changed: ',
+                  value,
+                  ' <= ',
+                  previousValue
+                );
+              this.stop();
+            } else if (
+              value == null &&
+              previousValue != null // ||
+              // value == serverInfo.channelNo
+            ) {
+              // this.pause(false);
+              this.setNativePlayback();
+            }
+            // }
+          }
+        ),
+        reaction(
+          () => videoStore.gridLayout,
+          () => {
+            __DEV__ &&
+              console.log(
+                'GOND on gridLayout changed: ',
+                this.props.serverInfo.channelName
+              );
+            this.stop();
+            setTimeout(() => this.setNativePlayback(), 1000);
           }
         ),
       ];
@@ -358,7 +374,7 @@ class DirectVideoView extends React.Component {
             startplayback: playbackInfo,
           });
         }
-      }, 200);
+      }, 500);
     } else {
       this.ffmpegPlayer.setNativeProps({
         startplayback: playbackInfo,
@@ -649,6 +665,7 @@ class DirectVideoView extends React.Component {
     if (this.ffmpegPlayer) {
       __DEV__ &&
         console.log('GOND on direct stop: ', this.props.serverInfo.channelName);
+      // __DEV__ && console.trace();
       this.ffmpegPlayer.setNativeProps({
         stop: true,
       });

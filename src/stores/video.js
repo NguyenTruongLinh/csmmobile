@@ -1254,22 +1254,23 @@ export const VideoModel = types
                 return false;
               }
             }
-            self.directStreams = [
-              DirectStreamModel.create({
-                server: self.directConnection.serverIP,
-                channel: targetChannel,
-                // playing: false,
-              }),
-            ];
-          } else {
-            self.directStreams = self.allChannels.map(ch =>
-              DirectStreamModel.create({
-                server: self.directConnection.serverIP,
-                channel: ch,
-                // playing: false,
-              })
-            );
+            // self.directStreams = [
+            //   DirectStreamModel.create({
+            //     server: self.directConnection.serverIP,
+            //     channel: targetChannel,
+            //     // playing: false,
+            //   }),
+            // ];
           }
+          // else {
+          self.directStreams = self.allChannels.map(ch =>
+            DirectStreamModel.create({
+              server: self.directConnection.serverIP,
+              channel: ch,
+              // playing: false,
+            })
+          );
+          // }
         } catch (err) {
           console.log('GOND cannot get direct video info: ', err);
           snackbarUtil.handleRequestFailed(err);

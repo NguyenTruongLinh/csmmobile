@@ -162,20 +162,22 @@ class VideoPlayerView extends Component {
     this.appState = nextAppState;
   };
 
-  checkDataOnSearchDate = () => {
+  checkDataOnSearchDate = selectedDate => {
     // dongpt: add no data (selected a day without data)
     const {videoStore} = this.props;
     const recordingDates = {...(videoStore.recordingDates ?? {})};
     // let datesList = [];
     let datesList = Object.keys(recordingDates);
 
-    let selectedDate = videoStore.searchDate.toFormat(CALENDAR_DATE_FORMAT);
+    // let selectedDate = videoStore.searchDate.toFormat(CALENDAR_DATE_FORMAT);
     __DEV__ &&
       console.log(
         'GOND checkDataOnSearchDate selectedDate = ',
         selectedDate,
         '\n --- object = ',
-        videoStore.searchDate
+        videoStore.searchDate,
+        ', result = ',
+        datesList.indexOf(selectedDate)
       );
     // let selectedDate = USE_TIMESTAMP ? this.state.sdate.format('CALENDAR_DATE_FORMAT') : dayjs(this.searchDate * 1000).format('CALENDAR_DATE_FORMAT'); // .utcOffset(0)
     if (
@@ -289,7 +291,12 @@ class VideoPlayerView extends Component {
     //   videoStore.setNoVideo(false);
     // }
 
-    if (this.checkDataOnSearchDate()) {
+    videoStore.setDisplayDateTime(
+      DateTime.fromFormat(value.dateString, CALENDAR_DATE_FORMAT).toFormat(
+        NVRPlayerConfig.FrameFormat
+      )
+    );
+    if (this.checkDataOnSearchDate(value.dateString)) {
       videoStore.setNoVideo(true);
       this.setState({showCalendar: false});
       videoStore.setSearchDate(value.dateString, CALENDAR_DATE_FORMAT);
