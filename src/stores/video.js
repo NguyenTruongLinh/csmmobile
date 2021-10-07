@@ -578,13 +578,14 @@ export const VideoModel = types
       },
       selectChannel(value) {
         const foundChannel = self.allChannels.find(ch => ch.channelNo == value);
-        __DEV__ &&
-          console.log('GOND selected Channel: ', getSnapshot(foundChannel));
         if (!foundChannel) {
           console.log('GOND selected Channel not found: ', value);
           snackbarUtil.onError('Selected channel not found!');
           return false;
         }
+        __DEV__ &&
+          console.log('GOND selected Channel: ', getSnapshot(foundChannel));
+
         if (self.noVideo) {
           self.setNoVideo(false);
         }

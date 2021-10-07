@@ -77,6 +77,7 @@ export const Video = {
   authenTitle: 'NVR Authorization',
   SELECT_CHANNEL_1: 'Please press ',
   SELECT_CHANNEL_2: ' to select channels',
+  NO_PERMISSION: "You don't have VSC permission",
 };
 
 export const STREAM_STATUS = {

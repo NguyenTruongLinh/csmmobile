@@ -3,6 +3,7 @@ import {View, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {inject, observer} from 'mobx-react';
 
 import InputTextIcon from '../../components/controls/InputTextIcon';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
 import snackbar from '../../util/snackbar';
 
@@ -11,23 +12,58 @@ import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
 import {Comps as CompTxt} from '../../localization/texts';
+import {reaction} from 'mobx';
 
 class RegionsView extends Component {
   constructor(props) {
     super(props);
     this._isMounted = false;
+    this.reactions = [];
   }
 
   componentWillUnmount() {
     __DEV__ && console.log('RegionsView componentWillUnmount');
     this._isMounted = false;
+
+    this.reactions && this.reactions.map(unsubscribe => unsubscribe());
   }
+
   componentDidMount() {
     this._isMounted = true;
     if (__DEV__) console.log('RegionsView componentDidMount');
 
     this.getRegionsList();
+    this.initReactions();
+    this.setHeader();
   }
+
+  initReactions = () => {
+    const {sitesStore} = this.props;
+
+    this.reactions = [
+      reaction(
+        () => sitesStore.isLoading,
+        () => this.setHeader()
+      ),
+    ];
+  };
+
+  setHeader = () => {
+    const {sitesStore, navigation} = this.props;
+
+    navigation.setOptions({
+      headerRight: () => (
+        <CMSTouchableIcon
+          size={22}
+          onPress={() => navigation.navigate(ROUTERS.VIDEO_SITES)}
+          color={CMSColors.IconButton}
+          styles={commonStyles.buttonSearchHeader}
+          iconCustom="sites"
+          disabled={sitesStore.isLoading}
+        />
+      ),
+    });
+  };
 
   getRegionsList = async () => {
     let res = await this.props.sitesStore.getSiteTree();

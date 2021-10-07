@@ -70,7 +70,7 @@ class AlarmDetailView extends Component {
     if (!alarmStore.rateConfig || alarmStore.rateConfig.length == 0) {
       alarmStore.getConfigs();
     }
-    this.refreshHeader();
+    this.setHeader();
     alarmStore.selectedAlarm.loadSnapshotImages();
     this.initReactions();
 
@@ -86,7 +86,7 @@ class AlarmDetailView extends Component {
     alarmStore.onExitAlarmDetail();
     videoStore.onExitSinglePlayer();
     videoStore.releaseStreams();
-    this.reactions.forEach(unsubscribe => unsubscribe());
+    this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
   }
 
   initReactions = () => {
@@ -103,7 +103,7 @@ class AlarmDetailView extends Component {
     ];
   };
 
-  refreshHeader = () => {
+  setHeader = () => {
     const {alarmStore} = this.props;
     const {selectedAlarm} = alarmStore;
     if (!selectedAlarm) return;
@@ -131,6 +131,11 @@ class AlarmDetailView extends Component {
         rating.rateId != selectedAlarm.rate
       );*/
 
+    // __DEV__ && console.log('GOND AlarmDetail setHeader: ', selectedAlarm);
+    const siteName =
+      selectedAlarm.siteName && selectedAlarm.siteName.length > 0
+        ? selectedAlarm.siteName
+        : selectedAlarm.serverID;
     this.props.navigation.setOptions({
       headerRight: () => (
         <Button
@@ -155,10 +160,10 @@ class AlarmDetailView extends Component {
           <Text style={{fontWeight: 'bold', fontSize: 18}}>
             {currentSnapshot.channelName}
           </Text>
-          <Text style={{}}>{selectedAlarm.siteName}</Text>
+          <Text style={{fontSize: 16, textAlign: 'center'}}>{siteName}</Text>
         </View>
       ),
-      headerTitleAlign: 'left',
+      headerTitleAlign: 'center',
     });
   };
 
@@ -176,12 +181,12 @@ class AlarmDetailView extends Component {
   };
 
   onNoteChange = value => {
-    this.setState({note: value}, () => this.refreshHeader());
+    this.setState({note: value}, () => this.setHeader());
   };
 
   onRatingChange = value => {
     this.setState({rating: this.props.alarmStore.getRate(5 - value)}, () =>
-      this.refreshHeader()
+      this.setHeader()
     );
   };
 
@@ -190,7 +195,7 @@ class AlarmDetailView extends Component {
     for (let i = 0; i < viewableItems.length; i++) {
       if (viewableItems.isViewable)
         this.setState({activeIndex: viewableItems.index}, () =>
-          this.refreshHeader()
+          this.setHeader()
         );
     }
   };

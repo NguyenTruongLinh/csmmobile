@@ -20,13 +20,13 @@ import appStore from './appStore';
 // const AppId = '4d53bce03ec34c0a911182d4c228ee6c';
 import {isNullOrUndef} from '../util/general';
 import snackbarUtil from '../util/snackbar';
-import {LocalDBName} from '../consts/misc';
+import {LocalDBName, MODULE_PERMISSIONS} from '../consts/misc';
 
 const ModuleModel = types
   .model({
-    moduleId: types.number,
     functionId: types.number,
     functionName: types.string,
+    moduleId: types.number,
   })
   .actions(self => ({
     parse(_module) {
@@ -588,6 +588,9 @@ export const UserStoreModel = types
     }),
     // #endregion
     // #region Settings:
+    hasPermission(id) {
+      return !!self.modules.find(mod => mod.functionId == id);
+    },
     updateProfile: flow(function* updateProfile(data) {
       self.user.updateProfile(data);
       let res = yield apiService.put(

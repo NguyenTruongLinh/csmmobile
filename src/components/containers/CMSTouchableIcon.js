@@ -132,7 +132,9 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <Icon
-            color={disabled ? disabledColor ?? cmscolors.Dark_Gray : color}
+            color={
+              disabled ? disabledColor ?? cmscolors.DisabledIconButton : color
+            }
             size={size}
             name={icon}
           />
@@ -142,7 +144,9 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <IconCustom
-            color={disabled ? disabledColor ?? cmscolors.Dark_Gray : color}
+            color={
+              disabled ? disabledColor ?? cmscolors.DisabledIconButton : color
+            }
             size={size}
             name={iconCustom}
           />
@@ -152,7 +156,9 @@ class CMSTouchableIcon extends React.Component {
       content = (
         <View style={[styles]}>
           <MaterialIcons
-            color={disabled ? disabledColor ?? cmscolors.Dark_Gray : color}
+            color={
+              disabled ? disabledColor ?? cmscolors.DisabledIconButton : color
+            }
             size={size}
             name={iconMaterial}
           />

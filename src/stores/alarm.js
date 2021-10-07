@@ -30,11 +30,19 @@ const AlarmSnapshot = types
     isLoading: types.boolean,
   })
   .actions(self => ({
-    getImage: flow(function* getImage(kDVR, kAlertEvent, isTempSDAlert) {
-      if (self.channelNo < 0 || self.time == 0) {
+    getImage: flow(function* (kDVR, kAlertEvent, isTempSDAlert) {
+      if (self.channelNo < 0 || (!isTempSDAlert && self.time == 0)) {
+        __DEV__ && console.log('GOND get snapshot no image');
         self.image = {url_thumnail: No_Image};
         return;
       }
+      // __DEV__ &&
+      //   console.log(
+      //     'GOND get snapshot isTempSD: ',
+      //     isTempSDAlert,
+      //     ', kAlertEvent: ',
+      //     kAlertEvent
+      //   );
       self.isLoading = true;
       try {
         const res = yield apiService.getBase64Stream(
@@ -42,11 +50,13 @@ const AlarmSnapshot = types
           String(isTempSDAlert ? kAlertEvent : self.time),
           isTempSDAlert ? Alert.image : Alert.imageTime,
           {
-            thumb: true,
+            thumb: false,
             kdvr: kDVR,
             ch: self.channelNo,
             next: null,
             download: false,
+            va: false,
+            ti: null,
           }
         );
 

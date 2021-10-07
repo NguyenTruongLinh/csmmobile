@@ -14,6 +14,7 @@ import {inject, observer} from 'mobx-react';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import BackButton from '../../components/controls/BackButton';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
 import snackbar from '../../util/snackbar';
 
@@ -36,12 +37,13 @@ class SitesView extends Component {
   componentWillUnmount() {
     __DEV__ && console.log('SitesView componentWillUnmount');
     this._isMounted = false;
-    this.props.sitesStore.setSiteFilter('');
+    this.props.sitesStore.onSitesViewExit();
     // BackHandler.removeEventListener('hardwareBackPress', this.onBack);
   }
 
   componentDidMount() {
     this._isMounted = true;
+    const {sitesStore, navigation} = this.props;
     if (__DEV__) console.log('SitesView componentDidMount');
 
     // BackHandler.addEventListener('hardwareBackPress', this.onBack);
@@ -52,13 +54,33 @@ class SitesView extends Component {
     //     e.preventDefault();
     //   }
     // };
-    if (!this.props.sitesStore.selectedRegion) {
+    if (!sitesStore.selectedRegion) {
       this.getSitesList();
-      this.props.navigation.setOptions({
-        headerLeft: () => null,
-      });
     }
+    this.setHeader();
   }
+
+  setHeader = () => {
+    const {sitesStore, navigation} = this.props;
+    if (sitesStore.selectedRegion != null) return;
+
+    const options = {
+      headerLeft: () => null,
+      headerRight: sitesStore.hasRegions
+        ? () => (
+            <CMSTouchableIcon
+              size={22}
+              onPress={() => navigation.navigate(ROUTERS.VIDEO_REGIONS)}
+              color={CMSColors.IconButton}
+              styles={commonStyles.buttonSearchHeader}
+              iconCustom="sites"
+            />
+          )
+        : undefined,
+    };
+
+    navigation.setOptions(options);
+  };
 
   getSitesList = async () => {
     let res = await this.props.sitesStore.getAllSites();
@@ -157,10 +179,8 @@ class SitesView extends Component {
           renderItem={this.renderItem}
           keyExtractor={item => item.key}
           data={sitesStore.filteredSites}
-          onRefresh={this.getSitesList}
-          refreshing={
-            this.props.sitesStore ? this.props.sitesStore.isLoading : false
-          }
+          onRefresh={sitesStore.hasRegions ? undefined : this.getSitesList}
+          refreshing={sitesStore.isLoading}
         />
       </View>
     );

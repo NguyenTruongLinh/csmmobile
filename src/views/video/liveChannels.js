@@ -27,8 +27,8 @@ import {IconCustom} from '../../components/CMSStyleSheet';
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import {CLOUD_TYPE, LAYOUT_DATA} from '../../consts/video';
-import sitesStore from '../../stores/sites';
 import ROUTERS from '../../consts/routes';
+import {MODULE_PERMISSIONS} from '../../consts/misc';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
@@ -161,7 +161,7 @@ class ChannelsView extends React.Component {
   };
 
   setHeader = enableSettingButton => {
-    const {navigation, videoStore} = this.props;
+    const {navigation, videoStore, sitesStore, userStore} = this.props;
     let gridIcon = 'grid-view-4';
     switch (videoStore.gridLayout) {
       case 3:
@@ -184,7 +184,10 @@ class ChannelsView extends React.Component {
               size={22}
               onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
               color={CMSColors.ColorText}
-              disabled={!enableSettingButton}
+              disabled={
+                !enableSettingButton ||
+                !userStore.hasPermission(MODULE_PERMISSIONS.VSC)
+              }
               styles={{
                 flex: 1,
                 width: 40,
@@ -532,7 +535,7 @@ class ChannelsView extends React.Component {
         />
       );
     const {videoWindow} = this.state;
-    const {videoStore} = this.props;
+    const {videoStore, userStore} = this.props;
 
     let playerProps = {
       with: videoWindow.width,
@@ -584,6 +587,22 @@ class ChannelsView extends React.Component {
     return player;
   };
 
+  renderInfoText = () => {
+    const {userStore} = this.props;
+
+    return userStore.hasPermission(MODULE_PERMISSIONS.VSC) ? (
+      <View style={styles.infoTextContainer}>
+        <Text>{VideoTxt.SELECT_CHANNEL_1}</Text>
+        <IconCustom name="add-cam" size={22} color={CMSColors.ColorText} />
+        <Text>{VideoTxt.SELECT_CHANNEL_2}</Text>
+      </View>
+    ) : (
+      <View style={styles.infoTextContainer}>
+        <Text>{VideoTxt.NO_PERMISSION}</Text>
+      </View>
+    );
+  };
+
   render() {
     // const authenModal = this.renderNVRAuthenModal();
     const {appStore, videoStore, navigation} = this.props;
@@ -626,23 +645,7 @@ class ChannelsView extends React.Component {
               refreshing={videoStore.isLoading}
             />
           ) : (
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: 'white',
-                flexDirection: 'row',
-                // paddingLeft: 20,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Text>{VideoTxt.SELECT_CHANNEL_1}</Text>
-              <IconCustom
-                name="add-cam"
-                size={22}
-                color={CMSColors.ColorText}
-              />
-              <Text>{VideoTxt.SELECT_CHANNEL_2}</Text>
-            </View>
+            this.renderInfoText()
           )}
         </View>
         {this.renderLayoutModal()}
@@ -692,10 +695,18 @@ const styles = StyleSheet.create({
     paddingLeft: 35,
     paddingRight: 35,
   },
+  infoTextContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default inject(
   'appStore',
   'videoStore',
-  'sitesStore'
+  'sitesStore',
+  'userStore'
 )(observer(ChannelsView));

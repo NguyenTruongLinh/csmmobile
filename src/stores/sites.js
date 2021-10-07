@@ -4,6 +4,7 @@ import {Route, Site as SiteRoute} from '../consts/apiRoutes';
 import {Login as LoginTxt} from '../localization/texts';
 import apiService from '../services/api';
 import utils from '../util/general';
+import snackbarUtil from '../util/snackbar';
 
 const DVRModel = types
   .model({
@@ -25,7 +26,7 @@ const parseDVR = data => {
 
 const SiteModel = types
   .model({
-    pacId: types.maybeNull(types.number),
+    // pacId: types.maybeNull(types.number),
     key: types.identifierNumber,
     name: types.string,
     regionKey: types.maybeNull(types.number),
@@ -53,7 +54,7 @@ const parseSite = _site => {
     name: _site.SiteName,
     pacId: _site.PacID,
     regionKey: _site.RegionKey == undefined ? null : _site.RegionKey,
-    defaultKDVR: _site.KDVR == undefined ? null : _site.KDVR,
+    // defaultKDVR: _site.KDVR == undefined ? null : _site.KDVR,
     dvrs: dvrs,
   });
 };
@@ -73,7 +74,7 @@ const RegionModel = types
   .model({
     // pacId: types.maybeNull(types.number),
     key: types.identifierNumber,
-    userKey: types.optional(types.number, 0),
+    userKey: types.maybeNull(types.number),
     name: types.optional(types.string, ''),
     parentId: types.maybeNull(types.number),
     descriptions: types.optional(types.string, ''),
@@ -91,8 +92,8 @@ const RegionModel = types
   }));
 
 const parseRegion = _regions => {
-  // let sites = Array.isArray(_regions.Childs)
-  //   ? _regions.Childs.map(item => parseDVR(item))
+  // let sites = Array.isArray(_regions.SitesList)
+  //   ? _regions.SitesList.map(item => parseSite(item))
   //   : [];
   return RegionModel.create({
     key: _regions.RegionKey,
@@ -100,7 +101,7 @@ const parseRegion = _regions => {
     name: _regions.RegionName,
     parentId: _regions.RegionParentId,
     descriptions: _regions.Description ?? '',
-    // sites: ,
+    // sites,
   });
 };
 
@@ -109,6 +110,7 @@ export const SitesMapModel = types
     regionsList: types.array(RegionModel),
     regionFilter: types.optional(types.string, ''),
     selectedRegion: types.maybeNull(types.reference(RegionModel)),
+    // oldSitesList: types.array(SiteModel), // support old API
     sitesList: types.array(SiteModel),
     siteFilter: types.string,
     selectedSite: types.maybeNull(types.reference(SiteModel)),
@@ -153,6 +155,21 @@ export const SitesMapModel = types
         dvr.name.toLowerCase().includes(self.dvrFilter.toLowerCase())
       );
     },
+    get hasRegions() {
+      return self.regionsList.length > 0;
+    },
+    // New API: get sites list from region data
+    // get newSitesList() {
+    //   return self.regionsList.reduce((result, region) => {
+    //     region.sites.forEach(s => result.push(s));
+    //     return result;
+    //   }, []);
+    // },
+    // get sitesList() {
+    //   return self.regionsList.length > 0
+    //     ? self.newSitesList
+    //     : self.oldSitesList;
+    // },
   }))
   .actions(self => ({
     parseSitesList(data, haveDVRs = false) {
@@ -245,6 +262,14 @@ export const SitesMapModel = types
     setDVRFilter(value) {
       self.dvrFilter = value;
     },
+    onSitesViewExit() {
+      self.siteFilter = '';
+      self.selectedRegion = null;
+    },
+    onNVRsViewExit() {
+      self.dvrFilter = '';
+      self.selectedSite = null;
+    },
     startLoad() {
       self.loadCounter++;
     },
@@ -292,6 +317,7 @@ export const SitesMapModel = types
       self.endLoad();
       return true;
     }),
+    /*
     getSiteTree: flow(function* getOAMSites() {
       self.startLoad();
       try {
@@ -348,6 +374,58 @@ export const SitesMapModel = types
         }
       } catch (err) {
         __DEV__ && console.log('GOND get site tree failed: ', err);
+        snackbarUtil.handleRequestFailed();
+      }
+      self.endLoad();
+      return false;
+    }),
+    */
+    getSiteTree: flow(function* () {
+      self.startLoad();
+      try {
+        const resRegions = yield apiService.get(
+          SiteRoute.controller,
+          apiService.configToken.userId ?? 0,
+          SiteRoute.getAllRegions
+        );
+        __DEV__ && console.log('GOND get regions: ', resRegions);
+        if (resRegions) {
+          // TODO: Map sites to region by key, can improve?
+          // self.sitesList.forEach(s => {
+          //   if (s.regionKey) {
+          //     const region = self.regionsList.find(reg => reg.key == s.regionKey);
+          //     if (region) region.push(s.key);
+          //   }
+          // });
+          if (Array.isArray(resRegions)) {
+            self.sitesList = resRegions.reduce((result, reg) => {
+              reg.SitesList.forEach(s => result.push(parseSite(s)));
+              return result;
+            }, []);
+
+            self.regionsList = resRegions
+              .map(reg => {
+                const newRegion = parseRegion(reg);
+                reg.SitesList.forEach(s => newRegion.pushSite(s.SiteKey));
+                return newRegion;
+              })
+              .filter(r => r.sites && r.sites.length > 0);
+          } else {
+            __DEV__ &&
+              console.log(
+                'GOND get site tree region data is not valid: ',
+                resRegions
+              );
+            return false;
+          }
+          __DEV__ &&
+            console.log('GOND get site tree result: ', self.regionsList);
+          self.endLoad();
+          return true;
+        }
+      } catch (err) {
+        __DEV__ && console.log('GOND get site tree failed: ', err);
+        snackbarUtil.handleRequestFailed();
       }
       self.endLoad();
       return false;
