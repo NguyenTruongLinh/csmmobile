@@ -150,15 +150,22 @@ class DirectVideoView extends React.Component {
           }
         ),
         reaction(
-          () => videoStore.isLive,
+          // () => videoStore.isLive,
+          () => this.props.isLive,
           (isLive, prevLive) => {
-            __DEV__ &&
+            /*__DEV__ &&
               console.log(
                 'GOND Direct switch mode: isLive = ',
-                videoStore.isLive
-              );
+                videoStore.isLive,
+                ', prop: ',
+                this.props.isLive
+              );*/
             // if (singlePlayer) {
             // this.stop();
+            this.props.serverInfo.setStreamStatus({
+              isLoading: true,
+              connectionStatus: STREAM_STATUS.CONNECTING,
+            });
             this.setNativePlayback(true);
             // }
           }
@@ -168,7 +175,23 @@ class DirectVideoView extends React.Component {
           (searchDate, prevSearchDate) => {
             // if (singlePlayer) {
             // this.stop();
-            this.setNativePlayback(true);
+            if (
+              searchDate &&
+              prevSearchDate &&
+              searchDate.toFormat(CALENDAR_DATE_FORMAT) !=
+                prevSearchDate.toFormat(CALENDAR_DATE_FORMAT)
+            ) {
+              __DEV__ &&
+                console.log(
+                  'GOND direct searchDate changed: ',
+                  searchDate
+                );
+              this.props.serverInfo.setStreamStatus({
+                isLoading: true,
+                connectionStatus: STREAM_STATUS.CONNECTING,
+              });
+              this.setNativePlayback(true);
+            }
             // }
           }
         ),
@@ -177,6 +200,21 @@ class DirectVideoView extends React.Component {
           (paused, prevPaused) => {
             // singlePlayer &&
             this.pause(paused);
+          }
+        ),
+        reaction(
+          () => videoStore.noVideo,
+          noVideo => {
+            const {serverInfo} = this.props;
+            if (
+              noVideo &&
+              serverInfo.connectionStatus != STREAM_STATUS.NOVIDEO
+            ) {
+              serverInfo.setStreamStatus({
+                isLoading: false,
+                connectionStatus: STREAM_STATUS.NOVIDEO,
+              });
+            }
           }
         ),
       ];
@@ -334,7 +372,7 @@ class DirectVideoView extends React.Component {
   }
   */
 
-  setNativePlayback(willPause = false, paramsObject = {}) {
+  setNativePlayback = (willPause = false, paramsObject = {}) => {
     const {serverInfo, videoStore, isLive, hdMode} = this.props;
     if (!this._isMounted || !this.ffmpegPlayer || !serverInfo.server) {
       __DEV__ &&
@@ -380,7 +418,7 @@ class DirectVideoView extends React.Component {
         startplayback: playbackInfo,
       });
     }
-  }
+  };
 
   onNativeMessage = event => {
     let {msgid, value} = event; //.nativeEvent;
@@ -816,30 +854,31 @@ class DirectVideoView extends React.Component {
               />
             )}
           </View>
-          {noVideo ? null : (
-            <View style={styles.playerView}>
-              {Platform.OS === 'ios' ? (
-                <FFMpegFrameViewIOS
-                  width={this.state.width} // {this.state.width}
-                  height={this.state.height} // {this.state.height}
-                  ref={ref => {
-                    this.ffmpegPlayer = ref;
-                  }}
-                  onFFMPegFrameChange={this.onNativeMessage}
-                />
-              ) : (
-                <FFMpegFrameView
-                  iterationCount={1}
-                  width={width}
-                  height={height}
-                  ref={ref => {
-                    this.ffmpegPlayer = ref;
-                  }}
-                  onFFMPegFrameChange={this.onNativeMessage}
-                />
-              )}
-            </View>
-          )}
+          {/* {noVideo ? null : ( */}
+          <View
+            style={[styles.playerView, {zIndexn: noVideo ? -1 : undefined}]}>
+            {Platform.OS === 'ios' ? (
+              <FFMpegFrameViewIOS
+                width={this.state.width} // {this.state.width}
+                height={this.state.height} // {this.state.height}
+                ref={ref => {
+                  this.ffmpegPlayer = ref;
+                }}
+                onFFMPegFrameChange={this.onNativeMessage}
+              />
+            ) : (
+              <FFMpegFrameView
+                iterationCount={1}
+                width={width}
+                height={height}
+                ref={ref => {
+                  this.ffmpegPlayer = ref;
+                }}
+                onFFMPegFrameChange={this.onNativeMessage}
+              />
+            )}
+          </View>
+          {/* )} */}
           {/* </View> */}
         </ImageBackground>
       </View>

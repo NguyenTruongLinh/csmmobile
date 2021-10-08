@@ -629,7 +629,7 @@ export const VideoModel = types
         return true;
       },
       setFrameTime(value, fromZone) {
-        __DEV__ && console.log('GOND setFrameTime ', value);
+        // __DEV__ && console.log('GOND setFrameTime ', value);
         if (typeof value == 'string') {
           // TODO: convert
           self.frameTime = DateTime.fromFormat(
@@ -801,6 +801,11 @@ export const VideoModel = types
           return;
         }
         __DEV__ && console.log('GOND setTimeline ', value);
+        if (value.length == 0) {
+          self.setNoVideo(true);
+          return;
+        }
+
         self.timeline = value.map(item =>
           // TimelineModel.create({
           ({
@@ -916,6 +921,9 @@ export const VideoModel = types
       },
       setNoVideo(value) {
         self.noVideo = value;
+        self.displayDateTime = self.searchDate.toFormat(
+          NVRPlayerConfig.FrameFormat
+        );
       },
       setPlayTimeForSearch(value) {
         self.searchPlayTime = value;

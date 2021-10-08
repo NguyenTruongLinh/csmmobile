@@ -62,22 +62,27 @@ class SitesView extends Component {
 
   setHeader = () => {
     const {sitesStore, navigation} = this.props;
-    if (sitesStore.selectedRegion != null) return;
-
-    const options = {
-      headerLeft: () => null,
-      headerRight: sitesStore.hasRegions
-        ? () => (
-            <CMSTouchableIcon
-              size={22}
-              onPress={() => navigation.navigate(ROUTERS.VIDEO_REGIONS)}
-              color={CMSColors.IconButton}
-              styles={commonStyles.buttonSearchHeader}
-              iconCustom="sites"
-            />
-          )
-        : undefined,
-    };
+    let options = {};
+    if (sitesStore.selectedRegion == null) {
+      options = {
+        headerLeft: () => null,
+        headerRight: sitesStore.hasRegions
+          ? () => (
+              <CMSTouchableIcon
+                size={22}
+                onPress={() => navigation.navigate(ROUTERS.VIDEO_REGIONS)}
+                color={CMSColors.IconButton}
+                styles={commonStyles.buttonSearchHeader}
+                iconCustom="solid_region"
+              />
+            )
+          : undefined,
+      };
+    } else {
+      options = {
+        headerTitle: sitesStore.selectedRegion.name ?? 'Unknow region',
+      };
+    }
 
     navigation.setOptions(options);
   };
