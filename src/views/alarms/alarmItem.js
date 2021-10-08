@@ -104,7 +104,9 @@ class AlarmItem extends React.Component {
           }}>
           <IconCustom name="sites" size={14} color={CMSColors.SecondaryText} />
         </View>
-        <Text style={styles.subtext}>{siteName ?? site}</Text>
+        <Text style={styles.subtext}>
+          {siteName && siteName.length > 0 ? siteName : site.split(':')[0]}
+        </Text>
       </View>
     );
   };
@@ -197,55 +199,56 @@ class AlarmItem extends React.Component {
     );
   };
 
-  customDescription = (desc, kAlertTypeVA) => {
-    if (!desc) return;
-    try {
-      // version old
-      if (desc.includes(':')) {
-        let lst = desc.split(' ');
-        if (!lst || lst.length == 0) return '';
-        lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
-        return lst.join(' ');
-      } else {
-        let lst = desc.split('.');
-        if (!lst || lst.length == 0) return '';
-        lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
-        lst[lst.length - 2] = util.capitalize(lst[lst.length - 2], '&');
-        lst[lst.length - 2] = ': ' + util.capitalize(lst[lst.length - 2], '/');
-        return lst.map(s => s.trim()).join(' ');
-      }
-    } catch (err) {
-      __DEV__ && console.log('GOND custom desciption failed: ', err);
-      return;
-    }
-  };
+  // customDescription = (desc, kAlertTypeVA) => {
+  //   if (!desc) return;
+  //   try {
+  //     // version old
+  //     if (desc.includes(':')) {
+  //       let lst = desc.split(' ');
+  //       if (!lst || lst.length == 0) return '';
+  //       lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
+  //       return lst.join(' ');
+  //     } else {
+  //       let lst = desc.split('.');
+  //       if (!lst || lst.length == 0) return '';
+  //       lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
+  //       lst[lst.length - 2] = util.capitalize(lst[lst.length - 2], '&');
+  //       lst[lst.length - 2] = ': ' + util.capitalize(lst[lst.length - 2], '/');
+  //       return lst.map(s => s.trim()).join(' ');
+  //     }
+  //   } catch (err) {
+  //     __DEV__ && console.log('GOND custom desciption failed: ', err);
+  //     return;
+  //   }
+  // };
 
   renderDescription = () => {
-    let {description, kAlertTypeVA, kAlertType, status} = this.props.data;
-    let descriptCustomVA = '';
-    let areaName = '';
-    // console.log('GOND renderDescription kAlertType = ', kAlertType)
-    switch (kAlertType) {
-      case AlertTypes.DVR_Sensor_Triggered:
-        descriptCustomVA = description;
-        break;
-      case AlertTypes.DVR_VA_detection:
-        descriptCustomVA = this.customDescription(description, kAlertTypeVA);
-        break;
-      case AlertTypes.TEMPERATURE_OUT_OF_RANGE:
-      case AlertTypes.TEMPERATURE_NOT_WEAR_MASK:
-      case AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY:
-        descriptCustomVA = AlertNames[kAlertType.toString()];
-        break;
-      case AlertTypes.SOCIAL_DISTANCE:
-        areaName = description.split(',')[0];
-        descriptCustomVA = areaName
-          ? areaName + ': Social distance'
-          : 'Social distance';
-        break;
-    }
+    let {description, kAlertTypeVA, kAlertType, status, customDescription} =
+      this.props.data;
+    // let descriptCustomVA = '';
+    // let areaName = '';
+    // // console.log('GOND renderDescription kAlertType = ', kAlertType)
+    // switch (kAlertType) {
+    //   case AlertTypes.DVR_Sensor_Triggered:
+    //     descriptCustomVA = description;
+    //     break;
+    //   case AlertTypes.DVR_VA_detection:
+    //     descriptCustomVA = this.customDescription(description, kAlertTypeVA);
+    //     break;
+    //   case AlertTypes.TEMPERATURE_OUT_OF_RANGE:
+    //   case AlertTypes.TEMPERATURE_NOT_WEAR_MASK:
+    //   case AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY:
+    //     descriptCustomVA = AlertNames[kAlertType.toString()];
+    //     break;
+    //   case AlertTypes.SOCIAL_DISTANCE:
+    //     areaName = description.split(',')[0];
+    //     descriptCustomVA = areaName
+    //       ? areaName + ': Social distance'
+    //       : 'Social distance';
+    //     break;
+    // }
 
-    // console.log('GOND descriptCustomVA = ', descriptCustomVA)
+    // console.log('GOND customDescription = ', customDescription)
     if (status == 1) {
       return (
         <View style={styles.descriptionContainer}>
@@ -264,14 +267,16 @@ class AlarmItem extends React.Component {
             {util.isTemperatureAlert(kAlertType) ? AlertNames[kAlertType] : util.capitalize(descriptCustomVA)}
           </Text> */}
           <Text numberOfLines={1} style={styles.description}>
-            {util.capitalize(descriptCustomVA)}
+            {/* {util.capitalize(descriptCustomVA)} */}
+            {util.capitalize(customDescription)}
           </Text>
         </View>
       );
     }
     return (
       <Text numberOfLines={1} style={styles.description}>
-        {util.capitalize(descriptCustomVA)}
+        {/* {util.capitalize(descriptCustomVA)} */}
+        {util.capitalize(customDescription)}
       </Text>
     );
   };

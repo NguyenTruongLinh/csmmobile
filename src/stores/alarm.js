@@ -5,7 +5,7 @@ import snackbarUtil from '../util/snackbar';
 import util from '../util/general';
 
 import {No_Image} from '../consts/images';
-import {AlertTypes, AlertType_Support} from '../consts/misc';
+import {AlertTypes, AlertType_Support, AlertNames} from '../consts/misc';
 import {ACConfig, Alert, AlertType} from '../consts/apiRoutes';
 
 const ID_Canned_Message = 5;
@@ -183,6 +183,47 @@ const AlarmData = types
     },
     get isTempSDAlert() {
       return self.isTemperatureAlert || self.isSDAlert;
+    },
+    get customDescription() {
+      switch (self.kAlertType) {
+        case AlertTypes.DVR_Sensor_Triggered:
+          return self.description;
+        case AlertTypes.DVR_VA_detection:
+          const desc = self.description;
+          try {
+            __DEV__ && console.log('GOND custom desciption VA: ', desc);
+            // version old
+            if (desc.includes(':')) {
+              let lst = desc.split(' ');
+              // Remove first element
+              lst.shift();
+              if (!lst || lst.length == 0) return '';
+              lst[lst.length - 1] = util.getAlertTypeVA(self.kAlertTypeVA);
+              return lst.map(s => s.trim()).join(' ');
+            } else {
+              let lst = desc.split('.');
+              // Remove first 2 elements
+              lst = lst.filter((val, idx) => idx > 1);
+              if (!lst || lst.length == 0) return '';
+              lst[lst.length - 1] = util.getAlertTypeVA(self.kAlertTypeVA);
+              lst[lst.length - 2] = util.capitalize(lst[lst.length - 2], '&');
+              lst[lst.length - 2] =
+                ': ' + util.capitalize(lst[lst.length - 2], '/');
+              return lst.map(s => s.trim()).join(' ');
+            }
+          } catch (err) {
+            __DEV__ && console.log('GOND custom desciption failed: ', err);
+            return desc;
+          }
+
+        case AlertTypes.TEMPERATURE_OUT_OF_RANGE:
+        case AlertTypes.TEMPERATURE_NOT_WEAR_MASK:
+        case AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY:
+          return AlertNames[self.kAlertType.toString()];
+        case AlertTypes.SOCIAL_DISTANCE:
+          let areaName = self.description.split(',')[0];
+          return areaName ? areaName + ': Social distance' : 'Social distance';
+      }
     },
   }))
   .actions(self => ({
@@ -366,7 +407,9 @@ export const AlarmModel = types
           item.serverID.toLowerCase().includes(self.filterText) ||
           item.siteName.toLowerCase().includes(self.filterText) ||
           item.alertType.toLowerCase().includes(self.filterText) ||
-          item.description.toLowerCase().includes(self.filterText)
+          item.description.toLowerCase().includes(self.filterText) ||
+          // AlertNames[item.kAlertType.toString()].includes(self.filterText)
+          item.customDescription.toLowerCase().includes(self.filterText)
       );
     },
     get filteredSearchData() {
@@ -376,7 +419,9 @@ export const AlarmModel = types
           item.serverID.toLowerCase().includes(self.filterText) ||
           item.siteName.toLowerCase().includes(self.filterText) ||
           item.alertType.toLowerCase().includes(self.filterText) ||
-          item.description.toLowerCase().includes(self.filterText)
+          item.description.toLowerCase().includes(self.filterText) ||
+          // AlertNames[item.kAlertType.toString()].includes(self.filterText)
+          item.customDescription.toLowerCase().includes(self.filterText)
       );
     },
     getRate(id) {
