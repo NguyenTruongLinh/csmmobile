@@ -154,6 +154,7 @@ class AuthenModal extends Component {
             disabled={false}
             secureTextEntry={!showpass}
             limit={32}
+            revealable={true}
           />
           {/* {check_box} */}
         </View>

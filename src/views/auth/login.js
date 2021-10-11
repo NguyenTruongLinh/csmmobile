@@ -325,6 +325,7 @@ class LoginView extends Component {
                   textColor={CMSColors.PrimaryText}
                   baseColor={CMSColors.PrimaryText}
                   secureTextEntry={true}
+                  revealable={true}
                 />
               </View>
             </View>

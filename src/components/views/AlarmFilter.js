@@ -738,7 +738,8 @@ export default class AlarmFilter extends Component {
           .map(x => {
             return {
               id: x.id,
-              name: x.id == 8 ? 'Ai Detection' : util.getAlertTypeVA(x.id),
+              name:
+                x.id == 8 ? 'Ai Detection' : util.getAlertTypeVA(x.id, x.name),
             };
           });
         // __DEV__ &&

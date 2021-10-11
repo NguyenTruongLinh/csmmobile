@@ -436,7 +436,7 @@ exports.getColorStatus = status => {
   }
 };
 
-exports.getAlertTypeVA = status => {
+exports.getAlertTypeVA = (status, codeName) => {
   switch (status) {
     case AlertTypeVA.Unknown:
       return 'Unknown';
@@ -457,7 +457,28 @@ exports.getAlertTypeVA = status => {
     case AlertTypeVA.AIDetection:
       return 'Detected';
     default:
-      return '';
+      if (!codeName || typeof codeName != 'string') return '';
+      return codeName;
+      /*
+      // Try to breakdown code name into human name
+      let lastUpperCase = false;
+      return codeName.reduce((result, char, index) => {
+        if (index == 0) {
+          lastUpperCase = true;
+          return result + char.toUpperCase();
+        }
+        if (char == char.toUpperCase()) {
+          if (lastUpperCase) {
+            return result + char;
+          }
+          lastUpperCase = true;
+          return result + ' ' + char;
+        }
+        lastUpperCase = false;
+        return result + char;
+      }, '');
+      */
+      break;
   }
 };
 
