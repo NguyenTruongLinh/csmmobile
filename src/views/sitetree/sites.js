@@ -54,7 +54,10 @@ class SitesView extends Component {
     //     e.preventDefault();
     //   }
     // };
-    if (!sitesStore.selectedRegion) {
+    if (
+      !sitesStore.selectedRegion &&
+      (!sitesStore.sitesList || sitesStore.sitesList.length == 0)
+    ) {
       this.getSitesList();
     }
     this.setHeader();

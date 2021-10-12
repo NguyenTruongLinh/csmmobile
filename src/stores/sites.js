@@ -297,7 +297,7 @@ export const SitesMapModel = types
       self.endLoad();
       return true;
     }),
-    getAllSites: flow(function* getAllSites() {
+    getAllSites: flow(function* () {
       // self.isLoading = true;
       self.startLoad();
       try {
