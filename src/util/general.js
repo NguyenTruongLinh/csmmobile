@@ -456,10 +456,13 @@ exports.getAlertTypeVA = (status, codeName) => {
       return 'Many Human';
     case AlertTypeVA.AIDetection:
       return 'Detected';
+    case AlertTypeVA.AICamera:
+      return 'AI Camera';
+    case AlertTypeVA.AICrossWire:
+      return 'Cross Wire';
     default:
-      if (!codeName || typeof codeName != 'string') return '';
-      return codeName;
-      /*
+      // if (!codeName || typeof codeName != 'string') return '';
+      // return codeName;
       // Try to breakdown code name into human name
       let lastUpperCase = false;
       return codeName.reduce((result, char, index) => {
@@ -477,8 +480,7 @@ exports.getAlertTypeVA = (status, codeName) => {
         lastUpperCase = false;
         return result + char;
       }, '');
-      */
-      break;
+    // break;
   }
 };
 

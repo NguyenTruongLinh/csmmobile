@@ -384,6 +384,8 @@ export const AlertTypeVA = {
   Direction: 6,
   ManyHuman: 7,
   AIDetection: 8,
+  AICamera: 9,
+  AICrossWire: 10,
 };
 
 export const FilterMore = {
