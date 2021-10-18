@@ -182,10 +182,7 @@ class DirectVideoView extends React.Component {
                 prevSearchDate.toFormat(CALENDAR_DATE_FORMAT)
             ) {
               __DEV__ &&
-                console.log(
-                  'GOND direct searchDate changed: ',
-                  searchDate
-                );
+                console.log('GOND direct searchDate changed: ', searchDate);
               this.props.serverInfo.setStreamStatus({
                 isLoading: true,
                 connectionStatus: STREAM_STATUS.CONNECTING,
@@ -823,7 +820,7 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo, noVideo} = this.props;
+    const {width, height, channelInfoPosTop, serverInfo, noVideo} = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
@@ -839,7 +836,7 @@ class DirectVideoView extends React.Component {
           style={{width: width, height: height}}
           resizeMode="stretch">
           {/* <View style={{width: width, height: height}}> */}
-          <Text style={styles.channelInfo}>
+          <Text style={[styles.channelInfo, {top: channelInfoPosTop}]}>
             {serverInfo.channelName ?? 'Unknown'}
           </Text>
           <View style={styles.statusView}>

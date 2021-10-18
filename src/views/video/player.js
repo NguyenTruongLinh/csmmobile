@@ -29,6 +29,7 @@ import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
 import RTCStreamingView from './rtc';
 import {IconCustom} from '../../components/CMSStyleSheet';
+import {StatusBar} from 'react-native';
 
 import snackbar from '../../util/snackbar';
 import {normalize, isNullOrUndef} from '../../util/general';
@@ -457,6 +458,12 @@ class VideoPlayerView extends Component {
     const {selectedStream} = videoStore;
     const {pause, sWidth, sHeight} = this.state;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
+    const channelInfoPosTop = videoStore.isFullscreen
+      ? StatusBar.currentHeight +
+        (this.state.showController
+          ? ((sHeight - StatusBar.currentHeight) * 15) / 100
+          : 0)
+      : 0;
     // __DEV__ && console.log('GOND renderVid player: ', selectedStream);
     if (!selectedStream) {
       return (
@@ -470,6 +477,7 @@ class VideoPlayerView extends Component {
     let playerProps = {
       width: sWidth,
       height: height,
+      channelInfoPosTop: channelInfoPosTop,
       hdMode: videoStore.hdMode,
       isLive: videoStore.isLive,
       noVideo: videoStore.isLive ? false : videoStore.noVideo, // this.isNoDataSearch,
