@@ -66,13 +66,13 @@ const ChannelConnectionModel = types
       };
     },
     get kChannel() {
-      return self.channel.kChannel;
+      return self.channel ? self.channel.kChannel : -1;
     },
     get channelNo() {
-      return self.channel.channelNo;
+      return self.channel ? self.channel.channelNo : -1;
     },
     get channelName() {
-      return self.channel.name;
+      return self.channel ? self.channel.name : '';
     },
   }))
   .actions(self => {

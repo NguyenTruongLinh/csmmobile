@@ -29,6 +29,8 @@ class AuthenModal extends Component {
       password: password ?? '',
       // showpasslable: ShowPassLabel ? ShowPassLabel : str_showpass,
     };
+
+    this._refs = {};
   }
 
   checkData = ({username, password}) => {
@@ -48,8 +50,8 @@ class AuthenModal extends Component {
 
   onSubmitEditing = () => {
     let focus = false;
-    for (let key in this.refs) {
-      let ref = this.refs[key];
+    for (let key in this._refs) {
+      let ref = this._refs[key];
       if (focus) {
         ref.focus();
         break;
@@ -61,8 +63,8 @@ class AuthenModal extends Component {
   onChangeText = text => {
     let tmp = {};
     let last_key = '';
-    for (let key in this.refs) {
-      let ref = this.refs[key];
+    for (let key in this._refs) {
+      let ref = this._refs[key];
       tmp[key] = this.state[key];
       if (ref && ref.isFocused && ref.isFocused()) {
         tmp[key] = text;
@@ -103,7 +105,7 @@ class AuthenModal extends Component {
   //       <Ripple
   //         style={[styles.checkboxRipple]}
   //         onPress={() => {
-  //           this.refs['password'].blur();
+  //           this._refs['password'].blur();
   //           this.setState({showpass: !this.state.showpass});
   //         }}>
   //         <View style={{paddingRight: normalize(12)}}>
@@ -126,7 +128,7 @@ class AuthenModal extends Component {
         </View>
         <View style={[styles.body]}>
           <InputTextIcon
-            ref="username"
+            ref={r => (this._refs.username = r)}
             value={this.state.username}
             autoCorrect={false}
             enablesReturnKeyAutomatically={true}
@@ -141,7 +143,7 @@ class AuthenModal extends Component {
             secureTextEntry={false}
           />
           <InputTextIcon
-            ref="password"
+            ref={r => (this._refs.password = r)}
             value={this.state.password}
             autoCorrect={false}
             enablesReturnKeyAutomatically={true}

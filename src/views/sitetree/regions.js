@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {View, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {inject, observer} from 'mobx-react';
+import Ripple from 'react-native-material-ripple';
 
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
@@ -82,7 +83,7 @@ class RegionsView extends Component {
   onRegionSelected = item => {
     const {sitesStore, navigation} = this.props;
     sitesStore.selectRegion(item);
-    this.props.appStore.naviService.push(ROUTERS.VIDEO_SITES);
+    navigation.push(ROUTERS.VIDEO_SITES);
     // if (item.dvrs.length == 1) {
     //   sitesStore.selectDVR(item.dvrs[0]);
     //   navigation.push(ROUTERS.VIDEO_CHANNELS);
@@ -101,7 +102,7 @@ class RegionsView extends Component {
     const itemHeight = Dimensions.get('window').height / 16;
     return (
       <View style={{height: itemHeight + 1}}>
-        <TouchableOpacity
+        <Ripple
           style={{
             height: itemHeight,
             backgroundColor: CMSColors.White,
@@ -112,9 +113,10 @@ class RegionsView extends Component {
             borderBottomWidth: variables.borderWidthRow,
             borderColor: CMSColors.BorderColorListRow,
           }}
+          rippleOpacity={0.8}
           onPress={() => this.onRegionSelected(item)}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
-        </TouchableOpacity>
+        </Ripple>
       </View>
     );
   };

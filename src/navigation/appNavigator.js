@@ -13,19 +13,6 @@ import LoginView from '../views/auth/login';
 
 import HomeView from '../views/home/home';
 
-import HealthView from '../views/health/health';
-import HealthDetailView from '../views/health/healthDetail';
-import AlertsView from '../views/health/alerts';
-import AlertDetailView from '../views/health/alertDetail';
-
-import RegionsView from '../views/sitetree/regions';
-import SitesView from '../views/sitetree/sites';
-import NVRsView from '../views/sitetree/nvrs';
-
-// import ChannelsView from '../views/video/liveChannels';
-// import ChannelsSettingView from '../views/video/channelsSetting';
-// import VideoPlayerView from '../views/video/player';
-
 import SummaryView from '../views/pos/summary';
 import ExceptionsView from '../views/pos/transactions';
 import TransactionDetailView from '../views/pos/transactionDetail';
@@ -34,19 +21,14 @@ import TransactionFCMView from '../views/pos/transactionDetailFCM';
 import OAMSitesView from '../views/oam/oamSites';
 import OAMDetailView from '../views/oam/detail';
 
-// import SettingsView from '../views/settings/settings';
-// import ProfileView from '../views/settings/profile';
-// import AboutViews from '../views/settings/about';
-// import NotifySettingView from '../views/settings/notify';
-// import VideoSettingView from '../views/settings/video';
-
 import VideoStack from './videoNavigator';
 import SettingsStack from './settingsNavigator';
 import AlarmStack from './alarmNavigator';
+import HealthStack from './healthNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
 import ROUTERS from '../consts/routes';
-import cmscolors from '../styles/cmscolors';
+// import cmscolors from '../styles/cmscolors';
 
 // const getHeaderOptions = route => {
 //   const headerTitle = getHeaderTitle(route);
@@ -63,60 +45,6 @@ import cmscolors from '../styles/cmscolors';
 //   };
 // };
 
-// const AStack = createStackNavigator();
-// const AlarmStack = () => (
-//   <AStack.Navigator initialRouteName={ROUTERS.ALARM_LIVE} headerMode="none">
-//     <AStack.Screen name={ROUTERS.ALARM_LIVE} component={AlarmsLiveView} />
-//     <AStack.Screen name={ROUTERS.ALARM_SEARCH} component={AlarmsSearchView} />
-//     <AStack.Screen name={ROUTERS.ALARM_DETAIL} component={AlarmDetailView} />
-//   </AStack.Navigator>
-// );
-
-// const VStack = createStackNavigator();
-// const VideoStack = () => (
-//   <VStack.Navigator initialRouteName={ROUTERS.VIDEO_REGIONS} headerMode="none">
-//     <VStack.Screen name={ROUTERS.VIDEO_REGIONS} component={RegionsView} />
-//     <VStack.Screen name={ROUTERS.VIDEO_SITES} component={SitesView} />
-//     <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
-//     <VStack.Screen name={ROUTERS.VIDEO_CHANNELS} component={ChannelsView} />
-//     <VStack.Screen
-//       name={ROUTERS.VIDEO_CHANNELS_SETTING}
-//       component={ChannelsSettingView}
-//     />
-//     <VStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
-//   </VStack.Navigator>
-// );
-
-// const OPStack = createStackNavigator();
-// const OptionsStack = () => (
-//   <OPStack.Navigator
-//     initialRouteName={ROUTERS.OPTIONS}
-//     screenOptions={{
-//       headerStyle: {
-//         backgroundColor: CMSColors.White,
-//       },
-//       headerStatusBarHeight: 35,
-//       headerTitleStyle: {
-//         alignSelf: 'center',
-//       },
-//     }}>
-//     <OPStack.Screen
-//       name={ROUTERS.OPTIONS}
-//       component={SettingsView}
-//       options={{
-//         title: 'Settings',
-//       }}
-//     />
-//     <OPStack.Screen name={ROUTERS.OPTIONS_PROFILE} component={ProfileView} />
-//     <OPStack.Screen name={ROUTERS.OPTIONS_ABOUT} component={AboutViews} />
-//     <OPStack.Screen
-//       name={ROUTERS.OPTIONS_NOTIFY}
-//       component={NotifySettingView}
-//     />
-//     <OPStack.Screen name={ROUTERS.OPTIONS_VIDEO} component={VideoSettingView} />
-//   </OPStack.Navigator>
-// );
-
 const OAStack = createStackNavigator();
 const OAMStack = () => (
   <OAStack.Navigator initialRouteName={ROUTERS.OAM_SITES} headerMode="float">
@@ -125,18 +53,18 @@ const OAMStack = () => (
   </OAStack.Navigator>
 );
 
-const HStack = createStackNavigator();
-const HealthStack = () => (
-  <HStack.Navigator initialRouteName={ROUTERS.HEALTH_SITES} headerMode="float">
-    <HStack.Screen name={ROUTERS.HEALTH_SITES} component={HealthView} />
-    <HStack.Screen name={ROUTERS.HEALTH_DETAIL} component={HealthDetailView} />
-    <HStack.Screen name={ROUTERS.HEALTH_ALERTS} component={AlertsView} />
-    <HStack.Screen
-      name={ROUTERS.HEALTH_ALERT_DETAIL}
-      component={AlertDetailView}
-    />
-  </HStack.Navigator>
-);
+// const HStack = createStackNavigator();
+// const HealthStack = () => (
+//   <HStack.Navigator initialRouteName={ROUTERS.HEALTH_SITES} headerMode="float">
+//     <HStack.Screen name={ROUTERS.HEALTH_SITES} component={HealthView} />
+//     <HStack.Screen name={ROUTERS.HEALTH_DETAIL} component={HealthDetailView} />
+//     <HStack.Screen name={ROUTERS.HEALTH_ALERTS} component={AlertsView} />
+//     <HStack.Screen
+//       name={ROUTERS.HEALTH_ALERT_DETAIL}
+//       component={AlertDetailView}
+//     />
+//   </HStack.Navigator>
+// );
 
 const PStack = createStackNavigator();
 const POSStack = () => (

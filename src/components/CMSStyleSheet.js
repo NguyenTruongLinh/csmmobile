@@ -35,4 +35,5 @@ module.exports = {
   Icon: Icon,
   IconCustom: IconCustom,
   MaterialIcons: MaterialIcons,
+  ListViewHeight: 56,
 };

@@ -6,11 +6,17 @@ const non_employee_16_9 = require('../assets/images/common/non_employee_16_9.png
 const i3_logo = require('../assets/images/common/I3-logo.png');
 const cmsLogo = require('../assets/images/common/logo.png');
 
-const _Intro_Begin = require('../../assets/images/intro/intro.png');
-const _Intro_Health = require('../../assets/images/intro/health.png');
-const _Intro_Video = require('../../assets/images/intro/video.png');
-const _Intro_Smarter = require('../../assets/images/intro/smarter.png');
-const _Intro_OAM = require('../../assets/images/intro/oam.png');
+const _Intro_Begin = require('../assets/images/intro/intro.png');
+const _Intro_Health = require('../assets/images/intro/health.png');
+const _Intro_Video = require('../assets/images/intro/video.png');
+const _Intro_Smarter = require('../assets/images/intro/smarter.png');
+const _Intro_OAM = require('../assets/images/intro/oam.png');
+
+const _Home_Alarm = require('../assets/images/home/alarm.png');
+const _Home_Health = require('../assets/images/home/healthMonitor.png');
+const _Home_OAM = require('../assets/images/home/oam.png');
+const _Home_SmartER = require('../assets/images/home/smartER.png');
+const _Home_Video = require('../assets/images/home/video.png');
 
 const _Setting_Video_Direct = require('../assets/images/common/direct-connect.png');
 const _Setting_Video_Cloud = require('../assets/images/common/media-stream.png');
@@ -29,6 +35,12 @@ export const Intro_Health = _Intro_Health;
 export const Intro_Video = _Intro_Video;
 export const Intro_Smarter = _Intro_Smarter;
 export const Intro_OAM = _Intro_OAM;
+
+export const Home_Alarm = _Home_Alarm;
+export const Home_Health = _Home_Health;
+export const Home_OAM = _Home_OAM;
+export const Home_SmartER = _Home_SmartER;
+export const Home_Video = _Home_Video;
 
 export const Setting_Video_Direct = _Setting_Video_Direct;
 export const Setting_Video_Cloud = _Setting_Video_Cloud;

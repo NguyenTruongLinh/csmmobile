@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
+import Ripple from 'react-native-material-ripple';
 
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -65,7 +66,7 @@ class NVRsView extends Component {
     const itemHeight = Dimensions.get('window').height / 16;
     return (
       <View style={{height: itemHeight + 1}}>
-        <TouchableOpacity
+        <Ripple
           style={{
             height: itemHeight,
             backgroundColor: CMSColors.White,
@@ -78,7 +79,7 @@ class NVRsView extends Component {
           }}
           onPress={() => this.onNVRSelected(item)}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
-        </TouchableOpacity>
+        </Ripple>
       </View>
     );
   };

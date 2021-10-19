@@ -95,7 +95,13 @@ module.exports = {
   BtnNumberListRow: Bright_Red,
   TextNumberListRow: Very_Light_Gray_Mostly_White,
   HeaderListRow: '#F7F7F7',
-  BorderColorListRow: 'rgb(204, 204, 204)',
+  BorderColorListRow: 'rgba(204, 204, 204, 0.5)',
+
+  // HOME:
+  WidgetBackground: '#F7F7F7',
+  WidgetBorder: 'rgba(7,135,209,0.2)',
+  HomeHeader: '#005673',
+  BoxShadow: 'rgba(0, 0, 0, 0.06)',
 
   //OPTIONS
   RowOptions: '#757575',
@@ -108,6 +114,8 @@ module.exports = {
   IconButton: Very_Dark_Gray,
   PrimaryActive: '#00AFFF',
   Inactive: '#DCE4EA',
+  Dismiss: 'rgba(239, 173, 78, 1)',
+  TotalAlerts: 'rgba(217, 83, 79, 1)',
 
   //Bottom Bar
   BackgroundBar: '#fff',

@@ -35,6 +35,13 @@ export const Alert = {
   image: 'image',
 };
 
+export const Health = {
+  controler: 'Mobile_SiteAlert',
+  summaryController: 'alertsummary',
+  dvrAlerts: 'GetAlertLastByDvrs',
+  dvrSensorAlerts: 'GetSensorsAlertByDvrs',
+};
+
 export const DVR = {
   controller: 'dvr',
   getConnection: 'infoconnectvideo',

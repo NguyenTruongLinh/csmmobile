@@ -10,11 +10,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
+import Ripple from 'react-native-material-ripple';
+import {SwipeRow} from 'react-native-swipe-list-view';
 
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import BackButton from '../../components/controls/BackButton';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
+import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 
 import snackbar from '../../util/snackbar';
 
@@ -24,14 +27,23 @@ import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
 import {Comps as CompTxt} from '../../localization/texts';
 
+// const ListViewHeight = 56; // Dimensions.get('window').height / 16;
+
 class SitesView extends Component {
   constructor(props) {
     super(props);
+    const {route} = props;
     this._isMounted = false;
 
     // this.state = {
     //   enableSearchbar: false,
     // };
+    this.state = {
+      isHealthRoute: route.name == ROUTERS.HEALTH_SITES,
+    };
+
+    this.rowRefs = {};
+    this.lastOpenRowId = null;
   }
 
   componentWillUnmount() {
@@ -41,10 +53,10 @@ class SitesView extends Component {
     // BackHandler.removeEventListener('hardwareBackPress', this.onBack);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this._isMounted = true;
-    const {sitesStore, navigation} = this.props;
-    if (__DEV__) console.log('SitesView componentDidMount');
+    // const {sitesStore, healthStore, userStore, route} = this.props;
+    if (__DEV__) console.log('SitesView componentDidMount: ', this.props);
 
     // BackHandler.addEventListener('hardwareBackPress', this.onBack);
     // const backEventHandler = e => {
@@ -54,22 +66,44 @@ class SitesView extends Component {
     //     e.preventDefault();
     //   }
     // };
-    if (
-      !sitesStore.selectedRegion &&
-      (!sitesStore.sitesList || sitesStore.sitesList.length == 0)
-    ) {
-      this.getSitesList();
-    }
+
+    await this.getData();
     this.setHeader();
   }
 
+  getData = async isReload => {
+    const {sitesStore, healthStore, userStore, route} = this.props;
+    const {isHealthRoute} = this.state;
+
+    if (
+      !sitesStore.selectedRegion ||
+      !sitesStore.hasRegions
+      // (!sitesStore.sitesList || sitesStore.sitesList.length == 0)
+    ) {
+      await sitesStore.getAllSites();
+    }
+
+    if (isHealthRoute) {
+      if (!userStore.settings || userStore.settings.alertTypes.length == 0) {
+        await userStore.getAlertTypesSettings();
+      }
+      await healthStore.getHealthData(
+        userStore.settings.alertTypes,
+        sitesStore.sitesList
+      );
+    } // else if (route.name == ROUTERS.VIDEO_SITES) {
+    // }
+  };
+
   setHeader = () => {
     const {sitesStore, navigation} = this.props;
+    const {isHealthRoute} = this.state;
+    const showRegionButton = !isHealthRoute && sitesStore.hasRegions;
     let options = {};
     if (sitesStore.selectedRegion == null) {
       options = {
         headerLeft: () => null,
-        headerRight: sitesStore.hasRegions
+        headerRight: showRegionButton
           ? () => (
               <CMSTouchableIcon
                 size={22}
@@ -90,11 +124,6 @@ class SitesView extends Component {
     navigation.setOptions(options);
   };
 
-  getSitesList = async () => {
-    let res = await this.props.sitesStore.getAllSites();
-    if (!res) snackbar.handleRequestFailed();
-  };
-
   // onBack = () => {
   //   if (this.state.enableSearchbar) {
   //     this.setState({enableSearchbar: false});
@@ -102,48 +131,177 @@ class SitesView extends Component {
   // };
 
   onSiteSelected = item => {
-    const {sitesStore, navigation} = this.props;
+    const {sitesStore, navigation, healthStore} = this.props;
+    const {isHealthRoute} = this.state;
     sitesStore.selectSite(item);
-    // this.props.appStore.naviService.push(ROUTERS.VIDEO_NVRS);
-    if (item.dvrs.length == 1) {
-      if (sitesStore.selectedDVR) return; // prevent double click
-      sitesStore.selectDVR(item.dvrs[0]);
-      navigation.push(ROUTERS.VIDEO_CHANNELS);
+
+    if (isHealthRoute) {
+      healthStore.selectSite(item.id);
+      navigation.push(ROUTERS.HEALTH_DETAIL);
     } else {
-      navigation.push(ROUTERS.VIDEO_NVRS);
+      if (item.dvrs.length == 1) {
+        if (sitesStore.selectedDVR) return; // prevent double click
+        sitesStore.selectDVR(item.dvrs[0]);
+        navigation.push(ROUTERS.VIDEO_CHANNELS);
+      } else {
+        navigation.push(ROUTERS.VIDEO_NVRS);
+      }
     }
-    // this.props.appStore.enableSearchbar(false);
   };
+
+  gotoVideo = (isLive, data) => {};
 
   onFilter = value => {
     const {sitesStore} = this.props;
     sitesStore.setSiteFilter(value);
   };
 
-  renderItem = ({item}) => {
-    const itemHeight = Dimensions.get('window').height / 16;
-    return (
-      <View style={{height: itemHeight + 1}}>
-        <TouchableOpacity
+  onRowOpen = data => {
+    const rowId = data.id ?? 0;
+    __DEV__ && console.log('GOND Health onRowOpen ... ', this.lastOpenRowId);
+
+    if (
+      this.lastOpenRowId &&
+      this.lastOpenRowId != rowId &&
+      this.rowRefs[this.lastOpenRowId]
+    ) {
+      this.rowRefs[this.lastOpenRowId].closeRow();
+    }
+    this.lastOpenRowId = rowId;
+  };
+
+  renderVideoButtons = data => {
+    const {isHealthRoute} = this.state;
+
+    return isHealthRoute ? (
+      // <View style={{flex: 1}}>
+      <View
+        style={{
+          alignItems: 'center',
+          flex: 1,
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          height: ListViewHeight,
+          // padding: 15,
+        }}>
+        {/* <View style={{flex: 6}} /> */}
+        <View
           style={{
-            height: itemHeight,
+            // flex: 1,
+            width: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <CMSTouchableIcon
+            iconCustom="searching-magnifying-glass"
+            size={26}
+            onPress={() => this.gotoVideo(false, data)}
+            color={CMSColors.IconButton}
+            // disabledColor={CMSColors.DisabledIconButton}
+            // disabled={isLoading}
+          />
+        </View>
+        <View
+          style={{
+            // flex: 1,
+            width: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <CMSTouchableIcon
+            iconCustom="videocam-filled-tool"
+            size={26}
+            onPress={() => this.gotoVideo(true, data)}
+            color={CMSColors.IconButton}
+            // disabledColor={CMSColors.DisabledIconButton}
+            // disabled={isLoading}
+          />
+        </View>
+      </View>
+    ) : (
+      // </View>
+      <View />
+    );
+  };
+
+  renderItem = ({item}) => {
+    const {isHealthRoute} = this.state;
+    const rowId = item.id ?? 0;
+    // __DEV__ && console.log('GOND site height: ', ListViewHeight);
+
+    return (
+      <SwipeRow
+        onRowOpen={() => this.onRowOpen(item)}
+        ref={r => (this.rowRefs[rowId] = r)}
+        closeOnRowPress={true}
+        disableRightSwipe={true}
+        swipeToOpenPercent={10}
+        rightOpenValue={-100}
+        // tension={2}
+        // friction={3}
+      >
+        {this.renderVideoButtons(item)}
+        <Ripple
+          rippleOpacity={0.8}
+          onPress={() => this.onSiteSelected(item)}
+          style={{
+            flex: 1,
+            height: ListViewHeight + 2,
             backgroundColor: CMSColors.White,
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'flex-start',
+            // justifyContent: 'flex-start',
             paddingLeft: 16,
-            borderBottomWidth: variables.borderWidthRow,
+            // borderTopWidth: 1,
+            borderBottomWidth: 1,
             borderColor: CMSColors.BorderColorListRow,
-          }}
-          onPress={() => this.onSiteSelected(item)}>
-          <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
-        </TouchableOpacity>
-      </View>
+          }}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              // backgroundColor: CMSColors.Transparent,
+            }}>
+            {isHealthRoute && (
+              <IconCustom
+                name="sites"
+                color={CMSColors.IconButton}
+                size={variables.fix_fontSize_Icon}
+              />
+            )}
+            <Text style={{fontSize: 16, fontWeight: '500', paddingLeft: 14}}>
+              {isHealthRoute ? item.siteName : item.name}
+            </Text>
+          </View>
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: ListViewHeight - 15,
+              height: ListViewHeight - 15,
+              marginRight: 14,
+              backgroundColor: CMSColors.BtnNumberListRow,
+            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '500',
+                color: CMSColors.White,
+              }}>
+              {item.total}
+            </Text>
+          </View>
+        </Ripple>
+      </SwipeRow>
     );
   };
 
   render() {
-    const {appStore, sitesStore, navigation} = this.props;
+    const {appStore, sitesStore, healthStore, navigation} = this.props;
+    const {isHealthRoute} = this.state;
+    const siteData = isHealthRoute
+      ? healthStore.filteredSites
+      : sitesStore.filteredSites;
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
@@ -185,14 +343,19 @@ class SitesView extends Component {
         <FlatList
           ref={ref => (this.sitesListRef = ref)}
           renderItem={this.renderItem}
-          keyExtractor={item => item.key}
-          data={sitesStore.filteredSites}
-          onRefresh={sitesStore.hasRegions ? undefined : this.getSitesList}
-          refreshing={sitesStore.isLoading}
+          keyExtractor={item => item.key ?? item.id}
+          data={siteData}
+          onRefresh={this.getData}
+          refreshing={sitesStore.isLoading || healthStore.isLoading}
         />
       </View>
     );
   }
 }
 
-export default inject('appStore', 'sitesStore')(observer(SitesView));
+export default inject(
+  'appStore',
+  'sitesStore',
+  'userStore',
+  'healthStore'
+)(observer(SitesView));

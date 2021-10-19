@@ -24,6 +24,7 @@ const ROUTERS = {
   HEALTH_DETAIL: 'healthdetail',
   HEALTH_ALERTS: 'healthalerts',
   HEALTH_ALERT_DETAIL: 'healthalertsdetail',
+  HEALTH_CHANNELS: 'healthchannels',
 
   VIDEO: 'video',
   VIDEO_STACK: 'videostack',
@@ -76,13 +77,13 @@ export const getHeaderTitle = route => {
 
   switch (routeName) {
     case ROUTERS.HEALTH_SITES:
-      return 'Health';
+      return 'Health Monitor';
     case ROUTERS.HEALTH_DETAIL:
-      return 'Health'; // TODO: site name get from store
+      return 'Site Health'; // TODO: site name get from store
     case ROUTERS.HEALTH_ALERTS:
-      return 'Health'; // TODO: get from store
+      return 'Alerts'; // TODO: get from store
     case ROUTERS.HEALTH_ALERT_DETAIL:
-      return 'Health'; // TODO: get from store
+      return 'Alert Detail'; // TODO: get from store
 
     case ROUTERS.VIDEO_REGIONS:
       return 'All Regions';

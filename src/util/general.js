@@ -2,6 +2,7 @@ import base64 from 'base64-js';
 import AES from 'crypto-js/aes';
 import CryptoJS from 'crypto-js';
 import {Dimensions, PixelRatio, Platform} from 'react-native';
+import {DateTime} from 'luxon';
 import uuid from 'react-native-uuid';
 
 import CMSColors from '../styles/cmscolors';
@@ -221,44 +222,44 @@ exports.Uinit8ArrToArray = function (uinit8) {
 };
 
 exports.toQueryStringDateTime = function (localdate, format) {
-  // if (!format) return moment(localdate).format('YYYYMMDDHHmmss');
-  // else {
-  //   return moment(localdate, format).format('YYYYMMDDHHmmss');
-  // }
+  if (!format) return DateTime(localdate).toFormat('YYYYMMDDHHmmss');
+  else {
+    return DateTime.fromFormat(localdate, format).toFormat('YYYYMMDDHHmmss');
+  }
 };
 
-exports.toQueryStringDate = function (localdate, format) {
-  // if (!format) return moment(localdate).format('YYYYMMDD');
-  // return moment(localdate).format(format);
+exports.toQueryStringDate = function (localdate, outputformat) {
+  if (!outputformat) return DateTime(localdate).toFormat('YYYYMMDD');
+  return DateTime.fromFormat(localdate).toFormat(outputformat);
 };
 
 exports.toFormatStringLocalDate = function (localdate, format, outputformat) {
   let resFormat = outputformat || 'MM/DD/YYYY';
-  // if (!format) return moment(localdate).format(resFormat);
-  // else return moment(localdate, format).format(resFormat);
+  if (!format) return DateTime(localdate).toFormat(resFormat);
+  else return DateTime.fromFormat(localdate, format).toFormat(resFormat);
 };
 
 exports.toFormatStringDate = function (localdate, format, outputformat) {
-  // if (!outputformat) outputformat = 'MM/DD/YYYY';
-  // if (!format) return moment(localdate).format(outputformat);
-  // else return moment(localdate, format).format(outputformat);
+  if (!outputformat) outputformat = 'MM/DD/YYYY';
+  if (!format) return DateTime(localdate).format(outputformat);
+  else return DateTime.fromFormat(localdate, format).toFormat(outputformat);
 };
 
 exports.toQueryStringUTCDateTime = function (localdate, format) {
-  // if (!format) return moment.utc(localdate).format('YYYYMMDDHHmmss');
-  // else {
-  //   return moment.utc(localdate, format).format('YYYYMMDDHHmmss');
-  // }
+  if (!format) return DateTime.fromISO(localdate).toFormat('YYYYMMDDHHmmss');
+  else {
+    return DateTime.fromFormat(localdate, format).toFormat('YYYYMMDDHHmmss');
+  }
 };
 exports.toQueryStringUTCEndDateTime = function (localdate, format) {
-  // if (!format) return moment.utc(localdate).format('YYYYMMDD235959');
-  // else return moment.utc(localdate, format).format('YYYYMMDD235959');
+  if (!format) return DateTime.fromISO(localdate).toFormat('YYYYMMDD235959');
+  else return DateTime.fromFormat(localdate, format).toFormat('YYYYMMDD235959');
 };
 exports.toQueryStringUTCDate = function (localdate, format) {
-  // if (!format) return moment.utc(localdate).format('YYYYMMDD');
-  // else {
-  //   return moment.utc(localdate, format).format('YYYYMMDD');
-  // }
+  if (!format) return DateTime.fromISO(localdate).toFormat('YYYYMMDD');
+  else {
+    return DateTime.fromFormat(localdate, format).toFormat('YYYYMMDD');
+  }
 };
 
 exports.AES_encrypt = function (input, key) {

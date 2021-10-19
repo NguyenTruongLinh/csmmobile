@@ -1,10 +1,10 @@
 import {types, flow, applySnapshot} from 'mobx-state-tree';
 
-import {Route, Site as SiteRoute} from '../consts/apiRoutes';
-import {Login as LoginTxt} from '../localization/texts';
 import apiService from '../services/api';
 import utils from '../util/general';
 import snackbarUtil from '../util/snackbar';
+import {Route, Site as SiteRoute} from '../consts/apiRoutes';
+// import {Login as LoginTxt} from '../localization/texts';
 
 const DVRModel = types
   .model({
@@ -301,16 +301,20 @@ export const SitesMapModel = types
       // self.isLoading = true;
       self.startLoad();
       try {
-        let res = yield apiService.get(
-          SiteRoute.controller,
-          SiteRoute.getAllWithDVR
-        );
-        __DEV__ && console.log('GOND get all sites: ', res);
-        self.sitesList = self.parseSitesList(res, true);
+        const canLoadRegion = yield self.getSiteTree();
+        if (!canLoadRegion) {
+          let res = yield apiService.get(
+            SiteRoute.controller,
+            SiteRoute.getAllWithDVR
+          );
+          __DEV__ && console.log('GOND get all sites: ', res);
+          self.sitesList = self.parseSitesList(res, true);
+        }
       } catch (err) {
         __DEV__ && console.log('GOND Could not get sites data!', err);
         // self.isLoading = false;
         self.endLoad();
+        snackbarUtil.handleRequestFailed();
         return false;
       }
       // self.isLoading = false;
@@ -318,7 +322,7 @@ export const SitesMapModel = types
       return true;
     }),
     /*
-    getSiteTree: flow(function* getOAMSites() {
+    getSiteTree: flow(function* () {
       self.startLoad();
       try {
         const [resRegions, resSites] = yield Promise.all([
@@ -382,6 +386,8 @@ export const SitesMapModel = types
     */
     getSiteTree: flow(function* () {
       self.startLoad();
+      self.regionsList = [];
+      self.sitesList = [];
       try {
         const resRegions = yield apiService.get(
           SiteRoute.controller,

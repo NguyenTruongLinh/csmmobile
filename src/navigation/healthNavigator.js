@@ -3,11 +3,14 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import BackButton from '../components/controls/BackButton';
 
-import RegionsView from '../views/sitetree/regions';
 import SitesView from '../views/sitetree/sites';
-import NVRsView from '../views/sitetree/nvrs';
 
-import LiveChannelsView from '../views/video/liveChannels';
+// import HealthView from '../views/health/health';
+import HealthDetailView from '../views/health/healthDetail';
+import AlertsView from '../views/health/alerts';
+import AlertDetailView from '../views/health/alertDetail';
+
+import ChannelsListView from '../views/video/channelsList';
 import ChannelsSettingView from '../views/video/channelsSetting';
 import VideoPlayerView from '../views/video/player';
 
@@ -15,12 +18,12 @@ import ROUTERS, {getHeaderTitle} from '../consts/routes';
 import variables from '../styles/variables';
 import CMSColors from '../styles/cmscolors';
 
-const VStack = createStackNavigator();
+const HStack = createStackNavigator();
 
-export default function VideoStack() {
+export default function HealthStack() {
   return (
-    <VStack.Navigator
-      initialRouteName={ROUTERS.VIDEO_REGIONS} //{ROUTERS.VIDEO_REGIONS}
+    <HStack.Navigator
+      initialRouteName={ROUTERS.HEALTH_SITES}
       screenOptions={({route, navigation}) => ({
         headerStyle: {
           // backgroundColor: CMSColors.White,
@@ -31,31 +34,26 @@ export default function VideoStack() {
         headerMode: 'screen',
         headerTitle: getHeaderTitle(route),
         headerLeft: () => <BackButton navigator={navigation} />,
-      })}
-      // screenOptions={() => ({
-      //   headerShown: false,
-      // })}
-    >
-      <VStack.Screen
-        name={ROUTERS.VIDEO_REGIONS}
-        component={RegionsView}
-        options={{headerLeft: () => null}}
+      })}>
+      <HStack.Screen name={ROUTERS.HEALTH_SITES} component={SitesView} />
+      <HStack.Screen
+        name={ROUTERS.HEALTH_DETAIL}
+        component={HealthDetailView}
       />
-      <VStack.Screen
-        name={ROUTERS.VIDEO_SITES}
-        component={SitesView}
-        // options={{headerLeft: () => {}}}
+      <HStack.Screen name={ROUTERS.HEALTH_ALERTS} component={AlertsView} />
+      <HStack.Screen
+        name={ROUTERS.HEALTH_ALERT_DETAIL}
+        component={AlertDetailView}
       />
-      <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
-      <VStack.Screen
-        name={ROUTERS.VIDEO_CHANNELS}
-        component={LiveChannelsView}
+      <HStack.Screen
+        name={ROUTERS.HEALTH_CHANNELS}
+        component={ChannelsListView}
       />
-      <VStack.Screen
+      <HStack.Screen
         name={ROUTERS.VIDEO_CHANNELS_SETTING}
         component={ChannelsSettingView}
       />
-      <VStack.Screen
+      <HStack.Screen
         name={ROUTERS.VIDEO_PLAYER}
         component={VideoPlayerView}
         options={({route, navigation}) => ({
@@ -74,6 +72,6 @@ export default function VideoStack() {
           },
         })}
       />
-    </VStack.Navigator>
+    </HStack.Navigator>
   );
 }

@@ -52,7 +52,7 @@ import {Comps as CompTxt, Video as VideoTxt} from '../../localization/texts';
 //   },
 // ];
 
-class ChannelsView extends React.Component {
+class LiveChannelsView extends React.Component {
   constructor(props) {
     super(props);
     const {gridLayout} = props.videoStore;
@@ -80,7 +80,7 @@ class ChannelsView extends React.Component {
   }
 
   componentWillUnmount() {
-    __DEV__ && console.log('ChannelsView componentWillUnmount');
+    __DEV__ && console.log('LiveChannelsView componentWillUnmount');
     const {videoStore, sitesStore} = this.props;
     this._isMounted = false;
     // AppState.removeEventListener('change', this.handleAppStateChange);
@@ -97,7 +97,10 @@ class ChannelsView extends React.Component {
     this._isMounted = true;
     const {videoStore, sitesStore, navigation} = this.props;
     if (__DEV__) {
-      console.log('ChannelsView componentDidMount: ', sitesStore.selectedDVR);
+      console.log(
+        'LiveChannelsView componentDidMount: ',
+        sitesStore.selectedDVR
+      );
       // if (sitesStore.selectedDVR.name === 'jackhome')
       //   videoStore.setNVRLoginInfo('i3admin', 'i3admin');
     }
@@ -316,7 +319,7 @@ class ChannelsView extends React.Component {
   //       : videoStore.buildVideoData();
   //   __DEV__ &&
   //     console.log(
-  //       'ChannelsView videoDataList: ',
+  //       'LiveChannelsView videoDataList: ',
   //       videoDataList,
   //       ', layout: ',
   //       gridLayout
@@ -344,20 +347,20 @@ class ChannelsView extends React.Component {
   //       if (index < videoDataList.length) {
   //         newRow.data.push(videoDataList[index]);
   //         __DEV__ &&
-  //           console.log('ChannelsView build video newRow.data: ', newRow);
+  //           console.log('LiveChannelsView build video newRow.data: ', newRow);
   //       } else newRow.data.push({});
   //     }
   //     result.push(newRow);
   //   }
 
-  //   __DEV__ && console.log('ChannelsView build video data: ', result);
+  //   __DEV__ && console.log('LiveChannelsView build video data: ', result);
   //   return result;
   // };
 
   onLayout = event => {
     const {x, y, width, height} = event.nativeEvent.layout;
     const {gridLayout} = this.props.videoStore; // this.state;
-    __DEV__ && console.log('ChannelsView onLayout: ', event.nativeEvent);
+    __DEV__ && console.log('LiveChannelsView onLayout: ', event.nativeEvent);
     this.setState({
       viewableWindow: {
         width,
@@ -709,4 +712,4 @@ export default inject(
   'videoStore',
   'sitesStore',
   'userStore'
-)(observer(ChannelsView));
+)(observer(LiveChannelsView));

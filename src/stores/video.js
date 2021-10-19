@@ -528,13 +528,13 @@ export const VideoModel = types
           if (index < videoDataList.length) {
             newRow.data.push(videoDataList[index]);
             __DEV__ &&
-              console.log('ChannelsView build video newRow.data: ', newRow);
+              console.log('LiveChannelsView build video newRow.data: ', newRow);
           } else newRow.data.push({});
         }
         result.push(newRow);
       }
 
-      __DEV__ && console.log('ChannelsView build video data: ', result);
+      __DEV__ && console.log('LiveChannelsView build video data: ', result);
       return result;
     },
   }))
@@ -2125,7 +2125,7 @@ export const VideoModel = types
             '- iso: ',
             DateTime.fromISO(self.searchPlayTime)
           );
-        yield self.getDvrChannels();
+        yield self.getDisplayingChannels();
 
         self.selectChannel(alarmData.channelNo);
         if (self.selectedChannelData == null) {
