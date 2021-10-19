@@ -11,6 +11,7 @@ import CMSStyleSheet from '../CMSStyleSheet';
 
 const Icon = CMSStyleSheet.Icon;
 const IconCustom = CMSStyleSheet.IconCustom;
+const LABEL_FONT_SIZE = 13;
 
 export default class InputTextIcon extends PureComponent {
   static defaultProps = {
@@ -215,6 +216,7 @@ export default class InputTextIcon extends PureComponent {
       icon,
       iconCustom,
       label,
+      useSmallLabel,
       maxLength,
       title,
       characterRestriction: limit,
@@ -316,7 +318,7 @@ export default class InputTextIcon extends PureComponent {
       : {color: CMSColors.PrimaryActive};
 
     return (
-      <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+      <View style={{marginTop: -20, flexDirection: 'row', alignSelf: 'center'}}>
         {iconPosition == 'left' && CIcon}
         {iconPosition == 'left' && CIconCustom}
         <View
@@ -353,8 +355,10 @@ export default class InputTextIcon extends PureComponent {
             placeholderTextColor={baseColor}
             ref={ref => (this.inputRef = ref)}
             label={label}
-            labelFontSize={label ? fontSize : 0}
+            labelFontSize={label ? LABEL_FONT_SIZE : 0}
             secureTextEntry={secureTextEntry && !this.state.revealHidden}
+            containerStyle={styles.textFieldContainerStyle}
+            inputContainerStyle={styles.textFieldInputContainerStyle}
           />
           <Animated.View style={helperContainerStyle}>
             <View style={styles.flex}>
@@ -376,7 +380,7 @@ export default class InputTextIcon extends PureComponent {
           <IconCustom
             name={'turn-visibility-off-button'}
             size={variable.fix_fontSize_Icon}
-            style={[{color: baseColor}, styles.icon, revealIconStyle]}
+            style={[{color: baseColor}, styles.rightIcon, revealIconStyle]}
             onPress={() => {
               //  __DEV__ && console.log('GOND icon customed name: ', iconCustom);
               this.setState({revealHidden: !this.state.revealHidden});
@@ -397,9 +401,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   icon: {
-    paddingTop: 40,
+    paddingTop: 42,
     paddingRight: 12,
     backgroundColor: 'transparent',
+  },
+  rightIcon: {
+    height: 40,
+    width: 40,
+    position: 'absolute',
+    right: 0,
+    bottom: 10,
+    padding: 10,
   },
   input: {
     top: 2,
@@ -410,5 +422,11 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+  },
+  textFieldContainerStyle: {
+    height: 75,
+  },
+  textFieldInputContainerStyle: {
+    marginTop: 10,
   },
 });

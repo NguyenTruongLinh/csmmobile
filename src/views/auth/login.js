@@ -26,6 +26,7 @@ import APP_INFO from '../../consts/appInfo';
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
 import {I3_Logo} from '../../consts/images';
+import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
 
 // const backgroundImg = require('../../assets/images/intro/welcome.png');
@@ -239,7 +240,7 @@ class LoginView extends Component {
             </View>
             <View style={styles.logoContainer}>
               <Image
-                source={I3_Logo}
+                source={CMS_Logo}
                 style={styles.logo}
                 resizeMode="contain"
               />
@@ -353,6 +354,14 @@ class LoginView extends Component {
               />
             </View>
           </View>
+          <View style={styles.copyRight}>
+            <Image
+              source={I3_Logo}
+              style={styles.copyRightLogo}
+              resizeMode="contain"
+            />
+            <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          </View>
         </KeyboardAwareScrollView>
       </View>
     );
@@ -379,7 +388,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     tintColor: CMSColors.Dark_Blue,
-    width: width * 0.45,
+    width: width * 0.3,
     height: '100%',
     alignSelf: 'center',
   },
@@ -397,12 +406,12 @@ const styles = StyleSheet.create({
     paddingTop: dim.height > 700 ? 28 : 0,
     alignItems: 'center',
   },
-  textTitle: {fontSize: 24, fontWeight: 'normal'},
+  textTitle: {fontSize: 20, fontWeight: 'normal'},
   textBold: {fontWeight: 'bold'},
-  textDesc: {fontSize: 16, paddingTop: dim.height > 700 ? 14 : 0},
-  inputsContainer: {alignItems: 'center', marginTop: 21},
+  textDesc: {fontSize: 15, paddingTop: dim.height > 700 ? 14 : 0},
+  inputsContainer: {alignItems: 'center', marginTop: 50},
   buttonsContainer: {
-    flex: 30,
+    flex: 35,
     paddingTop: 20,
     alignItems: 'center',
     flexDirection: 'column',
@@ -413,7 +422,7 @@ const styles = StyleSheet.create({
   },
   buttonPassword: {
     width: '100%',
-    marginTop: 15,
+    marginTop: 5,
   },
   content: {
     maxWidth: variable.deviceWidth > 370 ? 400 : variable.deviceWidth,
@@ -421,6 +430,22 @@ const styles = StyleSheet.create({
   },
   captionStyle: {
     color: CMSColors.TextButtonLogin,
+  },
+  copyRight: {
+    flex: 0.1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 20,
+  },
+  copyRightLogo: {
+    tintColor: CMSColors.Dark_Blue,
+    width: '32%',
+    height: '100%',
+  },
+  copyRightText: {
+    flex: 1,
+    fontSize: 11,
+    marginLeft: 5,
   },
 });
 
