@@ -14,6 +14,7 @@ import CMSImage from '../../components/containers/CMSImage';
 
 import CMSStyleSheet from '../../components/CMSStyleSheet';
 import ROUTERS from '../../consts/routes';
+import {MODULE_PERMISSIONS} from '../../consts/misc';
 const IconCustom = CMSStyleSheet.IconCustom;
 
 class SettingsView extends Component {
@@ -72,6 +73,9 @@ class SettingsView extends Component {
   render() {
     if (!this.props.userStore) return <View />;
     const {user} = this.props.userStore;
+    const showVideoSetting = this.props.userStore.hasPermission(
+      MODULE_PERMISSIONS.VSC
+    );
     const imgParams = {
       controller: Account.controller,
       action: Account.avatar,
@@ -181,29 +185,31 @@ class SettingsView extends Component {
               </View>
             </View>
           </Ripple>
-          <Ripple
-            style={styles.rowContainer}
-            rippleOpacity={0.87}
-            onPress={this.toVideoSetting}>
-            <View style={styles.listRow}>
-              {/* <View style={styles.listIcon}>
+          {showVideoSetting && (
+            <Ripple
+              style={styles.rowContainer}
+              rippleOpacity={0.87}
+              onPress={this.toVideoSetting}>
+              <View style={styles.listRow}>
+                {/* <View style={styles.listIcon}>
                 <IconCustom
                   name="icon-dvr"
                   size={20}
                   color={CMSColors.RowOptions}
                 />
               </View> */}
-              <Text style={styles.listText}>Video settings</Text>
+                <Text style={styles.listText}>Video settings</Text>
 
-              <View style={styles.listEnterIcon}>
-                <IconCustom
-                  name="keyboard-right-arrow-button"
-                  size={16}
-                  color={CMSColors.RowOptions}
-                />
+                <View style={styles.listEnterIcon}>
+                  <IconCustom
+                    name="keyboard-right-arrow-button"
+                    size={16}
+                    color={CMSColors.RowOptions}
+                  />
+                </View>
               </View>
-            </View>
-          </Ripple>
+            </Ripple>
+          )}
           <Ripple
             style={styles.rowContainer}
             rippleOpacity={0.87}
