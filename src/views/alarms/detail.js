@@ -170,7 +170,7 @@ class AlarmDetailView extends Component {
   onLayout = event => {
     const {x, y, width, height} = event.nativeEvent.layout;
     const {gridLayout} = this.state;
-    __DEV__ && console.log('ChannelsView onLayout: ', event.nativeEvent);
+
     this.setState({
       viewableWindow: {
         width,

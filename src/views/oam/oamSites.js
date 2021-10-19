@@ -21,7 +21,7 @@ class OAMSitesView extends Component {
   }
 
   render() {
-    <View></View>;
+    return <View></View>;
   }
 }
 

@@ -382,8 +382,6 @@ export default class InputText extends PureComponent {
           error={validation ? error : props.error}
           label={label}
           labelFontSize={fontSize}
-          // multiline={multiline ? multiline : false}
-          // numberOfLines={numberOfLines ? numberOfLines : 1}
           editable={!disabled && editable}
           onChangeText={this.onChangeText}
           onContentSizeChange={this.onContentSizeChange}
