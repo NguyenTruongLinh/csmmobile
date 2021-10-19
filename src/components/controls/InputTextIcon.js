@@ -216,7 +216,6 @@ export default class InputTextIcon extends PureComponent {
       icon,
       iconCustom,
       label,
-      useSmallLabel,
       maxLength,
       title,
       characterRestriction: limit,
