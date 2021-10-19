@@ -223,7 +223,10 @@ class LoginView extends Component {
             this._refs.username,
             this._refs.password,
           ]}>
-          <View style={{flex: 1}}>
+          <View
+            style={{
+              flex: 1,
+            }}>
             <View style={styles.closeButtonContainer}>
               <Button
                 style={styles.closeButton}
@@ -238,6 +241,7 @@ class LoginView extends Component {
                 onPress={this.onBack}
               />
             </View>
+            <View style={styles.space} />
             <View style={styles.logoContainer}>
               <Image
                 source={CMS_Logo}
@@ -245,6 +249,7 @@ class LoginView extends Component {
                 resizeMode="contain"
               />
             </View>
+            <View style={styles.space} />
             <View style={styles.textContainer}>
               <Text style={styles.textTitle}>
                 {LoginTxt.title}
@@ -252,14 +257,16 @@ class LoginView extends Component {
               </Text>
               <Text style={styles.textDesc}>{LoginTxt.description}</Text>
             </View>
+            <View style={styles.space} />
             <View
               style={[
                 styles.all,
                 styles.content,
                 styles.centerContent,
-                {flex: 35},
+                // { flex: 35 },
               ]}>
               {/* <View style={styles.centerContent}> */}
+              <View style={styles.space} />
               <View style={styles.inputsContainer}>
                 <InputTextIcon
                   ref={r => (this._refs.domain = r)}
@@ -330,6 +337,7 @@ class LoginView extends Component {
                 />
               </View>
             </View>
+            <View style={styles.space} />
             <View style={styles.buttonsContainer}>
               <Button
                 style={styles.buttonLogin}
@@ -354,6 +362,7 @@ class LoginView extends Component {
               />
             </View>
           </View>
+          <View style={styles.space_footer} />
           <View style={styles.copyRight}>
             <Image
               source={I3_Logo}
@@ -362,6 +371,7 @@ class LoginView extends Component {
             />
             <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
           </View>
+          <View style={styles.space_footer} />
         </KeyboardAwareScrollView>
       </View>
     );
@@ -377,8 +387,8 @@ const styles = StyleSheet.create({
     paddingRight: width * 0.1,
   },
   closeButtonContainer: {
-    flex: 5,
-    marginTop: dim.height > 700 ? 16 : 0,
+    height: 30,
+    flexDirection: 'column',
     flexDirection: 'column',
     alignItems: 'flex-end',
   },
@@ -392,37 +402,37 @@ const styles = StyleSheet.create({
     height: '100%',
     alignSelf: 'center',
   },
-  logoContainer: {flex: 20},
+  logoContainer: {
+    height: 60,
+    flexDirection: 'column',
+  },
   centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingLeft: 7,
     paddingRight: 7,
-    flex: 1,
     flexDirection: 'column',
   },
   textContainer: {
-    flex: 10,
-    paddingTop: dim.height > 700 ? 28 : 0,
     alignItems: 'center',
   },
   textTitle: {fontSize: 20, fontWeight: 'normal'},
   textBold: {fontWeight: 'bold'},
-  textDesc: {fontSize: 15, paddingTop: dim.height > 700 ? 14 : 0},
-  inputsContainer: {alignItems: 'center', marginTop: 50},
+  textDesc: {
+    fontSize: 15,
+  },
+  inputsContainer: {
+    alignItems: 'center',
+  },
   buttonsContainer: {
-    flex: 35,
-    paddingTop: 20,
     alignItems: 'center',
     flexDirection: 'column',
   },
   buttonLogin: {
     width: '100%',
-    marginTop: 40,
   },
   buttonPassword: {
     width: '100%',
-    marginTop: 5,
   },
   content: {
     maxWidth: variable.deviceWidth > 370 ? 400 : variable.deviceWidth,
@@ -432,10 +442,8 @@ const styles = StyleSheet.create({
     color: CMSColors.TextButtonLogin,
   },
   copyRight: {
-    flex: 0.1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 20,
   },
   copyRightLogo: {
     tintColor: CMSColors.Dark_Blue,
@@ -446,6 +454,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11,
     marginLeft: 5,
+  },
+  space: {
+    flex: 0.3,
+  },
+  space_footer: {
+    flex: 0.05,
   },
 });
 
