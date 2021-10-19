@@ -242,7 +242,7 @@ class ChannelsSettingView extends Component {
               size={24}
             />
           </View>
-          <View style={{justifyContent: 'center', paddingLeft: 7}}>
+          <View style={{flex: 1, justifyContent: 'center', paddingLeft: 7}}>
             <Text style={{}}>{channel.name}</Text>
           </View>
         </View>
