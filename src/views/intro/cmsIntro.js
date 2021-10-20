@@ -36,27 +36,27 @@ const IntroData = [
   },
   {
     key: 2,
-    title: 'Video monitoring',
+    title: 'Video Management',
     description: 'Live and Playback video monitoring',
     image: Intro_Video,
   },
   {
     key: 3,
-    title: 'Smart-ER report',
+    title: 'Smart-ER',
     description: 'POS exceptions report along with corresponding video',
     image: Intro_Smarter,
   },
   {
     key: 4,
-    title: 'Occupancy monitoring',
+    title: 'Occupancy Monitoring',
     description: 'Live Occupancy Alert Monitoring ',
     image: Intro_OAM,
   },
   {
     key: 5,
-    title: 'Health monitoring',
+    title: 'Health Monitoring',
     description:
-      'Provide health status of video system via report and notification',
+      'Provide health status of video system via reports and notifications',
     image: Intro_Health,
   },
 ];
