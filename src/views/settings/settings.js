@@ -142,29 +142,6 @@ class SettingsView extends Component {
           <Ripple
             style={styles.rowContainer}
             rippleOpacity={0.87}
-            onPress={this.toAbout}>
-            <View style={styles.listRow}>
-              {/* <View style={styles.listIcon}>
-                <IconCustom
-                  name="round-info-button"
-                  size={20}
-                  color={CMSColors.RowOptions}
-                />
-              </View> */}
-              <Text style={styles.listText}>About</Text>
-
-              <View style={styles.listEnterIcon}>
-                <IconCustom
-                  name="keyboard-right-arrow-button"
-                  size={16}
-                  color={CMSColors.RowOptions}
-                />
-              </View>
-            </View>
-          </Ripple>
-          <Ripple
-            style={styles.rowContainer}
-            rippleOpacity={0.87}
             onPress={this.toNotify}>
             <View style={styles.listRow}>
               {/* <View style={styles.listIcon}>
@@ -210,6 +187,29 @@ class SettingsView extends Component {
               </View>
             </Ripple>
           )}
+          <Ripple
+            style={styles.rowContainer}
+            rippleOpacity={0.87}
+            onPress={this.toAbout}>
+            <View style={styles.listRow}>
+              {/* <View style={styles.listIcon}>
+                <IconCustom
+                  name="round-info-button"
+                  size={20}
+                  color={CMSColors.RowOptions}
+                />
+              </View> */}
+              <Text style={styles.listText}>About</Text>
+
+              <View style={styles.listEnterIcon}>
+                <IconCustom
+                  name="keyboard-right-arrow-button"
+                  size={16}
+                  color={CMSColors.RowOptions}
+                />
+              </View>
+            </View>
+          </Ripple>
           <Ripple
             style={styles.rowContainer}
             rippleOpacity={0.87}
