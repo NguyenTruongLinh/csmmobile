@@ -7,7 +7,7 @@ export const Intro = {
 
 export const Welcome = {
   title: 'SIGN IN TO GET THE MOST OUT OF YOUR',
-  titleBold: 'SMART VIDEO SYSTEM.',
+  titleBold: 'INTELLIGENT VIDEO SYSTEM.',
   description:
     'By signing up for your i3 cloud account you will be able to unlock multiple features like real-time alarms, POS integration, video streaming, health monitoring, and much more. ',
   contactLink: 'Contact i3 to sign up today.',
