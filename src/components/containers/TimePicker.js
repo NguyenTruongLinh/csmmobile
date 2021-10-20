@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
-    height: 30,
+    height: 35,
     padding: 5,
   },
   rowButton_name: {
