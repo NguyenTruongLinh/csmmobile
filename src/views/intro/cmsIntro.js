@@ -67,6 +67,7 @@ class CMSIntroView extends Component {
     this.currentIndex = 0;
     this.introList = null;
     this.scrollX = new Animated.Value(0);
+    this.state = {showBackButton: false, showGetStartedButton: false};
   }
 
   componentDidMount() {
@@ -80,6 +81,10 @@ class CMSIntroView extends Component {
   onIntroItemChanged = ({viewableItems}) => {
     __DEV__ && console.log('GOND onIntroItemChanged ', viewableItems);
     this.currentIndex = viewableItems[viewableItems.length - 1].index;
+    this.setState({
+      showBackButton: this.currentIndex > 0,
+      showGetStartedButton: this.currentIndex == IntroData.length - 1,
+    });
   };
 
   onSkipIntro = () => {
@@ -89,9 +94,9 @@ class CMSIntroView extends Component {
 
   onNextStep = () => {
     // __DEV__ && console.log('GOND onNextStep = ', this.currentIndex);
-    if (this.introList && this.currentIndex < IntroData.length - 1)
+    if (this.introList && this.currentIndex < IntroData.length - 1) {
       this.introList.scrollToIndex({index: this.currentIndex + 1});
-    else if (this.currentIndex == IntroData.length - 1) {
+    } else if (this.currentIndex == IntroData.length - 1) {
       this.onSkipIntro();
     }
   };
@@ -102,8 +107,9 @@ class CMSIntroView extends Component {
   };
 
   onBackStep = () => {
-    if (this.introList && this.currentIndex > 0)
+    if (this.introList && this.currentIndex > 0) {
       this.introList.scrollToIndex({index: this.currentIndex - 1});
+    }
   };
 
   handleScroll = event => {
@@ -123,12 +129,12 @@ class CMSIntroView extends Component {
             width: dim.width + 2, // Fix onViewableItemsChanged viewitems contain not reached view
           },
         ]}>
-        <Image
+        {/* <Image
           style={styles.logoImage}
           source={I3_Logo}
           width={dim.width * 0.5}
           resizeMode="contain"
-        />
+        /> */}
         <Image
           style={styles.itemImage}
           source={item.image}
@@ -147,13 +153,13 @@ class CMSIntroView extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.skipContainer}>
-          {/* <Button
+          <Button
             style={{width: '20%'}}
             enable={true}
             type={'flat'}
             caption={'SKIP'}
             onPress={this.onSkipIntro}
-          /> */}
+          />
         </View>
         <View style={styles.listContainer}>
           <FlatList
@@ -181,25 +187,23 @@ class CMSIntroView extends Component {
 
         <View style={styles.footerContainer}>
           <View style={styles.backContainer}>
-            {/* {this.currentIndex > 0 ? ( */}
-            <Button
-              enable={true}
-              style={styles.backButton}
-              type={'flat'}
-              // caption={'< BACK'}
-              // onPress={this.onBackStep}
-              caption={'SKIP'}
-              onPress={this.onSkipIntro}
-            />
-            {/* ) : null} */}
+            {this.state.showBackButton && (
+              <Button
+                enable={true}
+                style={styles.backButton}
+                type={'flat'}
+                caption={'BACK'}
+                onPress={this.onBackStep}
+              />
+            )}
           </View>
           <View style={styles.nextContainer}>
             <Button
               enable={true}
               style={styles.nextButton}
               // type={'primary'}
-              type={'flat'}
-              caption={'NEXT'}
+              type={'primary'}
+              caption={this.state.showGetStartedButton ? 'GET STARTED' : 'NEXT'}
               onPress={this.onNextStep}
             />
           </View>
