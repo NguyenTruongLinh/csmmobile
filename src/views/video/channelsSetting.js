@@ -301,6 +301,7 @@ class ChannelsSettingView extends Component {
             iconPosition="right"
           />
         </View>
+        <Text style={styles.totalText}>{gridData.length} channels</Text>
         <View style={{flex: 1, marginBottom: 14}} onLayout={this.onLayout}>
           <FlatList
             renderItem={this.renderRow}
@@ -325,6 +326,10 @@ const styles = StyleSheet.create({
   summaryText: {
     paddingLeft: 24,
     textAlignVertical: 'center',
+    color: CMSColors.RowOptions,
+  },
+  totalText: {
+    padding: 12,
     color: CMSColors.RowOptions,
   },
 });

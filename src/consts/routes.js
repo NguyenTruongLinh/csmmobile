@@ -94,7 +94,7 @@ export const getHeaderTitle = route => {
     case ROUTERS.VIDEO_CHANNELS:
       return 'Channels';
     case ROUTERS.VIDEO_CHANNELS_SETTING:
-      return 'Channels setting';
+      return 'Add Channel';
     // case ROUTERS.VIDEO_PLAYER:
 
     case ROUTERS.ALARM_LIVE:
