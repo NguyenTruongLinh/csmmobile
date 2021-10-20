@@ -6,6 +6,7 @@ import {
   Text,
   Dimensions,
   Linking,
+  StyleSheet,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
@@ -61,31 +62,28 @@ class WelcomeView extends Component {
             flexDirection: 'column',
             paddingLeft: width * 0.1,
             paddingRight: width * 0.1,
-            paddingTop: height > 700 ? 28 : 0,
             backgroundColor: 'rgba(255, 255, 255, 0.85)',
           }}>
+          <View style={styles.larger_space} />
           <Image
             source={I3_Logo}
             style={{
-              flex: 10,
-              width: width * 0.5,
-              paddingTop: height * 0.14,
+              width: 180,
+              height: 90,
               tintColor: CMSColor.Dark_Blue,
             }}
             resizeMode="contain"
           />
+          <View style={styles.space} />
           <View
             style={{
-              flex: 50,
               flexDirection: 'column',
               width: width * 0.8,
-              // borderColor: 'black',
-              // borderWidth: 1,
             }}>
             <Text
               style={{
                 fontWeight: 'normal',
-                fontSize: 28,
+                fontSize: height > 600 ? 28 : 24,
                 flexWrap: 'wrap',
                 fontFamily: 'Roboto-Regular',
               }}>
@@ -94,55 +92,68 @@ class WelcomeView extends Component {
             <Text
               style={{
                 fontWeight: 'bold',
-                fontSize: 27,
+                fontSize: height > 600 ? 27 : 23,
                 flexWrap: 'wrap',
                 fontFamily: 'Roboto-Regular',
               }}>
               {WelcomeTxt.titleBold}
             </Text>
+          </View>
+          <View style={styles.text_space} />
+          <Text
+            style={{
+              fontWeight: 'normal',
+              fontSize: 16,
+              flexWrap: 'wrap',
+              fontFamily: 'Roboto-Regular',
+            }}>
+            {WelcomeTxt.description}
             <Text
               style={{
-                fontWeight: 'normal',
-                fontSize: 16,
-                flexWrap: 'wrap',
-                fontFamily: 'Roboto-Regular',
-                paddingTop: height > 700 ? 48 : 0,
+                // fontWeight: 'normal',
+                // fontSize: 16,
+                color: CMSColor.PrimaryActive,
+              }}
+              onPress={() => {
+                Linking.openURL(APP_INFO.ContactUrl);
               }}>
-              {WelcomeTxt.description}
-              <Text
-                style={{
-                  // fontWeight: 'normal',
-                  // fontSize: 16,
-                  color: CMSColor.PrimaryActive,
-                }}
-                onPress={() => {
-                  Linking.openURL(APP_INFO.ContactUrl);
-                }}>
-                {WelcomeTxt.contactLink}
-              </Text>
+              {WelcomeTxt.contactLink}
             </Text>
-          </View>
-          <View style={{flex: 40}}>
-            <Button
-              enable={true}
-              style={{marginTop: 35}}
-              type={'primary'}
-              caption={WelcomeTxt.login}
-              onPress={this.onLogin}
-            />
-            <Button
-              enable={true}
-              style={{marginTop: 14}}
-              type={'flat'}
-              caption={WelcomeTxt.skip}
-              onPress={this.onGoPro}
-            />
-          </View>
+          </Text>
+          <View style={styles.larger_space} />
+          <Button
+            enable={true}
+            type={'primary'}
+            caption={WelcomeTxt.login}
+            onPress={this.onLogin}
+          />
+          <View style={styles.smaller_space} />
+          <Button
+            enable={true}
+            type={'flat'}
+            caption={WelcomeTxt.skip}
+            onPress={this.onGoPro}
+          />
         </View>
       </ImageBackground>
       // </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  space: {
+    flex: 0.15,
+  },
+  larger_space: {
+    flex: 0.2,
+  },
+  smaller_space: {
+    flex: 0.05,
+  },
+  text_space: {
+    flex: 0.1,
+  },
+});
 
 export default inject('appStore')(observer(WelcomeView));
