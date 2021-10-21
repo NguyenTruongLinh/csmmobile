@@ -46,7 +46,19 @@ class NVRsView extends Component {
     //     : 'No site was selected',
     // });
     // this.getSitesList();
+    this.setHeader();
   }
+
+  setHeader = () => {
+    const {sitesStore, navigation} = this.props;
+    let options = {};
+    if (sitesStore.selectedSite != null) {
+      options = {
+        headerTitle: sitesStore.selectedSite.name ?? 'Unknown site',
+      };
+    }
+    navigation.setOptions(options);
+  };
 
   onFilter = value => {
     const {sitesStore} = this.props;
