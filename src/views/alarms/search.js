@@ -447,7 +447,7 @@ class AlarmsSearchView extends Component {
           shadowRadius: 45,
         }}>
         <CMSTouchableIcon
-          iconCustom="searching-magnifying-glass"
+          iconCustom="search_solid_advancedfind"
           onPress={() => this.setState({showFilterModal: true})}
           size={28}
           color={CMSColors.White}
