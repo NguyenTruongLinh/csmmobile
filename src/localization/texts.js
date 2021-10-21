@@ -69,6 +69,7 @@ export const Comps = {
   alarmFilterTitle: 'Alarm search',
   searchButton: 'Search',
   cancelButton: 'Cancel',
+  applyButton: 'Apply',
 };
 
 export const Video = {

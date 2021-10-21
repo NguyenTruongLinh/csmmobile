@@ -342,7 +342,7 @@ class AlarmsSearchView extends Component {
         <View style={styles.content_button_apply}>
           <Button
             style={styles.button_apply}
-            caption={CompTxt.searchButton}
+            caption={CompTxt.applyButton}
             captionStyle={{color: CMSColors.White}}
             type="flat"
             // enable={this.state.selectedSites.length > 0}
