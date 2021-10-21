@@ -53,7 +53,7 @@ class HLSStreamingView extends React.Component {
     this.tsIndex = -1;
     this.reactions = [];
     this.shouldResume = false;
-    this.lastSearchTime = 0;
+    this.lastSearchTime = null;
   }
 
   componentDidMount() {
@@ -76,6 +76,10 @@ class HLSStreamingView extends React.Component {
     //   this.appStateEventListener.remove();
     // }
   }
+
+  computeTime = secs => {
+    return DateTime.fromSeconds(secs).setZone(videoStore.timezone);
+  };
 
   initReactions = () => {
     // streamData could be changed
@@ -144,7 +148,7 @@ class HLSStreamingView extends React.Component {
           newChannel => {
             __DEV__ &&
               console.log('HLSStreamingView channel changed: ', newChannel);
-            this.lastSearchTime = 0;
+            this.lastSearchTime = null;
             // if (this.props.singlePlayer) {
             //   if (videoStore.paused) videoStore.pause(false);
             // }
@@ -155,7 +159,7 @@ class HLSStreamingView extends React.Component {
           isLive => {
             // __DEV__ &&
             //   console.log('HLSStreamingView switch mode isLive: ', isLive);
-            this.lastSearchTime = 0;
+            this.lastSearchTime = null;
           }
         ),
         reaction(
@@ -163,7 +167,7 @@ class HLSStreamingView extends React.Component {
           isHD => {
             // __DEV__ &&
             //   console.log('HLSStreamingView switch mode isHD: ', isHD);
-            this.lastSearchTime = this.frameTime;
+            this.lastSearchTime = computeTime(this.frameTime);
           }
         ),
       ];
@@ -262,7 +266,7 @@ class HLSStreamingView extends React.Component {
     // });
     // this.frameTime = 0;
     // TODO: new search time
-    if (!isLive) this.lastSearchTime = this.frameTime;
+    if (!isLive) this.lastSearchTime = computeTime(this.frameTime);
     streamData.reconnect(isLive, hdMode);
   };
 
@@ -414,7 +418,7 @@ class HLSStreamingView extends React.Component {
     const {videoStore} = this.props;
     const time = videoStore.searchDate.plus({seconds: value});
     __DEV__ && console.log('GOND HLS playAt: ', value, ' - ', time);
-    this.lastSearchTime = time.toSeconds();
+    this.lastSearchTime = this.computeTime(time.toSeconds());
 
     // videoStore.setPlayTimeForSearch(
     //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
