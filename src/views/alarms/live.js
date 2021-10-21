@@ -7,6 +7,9 @@ import {
   Modal as ModalBase,
   Dimensions,
   BackHandler,
+  Text,
+  Image,
+  StyleSheet,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
@@ -20,10 +23,12 @@ import CMSColors from '../../styles/cmscolors';
 import {Comps as CompTxt} from '../../localization/texts';
 import {AlertType_Support} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
+import {No_Data, No_Image} from '../../consts/images';
 
 class AlarmsLiveView extends Component {
   constructor(props) {
     super(props);
+    this.state = {height: 0};
   }
 
   componentDidMount() {
@@ -75,9 +80,27 @@ class AlarmsLiveView extends Component {
     );
   };
 
+  onFlatListLayout = event => {
+    const {width, height} = event.nativeEvent.layout;
+    this.setState({
+      width,
+      height,
+    });
+  };
+
+  renderNoData = () => {
+    return (
+      <View style={[styles.noDataContainer, {height: this.state.height}]}>
+        <Image source={No_Data} style={styles.noDataImg}></Image>
+        <Text style={styles.noDataTxt}>There is no data.</Text>
+      </View>
+    );
+  };
+
   render() {
     const {alarmStore} = this.props;
-
+    const noData =
+      !alarmStore.isLoading && alarmStore.filteredLiveData.length == 0;
     return (
       <View style={{flex: 1, backgroundColor: CMSColors.White}}>
         <View style={commonStyles.flatSearchBarContainer}>
@@ -95,14 +118,34 @@ class AlarmsLiveView extends Component {
           <FlatList
             renderItem={this.renderAlarmItem}
             data={alarmStore.filteredLiveData}
+            // data={[]}
             keyExtractor={item => item.kAlertEvent}
             onRefresh={this.refreshLiveData}
             refreshing={alarmStore.isLoading}
+            ListEmptyComponent={noData && this.renderNoData()}
+            onLayout={this.onFlatListLayout}
           />
         </View>
       </View>
     );
   }
 }
+const styles = StyleSheet.create({
+  noDataContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataImg: {
+    width: 100,
+    height: 100,
+  },
+  noDataTxt: {
+    marginTop: 12,
+    paddingBottom: 50,
+    fontSize: 16,
+    color: CMSColors.PrimaryText,
+  },
+});
 
 export default inject('alarmStore')(observer(AlarmsLiveView));

@@ -22,6 +22,8 @@ const _Setting_Video_Direct = require('../assets/images/common/direct-connect.pn
 const _Setting_Video_Cloud = require('../assets/images/common/media-stream.png');
 const _Setting_Video_Relay = require('../assets/images/common/relay.png');
 
+const _No_Data = require('../assets/images/common/folder.png');
+
 export const No_Image = no_img;
 export const No_Image_16_9 = no_img_16_9;
 export const NVR_Play_NoVideo_Image = NVR_Play_NoVideo_img;
@@ -45,3 +47,5 @@ export const Home_Video = _Home_Video;
 export const Setting_Video_Direct = _Setting_Video_Direct;
 export const Setting_Video_Cloud = _Setting_Video_Cloud;
 export const Setting_Video_Relay = _Setting_Video_Relay;
+
+export const No_Data = _No_Data;
