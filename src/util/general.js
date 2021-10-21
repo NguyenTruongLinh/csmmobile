@@ -11,6 +11,8 @@ import {
   ChannelStatus,
   AlertTypeVA,
   TEMPERATURE_ALARMS_TYPES,
+  NVRPlayerConfig,
+  DateFormat,
 } from '../consts/misc';
 
 exports.normalize = function (size) {
@@ -222,43 +224,67 @@ exports.Uinit8ArrToArray = function (uinit8) {
 };
 
 exports.toQueryStringDateTime = function (localdate, format) {
-  if (!format) return DateTime(localdate).toFormat('YYYYMMDDHHmmss');
+  if (!format)
+    return DateTime(localdate).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateTimeFormat
+    );
   else {
-    return DateTime.fromFormat(localdate, format).toFormat('YYYYMMDDHHmmss');
+    return DateTime.fromFormat(localdate, format).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateTimeFormat
+    );
   }
 };
 
 exports.toQueryStringDate = function (localdate, outputformat) {
-  if (!outputformat) return DateTime(localdate).toFormat('YYYYMMDD');
+  if (!outputformat)
+    return DateTime(localdate).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateFormat
+    );
   return DateTime.fromFormat(localdate).toFormat(outputformat);
 };
 
 exports.toFormatStringLocalDate = function (localdate, format, outputformat) {
-  let resFormat = outputformat || 'MM/DD/YYYY';
+  let resFormat = outputformat || DateFormat.POS_Filter_Date; // 'MM/dd/yyyy';
   if (!format) return DateTime(localdate).toFormat(resFormat);
   else return DateTime.fromFormat(localdate, format).toFormat(resFormat);
 };
 
 exports.toFormatStringDate = function (localdate, format, outputformat) {
-  if (!outputformat) outputformat = 'MM/DD/YYYY';
+  if (!outputformat) outputformat = DateFormat.POS_Filter_Date; //'MM/dd/yyyy';
   if (!format) return DateTime(localdate).format(outputformat);
   else return DateTime.fromFormat(localdate, format).toFormat(outputformat);
 };
 
 exports.toQueryStringUTCDateTime = function (localdate, format) {
-  if (!format) return DateTime.fromISO(localdate).toFormat('YYYYMMDDHHmmss');
+  if (!format)
+    return DateTime.fromISO(localdate).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateTimeFormat
+    );
   else {
-    return DateTime.fromFormat(localdate, format).toFormat('YYYYMMDDHHmmss');
+    return DateTime.fromFormat(localdate, format).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateTimeFormat
+    );
   }
 };
 exports.toQueryStringUTCEndDateTime = function (localdate, format) {
-  if (!format) return DateTime.fromISO(localdate).toFormat('YYYYMMDD235959');
-  else return DateTime.fromFormat(localdate, format).toFormat('YYYYMMDD235959');
+  if (!format)
+    return DateTime.fromISO(localdate).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateFormat + '235959'
+    );
+  else
+    return DateTime.fromFormat(localdate, format).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateFormat + '235959'
+    );
 };
 exports.toQueryStringUTCDate = function (localdate, format) {
-  if (!format) return DateTime.fromISO(localdate).toFormat('YYYYMMDD');
+  if (!format)
+    return DateTime.fromISO(localdate).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateFormat
+    );
   else {
-    return DateTime.fromFormat(localdate, format).toFormat('YYYYMMDD');
+    return DateTime.fromFormat(localdate, format).toFormat(
+      NVRPlayerConfig.QueryStringUTCDateFormat
+    );
   }
 };
 
@@ -437,6 +463,20 @@ exports.getColorStatus = status => {
   }
 };
 
+exports.isAlertTypeVASupported = alertId => {
+  return [
+    AlertTypeVA.Unknown,
+    AlertTypeVA.Area,
+    AlertTypeVA.Idle,
+    AlertTypeVA.Stop,
+    AlertTypeVA.CrossWire,
+    AlertTypeVA.MissAlarm,
+    AlertTypeVA.Direction,
+    AlertTypeVA.ManyHuman,
+    AlertTypeVA.AIDetection,
+  ].includes(alertId);
+};
+
 exports.getAlertTypeVA = (status, codeName) => {
   switch (status) {
     case AlertTypeVA.Unknown:
@@ -458,30 +498,30 @@ exports.getAlertTypeVA = (status, codeName) => {
     case AlertTypeVA.AIDetection:
       return 'Detected';
     case AlertTypeVA.AICamera:
-      return 'AI Camera';
+    // return 'AI Camera';
     case AlertTypeVA.AICrossWire:
-      return 'Cross Wire';
+    // return 'Cross Wire';
     default:
-      // if (!codeName || typeof codeName != 'string') return '';
-      // return codeName;
-      // Try to breakdown code name into human name
-      let lastUpperCase = false;
-      return codeName.reduce((result, char, index) => {
-        if (index == 0) {
-          lastUpperCase = true;
-          return result + char.toUpperCase();
-        }
-        if (char == char.toUpperCase()) {
-          if (lastUpperCase) {
-            return result + char;
-          }
-          lastUpperCase = true;
-          return result + ' ' + char;
-        }
-        lastUpperCase = false;
-        return result + char;
-      }, '');
-    // break;
+      return 'Unsupported alert'; // not supported yet
+    // if (!codeName || typeof codeName != 'string') return '';
+    // return codeName;
+    // Try to breakdown code name into human name
+    // let lastUpperCase = false;
+    // return codeName.reduce((result, char, index) => {
+    //   if (index == 0) {
+    //     lastUpperCase = true;
+    //     return result + char.toUpperCase();
+    //   }
+    //   if (char == char.toUpperCase()) {
+    //     if (lastUpperCase) {
+    //       return result + char;
+    //     }
+    //     lastUpperCase = true;
+    //     return result + ' ' + char;
+    //   }
+    //   lastUpperCase = false;
+    //   return result + char;
+    // }, '');
   }
 };
 

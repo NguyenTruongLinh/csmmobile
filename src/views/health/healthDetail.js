@@ -26,6 +26,7 @@ import {getIconAlertType} from '../../util/general';
 import variables from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import ROUTERS from '../../consts/routes';
 const RowEmpty = {isEmpty: true};
 
 class HealthDetailView extends Component {
@@ -34,14 +35,15 @@ class HealthDetailView extends Component {
 
     this.state = {
       showActionsModal: false,
-      showDismissModal: true,
+      showDismissModal: false,
       dismissDescription: '',
-      selectedAlert: null,
+      selectedAlertForDismiss: null,
     };
     this._isMounted = false;
     this.reactions = [];
     this.rowRefs = {};
     this.lastOpenRowId = null;
+    this.reactions = [];
   }
 
   componentDidMount() {
@@ -61,6 +63,8 @@ class HealthDetailView extends Component {
     this._isMounted = false;
 
     const {healthStore} = this.props;
+    this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
+
     healthStore.onExitHealthDetail();
   }
 
@@ -71,7 +75,7 @@ class HealthDetailView extends Component {
       reaction(
         () => healthStore.selectedSite,
         newSite => {
-          if (newSite == null) navigation.goBack();
+          if (newSite == null && this._isMounted) navigation.goBack();
         }
       ),
     ];
@@ -103,16 +107,21 @@ class HealthDetailView extends Component {
     this.lastOpenRowId = rowId;
   };
 
-  onAlertSelected = data => {};
+  onAlertTypeSelected = data => {
+    const {healthStore, navigation} = this.props;
+    healthStore.selectAlertType(data);
+    navigation.push(ROUTERS.HEALTH_ALERTS);
+  };
 
-  onDismissAlert = data => {
+  onDismissAlert = description => {
     const {healthStore} = this.props;
-    healthStore.dismissAlert(data);
-    this.setState({showDismissModal: false, selectedAlert: null});
+    const {selectedAlertForDismiss} = this.state;
+    healthStore.dismissAlertsByType(selectedAlertForDismiss, description);
+    this.setState({showDismissModal: false, selectedAlertForDismiss: null});
   };
 
   onCancelDismiss = () => {
-    this.setState({showDismissModal: false, selectedAlert: null});
+    this.setState({showDismissModal: false, selectedAlertForDismiss: null});
   };
 
   // renderDismissModal = () => {
@@ -213,7 +222,10 @@ class HealthDetailView extends Component {
           <Ripple
             style={styles.actionRowContainer}
             onPress={() =>
-              this.setState({showDismissModal: true, selectedAlert: null})
+              this.setState({
+                showDismissModal: true,
+                selectedAlertForDismiss: null,
+              })
             }>
             <IconCustom
               name="double-tick-indicator"
@@ -261,7 +273,10 @@ class HealthDetailView extends Component {
                 iconCustom="double-tick-indicator"
                 size={26}
                 onPress={() =>
-                  this.setState({selectedAlert: item, showDismissModal: true})
+                  this.setState({
+                    selectedAlertForDismiss: item,
+                    showDismissModal: true,
+                  })
                 }
                 color={CMSColors.Dismiss}
               />
@@ -270,7 +285,7 @@ class HealthDetailView extends Component {
         </View>
         <Ripple
           rippleOpacity={0.8}
-          onPress={() => this.onAlertSelected(item)}
+          onPress={() => this.onAlertTypeSelected(item)}
           style={{
             flex: 1,
             height: ListViewHeight + 2,
@@ -335,9 +350,9 @@ class HealthDetailView extends Component {
     __DEV__ &&
       console.log(
         'GOND render Health detail: ',
-        healthStore.selectedSiteAlerts
+        healthStore.selectedSiteAlertTypes
       );
-    if (!healthStore.selectedSiteAlerts) return <View />;
+    if (!healthStore.selectedSiteAlertTypes) return <View />;
 
     return (
       <View style={{flex: 1}}>
@@ -347,7 +362,7 @@ class HealthDetailView extends Component {
         <FlatList
           renderItem={this.renderItem}
           keyExtractor={item => item.alertId}
-          data={healthStore.selectedSiteAlerts}
+          data={healthStore.selectedSiteAlertTypes}
           onRefresh={this.getData}
           refreshing={healthStore.isLoading}
         />

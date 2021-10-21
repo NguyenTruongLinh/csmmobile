@@ -17,7 +17,7 @@ class BackButton extends React.Component {
       __DEV__ &&
         console.log('GOND WARNING! BackButton must have navigator props!');
     }
-    __DEV__ && console.log('GOND navi: ', props.navigator);
+    // __DEV__ && console.log('GOND navi: ', props.navigator);
   }
 
   render() {
@@ -26,7 +26,10 @@ class BackButton extends React.Component {
       <Ripple
         rippleCentered={true}
         style={styles.left}
-        onPress={() => navigator && navigator.goBack()}>
+        onPress={() => {
+          // __DEV__ && console.log('GOND BackButton onPress!!!');
+          if (navigator && navigator.canGoBack()) navigator.goBack();
+        }}>
         <View style={styles.icon}>
           <CMSTouchableIcon
             size={20}

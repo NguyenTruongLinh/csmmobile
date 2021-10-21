@@ -6,7 +6,7 @@ import snackbarUtil from '../util/snackbar';
 import {Route, Site as SiteRoute} from '../consts/apiRoutes';
 // import {Login as LoginTxt} from '../localization/texts';
 
-const DVRModel = types
+export const DVRModel = types
   .model({
     kDVR: types.identifierNumber,
     name: types.string,

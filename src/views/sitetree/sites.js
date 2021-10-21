@@ -98,7 +98,8 @@ class SitesView extends Component {
   setHeader = () => {
     const {sitesStore, navigation} = this.props;
     const {isHealthRoute} = this.state;
-    const showRegionButton = !isHealthRoute && sitesStore.hasRegions;
+    if (isHealthRoute) return;
+    const showRegionButton = sitesStore.hasRegions;
     let options = {};
     if (sitesStore.selectedRegion == null) {
       options = {
@@ -297,7 +298,7 @@ class SitesView extends Component {
   };
 
   render() {
-    const {appStore, sitesStore, healthStore, navigation} = this.props;
+    const {sitesStore, healthStore} = this.props;
     const {isHealthRoute} = this.state;
     const siteData = isHealthRoute
       ? healthStore.filteredSites
@@ -305,14 +306,6 @@ class SitesView extends Component {
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
-        {/* <HeaderWithSearch
-          title="All Sites"
-          showSearchBar={appStore.showSearchBar}
-          onChangeSearchText={this.onFilter}
-          searchValue={sitesStore.siteFilter}
-          // backButton={false}
-          navigator={navigation}
-        /> */}
         <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
@@ -354,7 +347,7 @@ class SitesView extends Component {
 }
 
 export default inject(
-  'appStore',
+  // 'appStore',
   'sitesStore',
   'userStore',
   'healthStore'

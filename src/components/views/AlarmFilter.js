@@ -733,7 +733,8 @@ export default class AlarmFilter extends Component {
         //getAlertTypeVA
         let ds_Video_Analytics = alertTypesVA
           .filter(
-            i => i.id != AlertTypeVA.Unknown && i.id != AlertTypeVA.ManyHuman
+            // i => i.id != AlertTypeVA.Unknown && i.id != AlertTypeVA.ManyHuman
+            alert => util.isAlertTypeVASupported(alert.id)
           )
           .map(x => {
             return {

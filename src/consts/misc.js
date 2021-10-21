@@ -568,5 +568,7 @@ export const NVRPlayerConfig = {
   TimeFormat: 'HH:mm',
   FrameFormat: 'MM/dd/yyyy - HH:mm:ss',
   LiveFrameFormat: 'HH:mm:ss',
+  QueryStringUTCDateTimeFormat: 'yyyyMMddHHmmss',
+  QueryStringUTCDateFormat: 'yyyyMMdd',
   Search_Duration: 10 * 60,
 };

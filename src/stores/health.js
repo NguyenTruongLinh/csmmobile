@@ -1,5 +1,6 @@
 import {types, applySnapshot, flow} from 'mobx-state-tree';
 
+import {DVRModel} from './sites';
 import apiService from '../services/api';
 import utils from '../util/general';
 import snackbarUtil from '../util/snackbar';
@@ -7,7 +8,7 @@ import snackbarUtil from '../util/snackbar';
 import {Health as HealthRoute, Alert as AlertRoute} from '../consts/apiRoutes';
 import {AlertTypes} from '../consts/misc';
 
-const NotDismissableAlerts = [
+const NonDismissableAlerts = [
   AlertTypes.DVR_is_off_line,
   AlertTypes.DVR_Record_Less_Than,
   AlertTypes.CMSWEB_POS_data_missing,
@@ -23,7 +24,8 @@ const SiteHealthModel = types
     edate: types.string, // should be Date or number?
     isDismissAll: types.boolean,
     siteName: types.string,
-    dvrs: types.array(types.number),
+    // dvrs: types.array(types.number),
+    dvrs: types.array(DVRModel),
   })
   .views(self => ({
     get lowerCaseName() {
@@ -31,45 +33,74 @@ const SiteHealthModel = types
     },
   }));
 
-const SiteAlertModel = types.model({
-  alertId: types.identifierNumber,
-  name: types.optional(types.string, 'Unknow alert'),
-  total: types.number,
-  sdate: types.string,
-  edate: types.string,
-  canDismiss: types.boolean,
-});
+const SiteAlertTypeModel = types
+  .model({
+    alertId: types.identifierNumber,
+    name: types.optional(types.string, 'Unknow alert'),
+    total: types.number,
+    sdate: types.string,
+    edate: types.string,
+  })
+  .views(self => ({
+    get canDismiss() {
+      return !NonDismissableAlerts.includes(self.alertId);
+    },
+  }));
 
-const DVRModel = types.model({
-  kDVR: types.number, //types.identifierNumber
-  name: types.string,
-});
+// const DVRModel = types.model({
+//   kDVR: types.number, //types.identifierNumber
+//   name: types.string,
+// });
 
-const DVRAlertlModel = types.model({
-  channelName: types.maybeNull(types.string),
-  kDVR: types.number,
-  id: types.identifierNumber, //types.maybeNull(types.number),
-  kChannel: types.maybeNull(types.number),
-  channelNo: types.maybeNull(types.number),
-  timezone: types.string,
-  time: types.string,
-  dvr: DVRModel,
-  image: types.maybeNull(types.string),
-  imageInfo: types.maybeNull(types.string), // todo: define AlertImgInfoModel
-});
+const AlertModel = types
+  .model({
+    channelName: types.maybeNull(types.string),
+    // kDVR: types.number,
+    id: types.optional(types.identifier, () => utils.getRandomId()), //types.maybeNull(types.number),
+    alertId: types.number,
+    kChannel: types.maybeNull(types.number),
+    channelNo: types.maybeNull(types.number),
+    timezone: types.string,
+    time: types.string,
+    pinned: types.optional(types.boolean, false),
+    dvr: types.reference(DVRModel),
+    // image: types.maybeNull(types.string),
+    // imageInfo: types.maybeNull(types.string), // todo: define AlertImgInfoModel
+  })
+  .volatile(self => ({
+    image: null,
+    imageInfo: null,
+  }))
+  .views(self => ({
+    get kDVR() {
+      return self.dvr.kDVR;
+    },
+    get canDismiss() {
+      return !NonDismissableAlerts.includes(self.id);
+    },
+  }))
+  .actions(self => ({
+    pin(value) {
+      self.pinned = value === undefined ? !self.pinned : value;
+    },
+    saveImage(image, imageInfo) {
+      self.image = image;
+      if (imageInfo != undefined) self.imageInfo = imageInfo;
+    },
+  }));
 
 // const DVRAlertViewInfoModel = types.model({
 //   page: types.number,
 //   totalPages: types.number,
 // });
 
-const HealthDetailModel = types.model({
-  dvrAlerts: types.array(DVRAlertlModel),
-  fields: types.map(types.string),
-  // info: DVRAlertViewInfoModel,
-  page: types.number,
-  totalPages: types.number,
-});
+// const HealthDetailModel = types.model({
+//   dvrAlerts: types.array(DVRAlertlModel),
+//   fields: types.map(types.string),
+//   // info: DVRAlertViewInfoModel,
+//   page: types.number,
+//   totalPages: types.number,
+// });
 
 // const AlertTypeModel = types.model({
 //   id: types.identifierNumber,
@@ -85,30 +116,59 @@ export const HealthModel = types
     siteHealthList: types.array(SiteHealthModel),
     siteFilter: types.optional(types.string, ''),
     selectedSite: types.maybeNull(types.reference(SiteHealthModel)),
-    selectedSiteAlerts: types.array(SiteAlertModel),
+    selectedSiteAlertTypes: types.array(SiteAlertTypeModel),
+    selectedAlertType: types.maybeNull(types.reference(SiteAlertTypeModel)),
+
     date: types.string, // should be Date or number?
+    selectedAlertTypeData: types.array(AlertModel),
+    alertFilter: types.optional(types.string, ''),
     //dvrAlerts: types.array(types.map),
     // healthDetail: types.maybeNull(HealthDetailModel),
-    activeDVRAlert: types.maybeNull(DVRAlertlModel),
+    // activeDVRAlert: types.maybeNull(DVRAlertlModel),
     isLoading: types.boolean,
   })
   .volatile(self => ({
-    alertTypes: [],
+    alertTypesConfig: [],
+    // selectedAlertTypeData: [],
   }))
   .views(self => ({
     // Group alert by site
-    get alertSiteList() {},
+    // get alertSiteList() {},
     get filteredSites() {
       return self.siteHealthList.filter(s =>
         s.siteName.toLowerCase().includes(self.siteFilter.toLowerCase())
       );
     },
+    get filteredAlerts() {
+      return self.selectedAlertTypeData.filter(alert =>
+        alert.channelName.toLowerCase().includes(self.alertFilter.toLowerCase())
+      );
+    },
+    // get filteredAlertsGridView() {
+    //   return self.selectedAlertTypeData
+    //     .filter(alert =>
+    //       alert.channelName
+    //         .toLowerCase()
+    //         .includes(self.alertFilter.toLowerCase())
+    //     )
+    //     .reduce((result, alert, index) => {
+    //       if (index % ALERTS_GRID_LAYOUT == 0) {
+    //         result.push([]);
+    //       }
+    //       result[result.length - 1].push(alert);
+    //     }, []);
+    // },
     get showDismissAllButtonInHealthDetail() {
-      for (let i = 0; i < self.selectedSiteAlerts.length; i++) {
-        if (!NotDismissableAlerts.includes(self.selectedSiteAlerts[i].alertId))
+      for (let i = 0; i < self.selectedSiteAlertTypes.length; i++) {
+        if (
+          !NonDismissableAlerts.includes(self.selectedSiteAlertTypes[i].alertId)
+        )
           return true;
       }
       return false;
+    },
+    get selectedAlertTypeId() {
+      return self.selectedAlertType.alertId;
     },
   }))
   .actions(self => ({
@@ -119,6 +179,12 @@ export const HealthModel = types
     setSiteFilter(value) {
       self.siteFilter = value;
     },
+    setAlertFilter(value) {
+      self.alertFilter = value;
+    },
+    selectAlertType(value) {
+      self.selectedAlertType = value;
+    },
     // #endregion Setters
     // #region Get data
     getHealthData: flow(function* (alertTypes, sitesList) {
@@ -128,7 +194,7 @@ export const HealthModel = types
       }
       self.isLoading = true;
       const params = alertTypes.reduce((result, val) => {
-        self.alertTypes.push({id: val.id, name: val.name});
+        self.alertTypesConfig.push({id: val.id, name: val.name});
         return result + val.id;
       }, '');
       try {
@@ -144,6 +210,13 @@ export const HealthModel = types
           self.siteHealthList = res.summary
             .map(siteData => {
               let site = sitesList.find(s => s.key == siteData.Id);
+              // __DEV__ &&
+              //   console.log(
+              //     'GOND get health data ',
+              //     site.name,
+              //     'dvrs :',
+              //     site.dvrs
+              //   );
               if (site) {
                 return SiteHealthModel.create({
                   id: siteData.Id,
@@ -153,13 +226,19 @@ export const HealthModel = types
                   edate: siteData.edate ?? '',
                   isDismissAll: siteData.isDismissAll,
                   siteName: site.name,
-                  dvrs: site.dvrs.map(dvr => dvr.kDVR),
+                  // dvrs: site.dvrs.map(dvr => dvr),
+                  dvrs: site.dvrs.map(dvr =>
+                    DVRModel.create({kDVR: dvr.kDVR, name: dvr.name})
+                  ),
                 });
               }
               return null;
             })
             .filter(s => s != null)
-            .sort((s1, s2) => s1.lowerCaseName < s2.lowerCaseName);
+            .sort((s1, s2) =>
+              s1.siteName.toLowerCase().localeCompare(s2.siteName.toLowerCase())
+            );
+          // __DEV__ && console.log('GOND Health data: ', self.siteHealthList);
         }
       } catch (error) {
         __DEV__ && console.log('GOND get health data failed: ', error);
@@ -178,8 +257,8 @@ export const HealthModel = types
         return false;
       }
       self.isLoading = true;
-      self.selectedSiteAlerts = [];
-      const _alertTypes = alertTypes ?? self.alertTypes;
+      self.selectedSiteAlertTypes = [];
+      const _alertTypes = alertTypes ?? self.alertTypesConfig;
 
       try {
         const res = yield apiService.get(
@@ -195,15 +274,15 @@ export const HealthModel = types
           return true;
         }
 
-        self.selectedSiteAlerts = res.summary.map(alert => {
+        self.selectedSiteAlertTypes = res.summary.map(alert => {
           const alertType = _alertTypes.find(type => type.id == alert.Id);
-          return SiteAlertModel.create({
+          return SiteAlertTypeModel.create({
             alertId: alert.Id,
             name: alertType ? alertType.name : 'Unknown alert',
             total: alert.Total ?? 0,
             sdate: alert.sdate,
             edate: alert.edate,
-            canDismiss: !NotDismissableAlerts.includes(alert.Id),
+            // canDismiss: NonDismissableAlerts.includes(alert.Id),
           });
         });
       } catch (error) {
@@ -215,21 +294,78 @@ export const HealthModel = types
       self.isLoading = false;
       return true;
     }),
+    getAlertsByType: flow(function* (alertType) {
+      self.isLoading = true;
+      self.selectedAlertTypeData = [];
+      const _alertType = alertType ?? self.selectedAlertType.alertId;
+      __DEV__ &&
+        console.log('GOND get alert type data dvrs: ', self.selectedSite.dvrs);
+      try {
+        const res = yield apiService.get(
+          AlertRoute.controller,
+          String(_alertType),
+          AlertRoute.getByDvr,
+          {
+            kdvrs: self.selectedSite.dvrs.map(dvr => dvr.kDVR).join(','),
+            sdate: utils.toQueryStringUTCDateTime(self.selectedSite.sdate),
+            edate: utils.toQueryStringUTCDateTime(self.selectedSite.edate),
+            // page: 0,
+            // size: 10,
+          }
+        );
+        __DEV__ && console.log('GOND get alert type data: ', res);
+        if (!res.Data || res.Data.length == 0) {
+          console.log('GOND alert type ', _alertType, ' has no alert data');
+          self.isLoading = false;
+          return true;
+        }
+
+        let defaultId = 0;
+        self.selectedAlertTypeData = res.Data.map(alert => {
+          defaultId++;
+          return AlertModel.create({
+            alertId: alert.Id ?? defaultId,
+            channelName: alert.ChannelName ?? '',
+            // kDVR: alert.KDVR,
+            kChannel: alert.KChannel ?? 0,
+            channelNo: alert.ChannelNo ?? 0,
+            time: alert.Time ?? '',
+            timezone: alert.TimeZone ?? '',
+            dvr: self.selectedSite.dvrs.find(dvr => dvr.kDVR == alert.KDVR),
+            // dvr: DVRModel.create(
+            //   alert.DVR
+            //     ? {kDVR: alert.DVR.KDVR, name: alert.DVR.Name}
+            //     : {kDVR: alert.KDVR, name: ''}
+            // ),
+          });
+        });
+      } catch (error) {
+        __DEV__ && console.log('GOND get site alert type data failed: ', error);
+        snackbarUtil.handleRequestFailed();
+        self.isLoading = false;
+        return false;
+      }
+      self.isLoading = false;
+      return true;
+    }),
     refreshHealthDetail: flow(function* () {
       return yield self.getHealthDetail();
     }),
+    refreshAlertsByType: flow(function* () {
+      return yield self.getAlertsByType();
+    }),
     // #endregion Get data
     // #region Dismiss (Delete) alerts
-    dismissAlert(target, description) {
+    dismissAlertsByType: flow(function* (target, description) {
       self.isLoading = true;
       try {
         if (target) {
-          apiService.delete(
+          const res = apiService.delete(
             AlertRoute.controller,
             String(target.alertId),
             AlertRoute.ignoreMutiAlertType,
             {
-              Kdvrs: self.selectedSite.dvrs,
+              Kdvrs: self.selectedSite.dvrs.map(dvr => dvr.kDVR),
               Kalerttype: target.alertId,
               Sites: self.selectedSite.id,
               Description: description,
@@ -237,6 +373,12 @@ export const HealthModel = types
               edate: utils.toQueryStringUTCDateTime(target.edate),
             }
           );
+          __DEV__ &&
+            console.log(
+              'GOND dismiss all alerts of type: ',
+              target.alertId,
+              res
+            );
         } else {
           // dismiss all site alerts
           apiService.delete(
@@ -244,11 +386,18 @@ export const HealthModel = types
             String(self.selectedSite.id),
             AlertRoute.ignoreMutiAlertSite,
             {
-              Kdvrs: self.selectedSite.dvrs,
+              Kdvrs: self.selectedSite.dvrs.map(dvr => dvr.kDVR),
               Sites: self.selectedSite.id,
               Description: description,
             }
           );
+
+          __DEV__ &&
+            console.log(
+              'GOND dismiss all alerts of site: ',
+              self.selectedSite.id,
+              res
+            );
         }
       } catch (error) {
         __DEV__ && console.log('GOND get health detail data failed: ', error);
@@ -260,12 +409,53 @@ export const HealthModel = types
       // Dismiss successfully, reload page:
       self.refreshHealthDetail();
       return true;
-    },
+    }),
+    dismissAlert: flow(function* (target, description) {
+      self.isLoading = true;
+      __DEV__ &&
+        console.log(
+          'GOND dismiss single alert: ',
+          target,
+          ', des: ',
+          description
+        );
+      try {
+        if (target) {
+          const res = yield apiService.delete(
+            AlertRoute.controller,
+            String(target.alertId),
+            '',
+            {
+              Kdvr: target.kDVR,
+              Sites: self.selectedSite ? self.selectedSite.id : undefined,
+              Kchannel: target.kChannel,
+              KAlert: target.alertId,
+              Description: description,
+            }
+          );
+
+          __DEV__ && console.log('GOND dismiss single alert: ', res);
+        }
+      } catch (error) {
+        __DEV__ && console.log('GOND dismiss single alert failed: ', error);
+        snackbarUtil.handleRequestFailed();
+        self.isLoading = false;
+        return false;
+      }
+      self.isLoading = false;
+      // Dismiss successfully, reload page:
+      self.refreshAlertsByType();
+      return true;
+    }),
     // #endregion Dismiss alert
     // #region Cleanup
     onExitHealthDetail() {
       self.selectedSite = null;
-      self.selectedSiteAlerts = [];
+      self.selectedSiteAlertTypes = [];
+    },
+    onExitAlertsView() {
+      self.selectedAlertTypeData = [];
+      self.selectedAlertType = null;
     },
     cleanUp() {
       applySnapshot(self, storeDefault);
