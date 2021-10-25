@@ -7,6 +7,7 @@ import {
   Platform,
   Dimensions,
   StyleSheet,
+  Image,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
@@ -33,6 +34,7 @@ import {
 } from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
 import variables from '../../styles/variables';
+import {No_Data} from '../../consts/images';
 
 const header_height = 50;
 const footer_height = 50;
@@ -56,6 +58,7 @@ class AlarmsSearchView extends Component {
       params: filterParams ?? {},
       width,
       height,
+      listHeight: 0,
     };
   }
 
@@ -456,10 +459,28 @@ class AlarmsSearchView extends Component {
     );
   }
 
+  onFlatListLayout = event => {
+    const {height} = event.nativeEvent.layout;
+    this.setState({
+      listHeight: height,
+    });
+  };
+
+  renderNoData = () => {
+    return (
+      <View style={[styles.noDataContainer, {height: this.state.listHeight}]}>
+        <Image source={No_Data} style={styles.noDataImg}></Image>
+        <Text style={styles.noDataTxt}>There is no data.</Text>
+      </View>
+    );
+  };
+
   render() {
     const {alarmStore} = this.props;
     const actionButton = this.renderActionButton();
     const filterModal = this.renderFilterModal();
+    const noData =
+      !alarmStore.isLoading && alarmStore.filteredSearchData.length == 0;
 
     return (
       <View
@@ -483,6 +504,8 @@ class AlarmsSearchView extends Component {
             keyExtractor={item => item.kAlertEvent}
             onRefresh={this.refreshData}
             refreshing={alarmStore.isLoading}
+            ListEmptyComponent={noData && this.renderNoData()}
+            onLayout={this.onFlatListLayout}
           />
         </View>
         {actionButton}
@@ -655,6 +678,21 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignItems: 'center',
     borderColor: CMSColors.White,
+  },
+  noDataContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataImg: {
+    width: 100,
+    height: 100,
+  },
+  noDataTxt: {
+    marginTop: 12,
+    paddingBottom: 50,
+    fontSize: 16,
+    color: CMSColors.PrimaryText,
   },
 });
 
