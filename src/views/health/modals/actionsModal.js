@@ -31,21 +31,24 @@ class AlertActionsModal extends React.Component {
   }
 
   componentDidMount() {
-    // const {healthStore} = this.props;
-    __DEV__ && console.log('HealthDetailView componentDidMount');
+    __DEV__ && console.log('HEALTH ActionsModals componentDidMount');
     this._isMounted = true;
   }
 
   componentWillUnmount() {
-    // const {healthStore} = this.props;
-    __DEV__ && console.log('HealthDetailView componentWillUnmount');
+    __DEV__ && console.log('HEALTH ActionsModals componentWillUnmount');
     this._isMounted = false;
   }
 
   onDismissAlert = description => {
     const {healthStore} = this.props;
-    healthStore.showDismissModal(true);
     healthStore.showActionsModal(false);
+    __DEV__ && console.log('HEALTH ActionsModals actions modal dismissed');
+
+    setTimeout(() => {
+      __DEV__ && console.log('HEALTH ActionsModals show dismiss modal');
+      healthStore.showDismissModal(true);
+    }, 500);
   };
 
   onLiveSearchVideo = isLive => {
