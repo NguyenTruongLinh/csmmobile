@@ -32,7 +32,7 @@ import {MODULE_PERMISSIONS} from '../../consts/misc';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
-import {Comps as CompTxt, Video as VideoTxt} from '../../localization/texts';
+import {Comps as CompTxt, VIDEO as VIDEO_TXT} from '../../localization/texts';
 
 // const LayoutData = [
 //   {
@@ -397,7 +397,7 @@ class LiveChannelsView extends React.Component {
   //           onCancel={videoStore.onAuthenCancel}
   //           username={videoStore.nvrUser}
   //           password={''}
-  //           title={VideoTxt.authenTitle}
+  //           title={VIDEO_TXT.AUTHEN_TITLE}
   //         />
   //       </View>
   //     </Modal>
@@ -595,13 +595,13 @@ class LiveChannelsView extends React.Component {
 
     return userStore.hasPermission(MODULE_PERMISSIONS.VSC) ? (
       <View style={styles.infoTextContainer}>
-        <Text>{VideoTxt.SELECT_CHANNEL_1}</Text>
+        <Text>{VIDEO_TXT.SELECT_CHANNEL_1}</Text>
         <IconCustom name="add-cam" size={22} color={CMSColors.ColorText} />
-        <Text>{VideoTxt.SELECT_CHANNEL_2}</Text>
+        <Text>{VIDEO_TXT.SELECT_CHANNEL_2}</Text>
       </View>
     ) : (
       <View style={styles.infoTextContainer}>
-        <Text>{VideoTxt.NO_PERMISSION}</Text>
+        <Text>{VIDEO_TXT.NO_PERMISSION}</Text>
       </View>
     );
   };

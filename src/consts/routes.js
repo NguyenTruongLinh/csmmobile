@@ -131,3 +131,51 @@ export const getHeaderTitle = route => {
   }
   return routeName;
 };
+
+export const getCurrentRoute = route => {
+  const routeName = route.name ?? getFocusedRouteNameFromRoute(route) ?? '';
+  // __DEV__ &&
+  //   console.log('GOND getHeaderTitle routeName = ', routeName, '\n++', route);
+
+  switch (routeName) {
+    case ROUTERS.HEALTH_SITES:
+    case ROUTERS.HEALTH_DETAIL:
+    case ROUTERS.HEALTH_ALERTS:
+    case ROUTERS.HEALTH_ALERT_DETAIL:
+      return ROUTERS.HEALTH;
+
+    case ROUTERS.VIDEO_REGIONS:
+    case ROUTERS.VIDEO_SITES:
+    case ROUTERS.VIDEO_NVRS:
+    case ROUTERS.VIDEO_CHANNELS:
+    case ROUTERS.VIDEO_CHANNELS_SETTING:
+    case ROUTERS.VIDEO_PLAYER:
+      return ROUTERS.VIDEO;
+
+    case ROUTERS.ALARM_LIVE:
+    case ROUTERS.ALARM_SEARCH:
+    case ROUTERS.ALARM_DETAIL:
+    case ROUTERS.ALARM_SEARCH_DETAIL:
+      return ROUTERS.ALARM; // TODO: get from store
+
+    case ROUTERS.OAM_SITES:
+    case ROUTERS.OAM_DETAIL:
+      return ROUTERS.OAM;
+
+    case ROUTERS.POS:
+    case ROUTERS.TRANSACTIONS:
+    case ROUTERS.TRAN_DETAIL:
+    case ROUTERS.TRAN_DETAIL_FCM:
+      return ROUTERS.POS;
+
+    case ROUTERS.OPTIONS:
+    case ROUTERS.OPTIONS_PROFILE:
+    case ROUTERS.OPTIONS_ABOUT:
+    case ROUTERS.OPTIONS_NOTIFY:
+    case ROUTERS.OPTIONS_VIDEO:
+      return ROUTERS.OPTIONS;
+  }
+  __DEV__ &&
+    console.log('GOND getCurrenRoute routeName = ', routeName, '\n++', route);
+  return ROUTERS.HOME;
+};

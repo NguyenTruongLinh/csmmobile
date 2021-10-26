@@ -5,7 +5,7 @@ import Modal from 'react-native-modal';
 import AuthenModal from '../common/AuthenModal';
 
 import CMSColors from '../../styles/cmscolors';
-import {Video as VideoTxt} from '../../localization/texts';
+import {VIDEO as VIDEO_TXT} from '../../localization/texts';
 import {inject, observer} from 'mobx-react';
 
 class NVRAuthenModal extends React.Component {
@@ -38,7 +38,7 @@ class NVRAuthenModal extends React.Component {
             onCancel={videoStore.onAuthenCancel}
             username={videoStore.nvrUser}
             password={''}
-            title={VideoTxt.authenTitle}
+            title={VIDEO_TXT.AUTHEN_TITLE}
           />
         </View>
       </Modal>

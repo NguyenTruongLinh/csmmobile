@@ -16,6 +16,8 @@ import Modal from 'react-native-modal';
 import {SwipeRow} from 'react-native-swipe-list-view';
 import Ripple from 'react-native-material-ripple';
 
+import AlertActionModal from './modals/actionsModal';
+import AlertDismissModal from './modals/dismissModal';
 // import InputTextIcon from '../../components/controls/InputTextIcon';
 import CMSTextInputModal from '../../components/controls/CMSTextInputModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
@@ -34,13 +36,12 @@ class HealthDetailView extends Component {
     super(props);
 
     this.state = {
-      showActionsModal: false,
-      showDismissModal: false,
+      // showActionsModal: false,
+      // showDismissModal: false,
       dismissDescription: '',
       selectedAlertForDismiss: null,
     };
     this._isMounted = false;
-    this.reactions = [];
     this.rowRefs = {};
     this.lastOpenRowId = null;
     this.reactions = [];
@@ -113,16 +114,16 @@ class HealthDetailView extends Component {
     navigation.push(ROUTERS.HEALTH_ALERTS);
   };
 
-  onDismissAlert = description => {
-    const {healthStore} = this.props;
-    const {selectedAlertForDismiss} = this.state;
-    healthStore.dismissAlertsByType(selectedAlertForDismiss, description);
-    this.setState({showDismissModal: false, selectedAlertForDismiss: null});
-  };
+  // onDismissAlert = description => {
+  //   const {healthStore} = this.props;
+  //   const {selectedAlertForDismiss} = this.state;
+  //   healthStore.dismissAlertsByType(selectedAlertForDismiss, description);
+  //   this.setState({showDismissModal: false, selectedAlertForDismiss: null});
+  // };
 
-  onCancelDismiss = () => {
-    this.setState({showDismissModal: false, selectedAlertForDismiss: null});
-  };
+  // onCancelDismiss = () => {
+  //   this.setState({showDismissModal: false, selectedAlertForDismiss: null});
+  // };
 
   // renderDismissModal = () => {
   //   return (
@@ -143,28 +144,13 @@ class HealthDetailView extends Component {
 
   renderActionButton() {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          right: 35,
-          bottom: 28,
-          width: 63,
-          height: 63,
-          borderRadius: 45,
-          backgroundColor: CMSColors.PrimaryActive,
-          justifyContent: 'center',
-          alignItems: 'center',
-          // android's shadow
-          elevation: 5,
-          // ios's shadow check later
-          shadowOffset: {width: 14, height: 14},
-          shadowColor: 'black',
-          shadowOpacity: 0.7,
-          shadowRadius: 45,
-        }}>
+      <View style={styles.actionButtonContainer}>
         <CMSTouchableIcon
           iconCustom="grid-view-9"
-          onPress={() => this.setState({showActionsModal: true})}
+          onPress={() => {
+            // this.setState({showActionsModal: true})
+            this.props.healthStore.showActionsModal(true);
+          }}
           size={28}
           color={CMSColors.White}
         />
@@ -172,72 +158,65 @@ class HealthDetailView extends Component {
     );
   }
 
-  renderActionsModal = () => {
-    const {height} = Dimensions.get('window');
-    const {showDismissAllButtonInHealthDetail} = this.props.healthStore;
+  // renderActionsModal = () => {
+  //   const {height} = Dimensions.get('window');
+  //   const {showDismissAllButtonInHealthDetail} = this.props.healthStore;
 
-    return (
-      <Modal
-        isVisible={this.state.showActionsModal}
-        onBackdropPress={() => this.setState({showActionsModal: false})}
-        // onSwipeOut={() => this.setState({showFilterModal: false})}
-        onBackButtonPress={() => this.setState({showActionsModal: false})}
-        backdropOpacity={0.1}
-        style={{
-          flex: 1,
-          marginBottom: 0,
-          marginTop: height - (showDismissAllButtonInHealthDetail ? 210 : 140),
-          marginLeft: 0,
-          marginRight: 0,
-          paddingTop: 0,
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-          alignItems: 'flex-start',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          backgroundColor: CMSColors.White,
-        }}>
-        <Ripple
-          style={[
-            styles.actionRowContainer,
-            // {borderWidth: 1, borderColor: 'red'},
-          ]}
-          onPress={() => {}}>
-          <IconCustom
-            name="videocam-filled-tool"
-            color={CMSColors.IconButton}
-            size={variables.fix_fontSize_Icon}
-          />
-          <Text style={styles.actionText}>Live</Text>
-        </Ripple>
-        <Ripple style={styles.actionRowContainer} onPress={() => {}}>
-          <IconCustom
-            name="searching-magnifying-glass"
-            color={CMSColors.IconButton}
-            size={variables.fix_fontSize_Icon}
-          />
-          <Text style={styles.actionText}>Search</Text>
-        </Ripple>
-        {showDismissAllButtonInHealthDetail && (
-          <Ripple
-            style={styles.actionRowContainer}
-            onPress={() =>
-              this.setState({
-                showDismissModal: true,
-                selectedAlertForDismiss: null,
-              })
-            }>
-            <IconCustom
-              name="double-tick-indicator"
-              color={CMSColors.IconButton}
-              size={variables.fix_fontSize_Icon}
-            />
-            <Text style={styles.actionText}>Dismiss all alerts</Text>
-          </Ripple>
-        )}
-      </Modal>
-    );
-  };
+  //   return (
+  //     <Modal
+  //       isVisible={this.state.showActionsModal}
+  //       onBackdropPress={() => this.setState({showActionsModal: false})}
+  //       // onSwipeOut={() => this.setState({showFilterModal: false})}
+  //       onBackButtonPress={() => this.setState({showActionsModal: false})}
+  //       backdropOpacity={0.1}
+  //       style={[
+  //         styles.actionModal,
+  //         {
+  //           marginTop:
+  //             height - (showDismissAllButtonInHealthDetail ? 210 : 140),
+  //         },
+  //       ]}>
+  //       <Ripple
+  //         style={[
+  //           styles.actionRowContainer,
+  //           // {borderWidth: 1, borderColor: 'red'},
+  //         ]}
+  //         onPress={() => {}}>
+  //         <IconCustom
+  //           name="videocam-filled-tool"
+  //           color={CMSColors.IconButton}
+  //           size={variables.fix_fontSize_Icon}
+  //         />
+  //         <Text style={styles.actionText}>Live</Text>
+  //       </Ripple>
+  //       <Ripple style={styles.actionRowContainer} onPress={() => {}}>
+  //         <IconCustom
+  //           name="searching-magnifying-glass"
+  //           color={CMSColors.IconButton}
+  //           size={variables.fix_fontSize_Icon}
+  //         />
+  //         <Text style={styles.actionText}>Search</Text>
+  //       </Ripple>
+  //       {showDismissAllButtonInHealthDetail && (
+  //         <Ripple
+  //           style={styles.actionRowContainer}
+  //           onPress={() =>
+  //             this.setState({
+  //               showDismissModal: true,
+  //               selectedAlertForDismiss: null,
+  //             })
+  //           }>
+  //           <IconCustom
+  //             name="double-tick-indicator"
+  //             color={CMSColors.IconButton}
+  //             size={variables.fix_fontSize_Icon}
+  //           />
+  //           <Text style={styles.actionText}>Dismiss all alerts</Text>
+  //         </Ripple>
+  //       )}
+  //     </Modal>
+  //   );
+  // };
 
   renderItem = ({item}) => {
     const rowId = item.alertId ?? 0;
@@ -254,30 +233,19 @@ class HealthDetailView extends Component {
         // tension={2}
         // friction={3}
       >
-        <View
-          style={{
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            height: ListViewHeight,
-          }}>
-          <View
-            style={{
-              width: 50,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
+        <View style={styles.backRowContainer}>
+          <View style={styles.dismissButton}>
             {item.canDismiss && (
               <CMSTouchableIcon
                 iconCustom="double-tick-indicator"
                 size={26}
-                onPress={() =>
+                onPress={() => {
                   this.setState({
                     selectedAlertForDismiss: item,
-                    showDismissModal: true,
-                  })
-                }
+                    // showDismissModal: true,
+                  });
+                  this.props.healthStore.showDismissModal(true);
+                }}
                 color={CMSColors.Dismiss}
               />
             )}
@@ -286,24 +254,8 @@ class HealthDetailView extends Component {
         <Ripple
           rippleOpacity={0.8}
           onPress={() => this.onAlertTypeSelected(item)}
-          style={{
-            flex: 1,
-            height: ListViewHeight + 2,
-            backgroundColor: CMSColors.White,
-            flexDirection: 'row',
-            alignItems: 'center',
-            // justifyContent: 'flex-start',
-            paddingLeft: 16,
-            // borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderColor: CMSColors.BorderColorListRow,
-          }}>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              // backgroundColor: CMSColors.Transparent,
-            }}>
+          style={styles.frontRowRipple}>
+          <View style={styles.frontRowIcon}>
             <IconCustom
               name={alertIcon}
               color={CMSColors.IconButton}
@@ -314,24 +266,8 @@ class HealthDetailView extends Component {
             </Text>
           </View>
           {item.total > 0 && (
-            <View
-              style={{
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: ListViewHeight - 15,
-                height: ListViewHeight - 15,
-                marginRight: 14,
-                flexDirection: 'row',
-                // backgroundColor: CMSColors.BtnNumberListRow,
-              }}>
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: '500',
-                  color: CMSColors.TotalAlerts,
-                }}>
-                {item.total}
-              </Text>
+            <View style={styles.frontRowInfoContainer}>
+              <Text style={styles.frontRowText}>{item.total}</Text>
               <IconCustom
                 name="keyboard-right-arrow-button"
                 color={CMSColors.IconButton}
@@ -345,13 +281,13 @@ class HealthDetailView extends Component {
   };
 
   render() {
-    const {healthStore} = this.props;
-    const {showDismissModal} = this.state;
-    __DEV__ &&
-      console.log(
-        'GOND render Health detail: ',
-        healthStore.selectedSiteAlertTypes
-      );
+    const {healthStore, navigation} = this.props;
+    const {/*showDismissModal,*/ selectedAlertForDismiss} = this.state;
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND render Health detail: ',
+    //     healthStore.selectedSiteAlertTypes
+    //   );
     if (!healthStore.selectedSiteAlertTypes) return <View />;
 
     return (
@@ -367,14 +303,25 @@ class HealthDetailView extends Component {
           refreshing={healthStore.isLoading}
         />
         {this.renderActionButton()}
-        {this.renderActionsModal()}
-        <CMSTextInputModal
+        {/* {this.renderActionsModal()} */}
+        {/* <CMSTextInputModal
           isVisible={showDismissModal}
           title="Dismiss alert"
           label="Description"
           onSubmit={this.onDismissAlert}
           onCancel={this.onCancelDismiss}
           placeHolder="Dismiss descriptions"
+        /> */}
+        <AlertActionModal
+          data={healthStore.selectedSite}
+          siteAlerts={true}
+          navigation={navigation}
+        />
+        <AlertDismissModal
+          selectedAlertType={selectedAlertForDismiss}
+          callback={() =>
+            this._isMounted && this.setState({selectedAlertForDismiss: null})
+          }
         />
         {/* </KeyboardAwareScrollView> */}
       </View>
@@ -384,6 +331,19 @@ class HealthDetailView extends Component {
 
 const styles = StyleSheet.create({
   actionContainer: {},
+  actionModal: {
+    flex: 1,
+    marginBottom: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    paddingTop: 0,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    alignItems: 'flex-start',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    backgroundColor: CMSColors.White,
+  },
   actionRowContainer: {
     width: '100%',
     height: ListViewHeight,
@@ -394,6 +354,67 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionText: {marginLeft: 14},
+  actionButtonContainer: {
+    position: 'absolute',
+    right: 35,
+    bottom: 28,
+    width: 63,
+    height: 63,
+    borderRadius: 45,
+    backgroundColor: CMSColors.PrimaryActive,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // android's shadow
+    elevation: 5,
+    // ios's shadow check later
+    shadowOffset: {width: 14, height: 14},
+    shadowColor: 'black',
+    shadowOpacity: 0.7,
+    shadowRadius: 45,
+  },
+  backRowContainer: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    height: ListViewHeight,
+  },
+  dismissButton: {
+    width: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  frontRowRipple: {
+    flex: 1,
+    height: ListViewHeight + 2,
+    backgroundColor: CMSColors.White,
+    flexDirection: 'row',
+    alignItems: 'center',
+    // justifyContent: 'flex-start',
+    paddingLeft: 16,
+    // borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: CMSColors.BorderColorListRow,
+  },
+  frontRowIcon: {
+    flex: 1,
+    flexDirection: 'row',
+    // backgroundColor: CMSColors.Transparent,
+  },
+  frontRowInfoContainer: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: ListViewHeight - 15,
+    height: ListViewHeight - 15,
+    marginRight: 14,
+    flexDirection: 'row',
+    // backgroundColor: CMSColors.BtnNumberListRow,
+  },
+  frontRowText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: CMSColors.TotalAlerts,
+  },
 });
 
 export default inject('userStore', 'healthStore')(observer(HealthDetailView));

@@ -1,12 +1,9 @@
-// ----------------------------------------------------
-// <!-- START MODULES -->
 import {inject, observer} from 'mobx-react';
 import React, {Component} from 'react';
 import {
   View,
   FlatList,
   Text,
-  Image,
   Platform,
   StatusBar,
   Dimensions,
@@ -15,7 +12,10 @@ import {
 
 import Ripple from 'react-native-material-ripple';
 import {SwipeRow} from 'react-native-swipe-list-view';
+import {DateTime} from 'luxon';
 
+import AlertActionModal from './modals/actionsModal';
+import AlertDismissModal from './modals/dismissModal';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 // import BackButton from '../../components/controls/BackButton';
@@ -24,9 +24,6 @@ import CMSImage from '../../components/containers/CMSImage';
 import CMSTextInputModal from '../../components/controls/CMSTextInputModal';
 import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 
-import snackbar from '../../util/snackbar';
-
-import ROUTERS from '../../consts/routes';
 import {AlertTypes, DateFormat} from '../../consts/misc';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
@@ -34,9 +31,9 @@ import variables from '../../styles/variables';
 import {No_Image} from '../../consts/images';
 
 import {Comps as CompTxt} from '../../localization/texts';
-import {DateTime} from 'luxon';
+import ROUTERS from '../../consts/routes';
 
-const ALERTS_GRID_LAYOUT = 3;
+const ALERTS_GRID_LAYOUT = 2;
 
 // const HEADER_MAX_HEIGHT = Platform.OS !== 'ios' ? 54 : 64;
 // const HEADER_MIN_HEIGHT = 35;
@@ -48,15 +45,17 @@ class AlertsView extends Component {
 
     this.state = {
       isListView: true,
-      showDismissModal: false,
+      // showDismissModal: false,
       selectedAlertForDismiss: null,
     };
     this.rowRefs = {};
     this.lastOpenRowId = null;
+    this._isMounted = false;
   }
 
   componentDidMount() {
     __DEV__ && console.log('AlertsView componentDidMount');
+    this._isMounted = true;
 
     this.setHeader();
     this.getData();
@@ -64,11 +63,15 @@ class AlertsView extends Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('AlertsView componentWillUnmount');
+    this._isMounted = false;
+
+    this.props.healthStore.onExitAlertsView();
   }
 
   setHeader = () => {
     const {healthStore, navigation} = this.props;
     const {selectedAlertTypeId} = healthStore;
+    const {isListView} = this.state;
     __DEV__ &&
       console.log(
         'GOND AlertsView setHeader, alertType = ',
@@ -84,7 +87,11 @@ class AlertsView extends Component {
         ...options,
         headerRight: () => (
           <CMSTouchableIcon
-            iconCustom="two-rows-and-three-columns-layout"
+            iconCustom={
+              isListView
+                ? 'two-rows-and-three-columns-layout'
+                : 'view-list-button'
+            }
             size={22}
             color={CMSColors.ColorText}
             styles={{
@@ -97,9 +104,12 @@ class AlertsView extends Component {
               // backgroundColor: CMSColors.transparent,
             }}
             onPress={() => {
-              this.setState({
-                isListView: !this.state.isListView,
-              });
+              this.setState(
+                {
+                  isListView: !this.state.isListView,
+                },
+                () => this.setHeader()
+              );
             }}
           />
         ),
@@ -134,18 +144,24 @@ class AlertsView extends Component {
     this.lastOpenRowId = rowId;
   };
 
-  onDismissAlert = description => {
-    const {healthStore} = this.props;
-    const {selectedAlertForDismiss} = this.state;
-    healthStore.dismissAlert(selectedAlertForDismiss, description);
-    this.setState({showDismissModal: false, selectedAlertForDismiss: null});
-  };
+  // onDismissAlert = description => {
+  //   const {healthStore} = this.props;
+  //   const {selectedAlertForDismiss} = this.state;
+  //   healthStore.dismissAlert(selectedAlertForDismiss, description);
+  //   this.setState({showDismissModal: false, selectedAlertForDismiss: null});
+  // };
 
-  onCancelDismiss = () => {
-    this.setState({showDismissModal: false, selectedAlertForDismiss: null});
-  };
+  // onCancelDismiss = () => {
+  //   this.setState({showDismissModal: false, selectedAlertForDismiss: null});
+  // };
 
-  gotoAlertDetail = alert => {};
+  gotoAlertDetail = alert => {
+    const {healthStore, navigation} = this.props;
+    __DEV__ && console.log('GOND HEALTH Select alert: ', alert);
+    healthStore.selectAlert(alert);
+    __DEV__ && console.log('GOND HEALTH Select alert 1');
+    navigation.push(ROUTERS.HEALTH_ALERT_DETAIL);
+  };
 
   getSnapShot = alert => {
     if (!alert) return;
@@ -215,8 +231,9 @@ class AlertsView extends Component {
         onPress={() => {
           this.setState({
             selectedAlertForDismiss: item,
-            showDismissModal: true,
+            // showDismissModal: true,
           });
+          this.props.healthStore.showDismissModal(true);
         }}>
         {/* <View style={{flex: 1, padding: 5, justifyContent: 'center'}}> */}
         <View style={styles.backRowView}>
@@ -277,6 +294,8 @@ class AlertsView extends Component {
   };
 
   renderAlertItemWithSnapshot = item => {
+    const {healthStore} = this.props;
+
     return (
       <SwipeRow
         onRowOpen={() => this.onRowOpen(item)}
@@ -295,7 +314,7 @@ class AlertsView extends Component {
             <CMSImage
               id={'list_' + DateTime.now().toMillis()}
               src={item.image}
-              domain={this.getSnapShot(item)}
+              domain={healthStore.getAlertSnapShot(item)} // {this.getSnapShot(item)}
               dataCompleteHandler={(param, image) => {
                 if (image) {
                   item.saveImage(image);
@@ -338,7 +357,7 @@ class AlertsView extends Component {
             src={item.image ? item.image : undefined}
             styleImage={[
               styles.alertThumbGrid,
-              {width: itemWidth, height: itemWidth},
+              {width: itemWidth, height: Math.floor((itemWidth * 9) / 16)},
             ]}
             styles={{flex: 8}}
             dataCompleteHandler={(param, image) => {
@@ -376,8 +395,9 @@ class AlertsView extends Component {
   };
 
   render() {
-    const {healthStore} = this.props;
-    const {showDismissModal, isListView} = this.state;
+    const {healthStore, navigation} = this.props;
+    const {/*showDismissModal,*/ isListView, selectedAlertForDismiss} =
+      this.state;
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
@@ -401,13 +421,24 @@ class AlertsView extends Component {
           onRefresh={this.getData}
           refreshing={healthStore.isLoading}
         />
-        <CMSTextInputModal
+        {/* <CMSTextInputModal
           isVisible={showDismissModal}
           title="Dismiss alert"
           label="Description"
           onSubmit={this.onDismissAlert}
           onCancel={this.onCancelDismiss}
           placeHolder="Dismiss descriptions"
+        /> */}
+        <AlertActionModal
+          data={healthStore.selectedAlertType}
+          siteAlerts={false}
+          navigation={navigation}
+        />
+        <AlertDismissModal
+          selectedAlert={selectedAlertForDismiss}
+          callback={() =>
+            this._isMounted && this.setState({selectedAlertForDismiss: null})
+          }
         />
       </View>
     );

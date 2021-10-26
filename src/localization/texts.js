@@ -61,6 +61,7 @@ export const ActionMessages = {
   getDataFailed: 'Cannot connect to CMS server, please try again later!',
   readLocalFailed: 'Cannot read local data!',
   saveLocalFailed: 'Cannot save local data!',
+  SUCCESS: 'Success!',
 };
 
 export const Comps = {
@@ -72,12 +73,12 @@ export const Comps = {
   applyButton: 'Apply',
 };
 
-export const Video = {
-  live: 'Live',
-  search: 'Search',
-  noVideo: 'No video',
-  channelError: 'Channel not found!',
-  authenTitle: 'NVR Authorization',
+export const VIDEO = {
+  LIVE: 'Live',
+  SEARCH: 'Search',
+  NO_VIDEO: 'No video',
+  CHANNEL_ERROR: 'Channel not found!',
+  AUTHEN_TITLE: 'NVR Authorization',
   SELECT_CHANNEL_1: 'Please press ',
   SELECT_CHANNEL_2: ' to select channels',
   NO_PERMISSION: "You don't have VSC permission",
@@ -104,4 +105,10 @@ export const STREAM_STATUS = {
 export const ALARM = {
   EVENT_TIME: 'Event time',
   PROCESS: 'Process',
+};
+
+export const HEALTH = {
+  HISTORICAL: 'Historical',
+  DISMISS_ALL: 'Dismiss all alerts',
+  DISMISS_CURRENT: 'Dismiss',
 };

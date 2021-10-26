@@ -37,7 +37,7 @@ import {TIMEZONE_MAP} from '../consts/timezonesmap';
 //   KinesisVideoArchivedMedia,
 // } from '@aws-sdk/client-kinesis-video-archived-media';
 
-import {Video as VideoTxt, STREAM_STATUS} from '../localization/texts';
+import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../localization/texts';
 
 const DirectServerModel = types
   .model({
@@ -1259,7 +1259,7 @@ export const VideoModel = types
                     'GOND HLS - requested channel not found: ',
                     channelNo
                   );
-                snackbarUtil.onError(VideoTxt.channelError);
+                snackbarUtil.onError(VIDEO_TXT.CHANNEL_ERROR);
                 return false;
               }
             }
@@ -2134,7 +2134,7 @@ export const VideoModel = types
               'GOND onAlertPlay channels has been removed or not existed!'
             );
           // self.error = 'Channel is not existed or has been removed!';
-          snackbarUtil.onError(VideoTxt.channelError);
+          snackbarUtil.onError(VIDEO_TXT.CHANNEL_ERROR);
           return false;
         }
         // Get timezone first

@@ -20,7 +20,7 @@ import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {NATIVE_MESSAGE, STREAM_TIMEOUT} from '../../consts/video';
 import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 
-import {Video as VideoTxt, STREAM_STATUS} from '../../localization/texts';
+import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../../localization/texts';
 
 const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
 // const Time_Ruler_Height = normalize(variables.isPhoneX ? 75 : 65);

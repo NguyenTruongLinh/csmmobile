@@ -7,6 +7,7 @@ import snackbarUtil from '../util/snackbar';
 
 import {Health as HealthRoute, Alert as AlertRoute} from '../consts/apiRoutes';
 import {AlertTypes} from '../consts/misc';
+import {No_Image} from '../consts/images';
 
 const NonDismissableAlerts = [
   AlertTypes.DVR_is_off_line,
@@ -56,7 +57,7 @@ const AlertModel = types
   .model({
     channelName: types.maybeNull(types.string),
     // kDVR: types.number,
-    id: types.optional(types.identifier, () => utils.getRandomId()), //types.maybeNull(types.number),
+    id: types.optional(types.identifier, () => utils.getRandomId()), // Consider using kChannel instead
     alertId: types.number,
     kChannel: types.maybeNull(types.number),
     channelNo: types.maybeNull(types.number),
@@ -120,16 +121,21 @@ export const HealthModel = types
     selectedAlertType: types.maybeNull(types.reference(SiteAlertTypeModel)),
 
     date: types.string, // should be Date or number?
-    selectedAlertTypeData: types.array(AlertModel),
+    alertsListByType: types.array(AlertModel),
     alertFilter: types.optional(types.string, ''),
     //dvrAlerts: types.array(types.map),
     // healthDetail: types.maybeNull(HealthDetailModel),
     // activeDVRAlert: types.maybeNull(DVRAlertlModel),
     isLoading: types.boolean,
+
+    //
+    dismissModalShown: types.optional(types.boolean, false),
+    selectedAlert: types.maybeNull(types.reference(AlertModel)),
+    actionsModalShown: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     alertTypesConfig: [],
-    // selectedAlertTypeData: [],
+    // alertsListByType: [],
   }))
   .views(self => ({
     // Group alert by site
@@ -140,12 +146,12 @@ export const HealthModel = types
       );
     },
     get filteredAlerts() {
-      return self.selectedAlertTypeData.filter(alert =>
+      return self.alertsListByType.filter(alert =>
         alert.channelName.toLowerCase().includes(self.alertFilter.toLowerCase())
       );
     },
     // get filteredAlertsGridView() {
-    //   return self.selectedAlertTypeData
+    //   return self.alertsListByType
     //     .filter(alert =>
     //       alert.channelName
     //         .toLowerCase()
@@ -168,7 +174,14 @@ export const HealthModel = types
       return false;
     },
     get selectedAlertTypeId() {
+      if (!self.selectedAlertType) return 0;
       return self.selectedAlertType.alertId;
+    },
+    get selectedAlertIndex() {
+      if (!self.selectedAlert) return -1;
+      return self.alertsListByType.findIndex(
+        alert => alert.id == self.selectedAlert.id
+      );
     },
   }))
   .actions(self => ({
@@ -184,6 +197,21 @@ export const HealthModel = types
     },
     selectAlertType(value) {
       self.selectedAlertType = value;
+    },
+    selectAlert(value) {
+      __DEV__ && console.log('GOND +++++++ select Alert: ', value);
+      if (self.alertsListByType.length == 0 || value == null) {
+        self.selectedAlert = null;
+        return;
+      }
+      self.selectedAlert =
+        value == undefined ? self.alertsListByType[0] : value;
+    },
+    showActionsModal(isShow) {
+      self.actionsModalShown = isShow;
+    },
+    showDismissModal(isShow) {
+      self.dismissModalShown = isShow;
     },
     // #endregion Setters
     // #region Get data
@@ -258,6 +286,7 @@ export const HealthModel = types
       }
       self.isLoading = true;
       self.selectedSiteAlertTypes = [];
+      if (self.selectedAlertType) self.selectedAlertType = null;
       const _alertTypes = alertTypes ?? self.alertTypesConfig;
 
       try {
@@ -296,7 +325,9 @@ export const HealthModel = types
     }),
     getAlertsByType: flow(function* (alertType) {
       self.isLoading = true;
-      self.selectedAlertTypeData = [];
+      if (self.selectedAlert) self.selectedAlert = null;
+      self.alertsListByType = [];
+
       const _alertType = alertType ?? self.selectedAlertType.alertId;
       __DEV__ &&
         console.log('GOND get alert type data dvrs: ', self.selectedSite.dvrs);
@@ -321,7 +352,7 @@ export const HealthModel = types
         }
 
         let defaultId = 0;
-        self.selectedAlertTypeData = res.Data.map(alert => {
+        self.alertsListByType = res.Data.map(alert => {
           defaultId++;
           return AlertModel.create({
             alertId: alert.Id ?? defaultId,
@@ -379,9 +410,10 @@ export const HealthModel = types
               target.alertId,
               res
             );
+          if (res.error) snackbarUtil.handleRequestFailed();
         } else {
           // dismiss all site alerts
-          apiService.delete(
+          const res = apiService.delete(
             AlertRoute.controller,
             String(self.selectedSite.id),
             AlertRoute.ignoreMutiAlertSite,
@@ -398,6 +430,7 @@ export const HealthModel = types
               self.selectedSite.id,
               res
             );
+          if (res.error) snackbarUtil.handleRequestFailed();
         }
       } catch (error) {
         __DEV__ && console.log('GOND get health detail data failed: ', error);
@@ -406,6 +439,7 @@ export const HealthModel = types
         return false;
       }
       self.isLoading = false;
+      snackbarUtil.onSuccess();
       // Dismiss successfully, reload page:
       self.refreshHealthDetail();
       return true;
@@ -433,8 +467,8 @@ export const HealthModel = types
               Description: description,
             }
           );
-
-          __DEV__ && console.log('GOND dismiss single alert: ', res);
+          __DEV__ && console.log('GOND dismiss single alert result: ', res);
+          if (res.error) snackbarUtil.handleRequestFailed();
         }
       } catch (error) {
         __DEV__ && console.log('GOND dismiss single alert failed: ', error);
@@ -442,20 +476,55 @@ export const HealthModel = types
         self.isLoading = false;
         return false;
       }
+
       self.isLoading = false;
+      snackbarUtil.onSuccess();
       // Dismiss successfully, reload page:
       self.refreshAlertsByType();
       return true;
     }),
     // #endregion Dismiss alert
+    // #region Utilities:
+    getAlertSnapShot(alert, alertType) {
+      if (!alert) return;
+      const _alertType = alertType ?? self.selectedAlertTypeId;
+
+      if (_alertType == AlertTypes.DVR_Sensor_Triggered)
+        return {
+          controller: 'alert',
+          action: 'imagetime',
+          id: alert.timezone,
+          param: {
+            thumb: true,
+            download: false,
+            next: false,
+            kdvr: alert.KDVR,
+            ch: alert.ChannelNo,
+          },
+          no_img: No_Image,
+        };
+      return {
+        controller: 'channel',
+        action: 'image',
+        param: null,
+        id: alert.kChannel,
+        no_img: No_Image,
+      };
+    },
+    // #endregion Utilities
     // #region Cleanup
     onExitHealthDetail() {
       self.selectedSite = null;
+      self.selectedAlertType = null;
       self.selectedSiteAlertTypes = [];
     },
     onExitAlertsView() {
-      self.selectedAlertTypeData = [];
+      self.selectedAlert = null;
+      self.alertsListByType = [];
       self.selectedAlertType = null;
+    },
+    onExitAlertDetailView() {
+      self.selectedAlert = null;
     },
     cleanUp() {
       applySnapshot(self, storeDefault);

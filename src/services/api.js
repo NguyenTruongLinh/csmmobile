@@ -74,11 +74,20 @@ class Api {
     let ver = this.config.version;
     let urlbase = this.config.url; //+ ((ver ==='' || ver=== undefined)?'' : ('/' + ver) );
     if (!controller || controller === '') return urlbase;
+    // __DEV__ && console.log('GOND build URL, ', urlbase, ', id = ', id);
     if (!id || id === '') {
+      // __DEV__ && console.log('GOND build URL no id ', id);
       if (action) return urlbase + '/' + controller + '/' + action;
       return urlbase + '/' + controller;
     }
-    if (!action || action === '') return urlbase + '/' + controller + '/' + id;
+    if (!action || action === '') {
+      // __DEV__ &&
+      //   console.log(
+      //     'GOND build URL no action = ',
+      //     urlbase + '/' + controller + '/' + id
+      //   );
+      return urlbase + '/' + controller + '/' + id;
+    }
     return urlbase + '/' + controller + '/' + id + '/' + action;
   }
 

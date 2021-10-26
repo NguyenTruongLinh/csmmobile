@@ -35,6 +35,10 @@ exports.onError = message => {
   showMessage(message, true);
 };
 
+exports.onSuccess = message => {
+  showMessage(message ?? ActionMessages.SUCCESS, false);
+};
+
 const onMessage = (msg, backcolor, actions) => {
   if (!actions) {
     Snackbar.show({

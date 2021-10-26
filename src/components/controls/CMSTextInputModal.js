@@ -21,6 +21,7 @@ class CMSTextInputModal extends React.Component {
   static defaultProps = {
     title: '',
     placeHolder: undefined,
+    savePreviousText: false,
     onSubmit: text => console.log('GOND CMSTextInputModal onSubmit: ', text),
     onCancel: () => console.log('GOND CMSTextInputModal onCancel'),
   };
@@ -30,26 +31,29 @@ class CMSTextInputModal extends React.Component {
 
     this.state = {
       textInput: '',
-      focused: false,
+      // focused: false,
     };
+    this.inputRef = null;
   }
 
   onSubmit = () => {
-    const {onSubmit} = this.props;
+    const {onSubmit, savePreviousText} = this.props;
     const {textInput} = this.state;
 
     if (onSubmit && typeof onSubmit == 'function') {
       onSubmit(textInput);
+      if (!savePreviousText) this.setState({textInput: ''});
     } else {
       console.log('GOND CMSTextInputModal onSubmit no handler function found!');
     }
   };
 
   onCancel = () => {
-    const {onCancel} = this.props;
+    const {onCancel, savePreviousText} = this.props;
 
     if (onCancel && typeof onCancel == 'function') {
       onCancel();
+      if (!savePreviousText) this.setState({textInput: ''});
     } else {
       console.log('GOND CMSTextInputModal onCancel no handler function found!');
     }
@@ -61,7 +65,7 @@ class CMSTextInputModal extends React.Component {
 
   render() {
     const {isVisible, placeHolder, title, label} = this.props;
-    const {textInput, focused} = this.state;
+    const {textInput /*, focused*/} = this.state;
     const {height} = Dimensions.get('window');
 
     return (
@@ -77,7 +81,10 @@ class CMSTextInputModal extends React.Component {
         backdropOpacity={0.1}
         style={[
           styles.modalcontainer,
-          {marginTop: height - (focused ? 650 : 283)},
+          {
+            marginTop:
+              height - (this.inputRef && this.inputRef.isFocused() ? 650 : 283),
+          },
         ]}>
         <View style={[styles.modalView]}>
           {title.length > 0 && (
@@ -87,6 +94,7 @@ class CMSTextInputModal extends React.Component {
           )}
           <View style={[styles.body]}>
             <InputText
+              ref={r => (this.inputRef = r)}
               value={textInput}
               fontSize={16}
               autoCorrect={false}
@@ -100,8 +108,8 @@ class CMSTextInputModal extends React.Component {
               label={label}
               placeHolder={placeHolder}
               style={styles.textInput}
-              onFocus={() => this.setState({focused: true})}
-              onBlur={() => this.setState({focused: false})}
+              // onFocus={() => this.setState({focused: true})}
+              // onBlur={() => this.setState({focused: false})}
             />
           </View>
           <View style={[styles.footer]}>

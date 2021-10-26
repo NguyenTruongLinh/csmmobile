@@ -41,7 +41,7 @@ import {
 } from '../../consts/video';
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
-import {STREAM_STATUS, Video as VideoTxt} from '../../localization/texts';
+import {STREAM_STATUS, VIDEO as VIDEO_TXT} from '../../localization/texts';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 
@@ -542,7 +542,7 @@ class VideoPlayerView extends Component {
         />
         <View style={styles.headerTitleWrap}>
           <Text style={styles.headerTitleText}>
-            {videoStore.isLive ? VideoTxt.live : VideoTxt.search}
+            {videoStore.isLive ? VIDEO_TXT.LIVE : VIDEO_TXT.SEARCH}
           </Text>
         </View>
         {this.renderDatetime()}
