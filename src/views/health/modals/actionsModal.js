@@ -43,10 +43,10 @@ class AlertActionsModal extends React.Component {
   onDismissAlert = description => {
     const {healthStore} = this.props;
     healthStore.showActionsModal(false);
-    __DEV__ && console.log('HEALTH ActionsModals actions modal dismissed');
+    // __DEV__ && console.log('HEALTH ActionsModals actions modal dismissed');
 
     setTimeout(() => {
-      __DEV__ && console.log('HEALTH ActionsModals show dismiss modal');
+      // __DEV__ && console.log('HEALTH ActionsModals show dismiss modal');
       healthStore.showDismissModal(true);
     }, 500);
   };

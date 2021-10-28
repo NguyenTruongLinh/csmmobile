@@ -134,7 +134,7 @@ class SitesView extends Component {
   onSiteSelected = item => {
     const {sitesStore, navigation, healthStore} = this.props;
     const {isHealthRoute} = this.state;
-    sitesStore.selectSite(item);
+    sitesStore.selectSite(item.id);
 
     if (isHealthRoute) {
       healthStore.selectSite(item.id);
@@ -150,7 +150,13 @@ class SitesView extends Component {
     }
   };
 
-  gotoVideo = (isLive, data) => {};
+  gotoVideo = (isLive, data) => {
+    const {sitesStore, videoStore, navigation} = this.props;
+    __DEV__ && console.log('GOND Health gotoVideo ... ', data);
+    sitesStore.selectSite(data.id);
+    videoStore.switchLiveSearch(isLive);
+    navigation.push(ROUTERS.HEALTH_CHANNELS);
+  };
 
   onFilter = value => {
     const {sitesStore} = this.props;
@@ -159,7 +165,7 @@ class SitesView extends Component {
 
   onRowOpen = data => {
     const rowId = data.id ?? 0;
-    __DEV__ && console.log('GOND Health onRowOpen ... ', this.lastOpenRowId);
+    // __DEV__ && console.log('GOND Health onRowOpen ... ', this.lastOpenRowId);
 
     if (
       this.lastOpenRowId &&
@@ -236,8 +242,9 @@ class SitesView extends Component {
         ref={r => (this.rowRefs[rowId] = r)}
         closeOnRowPress={true}
         disableRightSwipe={true}
+        disableLeftSwipe={!isHealthRoute}
         swipeToOpenPercent={10}
-        rightOpenValue={-100}
+        rightOpenValue={isHealthRoute ? -100 : 0}
         // tension={2}
         // friction={3}
       >
@@ -274,24 +281,26 @@ class SitesView extends Component {
               {isHealthRoute ? item.siteName : item.name}
             </Text>
           </View>
-          <View
-            style={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: ListViewHeight - 15,
-              height: ListViewHeight - 15,
-              marginRight: 14,
-              backgroundColor: CMSColors.BtnNumberListRow,
-            }}>
-            <Text
+          {isHealthRoute && (
+            <View
               style={{
-                fontSize: 16,
-                fontWeight: '500',
-                color: CMSColors.White,
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: ListViewHeight - 15,
+                height: ListViewHeight - 15,
+                marginRight: 14,
+                backgroundColor: CMSColors.BtnNumberListRow,
               }}>
-              {item.total}
-            </Text>
-          </View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: '500',
+                  color: CMSColors.White,
+                }}>
+                {item.total}
+              </Text>
+            </View>
+          )}
         </Ripple>
       </SwipeRow>
     );
@@ -347,7 +356,7 @@ class SitesView extends Component {
 }
 
 export default inject(
-  // 'appStore',
+  'videoStore',
   'sitesStore',
   'userStore',
   'healthStore'

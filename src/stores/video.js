@@ -1200,7 +1200,7 @@ export const VideoModel = types
       }),
       // #endregion get channels
       // #region direct connection
-      getDirectInfos: flow(function* getDirectInfos(channelNo) {
+      getDirectInfos: flow(function* (channelNo) {
         self.isLoading = true;
         // if (!self.allChannels || self.allChannels.length <= 0) {
         //   yield self.getDvrChannels();
@@ -1944,7 +1944,7 @@ export const VideoModel = types
       }),
       // #endregion HLS streaming
       // #region WebRTC streaming
-      getRTCInfos: flow(function* getRTCInfos(channelNo) {
+      getRTCInfos: flow(function* (channelNo) {
         self.isLoading = true;
         self.rtcConnection = RTCStreamModel.create({
           sid: util.getRandomId(),

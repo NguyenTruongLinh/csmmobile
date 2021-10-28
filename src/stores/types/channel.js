@@ -23,14 +23,22 @@ export default ChannelModel = types
     resolution: types.maybeNull(types.string), // ?
     modelName: types.string,
     isActive: types.boolean,
-    image: types.maybeNull(types.string),
+    // image: types.maybeNull(types.string),
   })
+  .volatile(self => ({
+    snapshot: null,
+  }))
   .views(self => ({
     // get data() {
     //   const res = getSnapshot(self);
     //   __DEV__ && console.log('GOND channel snapshot = ', res);
     //   return res;
     // },
+  }))
+  .actions(self => ({
+    saveSnapshot(value) {
+      self.snapshot = value;
+    },
   }));
 
 export const parseChannel = (_channel, activeList = null) => {

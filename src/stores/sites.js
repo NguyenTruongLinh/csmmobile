@@ -136,6 +136,11 @@ export const SitesMapModel = types
         ? self.selectedSite.dvrs.map(dvr => dvr.data)
         : [];
     },
+    get selectedSiteDefaultDVR() {
+      return self.selectedSite
+        ? self.selectedSite.defaultKDVR ?? self.selectedSite.dvrs[0]
+        : null;
+    },
     get filteredRegions() {
       return self.regionsList.filter(region =>
         region.name.toLowerCase().includes(self.regionFilter.toLowerCase())
@@ -248,13 +253,17 @@ export const SitesMapModel = types
       self.regionFilter = value;
     },
     selectSite(item) {
-      self.selectedSite = item.key;
+      self.selectedSite = item;
     },
     setSiteFilter(value) {
       self.siteFilter = value;
     },
     selectDVR(item) {
-      self.selectedDVR = item.kDVR;
+      if (utils.isNullOrUndef(item)) {
+        self.selectedDVR = self.selectedSiteDefaultDVR;
+        return;
+      }
+      self.selectedDVR = item;
     },
     deselectDVR() {
       self.selectedDVR = null;
