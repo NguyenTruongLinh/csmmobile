@@ -381,7 +381,9 @@ export const UserStoreModel = types
             alertTypesRes,
             registerTokenRes
           );
-        return uPhotoRes && modulesRes; // && alertTypesRes;
+        // TODO: should we?
+        // return uPhotoRes && modulesRes; // && alertTypesRes;
+        return true;
       } catch (err) {
         __DEV__ && console.log('GOND getDataPostLogin failed: ', err);
         snackbarUtil.handleRequestFailed();

@@ -20,7 +20,7 @@ const TabIcons = [
   'ic_settings_24px',
 ];
 const TabLabels = [Labels.home, Labels.video, Labels.alarm, Labels.settings];
-const HideTabbarScreens = [ROUTERS.VIDEO_PLAYER];
+const HideTabbarScreens = [ROUTERS.VIDEO_PLAYER, ROUTERS.HEALTH_VIDEO];
 
 export default class extends React.Component {
   constructor(props) {

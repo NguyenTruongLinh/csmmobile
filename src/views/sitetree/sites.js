@@ -13,6 +13,7 @@ import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
 import {SwipeRow} from 'react-native-swipe-list-view';
 
+import AlertDismissModal from '../health/modals/dismissModal';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import BackButton from '../../components/controls/BackButton';
@@ -131,15 +132,24 @@ class SitesView extends Component {
   //   }
   // };
 
+  onDismissSiteAlerts = item => {
+    if (!this.state.isHealthRoute) return;
+    const {healthStore} = this.props;
+    healthStore.selectSite(item.id);
+    this.onRowOpen();
+    healthStore.showDismissModal(true);
+  };
+
   onSiteSelected = item => {
     const {sitesStore, navigation, healthStore} = this.props;
     const {isHealthRoute} = this.state;
-    sitesStore.selectSite(item.id);
 
     if (isHealthRoute) {
+      sitesStore.selectSite(item.id);
       healthStore.selectSite(item.id);
       navigation.push(ROUTERS.HEALTH_DETAIL);
     } else {
+      sitesStore.selectSite(item.key);
       if (item.dvrs.length == 1) {
         if (sitesStore.selectedDVR) return; // prevent double click
         sitesStore.selectDVR(item.dvrs[0]);
@@ -151,10 +161,10 @@ class SitesView extends Component {
   };
 
   gotoVideo = (isLive, data) => {
-    const {sitesStore, videoStore, navigation} = this.props;
+    const {sitesStore, navigation} = this.props;
     __DEV__ && console.log('GOND Health gotoVideo ... ', data);
     sitesStore.selectSite(data.id);
-    videoStore.switchLiveSearch(isLive);
+    healthStore.setVideoMode(isLive);
     navigation.push(ROUTERS.HEALTH_CHANNELS);
   };
 
@@ -164,7 +174,7 @@ class SitesView extends Component {
   };
 
   onRowOpen = data => {
-    const rowId = data.id ?? 0;
+    const rowId = data ? data.id ?? 0 : null;
     // __DEV__ && console.log('GOND Health onRowOpen ... ', this.lastOpenRowId);
 
     if (
@@ -177,56 +187,48 @@ class SitesView extends Component {
     this.lastOpenRowId = rowId;
   };
 
-  renderVideoButtons = data => {
+  renderBackRow = data => {
     const {isHealthRoute} = this.state;
 
     return isHealthRoute ? (
-      // <View style={{flex: 1}}>
-      <View
-        style={{
-          alignItems: 'center',
-          flex: 1,
-          flexDirection: 'row',
-          justifyContent: 'flex-end',
-          height: ListViewHeight,
-          // padding: 15,
-        }}>
-        {/* <View style={{flex: 6}} /> */}
-        <View
-          style={{
-            // flex: 1,
-            width: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <CMSTouchableIcon
-            iconCustom="searching-magnifying-glass"
-            size={26}
-            onPress={() => this.gotoVideo(false, data)}
-            color={CMSColors.IconButton}
-            // disabledColor={CMSColors.DisabledIconButton}
-            // disabled={isLoading}
-          />
+      <View style={styles.backRowContainer}>
+        <View style={styles.backRowLeft}>
+          <View style={styles.backRowButtonContainer}>
+            <CMSTouchableIcon
+              iconCustom="double-tick-indicator"
+              size={26}
+              onPress={() => this.onDismissSiteAlerts(data)}
+              color={CMSColors.IconButton}
+              // disabledColor={CMSColors.DisabledIconButton}
+              // disabled={isLoading}
+            />
+          </View>
         </View>
-        <View
-          style={{
-            // flex: 1,
-            width: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <CMSTouchableIcon
-            iconCustom="videocam-filled-tool"
-            size={26}
-            onPress={() => this.gotoVideo(true, data)}
-            color={CMSColors.IconButton}
-            // disabledColor={CMSColors.DisabledIconButton}
-            // disabled={isLoading}
-          />
+        <View style={styles.backRowRight}>
+          {/* <View style={{flex: 6}} /> */}
+          <View style={styles.backRowButtonContainer}>
+            <CMSTouchableIcon
+              iconCustom="searching-magnifying-glass"
+              size={26}
+              onPress={() => this.gotoVideo(false, data)}
+              color={CMSColors.IconButton}
+              // disabledColor={CMSColors.DisabledIconButton}
+              // disabled={isLoading}
+            />
+          </View>
+          <View style={styles.backRowButtonContainer}>
+            <CMSTouchableIcon
+              iconCustom="videocam-filled-tool"
+              size={26}
+              onPress={() => this.gotoVideo(true, data)}
+              color={CMSColors.IconButton}
+              // disabledColor={CMSColors.DisabledIconButton}
+              // disabled={isLoading}
+            />
+          </View>
         </View>
       </View>
     ) : (
-      // </View>
       <View />
     );
   };
@@ -241,35 +243,20 @@ class SitesView extends Component {
         onRowOpen={() => this.onRowOpen(item)}
         ref={r => (this.rowRefs[rowId] = r)}
         closeOnRowPress={true}
-        disableRightSwipe={true}
+        disableRightSwipe={!isHealthRoute}
         disableLeftSwipe={!isHealthRoute}
         swipeToOpenPercent={10}
         rightOpenValue={isHealthRoute ? -100 : 0}
+        leftOpenValue={isHealthRoute ? 50 : 0}
         // tension={2}
         // friction={3}
       >
-        {this.renderVideoButtons(item)}
+        {this.renderBackRow(item)}
         <Ripple
           rippleOpacity={0.8}
           onPress={() => this.onSiteSelected(item)}
-          style={{
-            flex: 1,
-            height: ListViewHeight + 2,
-            backgroundColor: CMSColors.White,
-            flexDirection: 'row',
-            alignItems: 'center',
-            // justifyContent: 'flex-start',
-            paddingLeft: 16,
-            // borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderColor: CMSColors.BorderColorListRow,
-          }}>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              // backgroundColor: CMSColors.Transparent,
-            }}>
+          style={styles.listItemRipple}>
+          <View style={styles.siteNameContainer}>
             {isHealthRoute && (
               <IconCustom
                 name="sites"
@@ -277,28 +264,13 @@ class SitesView extends Component {
                 size={variables.fix_fontSize_Icon}
               />
             )}
-            <Text style={{fontSize: 16, fontWeight: '500', paddingLeft: 14}}>
+            <Text style={styles.siteName}>
               {isHealthRoute ? item.siteName : item.name}
             </Text>
           </View>
           {isHealthRoute && (
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: ListViewHeight - 15,
-                height: ListViewHeight - 15,
-                marginRight: 14,
-                backgroundColor: CMSColors.BtnNumberListRow,
-              }}>
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: '500',
-                  color: CMSColors.White,
-                }}>
-                {item.total}
-              </Text>
+            <View style={styles.alertsCountContainer}>
+              <Text style={styles.alertsCount}>{item.total}</Text>
             </View>
           )}
         </Ripple>
@@ -314,7 +286,7 @@ class SitesView extends Component {
       : sitesStore.filteredSites;
 
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={styles.screenContainer}>
         <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
@@ -326,19 +298,8 @@ class SitesView extends Component {
             iconPosition="right"
           />
         </View>
-        <View
-          style={{
-            backgroundColor: CMSColors.HeaderListRow,
-            height: 35,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Text
-            style={{
-              paddingLeft: 24,
-              textAlignVertical: 'center',
-              color: CMSColors.RowOptions,
-            }}>
+        <View style={styles.summaryContainer}>
+          <Text style={styles.sitesCount}>
             {sitesStore.filteredSites.length + ' sites'}
           </Text>
         </View>
@@ -350,13 +311,88 @@ class SitesView extends Component {
           onRefresh={this.getData}
           refreshing={sitesStore.isLoading || healthStore.isLoading}
         />
+        <AlertDismissModal
+          callback={() => {
+            healthStore.selectSite(null);
+          }}
+        />
       </View>
     );
   }
 }
 
+const styles = StyleSheet.create({
+  screenContainer: {flex: 1, flexDirection: 'column'},
+  backRowContainer: {flex: 1, flexDirection: 'row'},
+  backRowLeft: {
+    flex: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    height: ListViewHeight,
+  },
+  backRowButtonContainer: {
+    width: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backRowRight: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    height: ListViewHeight,
+    // padding: 15,
+  },
+  listItemRipple: {
+    flex: 1,
+    height: ListViewHeight + 2,
+    backgroundColor: CMSColors.White,
+    flexDirection: 'row',
+    alignItems: 'center',
+    // justifyContent: 'flex-start',
+    paddingLeft: 16,
+    // borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: CMSColors.BorderColorListRow,
+  },
+  siteNameContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    // backgroundColor: CMSColors.Transparent,
+  },
+  siteName: {
+    fontSize: 16,
+    fontWeight: '500',
+    paddingLeft: 14,
+  },
+  alertsCountContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: ListViewHeight - 15,
+    height: ListViewHeight - 15,
+    marginRight: 14,
+    backgroundColor: CMSColors.BtnNumberListRow,
+  },
+  alertsCount: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: CMSColors.White,
+  },
+  summaryContainer: {
+    backgroundColor: CMSColors.HeaderListRow,
+    height: 35,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sitesCount: {
+    paddingLeft: 24,
+    textAlignVertical: 'center',
+    color: CMSColors.RowOptions,
+  },
+});
+
 export default inject(
-  'videoStore',
   'sitesStore',
   'userStore',
   'healthStore'

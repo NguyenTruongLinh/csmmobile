@@ -54,7 +54,7 @@ export default function HealthStack() {
         component={ChannelsSettingView}
       />
       <HStack.Screen
-        name={ROUTERS.VIDEO_PLAYER}
+        name={ROUTERS.HEALTH_VIDEO}
         component={VideoPlayerView}
         options={({route, navigation}) => ({
           headerLeft: () => (

@@ -28,16 +28,8 @@ import {
 } from '../consts/video';
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../consts/misc';
 import {TIMEZONE_MAP} from '../consts/timezonesmap';
-// import {KinesisVideo} from '@aws-sdk/client-kinesis-video';
-// import {
-//   ContainerFormat,
-//   FragmentSelectorType,
-//   HLSDiscontinuityMode,
-//   HLSPlaybackMode,
-//   KinesisVideoArchivedMedia,
-// } from '@aws-sdk/client-kinesis-video-archived-media';
-
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../localization/texts';
+import ROUTERS from '../consts/routes';
 
 const DirectServerModel = types
   .model({
@@ -229,7 +221,7 @@ export const VideoModel = types
     gridLayout: types.optional(types.number, 2),
     channelFilter: types.string,
     isLoading: types.boolean,
-    error: types.string,
+    // error: types.string,
     // needResetConnection: types.boolean,
     message: types.string,
     nvrUser: types.maybeNull(types.string),
@@ -928,7 +920,7 @@ export const VideoModel = types
       setPlayTimeForSearch(value) {
         self.searchPlayTime = value;
       },
-      onExitSinglePlayer() {
+      onExitSinglePlayer(currentRoute) {
         self.isSingleMode = false;
         self.selectedChannel = null;
         self.searchBegin = null;
@@ -938,7 +930,6 @@ export const VideoModel = types
         self.searchPlayTime = null;
         self.displayDateTime = '';
         self.isLoading = false;
-        self.isLive = true;
         self.isFullscreen = false;
         self.hdMode = false;
         self.paused = false;
@@ -947,8 +938,12 @@ export const VideoModel = types
         self.timezoneOffset = 0;
         self.noVideo = false;
         //
-        self.selectedHLSStream = null;
+        // self.selectedHLSStream = null;
         self.isAlertPlay = false;
+
+        if (currentRoute != ROUTERS.HEALTH_CHANNELS) {
+          self.isLive = false;
+        }
       },
       // #endregion setters
       // #region Build data
@@ -1059,7 +1054,7 @@ export const VideoModel = types
             }
           );
           snackbarUtil.handleSaveResult(result);
-          if (!result.error) {
+          if (result && !result.error) {
             yield self.getActiveChannels();
           }
         } catch (err) {
@@ -1120,11 +1115,11 @@ export const VideoModel = types
           );
           __DEV__ &&
             console.log(`GOND get channels info (GetAll = ${isGetAll}): `, res);
-          if (res.error) {
+          if (res && res.error) {
             __DEV__ &&
               console.log('GOND cannot get channels info: ', res.error);
             snackbarUtil.handleRequestFailed(res.error);
-            self.error = res.error;
+            // self.error = res.error;
             self.isLoading = false;
             return false;
           }
@@ -1161,15 +1156,15 @@ export const VideoModel = types
               '\n all channels: ',
               resAll
             );
-          if (resActive.error || resAll.error) {
+          if ((resActive && resActive.error) || (resAll && resAll.error)) {
             console.log(
               'GOND cannot get active channels info: ',
-              resActive.error,
+              resActive,
               ' && ',
-              resAll.error
+              resAll
             );
             snackbarUtil.handleRequestFailed(resActive.error || resAll.error);
-            self.error = resActive.error || resAll.error;
+            // self.error = resActive.error || resAll.error;
             self.isLoading = false;
             return false;
           }
@@ -1343,6 +1338,9 @@ export const VideoModel = types
         });
       }),
       getTimeline: flow(function* (channelNo, sid) {
+        if (!self.searchDate) {
+          self.searchDate = DateTime.now().setZone(self.timezone);
+        }
         return yield self.sendVSCCommand(VSCCommand.TIMELINE, channelNo, {
           requestDate: self.searchDate.toFormat(
             NVRPlayerConfig.HLSRequestDateFormat
@@ -1749,7 +1747,16 @@ export const VideoModel = types
           //   target.targetUrl.set({sid: info.sid});
           // }
           // let isTargetSelected = false;
-          target = self.hlsStreams.find(s => s.getUrl(cmd).sid == info.sid);
+          target = self.hlsStreams.find(s => {
+            __DEV__ &&
+              console.log(
+                `GOND on HLS matching url, sid = ${info.sid}, s = `,
+                s,
+                `s.getUrl(cmd) = `,
+                s.getUrl(cmd)
+              );
+            return s.getUrl(cmd).sid == info.sid;
+          });
           if (!target) {
             // if (
             //   self.selectedHLSStream &&

@@ -127,6 +127,7 @@ export const HealthModel = types
     // healthDetail: types.maybeNull(HealthDetailModel),
     // activeDVRAlert: types.maybeNull(DVRAlertlModel),
     isLoading: types.boolean,
+    isLiveVideo: types.optional(types.boolean, false),
 
     //
     dismissModalShown: types.optional(types.boolean, false),
@@ -212,6 +213,9 @@ export const HealthModel = types
     },
     showDismissModal(isShow) {
       self.dismissModalShown = isShow;
+    },
+    setVideoMode(isLive) {
+      self.isLiveVideo = isLive;
     },
     // #endregion Setters
     // #region Get data

@@ -53,16 +53,15 @@ class ChannelsListView extends React.Component {
     const {videoStore, sitesStore} = this.props;
     this._isMounted = false;
 
-    this.appStateEvtSub && this.appStateEvtSub.remove();
     videoStore.releaseStreams();
     videoStore.setChannelFilter('');
     sitesStore.deselectDVR();
-    // this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
+    this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
   }
 
   componentDidMount() {
     this._isMounted = true;
-    const {videoStore, sitesStore, navigation} = this.props;
+    const {videoStore, healthStore, sitesStore, navigation} = this.props;
     if (__DEV__) {
       console.log(
         'ChannelsListView componentDidMount: ',
@@ -71,10 +70,16 @@ class ChannelsListView extends React.Component {
         sitesStore.selectedSiteDefaultDVR
       );
     }
-    this.appStateEvtSub = AppState.addEventListener(
-      'change',
-      this.handleAppStateChange
-    );
+
+    this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
+      __DEV__ && console.log('GOND channels list view on focused');
+      videoStore.switchLiveSearch(healthStore.isLiveVideo);
+    });
+    __DEV__ &&
+      console.log(
+        'GOND channels list view on focused event sub: ',
+        this.unsubscribleFocusEvent
+      );
 
     if (util.isNullOrUndef(sitesStore.selectedDVR)) {
       sitesStore.selectDVR(); // select default
@@ -86,19 +91,6 @@ class ChannelsListView extends React.Component {
 
     this.getChannelsInfo();
   }
-
-  handleAppStateChange = nextAppState => {
-    __DEV__ &&
-      console.log('GOND handleAppStateChange nextAppState: ', nextAppState);
-    // if (nextAppState === 'active' && this.appState) {
-    //   if (this.appState.match(/inactive|background/)) {
-    //     this.pauseAll(false);
-    //   }
-    // } else {
-    //   this.pauseAll(true);
-    // }
-    this.appState = nextAppState;
-  };
 
   setHeader = enableSettingButton => {
     const {navigation, videoStore, sitesStore, userStore} = this.props;
@@ -112,8 +104,9 @@ class ChannelsListView extends React.Component {
         : 'No Site was selected',
       headerRight: () => (
         <View style={styles.headerRight}>
-          {videoStore.cloudType == CLOUD_TYPE.HLS ||
-          videoStore.cloudType == CLOUD_TYPE.RTC ? (
+          {healthStore.isLive &&
+          (videoStore.cloudType == CLOUD_TYPE.HLS ||
+            videoStore.cloudType == CLOUD_TYPE.RTC) ? (
             <CMSTouchableIcon
               size={22}
               onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
@@ -163,7 +156,7 @@ class ChannelsListView extends React.Component {
         this.setHeader(true);
       }
       this.setState({isLoading: false});
-      res = res && (await videoStore.getVideoInfos());
+      if (res && healthStore.isLive) res = await videoStore.getVideoInfos();
       // if (videoStore.needAuthen) {
       //   __DEV__ && console.log('GOND need authen ->');
       //   videoStore.displayAuthen(true);
@@ -183,7 +176,7 @@ class ChannelsListView extends React.Component {
     );
     // this.pauseAll(true);
     setTimeout(() => {
-      this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
+      this.props.navigation.push(ROUTERS.HEALTH_VIDEO);
     }, 500);
   };
 
@@ -462,6 +455,7 @@ const styles = StyleSheet.create({
 
 export default inject(
   'videoStore',
+  'healthStore',
   'sitesStore',
   'userStore'
 )(observer(ChannelsListView));

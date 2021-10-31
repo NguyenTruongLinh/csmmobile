@@ -12,6 +12,7 @@ import {IconCustom, ListViewHeight} from '../../../components/CMSStyleSheet';
 
 import variables from '../../../styles/variables';
 import CMSColors from '../../../styles/cmscolors';
+import ROUTERS from '../../../consts/routes';
 import {
   HEALTH as HEALTH_TXT,
   VIDEO as VIDEO_TXT,
@@ -51,15 +52,20 @@ class AlertActionsModal extends React.Component {
     }, 500);
   };
 
-  onLiveSearchVideo = isLive => {
-    const {healthStore, navigation} = this.props;
+  onLiveSearchVideo = (isLive, data) => {
+    const {sitesStore, healthStore, navigation} = this.props;
+    __DEV__ && console.log('GOND Health gotoVideo ... ', data);
+    sitesStore.selectSite(data.id);
     healthStore.showActionsModal(false);
-    // TODO: navigate to video channels
+    healthStore.setVideoMode(isLive);
+    setTimeout(() => {
+      navigation.push(ROUTERS.HEALTH_CHANNELS);
+    }, 500);
   };
 
   render() {
     const {height} = Dimensions.get('window');
-    const {healthStore, siteAlerts} = this.props;
+    const {healthStore, siteAlerts, data} = this.props;
     const {showDismissAllButtonInHealthDetail, actionsModalShown} = healthStore;
 
     return (
@@ -81,7 +87,7 @@ class AlertActionsModal extends React.Component {
             styles.actionRowContainer,
             // {borderWidth: 1, borderColor: 'red'},
           ]}
-          onPress={() => this.onLiveSearchVideo(true)}>
+          onPress={() => this.onLiveSearchVideo(true, data)}>
           <IconCustom
             name="videocam-filled-tool"
             color={CMSColors.IconButton}
@@ -91,7 +97,7 @@ class AlertActionsModal extends React.Component {
         </Ripple>
         <Ripple
           style={styles.actionRowContainer}
-          onPress={() => this.onLiveSearchVideo(false)}>
+          onPress={() => this.onLiveSearchVideo(false, data)}>
           <IconCustom
             name="searching-magnifying-glass"
             color={CMSColors.IconButton}
@@ -163,4 +169,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('healthStore')(observer(AlertActionsModal));
+export default inject('healthStore', 'sitesStore')(observer(AlertActionsModal));

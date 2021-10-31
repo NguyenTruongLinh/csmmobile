@@ -25,6 +25,7 @@ const ROUTERS = {
   HEALTH_ALERTS: 'healthalerts',
   HEALTH_ALERT_DETAIL: 'healthalertsdetail',
   HEALTH_CHANNELS: 'healthchannels',
+  HEALTH_VIDEO: 'healthvideo',
 
   VIDEO: 'video',
   VIDEO_STACK: 'videostack',
