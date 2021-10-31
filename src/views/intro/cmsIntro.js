@@ -8,7 +8,7 @@ import {
   Dimensions,
   StyleSheet,
 } from 'react-native';
-import {inject} from 'mobx-react';
+import {inject, observer} from 'mobx-react';
 
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 
@@ -292,4 +292,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('appStore')(CMSIntroView);
+export default inject('appStore')(observer(CMSIntroView));

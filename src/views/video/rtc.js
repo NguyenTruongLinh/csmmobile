@@ -91,11 +91,6 @@ class RTCStreamingView extends Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('RTCStreamingView componentWillUnmount');
-    // Dimensions.removeEventListener('change', this.Dimension_handler);
-    // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
-    // if (Platform.OS === 'ios') {
-    //   this.appStateEventListener.remove();
-    // }
     this._isMounted = false;
 
     this.reactions.forEach(unsubscribe => unsubscribe());

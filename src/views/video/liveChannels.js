@@ -83,8 +83,8 @@ class LiveChannelsView extends React.Component {
     __DEV__ && console.log('LiveChannelsView componentWillUnmount');
     const {videoStore, sitesStore} = this.props;
     this._isMounted = false;
-    // AppState.removeEventListener('change', this.handleAppStateChange);
-    this.appStateEvtSub && this.appStateEvtSub.remove();
+    AppState.removeEventListener('change', this.handleAppStateChange);
+    // this.appStateEvtSub && this.appStateEvtSub.remove();
     videoStore.releaseStreams();
     videoStore.setChannelFilter('');
     sitesStore.deselectDVR();
@@ -115,6 +115,7 @@ class LiveChannelsView extends React.Component {
       return;
     }
     videoStore.selectDVR(sitesStore.selectedDVR);
+    videoStore.switchLiveSearch(true);
 
     // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
     // videoStore.setStreamReadyCallback(this.onStreamReady);

@@ -196,8 +196,8 @@ export default class TimeRuler extends PureComponent {
   }
 
   componentWillUnmount() {
-    // Dimensions.removeEventListener('change', this._onDimensionChange);
-    this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
+    Dimensions.removeEventListener('change', this._onDimensionChange);
+    // this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
     this._isMounted = false;
   }
 

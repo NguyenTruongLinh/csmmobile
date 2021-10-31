@@ -115,8 +115,6 @@ class DirectVideoView extends React.Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('DirectStreamingView componentWillUnmount');
-    // Dimensions.removeEventListener('change', this.Dimension_handler);
-    // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }

@@ -1,5 +1,5 @@
-// ----------------------------------------------------
-// <!-- START MODULES -->
+// Using "views/sitetree/sites" instead
+//
 import React, {Component} from 'react';
 import {
   View,

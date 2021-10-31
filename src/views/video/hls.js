@@ -70,14 +70,13 @@ class HLSStreamingView extends React.Component {
       clearTimeout(this.checkStreamTO);
     }
     this.reactions.forEach(unsubsribe => unsubsribe());
-    // Dimensions.removeEventListener('change', this.Dimension_handler);
-    // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
   }
 
   computeTime = secs => {
+    const {videoStore} = this.props;
     return DateTime.fromSeconds(secs).setZone(videoStore.timezone);
   };
 
@@ -167,45 +166,12 @@ class HLSStreamingView extends React.Component {
           isHD => {
             // __DEV__ &&
             //   console.log('HLSStreamingView switch mode isHD: ', isHD);
-            this.lastSearchTime = computeTime(this.frameTime);
+            this.lastSearchTime = this.computeTime(this.frameTime);
           }
         ),
       ];
     }
   };
-
-  /*
-  static getDerivedStateFromProps(nextProps, prevState) {
-    console.log('GOND HLS getDerivedStateFromProps...', nextProps);
-    const {streamData, timezone, isLive, videoStore} = nextProps;
-    const {searchPlayTimeLuxon} = videoStore;
-    const {streamUrl} = streamData;
-    let nextState = {};
-    if (streamUrl != prevState.streamUrl) {
-      nextState = {
-        ...nextState,
-        streamUrl: streamUrl,
-        timeBeginPlaying: isLive
-          ? DateTime.now().setZone(timezone)
-          : searchPlayTimeLuxon,
-      };
-      if (videoStore.paused) videoStore.pause(false);
-    }
-
-    if (timezone && timezone != prevState.timeBeginPlaying.zone.name) {
-      __DEV__ &&
-        console.log(
-          `GOND HLS getDerivedStateFromProps: timezone changed: ${timezone} <= `,
-          prevState.timeBeginPlaying.zone
-        );
-      nextState = {
-        ...nextState,
-        timeBeginPlaying: prevState.timeBeginPlaying.setZone(timezone),
-      };
-    }
-    return nextState;
-  }
-  */
 
   onLayout = event => {
     if (event == null || event.nativeEvent == null || !this._isMounted) return;
@@ -226,17 +192,26 @@ class HLSStreamingView extends React.Component {
   };
 
   onReady = event => {
-    __DEV__ && console.log('GOND HLS onReady: ', event);
-    const {streamData, videoStore} = this.props;
+    const {streamData, videoStore, singlePlayer} = this.props;
+    __DEV__ &&
+      console.log(
+        'GOND HLS onReady: ',
+        streamData.channelName,
+        ', shouldResume: ',
+        this.shouldResume
+      );
 
-    if (this.shouldResume) {
+    if (singlePlayer && this.shouldResume) {
       this.shouldResume = false;
-      // videoStore.pause(true);
-      // setTimeout(() => this._isMounted && videoStore.pause(false), 3000);
+
       setTimeout(() => {
         if (this._isMounted) {
           videoStore.pause(true);
-          setTimeout(() => this._isMounted && videoStore.pause(false), 1000);
+          setTimeout(() => {
+            if (this._isMounted) {
+              videoStore.pause(false);
+            }
+          }, 1000);
         }
       }, 1000);
     }
@@ -266,12 +241,13 @@ class HLSStreamingView extends React.Component {
     // });
     // this.frameTime = 0;
     // TODO: new search time
-    if (!isLive) this.lastSearchTime = computeTime(this.frameTime);
+    if (!isLive) this.lastSearchTime = this.computeTime(this.frameTime);
     streamData.reconnect(isLive, hdMode);
   };
 
   onProgress = data => {
     const {isLive, videoStore, streamData, singlePlayer} = this.props;
+    // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
     if (!singlePlayer) return;
 
     const {hlsTimestamps} = videoStore;
@@ -507,6 +483,8 @@ class HLSStreamingView extends React.Component {
                   // preferredForwardBufferDuration={2}
                   playInBackground={true}
                   playWhenInactive={true}
+                  useTextureView={false}
+                  disableFocus={true}
                   onPlaybackStalled={() =>
                     __DEV__ && console.log('GOND HLS onPlaybackStalled')
                   }

@@ -37,9 +37,10 @@ class NVRsView extends Component {
 
   componentDidMount() {
     this._isMounted = true;
-    if (__DEV__) console.log('SitesView componentDidMount');
-
     const {sitesStore, navigation} = this.props;
+    if (__DEV__)
+      console.log('NVRS componentDidMount: ', sitesStore.selectedSite);
+
     // navigation.setOptions({
     //   headerTitle: sitesStore.selectedSite
     //     ? sitesStore.selectedSite.name
@@ -69,7 +70,7 @@ class NVRsView extends Component {
     const {sitesStore, navigation} = this.props;
 
     if (sitesStore.selectedDVR) return; // prevent double click
-    sitesStore.selectDVR(item);
+    sitesStore.selectDVR(item.kDVR);
     navigation.push(ROUTERS.VIDEO_CHANNELS);
     // this.props.appStore.enableSearchbar(false);
   };

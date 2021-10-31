@@ -73,6 +73,7 @@ class VideoPlayerView extends Component {
     this.timelineAutoScroll = true;
     this.timeOnTimeline = null;
     // this.isNoDataSearch = false;
+    this.eventSubscribers = [];
   }
 
   componentDidMount() {
@@ -80,11 +81,15 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     this._isMounted = true;
 
-    this.dimensionsChangeEvtSub = Dimensions.addEventListener(
-      'change',
-      this.onDimensionsChange
-    );
-    AppState.addEventListener('change', this.handleAppStateChange);
+    this.eventSubscribers = [
+      Dimensions.addEventListener('change', this.onDimensionsChange),
+      AppState.addEventListener('change', this.handleAppStateChange),
+    ];
+    __DEV__ &&
+      console.log(
+        'VideoPlayerView componentDidMount, evtSubs: ',
+        this.eventSubscribers
+      );
     this.updateHeader();
     // this.unsubSearchTimeReaction = reaction(
     //   () => videoStore.searchPlayTime,
@@ -122,15 +127,18 @@ class VideoPlayerView extends Component {
   };
 
   componentWillUnmount() {
-    __DEV__ && console.log('VideoPlayerView componentWillUnmount');
     this._isMounted = false;
-    // Dimensions.removeEventListener('change', this.onDimensionsChange);
-    this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
+    Dimensions.removeEventListener('change', this.onDimensionsChange);
+    // this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
     AppState.removeEventListener('change', this.handleAppStateChange);
-    // if (Platform.OS === 'ios') {
-    //   this.appStateEventListener.remove();
-    // }
-    const {videoStore} = this.props;
+    const {videoStore, route} = this.props;
+
+    // __DEV__ &&
+    //   console.log(
+    //     'VideoPlayerView componentWillUnmount, evtSubs: ',
+    //     this.eventSubscribers
+    //   );
+    // this.eventSubscribers.forEach(evt => evt && evt.remove());
 
     // if (videoStore.isSingleMode) {
     //   videoStore.releaseStreams();
@@ -138,7 +146,13 @@ class VideoPlayerView extends Component {
     if (videoStore.isFullscreen) {
       this.onFullscreenPress();
     }
-    if (!videoStore.isAlertPlay) videoStore.onExitSinglePlayer();
+    if (!videoStore.isAlertPlay) {
+      videoStore.onExitSinglePlayer(route.name);
+      videoStore.selectedStream &&
+        videoStore.selectedStream.setStreamStatus({
+          connectionStatus: STREAM_STATUS.DONE,
+        });
+    }
 
     // dongpt: TODO handle Orientation
     Orientation.lockToPortrait();

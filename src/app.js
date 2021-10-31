@@ -136,8 +136,8 @@ class App extends React.Component {
   componentWillUnmount() {
     __DEV__ && console.log('app componentWillUnmount');
     if (this.checkAutoRotateTimer) clearInterval(this.checkAutoRotateTimer);
-    // AppState.removeEventListener('change', this._handleAppStateChange);
-    this.appStateEvtListener && this.appStateEvtListener.remove();
+    AppState.removeEventListener('change', this._handleAppStateChange);
+    // this.appStateEvtListener && this.appStateEvtListener.remove();
     Orientation.removeDeviceOrientationListener(this._orientationDidChange);
     //Forgetting to remove the listener will cause pop executes multiple times
     // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);

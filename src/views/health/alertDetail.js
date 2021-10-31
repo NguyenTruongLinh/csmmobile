@@ -51,7 +51,7 @@ class AlertDetailView extends Component {
     this.imagesScrollView = null;
     this._isMounted = false;
     this.reactions = [];
-    this.eventSubscribers = [];
+    // this.eventSubscribers = [];
     __DEV__ &&
       console.log(
         'AlertDetailView constructor, alerts list: ',
@@ -69,9 +69,9 @@ class AlertDetailView extends Component {
     __DEV__ && console.log('AlertDetailView componentDidMount');
     this._isMounted = true;
 
-    this.eventSubscribers = [
-      Dimensions.addEventListener('change', this.onDimensionsChange),
-    ];
+    // this.eventSubscribers = [
+    //   Dimensions.addEventListener('change', this.onDimensionsChange),
+    // ];
     this.reactions = [
       // reaction(
       //   () => healthStore.selectedAlert,
@@ -98,7 +98,7 @@ class AlertDetailView extends Component {
     __DEV__ && console.log('AlertDetailView componentWillUnmount');
     this._isMounted = false;
 
-    this.eventSubscribers.forEach(sub => sub && sub.remove());
+    // this.eventSubscribers.forEach(sub => sub && sub.remove());
     this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
     this.props.healthStore.onExitAlertDetailView();
   }
