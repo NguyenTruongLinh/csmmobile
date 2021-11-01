@@ -93,7 +93,13 @@ class ChannelsListView extends React.Component {
   }
 
   setHeader = enableSettingButton => {
-    const {navigation, videoStore, sitesStore, userStore} = this.props;
+    const {
+      navigation,
+      videoStore,
+      healthStore,
+      sitesStore,
+      userStore,
+    } = this.props;
     const {isListView} = this.state;
     __DEV__ &&
       console.log('GOND channels setHeader: ', sitesStore.selectedSite);
@@ -148,7 +154,7 @@ class ChannelsListView extends React.Component {
   };
 
   getChannelsInfo = () => {
-    const {videoStore} = this.props;
+    const {videoStore, healthStore} = this.props;
     this.setState({isLoading: true}, async () => {
       let res = await videoStore.getCloudSetting();
       res = res && (await videoStore.getDisplayingChannels());

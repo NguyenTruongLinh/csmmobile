@@ -31,25 +31,36 @@ export default class extends React.Component {
     }
   }
 
+  getCurrentRouteName = () => {
+    let {navigation, state} = this.props;
+
+    while (state) {
+      const currentRoute = state.routes[state.index];
+      state = currentRoute.state;
+      if (!state) return currentRoute.name;
+    }
+  };
+
   render() {
     const {navigation, state} = this.props;
     const currentIndex = state.index;
-    const currentRoute = state.routes[state.index];
+    // const currentRoute = state.routes[state.index];
     const {width, height} = Dimensions.get('window');
-    const tabWidth = width / TabLabels.length;
+    // const tabWidth = width / TabLabels.length;
 
     // __DEV__ &&
     //   console.log(
-    //     'GOND createTabbar navigation = ',
-    //     navigation,
-    //     ', --- state = ',
-    //     state
+    //     'GOND createTabbar currentRoute.state = ',
+    //     currentRoute.state,
+    //     '\n--- getCurrentRouteName = ',
+    //     this.getCurrentRouteName()
     //   );
     if (
-      currentRoute.state &&
-      HideTabbarScreens.includes(
-        currentRoute.state.routes[currentRoute.state.index].name
-      )
+      // currentRoute.state &&
+      // HideTabbarScreens.includes(
+      //   currentRoute.state.routes[currentRoute.state.index].name
+      // )
+      HideTabbarScreens.includes(this.getCurrentRouteName())
     )
       return null;
     return (
