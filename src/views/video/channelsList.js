@@ -161,8 +161,10 @@ class ChannelsListView extends React.Component {
       if (res) {
         this.setHeader(true);
       }
+
+      if (res && healthStore.isLiveVideo)
+        res = await videoStore.getVideoInfos();
       this.setState({isLoading: false});
-      if (res && healthStore.isLive) res = await videoStore.getVideoInfos();
       // if (videoStore.needAuthen) {
       //   __DEV__ && console.log('GOND need authen ->');
       //   videoStore.displayAuthen(true);
@@ -172,14 +174,19 @@ class ChannelsListView extends React.Component {
   };
 
   onChannelSelect = value => {
-    const {videoStore} = this.props;
+    const {videoStore, healthStore} = this.props;
     __DEV__ && console.log('GOND select channel: ', value);
     // prevent double click
     if (!value || Object.keys(value) == 0 || videoStore.selectedChannel) return;
+    // videoStore.switchLiveSearch(healthStore.isLiveVideo);
 
-    videoStore.selectChannel(
-      value.channelNo // ?? value.channel.channelNo
-    );
+    if (healthStore.isLiveVideo) {
+      videoStore.selectChannel(
+        value.channelNo // ?? value.channel.channelNo
+      );
+    } else {
+      videoStore.onAlertPlay(healthStore.isLiveVideo, value);
+    }
     // this.pauseAll(true);
     setTimeout(() => {
       this.props.navigation.push(ROUTERS.HEALTH_VIDEO);
@@ -323,35 +330,37 @@ class ChannelsListView extends React.Component {
   render() {
     const {videoStore, sitesStore} = this.props;
     const {isListView, isLoading} = this.state;
-    __DEV__ &&
-      console.log('GOND channels render selected = ', sitesStore.selectedDVR);
+    // __DEV__ &&
+    //   console.log('GOND channels render selected = ', sitesStore.selectedDVR);
     this.playerRefs = [];
     const renderItem = isListView ? this.renderItemList : this.renderItemGrid;
 
     return (
       <View style={styles.screenContainer}>
-        <View style={styles.dropdownContainer}>
-          <Dropdown
-            data={sitesStore.selectedSiteDVRs}
-            labelField="name"
-            valueField="kDVR"
-            value={
-              sitesStore.selectedDVR ? sitesStore.selectedDVR.kDVR : undefined
-            }
-            search={sitesStore.selectedSiteDVRs.length > 5}
-            searchPlaceholder={CompTxt.searchPlaceholder}
-            onChange={this.onSwitchDVR}
-            renderLeftIcon={() => (
-              <View style={styles.dropdownIcon}>
-                <IconCustom
-                  name={'icon-dvr'}
-                  size={24}
-                  color={CMSColors.PrimaryText}
-                />
-              </View>
-            )}
-          />
-        </View>
+        {sitesStore.selectedSiteDVRs.length > 1 && (
+          <View style={styles.dropdownContainer}>
+            <Dropdown
+              data={sitesStore.selectedSiteDVRs}
+              labelField="name"
+              valueField="kDVR"
+              value={
+                sitesStore.selectedDVR ? sitesStore.selectedDVR.kDVR : undefined
+              }
+              search={sitesStore.selectedSiteDVRs.length > 5}
+              searchPlaceholder={CompTxt.searchPlaceholder}
+              onChange={this.onSwitchDVR}
+              renderLeftIcon={() => (
+                <View style={styles.dropdownIcon}>
+                  <IconCustom
+                    name={'icon-dvr'}
+                    size={24}
+                    color={CMSColors.PrimaryText}
+                  />
+                </View>
+              )}
+            />
+          </View>
+        )}
         <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""

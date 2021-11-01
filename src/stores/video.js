@@ -590,9 +590,15 @@ export const VideoModel = types
           }
         }
 
-        const foundStream = self.hlsStreams.find(s => s.channelNo == value);
+        const foundStream = self.videoData.find(s => s.channelNo == value);
         if (!foundStream) {
           switch (self.cloudType) {
+            case CLOUD_TYPE.DEFAULT:
+            case CLOUD_TYPE.DIRECTION:
+              console(
+                '### GOND this is unbelievable, how can this case happen, no direct stream found while channel existed!!!'
+              );
+              break;
             case CLOUD_TYPE.HLS:
               // create stream first for showing in player
               const newStream = HLSStreamModel.create({
@@ -608,7 +614,7 @@ export const VideoModel = types
               self.getHLSInfos({channelNo: value, timeline: !self.isLive});
               break;
             case CLOUD_TYPE.RTC:
-              if (self.rtcConnection) {
+              if (self.rtcConnection && self.rtcConnection.isValid) {
                 self.rtcConnection.createStreams(
                   self.rtcConnection.connectionInfo,
                   foundChannel
@@ -1966,8 +1972,9 @@ export const VideoModel = types
         try {
           // __DEV__ &&
           //   console.log(
-          //     'GOND getRTCInfo allChannels: ',
-          //     getSnapshot(self.allChannels)
+          //     'GOND getRTCInfo rtcConnection: ',
+          //     self.rtcConnection
+          //     // , getSnapshot(self.allChannels)
           //   );
           let res = yield apiService.post(
             VSC.controller,
@@ -2032,7 +2039,7 @@ export const VideoModel = types
       // #endregion WebRTC streaming
       // #region Get and receive videoinfos
       getVideoInfos: flow(function* (channelNo) {
-        console.log('GOND getVideoInfos');
+        // __DEV__ && console.log('GOND getVideoInfos');
         let getInfoPromise = null;
         if (!self.allChannels || self.allChannels.length <= 0) {
           let res = yield self.getDisplayingChannels();
@@ -2053,6 +2060,7 @@ export const VideoModel = types
             return false;
           }
         }
+        __DEV__ && console.log('GOND getVideoInfos 2');
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
@@ -2068,6 +2076,7 @@ export const VideoModel = types
             getInfoPromise = self.getDVRTimezone(channelNo);
             break;
           case CLOUD_TYPE.RTC:
+            __DEV__ && console.log('GOND getRTCInfos');
             getInfoPromise = self.getRTCInfos(channelNo);
             break;
           default:
@@ -2110,31 +2119,34 @@ export const VideoModel = types
       }),
       // #endregion Get and receive videoinfos
       // #region Alert play
-      onAlertPlay: flow(function* (isLive, alarmData) {
-        __DEV__ && console.log('GOND onAlertPlay: ', alarmData);
+      onAlertPlay: flow(function* (isLive, alertData) {
+        __DEV__ && console.log('GOND onAlertPlay: ', alertData);
         self.isAlertPlay = true;
-        self.kDVR = alarmData.kDVR;
+        self.kDVR = alertData.kDVR;
         self.isLive = isLive;
         self.isSingleMode = true;
-        // if (!isLive) {
-        self.searchPlayTime = alarmData.timezone;
-        // }
-        self.searchDate = DateTime.fromISO(alarmData.timezone, {
-          zone: 'utc',
-        }).startOf('day');
-        __DEV__ &&
-          console.log(
-            'GOND onAlertPlay time input: ',
-            alarmData.timezone,
-            '\n searchPlayTime: ',
-            self.searchPlayTime,
-            self.searchPlayTimeLuxon,
-            '- iso: ',
-            DateTime.fromISO(self.searchPlayTime)
-          );
+        if (alertData.timezone) {
+          self.searchPlayTime = alertData.timezone;
+          // }
+          self.searchDate = DateTime.fromISO(alertData.timezone, {
+            zone: 'utc',
+          }).startOf('day');
+          // __DEV__ &&
+          //   console.log(
+          //     'GOND onAlertPlay time input: ',
+          //     alertData.timezone,
+          //     '\n searchPlayTime: ',
+          //     self.searchPlayTime,
+          //     self.searchPlayTimeLuxon,
+          //     '- iso: ',
+          //     DateTime.fromISO(self.searchPlayTime)
+          //   );
+        } else {
+          self.searchDate = DateTime.now().startOf('day');
+        }
         yield self.getDisplayingChannels();
 
-        self.selectChannel(alarmData.channelNo);
+        self.selectChannel(alertData.channelNo);
         if (self.selectedChannelData == null) {
           __DEV__ &&
             console.log(
@@ -2145,11 +2157,11 @@ export const VideoModel = types
           return false;
         }
         // Get timezone first
-        yield self.getVideoInfos(alarmData.channelNo);
+        yield self.getVideoInfos(alertData.channelNo);
 
         // else {
         //   // dongpt: only Direct need to be build?
-        //   self.buildVideoData(alarmData.channelNo);
+        //   self.buildVideoData(alertData.channelNo);
         //   streamReadyCallback && streamReadyCallback();
         // }
         return true;
