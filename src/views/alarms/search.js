@@ -481,6 +481,11 @@ class AlarmsSearchView extends Component {
     const filterModal = this.renderFilterModal();
     const noData =
       !alarmStore.isLoading && alarmStore.filteredSearchData.length == 0;
+    __DEV__ &&
+      console.log(
+        'GOND renderAlarmSearch filter: ',
+        this.state.showFilterModal
+      );
 
     return (
       <View
@@ -497,7 +502,9 @@ class AlarmsSearchView extends Component {
             iconPosition="right"
           />
         </View>
-        <View style={{flex: 1, flexDirection: 'column'}}>
+        <View
+          style={{flex: 1, flexDirection: 'column'}}
+          onLayout={this.onFlatListLayout}>
           <FlatList
             renderItem={this.renderAlarmItem}
             data={alarmStore.filteredSearchData}
@@ -505,7 +512,6 @@ class AlarmsSearchView extends Component {
             onRefresh={this.refreshData}
             refreshing={alarmStore.isLoading}
             ListEmptyComponent={noData && this.renderNoData()}
-            onLayout={this.onFlatListLayout}
           />
         </View>
         {actionButton}

@@ -4,7 +4,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import BackButton from '../components/controls/BackButton';
 import Ripple from 'react-native-material-ripple';
-import CMSTouchableIcon from '../components/containers/CMSTouchableIcon';
+// import CMSTouchableIcon from '../components/containers/CMSTouchableIcon';
+import {IconCustom} from '../components/CMSStyleSheet';
 
 import AlarmsLiveView from '../views/alarms/live';
 import AlarmsSearchView from '../views/alarms/search';
@@ -38,31 +39,29 @@ export default function AlarmStack() {
         options={({route, navigation}) => ({
           headerLeft: () => {},
           headerRight: () => (
-            <Ripple
-              rippleCentered={true}
+            <View
               style={{
+                flex: 1,
                 flexDirection: 'row',
-                justifyContent: 'flex-end',
-                marginRight: 10,
-                marginTop: 14,
-                alignItems: 'center',
-              }}
-              onPress={() => navigation.push(ROUTERS.ALARM_SEARCH)}>
-              <View
+                padding: 7,
+              }}>
+              <Ripple
+                rippleCentered={true}
                 style={{
+                  flex: 1,
                   flexDirection: 'row',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  padding: 5,
-                }}>
-                <CMSTouchableIcon
-                  size={24}
-                  color="black"
+                }}
+                onPress={() => navigation.push(ROUTERS.ALARM_SEARCH)}>
+                <IconCustom
                   styles={{position: 'relative'}}
-                  iconCustom="search_solid_advancedfind"
+                  name="search_solid_advancedfind"
+                  color={CMSColors.IconButton}
+                  size={24}
                 />
-              </View>
-            </Ripple>
+              </Ripple>
+            </View>
           ),
         })}
       />

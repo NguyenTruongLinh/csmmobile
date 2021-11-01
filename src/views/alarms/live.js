@@ -114,16 +114,16 @@ class AlarmsLiveView extends Component {
             iconPosition="right"
           />
         </View>
-        <View style={{flex: 1, flexDirection: 'column'}}>
+        <View
+          style={{flex: 1, flexDirection: 'column'}}
+          onLayout={this.onFlatListLayout}>
           <FlatList
             renderItem={this.renderAlarmItem}
             data={alarmStore.filteredLiveData}
-            // data={[]}
             keyExtractor={item => item.kAlertEvent}
             onRefresh={this.refreshLiveData}
             refreshing={alarmStore.isLoading}
             ListEmptyComponent={noData && this.renderNoData()}
-            onLayout={this.onFlatListLayout}
           />
         </View>
       </View>
