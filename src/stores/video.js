@@ -349,6 +349,7 @@ export const VideoModel = types
           return s;
         // return self.selectedHLSStream;
         case CLOUD_TYPE.RTC:
+          if (!self.rtcConnection) return null;
           return self.rtcConnection.viewers.find(
             v => v.channelNo == self.selectedChannel
           );
