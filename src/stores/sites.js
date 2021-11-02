@@ -155,6 +155,11 @@ export const SitesMapModel = types
         site.name.toLowerCase().includes(self.siteFilter.toLowerCase())
       );
     },
+    get filteredOamSites() {
+      return self.oamSites.filter(site =>
+        site.name.toLowerCase().includes(self.siteFilter.toLowerCase())
+      );
+    },
     get filteredDVRs() {
       return self.selectedSiteDVRs.filter(dvr =>
         dvr.name.toLowerCase().includes(self.dvrFilter.toLowerCase())
@@ -203,23 +208,25 @@ export const SitesMapModel = types
       self.sitesList.splice(removedIdx, 1);
     },
     add(_newSite) {
-      // let site = SiteModel.create({
-      //   key: _newSite.key,
-      //   name: _newSite.Name,
-      //   dvrs: Array.isArray(_newSite.Childs)
-      //     ? _newSite.Childs.forEach(item => {
-      //       self.dvrs.push(DVRModel.create({
-      //         kDVR: item.KDVR,
-      //         name: item.Name,
-      //       }))
-      //     })
-      //     : []
-      // });
+      self.sitesList = self.sitesList.filter(item => item.key !== _newSite.Key);
+      let key = _newSite.Key;
+      let name = _newSite.Name;
+      let dvrs = [];
+      if (Array.isArray(_newSite.Childs)) {
+        _newSite.Childs.forEach(item => {
+          dvrs.push(
+            DVRModel.create({
+              kDVR: item.KDVR,
+              name: item.Name,
+            })
+          );
+        });
+      }
       let site = SiteModel.create({
-        key: _newSite.key,
-        name: _newSite.Name,
-        dvrs: [],
-      }).parse(_newSite);
+        key,
+        name,
+        dvrs,
+      });
       self.sitesList.push(site);
       self.sitesList.sort(item => item.name);
     },
@@ -453,8 +460,12 @@ export const SitesMapModel = types
           // apiService.configToken.userId ?? 0,
           SiteRoute.getSiteOam
         );
-        __DEV__ && console.log('GOND get OAM sites: ', res);
-        self.oamSites = res.map(item => item.key);
+        __DEV__ && console.log('GOND get OAM sites: ', JSON.stringify(res));
+        self.oamSites = res.map(item => {
+          self.add(item);
+          console.log('HAI item.Key = ' + item.Key);
+          return item.Key;
+        });
       } catch (err) {
         __DEV__ && console.log('GOND Could not get sites data! ', err);
         self.endLoad();
