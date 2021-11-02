@@ -595,9 +595,10 @@ export const VideoModel = types
           switch (self.cloudType) {
             case CLOUD_TYPE.DEFAULT:
             case CLOUD_TYPE.DIRECTION:
-              console(
-                '### GOND this is unbelievable, how can this case happen, no direct stream found while channel existed!!!'
-              );
+              // console.log(
+              //   '### GOND this is unbelievable, how can this case happen, no direct stream found while channel existed!!!'
+              // );
+              self.getDirectInfos(value);
               break;
             case CLOUD_TYPE.HLS:
               // create stream first for showing in player
@@ -843,6 +844,8 @@ export const VideoModel = types
         self.displayAuthen(false);
       },
       switchLiveSearch(isLive) {
+        console.trace();
+        const lastValue = self.isLive;
         self.isLive = isLive === undefined ? !self.isLive : isLive;
 
         if (self.noVideo) {
@@ -861,7 +864,7 @@ export const VideoModel = types
             );
         }
 
-        if (self.cloudType == CLOUD_TYPE.HLS) {
+        if (self.cloudType == CLOUD_TYPE.HLS && self.isLive != lastValue) {
           __DEV__ && console.log('GOND @@@ switchlivesearch HLS');
           if (self.selectedStream) {
             self.selectedStream.setLive(self.isLive);
@@ -947,8 +950,9 @@ export const VideoModel = types
         // self.selectedHLSStream = null;
         self.isAlertPlay = false;
 
-        if (currentRoute != ROUTERS.HEALTH_CHANNELS) {
-          self.isLive = false;
+        __DEV__ && console.log('GOND onExitSinglePlayer: ', currentRoute);
+        if (currentRoute != ROUTERS.HEALTH_VIDEO) {
+          self.isLive = true;
         }
       },
       // #endregion setters

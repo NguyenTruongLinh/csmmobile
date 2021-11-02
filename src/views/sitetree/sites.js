@@ -161,7 +161,7 @@ class SitesView extends Component {
   };
 
   gotoVideo = (isLive, data) => {
-    const {sitesStore, navigation} = this.props;
+    const {sitesStore, healthStore, navigation} = this.props;
     __DEV__ && console.log('GOND Health gotoVideo ... ', data);
     sitesStore.selectSite(data.id);
     healthStore.setVideoMode(isLive);

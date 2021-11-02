@@ -72,14 +72,18 @@ class ChannelsListView extends React.Component {
     }
 
     this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
-      __DEV__ && console.log('GOND channels list view on focused');
+      // __DEV__ &&
+      //   console.log(
+      //     'GOND channels list view on focused, set islive: ',
+      //     healthStore.isLiveVideo
+      //   );
       videoStore.switchLiveSearch(healthStore.isLiveVideo);
     });
-    __DEV__ &&
-      console.log(
-        'GOND channels list view on focused event sub: ',
-        this.unsubscribleFocusEvent
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND channels list view on focused event sub: ',
+    //     this.unsubscribleFocusEvent
+    //   );
 
     if (util.isNullOrUndef(sitesStore.selectedDVR)) {
       sitesStore.selectDVR(); // select default
