@@ -169,8 +169,13 @@ class SitesView extends Component {
   };
 
   onFilter = value => {
-    const {sitesStore} = this.props;
-    sitesStore.setSiteFilter(value);
+    const {sitesStore, healthStore} = this.props;
+    const {isHealthRoute} = this.state;
+    if (isHealthRoute) {
+      healthStore.setSiteFilter(value);
+    } else {
+      sitesStore.setSiteFilter(value);
+    }
   };
 
   onRowOpen = data => {
@@ -298,11 +303,13 @@ class SitesView extends Component {
             iconPosition="right"
           />
         </View>
-        <View style={styles.summaryContainer}>
-          <Text style={styles.sitesCount}>
-            {sitesStore.filteredSites.length + ' sites'}
-          </Text>
-        </View>
+        {!isHealthRoute && (
+          <View style={styles.summaryContainer}>
+            <Text style={styles.sitesCount}>
+              {sitesStore.filteredSites.length + ' sites'}
+            </Text>
+          </View>
+        )}
         <FlatList
           ref={ref => (this.sitesListRef = ref)}
           renderItem={this.renderItem}

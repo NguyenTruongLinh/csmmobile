@@ -353,23 +353,23 @@ class HLSStreamingView extends React.Component {
     //     );
     // }
 
-    __DEV__ &&
-      console.log(
-        'GOND HLS onProgress: channel: ',
-        streamData.channelName,
-        ', currentTime = ',
-        data.currentTime,
-        ', frameTime = ',
-        this.frameTime,
-        // ', tz = ',
-        // videoStore.timezone,
-        ', tsIndex: ',
-        this.tsIndex,
-        ', DT = ',
-        DateTime.fromSeconds(this.frameTime).toFormat(
-          NVRPlayerConfig.RequestTimeFormat
-        )
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND HLS onProgress: channel: ',
+    //     streamData.channelName,
+    //     ', currentTime = ',
+    //     data.currentTime,
+    //     ', frameTime = ',
+    //     this.frameTime,
+    //     // ', tz = ',
+    //     // videoStore.timezone,
+    //     ', tsIndex: ',
+    //     this.tsIndex,
+    //     ', DT = ',
+    //     DateTime.fromSeconds(this.frameTime).toFormat(
+    //       NVRPlayerConfig.RequestTimeFormat
+    //     )
+    //   );
     videoStore.setDisplayDateTime(
       DateTime.fromSeconds(this.frameTime, {
         zone: videoStore.timezone,
