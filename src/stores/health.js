@@ -133,6 +133,9 @@ export const HealthModel = types
     dismissModalShown: types.optional(types.boolean, false),
     selectedAlert: types.maybeNull(types.reference(AlertModel)),
     actionsModalShown: types.optional(types.boolean, false),
+
+    //
+    needRefresh: types.optional(types.boolean, 'false'),
   })
   .volatile(self => ({
     alertTypesConfig: [],
@@ -216,6 +219,9 @@ export const HealthModel = types
     },
     setVideoMode(isLive) {
       self.isLiveVideo = isLive;
+    },
+    refresh(value) {
+      self.needRefresh = value;
     },
     // #endregion Setters
     // #region Get data

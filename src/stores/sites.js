@@ -452,6 +452,24 @@ export const SitesMapModel = types
       self.endLoad();
       return false;
     }),
+    getSiteByKDVR: flow(function* (kDVR) {
+      if (self.sitesList.length == 0) {
+        yield self.getSiteTree();
+      }
+
+      let result = self.sitesList.find(site =>
+        site.dvrs.find(dvr => dvr.kDVR == kDVR)
+      );
+      return result; // ? result.name : '';
+    }),
+    getSiteByKey: flow(function* (siteKey) {
+      if (self.sitesList.length == 0) {
+        yield self.getSiteTree();
+      }
+
+      let result = self.sitesList.find(site => site.key == siteKey);
+      return result;
+    }),
     getOAMSites: flow(function* getOAMSites() {
       self.startLoad();
       try {

@@ -70,15 +70,16 @@ class AlertsView extends Component {
 
   setHeader = () => {
     const {healthStore, navigation} = this.props;
-    const {selectedAlertTypeId} = healthStore;
+    const {selectedAlertTypeId, selectedAlertType, selectedSite} = healthStore;
     const {isListView} = this.state;
     __DEV__ &&
-      console.log(
-        'GOND AlertsView setHeader, alertType = ',
-        selectedAlertTypeId
-      );
+      console.log('GOND AlertsView setHeader, selectedSite = ', selectedSite);
 
-    let options = {};
+    let options = {
+      headerTitle: `${
+        selectedAlertType ? selectedAlertType.name : 'Unknown alert'
+      } - ${selectedSite ? selectedSite.siteName : 'Unknown site'}`,
+    };
     if (
       selectedAlertTypeId == AlertTypes.DVR_Video_Loss ||
       selectedAlertTypeId == AlertTypes.DVR_Sensor_Triggered
@@ -396,8 +397,10 @@ class AlertsView extends Component {
 
   render() {
     const {healthStore, navigation} = this.props;
-    const {/*showDismissModal,*/ isListView, selectedAlertForDismiss} =
-      this.state;
+    const {
+      /*showDismissModal,*/ isListView,
+      selectedAlertForDismiss,
+    } = this.state;
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>

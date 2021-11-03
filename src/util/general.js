@@ -627,3 +627,17 @@ exports.isBase64Encoded = value => {
     return false;
   }
 };
+
+exports.generateNotifId = (alertType, kdvr) => {
+  return `msg_health${kdvr ? '_' + kdvr : ''}${
+    alertType ? '_' + alertType : ''
+  }`;
+};
+
+exports.getCurrentRouteName = (navigation, state) => {
+  while (state) {
+    const currentRoute = state.routes[state.index];
+    state = currentRoute.state;
+    if (!state) return currentRoute.name;
+  }
+};
