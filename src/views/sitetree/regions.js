@@ -83,7 +83,17 @@ class RegionsView extends Component {
   onRegionSelected = item => {
     const {sitesStore, navigation} = this.props;
     sitesStore.selectRegion(item);
-    navigation.push(ROUTERS.VIDEO_SITES);
+    if (item.sites.length == 1) {
+      sitesStore.selectSite(item.sites[0]);
+      if (item.sites[0].dvrs && item.sites[0].dvrs.length == 1) {
+        sitesStore.selectDVR(item.sites[0].dvrs[0]);
+        navigation.push(ROUTERS.VIDEO_CHANNELS);
+      } else {
+        navigation.push(ROUTERS.VIDEO_NVRS);
+      }
+    } else {
+      navigation.push(ROUTERS.VIDEO_SITES);
+    }
     // if (item.dvrs.length == 1) {
     //   sitesStore.selectDVR(item.dvrs[0]);
     //   navigation.push(ROUTERS.VIDEO_CHANNELS);
