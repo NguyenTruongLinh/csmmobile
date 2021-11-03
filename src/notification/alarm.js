@@ -7,6 +7,8 @@ import {
 import {parseAlarmData} from '../stores/alarm';
 import ROUTERS from '../consts/routes';
 
+import {generateNotifId} from '../util/general';
+
 export function onAlarmEvent(alarmStore, navigator, action, content) {
   const alert = content;
   // try {
@@ -31,7 +33,7 @@ export function onAlarmEvent(alarmStore, navigator, action, content) {
           ? AlertNames[strAlertType]
           : 'Unknow alert, id = ' + strAlertType;
         noti = {
-          id: getMessageId(msg, alert.KAlertEvent ?? 0),
+          id: generateNotifId(msg, alert.KAlertEvent ?? 0),
           body: (alert.SiteName ?? 'Unknown site') + msg,
           isContent: true,
         };
@@ -57,7 +59,7 @@ export function onAlarmEvent(alarmStore, navigator, action, content) {
       //     ? AlertNames[strAlertType]
       //     : 'Unknow alert, id = ' + strAlertType;
       //   noti = {
-      //     id: getMessageId(msg, alert.KAlertEvent ?? 0),
+      //     id: generateNotifId(msg, alert.KAlertEvent ?? 0),
       //     body: (alert.SiteName ?? 'Unknown site') + msg,
       //     isContent: true,
       //   };
@@ -106,13 +108,4 @@ export async function onOpenAlarmEvent(alarmStore, navigator, action, content) {
   } catch (ex) {
     __DEV__ && console.log('GOND onOpenAlarmEvent parse content error: ', ex);
   }
-}
-
-function getMessageId(altType, kdvr) {
-  if (altType && kdvr)
-    return 'msg_health_' + kdvr.toString() + '_' + altType.toString();
-  if (kdvr && !altType) return 'msg_health_' + kdvr.toString();
-  if (!kdvr && altType) return 'msg_health_' + altType.toString();
-
-  return 'msg_health';
 }

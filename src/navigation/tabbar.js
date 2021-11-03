@@ -31,9 +31,7 @@ export default class extends React.Component {
     }
   }
 
-  getCurrentRouteName = () => {
-    let {navigation, state} = this.props;
-
+  getCurrentRouteName = (navigation, state) => {
     while (state) {
       const currentRoute = state.routes[state.index];
       state = currentRoute.state;
@@ -60,7 +58,7 @@ export default class extends React.Component {
       // HideTabbarScreens.includes(
       //   currentRoute.state.routes[currentRoute.state.index].name
       // )
-      HideTabbarScreens.includes(this.getCurrentRouteName())
+      HideTabbarScreens.includes(this.getCurrentRouteName(navigation, state))
     )
       return null;
     return (

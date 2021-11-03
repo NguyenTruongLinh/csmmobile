@@ -8,6 +8,7 @@ import PushNotification, {Importance} from 'react-native-push-notification';
 
 import {onVideoNotifEvent} from './video';
 import {onAlarmEvent, onOpenAlarmEvent} from './alarm';
+import {onAlertEvent, onOpenAlertEvent} from './alert';
 import {NOTIFY_TYPE} from '../consts/misc';
 
 const CHANNEL_ID = 'CMS_Channel';
@@ -172,38 +173,6 @@ class NotificationController extends React.Component {
           });
         }
       });
-
-    /*
-    notifee.onForegroundEvent(({type, detail}) => {
-      if (type == EventType.PRESS) {
-        this.onNotificationOpened(detail.notification);
-      }
-    });
-
-    notifee.onBackgroundEvent(async ({type, detail}) => {
-      __DEV__ &&
-        console.log(
-          'GOND Receveived background notification event: ',
-          type,
-          detail
-        );
-      switch (type) {
-        case EventType.PRESS:
-          this.onNotificationOpened(detail.notification);
-          break;
-      }
-    });
-
-    const initialNotification = await notifee.getInitialNotification();
-    if (initialNotification) {
-      __DEV__ &&
-        console.log(
-          'GOND notifee on open notification from closed state:',
-          initialNotification
-        );
-      this.onNotificationOpened(initialNotification.notification);
-    }
-    */
   };
 
   validate = data => {
@@ -331,9 +300,11 @@ class NotificationController extends React.Component {
         // notif = onUserEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
+        __DEV__ && console.log('GOND onAlertType Notification: ', data);
         // notif = onAlertSetting(dispatch, action, content);
         break;
       case NOTIFY_TYPE.ALERT:
+        __DEV__ && console.log('GOND onAlert Notification: ', data);
         // notif = onAlertEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.ALARM:
@@ -434,7 +405,8 @@ export default inject(
   'appStore',
   'userStore',
   'videoStore',
-  'alarmStore'
+  'alarmStore',
+  'healthStore'
 )(
   observer(NotificationController)
   // observer(props => {
