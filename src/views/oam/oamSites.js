@@ -46,9 +46,12 @@ class OAMSitesView extends Component {
   }
 
   onSiteSelected = item => {
-    const {sitesStore, navigation} = this.props;
+    const {sitesStore, oamStore, navigation} = this.props;
     sitesStore.selectSite(item.key);
-    navigation.push(ROUTERS.OAM_DETAIL);
+    if (item.dvrs && item.dvrs[0]) {
+      oamStore.setKdvr(item.dvrs[0].kDVR);
+      navigation.push(ROUTERS.OAM_DETAIL);
+    }
   };
 
   renderRow = ({item}) => {
@@ -82,7 +85,7 @@ class OAMSitesView extends Component {
   render() {
     const {sitesStore} = this.props;
     return (
-      <View style={{backgroundColor: CMSColors.White, paddingTop: 16}}>
+      <View style={{flex: 1, backgroundColor: CMSColors.White, paddingTop: 16}}>
         <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
@@ -95,6 +98,7 @@ class OAMSitesView extends Component {
           />
         </View>
         <FlatList
+          style={{flex: 1}}
           renderItem={this.renderRow}
           data={sitesStore.filteredOamSites}
           keyExtractor={item => item.key}
@@ -178,4 +182,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('sitesStore')(observer(OAMSitesView));
+export default inject('sitesStore', 'oamStore')(observer(OAMSitesView));

@@ -135,7 +135,7 @@ export const HealthModel = types
     actionsModalShown: types.optional(types.boolean, false),
 
     //
-    needRefresh: types.optional(types.boolean, 'false'),
+    needRefresh: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     alertTypesConfig: [],
