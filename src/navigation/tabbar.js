@@ -8,6 +8,7 @@ import {
   Image,
 } from 'react-native';
 
+import {getCurrentRouteName} from '../util/general';
 import {Tabbar as Labels} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
 import {IconCustom} from '../components/CMSStyleSheet';
@@ -26,18 +27,18 @@ export default class extends React.Component {
   constructor(props) {
     super(props);
 
-    if (typeof props.naviSetter == 'function') {
-      props.naviSetter(props.navigation);
-    }
+    // if (typeof props.naviSetter == 'function') {
+    //   props.naviSetter(props.navigation);
+    // }
   }
 
-  getCurrentRouteName = (navigation, state) => {
-    while (state) {
-      const currentRoute = state.routes[state.index];
-      state = currentRoute.state;
-      if (!state) return currentRoute.name;
-    }
-  };
+  // getCurrentRouteName = (state) => {
+  //   while (state) {
+  //     const currentRoute = state.routes[state.index];
+  //     state = currentRoute.state;
+  //     if (!state) return currentRoute.name;
+  //   }
+  // };
 
   render() {
     const {navigation, state} = this.props;
@@ -58,7 +59,7 @@ export default class extends React.Component {
       // HideTabbarScreens.includes(
       //   currentRoute.state.routes[currentRoute.state.index].name
       // )
-      HideTabbarScreens.includes(this.getCurrentRouteName(navigation, state))
+      HideTabbarScreens.includes(getCurrentRouteName(state))
     )
       return null;
     return (

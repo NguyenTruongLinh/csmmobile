@@ -111,4 +111,8 @@ export const HEALTH = {
   HISTORICAL: 'Historical',
   DISMISS_ALL: 'Dismiss all alerts',
   DISMISS_CURRENT: 'Dismiss',
+  NOTIF_ALERT_SETTINGS: 'Alert Settings.',
+  NOTIF_ALERT_SETTINGS_CONTENT: 'Alert Settings has changed.',
+  NOTIF_HEALTHL: 'CMS Health.',
+  ALERT_DISMISSED: 'Alert dismissed.',
 };

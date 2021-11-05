@@ -93,7 +93,7 @@ const HomeNavigator = () => (
 );
 
 const BottomTab = createBottomTabNavigator();
-const CMSMainTab = navigatorSetter => (
+const CMSMainTab = () => (
   <BottomTab.Navigator
     initialRouteName={ROUTERS.HOME}
     headerMode="none"
@@ -104,7 +104,7 @@ const CMSMainTab = navigatorSetter => (
     }}
     screenOptions={{unmountOnBlur: true}}
     tabBar={props => {
-      return <CMSTabbar naviSetter={navigatorSetter} {...props} />;
+      return <CMSTabbar {...props} />;
     }}>
     <BottomTab.Screen name={ROUTERS.HOME_NAVIGATOR} component={HomeNavigator} />
     <BottomTab.Screen name={ROUTERS.VIDEO_STACK} component={VideoStack} />
@@ -113,6 +113,10 @@ const CMSMainTab = navigatorSetter => (
       name={ROUTERS.OPTIONS_NAVIGATOR}
       component={SettingsStack}
     />
+    {/* Hidden tabs: can only access from Home screen*/}
+    {/* <BottomTab.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} />
+    <BottomTab.Screen name={ROUTERS.POS_STACK} component={POSStack} />
+    <BottomTab.Screen name={ROUTERS.OAM_STACK} component={OAMStack} /> */}
   </BottomTab.Navigator>
 );
 
@@ -125,14 +129,10 @@ const WelcomeStack = createStackNavigator();
  * @param {bool} isLoggedIn
  * @returns ReactElement
  */
-const AppNavigator = ({
-  showIntro,
-  isLoggedIn,
-  isLoading,
-  navigatorSetter,
-  notificationController,
-}) => {
-  // __DEV__ && console.log('GOND NavContainer render, isLogin = ', isLoggedIn);
+const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
+  const {showIntro, isLoading, naviService} = appStore;
+
+  // __DEV__ && console.log('GOND NavContainer: ', this.props);
   return (
     <NavigationContainer
       // theme={{
@@ -145,8 +145,13 @@ const AppNavigator = ({
       ref={ref => {
         // __DEV__ && console.log('GOND NavContainer ref = ', ref);
         // navigationService.setTopLevelNavigator(ref);
-        if (typeof navigatorSetter == 'function') navigatorSetter(ref);
-      }}>
+        // if (typeof navigatorSetter == 'function') navigatorSetter(ref);
+        appStore.setNavigator(ref);
+      }}
+      onReady={() => {
+        naviService && naviService.onReady(true);
+      }}
+      onStateChange={state => naviService && naviService.onStateChange(state)}>
       {isLoggedIn && notificationController}
       {isLoading ? (
         <LoadingOverlay />
@@ -160,7 +165,7 @@ const AppNavigator = ({
           />
         </IntroStack.Navigator>
       ) : isLoggedIn ? (
-        CMSMainTab(navigatorSetter)
+        CMSMainTab()
       ) : (
         <WelcomeStack.Navigator
           initialRouteName={ROUTERS.INTRO_WELCOME}

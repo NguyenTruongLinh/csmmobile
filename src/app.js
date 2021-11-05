@@ -449,17 +449,15 @@ class App extends React.Component {
   };
 
   render() {
-    const {showIntro, isLoading} = this.props.appStore;
+    const {appStore} = this.props;
     const notificationController = <NotificationController />;
     // showIntro = true; // testing
     const {isLoggedIn} = this.props.userStore;
 
     return AppNavigator({
-      showIntro,
-      isLoading,
       isLoggedIn,
       notificationController,
-      navigatorSetter: this.setNavigator,
+      appStore,
     });
   }
 }

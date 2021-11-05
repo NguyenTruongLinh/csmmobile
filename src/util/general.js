@@ -634,10 +634,17 @@ exports.generateNotifId = (alertType, kdvr) => {
   }`;
 };
 
-exports.getCurrentRouteName = (navigation, state) => {
-  while (state) {
-    const currentRoute = state.routes[state.index];
-    state = currentRoute.state;
-    if (!state) return currentRoute.name;
+exports.getCurrentRouteName = state => {
+  let _state = state;
+  while (_state) {
+    const currentRoute = _state.routes[_state.index];
+    _state = currentRoute.state;
+    if (!_state) return currentRoute.name;
   }
+
+  return 'Unknown';
+};
+
+exports.getTopRouteName = state => {
+  if (state) return state.routes[state.index].name;
 };

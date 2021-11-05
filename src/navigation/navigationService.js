@@ -14,8 +14,10 @@ const NavigationService = types
   .model({
     _navigator: types.frozen(),
     isReady: types.boolean,
-    // _navStore: NavigationModel,
   })
+  .volatile(self => ({
+    state: null,
+  }))
   .actions(self => ({
     setTopLevelNavigator(navigatorRef, route) {
       if (!navigatorRef) return;
@@ -25,6 +27,9 @@ const NavigationService = types
     onReady(isReady) {
       __DEV__ && console.log('GOND ON NAVIGATION READY!');
       self.isReady = isReady == undefined ? true : isReady;
+    },
+    onStateChange(newState) {
+      self.state = newState;
     },
 
     // setNavigationStore(store) {
@@ -104,61 +109,21 @@ const NavigationService = types
     },
 
     getCurrentRouteName() {
-      // __DEV__ && console.log('GOND getCurrentRouteName ', self._navigator);
-      const {getCurrentRoute} = self._navigator;
-      if (!getCurrentRoute || typeof getCurrentRoute != 'function') {
-        __DEV__ &&
-          console.log(
-            'GOND getCurrentRouteName failed, not available ',
-            self._navigator
-          );
-        return null;
+      let _state = self.state;
+      while (_state) {
+        const currentRoute = _state.routes[_state.index];
+        _state = currentRoute.state;
+        if (!_state) return currentRoute.name;
       }
-      const currentRoute = getCurrentRoute();
-      // __DEV__ && console.log('GOND getCurrentRouteName = ', currentRoute);
-      return currentRoute ? currentRoute.name : '';
+
+      return 'Not ready yet';
     },
 
-    // showLoading() {
-    //   // self._navStore.setLoading(true);
-    // },
-
-    // hideLoading() {
-    //   // self._navStore.setLoading(false);
-    // },
-
-    // setSequenceNavigate(screenName) {
-    //   subNavigations = screenName || '';
-    // },
-
-    // sequenceNavigate() {
-    //   if (subNavigations) {
-    //     navigate(subNavigations);
-    //   }
-
-    //   subNavigations = '';
-    // },
+    getTopRouteName() {
+      const {state} = self;
+      if (state) return state.routes[state.index].name;
+      return 'Not ready yet';
+    },
   }));
 
-// const naviService = new NavigationService();
-// export default naviService;
-
 export default NavigationService;
-
-// export default {
-//   navigate,
-//   setTopLevelNavigator,
-//   setNavigationStore,
-//   // generateUid,
-//   push,
-//   back,
-//   dismiss,
-//   popToTop,
-//   reset,
-//   getCurrentRouteName,
-//   // navigateToUserScreen,
-//   showLoading,
-//   hideLoading,
-//   setSequenceNavigate,
-//   sequenceNavigate,
-// };
