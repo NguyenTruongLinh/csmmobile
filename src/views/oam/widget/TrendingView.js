@@ -234,6 +234,8 @@ class TrendingView extends Component {
               drawCubic: false,
               valueFormatter: '#',
               textLegendRotation: textLabelRotation,
+              color: -1,
+              valueTextColor: -1,
             },
           },
           {
@@ -249,6 +251,8 @@ class TrendingView extends Component {
               },
               valueFormatter: '#',
               textLegendRotation: textLabelRotation,
+              color: -1,
+              valueTextColor: -1,
             },
           },
         ],
@@ -259,6 +263,7 @@ class TrendingView extends Component {
         valueFormatter: xAxisLabels,
         drawLabels: xAxisLabels ? true : false,
         labelRotationAngle: 325,
+        textColor: -1,
       },
       dataPoint: nextProps.dataPoint, //nextProps.trendDataCount,
       // yAxis: {

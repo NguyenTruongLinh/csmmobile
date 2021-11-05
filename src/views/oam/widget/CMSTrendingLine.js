@@ -20,6 +20,9 @@ class CMSTrendingLine extends React.Component {
       labelCount: 10,
       labelCountForce: true,
       position: 'BOTH_SIDED',
+      textColor: -1,
+      axisLineColor: true,
+      gridColor: true,
     },
     yAxis: {
       left: {
@@ -30,6 +33,8 @@ class CMSTrendingLine extends React.Component {
         enabled: false,
       },
       drawGridLines: false,
+      textColor: -1,
+      axisLineColor: true,
     },
     // legend: {
     //   enable: true,
@@ -63,6 +68,7 @@ class CMSTrendingLine extends React.Component {
         // position: 'BELOW_CHART_CENTER',
         horizontalAlignment: 'CENTER',
         orientation: 'HORIZONTAL',
+        textColor: -1,
       },
     };
   }
@@ -113,6 +119,8 @@ class CMSTrendingLine extends React.Component {
             yAxis={yAxis}
             touchEnabled={false}
             dragDecelerationEnabled={false}
+            textColor={-1}
+            gridColor={-1}
           />
         </View>
       );

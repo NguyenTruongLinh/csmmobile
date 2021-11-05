@@ -50,7 +50,7 @@
     "react-native-collapsible": "^1.6.0",
     "react-native-db-models": "github:phungthanhdong/react-native-db-models#master",
     "react-native-device-info": "^8.1.3",
-    "react-native-element-dropdown": "^1.4.5",
+    "react-native-element-dropdown": "^1.4.6",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-get-random-values": "^1.7.0",
     "react-native-keyboard-aware-scrollview": "^2.1.0",
