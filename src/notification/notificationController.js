@@ -8,7 +8,12 @@ import PushNotification, {Importance} from 'react-native-push-notification';
 
 import {onVideoNotifEvent} from './video';
 import {onAlarmEvent, onOpenAlarmEvent} from './alarm';
-import {onAlertEvent, onOpenAlertEvent} from './alert';
+import {
+  onAlertEvent,
+  onOpenAlertEvent,
+  onAlertSetting,
+  onOpenAlertSetting,
+} from './alert';
 import {NOTIFY_TYPE} from '../consts/misc';
 
 const CHANNEL_ID = 'CMS_Channel';
@@ -23,7 +28,8 @@ class NotificationController extends React.Component {
   }
 
   async componentDidMount() {
-    console.log('GOND Notification controller did mount');
+    __DEV__ &&
+      console.log('GOND Notification controller did mount: ', this.props);
     let isAllowed = await this.checkPermission();
 
     if (!isAllowed) {
@@ -41,6 +47,19 @@ class NotificationController extends React.Component {
         console.log('GOND Push notificaiton createChannel returned ', created)
     );
     this.createNotificationListeners();
+
+    // Testing:
+    // const {naviService} = this.props.appStore;
+    // const this.testItv = setInterval(() => {
+    //   console.log(
+    //     '### TESTING ### currentRoute: ',
+    //     naviService.getCurrentRouteName(),
+    //     ', topRoute: ',
+    //     naviService.getTopRouteName(),
+    //     ', state:',
+    //     naviService.state
+    //   );
+    // }, 2000);
   }
 
   componentWillUnmount() {
@@ -48,6 +67,8 @@ class NotificationController extends React.Component {
       // unsubscribe
       this.unsubscribeForegroundListioner();
     }
+
+    // this.testItv && clearInterval(this.testItv);
   }
 
   checkPermission = async () => {
@@ -116,10 +137,7 @@ class NotificationController extends React.Component {
       notification => {
         __DEV__ && console.log('GOND Received notification: ', notification);
         NotificationController.onNotificationReceived({
-          appStore,
-          alarmStore,
-          videoStore,
-          userStore,
+          ...this.props,
           message: notification,
         });
       }
@@ -129,10 +147,7 @@ class NotificationController extends React.Component {
       __DEV__ &&
         console.log('GOND Receveived background notification: ', notification);
       NotificationController.onNotificationReceived({
-        appStore,
-        alarmStore,
-        videoStore,
-        userStore,
+        ...this.props,
         message: notification,
       });
     });
@@ -145,10 +160,7 @@ class NotificationController extends React.Component {
           remoteMessage
         );
       NotificationController.onNotificationOpened({
-        appStore,
-        alarmStore,
-        videoStore,
-        userStore,
+        ...this.props,
         message: remoteMessage.notification,
       });
     });
@@ -165,10 +177,7 @@ class NotificationController extends React.Component {
             );
           // setInitialRoute(remoteMessage.data.type); // e.g. "Settings"
           NotificationController.onNotificationOpened({
-            appStore,
-            alarmStore,
-            videoStore,
-            userStore,
+            ...this.props,
             message: remoteMessage.notification,
           });
         }
@@ -204,7 +213,7 @@ class NotificationController extends React.Component {
   static displayLocalNotification = ({id, title, body, messageId, data}) => {
     let idNumber = typeof id == 'number' ? id : parseInt(id, 16);
     idNumber = isNaN(idNumber) ? undefined : idNumber;
-    if (idNumber) PushNotification.cancelLocalNotification(idNumber);
+    // if (idNumber) PushNotification.cancelLocalNotification(idNumber);
 
     const notificationRequest = {
       id: idNumber,
@@ -256,16 +265,19 @@ class NotificationController extends React.Component {
     */
   };
 
-  static onNotificationReceived = async ({
-    videoStore,
-    alarmStore,
-    appStore,
-    message,
-    shouldValidate,
-  }) => {
+  static onNotificationReceived = async props => {
+    const {
+      videoStore,
+      alarmStore,
+      healthStore,
+      userStore,
+      appStore,
+      message,
+      shouldValidate,
+    } = props;
     const {data, messageId} = message;
     // const {videoStore, alarmStore, appStore} = this.props;
-    const naviService = appStore ? appStore.naviService : null;
+    // const naviService = appStore ? appStore.naviService : null;
 
     // __DEV__ && console.log('GOND onNotificationReceived: ', data);
     if (shouldValidate && !this.validate(data)) {
@@ -274,10 +286,9 @@ class NotificationController extends React.Component {
     }
     let {type, action, content, cmd} = data;
     if (!content && data.data) content = data.data;
-    let contentObj = content;
-    if (typeof contentObj === 'string') {
+    if (typeof content === 'string') {
       try {
-        contentObj = JSON.parse(content);
+        content = JSON.parse(content);
       } catch (ex) {
         __DEV__ &&
           console.log('GOND Parse notification content failed: ', content);
@@ -301,20 +312,21 @@ class NotificationController extends React.Component {
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
         __DEV__ && console.log('GOND onAlertType Notification: ', data);
-        // notif = onAlertSetting(dispatch, action, content);
+        notif = onAlertSetting({...props, action, content});
         break;
       case NOTIFY_TYPE.ALERT:
-        __DEV__ && console.log('GOND onAlert Notification: ', data);
-        // notif = onAlertEvent(dispatch, action, content);
+        __DEV__ && console.log('GOND onAlert Notification: ', props);
+        notif = await onAlertEvent({...props, action, content});
+        __DEV__ && console.log('GOND onAlert notif: ', notif);
         break;
       case NOTIFY_TYPE.ALARM:
-        notif = onAlarmEvent(alarmStore, naviService, action, contentObj);
+        notif = onAlarmEvent({...props, action, content});
         break;
       case NOTIFY_TYPE.EXCEPTION:
         // notif = onExceptionEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.STREAMING:
-        onVideoNotifEvent(videoStore, action, contentObj, cmd);
+        onVideoNotifEvent({videoStore, action, content, cmd});
         break;
       case NOTIFY_TYPE.PVM:
         // notif = onPVMEvent(dispatch,action, content);
@@ -335,13 +347,11 @@ class NotificationController extends React.Component {
     }
   };
 
-  static onNotificationOpened = ({
-    // videoStore,
-    alarmStore,
-    appStore,
-    message,
-  }) => {
-    __DEV__ && console.log('GOND onNotificationOpened message = ', message);
+  static onNotificationOpened = props => {
+    const {videoStore, alarmStore, healthStore, userStore, appStore, message} =
+      props;
+
+    __DEV__ && console.log('GOND onNotificationOpened: ', props);
     const {naviService} = appStore ?? {};
     if (!message || (!message.content && !message.data)) {
       console.log('GOND OnOpenNotifyHandler message content not exist');
@@ -371,13 +381,13 @@ class NotificationController extends React.Component {
         // onOpenOnUserEvent(dispatch,action, content, noti_disable);
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
-        // onOpenAlertSetting( dispatch,action, content, noti_disable);
+        onOpenAlertSetting({...props, naviService, action, content});
         break;
       case NOTIFY_TYPE.ALERT:
-        // onOpenAlertEvent( dispatch,action, content, noti_disable);
+        onOpenAlertEvent({...props, naviService, action, content});
         break;
       case NOTIFY_TYPE.ALARM:
-        onOpenAlarmEvent(alarmStore, naviService, action, content);
+        onOpenAlarmEvent({alarmStore, naviService, action, content});
         break;
       case NOTIFY_TYPE.EXCEPTION:
         // onOpenExceptionEvent( dispatch,action, content, noti_disable);
@@ -387,11 +397,7 @@ class NotificationController extends React.Component {
         break;
       default:
         __DEV__ &&
-          console.log(
-            'GOND OnOpenNotifyHandler type is not valid: ',
-            msgData,
-            msgData
-          );
+          console.log('GOND OnOpenNotifyHandler type is not valid: ', msgData);
         break;
     }
   };
@@ -406,7 +412,8 @@ export default inject(
   'userStore',
   'videoStore',
   'alarmStore',
-  'healthStore'
+  'healthStore',
+  'sitesStore'
 )(
   observer(NotificationController)
   // observer(props => {

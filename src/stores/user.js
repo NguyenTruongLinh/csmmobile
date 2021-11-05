@@ -267,7 +267,7 @@ export const UserStoreModel = types
       if (onLogout != undefined && typeof onLogout == 'function')
         self.onLogout = onLogout;
     },
-    login: flow(function* login(domainname, username, password) {
+    login: flow(function* (domainname, username, password) {
       appStore.setLoading(true);
       if (!appStore.deviceInfo || !appStore.deviceInfo.deviceId) {
         yield appStore.loadLocalData();
@@ -300,7 +300,7 @@ export const UserStoreModel = types
       }
       appStore.setLoading(false);
     }),
-    loginSuccess: flow(function* loginSuccess(data) {
+    loginSuccess: flow(function* (data) {
       try {
         self.user.parse(data.Result);
         apiService.updateUserId(self.user.userId);
@@ -342,7 +342,7 @@ export const UserStoreModel = types
       }
       self.isLoggedIn = false;
     },
-    logout: flow(function* logout() {
+    logout: flow(function* () {
       if (!self.deleteLocal()) return false;
       self.onLogout();
 
@@ -363,8 +363,7 @@ export const UserStoreModel = types
       self.routes = [];
       return true;
     }),
-    getDataPostLogin: flow(function* getDataPostLogin() {
-      self.onLogin();
+    getDataPostLogin: flow(function* () {
       try {
         const [uPhotoRes, modulesRes, alertTypesRes, registerTokenRes] =
           yield Promise.all([
@@ -383,6 +382,7 @@ export const UserStoreModel = types
           );
         // TODO: should we?
         // return uPhotoRes && modulesRes; // && alertTypesRes;
+        self.onLogin();
         return true;
       } catch (err) {
         __DEV__ && console.log('GOND getDataPostLogin failed: ', err);
@@ -394,7 +394,7 @@ export const UserStoreModel = types
       self.error = data.error;
       self.message = data.message;
     },
-    getUserPhoto: flow(function* getUserPhoto() {
+    getUserPhoto: flow(function* () {
       if (self.user && self.user.userId) {
         try {
           let res = yield apiService.getBase64Stream(
@@ -415,7 +415,7 @@ export const UserStoreModel = types
       }
       return false;
     }),
-    getPrivilege: flow(function* getPrivilege() {
+    getPrivilege: flow(function* () {
       if (self.user && self.user.userId) {
         try {
           let res = yield apiService.get(
@@ -449,7 +449,7 @@ export const UserStoreModel = types
     }),
     // #endregion
     // #region local data
-    saveLocal: flow(function* saveLocal() {
+    saveLocal: flow(function* () {
       try {
         let data = self.user.data;
         data.api = self.api.data;
@@ -480,12 +480,12 @@ export const UserStoreModel = types
         return false;
       }
     }),
-    deleteLocal: flow(function* deleteLocal() {
+    deleteLocal: flow(function* () {
       let res = yield dbService.delete(LocalDBName.user);
       // __DEV__ && console.log('GOND user delete local: ', res);
       return res;
     }),
-    loadLocalData: flow(function* loadLocalData() {
+    loadLocalData: flow(function* () {
       const savedData = yield dbService.getFirstData(LocalDBName.user);
 
       // __DEV__ && console.log('GOND user load local data: ', savedData);
@@ -507,7 +507,7 @@ export const UserStoreModel = types
       }
       return false;
     }),
-    shouldAutoLogin: flow(function* shouldAutoLogin() {
+    shouldAutoLogin: flow(function* () {
       appStore.setLoading(true);
       const shouldLogin = yield self.loadLocalData();
       if (!appStore.deviceInfo || !appStore.deviceInfo.deviceId) {
@@ -535,7 +535,7 @@ export const UserStoreModel = types
         if (self.isLoggedIn) self.registerToken();
       }
     },
-    registerToken: flow(function* registerToken() {
+    registerToken: flow(function* () {
       const data = {
         fcm_token: self.fcm.token,
         deviceid: appStore.deviceInfo.deviceId,
@@ -569,7 +569,7 @@ export const UserStoreModel = types
         return false;
       }
     }),
-    unregisterToken: flow(function* unregisterToken() {
+    unregisterToken: flow(function* () {
       if (!appStore.deviceInfo.deviceId) return;
 
       try {
@@ -593,7 +593,7 @@ export const UserStoreModel = types
     hasPermission(id) {
       return !!self.modules.find(mod => mod.functionId == id);
     },
-    updateProfile: flow(function* updateProfile(data) {
+    updateProfile: flow(function* (data) {
       self.user.updateProfile(data);
       let res = yield apiService.put(
         UserRoute.controller,
@@ -636,7 +636,7 @@ export const UserStoreModel = types
       }
       return {...user};
     },
-    getNotifySettings: flow(function* getNotifySettings() {
+    getNotifySettings: flow(function* () {
       let res = yield apiService.get(
         AccountRoute.controller,
         self.user.userId,
@@ -655,7 +655,7 @@ export const UserStoreModel = types
         return true;
       }
     }),
-    updateNotifySettings: flow(function* updateNotifySettings(newSetting) {
+    updateNotifySettings: flow(function* (newSetting) {
       let res = yield apiService.post(
         AccountRoute.controller,
         self.user.userId,
@@ -669,7 +669,7 @@ export const UserStoreModel = types
       snackbarUtil.handleSaveResult(res);
       res && !res.error && self.getNotifySettings();
     }),
-    getAlertTypesSettings: flow(function* getAlertTypesSettings() {
+    getAlertTypesSettings: flow(function* () {
       let res = yield apiService.get(
         AccountRoute.controller,
         self.user.userId,

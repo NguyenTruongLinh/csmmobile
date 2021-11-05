@@ -462,6 +462,18 @@ export const SitesMapModel = types
       );
       return result; // ? result.name : '';
     }),
+    getDVR: flow(function* (kDVR) {
+      if (self.sitesList.length == 0) {
+        yield self.getSiteTree();
+      }
+
+      let result = null;
+      self.sitesList.find(site => {
+        result = site.dvrs.find(dvr => dvr.kDVR == kDVR);
+        return result;
+      });
+      return result; // ? result.name : '';
+    }),
     getSiteByKey: flow(function* (siteKey) {
       if (self.sitesList.length == 0) {
         yield self.getSiteTree();

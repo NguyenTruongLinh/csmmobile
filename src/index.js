@@ -39,6 +39,7 @@ const Main = () => {
               userStore,
               posStore,
               oamStore,
+              sitesStore,
               healthStore,
               message: notification,
             });

@@ -53,10 +53,12 @@ class HealthDetailView extends Component {
     this._isMounted = true;
 
     navigation.setOptions({
-      headerTitle: healthStore.selectedSite.siteName,
+      headerTitle: healthStore.selectedSite
+        ? healthStore.selectedSite.siteName
+        : healthStore.currentSiteName,
     });
     this.initReactions();
-    this.getData();
+    if (!healthStore.isFromNotification) this.getData();
   }
 
   componentWillUnmount() {
@@ -90,7 +92,6 @@ class HealthDetailView extends Component {
     }
 
     // Use saved alertTypes in healthStore
-    // await healthStore.getHealthDetail(userStore.settings.alertTypes);
     await healthStore.getHealthDetail();
   };
 

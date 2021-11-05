@@ -116,17 +116,19 @@ class App extends React.Component {
 
     // autoLogin
     // if (isLoggedIn) this.props.videoStore.getCloudSetting();
-    this.props.userStore.addAuthenticationEventListeners({
+    const {appStore, userStore, videoStore, healthStore} = this.props;
+    userStore.addAuthenticationEventListeners({
       onLogin: () => {
         __DEV__ && console.log('GOND onLogin called');
-        this.props.videoStore.getCloudSetting();
+        videoStore.getCloudSetting();
+        healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);
       },
     });
 
-    this.props.appStore.setLoading(true);
-    await this.props.appStore.loadLocalData();
+    appStore.setLoading(true);
+    await appStore.loadLocalData();
     // await this.props.userStore.loadLocalData();
-    const isLoggedIn = await this.props.userStore.shouldAutoLogin();
+    const isLoggedIn = await userStore.shouldAutoLogin();
     // setTimeout(() => {
     //   this.props.appStore.setLoading(false);
     //   this.setState({notificationController: <NotificationController />});
@@ -465,4 +467,9 @@ class App extends React.Component {
 Text.defaultProps = Text.defaultProps || {};
 Text.defaultProps.allowFontScaling = false;
 
-export default inject('appStore', 'userStore', 'videoStore')(observer(App));
+export default inject(
+  'appStore',
+  'userStore',
+  'videoStore',
+  'healthStore'
+)(observer(App));

@@ -55,7 +55,7 @@ class AlertDetailView extends Component {
     __DEV__ &&
       console.log(
         'AlertDetailView constructor, alerts list: ',
-        props.healthStore.alertsListByType,
+        props.healthStore.alertsList,
         '\n selected alert: ',
         props.healthStore.selectedAlert
       );
@@ -81,7 +81,7 @@ class AlertDetailView extends Component {
       //   }
       // ),
       reaction(
-        () => healthStore.alertsListByType,
+        () => healthStore.alertsList,
         newList => {
           __DEV__ &&
             console.log(
@@ -335,9 +335,9 @@ class AlertDetailView extends Component {
           {this.renderAlertInfo(healthStore.selectedAlert)}
         </View>
         <View style={{flex: 40}}>
-          {healthStore.alertsListByType.length > 0 &&
+          {healthStore.alertsList.length > 0 &&
             this.renderImageList(
-              healthStore.alertsListByType,
+              healthStore.alertsList,
               healthStore.selectedAlertIndex
             )}
         </View>

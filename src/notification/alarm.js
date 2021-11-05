@@ -9,18 +9,12 @@ import ROUTERS from '../consts/routes';
 
 import {generateNotifId} from '../util/general';
 
-export function onAlarmEvent(alarmStore, navigator, action, content) {
+export function onAlarmEvent({alarmStore, naviService, action, content}) {
   const alert = content;
-  // try {
-  //   alert = JSON.parse(content);
-  // } catch (ex) {
-  //   __DEV__ &&
-  //     console.log('GOND Parse alarm notification content failed: ', ex);
-  // }
   if (!alert) return;
 
   let noti = null;
-  const currentRoute = navigator ? navigator.getCurrentRouteName() : '';
+  const currentRoute = naviService ? naviService.getCurrentRouteName() : '';
 
   switch (action) {
     case NOTIFY_ACTION.ADD:
@@ -74,11 +68,12 @@ export function onAlarmEvent(alarmStore, navigator, action, content) {
   return noti;
 }
 
-export async function onOpenAlarmEvent(alarmStore, navigator, action, content) {
+const onOpenAlarmEvent = async props => {
+  const {alarmStore, naviService, action, content} = props;
   try {
     const alarm = typeof content === 'object' ? content : JSON.parse(content);
     if (!alarm) return;
-    const currentRoute = navigator.getCurrentRouteName();
+    const currentRoute = naviService.getCurrentRouteName();
     console.log('GOND onOpenAlarmEvent content: ', content);
 
     switch (action) {
@@ -94,18 +89,24 @@ export async function onOpenAlarmEvent(alarmStore, navigator, action, content) {
         const params = alarmStore.selectAlarm(alarmData)
           ? {screen: ROUTERS.ALARM_DETAIL, initial: false}
           : undefined;
-        console.log('GOND onOpenAlarmEvent navigate ', alarm, ', ', params);
-        navigator.navigate(ROUTERS.ALARM_STACK, params);
+        __DEV__ &&
+          console.log('GOND onOpenAlarmEvent navigate ', alarm, ', ', params);
+        naviService.navigate(ROUTERS.ALARM_STACK, params);
         return;
       case NOTIFY_ACTION.DELETE:
         return null;
       default:
-        if (!currentRoute.includes(ROUTERS.OPTIONS)) {
+        if (!currentRoute.includes(ROUTERS.ALARM)) {
           // TODO: navigate to Settings screen
-          navigator.navigate(ROUTERS.OPTIONS_NAVIGATOR);
+          naviService.navigate(ROUTERS.ALARM_STACK);
         }
     }
   } catch (ex) {
     __DEV__ && console.log('GOND onOpenAlarmEvent parse content error: ', ex);
   }
-}
+};
+
+module.exports = {
+  onAlarmEvent,
+  onOpenAlarmEvent,
+};

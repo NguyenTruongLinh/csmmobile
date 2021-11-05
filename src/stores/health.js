@@ -6,8 +6,9 @@ import utils from '../util/general';
 import snackbarUtil from '../util/snackbar';
 
 import {Health as HealthRoute, Alert as AlertRoute} from '../consts/apiRoutes';
-import {AlertTypes} from '../consts/misc';
+import {AlertTypes, AlertNames} from '../consts/misc';
 import {No_Image} from '../consts/images';
+import ROUTERS from '../consts/routes';
 
 const NonDismissableAlerts = [
   AlertTypes.DVR_is_off_line,
@@ -31,6 +32,17 @@ const SiteHealthModel = types
   .views(self => ({
     get lowerCaseName() {
       return self.siteName.toLowerCase();
+    },
+  }))
+  .actions(self => ({
+    update(model) {
+      self.name = model.name;
+      self.total = model.total ?? 0;
+      self.sdate = model.sdate ?? '';
+      self.edate = model.edate ?? '';
+      self.isDismissAll = model.isDismissAll;
+      self.siteName = model.siteName;
+      self.dvrs = model.dvrs.map(dvr => DVRModel.create(dvr));
     },
   }));
 
@@ -64,7 +76,7 @@ const AlertModel = types
     timezone: types.string,
     time: types.string,
     pinned: types.optional(types.boolean, false),
-    dvr: types.reference(DVRModel),
+    dvr: types.safeReference(DVRModel),
     // image: types.maybeNull(types.string),
     // imageInfo: types.maybeNull(types.string), // todo: define AlertImgInfoModel
   })
@@ -116,12 +128,12 @@ export const HealthModel = types
   .model({
     siteHealthList: types.array(SiteHealthModel),
     siteFilter: types.optional(types.string, ''),
-    selectedSite: types.maybeNull(types.reference(SiteHealthModel)),
+    selectedSite: types.safeReference(SiteHealthModel),
     selectedSiteAlertTypes: types.array(SiteAlertTypeModel),
-    selectedAlertType: types.maybeNull(types.reference(SiteAlertTypeModel)),
+    selectedAlertType: types.safeReference(SiteAlertTypeModel),
 
     date: types.string, // should be Date or number?
-    alertsListByType: types.array(AlertModel),
+    alertsList: types.array(AlertModel),
     alertFilter: types.optional(types.string, ''),
     //dvrAlerts: types.array(types.map),
     // healthDetail: types.maybeNull(HealthDetailModel),
@@ -131,15 +143,17 @@ export const HealthModel = types
 
     //
     dismissModalShown: types.optional(types.boolean, false),
-    selectedAlert: types.maybeNull(types.reference(AlertModel)),
+    selectedAlert: types.safeReference(AlertModel),
     actionsModalShown: types.optional(types.boolean, false),
 
     //
     needRefresh: types.optional(types.boolean, false),
+    isFromNotification: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     alertTypesConfig: [],
-    // alertsListByType: [],
+    currentSiteName: null,
+    // alertsList: [],
   }))
   .views(self => ({
     // Group alert by site
@@ -150,12 +164,12 @@ export const HealthModel = types
       );
     },
     get filteredAlerts() {
-      return self.alertsListByType.filter(alert =>
+      return self.alertsList.filter(alert =>
         alert.channelName.toLowerCase().includes(self.alertFilter.toLowerCase())
       );
     },
     // get filteredAlertsGridView() {
-    //   return self.alertsListByType
+    //   return self.alertsList
     //     .filter(alert =>
     //       alert.channelName
     //         .toLowerCase()
@@ -183,13 +197,16 @@ export const HealthModel = types
     },
     get selectedAlertIndex() {
       if (!self.selectedAlert) return -1;
-      return self.alertsListByType.findIndex(
+      return self.alertsList.findIndex(
         alert => alert.id == self.selectedAlert.id
       );
     },
   }))
   .actions(self => ({
     // #region Setters
+    saveAlertTypesConfig(configs) {
+      self.alertTypesConfig = configs;
+    },
     selectSite(value) {
       self.selectedSite = value;
     },
@@ -204,12 +221,11 @@ export const HealthModel = types
     },
     selectAlert(value) {
       __DEV__ && console.log('GOND +++++++ select Alert: ', value);
-      if (self.alertsListByType.length == 0 || value == null) {
+      if (self.alertsList.length == 0 || value == null) {
         self.selectedAlert = null;
         return;
       }
-      self.selectedAlert =
-        value == undefined ? self.alertsListByType[0] : value;
+      self.selectedAlert = value == undefined ? self.alertsList[0] : value;
     },
     showActionsModal(isShow) {
       self.actionsModalShown = isShow;
@@ -225,13 +241,13 @@ export const HealthModel = types
     },
     // #endregion Setters
     // #region Get data
-    getHealthData: flow(function* (alertTypes, sitesList) {
-      if (!alertTypes || !Array.isArray(alertTypes)) {
-        console.log('GOND getDataHealth - alert type not provided');
-        return;
-      }
+    getHealthData: flow(function* (sitesList) {
+      // if (!alertTypes || !Array.isArray(alertTypes)) {
+      //   console.log('GOND getDataHealth - alert type not provided');
+      //   return;
+      // }
       self.isLoading = true;
-      const params = alertTypes.reduce((result, val) => {
+      const params = self.alertTypesConfig.reduce((result, val) => {
         self.alertTypesConfig.push({id: val.id, name: val.name});
         return result + val.id;
       }, '');
@@ -256,6 +272,22 @@ export const HealthModel = types
               //     site.dvrs
               //   );
               if (site) {
+                if (self.selectedSite && self.selectedSite.id == siteData.Id) {
+                  applySnapshot(self.selectedSite, {
+                    name: siteData.Name,
+                    total: siteData.Total,
+                    sdate: siteData.sdate ?? '',
+                    edate: siteData.edate ?? '',
+                    isDismissAll: siteData.isDismissAll,
+                    siteName: site.name,
+                    // dvrs: site.dvrs.map(dvr => dvr),
+                    dvrs: site.dvrs.map(dvr =>
+                      DVRModel.create({kDVR: dvr.kDVR, name: dvr.name})
+                    ),
+                  });
+                  return self.selectedSite;
+                }
+
                 return SiteHealthModel.create({
                   id: siteData.Id,
                   name: siteData.Name,
@@ -284,7 +316,8 @@ export const HealthModel = types
       }
       self.isLoading = false;
     }),
-    getHealthDetail: flow(function* (alertTypes, siteKey) {
+    getHealthDetail: flow(function* (siteKey) {
+      // __DEV__ && console.log('GOND getHealthDetail alertTypes: ', alertTypes);
       const site =
         siteKey == undefined
           ? self.selectedSite
@@ -296,8 +329,8 @@ export const HealthModel = types
       }
       self.isLoading = true;
       self.selectedSiteAlertTypes = [];
-      if (self.selectedAlertType) self.selectedAlertType = null;
-      const _alertTypes = alertTypes ?? self.alertTypesConfig;
+      // if (self.selectedAlertType) self.selectedAlertType = null;
+      // const _alertTypes = self.alertTypesConfig;
 
       try {
         const res = yield apiService.get(
@@ -314,7 +347,23 @@ export const HealthModel = types
         }
 
         self.selectedSiteAlertTypes = res.summary.map(alert => {
-          const alertType = _alertTypes.find(type => type.id == alert.Id);
+          // const alertType = _alertTypes.find(type => type.id == alert.Id);
+          // __DEV__ && console.log('GOND matching alertTyoe: ', alert, alertType);
+          if (
+            self.selectedAlertType &&
+            self.selectedAlertType.alertId == alert.id
+          ) {
+            applySnapshot(self.selectedAlertType, {
+              // alertId: alert.Id,
+              // name: alertType ? alertType.name : 'Unknown alert',
+              name: self.getAlertName(alert.Id),
+              total: alert.Total ?? 0,
+              sdate: alert.sdate,
+              edate: alert.edate,
+            });
+            return self.selectedAlertType;
+          }
+
           return SiteAlertTypeModel.create({
             alertId: alert.Id,
             name: alertType ? alertType.name : 'Unknown alert',
@@ -336,7 +385,7 @@ export const HealthModel = types
     getAlertsByType: flow(function* (alertType) {
       self.isLoading = true;
       if (self.selectedAlert) self.selectedAlert = null;
-      self.alertsListByType = [];
+      self.alertsList = [];
 
       const _alertType = alertType ?? self.selectedAlertType.alertId;
       __DEV__ &&
@@ -362,8 +411,9 @@ export const HealthModel = types
         }
 
         let defaultId = 0;
-        self.alertsListByType = res.Data.map(alert => {
+        self.alertsList = res.Data.map(alert => {
           defaultId++;
+
           return AlertModel.create({
             alertId: alert.Id ?? defaultId,
             channelName: alert.ChannelName ?? '',
@@ -494,7 +544,89 @@ export const HealthModel = types
       return true;
     }),
     // #endregion Dismiss alert
+    // #region Alert notifications
+    onNVRStatusNotification(alert, nvrs) {
+      // const kDVR = alert.NVRs[0].Key;
+      // const dvr =
+      //   site && site.dvrs
+      //     ? site.dvrs.find(d => d.kDVR == kDVR)
+      //     : {kDVR, name: 'KDVR: ', kDVR};
+      // const timezone = alert.NVRs[alert.NVRs.length - 1].Value;
+
+      self.isFromNotification = true;
+      self.currentSiteName = 'NVRs Offline'; // site ? site.name : 'Unknown site';
+      // self.alertsList.push(
+      //   AlertModel.create({
+      //     id: utils.getRandomId(),
+      //     alertId: alert.AlertType,
+      //     timezone,
+      //     time: timezone,
+      //     dvr,
+      //   })
+      // );
+      self.alertsList = nvrs.map(nvr =>
+        AlertModel.create({
+          id: utils.getRandomId(),
+          alertId: alert.AlertType,
+          timezone: nvr.timezone,
+          time: nvr.timezone,
+          dvr: DVRModel.create({kDVR: nvr.kDVR, name: nvr.name}),
+        })
+      );
+    },
+    onAlertNotification(alert, site, alertTypeConfigs) {
+      __DEV__ &&
+        console.log('GOND onAlertNotification config: ', alertTypeConfigs);
+      let selectedSite = self.siteHealthList.find(site => site.id == site.key);
+      if (!selectedSite) {
+        selectedSite = SiteHealthModel.create({
+          id: site.key,
+          total: 1,
+          sdate: alert.sdate ?? alert.Timezone ?? '',
+          edate: alert.edate ?? alert.Timezone ?? '',
+          isDismissAll: false,
+          siteName: site.name,
+          // dvrs: site.dvrs.map(dvr => dvr),
+          dvrs: site.dvrs.map(dvr =>
+            DVRModel.create({kDVR: dvr.kDVR, name: dvr.name})
+          ),
+        });
+        self.siteHealthList.push(selectedSite);
+      }
+      self.selectedSite = selectedSite.id;
+      self.isFromNotification = true;
+      self.currentSiteName = site ? site.name : 'Unknown site';
+
+      if (!self.alertTypesConfig || self.alertTypesConfig.length == 0) {
+        self.alertTypesConfig = alertTypeConfigs;
+      }
+
+      let result = self.getHealthDetail(site.key);
+      if (!result) return null;
+
+      self.selectedAlertType = self.selectedSiteAlertTypes.find(
+        item => item.alertId == alert.AlertType
+      );
+
+      if (self.selectedAlertType) {
+        return {
+          screen: ROUTERS.HEALTH_ALERTS,
+          initial: false,
+          // screen: ROUTERS.HEALTH_DETAIL,
+          // params: {screen: ROUTERS.HEALTH_ALERTS},
+        };
+      }
+      return {screen: ROUTERS.HEALTH_DETAIL, initial: false};
+    },
+    // #endregion Alert notifications
     // #region Utilities:
+    getAlertName(alertId) {
+      if (self.alertTypesConfig && self.alertTypesConfig.length > 0) {
+        const result = self.alertTypesConfig.find(type => type.id == alertId);
+        if (result) return result.name;
+      }
+      return AlertNames[alertId] ?? 'Unknow alert: ' + alertId;
+    },
     getAlertSnapShot(alert, alertType) {
       if (!alert) return;
       const _alertType = alertType ?? self.selectedAlertTypeId;
@@ -530,8 +662,12 @@ export const HealthModel = types
     },
     onExitAlertsView() {
       self.selectedAlert = null;
-      self.alertsListByType = [];
+      self.alertsList = [];
       self.selectedAlertType = null;
+      if (self.isFromNotification) {
+        self.isFromNotification = false;
+        self.currentSiteName = null;
+      }
     },
     onExitAlertDetailView() {
       self.selectedAlert = null;

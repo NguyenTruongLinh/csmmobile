@@ -88,10 +88,7 @@ class SitesView extends Component {
       if (!userStore.settings || userStore.settings.alertTypes.length == 0) {
         await userStore.getAlertTypesSettings();
       }
-      await healthStore.getHealthData(
-        userStore.settings.alertTypes,
-        sitesStore.sitesList
-      );
+      await healthStore.getHealthData(sitesStore.sitesList);
     } // else if (route.name == ROUTERS.VIDEO_SITES) {
     // }
   };
