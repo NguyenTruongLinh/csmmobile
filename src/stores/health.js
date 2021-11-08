@@ -1,4 +1,4 @@
-import {types, applySnapshot, flow} from 'mobx-state-tree';
+import {types, applySnapshot, flow, getSnapshot} from 'mobx-state-tree';
 
 import {DVRModel} from './sites';
 import apiService from '../services/api';
@@ -76,7 +76,7 @@ const AlertModel = types
     timezone: types.string,
     time: types.string,
     pinned: types.optional(types.boolean, false),
-    dvr: types.safeReference(DVRModel),
+    dvr: types.frozen(),
     // image: types.maybeNull(types.string),
     // imageInfo: types.maybeNull(types.string), // todo: define AlertImgInfoModel
   })
@@ -164,8 +164,16 @@ export const HealthModel = types
       );
     },
     get filteredAlerts() {
-      return self.alertsList.filter(alert =>
-        alert.channelName.toLowerCase().includes(self.alertFilter.toLowerCase())
+      return self.alertsList.filter(
+        alert =>
+          (alert.channelName &&
+            alert.channelName
+              .toLowerCase()
+              .includes(self.alertFilter.toLowerCase())) ||
+          (alert.dvr &&
+            alert.dvr.name
+              .toLowerCase()
+              .includes(self.alertFilter.toLowerCase()))
       );
     },
     // get filteredAlertsGridView() {
@@ -222,7 +230,7 @@ export const HealthModel = types
     selectAlert(value) {
       __DEV__ && console.log('GOND +++++++ select Alert: ', value);
       if (self.alertsList.length == 0 || value == null) {
-        self.selectedAlert = null;
+        self.selectedAlert = undefined;
         return;
       }
       self.selectedAlert = value == undefined ? self.alertsList[0] : value;
@@ -248,7 +256,6 @@ export const HealthModel = types
       // }
       self.isLoading = true;
       const params = self.alertTypesConfig.reduce((result, val) => {
-        self.alertTypesConfig.push({id: val.id, name: val.name});
         return result + val.id;
       }, '');
       try {
@@ -274,6 +281,7 @@ export const HealthModel = types
               if (site) {
                 if (self.selectedSite && self.selectedSite.id == siteData.Id) {
                   applySnapshot(self.selectedSite, {
+                    id: siteData.Id,
                     name: siteData.Name,
                     total: siteData.Total,
                     sdate: siteData.sdate ?? '',
@@ -329,7 +337,7 @@ export const HealthModel = types
       }
       self.isLoading = true;
       self.selectedSiteAlertTypes = [];
-      // if (self.selectedAlertType) self.selectedAlertType = null;
+      // if (self.selectedAlertType) self.selectedAlertType = undefined;
       // const _alertTypes = self.alertTypesConfig;
 
       try {
@@ -354,7 +362,7 @@ export const HealthModel = types
             self.selectedAlertType.alertId == alert.id
           ) {
             applySnapshot(self.selectedAlertType, {
-              // alertId: alert.Id,
+              alertId: alert.Id,
               // name: alertType ? alertType.name : 'Unknown alert',
               name: self.getAlertName(alert.Id),
               total: alert.Total ?? 0,
@@ -366,7 +374,7 @@ export const HealthModel = types
 
           return SiteAlertTypeModel.create({
             alertId: alert.Id,
-            name: alertType ? alertType.name : 'Unknown alert',
+            name: self.getAlertName(alert.Id), // self.alertType ? self.alertType.name : 'Unknown alert',
             total: alert.Total ?? 0,
             sdate: alert.sdate,
             edate: alert.edate,
@@ -384,12 +392,15 @@ export const HealthModel = types
     }),
     getAlertsByType: flow(function* (alertType) {
       self.isLoading = true;
-      if (self.selectedAlert) self.selectedAlert = null;
+      if (self.selectedAlert) self.selectedAlert = undefined;
       self.alertsList = [];
 
       const _alertType = alertType ?? self.selectedAlertType.alertId;
       __DEV__ &&
-        console.log('GOND get alert type data dvrs: ', self.selectedSite.dvrs);
+        console.log(
+          'GOND get alert type data dvrs: ',
+          getSnapshot(self.selectedSite.dvrs)
+        );
       try {
         const res = yield apiService.get(
           AlertRoute.controller,
@@ -413,6 +424,13 @@ export const HealthModel = types
         let defaultId = 0;
         self.alertsList = res.Data.map(alert => {
           defaultId++;
+          const foundDVR = getSnapshot(
+            self.selectedSite.dvrs.find(dvr => dvr.kDVR == alert.KDVR)
+          ) ?? {
+            kDVR: alert.KDVR,
+            name: 'KDVR ' + alert.KDVR,
+          };
+          __DEV__ && console.log('GOND map kdvr found:', foundDVR);
 
           return AlertModel.create({
             alertId: alert.Id ?? defaultId,
@@ -422,7 +440,7 @@ export const HealthModel = types
             channelNo: alert.ChannelNo ?? 0,
             time: alert.Time ?? '',
             timezone: alert.TimeZone ?? '',
-            dvr: self.selectedSite.dvrs.find(dvr => dvr.kDVR == alert.KDVR),
+            dvr: foundDVR,
             // dvr: DVRModel.create(
             //   alert.DVR
             //     ? {kDVR: alert.DVR.KDVR, name: alert.DVR.Name}
@@ -430,6 +448,12 @@ export const HealthModel = types
             // ),
           });
         });
+
+        __DEV__ &&
+          console.log(
+            'GOND get site alert type data: ',
+            getSnapshot(self.alertsList)
+          );
       } catch (error) {
         __DEV__ && console.log('GOND get site alert type data failed: ', error);
         snackbarUtil.handleRequestFailed();
@@ -545,7 +569,7 @@ export const HealthModel = types
     }),
     // #endregion Dismiss alert
     // #region Alert notifications
-    onNVRStatusNotification(alert, nvrs) {
+    onNVRStatusNotification(alert, nvrs, site) {
       // const kDVR = alert.NVRs[0].Key;
       // const dvr =
       //   site && site.dvrs
@@ -554,7 +578,7 @@ export const HealthModel = types
       // const timezone = alert.NVRs[alert.NVRs.length - 1].Value;
 
       self.isFromNotification = true;
-      self.currentSiteName = 'NVRs Offline'; // site ? site.name : 'Unknown site';
+      self.currentSiteName = site ? site.name : '';
       // self.alertsList.push(
       //   AlertModel.create({
       //     id: utils.getRandomId(),
@@ -570,16 +594,17 @@ export const HealthModel = types
           alertId: alert.AlertType,
           timezone: nvr.timezone,
           time: nvr.timezone,
-          dvr: DVRModel.create({kDVR: nvr.kDVR, name: nvr.name}),
+          dvr: {kDVR: nvr.kDVR, name: nvr.name},
         })
       );
-    },
-    onAlertNotification(alert, site, alertTypeConfigs) {
+
       __DEV__ &&
-        console.log('GOND onAlertNotification config: ', alertTypeConfigs);
-      let selectedSite = self.siteHealthList.find(site => site.id == site.key);
-      if (!selectedSite) {
-        selectedSite = SiteHealthModel.create({
+        console.log('GOND onAlertNotification NVRStatus ', self.alertsList);
+    },
+    onAlertNotification: flow(function* (alert, site, alertTypeConfigs) {
+      let targetSite = self.siteHealthList.find(s => s.id == site.key);
+      if (!targetSite) {
+        targetSite = SiteHealthModel.create({
           id: site.key,
           total: 1,
           sdate: alert.sdate ?? alert.Timezone ?? '',
@@ -591,9 +616,14 @@ export const HealthModel = types
             DVRModel.create({kDVR: dvr.kDVR, name: dvr.name})
           ),
         });
-        self.siteHealthList.push(selectedSite);
+        self.siteHealthList.push(targetSite);
       }
-      self.selectedSite = selectedSite.id;
+      self.selectedSite = targetSite.id;
+      __DEV__ &&
+        console.log(
+          'GOND onAlertNotification selectedSite ',
+          self.selectedSite
+        );
       self.isFromNotification = true;
       self.currentSiteName = site ? site.name : 'Unknown site';
 
@@ -601,14 +631,19 @@ export const HealthModel = types
         self.alertTypesConfig = alertTypeConfigs;
       }
 
-      let result = self.getHealthDetail(site.key);
+      let result = yield self.getHealthDetail(site.key);
       if (!result) return null;
 
+      // __DEV__ &&
+      //   console.log('GOND onAlertNotification 5 ', self.selectedSiteAlertTypes);
+
+      // self.selectedAlertType = undefined;
       self.selectedAlertType = self.selectedSiteAlertTypes.find(
         item => item.alertId == alert.AlertType
       );
 
       if (self.selectedAlertType) {
+        self.getAlertsByType(self.selectedAlertType.alertId);
         return {
           screen: ROUTERS.HEALTH_ALERTS,
           initial: false,
@@ -617,7 +652,7 @@ export const HealthModel = types
         };
       }
       return {screen: ROUTERS.HEALTH_DETAIL, initial: false};
-    },
+    }),
     // #endregion Alert notifications
     // #region Utilities:
     getAlertName(alertId) {
@@ -656,21 +691,25 @@ export const HealthModel = types
     // #endregion Utilities
     // #region Cleanup
     onExitHealthDetail() {
-      self.selectedSite = null;
-      self.selectedAlertType = null;
       self.selectedSiteAlertTypes = [];
+      self.selectedAlertType = undefined;
+      self.selectedSite = undefined;
+      if (self.isFromNotification) {
+        self.isFromNotification = false;
+        self.currentSiteName = null;
+      }
     },
     onExitAlertsView() {
-      self.selectedAlert = null;
+      self.selectedAlert = undefined;
       self.alertsList = [];
-      self.selectedAlertType = null;
+      self.selectedAlertType = undefined;
       if (self.isFromNotification) {
         self.isFromNotification = false;
         self.currentSiteName = null;
       }
     },
     onExitAlertDetailView() {
-      self.selectedAlert = null;
+      self.selectedAlert = undefined;
     },
     cleanUp() {
       applySnapshot(self, storeDefault);

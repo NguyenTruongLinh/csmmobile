@@ -240,20 +240,27 @@ const onOpenAlertEvent = async props => {
         // if (kDVR) {
         //   site = await sitesStore.getSiteByKDVR(kDVR);
         // }
-        if (!alert.NVRs || !Array.isArray(alert.NVRs) || !alert.NVRs.length) {
+        if (
+          !alert.NVRs ||
+          !Array.isArray(alert.NVRs) ||
+          !alert.NVRs.length ||
+          !alert.NVRs[0]
+        ) {
           console.log('GOND onOpenAlertEvent: no NVR data', alert);
           return;
         }
         // call get site for getting data first
         const site = await sitesStore.getSiteByKDVR(alert.NVRs[0].Key);
-        const dvrs = alert.NVRs.map(nvr => {
-          const result = sitesStore.getDVR(nvr.Key);
-          return result
-            ? {...result, timezone: nvr.Value}
-            : {kDVR: nvr.Key, name: 'KDVR ' + nvr.Key, timezone: nvr.Value};
-        });
-
-        healthStore.onNVRStatusNotification(alert, dvrs);
+        const dvrs = await Promise.all(
+          alert.NVRs.map(async nvr => {
+            const result = await sitesStore.getDVR(nvr.Key);
+            return result
+              ? {...result, timezone: nvr.Value}
+              : {kDVR: nvr.Key, name: 'KDVR ' + nvr.Key, timezone: nvr.Value};
+          })
+        );
+        // console.log('GOND onOpen NVR status, dvrs = ', dvrs);
+        healthStore.onNVRStatusNotification(alert, dvrs, site);
         naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
           screen: ROUTERS.HEALTH_STACK,
           params: {

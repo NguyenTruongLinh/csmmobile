@@ -82,11 +82,11 @@ const onOpenAlarmEvent = async props => {
       case NOTIFY_ACTION.EDIT:
       case NOTIFY_ACTION.REFRESH:
       case NOTIFY_ACTION.ADD:
-        // TODO: navigate to Alarm live screen
-        console.log('GOND onOpenAlarmEvent add');
-        await alarmStore.getAlarms({aty: AlertType_Support});
-        const alarmData = parseAlarmData(alarm);
-        const params = alarmStore.selectAlarm(alarmData)
+        // __DEV__ && console.log('GOND onOpenAlarmEvent: ', alarm);
+        // await alarmStore.getAlarms({aty: AlertType_Support});
+        // const alarmData = parseAlarmData(alarm);
+
+        const params = alarmStore.onAlarmNotification(alarm)
           ? {screen: ROUTERS.ALARM_DETAIL, initial: false}
           : undefined;
         __DEV__ &&

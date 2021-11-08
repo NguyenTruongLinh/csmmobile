@@ -53,7 +53,7 @@ const AlarmSnapshot = types
             thumb: false,
             kdvr: kDVR,
             ch: self.channelNo,
-            next: null,
+            next: isTempSDAlert ? false : null,
             download: false,
             va: false,
             ti: null,
@@ -122,7 +122,7 @@ const AlarmData = types
     kDVR: types.number,
     time: types.string,
     timezone: types.string,
-    dVRUser: types.maybeNull(types.string),
+    dvrUser: types.maybeNull(types.string),
     description: types.string,
     channelNo: types.number,
     alertType: types.string,
@@ -316,7 +316,10 @@ export const parseAlarmData = item =>
     severity: item.Severity,
     serverID: item.ServerID,
     site: item.Site,
-    siteName: item.SiteName,
+    siteName:
+      item.SiteName && item.SiteName.length > 0
+        ? item.SiteName
+        : item.Site.split(':')[0],
     serverIP: item.ServerIP,
     dtUpdateTime: item.dtUpdateTime,
     snapshot:
@@ -366,7 +369,7 @@ export const parseAlarmData = item =>
     kAlertType: item.KAlertType,
     kDVR: item.KDVR,
     timezone: item.TimeZone,
-    dVRUser: item.DVRUser,
+    dvrUser: item.DVRUser,
     description: item.Description,
     time: item.Time,
     channelNo: parseInt(item.Channel),
@@ -399,6 +402,8 @@ export const AlarmModel = types
     selectedAlarm: types.maybeNull(types.reference(AlarmData)),
     notifiedAlarm: types.maybeNull(AlarmData),
   })
+  // .volatile(self => ({
+  // }))
   .views(self => ({
     get filteredLiveData() {
       if (!self.filterText) return self.liveAlarms;
@@ -590,6 +595,18 @@ export const AlarmModel = types
       }
       self.isLoading = false;
     }),
+    // #region on notification events
+    onAlarmNotification(data) {
+      // const alarm = parseAlarmData(data);
+      try {
+        self.notifiedAlarm = parseAlarmData(data);
+        return self.selectAlarm(self.notifiedAlarm);
+      } catch (ex) {
+        __DEV__ &&
+          console.log('GOND parse notification alarm data failed: ', ex);
+      }
+    },
+    // #endregion on notification events
     onExitAlarmDetail() {
       self.selectedAlarm = null;
     },

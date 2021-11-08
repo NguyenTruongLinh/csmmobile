@@ -7,6 +7,7 @@ import {
   TextInput,
   Dimensions,
   Animated,
+  LogBox,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
@@ -62,6 +63,7 @@ class AlarmDetailView extends Component {
   async componentDidMount() {
     const {alarmStore, videoStore} = this.props;
     this._isMounted = true;
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
     __DEV__ && console.log('AlarmDetail componentDidMount');
 
     if (!alarmStore.vaConfig || alarmStore.vaConfig.length == 0) {
@@ -158,7 +160,11 @@ class AlarmDetailView extends Component {
       headerTitle: () => (
         <View style={{flexDirection: 'column', marginLeft: -20}}>
           <Text style={{fontWeight: 'bold', fontSize: 18}}>
-            {currentSnapshot.channelName}
+            {selectedAlarm.isTempSDAlert
+              ? selectedAlarm.dvrUser && selectedAlarm.dvrUser.length > 0
+                ? selectedAlarm.dvrUser
+                : ALARM_TXT.NONEMPLOYEE
+              : currentSnapshot.channelName}
           </Text>
           <Text style={{fontSize: 16, textAlign: 'center'}}>{siteName}</Text>
         </View>

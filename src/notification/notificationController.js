@@ -5,6 +5,7 @@ import {useRoute} from '@react-navigation/native';
 import messaging from '@react-native-firebase/messaging';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import PushNotification, {Importance} from 'react-native-push-notification';
+import {DateTime} from 'luxon';
 
 import {onVideoNotifEvent} from './video';
 import {onAlarmEvent, onOpenAlarmEvent} from './alarm';
@@ -211,17 +212,17 @@ class NotificationController extends React.Component {
   };
 
   static displayLocalNotification = ({id, title, body, messageId, data}) => {
+    // console.log('GOND2 ', id, ', body: ', body, ', data: ', data);
     let idNumber = typeof id == 'number' ? id : parseInt(id, 16);
     idNumber = isNaN(idNumber) ? undefined : idNumber;
     // if (idNumber) PushNotification.cancelLocalNotification(idNumber);
-
     const notificationRequest = {
       id: idNumber,
       vibration: 500,
       title: title,
       message: /*Platform.OS == 'android' ? encodeURI(body) :*/ body,
       messageId: messageId,
-      userInfo: data,
+      userInfo: JSON.stringify(data),
       invokeApp: true,
       // for android:
       channelId: CHANNEL_ID,
@@ -237,32 +238,6 @@ class NotificationController extends React.Component {
     Platform.OS === 'ios'
       ? PushNotification.localNotification(notificationRequest)
       : PushNotification.presentLocalNotification(notificationRequest);
-    /*
-    const strId = typeof id == 'string' ? id : String(id);
-    if (strId) notifee.cancelNotification(strId);
-    console.log('GOND displayLocalNotification: ', data);
-
-    notifee.displayNotification({
-      id: strId,
-      title,
-      body,
-      data: {
-        ...data,
-        content:
-          typeof data.content == 'object'
-            ? JSON.stringify(data.content)
-            : data.content,
-      },
-      android: {
-        channelId: CHANNEL_ID,
-        largeIcon: 'noti_icon',
-        smallIcon: 'noti_icon',
-        pressAction: {
-          id: 'default',
-        },
-      },
-    });
-    */
   };
 
   static onNotificationReceived = async props => {
@@ -385,6 +360,16 @@ class NotificationController extends React.Component {
         break;
       case NOTIFY_TYPE.ALERT:
         onOpenAlertEvent({...props, naviService, action, content});
+        // testing only
+        // setTimeout(
+        //   () =>
+        //     NotificationController.displayLocalNotification({
+        //       ...message,
+        //       body: message.message || 'Alert again',
+        //       id: DateTime.now().toSeconds(),
+        //     }),
+        //   1000
+        // );
         break;
       case NOTIFY_TYPE.ALARM:
         onOpenAlarmEvent({alarmStore, naviService, action, content});

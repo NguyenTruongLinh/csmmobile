@@ -75,6 +75,7 @@ class AlertsView extends Component {
       selectedAlertType,
       selectedSite,
       currentSiteName,
+      alertsList,
     } = healthStore;
     const {isListView} = this.state;
     __DEV__ &&
@@ -82,7 +83,11 @@ class AlertsView extends Component {
 
     let options = {
       headerTitle: `${
-        selectedAlertType ? selectedAlertType.name : 'Unknown alert'
+        selectedAlertType
+          ? selectedAlertType.name
+          : alertsList.length > 0
+          ? healthStore.getAlertName(alertsList[0].alertId)
+          : ''
       } - ${
         selectedSite ? selectedSite.siteName : currentSiteName ?? 'Unknown site'
       }`,
@@ -259,6 +264,7 @@ class AlertsView extends Component {
 
   renderContentAlertWithSnapshot = alert => {
     const {isListView} = this.state;
+    // __DEV__ && console.log('GOND renderContentAlertWithSnapshot: ', alert);
 
     const containerStyle = isListView
       ? {flex: 2}

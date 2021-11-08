@@ -121,7 +121,8 @@ class App extends React.Component {
       onLogin: () => {
         __DEV__ && console.log('GOND onLogin called');
         videoStore.getCloudSetting();
-        healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);
+        if (userStore.settings.alertTypes.length > 0)
+          healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);
       },
     });
 
