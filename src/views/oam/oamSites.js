@@ -49,6 +49,7 @@ class OAMSitesView extends Component {
     const {sitesStore, oamStore, navigation} = this.props;
     sitesStore.selectSite(item.key);
     if (item.dvrs && item.dvrs[0]) {
+      oamStore.setTitle(item.name);
       oamStore.setKdvr(item.dvrs[0].kDVR);
       navigation.push(ROUTERS.OAM_DETAIL);
     }

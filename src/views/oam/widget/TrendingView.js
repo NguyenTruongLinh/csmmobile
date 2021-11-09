@@ -221,6 +221,25 @@ class TrendingView extends Component {
             textLabelRotation = - Math.PI/2;
         }*/
     // console.log('GOND xAxisLabels:', xAxisLabels)
+    const processedColor = processColor(nextProps.color);
+    const historicalConfig = {
+      drawHighlightIndicators: false,
+      drawCircles: false,
+      drawCubic: false,
+      valueFormatter: '#',
+      textLegendRotation: textLabelRotation,
+      color: processedColor,
+      valueTextColor: processedColor,
+      valueTextSize: 9,
+      lineWidth: 2,
+    };
+    const forecastConfig = {
+      ...historicalConfig,
+      dashedLine: {
+        lineLength: 6,
+        spaceLength: 5,
+      },
+    };
     return {
       chartData: {
         ...prevState.chartData,
@@ -228,32 +247,12 @@ class TrendingView extends Component {
           {
             ...prevState.chartData.dataSets[0],
             values: historicalValues,
-            config: {
-              drawHighlightIndicators: false,
-              drawCircles: false,
-              drawCubic: false,
-              valueFormatter: '#',
-              textLegendRotation: textLabelRotation,
-              color: -1,
-              valueTextColor: -1,
-            },
+            config: historicalConfig,
           },
           {
             ...prevState.chartData.dataSets[1],
             values: forecastValues,
-            config: {
-              drawHighlightIndicators: false,
-              drawCircles: false,
-              drawCubic: false,
-              dashedLine: {
-                lineLength: 4,
-                spaceLength: 4,
-              },
-              valueFormatter: '#',
-              textLegendRotation: textLabelRotation,
-              color: -1,
-              valueTextColor: -1,
-            },
+            config: forecastConfig,
           },
         ],
       },
@@ -263,7 +262,7 @@ class TrendingView extends Component {
         valueFormatter: xAxisLabels,
         drawLabels: xAxisLabels ? true : false,
         labelRotationAngle: 325,
-        textColor: -1,
+        textColor: processedColor,
       },
       dataPoint: nextProps.dataPoint, //nextProps.trendDataCount,
       // yAxis: {
@@ -282,7 +281,12 @@ class TrendingView extends Component {
         <Text style={[styles.title, {color: color}]}>
           {dataPoint} hours data trend{' '}
         </Text>
-        <CMSTrendingLine style={styles} chartData={chartData} xAxis={xAxis} />
+        <CMSTrendingLine
+          style={styles}
+          chartData={chartData}
+          xAxis={xAxis}
+          color={color}
+        />
       </View>
     );
   }

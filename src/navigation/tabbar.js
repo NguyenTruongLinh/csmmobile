@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import {inject, observer} from 'mobx-react';
 
 import {getCurrentRouteName} from '../util/general';
 import {Tabbar as Labels} from '../localization/texts';
@@ -23,7 +24,7 @@ const TabIcons = [
 const TabLabels = [Labels.home, Labels.video, Labels.alarm, Labels.settings];
 const HideTabbarScreens = [ROUTERS.VIDEO_PLAYER, ROUTERS.HEALTH_VIDEO];
 
-export default class extends React.Component {
+class CMSTabbar extends React.Component {
   constructor(props) {
     super(props);
 
@@ -41,7 +42,7 @@ export default class extends React.Component {
   // };
 
   render() {
-    const {navigation, state} = this.props;
+    const {navigation, state, oamStore} = this.props;
     const currentIndex = state.index;
     // const currentRoute = state.routes[state.index];
     const {width, height} = Dimensions.get('window');
@@ -59,7 +60,9 @@ export default class extends React.Component {
       // HideTabbarScreens.includes(
       //   currentRoute.state.routes[currentRoute.state.index].name
       // )
-      HideTabbarScreens.includes(getCurrentRouteName(state))
+      HideTabbarScreens.includes(getCurrentRouteName(state)) ||
+      (getCurrentRouteName(state) == ROUTERS.OAM_DETAIL &&
+        !oamStore.isBottomTabShown)
     )
       return null;
     return (
@@ -105,7 +108,7 @@ export default class extends React.Component {
   }
 }
 
-// export default CMSTabbar;
+export default inject('oamStore')(observer(CMSTabbar));
 
 const styles = StyleSheet.create({
   container: {

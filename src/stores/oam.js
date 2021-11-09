@@ -1,4 +1,6 @@
 import {types, flow, applySnapshot} from 'mobx-state-tree';
+import Snackbar from 'react-native-snackbar';
+
 import {OAM} from '../consts/apiRoutes';
 import apiService from '../services/api';
 const MOCK_DATA = {
@@ -64,9 +66,21 @@ const timedValue = types.model({
   time: types.maybeNull(types.string),
   hourLabel: types.maybeNull(types.string),
 });
+const oamDismissInfo = types.model({
+  cMSUser: types.maybeNull(types.string),
+  note: types.maybeNull(types.string),
+  time: types.maybeNull(types.string),
+  kAlertEvent: types.maybeNull(types.number),
+  kAlertType: types.maybeNull(types.number),
+  kDVR: types.maybeNull(types.number),
+  dvrName: types.maybeNull(types.string),
+  siteName: types.maybeNull(types.string),
+  serverID: types.maybeNull(types.string),
+});
+
 const oamData = types.model({
   kAlertEventDetail: types.maybeNull(types.number),
-  dVRUser: types.maybeNull(types.string),
+  dvrUser: types.maybeNull(types.string),
   occupancy: types.number,
   occupancyTitle: types.maybeNull(types.string),
   capacity: types.number,
@@ -86,49 +100,13 @@ const oamData = types.model({
   kAlertEvent: types.number,
   kAlertType: types.number,
   kDVR: types.number,
-  dVRName: types.maybeNull(types.string),
+  dvrName: types.maybeNull(types.string),
   siteName: types.maybeNull(types.string),
   serverID: types.maybeNull(types.string),
 });
 
-// onSnapshot(oamData, snapshot => {
-// });
-const HIS_DATA = [
-  {
-    Value: 0,
-    Time: '2021-11-03T05:00:00Z',
-    HourLabel: '5A',
-  },
-  {
-    Value: 0,
-    Time: '2021-11-03T06:00:00Z',
-    HourLabel: '6A',
-  },
-  {
-    Value: 0,
-    Time: '2021-11-03T07:00:00Z',
-    HourLabel: '7A',
-  },
-];
-const FOR_DATA = [
-  {
-    Value: 0,
-    Time: '2021-11-03T08:00:00Z',
-    HourLabel: '8A',
-  },
-  {
-    Value: 0,
-    Time: '2021-11-03T09:00:00Z',
-    HourLabel: '9A',
-  },
-  {
-    Value: 0,
-    Time: '2021-11-03T10:00:00Z',
-    HourLabel: '10A',
-  },
-];
 function parseTimedValueList(values) {
-  console.log('HAI parseTimedValueList values = ', values);
+  __DEV__ && console.log('HAI parseTimedValueList values = ', values);
   let result = [];
   if (Array.isArray(values)) {
     values.forEach(item => {
@@ -144,11 +122,58 @@ function parseTimedValueList(values) {
   console.log('HAI parseTimedValueList result = ', result);
   return result;
 }
-
+function parseOAMDismissInfo(dismissInfo) {
+  return {
+    cMSUser: dismissInfo.CMSUser,
+    note: dismissInfo.Note,
+    time: dismissInfo.Time,
+    kAlertEvent: dismissInfo.KAlertEvent,
+    kAlertType: dismissInfo.KAlertType,
+    kDVR: dismissInfo.KDVR,
+    dvrName: dismissInfo.DVRName,
+    siteName: dismissInfo.SiteName,
+    serverID: dismissInfo.ServerID,
+  };
+}
+function parseOAMData(data) {
+  let historycals = parseTimedValueList(data.Historycals);
+  __DEV__ && console.log('HAI get OAM data: historycals = ', historycals);
+  let foreCasts = parseTimedValueList(data.ForeCasts);
+  __DEV__ && console.log('HAI get OAM data: foreCasts = ', foreCasts);
+  return {
+    kAlertEventDetail: data.KAlertEventDetail,
+    dvrUser: data.DVRUser,
+    occupancy: data.Occupancy,
+    occupancyTitle: data.OccupancyTitle,
+    capacity: data.Capacity,
+    capacityTitle: data.CapacityTitle,
+    untilCapacity: data.UntilCapacity,
+    aboveCapacity: data.AboveCapacity,
+    estWaitTime: data.EstWaitTime,
+    estWaitTimeReadable: data.EstWaitTimeReadable,
+    dataTrend: data.DataTrend,
+    foreColor: data.ForeColor,
+    backColor: data.BackColor,
+    channelNo: data.ChannelNo,
+    historycals: historycals,
+    foreCasts: foreCasts,
+    dataPoint: data.DataPoint,
+    offline: data.Offline,
+    kAlertEvent: data.KAlertEvent,
+    kAlertType: data.KAlertType,
+    kDVR: data.KDVR,
+    dvrName: data.DVRName,
+    siteName: data.SiteName,
+    serverID: data.ServerID,
+  };
+}
 export const OAMModel = types
   .model({
+    title: types.maybeNull(types.string),
+    isBottomTabShown: types.boolean,
     kdvr: types.number,
     data: types.maybeNull(oamData),
+    isAckPopupVisible: types.boolean,
     // oamMap: types.map(oamData),
   })
   .views(self => ({
@@ -157,9 +182,16 @@ export const OAMModel = types
     // },
   }))
   .actions(self => ({
+    setTitle(title) {
+      self.title = title;
+    },
     setKdvr(kdvr) {
       self.kdvr = kdvr;
       self.data = null;
+      self.fetchData();
+    },
+    setIsBottomTabShown(isBottomTabShown) {
+      self.isBottomTabShown = isBottomTabShown;
     },
     fetchData: flow(function* fetchData() {
       try {
@@ -170,46 +202,70 @@ export const OAMModel = types
         );
         // newData = MOCK_DATA;
         __DEV__ && console.log('HAI get OAM data: ', JSON.stringify(newData));
-        let historycals = parseTimedValueList(newData.Historycals);
-        __DEV__ && console.log('HAI get OAM data: historycals = ', historycals);
-        let foreCasts = parseTimedValueList(newData.ForeCasts);
-        __DEV__ && console.log('HAI get OAM data: foreCasts = ', foreCasts);
-        self.data = oamData.create({
-          kAlertEventDetail: newData.KAlertEventDetail,
-          dVRUser: newData.DVRUser,
-          occupancy: newData.Occupancy,
-          occupancyTitle: newData.OccupancyTitle,
-          capacity: newData.Capacity,
-          capacityTitle: newData.CapacityTitle,
-          untilCapacity: newData.UntilCapacity,
-          aboveCapacity: newData.AboveCapacity,
-          estWaitTime: newData.EstWaitTime,
-          estWaitTimeReadable: newData.EstWaitTimeReadable,
-          dataTrend: newData.DataTrend,
-          foreColor: newData.ForeColor,
-          backColor: newData.BackColor,
-          channelNo: newData.ChannelNo,
-          historycals: historycals, //HIS_DATA), //
-          foreCasts: foreCasts, //FOR_DATA), //
-          dataPoint: newData.DataPoint,
-          offline: newData.Offline,
-          kAlertEvent: newData.KAlertEvent,
-          kAlertType: newData.KAlertType,
-          kDVR: newData.KDVR,
-          dVRName: newData.DVRName,
-          siteName: newData.SiteName,
-          serverID: newData.ServerID,
-        });
+        self.data = oamData.create(parseOAMData(newData));
       } catch (err) {
         __DEV__ && console.log('GOND Could not get sites data! ', err);
       }
     }),
+    notifyRefeshFromPN(pnData) {
+      if (pnData.KAlertEvent && pnData.kAlertEventDetail == pnData.KAlertEvent)
+        self.data.kAlertEventDetail = null;
+      else if (pnData.KDVR == self.data.kDVR)
+        self.data = oamData.create(parseOAMData(pnData));
+    },
+    postAcknowledge: flow(function* postAcknowledge(model, successCb, errorCb) {
+      __DEV__ &&
+        console.log(
+          'HAI postAcknowledge successCb: ',
+          JSON.stringify(successCb),
+          ' errorCb',
+          JSON.stringify(errorCb)
+        );
+      let error = false;
+      try {
+        let res = yield apiService.post(
+          OAM.controller,
+          model.id || -1,
+          OAM.acknowledgePVMAlert,
+          model
+        );
+        __DEV__ &&
+          console.log('HAI postAcknowledge data: ', JSON.stringify(res));
+        if (res.error) {
+          error = true;
+        } else {
+          // successCb();
+        }
+      } catch (err) {
+        error = true;
+        __DEV__ && console.log('HAI Could not postAcknowledge! ', err);
+      }
+      if (error) {
+        Snackbar.show({
+          text:
+            'Failed to acknowledge (' +
+            result.error +
+            '), please try again later',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: CMSColors.Danger,
+        });
+      } else {
+        self.setAckPopupVisibility(false);
+      }
+    }),
+    setAckPopupVisibility(visible) {
+      self.isAckPopupVisible = visible;
+    },
     cleanUp() {},
   }));
 
 const oamStore = OAMModel.create({
+  title: null,
+  isBottomTabShown: true,
   kdvr: -1,
   data: null,
+  dismissInfo: null,
+  isAckPopupVisible: false,
 });
 
 export default oamStore;

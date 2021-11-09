@@ -9,6 +9,7 @@ import {DateTime} from 'luxon';
 
 import {onVideoNotifEvent} from './video';
 import {onAlarmEvent, onOpenAlarmEvent} from './alarm';
+import {onPVMEvent, onOpenPVMEvent} from './pvm';
 import {
   onAlertEvent,
   onOpenAlertEvent,
@@ -124,7 +125,7 @@ class NotificationController extends React.Component {
   };
 
   createNotificationListeners = async () => {
-    const {appStore, alarmStore, videoStore, userStore} = this.props;
+    const {appStore, alarmStore, videoStore, userStore, oamStore} = this.props;
 
     messaging().onTokenRefresh(newToken => {
       __DEV__ && console.log('GOND FCM Token has been refreshed: ', newToken);
@@ -247,6 +248,7 @@ class NotificationController extends React.Component {
       healthStore,
       userStore,
       appStore,
+      oamStore,
       message,
       shouldValidate,
     } = props;
@@ -304,7 +306,8 @@ class NotificationController extends React.Component {
         onVideoNotifEvent({videoStore, action, content, cmd});
         break;
       case NOTIFY_TYPE.PVM:
-        // notif = onPVMEvent(dispatch,action, content);
+        __DEV__ && console.log('HAI onPVM Notification: ', data);
+        notif = onPVMEvent(oamStore, action, content, cmd);
         break;
     }
 
@@ -323,8 +326,15 @@ class NotificationController extends React.Component {
   };
 
   static onNotificationOpened = props => {
-    const {videoStore, alarmStore, healthStore, userStore, appStore, message} =
-      props;
+    const {
+      videoStore,
+      alarmStore,
+      healthStore,
+      userStore,
+      appStore,
+      oamStore,
+      message,
+    } = props;
 
     __DEV__ && console.log('GOND onNotificationOpened: ', props);
     const {naviService} = appStore ?? {};
@@ -378,7 +388,7 @@ class NotificationController extends React.Component {
         // onOpenExceptionEvent( dispatch,action, content, noti_disable);
         break;
       case NOTIFY_TYPE.PVM:
-        // onOpenPVMPushNotification( dispatch, action, content, noti_disable);
+        onOpenPVMEvent(oamStore, naviService, action, content);
         break;
       default:
         __DEV__ &&
@@ -398,7 +408,8 @@ export default inject(
   'videoStore',
   'alarmStore',
   'healthStore',
-  'sitesStore'
+  'sitesStore',
+  'oamStore'
 )(
   observer(NotificationController)
   // observer(props => {

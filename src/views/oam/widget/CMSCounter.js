@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {View, StyleSheet, Text, Dimensions} from 'react-native';
-import CMSStyleSheet from '../../../components/CMSStyleSheet'; //'../../components/CMSStyleSheet';
+import CMSStyleSheet from '../../../components/CMSStyleSheet';
 import {normalize} from '../../../util/general';
 import CMSColors from '../../../styles/cmscolors';
 

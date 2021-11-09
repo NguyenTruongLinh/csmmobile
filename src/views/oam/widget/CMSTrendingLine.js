@@ -2,7 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Dimensions, View, Text} from 'react-native';
+import {StyleSheet, Dimensions, View, Text, processColor} from 'react-native';
 import {backgroundChart} from '../../styles/CMSColors';
 import {BarChart, LineChart} from 'react-native-charts-wrapper';
 
@@ -20,7 +20,6 @@ class CMSTrendingLine extends React.Component {
       labelCount: 10,
       labelCountForce: true,
       position: 'BOTH_SIDED',
-      textColor: -1,
       axisLineColor: true,
       gridColor: true,
     },
@@ -33,7 +32,6 @@ class CMSTrendingLine extends React.Component {
         enabled: false,
       },
       drawGridLines: false,
-      textColor: -1,
       axisLineColor: true,
     },
     // legend: {
@@ -68,7 +66,7 @@ class CMSTrendingLine extends React.Component {
         // position: 'BELOW_CHART_CENTER',
         horizontalAlignment: 'CENTER',
         orientation: 'HORIZONTAL',
-        textColor: -1,
+        textSize: 11,
       },
     };
   }
@@ -83,6 +81,15 @@ class CMSTrendingLine extends React.Component {
       },
     });
   };
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return {
+      legend: {
+        ...prevState.legend,
+        textColor: processColor(nextProps.color),
+      },
+    };
+  }
 
   render() {
     const {
@@ -130,7 +137,7 @@ class CMSTrendingLine extends React.Component {
 
 const styles = StyleSheet.create({
   chart: {
-    backgroundColor: '#00000022',
+    backgroundColor: '#00000033',
     marginRight: 16,
   },
 });

@@ -27,7 +27,10 @@ import AlarmStack from './alarmNavigator';
 import HealthStack from './healthNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
-import ROUTERS from '../consts/routes';
+import ROUTERS, {getHeaderTitle} from '../consts/routes';
+
+import BackButton from '../components/controls/BackButton';
+import variables from '../styles/variables';
 // import cmscolors from '../styles/cmscolors';
 
 // const getHeaderOptions = route => {
@@ -47,7 +50,20 @@ import ROUTERS from '../consts/routes';
 
 const OAStack = createStackNavigator();
 const OAMStack = () => (
-  <OAStack.Navigator initialRouteName={ROUTERS.OAM_SITES} headerMode="float">
+  <OAStack.Navigator
+    initialRouteName={ROUTERS.OAM_SITES}
+    screenOptions={({route, navigation}) => ({
+      headerStyle: {
+        // backgroundColor: CMSColors.White,
+        borderBottomWidth: 1,
+      },
+      headerStatusBarHeight: variables.StatusBarHeight,
+      headerTitleAlign: 'center',
+      headerMode: 'screen',
+      headerTitle: getHeaderTitle(route),
+      headerLeft: () => <BackButton navigator={navigation} />,
+    })}
+    headerMode="float">
     <OAStack.Screen name={ROUTERS.OAM_SITES} component={OAMSitesView} />
     <OAStack.Screen name={ROUTERS.OAM_DETAIL} component={OAMDetailView} />
   </OAStack.Navigator>

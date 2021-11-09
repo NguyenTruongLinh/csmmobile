@@ -17,8 +17,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import CMSColors from '../../styles/cmscolors';
 import {inject, observer} from 'mobx-react';
+import Ripple from 'react-native-material-ripple';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import CMSColors from '../../styles/cmscolors';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
 import {normalize} from '../../util/general';
@@ -30,6 +33,11 @@ import CounterView from './widget/CMSCounter';
 import TrendingView from './widget/TrendingView';
 import WaitTime from './widget/WaitTime';
 
+import CMSStyleSheet from '../../components/CMSStyleSheet';
+const IconCustom = CMSStyleSheet.IconCustom;
+
+import AcknowledgePopup from './widget/AcknowledgePopup';
+
 const pvmColors = CMSColors.pvm;
 const BORDER_ALPHA = '28';
 const PVM_MESSAGES = {
@@ -37,23 +45,6 @@ const PVM_MESSAGES = {
   PVM_NO_UPDATE: 'No new data for more than 2 hours.',
   PVM_NOT_ENABLE: 'Site has no PVM enabled.',
 };
-const warningMessage = [
-  {
-    id: 1,
-    selected: true,
-    value:
-      'I have responded to the alarm and per company protocol, have taken corrective action.',
-  },
-  {
-    id: 2,
-    value:
-      'I have responded to the alarm and per company protocol, have allowed additional customers into the store.',
-  },
-  {
-    id: 3,
-    value: 'I have responded to the alarm and no further action is needed.',
-  },
-];
 
 class OAMDetailView extends Component {
   static defaultProps = {
@@ -64,9 +55,13 @@ class OAMDetailView extends Component {
     },
     // showBackButton: true,
   };
+  isHeaderShown = true;
 
   constructor(props) {
     super(props);
+    this.state = {
+      showPopup: false,
+    };
   }
 
   // onDimensionChange = event => {
@@ -90,14 +85,16 @@ class OAMDetailView extends Component {
   }
 
   componentDidMount() {
-    const {oamStore} = this.props;
+    const {navigation, oamStore} = this.props;
     __DEV__ && console.log('RTCStreamingView componentDidMount');
-    oamStore.fetchData();
     // AppState.addEventListener('change', this._handleAppStateChange);
     // Dimensions.addEventListener('change', this.onDimensionChange);
     // if (this.props.onBack)
     //   BackHandler.addEventListener('hardwareBackPress', this.props.onBack);
     // Orientation.addDeviceOrientationListener(this._orientationDidChange);
+    navigation.setOptions({
+      headerShown: this.isHeaderShown,
+    });
   }
 
   // _handleAppStateChange = nextAppState => {
@@ -129,8 +126,8 @@ class OAMDetailView extends Component {
     );
   }
   renderAcknowledgeButton(foreColor, backColor) {
-    // return this.state.KAlertEventDetail ? (
-    return (
+    const {oamStore} = this.props;
+    return oamStore.data.kAlertEventDetail ? (
       <Button
         style={[
           styles.ackButton,
@@ -142,11 +139,10 @@ class OAMDetailView extends Component {
         caption={'acknowledge'}
         captionStyle={{color: foreColor, fontSize: normalize(14)}}
         onPress={() => {
-          this.onAcknowledge();
+          oamStore.setAckPopupVisibility(true);
         }}
       />
-    );
-    // ) : null;
+    ) : null;
   }
 
   renderActionButton() {
@@ -164,10 +160,20 @@ class OAMDetailView extends Component {
       </View>
     );
   }
-  onFullScreenPress = () => {};
+  onFullScreenPress = () => {
+    const {oamStore} = this.props;
+    this.isHeaderShown = !this.isHeaderShown;
+    oamStore.setIsBottomTabShown(this.isHeaderShown);
+    this.props.navigation.setOptions({
+      headerShown: this.isHeaderShown,
+    });
+  };
 
   render() {
-    const {oamStore} = this.props;
+    const {oamStore, navigation} = this.props;
+    navigation.setOptions({
+      headerTitle: oamStore.title,
+    });
     const isLandscape = false;
     if (!oamStore.data)
       return (
@@ -210,7 +216,11 @@ class OAMDetailView extends Component {
           {/* <Text>{JSON.stringify(oamStore.data)}</Text> */}
           {/* <Text>{JSON.stringify(historycals)}</Text>
           <Text>{JSON.stringify(foreCasts)}</Text> */}
-          <View style={styles.header}>
+          <View
+            style={[
+              styles.header,
+              {backgroundColor: foreColor + BORDER_ALPHA},
+            ]}>
             {this.renderAcknowledgeButton(foreColor, backColor)}
             {this.renderFullScreenButton(foreColor)}
           </View>
@@ -242,13 +252,14 @@ class OAMDetailView extends Component {
           />
           <TrendingView
             style={{flex: 1}}
-            color={foreColor || 'white'}
+            color={foreColor}
             historicalData={historycals}
             forecastData={foreCasts}
             dataPoint={dataPoint}
             borderAlpha={BORDER_ALPHA}
           />
           {this.renderActionButton()}
+          <AcknowledgePopup />
         </View>
       )
     );
@@ -275,7 +286,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     justifyContent: 'flex-end',
     paddingVertical: 5,
-    backgroundColor: '#ffffff' + BORDER_ALPHA,
+    minHeight: 40,
   },
   occupancyView: {
     flex: 1.5,
@@ -316,13 +327,6 @@ const styles = StyleSheet.create({
     //opacity: 1,
     fontSize: normalize(14),
   },
-  buttonIgnore: {
-    flex: 1,
-    backgroundColor: CMSColors.PrimaryColor,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-  },
   buttonSite: {
     backgroundColor: 'rgba(255,255,255,0.28)',
     justifyContent: 'center',
@@ -330,13 +334,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     height: 24,
     marginRight: 3,
-  },
-  popupcomponent: {
-    flexDirection: 'row',
-    flex: 1,
-    paddingTop: 10,
-    marginLeft: 10,
-    marginRight: 10,
   },
   modalcontainer: {
     justifyContent: 'flex-start',
@@ -361,17 +358,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
-  },
-  radiobuttonContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignContent: 'center',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingLeft: 24,
-    paddingRight: 24,
-    //marginTop:20,
-    marginRight: 20,
   },
   actionButtonContainer: {
     position: 'absolute',
