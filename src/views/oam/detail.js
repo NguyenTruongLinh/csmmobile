@@ -125,6 +125,7 @@ class OAMDetailView extends Component {
       />
     );
   }
+
   renderAcknowledgeButton(foreColor, backColor) {
     const {oamStore} = this.props;
     return oamStore.data.kAlertEventDetail ? (
@@ -138,9 +139,7 @@ class OAMDetailView extends Component {
         enable={true}
         caption={'acknowledge'}
         captionStyle={{color: foreColor, fontSize: normalize(14)}}
-        onPress={() => {
-          oamStore.setAckPopupVisibility(true);
-        }}
+        onPress={() => oamStore.setAckPopupVisibility(true)}
       />
     ) : null;
   }
@@ -286,7 +285,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     justifyContent: 'flex-end',
     paddingVertical: 5,
-    minHeight: 40,
+    minHeight: 45,
   },
   occupancyView: {
     flex: 1.5,

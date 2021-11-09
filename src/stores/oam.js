@@ -208,9 +208,10 @@ export const OAMModel = types
       }
     }),
     notifyRefeshFromPN(pnData) {
-      if (pnData.KAlertEvent && pnData.kAlertEventDetail == pnData.KAlertEvent)
-        self.data.kAlertEventDetail = null;
-      else if (pnData.KDVR == self.data.kDVR)
+      if (pnData.Note) {
+        if (self.data.kAlertEventDetail == pnData.KAlertEvent)
+          self.data.kAlertEventDetail = null;
+      } else if (pnData.KDVR == self.data.kDVR)
         self.data = oamData.create(parseOAMData(pnData));
     },
     postAcknowledge: flow(function* postAcknowledge(model, successCb, errorCb) {
@@ -222,6 +223,9 @@ export const OAMModel = types
           JSON.stringify(errorCb)
         );
       let error = false;
+      let tempKAlertEventDetail = self.data.kAlertEventDetail;
+      self.isAckPopupVisible = false;
+      self.data.kAlertEventDetail = null;
       try {
         let res = yield apiService.post(
           OAM.controller,
@@ -231,11 +235,7 @@ export const OAMModel = types
         );
         __DEV__ &&
           console.log('HAI postAcknowledge data: ', JSON.stringify(res));
-        if (res.error) {
-          error = true;
-        } else {
-          // successCb();
-        }
+        error = !!res.error;
       } catch (err) {
         error = true;
         __DEV__ && console.log('HAI Could not postAcknowledge! ', err);
@@ -249,8 +249,8 @@ export const OAMModel = types
           duration: Snackbar.LENGTH_LONG,
           backgroundColor: CMSColors.Danger,
         });
-      } else {
-        self.setAckPopupVisibility(false);
+        self.isAckPopupVisible = true;
+        self.data.kAlertEventDetail = tempKAlertEventDetail;
       }
     }),
     setAckPopupVisibility(visible) {

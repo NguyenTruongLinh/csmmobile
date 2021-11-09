@@ -123,7 +123,7 @@ class AcknowledgePopup extends Component {
               backgroundColor: CMSColors.borderColor,
             }}
             activeOpacity={1}
-            onPress={oamStore.setAckPopupVisibility(false)}
+            onPress={() => oamStore.setAckPopupVisibility(false)}
           />
           <View
             style={[
