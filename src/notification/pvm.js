@@ -1,18 +1,8 @@
 // import {CancelNotify} from './utils';
-import PushNotification, {Importance} from 'react-native-push-notification';
-import {
-  NOTIFY_ACTION,
-  // AlertTypes,
-  AlertType_Support,
-  AlertNames,
-} from '../consts/misc';
+import PushNotification from 'react-native-push-notification';
+import {NOTIFY_ACTION} from '../consts/misc';
 import ROUTERS from '../consts/routes';
-import {
-  receiveStatusUpdate,
-  getPVMData,
-  openPVMNotification,
-  alertDismissed,
-} from '../actions/pvm';
+
 // import {Actions} from 'react-native-router-flux';
 // import {GetStore} from '../stores/createStore';
 // import {ModuleChange} from '../actions/user';
@@ -98,38 +88,6 @@ function onPVMEvent(oamStore, action, contentObj, cmd) {
       return null;
   }
   return notif;
-}
-
-function OnOpenPVM(dispatch, data) {
-  // console.log('GOND: OnOpenPVM, current scene: ', Actions.currentScene)
-  if (!data) return;
-
-  //let user = GetStore('user');
-  let kdvr = data.KDVR;
-  if (kdvr) {
-    if (Actions.currentScene != ROUTERS.ALARM) {
-      // dispatch(ModuleChange(ROUTERS.ALARM));//TODO
-    }
-
-    // dongpt: only dispatch action after app completely changed to Alarm scene
-    // waitForModuleChanged(ROUTERS.ALARM, () => {//TODO
-    //   // dispatch(openPVMNotification(data));//TODO
-    // });//TODO
-    // let countDown = 32;
-    // const scheduler = () => {
-    //   setTimeout(() => {
-    //     countDown--
-    //     if (countDown < 0) return
-    //     // console.log('################# On Open Notif PVM, data: ', data)
-    //     // console.log('################# On Open Notif PVM, currentScene: ', Actions.currentScene)
-    //     if (Actions.currentScene === ROUTERS.ALARM)
-    //       dispatch(openPVMNotification(data))
-    //     else
-    //       scheduler()
-    //   }, 500);
-    // }
-    // scheduler();
-  }
 }
 
 function onOpenPVMEvent(
