@@ -40,11 +40,6 @@ import AcknowledgePopup from './widget/AcknowledgePopup';
 
 const pvmColors = CMSColors.pvm;
 const BORDER_ALPHA = '28';
-const PVM_MESSAGES = {
-  PVM_OFFLINE: 'NVR is offline.',
-  PVM_NO_UPDATE: 'No new data for more than 2 hours.',
-  PVM_NOT_ENABLE: 'Site has no PVM enabled.',
-};
 
 class OAMDetailView extends Component {
   static defaultProps = {
@@ -193,74 +188,64 @@ class OAMDetailView extends Component {
       estWaitTime,
       historycals,
       foreCasts,
-      // foreColor,
-      // backColor,
       dataPoint,
-      showAcknowledgeButton,
-      firstLoading,
-      waitForAcknowledgeResponse,
-      dvrName,
     } = oamStore.data;
+
     let backColor = oamStore.data.backColor || '#008000';
     let foreColor = oamStore.data.foreColor || '#ffffff';
     return (
-      oamStore.data && (
-        <View
-          style={{
-            flex: 1,
-            borderWidth: 1,
-            backgroundColor: backColor,
-            paddingBottom: 120,
-          }}>
-          {/* <Text>{JSON.stringify(oamStore.data)}</Text> */}
-          {/* <Text>{JSON.stringify(historycals)}</Text>
+      <View
+        style={{
+          flex: 1,
+          borderWidth: 1,
+          backgroundColor: backColor,
+          paddingBottom: 120,
+        }}>
+        {/* <Text>{JSON.stringify(oamStore.data)}</Text> */}
+        {/* <Text>{JSON.stringify(historycals)}</Text>
           <Text>{JSON.stringify(foreCasts)}</Text> */}
-          <View
-            style={[
-              styles.header,
-              {backgroundColor: foreColor + BORDER_ALPHA},
-            ]}>
-            {this.renderAcknowledgeButton(foreColor, backColor)}
-            {this.renderFullScreenButton(foreColor)}
-          </View>
-
-          <View
-            style={[styles.occupancyView, isLandscape ? {minHeight: 100} : {}]}>
-            <CounterView
-              style={{flex: 1}}
-              title={occupancyTitle || 'OCCUPANCY'}
-              count={occupancy}
-              color={foreColor}
-              borderAlpha={BORDER_ALPHA}
-              icon="wc-2"
-            />
-            <CounterView
-              style={{flex: 1}}
-              title={capacityTitle || 'UNTIL CAPACITY'}
-              count={untilCapacity}
-              color={foreColor}
-              borderAlpha={BORDER_ALPHA}
-              icon="family"
-            />
-          </View>
-          <WaitTime
-            style={{flex: 1}}
-            estWaitTime={estWaitTime}
-            color={foreColor}
-            borderAlpha={BORDER_ALPHA}
-          />
-          <TrendingView
-            style={{flex: 1}}
-            color={foreColor}
-            historicalData={historycals}
-            forecastData={foreCasts}
-            dataPoint={dataPoint}
-            borderAlpha={BORDER_ALPHA}
-          />
-          {this.renderActionButton()}
-          <AcknowledgePopup />
+        <View
+          style={[styles.header, {backgroundColor: foreColor + BORDER_ALPHA}]}>
+          {this.renderAcknowledgeButton(foreColor, backColor)}
+          {this.renderFullScreenButton(foreColor)}
         </View>
-      )
+
+        <View
+          style={[styles.occupancyView, isLandscape ? {minHeight: 100} : {}]}>
+          <CounterView
+            style={{flex: 1}}
+            title={occupancyTitle || 'OCCUPANCY'}
+            count={occupancy}
+            color={foreColor}
+            borderAlpha={BORDER_ALPHA}
+            icon="wc-2"
+          />
+          <CounterView
+            style={{flex: 1}}
+            title={capacityTitle || 'UNTIL CAPACITY'}
+            count={untilCapacity}
+            color={foreColor}
+            borderAlpha={BORDER_ALPHA}
+            icon="family"
+          />
+        </View>
+        <WaitTime
+          style={{flex: 1}}
+          estWaitTime={estWaitTime}
+          color={foreColor}
+          borderAlpha={BORDER_ALPHA}
+        />
+        <TrendingView
+          style={{flex: 1}}
+          color={foreColor}
+          historicalData={historycals}
+          forecastData={foreCasts}
+          dataPoint={dataPoint}
+          borderAlpha={BORDER_ALPHA}
+        />
+        {this.renderActionButton()}
+        <AcknowledgePopup />
+      </View>
     );
   }
 }

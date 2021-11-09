@@ -3,6 +3,14 @@ import Snackbar from 'react-native-snackbar';
 
 import {OAM} from '../consts/apiRoutes';
 import apiService from '../services/api';
+import cmscolors from '../styles/cmscolors';
+
+const PVM_SNACK_BAR_MESSAGES = {
+  PVM_OFFLINE: 'NVR is offline.',
+  PVM_NO_UPDATE: 'No new data for more than 2 hours.',
+  PVM_NOT_ENABLE: 'Site has no PVM enabled.',
+};
+
 const MOCK_DATA = {
   KAlertEventDetail: null,
   DVRUser: null,
@@ -203,10 +211,21 @@ export const OAMModel = types
         // newData = MOCK_DATA;
         __DEV__ && console.log('HAI get OAM data: ', JSON.stringify(newData));
         self.data = oamData.create(parseOAMData(newData));
+        self.notifyShowSnackBarMessage();
       } catch (err) {
         __DEV__ && console.log('GOND Could not get sites data! ', err);
       }
     }),
+    notifyShowSnackBarMessage() {
+      if (!self.data.kDVR)
+        Snackbar.show({
+          text: self.data.offline
+            ? PVM_SNACK_BAR_MESSAGES.PVM_OFFLINE
+            : PVM_SNACK_BAR_MESSAGES.PVM_NO_UPDATE,
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: cmscolors.Danger,
+        });
+    },
     notifyRefeshFromPN(pnData) {
       if (pnData.Note) {
         if (self.data.kAlertEventDetail == pnData.KAlertEvent)
