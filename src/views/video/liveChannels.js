@@ -10,7 +10,7 @@ import {
   AppState,
   // BackHandler,
 } from 'react-native';
-// import {reaction} from 'mobx';
+import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
 // import {BottomModal, ModalContent} from 'react-native-modals';
 import Modal from 'react-native-modal';
@@ -23,6 +23,7 @@ import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import {IconCustom} from '../../components/CMSStyleSheet';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -77,6 +78,8 @@ class LiveChannelsView extends React.Component {
     this.firstFocus = true;
     this.channelsData = [];
     // this.showAllTimeout = null;
+    // this.didFilter = false;
+    // this.needUpdateVideos = false;
   }
 
   componentWillUnmount() {
@@ -96,14 +99,14 @@ class LiveChannelsView extends React.Component {
   componentDidMount() {
     this._isMounted = true;
     const {videoStore, sitesStore, navigation} = this.props;
-    if (__DEV__) {
+    /*if (__DEV__) {
       console.log(
         'LiveChannelsView componentDidMount: ',
         sitesStore.selectedDVR
       );
       // if (sitesStore.selectedDVR.name === 'jackhome')
       //   videoStore.setNVRLoginInfo('i3admin', 'i3admin');
-    }
+    }*/
     this.setHeader(false);
     this.appStateEvtSub = AppState.addEventListener(
       'change',
@@ -128,28 +131,41 @@ class LiveChannelsView extends React.Component {
     //   this.pauseAll(false);
     // });
 
-    // reaction(
-    //   () => videoStore.showAuthenModal,
-    //   (value, previousValue) => {
-    //     __DEV__ &&
-    //       console.log(
-    //         'GOND showAuthenModal changed ',
-    //         previousValue,
-    //         ' -> ',
-    //         value
-    //       );
-    //     if (value && !previousValue) {
-    //       if (this.showAllTimeout) {
-    //         __DEV__ && console.log('clearShowAllTimeout');
-    //         clearTimeout(this.showAllTimeout);
-    //         this.showAllTimeout = null;
-    //       }
-    //     }
-    //   }
-    // );
+    /*
+    reaction(
+      () => videoStore.videoData,
+      (value, previousValue) => {
+        __DEV__ &&
+          console.log(
+            'GOND videoData has changed, update? ',
+            this.needUpdateVideos
+          );
+        if (this.didFilter) {
+          this.needUpdateVideos = true;
+        }
+      }
+    );
+    */
 
     this.getChannelsInfo();
   }
+
+  /*
+  componentDidUpdate(prevProps) {
+    __DEV__ &&
+      console.log(
+        'GOND liveChannels componentDidUpdate didFilter: ',
+        this.didFilter,
+        ', needUpdateVideos: ',
+        this.needUpdateVideos
+      );
+    if (this.didFilter && this.needUpdateVideos) {
+      this.didFilter = false;
+      this.needUpdateVideos = false;
+      this.playerRefs && this.playerRefs.forEach(p => p && p.forceUpdate());
+    }
+  }
+  */
 
   handleAppStateChange = nextAppState => {
     __DEV__ &&
@@ -166,6 +182,11 @@ class LiveChannelsView extends React.Component {
 
   setHeader = enableSettingButton => {
     const {navigation, videoStore, sitesStore, userStore} = this.props;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() =>
+          this.setHeader(enableSettingButton)
+        )
+      : null;
     let gridIcon = 'grid-view-4';
     switch (videoStore.gridLayout) {
       case 3:
@@ -181,7 +202,7 @@ class LiveChannelsView extends React.Component {
         ? sitesStore.selectedDVR.name
         : 'No DVR was selected',
       headerRight: () => (
-        <View style={styles.headerRight}>
+        <View style={commonStyles.headerContainer}>
           {videoStore.cloudType == CLOUD_TYPE.HLS ||
           videoStore.cloudType == CLOUD_TYPE.RTC ? (
             <CMSTouchableIcon
@@ -215,6 +236,7 @@ class LiveChannelsView extends React.Component {
             }}
             iconCustom={gridIcon}
           />
+          {searchButton}
         </View>
       ),
     });
@@ -235,40 +257,7 @@ class LiveChannelsView extends React.Component {
       videoStore.displayAuthen(true);
       return;
     }
-
-    // Streaming will call onStreamReady when finish initialization
-    // if (
-    //   res &&
-    //   (videoStore.cloudType == CLOUD_TYPE.DEFAULT ||
-    //     videoStore.cloudType == CLOUD_TYPE.DIRECTION)
-    // ) {
-    //   newState.liveData = this.buildLiveData(videoStore.gridLayout /*, true*/);
-    // }
-    // this.setState(newState);
   };
-
-  // onReceiveStreamInfo = streamInfo => {
-  //   initRTCStream(streamInfo);
-  // };
-
-  // onStreamReady = () => {
-  //   if (!this._isMounted) return;
-  //   this.setState({liveData: this.buildLiveData(this.state.gridLayout)});
-  //   // dongpt: any side effect?
-  //   // this.props.videoStore.setStreamReadyCallback(null);
-  // };
-
-  // onAuthenSubmit = ({username, password}) => {
-  //   if (!username || !password) return;
-  //   const {videoStore} = this.props;
-  //   videoStore.setNVRLoginInfo(username, password);
-  //   videoStore.displayAuthen(false);
-
-  //   // __DEV__ && console.log('GOND show first channels 2!');
-  //   // this.setState({
-  //   //   liveData: this.buildLiveData(this.state.gridLayout /*, true*/),
-  //   // });
-  // };
 
   // onAuthenCancel = () => {
   //   this.props.videoStore.displayAuthen(false);
@@ -308,56 +297,6 @@ class LiveChannelsView extends React.Component {
     this.playerRefs.forEach(p => p && p.stop());
   };
 
-  // buildLiveData = (
-  //   gridLayout,
-  //   noRebuildChannels = false /*, isFirst = false*/
-  // ) => {
-  //   // const {gridLayout} = this.state;
-  //   const {videoStore} = this.props;
-  //   const videoDataList =
-  //     noRebuildChannels && this.channelsData.length > 0
-  //       ? this.channelsData
-  //       : videoStore.buildVideoData();
-  //   __DEV__ &&
-  //     console.log(
-  //       'LiveChannelsView videoDataList: ',
-  //       videoDataList,
-  //       ', layout: ',
-  //       gridLayout
-  //     );
-  //   this.channelsData = videoDataList;
-
-  //   if (!videoDataList || !Array.isArray(videoDataList)) return [];
-  //   // if (isFirst) {
-  //   //   let newRow = {key: 'videoRow_0', data: []};
-  //   //   for (let i = 0; i < gridLayout; i++) {
-  //   //     if (i == 0) {
-  //   //       newRow.data.push(videoDataList[i]);
-  //   //     } else newRow.data.push({});
-  //   //   }
-  //   //   return [newRow];
-  //   // }
-
-  //   let result = [];
-  //   let totalRow = Math.ceil(videoDataList.length / gridLayout);
-
-  //   for (let row = 0; row < totalRow; row++) {
-  //     let newRow = {key: 'videoRow_' + row, data: []};
-  //     for (let col = 0; col < gridLayout; col++) {
-  //       let index = row * gridLayout + col;
-  //       if (index < videoDataList.length) {
-  //         newRow.data.push(videoDataList[index]);
-  //         __DEV__ &&
-  //           console.log('LiveChannelsView build video newRow.data: ', newRow);
-  //       } else newRow.data.push({});
-  //     }
-  //     result.push(newRow);
-  //   }
-
-  //   __DEV__ && console.log('LiveChannelsView build video data: ', result);
-  //   return result;
-  // };
-
   onLayout = event => {
     const {x, y, width, height} = event.nativeEvent.layout;
     const {gridLayout} = this.props.videoStore; // this.state;
@@ -376,34 +315,8 @@ class LiveChannelsView extends React.Component {
 
   onFilter = value => {
     this.props.videoStore.setChannelFilter(value);
-    // this.setState({
-    //   liveData: this.buildLiveData(this.state.gridLayout),
-    // });
+    // this.didFilter = true;
   };
-
-  // renderNVRAuthenModal = () => {
-  //   const {videoStore} = this.props;
-
-  //   return (
-  //     <Modal
-  //       isVisible={videoStore.showAuthenModal}
-  //       onBackdropPress={videoStore.onAuthenCancel}
-  //       onBackButtonPress={videoStore.onAuthenCancel}
-  //       backdropOpacity={0}
-  //       style={{margin: 0}}>
-  //       <View style={[styles.modalcontainer]}>
-  //         <AuthenModal
-  //           style={styles.authenModal}
-  //           onOK={videoStore.onAuthenSubmit}
-  //           onCancel={videoStore.onAuthenCancel}
-  //           username={videoStore.nvrUser}
-  //           password={''}
-  //           title={VIDEO_TXT.AUTHEN_TITLE}
-  //         />
-  //       </View>
-  //     </Modal>
-  //   );
-  // };
 
   renderLayoutItem = ({item}) => {
     const {height} = Dimensions.get('window');
@@ -442,21 +355,6 @@ class LiveChannelsView extends React.Component {
     const {width, height} = Dimensions.get('window');
 
     return (
-      // <BottomModal
-      //   visible={this.state.showLayoutSelection}
-      //   onTouchOutside={() => this.setState({showLayoutSelection: false})}
-      //   onSwipeOut={() => this.setState({showLayoutSelection: false})}
-      //   height={0.25}>
-      //   <ModalContent style={styles.layoutModalContainer}>
-      //     <Text style={styles.layoutModalTitle}>Division</Text>
-      //     <FlatList
-      //       contentContainerStyle={styles.layoutModalBody}
-      //       renderItem={this.renderLayoutItem}
-      //       data={LayoutData}
-      //       horizontal={true}
-      //     />
-      //   </ModalContent>
-      // </BottomModal>
       <Modal
         isVisible={this.state.showLayoutSelection}
         onBackdropPress={() => this.setState({showLayoutSelection: false})}
@@ -610,20 +508,12 @@ class LiveChannelsView extends React.Component {
   render() {
     // const authenModal = this.renderNVRAuthenModal();
     const {appStore, videoStore, navigation} = this.props;
-    // __DEV__ && console.log('GOND channels render data = ', this.state.liveData);
+    __DEV__ && console.log('GOND channels render data = ');
     this.playerRefs = [];
 
     return (
       <View style={styles.screenContainer}>
-        {/* <Searchbar
-          // autoFocus
-          // onIconPress={() => appStore.enableSearchbar(false)}
-          icon={{}}
-          placeholder="Search..." //{CompTxt.searchPlaceholder}
-          value={videoStore.channelFilter}
-          onChangeText={this.onFilter}
-        /> */}
-        <View style={commonStyles.flatSearchBarContainer}>
+        {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={videoStore.channelFilter}
@@ -633,8 +523,13 @@ class LiveChannelsView extends React.Component {
             disabled={false}
             iconPosition="right"
           />
-        </View>
-        {/* {authenModal} */}
+        </View> */}
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={videoStore.channelFilter}
+          animation={false}
+        />
         <NVRAuthenModal onSubmit={this.onAuthenSubmit} />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           {videoStore.isLoading ||
@@ -666,13 +561,6 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     marginBottom: 5,
   },
-  // modalcontainer: {
-  //   flex: 1,
-  //   backgroundColor: CMSColors.PrimaryColor54,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  // },
-  // authenModal: {flex: 0, width: 343, height: 303},
   videoListContainer: {flex: 1, flexDirection: 'column'},
   videoRow: {
     flex: 1,

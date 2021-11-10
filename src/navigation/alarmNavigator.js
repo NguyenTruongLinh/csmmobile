@@ -38,31 +38,6 @@ export default function AlarmStack() {
         component={AlarmsLiveView}
         options={({route, navigation}) => ({
           headerLeft: () => {},
-          headerRight: () => (
-            <View
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                padding: 7,
-              }}>
-              <Ripple
-                rippleCentered={true}
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onPress={() => navigation.push(ROUTERS.ALARM_SEARCH)}>
-                <IconCustom
-                  styles={{position: 'relative'}}
-                  name="search_solid_advancedfind"
-                  color={CMSColors.IconButton}
-                  size={24}
-                />
-              </Ripple>
-            </View>
-          ),
         })}
       />
       <AStack.Screen name={ROUTERS.ALARM_SEARCH} component={AlarmsSearchView} />

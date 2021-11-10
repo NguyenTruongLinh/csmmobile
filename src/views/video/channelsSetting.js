@@ -17,6 +17,7 @@ import CMSImage from '../../components/containers/CMSImage';
 import {Icon, IconCustom} from '../../components/CMSStyleSheet';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import Button from '../../components/controls/Button';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 import snackbarUtil from '../../util/snackbar';
 import CMSColors from '../../styles/cmscolors';
@@ -94,16 +95,23 @@ class ChannelsSettingView extends Component {
   // }
 
   setHeader = enable => {
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() => this.setHeader(enable))
+      : null;
+
     this.props.navigation.setOptions({
       headerRight: () => (
-        <Button
-          style={commonStyles.buttonSave}
-          caption={SettingsTxt.save}
-          enable={enable}
-          onPress={this.save}
-          styleCaption={commonStyles.buttonSaveText}
-          type="flat"
-        />
+        <View style={commonStyles.headerContainer}>
+          {searchButton}
+          <Button
+            style={commonStyles.buttonSave}
+            caption={SettingsTxt.save}
+            enable={enable}
+            onPress={this.save}
+            styleCaption={commonStyles.buttonSaveText}
+            type="flat"
+          />
+        </View>
       ),
     });
   };
@@ -290,7 +298,7 @@ class ChannelsSettingView extends Component {
 
     return (
       <View style={{flex: 1}}>
-        <View style={commonStyles.flatSearchBarContainer}>
+        {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={videoStore.channelFilter}
@@ -300,7 +308,12 @@ class ChannelsSettingView extends Component {
             disabled={false}
             iconPosition="right"
           />
-        </View>
+        </View> */}
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={videoStore.channelFilter}
+        />
         <View style={styles.summaryContainer}>
           <Text style={styles.summaryText}>{gridData.length} channels</Text>
         </View>

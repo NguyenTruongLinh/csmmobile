@@ -3,8 +3,9 @@ import {View, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
 
-import InputTextIcon from '../../components/controls/InputTextIcon';
+// import InputTextIcon from '../../components/controls/InputTextIcon';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 import snackbar from '../../util/snackbar';
 
@@ -51,17 +52,23 @@ class RegionsView extends Component {
 
   setHeader = () => {
     const {sitesStore, navigation} = this.props;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() => this.setHeader())
+      : null;
 
     navigation.setOptions({
       headerRight: () => (
-        <CMSTouchableIcon
-          size={22}
-          onPress={() => navigation.navigate(ROUTERS.VIDEO_SITES)}
-          color={CMSColors.IconButton}
-          styles={commonStyles.buttonSearchHeader}
-          iconCustom="sites"
-          disabled={sitesStore.isLoading}
-        />
+        <View style={commonStyles.headerContainer}>
+          <CMSTouchableIcon
+            size={22}
+            onPress={() => navigation.navigate(ROUTERS.VIDEO_SITES)}
+            color={CMSColors.IconButton}
+            styles={commonStyles.headerIcon}
+            iconCustom="sites"
+            disabled={sitesStore.isLoading}
+          />
+          {searchButton}
+        </View>
       ),
     });
   };
@@ -136,7 +143,7 @@ class RegionsView extends Component {
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
-        <View style={commonStyles.flatSearchBarContainer}>
+        {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={sitesStore.siteFilter}
@@ -146,7 +153,12 @@ class RegionsView extends Component {
             disabled={false}
             iconPosition="right"
           />
-        </View>
+        </View> */}
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={sitesStore.regionFilter}
+        />
         <View
           style={{
             backgroundColor: CMSColors.HeaderListRow,

@@ -35,8 +35,22 @@ module.exports = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginRight: 7,
+  },
+  headerIcon: {
+    flex: 1,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   flatSearchBarContainer: {
     paddingLeft: 21,
+    height: 50,
     backgroundColor: cmscolors.White,
   },
   // Component PullToRefreshListView

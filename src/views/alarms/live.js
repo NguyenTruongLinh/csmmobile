@@ -15,7 +15,9 @@ import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
 
 import AlarmItem from './alarmItem';
-import InputTextIcon from '../components/controls/InputTextIcon';
+// import InputTextIcon from '../components/controls/InputTextIcon';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
+import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
@@ -29,6 +31,7 @@ class AlarmsLiveView extends Component {
   constructor(props) {
     super(props);
     this.state = {height: 0};
+    this.searchbarRef = null;
   }
 
   componentDidMount() {
@@ -36,11 +39,34 @@ class AlarmsLiveView extends Component {
 
     this.props.alarmStore.getLiveData(this.buildRequestParams());
     // this.refreshLiveData();
+    this.setHeader();
   }
 
   componentWillUnmount() {
     __DEV__ && console.log('AlarmsLive componentWillUnmount');
   }
+
+  setHeader = () => {
+    const {navigation} = this.props;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() => this.setHeader())
+      : null;
+
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={commonStyles.headerContainer}>
+          <CMSTouchableIcon
+            size={28}
+            onPress={() => navigation.push(ROUTERS.ALARM_SEARCH)}
+            color={CMSColors.ColorText}
+            styles={commonStyles.headerIcon}
+            iconCustom="search_solid_advancedfind"
+          />
+          {searchButton}
+        </View>
+      ),
+    });
+  };
 
   buildRequestParams = params => {
     return {
@@ -103,7 +129,7 @@ class AlarmsLiveView extends Component {
       !alarmStore.isLoading && alarmStore.filteredLiveData.length == 0;
     return (
       <View style={{flex: 1, backgroundColor: CMSColors.White}}>
-        <View style={commonStyles.flatSearchBarContainer}>
+        {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={alarmStore.filterText}
@@ -113,7 +139,12 @@ class AlarmsLiveView extends Component {
             disabled={false}
             iconPosition="right"
           />
-        </View>
+        </View> */}
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={alarmStore.filterText}
+        />
         <View
           style={{flex: 1, flexDirection: 'column'}}
           onLayout={this.onFlatListLayout}>

@@ -21,8 +21,9 @@ import InputTextIcon from '../../components/controls/InputTextIcon';
 // import BackButton from '../../components/controls/BackButton';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSImage from '../../components/containers/CMSImage';
-import CMSTextInputModal from '../../components/controls/CMSTextInputModal';
+// import CMSTextInputModal from '../../components/controls/CMSTextInputModal';
 import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 import {AlertTypes, DateFormat} from '../../consts/misc';
 import commonStyles from '../../styles/commons.style';
@@ -78,6 +79,9 @@ class AlertsView extends Component {
       alertsList,
     } = healthStore;
     const {isListView} = this.state;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() => this.setHeader())
+      : null;
     __DEV__ &&
       console.log('GOND AlertsView setHeader, selectedSite = ', selectedSite);
 
@@ -91,6 +95,9 @@ class AlertsView extends Component {
       } - ${
         selectedSite ? selectedSite.siteName : currentSiteName ?? 'Unknown site'
       }`,
+      headerRight: () => (
+        <View style={commonStyles.headerContainer}>{searchButton}</View>
+      ),
     };
     if (
       selectedAlertTypeId == AlertTypes.DVR_Video_Loss ||
@@ -99,32 +106,27 @@ class AlertsView extends Component {
       options = {
         ...options,
         headerRight: () => (
-          <CMSTouchableIcon
-            iconCustom={
-              isListView
-                ? 'two-rows-and-three-columns-layout'
-                : 'view-list-button'
-            }
-            size={22}
-            color={CMSColors.ColorText}
-            styles={{
-              flex: 1,
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-              // padding: 10,
-              // backgroundColor: CMSColors.transparent,
-            }}
-            onPress={() => {
-              this.setState(
-                {
-                  isListView: !this.state.isListView,
-                },
-                () => this.setHeader()
-              );
-            }}
-          />
+          <View style={commonStyles.headerContainer}>
+            <CMSTouchableIcon
+              iconCustom={
+                isListView
+                  ? 'two-rows-and-three-columns-layout'
+                  : 'view-list-button'
+              }
+              size={24}
+              color={CMSColors.ColorText}
+              styles={commonStyles.headerIcon}
+              onPress={() => {
+                this.setState(
+                  {
+                    isListView: !this.state.isListView,
+                  },
+                  () => this.setHeader()
+                );
+              }}
+            />
+            {searchButton}
+          </View>
         ),
       };
     }
@@ -416,7 +418,7 @@ class AlertsView extends Component {
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
-        <View style={commonStyles.flatSearchBarContainer}>
+        {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={healthStore.alertFilter}
@@ -426,7 +428,12 @@ class AlertsView extends Component {
             disabled={false}
             iconPosition="right"
           />
-        </View>
+        </View> */}
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={healthStore.alertFilter}
+        />
         <FlatList
           key={isListView ? 'list' : 'grid'}
           renderItem={this.renderItem}

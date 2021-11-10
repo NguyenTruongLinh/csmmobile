@@ -6,7 +6,7 @@ import {
   Dimensions,
   StyleSheet,
   Text,
-  AppState,
+  Animated,
   // BackHandler,
 } from 'react-native';
 // import {reaction} from 'mobx';
@@ -15,6 +15,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import InputTextIcon from '../../components/controls/InputTextIcon';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSImage from '../../components/containers/CMSImage';
 import {IconCustom} from '../../components/CMSStyleSheet';
 
@@ -97,61 +98,53 @@ class ChannelsListView extends React.Component {
   }
 
   setHeader = enableSettingButton => {
-    const {
-      navigation,
-      videoStore,
-      healthStore,
-      sitesStore,
-      userStore,
-    } = this.props;
+    const {navigation, videoStore, healthStore, sitesStore, userStore} =
+      this.props;
     const {isListView} = this.state;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() =>
+          this.setHeader(enableSettingButton)
+        )
+      : null;
     __DEV__ &&
-      console.log('GOND channels setHeader: ', sitesStore.selectedSite);
+      console.log(
+        'GOND channels setHeader: isLive = ',
+        healthStore.isLiveVideo
+      );
 
     navigation.setOptions({
       headerTitle: sitesStore.selectedSite
         ? sitesStore.selectedSite.name
         : 'No Site was selected',
       headerRight: () => (
-        <View style={styles.headerRight}>
-          {healthStore.isLive &&
+        <View style={commonStyles.headerContainer}>
+          {healthStore.isLiveVideo &&
           (videoStore.cloudType == CLOUD_TYPE.HLS ||
             videoStore.cloudType == CLOUD_TYPE.RTC) ? (
             <CMSTouchableIcon
-              size={22}
+              size={24}
               onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
               color={CMSColors.ColorText}
               disabled={
                 !enableSettingButton ||
                 !userStore.hasPermission(MODULE_PERMISSIONS.VSC)
               }
-              styles={{
-                flex: 1,
-                width: 40,
-                height: 40,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
+              styles={commonStyles.headerIcon}
               iconCustom="add-cam"
             />
           ) : null}
           <CMSTouchableIcon
-            size={22}
+            size={24}
             onPress={() => {
               this.setState({isListView: !this.state.isListView}, () =>
                 this.setHeader(enableSettingButton)
               );
             }}
             color={CMSColors.ColorText}
-            styles={{
-              flex: 1,
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
+            styles={commonStyles.headerIcon}
             iconCustom={isListView ? 'grid-view-4' : 'view-list-button'}
           />
+          {searchButton}
         </View>
       ),
     });
@@ -365,17 +358,11 @@ class ChannelsListView extends React.Component {
             />
           </View>
         )}
-        <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={videoStore.channelFilter}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View>
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={videoStore.channelFilter}
+        />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           {isLoading ||
           !videoStore.isCloud ||
@@ -383,7 +370,7 @@ class ChannelsListView extends React.Component {
             <FlatList
               ref={r => (this.videoListRef = r)}
               renderItem={renderItem}
-              data={videoStore.displayChannels} // {this.state.liveData}
+              data={videoStore.filteredDisplayChannels} // {this.state.liveData}
               keyExtractor={item => item.key}
               columnWrapperStyle={
                 isListView ? undefined : {justifyContent: 'space-between'}
@@ -411,6 +398,13 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 10,
     backgroundColor: CMSColors.White,
+  },
+  headerIcon: {
+    flex: 1,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerRight: {
     flex: 1,

@@ -370,6 +370,15 @@ export const VideoModel = types
           ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
       );
     },
+    get filteredDisplayChannels() {
+      if (
+        !self.isLive ||
+        self.cloudType == CLOUD_TYPE.DIRECTION ||
+        self.cloudType == CLOUD_TYPE.DEFAULT
+      )
+        return self.filteredChannels;
+      return self.filteredActiveChannels;
+    },
     get timezone() {
       if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
         return util.isNullOrUndef(self.timezoneOffset)
@@ -845,7 +854,7 @@ export const VideoModel = types
         self.displayAuthen(false);
       },
       switchLiveSearch(isLive) {
-        console.trace();
+        // console.trace();
         const lastValue = self.isLive;
         self.isLive = isLive === undefined ? !self.isLive : isLive;
 

@@ -18,8 +18,9 @@ import AlarmItem from './alarmItem';
 import AlarmFilter from '../../components/views/AlarmFilter';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import {IconCustom} from '../../components/CMSStyleSheet';
+// import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
@@ -60,11 +61,14 @@ class AlarmsSearchView extends Component {
       height,
       listHeight: 0,
     };
+
+    this.searchbarRef = null;
   }
 
   componentDidMount() {
     __DEV__ && console.log('AlarmsSearch componentDidMount');
     const {sitesStore, alarmStore} = this.props;
+    this.setHeader();
     sitesStore.getAllSites();
     if (!alarmStore.vaConfig || alarmStore.vaConfig.length == 0) {
       alarmStore.getVAConfigs();
@@ -77,6 +81,19 @@ class AlarmsSearchView extends Component {
   componentWillUnmount() {
     __DEV__ && console.log('AlarmsSearch componentWillUnmount');
   }
+
+  setHeader = () => {
+    const {navigation} = this.props;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() => this.setHeader())
+      : null;
+
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={commonStyles.headerContainer}>{searchButton}</View>
+      ),
+    });
+  };
 
   buildSearchParam = () => {
     let {params} = this.state;
@@ -491,7 +508,7 @@ class AlarmsSearchView extends Component {
       <View
         style={{flex: 1, backgroundColor: CMSColors.White}}
         onLayout={this.onLayout}>
-        <View style={commonStyles.flatSearchBarContainer}>
+        {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={alarmStore.filterText}
@@ -501,7 +518,12 @@ class AlarmsSearchView extends Component {
             disabled={false}
             iconPosition="right"
           />
-        </View>
+        </View> */}
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={alarmStore.filterText}
+        />
         <View
           style={{flex: 1, flexDirection: 'column'}}
           onLayout={this.onFlatListLayout}>

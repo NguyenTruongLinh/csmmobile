@@ -13,13 +13,14 @@ import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
 
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
-import InputTextIcon from '../../components/controls/InputTextIcon';
+// import InputTextIcon from '../../components/controls/InputTextIcon';
 import snackbar from '../../util/snackbar';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
-import {Comps as CompTxt} from '../../localization/texts';
+// import {Comps as CompTxt} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
 
 class NVRsView extends Component {
@@ -37,7 +38,7 @@ class NVRsView extends Component {
 
   componentDidMount() {
     this._isMounted = true;
-    const {sitesStore, navigation} = this.props;
+    const {sitesStore} = this.props;
     if (__DEV__)
       console.log('NVRS componentDidMount: ', sitesStore.selectedSite);
 
@@ -52,13 +53,22 @@ class NVRsView extends Component {
 
   setHeader = () => {
     const {sitesStore, navigation} = this.props;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() => this.setHeader())
+      : null;
     let options = {};
+
     if (sitesStore.selectedSite != null) {
       options = {
         headerTitle: sitesStore.selectedSite.name ?? 'Unknown site',
       };
     }
-    navigation.setOptions(options);
+    navigation.setOptions({
+      ...options,
+      headerRight: () => (
+        <View style={commonStyles.headerContainer}>{searchButton}</View>
+      ),
+    });
   };
 
   onFilter = value => {
@@ -113,7 +123,7 @@ class NVRsView extends Component {
           // backButton={false}
           navigator={navigation}
         /> */}
-        <View style={commonStyles.flatSearchBarContainer}>
+        {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={sitesStore.dvrFilter}
@@ -123,7 +133,12 @@ class NVRsView extends Component {
             disabled={false}
             iconPosition="right"
           />
-        </View>
+        </View> */}
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={sitesStore.dvrFilter}
+        />
         <View
           style={{
             backgroundColor: CMSColors.HeaderListRow,

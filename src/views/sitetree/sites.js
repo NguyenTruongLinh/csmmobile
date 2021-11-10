@@ -14,9 +14,9 @@ import Ripple from 'react-native-material-ripple';
 import {SwipeRow} from 'react-native-swipe-list-view';
 
 import AlertDismissModal from '../health/modals/dismissModal';
-// import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import InputTextIcon from '../../components/controls/InputTextIcon';
-import BackButton from '../../components/controls/BackButton';
+// import BackButton from '../../components/controls/BackButton';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 
@@ -44,6 +44,7 @@ class SitesView extends Component {
     };
 
     this.rowRefs = {};
+    this.searchbarRef = null;
     this.lastOpenRowId = null;
   }
 
@@ -57,7 +58,8 @@ class SitesView extends Component {
   async componentDidMount() {
     this._isMounted = true;
     // const {sitesStore, healthStore, userStore, route} = this.props;
-    if (__DEV__) console.log('SitesView componentDidMount: ', this.props);
+    if (__DEV__)
+      console.log('SitesView componentDidMount: ', this.searchbarRef);
 
     // BackHandler.addEventListener('hardwareBackPress', this.onBack);
     // const backEventHandler = e => {
@@ -96,23 +98,47 @@ class SitesView extends Component {
   setHeader = () => {
     const {sitesStore, navigation} = this.props;
     const {isHealthRoute} = this.state;
-    if (isHealthRoute) return;
-    const showRegionButton = sitesStore.hasRegions;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() => this.setHeader())
+      : null;
+    // __DEV__ && console.log('SitesView searchButton: ', searchButton);
+
+    if (isHealthRoute) {
+      __DEV__ &&
+        console.log('SitesView setHeader isHealthRoute: ', isHealthRoute);
+      navigation.setOptions({
+        headerRight: () => (
+          <View style={styles.headerContainer}>{searchButton}</View>
+        ),
+      });
+      return;
+    }
+    __DEV__ &&
+      console.log(
+        'SitesView setHeader not health route, hasRegion: ',
+        sitesStore.hasRegions
+      );
+    const regionButton = sitesStore.hasRegions ? (
+      <CMSTouchableIcon
+        size={28}
+        onPress={() => navigation.navigate(ROUTERS.VIDEO_REGIONS)}
+        color={CMSColors.IconButton}
+        styles={commonStyles.headerIcon}
+        iconCustom="solid_region"
+      />
+    ) : undefined;
+    __DEV__ && console.log('SitesView regionButton: ', regionButton);
+
     let options = {};
     if (sitesStore.selectedRegion == null) {
       options = {
         headerLeft: () => null,
-        headerRight: showRegionButton
-          ? () => (
-              <CMSTouchableIcon
-                size={22}
-                onPress={() => navigation.navigate(ROUTERS.VIDEO_REGIONS)}
-                color={CMSColors.IconButton}
-                styles={commonStyles.buttonSearchHeader}
-                iconCustom="solid_region"
-              />
-            )
-          : undefined,
+        headerRight: () => (
+          <View style={commonStyles.headerContainer}>
+            {regionButton}
+            {searchButton}
+          </View>
+        ),
       };
     } else {
       options = {
@@ -289,7 +315,7 @@ class SitesView extends Component {
 
     return (
       <View style={styles.screenContainer}>
-        <View style={commonStyles.flatSearchBarContainer}>
+        {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={sitesStore.siteFilter}
@@ -299,7 +325,12 @@ class SitesView extends Component {
             disabled={false}
             iconPosition="right"
           />
-        </View>
+        </View> */}
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={sitesStore.siteFilter}
+        />
         {!isHealthRoute && (
           <View style={styles.summaryContainer}>
             <Text style={styles.sitesCount}>
@@ -326,6 +357,12 @@ class SitesView extends Component {
 }
 
 const styles = StyleSheet.create({
+  headerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginRight: 7,
+  },
   screenContainer: {flex: 1, flexDirection: 'column'},
   backRowContainer: {flex: 1, flexDirection: 'row'},
   backRowLeft: {
