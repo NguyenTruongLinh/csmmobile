@@ -69,12 +69,6 @@ export default class InputTextIcon extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.onBlur = this.onBlur.bind(this);
-    this.onFocus = this.onFocus.bind(this);
-    this.onPress = this.focus.bind(this);
-    this.onChangeText = this.onChangeText.bind(this);
-    this.onContentSizeChange = this.onContentSizeChange.bind(this);
-
     let {value, error} = this.props;
 
     this.mounted = false;
@@ -135,38 +129,38 @@ export default class InputTextIcon extends PureComponent {
     }
   }
 
-  focus() {
+  focus = () => {
     let {disabled, editable} = this.props;
 
-    if (!disabled && editable) {
+    if (!disabled && editable && !this.inputRef.isFocused()) {
       this.inputRef.focus();
     }
-  }
+  };
 
-  blur() {
+  blur = () => {
     this.inputRef.blur();
-  }
+  };
 
-  clear() {
+  clear = () => {
     this.inputRef.clear();
-  }
+  };
 
-  value() {
+  value = () => {
     return this.state.text;
-  }
+  };
 
-  isFocused() {
+  isFocused = () => {
     return this.inputRef.isFocused();
-  }
+  };
 
-  isRestricted() {
+  isRestricted = () => {
     let {characterRestriction} = this.props;
     let {text = ''} = this.state;
 
     return characterRestriction < text.length;
-  }
+  };
 
-  onFocus(event) {
+  onFocus = event => {
     let {onFocus} = this.props;
 
     if (typeof onFocus === 'function') {
@@ -174,9 +168,9 @@ export default class InputTextIcon extends PureComponent {
     }
 
     this.setState({focused: true});
-  }
+  };
 
-  onBlur(event) {
+  onBlur = event => {
     let {onBlur} = this.props;
 
     if (typeof onBlur === 'function') {
@@ -184,9 +178,9 @@ export default class InputTextIcon extends PureComponent {
     }
 
     this.setState({focused: false});
-  }
+  };
 
-  onChangeText(text) {
+  onChangeText = text => {
     let {onChangeText} = this.props;
 
     if (typeof onChangeText === 'function') {
@@ -194,7 +188,7 @@ export default class InputTextIcon extends PureComponent {
     }
 
     this.setState({text});
-  }
+  };
 
   onEndEditing = e => {
     let {onEndEditing} = this.props;
@@ -204,11 +198,11 @@ export default class InputTextIcon extends PureComponent {
     }
   };
 
-  onContentSizeChange({nativeEvent}) {
+  onContentSizeChange = ({nativeEvent}) => {
     let {height} = nativeEvent.contentSize;
 
     this.setState({height: Math.ceil(height)});
-  }
+  };
 
   render() {
     let {
@@ -255,7 +249,7 @@ export default class InputTextIcon extends PureComponent {
               android: {textAlignVertical: 'top'},
             }),
           }
-        : {height: fontSize * 1.5}),
+        : {height: fontSize * 1.8}),
     };
 
     let errorStyle = {
@@ -322,7 +316,7 @@ export default class InputTextIcon extends PureComponent {
         {iconPosition == 'left' && CIconCustom}
         <View
           onStartShouldSetResponder={() => true}
-          onResponderRelease={this.onPress}
+          onResponderRelease={this.focus}
           style={styles.flex}>
           <TextField
             style={[styles.input, inputStyle, style]}
@@ -416,8 +410,9 @@ const styles = StyleSheet.create({
     top: 2,
     height: 24,
     fontSize: variable.fix_fontSire,
-    padding: 0,
-    margin: 0,
+    // padding: 0,
+    // margin: 0,
+    textAlignVertical: 'center',
   },
   flex: {
     flex: 1,

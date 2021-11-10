@@ -383,8 +383,9 @@ const dim = Dimensions.get('window');
 const styles = StyleSheet.create({
   viewContainer: {
     flex: 1,
-    paddingLeft: width * 0.1,
-    paddingRight: width * 0.1,
+    // paddingLeft: width * 0.1,
+    // paddingRight: width * 0.1,
+    paddingHorizontal: width * 0.1,
   },
   closeButtonContainer: {
     height: 30,
@@ -409,8 +410,9 @@ const styles = StyleSheet.create({
   centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingLeft: 7,
-    paddingRight: 7,
+    // paddingLeft: 7,
+    // paddingRight: 7,
+    paddingHorizontal: 7,
     flexDirection: 'column',
   },
   textContainer: {

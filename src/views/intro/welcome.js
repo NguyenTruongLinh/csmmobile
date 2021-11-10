@@ -60,8 +60,9 @@ class WelcomeView extends Component {
           style={{
             flex: 1,
             flexDirection: 'column',
-            paddingLeft: width * 0.1,
-            paddingRight: width * 0.1,
+            // paddingLeft: width * 0.1,
+            // paddingRight: width * 0.1,
+            paddingHorizontal: width * 0.1,
             backgroundColor: 'rgba(255, 255, 255, 0.85)',
           }}>
           <View style={styles.larger_space} />

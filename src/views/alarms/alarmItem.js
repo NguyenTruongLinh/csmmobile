@@ -401,8 +401,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     paddingLeft: variable.contentPadding,
     //height: 60
-    paddingTop: 2,
-    paddingBottom: 2,
+    // paddingTop: 2,
+    // paddingBottom: 2,
+    paddingVertical: 2,
   },
   descriptionContainer: {
     flexDirection: 'row',
