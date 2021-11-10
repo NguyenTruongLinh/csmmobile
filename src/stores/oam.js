@@ -227,11 +227,13 @@ export const OAMModel = types
         });
     },
     notifyRefeshFromPN(pnData) {
-      if (pnData.Note) {
-        if (self.data.kAlertEventDetail == pnData.KAlertEvent)
-          self.data.kAlertEventDetail = null;
-      } else if (pnData.KDVR == self.data.kDVR)
-        self.data = oamData.create(parseOAMData(pnData));
+      if (self.data) {
+        if (pnData.Note) {
+          if (self.data.kAlertEventDetail == pnData.KAlertEvent)
+            self.data.kAlertEventDetail = null;
+        } else if (pnData.KDVR == self.data.kDVR)
+          self.data = oamData.create(parseOAMData(pnData));
+      }
     },
     postAcknowledge: flow(function* postAcknowledge(model, successCb, errorCb) {
       __DEV__ &&
