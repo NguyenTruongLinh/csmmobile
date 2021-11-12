@@ -231,7 +231,7 @@ export const OAMModel = types
         if (pnData.Note) {
           if (self.data.kAlertEventDetail == pnData.KAlertEvent)
             self.data.kAlertEventDetail = null;
-        } else if (pnData.KDVR == self.data.kDVR)
+        } else if (pnData.KDVR == self.data.kDVR || pnData.KDVR == self.kdvr)
           self.data = oamData.create(parseOAMData(pnData));
       }
     },
