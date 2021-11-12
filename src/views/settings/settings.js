@@ -73,9 +73,9 @@ class SettingsView extends Component {
   render() {
     if (!this.props.userStore) return <View />;
     const {user} = this.props.userStore;
-    const showVideoSetting = this.props.userStore.hasPermission(
-      MODULE_PERMISSIONS.VSC
-    );
+    // const showVideoSetting = user.hasPermission(
+    //   MODULE_PERMISSIONS.VSC
+    // );
     const imgParams = {
       controller: Account.controller,
       action: Account.avatar,
@@ -162,31 +162,29 @@ class SettingsView extends Component {
               </View>
             </View>
           </Ripple>
-          {showVideoSetting && (
-            <Ripple
-              style={styles.rowContainer}
-              rippleOpacity={0.87}
-              onPress={this.toVideoSetting}>
-              <View style={styles.listRow}>
-                {/* <View style={styles.listIcon}>
+          <Ripple
+            style={styles.rowContainer}
+            rippleOpacity={0.87}
+            onPress={this.toVideoSetting}>
+            <View style={styles.listRow}>
+              {/* <View style={styles.listIcon}>
                 <IconCustom
                   name="icon-dvr"
                   size={20}
                   color={CMSColors.RowOptions}
                 />
               </View> */}
-                <Text style={styles.listText}>Video settings</Text>
+              <Text style={styles.listText}>Video settings</Text>
 
-                <View style={styles.listEnterIcon}>
-                  <IconCustom
-                    name="keyboard-right-arrow-button"
-                    size={16}
-                    color={CMSColors.RowOptions}
-                  />
-                </View>
+              <View style={styles.listEnterIcon}>
+                <IconCustom
+                  name="keyboard-right-arrow-button"
+                  size={16}
+                  color={CMSColors.RowOptions}
+                />
               </View>
-            </Ripple>
-          )}
+            </View>
+          </Ripple>
           <Ripple
             style={styles.rowContainer}
             rippleOpacity={0.87}

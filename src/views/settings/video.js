@@ -28,6 +28,7 @@ import {
   // Setting_Video_Relay,
 } from '../../consts/images';
 import {Settings as SettingsTxt} from '../../localization/texts';
+import {MODULE_PERMISSIONS} from '../../consts/misc';
 
 const CloudSettingData = [
   {
@@ -128,9 +129,15 @@ class VideosettingView extends Component {
 
   renderItem = ({item}) => {
     if (!item) return;
+
+    const isStreamingAvailable = this.props.userStore.hasPermission(
+      MODULE_PERMISSIONS.VSC
+    );
     const {selectedValue} = this.state;
     const {isLoading} = this.props.videoStore;
-    const isChecked = selectedValue == item.value;
+    const isChecked =
+      (selectedValue == item.value && item.value && isStreamingAvailable) ||
+      (!item.value && !selectedValue);
 
     const checkBox = isChecked ? (
       <View style={[styles.containIconCheck]}>
@@ -145,7 +152,11 @@ class VideosettingView extends Component {
       <Ripple
         rippleOpacity={0.87}
         onPress={() => {
-          if (selectedValue != item.value && !isLoading) {
+          if (
+            selectedValue != item.value &&
+            !isLoading &&
+            (isStreamingAvailable || selectedValue)
+          ) {
             this.setState({selectedValue: item.value});
           }
         }}>
@@ -163,11 +174,31 @@ class VideosettingView extends Component {
               color={isChecked ? CMSColors.White : CMSColors.RowOptions}
               icon={item.icon}
             /> */}
-            <Image source={item.icon} style={styles.rowButton_icon} />
+            <Image
+              source={item.icon}
+              style={[
+                styles.rowButton_icon,
+                item.value && !isStreamingAvailable
+                  ? {tintColor: 'lightgray'}
+                  : {},
+              ]}
+            />
           </View>
           <View style={styles.rowButton_contain_name}>
-            <Text style={styles.rowButton_name}>{item.name}</Text>
-            <Text style={styles.rowButton_desc}>{item.description}</Text>
+            <Text
+              style={[
+                styles.rowButton_name,
+                item.value && !isStreamingAvailable ? {color: 'lightgray'} : {},
+              ]}>
+              {item.name}
+            </Text>
+            <Text
+              style={[
+                styles.rowButton_desc,
+                item.value && !isStreamingAvailable ? {color: 'lightgray'} : {},
+              ]}>
+              {item.description}
+            </Text>
           </View>
           {checkBox}
         </View>
@@ -332,4 +363,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('videoStore')(observer(VideosettingView));
+export default inject('videoStore', 'userStore')(observer(VideosettingView));
