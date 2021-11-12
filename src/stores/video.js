@@ -275,6 +275,7 @@ export const VideoModel = types
     },
     get displayChannels() {
       if (
+        self.isAlertPlay ||
         !self.isLive ||
         self.cloudType == CLOUD_TYPE.DIRECTION ||
         self.cloudType == CLOUD_TYPE.DEFAULT

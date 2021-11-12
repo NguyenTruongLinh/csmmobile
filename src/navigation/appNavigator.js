@@ -20,6 +20,7 @@ import TransactionFCMView from '../views/pos/transactionDetailFCM';
 
 import OAMSitesView from '../views/oam/oamSites';
 import OAMDetailView from '../views/oam/detail';
+import VideoPlayerView from '../views/video/player';
 
 import VideoStack from './videoNavigator';
 import SettingsStack from './settingsNavigator';
@@ -66,6 +67,7 @@ const OAMStack = () => (
     headerMode="float">
     <OAStack.Screen name={ROUTERS.OAM_SITES} component={OAMSitesView} />
     <OAStack.Screen name={ROUTERS.OAM_DETAIL} component={OAMDetailView} />
+    <OAStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
   </OAStack.Navigator>
 );
 

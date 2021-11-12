@@ -37,6 +37,7 @@ import CMSStyleSheet from '../../components/CMSStyleSheet';
 const IconCustom = CMSStyleSheet.IconCustom;
 
 import AcknowledgePopup from './widget/AcknowledgePopup';
+import ROUTERS from '../../consts/routes';
 
 const pvmColors = CMSColors.pvm;
 const BORDER_ALPHA = '28';
@@ -70,6 +71,7 @@ class OAMDetailView extends Component {
   // };
 
   componentWillUnmount() {
+    const {videoStore} = this.props;
     __DEV__ && console.log('RTCStreamingView componentWillUnmount');
     // Orientation.unlockAllOrientations();
     // Dimensions.removeEventListener('change', this.onDimensionChange);
@@ -77,6 +79,8 @@ class OAMDetailView extends Component {
     // if (this.props.onBack)
     //   BackHandler.removeEventListener('hardwareBackPress', this.props.onBack);
     // Orientation.removeDeviceOrientationListener(this._orientationDidChange);
+    videoStore.onExitSinglePlayer();
+    videoStore.releaseStreams();
   }
 
   componentDidMount() {
@@ -139,15 +143,22 @@ class OAMDetailView extends Component {
     ) : null;
   }
 
+  gotoLiveVideo = () => {
+    const {oamStore, videoStore, navigation} = this.props;
+    videoStore.switchLiveSearch(true);
+    const {kDVR, timezone, channelNo} = oamStore.data;
+    videoStore.onAlertPlay(true, {kDVR, timezone, channelNo});
+    setTimeout(() => {
+      navigation.push(ROUTERS.VIDEO_PLAYER);
+    }, 200);
+  };
+
   renderActionButton() {
     return (
       <View style={styles.actionButtonContainer}>
         <CMSTouchableIcon
           iconCustom="videocam-filled-tool"
-          onPress={() => {
-            // this.setState({showActionsModal: true})
-            // this.props.healthStore.showActionsModal(true);
-          }}
+          onPress={() => this.gotoLiveVideo()}
           size={28}
           color={CMSColors.White}
         />
@@ -369,4 +380,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('oamStore')(observer(OAMDetailView));
+export default inject('oamStore', 'videoStore')(observer(OAMDetailView));
