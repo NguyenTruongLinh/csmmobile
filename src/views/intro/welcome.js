@@ -95,7 +95,7 @@ class WelcomeView extends Component {
                 fontWeight: 'bold',
                 fontSize: height > 600 ? 27 : 23,
                 flexWrap: 'wrap',
-                fontFamily: 'Roboto-Regular',
+                fontFamily: 'Roboto-Bold',
               }}>
               {WelcomeTxt.titleBold}
             </Text>
