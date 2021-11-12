@@ -508,7 +508,8 @@ class LiveChannelsView extends React.Component {
   render() {
     // const authenModal = this.renderNVRAuthenModal();
     const {appStore, videoStore, navigation} = this.props;
-    __DEV__ && console.log('GOND channels render data = ');
+    __DEV__ &&
+      console.log('GOND channels render data = ', videoStore.videoData);
     this.playerRefs = [];
 
     return (

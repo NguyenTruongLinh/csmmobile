@@ -124,7 +124,11 @@ const CMSMainTab = () => (
     tabBar={props => {
       return <CMSTabbar {...props} />;
     }}>
-    <BottomTab.Screen name={ROUTERS.HOME_NAVIGATOR} component={HomeNavigator} />
+    <BottomTab.Screen
+      name={ROUTERS.HOME_NAVIGATOR}
+      component={HomeNavigator}
+      screenOptions={{unmountOnBlur: true}}
+    />
     <BottomTab.Screen name={ROUTERS.VIDEO_STACK} component={VideoStack} />
     <BottomTab.Screen name={ROUTERS.ALARM_STACK} component={AlarmStack} />
     <BottomTab.Screen

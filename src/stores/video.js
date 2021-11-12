@@ -601,8 +601,18 @@ export const VideoModel = types
           }
         }
 
-        const foundStream = self.videoData.find(s => s.channelNo == value);
+        // __DEV__ &&
+        //   console.log(
+        //     `GOND selected Channel ${value} find stream data = : `,
+        //     self.videoData
+        //   );
+        const foundStream = self.videoData.find(row => {
+          return row.data.find(s => s.channelNo == value);
+        });
+        __DEV__ && console.log('GOND foundStream: ', foundStream);
         if (!foundStream) {
+          __DEV__ &&
+            console.log('GOND stream not found, add new one ... ', foundStream);
           switch (self.cloudType) {
             case CLOUD_TYPE.DEFAULT:
             case CLOUD_TYPE.DIRECTION:
@@ -733,6 +743,8 @@ export const VideoModel = types
       },
       buildTimezoneData(data) {
         self.waitForTimezone = false;
+        // __DEV__ && console.log('GOND buildTimezoneData');
+
         if (self.dvrTimezone && self.timezoneName) {
           __DEV__ &&
             console.log(
@@ -780,6 +792,14 @@ export const VideoModel = types
           daylightDate: parseDSTDate(data.DaylightDate),
           standardDate: parseDSTDate(data.StandardDate),
         });
+
+        // correct search date after timezone acquired
+        const startOfSearchDay = self.searchDate
+          ? self.searchDate.setZone(self.timezoneName).startOf('day')
+          : DateTime.now().setZone(self.timezoneName).startOf('day');
+        if (self.searchDate != startOfSearchDay) {
+          self.searchDate = startOfSearchDay;
+        }
 
         // Request data after timezone acquired
         if (self.cloudType == CLOUD_TYPE.HLS) {
@@ -1977,7 +1997,7 @@ export const VideoModel = types
         self.rtcConnection = RTCStreamModel.create({
           sid: util.getRandomId(),
           // kdvr: self.kDVR,
-          region: '',
+          region: DEFAULT_REGION,
           accessKeyId: '',
           secretAccessKey: '',
           rtcChannelName: '',
@@ -2181,6 +2201,36 @@ export const VideoModel = types
         // }
         return true;
       }),
+      onHealthPlay: flow(function* (isLive, data) {
+        __DEV__ && console.log('GOND onHealthPlay: ', data);
+        self.kDVR = data.kDVR;
+        self.isLive = isLive;
+        self.isSingleMode = true;
+        if (self.timezoneName) {
+          self.searchDate = DateTime.now()
+            .setZone(self.timezone)
+            .startOf('day');
+        } else {
+          self.searchDate = DateTime.now();
+        }
+
+        yield self.getDisplayingChannels();
+
+        self.selectChannel(data.channelNo);
+        if (self.selectedChannelData == null) {
+          __DEV__ &&
+            console.log(
+              'GOND onAlertPlay channels has been removed or not existed!'
+            );
+          // self.error = 'Channel is not existed or has been removed!';
+          snackbarUtil.onError(VIDEO_TXT.CHANNEL_ERROR);
+          return false;
+        }
+        // Get timezone first
+        yield self.getVideoInfos(data.channelNo);
+
+        return true;
+      }),
       // #endregion Alert play
       releaseStreams() {
         __DEV__ &&
@@ -2218,6 +2268,9 @@ export const VideoModel = types
         self.nvrPassword = null;
         self.isAuthenticated = false;
         self.allChannels = [];
+
+        self.timezoneName = null;
+        self.searchDate = null;
       },
       cleanUp() {
         applySnapshot(self, storeDefault);

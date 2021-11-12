@@ -18,6 +18,7 @@ import InputTextIcon from '../../components/controls/InputTextIcon';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSImage from '../../components/containers/CMSImage';
 import {IconCustom} from '../../components/CMSStyleSheet';
+import CMSRipple from '../../components/controls/CMSRipple';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -28,10 +29,11 @@ import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import {Comps as CompTxt, VIDEO as VIDEO_TXT} from '../../localization/texts';
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
 
 const ITEMS_PER_ROW = 2;
 const ITEM_HEIGHT = 200;
+const DROPDOWN_ITEM_HEIGHT = 56;
 
 class ChannelsListView extends React.Component {
   constructor(props) {
@@ -171,10 +173,11 @@ class ChannelsListView extends React.Component {
   };
 
   onChannelSelect = value => {
-    const {videoStore, healthStore} = this.props;
-    __DEV__ && console.log('GOND select channel: ', value);
+    const {videoStore, healthStore, navigation} = this.props;
+    __DEV__ && console.log('GOND Health select channel: ', value);
     // prevent double click
-    if (!value || Object.keys(value) == 0 || videoStore.selectedChannel) return;
+    if (!value || Object.keys(value) == 0 /*|| videoStore.selectedChannel*/)
+      return;
     // videoStore.switchLiveSearch(healthStore.isLiveVideo);
 
     if (healthStore.isLiveVideo) {
@@ -182,11 +185,12 @@ class ChannelsListView extends React.Component {
         value.channelNo // ?? value.channel.channelNo
       );
     } else {
-      videoStore.onAlertPlay(healthStore.isLiveVideo, value);
+      videoStore.onHealthPlay(healthStore.isLiveVideo, value);
     }
     // this.pauseAll(true);
     setTimeout(() => {
-      this.props.navigation.push(ROUTERS.HEALTH_VIDEO);
+      // __DEV__ && console.log('GOND select channel to Health Video ');
+      navigation.push(ROUTERS.HEALTH_VIDEO);
     }, 500);
   };
 
@@ -210,7 +214,7 @@ class ChannelsListView extends React.Component {
   onSwitchDVR = item => {
     const {sitesStore, videoStore} = this.props;
     console.log('GOND renderItemList ', item);
-    if (item.kDVR != videoStore.selectedDVR.kDVR) {
+    if (!videoStore.selectedDVR || item.kDVR != videoStore.selectedDVR.kDVR) {
       sitesStore.selectDVR(item.kDVR); // select default
       videoStore.selectDVR(item.kDVR);
       this.getChannelsInfo();
@@ -221,7 +225,7 @@ class ChannelsListView extends React.Component {
     console.log('GOND renderItemList ');
 
     return (
-      <Ripple
+      <CMSRipple
         onPress={() => {
           this.onChannelSelect(item);
         }}
@@ -254,7 +258,7 @@ class ChannelsListView extends React.Component {
             </View>
           </View>
         </View>
-      </Ripple>
+      </CMSRipple>
     );
   };
 
@@ -263,7 +267,7 @@ class ChannelsListView extends React.Component {
     return Object.keys(item).length == 0 ? (
       <View key="ch_none" style={styles.gridNoItem} />
     ) : (
-      <Ripple
+      <CMSRipple
         key={item.kChannel}
         onPress={() => this.onChannelSelect(item)}
         style={[
@@ -304,7 +308,7 @@ class ChannelsListView extends React.Component {
             <Text style={{}}>{item.name}</Text>
           </View>
         </View>
-      </Ripple>
+      </CMSRipple>
     );
   };
 
@@ -331,10 +335,16 @@ class ChannelsListView extends React.Component {
     //   console.log('GOND channels render selected = ', sitesStore.selectedDVR);
     this.playerRefs = [];
     const renderItem = isListView ? this.renderItemList : this.renderItemGrid;
+    const dvrsCount = sitesStore.selectedSiteDVRs.length;
 
     return (
       <View style={styles.screenContainer}>
-        {sitesStore.selectedSiteDVRs.length > 1 && (
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={videoStore.channelFilter}
+        />
+        {dvrsCount > 1 && (
           <View style={styles.dropdownContainer}>
             <Dropdown
               data={sitesStore.selectedSiteDVRs}
@@ -343,7 +353,7 @@ class ChannelsListView extends React.Component {
               value={
                 sitesStore.selectedDVR ? sitesStore.selectedDVR.kDVR : undefined
               }
-              search={sitesStore.selectedSiteDVRs.length > 5}
+              search={dvrsCount > 5}
               searchPlaceholder={CompTxt.searchPlaceholder}
               onChange={this.onSwitchDVR}
               renderLeftIcon={() => (
@@ -355,14 +365,15 @@ class ChannelsListView extends React.Component {
                   />
                 </View>
               )}
+              maxHeight={
+                dvrsCount < 5
+                  ? dvrsCount * DROPDOWN_ITEM_HEIGHT
+                  : 4 * DROPDOWN_ITEM_HEIGHT
+              }
+              containerStyle={{flex: 1, height: DROPDOWN_ITEM_HEIGHT}}
             />
           </View>
         )}
-        <CMSSearchbar
-          ref={r => (this.searchbarRef = r)}
-          onFilter={this.onFilter}
-          value={videoStore.channelFilter}
-        />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           {isLoading ||
           !videoStore.isCloud ||
@@ -413,9 +424,8 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   dropdownContainer: {
-    height: 36,
-    marginTop: 14,
-    marginBottom: 14,
+    height: DROPDOWN_ITEM_HEIGHT,
+    marginVertical: 14,
     padding: 14,
     backgroundColor: CMSColors.WidgetBackground,
   },
