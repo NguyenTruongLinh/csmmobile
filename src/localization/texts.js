@@ -17,7 +17,7 @@ export const Welcome = {
 
 export const Login = {
   title: 'Welcome to ',
-  titleBold: 'i3 CMS MOBILE',
+  titleBold: 'i3 CMS APP',
   description: 'Please Sign in to continue',
   domain: 'Domain',
   username: 'Username',
