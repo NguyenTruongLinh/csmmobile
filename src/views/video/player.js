@@ -690,69 +690,72 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     // const {sWidth, sHeight} = this.state;
     // const iconSize = normalize(28); // normalize(sHeight * 0.035);
-
     return (
       <View
         style={
           videoStore.isFullscreen
             ? styles.buttonsContainersFullscreen
-            : styles.buttonsContainers
+            : [
+                styles.buttonsContainers,
+                {
+                  backgroundColor: this.state.showController
+                    ? CMSColors.DarkElement
+                    : CMSColors.Transparent,
+                },
+              ]
         }>
-        <View style={styles.buttonWrap}>
-          <CMSTouchableIcon
-            iconCustom={
-              videoStore.isLive
-                ? 'searching-magnifying-glass'
-                : 'videocam-filled-tool'
-            }
-            color={CMSColors.White}
-            size={iconSize}
-            // style={styles.buttonStyle}
-            onPress={this.onSwitchLiveSearch}
-            // disabled={videoStore.isLoading || !this.playerRef}
-          />
-        </View>
-        {/* 
-        <View style={styles.buttonWrap}>
-        <CMSTouchableIcon
-          name="camera"
-          size={iconSize}
-          style={styles.buttonStyle}
-          onPress={this.onTakeVideoSnapshot}
-        /> 
-        </View>*/}
-        <View style={styles.buttonWrap}>
-          <CMSTouchableIcon
-            iconCustom="hd"
-            color={
-              // CMSColors.PrimaryActive
-              videoStore.hdMode == true
-                ? CMSColors.PrimaryActive
-                : CMSColors.White
-            }
-            size={iconSize}
-            // style={styles.buttonStyle}
-            onPress={() => videoStore.switchHD()}
-            disabled={
-              !videoStore.selectedStream ||
-              // videoStore.selectedStream.isLoading ||
-              !this.playerRef
-            }
-          />
-        </View>
-        <View style={styles.buttonWrap}>
-          <CMSTouchableIcon
-            iconCustom={
-              videoStore.isFullscreen
-                ? 'out-fullscreen'
-                : 'switch-to-full-screen-button'
-            }
-            size={iconSize}
-            color={CMSColors.White}
-            // style={styles.buttonStyle}
-            onPress={this.onFullscreenPress}
-          />
-        </View>
+        {this.state.showController && (
+          <View style={styles.buttonWrap}>
+            <CMSTouchableIcon
+              iconCustom={
+                videoStore.isLive
+                  ? 'searching-magnifying-glass'
+                  : 'videocam-filled-tool'
+              }
+              color={CMSColors.White}
+              size={iconSize}
+              // style={styles.buttonStyle}
+              onPress={this.onSwitchLiveSearch}
+              // disabled={videoStore.isLoading || !this.playerRef}
+            />
+          </View>
+        )}
+        {this.state.showController && (
+          <View style={styles.buttonWrap}>
+            <CMSTouchableIcon
+              iconCustom="hd"
+              color={
+                // CMSColors.PrimaryActive
+                videoStore.hdMode == true
+                  ? CMSColors.PrimaryActive
+                  : CMSColors.White
+              }
+              size={iconSize}
+              // style={styles.buttonStyle}
+              onPress={() => videoStore.switchHD()}
+              disabled={
+                !videoStore.selectedStream ||
+                // videoStore.selectedStream.isLoading ||
+                !this.playerRef
+              }
+            />
+          </View>
+        )}
+        {this.state.showController && (
+          <View style={styles.buttonWrap}>
+            <CMSTouchableIcon
+              iconCustom={
+                videoStore.isFullscreen
+                  ? 'out-fullscreen'
+                  : 'switch-to-full-screen-button'
+              }
+              size={iconSize}
+              color={CMSColors.White}
+              // style={styles.buttonStyle}
+              onPress={this.onFullscreenPress}
+            />
+          </View>
+        )}
       </View>
     );
   };
