@@ -2166,18 +2166,10 @@ export const VideoModel = types
           self.searchDate = DateTime.fromISO(alertData.timezone, {
             zone: 'utc',
           }).startOf('day');
-          // __DEV__ &&
-          //   console.log(
-          //     'GOND onAlertPlay time input: ',
-          //     alertData.timezone,
-          //     '\n searchPlayTime: ',
-          //     self.searchPlayTime,
-          //     self.searchPlayTimeLuxon,
-          //     '- iso: ',
-          //     DateTime.fromISO(self.searchPlayTime)
-          //   );
         } else {
-          self.searchDate = DateTime.now().startOf('day');
+          self.searchDate = self.timezoneName
+            ? DateTime.now().setZone(self.timezone).startOf('day')
+            : DateTime.now();
         }
         yield self.getDisplayingChannels();
 
