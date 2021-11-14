@@ -452,7 +452,9 @@ class AlertsView extends Component {
           placeHolder="Dismiss descriptions"
         /> */}
         <AlertActionModal
-          data={healthStore.selectedAlertType}
+          data={{
+            siteId: healthStore.selectedSite.id,
+          }}
           siteAlerts={false}
           navigation={navigation}
         />

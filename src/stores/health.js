@@ -86,7 +86,7 @@ const AlertModel = types
   }))
   .views(self => ({
     get kDVR() {
-      return self.dvr.kDVR;
+      return self.dvr ? self.dvr.kDVR : 0;
     },
     get canDismiss() {
       return !NonDismissableAlerts.includes(self.id);

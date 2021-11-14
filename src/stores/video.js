@@ -2173,7 +2173,11 @@ export const VideoModel = types
         }
         yield self.getDisplayingChannels();
 
-        self.selectChannel(alertData.channelNo);
+        if (alertData.channelNo) {
+          self.selectChannel(alertData.channelNo);
+        } else {
+          self.selectChannel(self.displayChannels[0].channelNo);
+        }
         if (self.selectedChannelData == null) {
           __DEV__ &&
             console.log(

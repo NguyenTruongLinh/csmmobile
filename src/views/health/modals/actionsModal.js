@@ -10,6 +10,7 @@ import Ripple from 'react-native-material-ripple';
 // import InputTextIcon from '../../../components/controls/InputTextIcon';
 import {IconCustom, ListViewHeight} from '../../../components/CMSStyleSheet';
 
+import snackbarUtil from '../../../util/snackbar';
 import variables from '../../../styles/variables';
 import CMSColors from '../../../styles/cmscolors';
 import ROUTERS from '../../../consts/routes';
@@ -53,14 +54,26 @@ class AlertActionsModal extends React.Component {
   };
 
   onLiveSearchVideo = (isLive, data) => {
-    const {sitesStore, healthStore, navigation} = this.props;
+    const {sitesStore, healthStore, videoStore, navigation} = this.props;
     __DEV__ && console.log('GOND Health gotoVideo ... ', data);
-    sitesStore.selectSite(data.id);
+    if (data.kDVR) {
+      videoStore.onAlertPlay(isLive, data);
+      setTimeout(() => {
+        navigation.push(ROUTERS.HEALTH_VIDEO);
+      }, 500);
+    } else if (data.siteId) {
+      sitesStore.selectSite(data.siteId);
+      setTimeout(() => {
+        navigation.push(ROUTERS.HEALTH_CHANNELS);
+      }, 500);
+    } else {
+      __DEV__ &&
+        console.log('GOND HealthMonitor onLiveSearch data not valid: ', data);
+      snackbarUtil.onError(VIDEO_TXT.CHANNEL_ERROR);
+      return;
+    }
     healthStore.showActionsModal(false);
     healthStore.setVideoMode(isLive);
-    setTimeout(() => {
-      navigation.push(ROUTERS.HEALTH_CHANNELS);
-    }, 500);
   };
 
   render() {
@@ -169,4 +182,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('healthStore', 'sitesStore')(observer(AlertActionsModal));
+export default inject(
+  'healthStore',
+  'sitesStore',
+  'videoStore'
+)(observer(AlertActionsModal));

@@ -314,7 +314,9 @@ class HealthDetailView extends Component {
           placeHolder="Dismiss descriptions"
         /> */}
         <AlertActionModal
-          data={healthStore.selectedSite}
+          data={{
+            siteId: healthStore.selectedSite.id,
+          }}
           siteAlerts={true}
           navigation={navigation}
         />
