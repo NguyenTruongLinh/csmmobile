@@ -273,7 +273,7 @@ class LoginView extends Component {
                 <InputTextIcon
                   ref={r => (this._refs.domain = r)}
                   name="domain"
-                  value={domain.replace('https://i3care.i3international.com/')}
+                  value={domain.replace(Domain.urlI3care, '')}
                   maxLength={60}
                   enablesReturnKeyAutomatically={true}
                   onEndEditing={this.onEndEditing}

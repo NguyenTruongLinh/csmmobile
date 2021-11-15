@@ -7,6 +7,7 @@ import {
   Dimensions,
   Linking,
   StyleSheet,
+  // SafeAreaView,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
@@ -48,7 +49,7 @@ class WelcomeView extends Component {
     console.log('GOND Dimension = ', Dimensions.get('window'));
 
     return (
-      // <View style={{position: 'absolute'}}>
+      // <SafeAreaView style={{flex: 1}}>
       <ImageBackground
         source={backgroundImg}
         style={{
@@ -136,7 +137,7 @@ class WelcomeView extends Component {
           />
         </View>
       </ImageBackground>
-      // </View>
+      // </SafeAreaView>
     );
   }
 }
