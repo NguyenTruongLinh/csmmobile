@@ -57,6 +57,7 @@ class DirectVideoView extends React.Component {
     this.shouldSetTime = true;
     this.reactions = [];
     this.lastLogin = {userName: '', password: ''};
+    this.pauseOnFilterCounter = 0;
   }
 
   componentDidMount() {
@@ -255,6 +256,24 @@ class DirectVideoView extends React.Component {
               );
             this.stop();
             setTimeout(() => this.setNativePlayback(), 1000);
+          }
+        ),
+        reaction(
+          () => videoStore.channelFilter,
+          (newFilter, oldFilter) => {
+            if (newFilter !== oldFilter) {
+              if (this.pauseOnFilterCounter == 0) {
+                this.pause(true);
+              }
+              this.pauseOnFilterCounter++;
+              setTimeout(() => {
+                this.pauseOnFilterCounter--;
+                if (this.pauseOnFilterCounter <= 0) {
+                  this.pause(false);
+                  this.pauseOnFilterCounter = 0;
+                }
+              }, 500);
+            }
           }
         ),
       ];
