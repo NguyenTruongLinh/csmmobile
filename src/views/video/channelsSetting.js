@@ -46,6 +46,7 @@ class ChannelsSettingView extends Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('ChannelsSettingView componentWillUnmount');
+    this.onFilter('');
   }
 
   async componentDidMount() {

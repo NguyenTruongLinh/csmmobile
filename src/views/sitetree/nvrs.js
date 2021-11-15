@@ -34,6 +34,7 @@ class NVRsView extends Component {
     this._isMounted = false;
 
     // appStore.enableSearchbar(false);
+    this.onFilter('');
   }
 
   componentDidMount() {

@@ -80,6 +80,7 @@ class AlarmsSearchView extends Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('AlarmsSearch componentWillUnmount');
+    this.onFilter('');
   }
 
   setHeader = () => {

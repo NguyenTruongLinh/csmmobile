@@ -28,6 +28,7 @@ class RegionsView extends Component {
     this._isMounted = false;
 
     this.reactions && this.reactions.map(unsubscribe => unsubscribe());
+    this.onFilter('');
   }
 
   componentDidMount() {

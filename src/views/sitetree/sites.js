@@ -52,6 +52,7 @@ class SitesView extends Component {
     __DEV__ && console.log('SitesView componentWillUnmount');
     this._isMounted = false;
     this.props.sitesStore.onSitesViewExit();
+    this.onFilter('');
     // BackHandler.removeEventListener('hardwareBackPress', this.onBack);
   }
 

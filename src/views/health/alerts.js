@@ -67,6 +67,7 @@ class AlertsView extends Component {
     this._isMounted = false;
 
     this.props.healthStore.onExitAlertsView();
+    this.onFilter('');
   }
 
   setHeader = () => {

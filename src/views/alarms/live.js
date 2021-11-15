@@ -44,6 +44,7 @@ class AlarmsLiveView extends Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('AlarmsLive componentWillUnmount');
+    this.onFilter('');
   }
 
   setHeader = () => {
