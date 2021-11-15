@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {
   View,
+  SafeAreaView,
   StyleSheet,
   Text,
   Image,
@@ -210,7 +211,7 @@ class LoginView extends Component {
     // );
 
     return (
-      <View style={styles.viewContainer}>
+      <SafeAreaView style={{flex: 1}}>
         <KeyboardAwareScrollView
           // keyBoardShouldPersistTaps="always"
           ref={r => {
@@ -222,7 +223,8 @@ class LoginView extends Component {
             this._refs.domain,
             this._refs.username,
             this._refs.password,
-          ]}>
+          ]}
+          style={styles.viewContainer}>
           <View
             style={{
               flex: 1,
@@ -373,7 +375,7 @@ class LoginView extends Component {
           </View>
           <View style={styles.space_footer} />
         </KeyboardAwareScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 }

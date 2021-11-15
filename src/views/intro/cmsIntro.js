@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {
   View,
+  SafeAreaView,
   Image,
   Text,
   FlatList,
@@ -151,64 +152,68 @@ class CMSIntroView extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <View style={styles.skipContainer}>
-          <Button
-            style={{width: '20%'}}
-            enable={true}
-            type={'flat'}
-            caption={'SKIP'}
-            onPress={this.onSkipIntro}
-          />
-        </View>
-        <View style={styles.listContainer}>
-          <FlatList
-            data={IntroData}
-            pagingEnabled={true}
-            horizontal={true}
-            onScroll={this.handleScroll}
-            onViewableItemsChanged={this.onIntroItemChanged}
-            onEndReached={this.onEndReached}
-            showsHorizontalScrollIndicator={false}
-            renderItem={this.renderIntroItem}
-            ref={r => (this.introList = r)}
-          />
-        </View>
-        <View style={styles.indicatorContainer}>
-          <LiquidLike
-            data={IntroData}
-            scrollX={this.scrollX}
-            scrollOffset={this.scrollX}
-            inActiveDotColor={CMSColors.Inactive}
-            activeDotColor={CMSColors.PrimaryActive}
-            strokeWidth={3}
-          />
-        </View>
-
-        <View style={styles.footerContainer}>
-          <View style={styles.backContainer}>
-            {this.state.showBackButton && (
-              <Button
-                enable={true}
-                style={styles.backButton}
-                type={'flat'}
-                caption={'BACK'}
-                onPress={this.onBackStep}
-              />
-            )}
-          </View>
-          <View style={styles.nextContainer}>
+      <SafeAreaView style={{flex: 1}}>
+        <View style={styles.container}>
+          <View style={styles.skipContainer}>
             <Button
+              style={{width: '20%'}}
               enable={true}
-              style={styles.nextButton}
-              // type={'primary'}
-              type={'primary'}
-              caption={this.state.showGetStartedButton ? 'GET STARTED' : 'NEXT'}
-              onPress={this.onNextStep}
+              type={'flat'}
+              caption={'SKIP'}
+              onPress={this.onSkipIntro}
             />
           </View>
+          <View style={styles.listContainer}>
+            <FlatList
+              data={IntroData}
+              pagingEnabled={true}
+              horizontal={true}
+              onScroll={this.handleScroll}
+              onViewableItemsChanged={this.onIntroItemChanged}
+              onEndReached={this.onEndReached}
+              showsHorizontalScrollIndicator={false}
+              renderItem={this.renderIntroItem}
+              ref={r => (this.introList = r)}
+            />
+          </View>
+          <View style={styles.indicatorContainer}>
+            <LiquidLike
+              data={IntroData}
+              scrollX={this.scrollX}
+              scrollOffset={this.scrollX}
+              inActiveDotColor={CMSColors.Inactive}
+              activeDotColor={CMSColors.PrimaryActive}
+              strokeWidth={3}
+            />
+          </View>
+
+          <View style={styles.footerContainer}>
+            <View style={styles.backContainer}>
+              {this.state.showBackButton && (
+                <Button
+                  enable={true}
+                  style={styles.backButton}
+                  type={'flat'}
+                  caption={'BACK'}
+                  onPress={this.onBackStep}
+                />
+              )}
+            </View>
+            <View style={styles.nextContainer}>
+              <Button
+                enable={true}
+                style={styles.nextButton}
+                // type={'primary'}
+                type={'primary'}
+                caption={
+                  this.state.showGetStartedButton ? 'GET STARTED' : 'NEXT'
+                }
+                onPress={this.onNextStep}
+              />
+            </View>
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 }
