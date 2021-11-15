@@ -61,7 +61,7 @@ class LoginView extends Component {
     };
     this.keyboardView = null;
     this.lastLoginError = '';
-    onPatch(props.userStore, this.onStoreChanged);
+    // onPatch(props.userStore, this.onStoreChanged);
   }
 
   componentDidMount() {
@@ -78,16 +78,16 @@ class LoginView extends Component {
   //   __DEV__ && console.log('LoginView getDerivedStateFromProps: ', nextProps);
   // }
 
-  onStoreChanged = newValues => {
-    const {error, isLoggedIn} = this.props.userStore;
-    if (error != this.lastLoginError) {
-      this.lastLoginError = error;
-      error && Alert.alert(LoginTxt.errorTitle, error);
-      return;
-    }
-    // if (newValues.path == '/isLoggedIn' && isLoggedIn === true)
-    //   Alert.alert('Login successfully', 'Yay!');
-  };
+  // onStoreChanged = newValues => {
+  //   const {error, isLoggedIn} = this.props.userStore;
+  //   if (error != this.lastLoginError) {
+  //     this.lastLoginError = error;
+  //     error && Alert.alert(LoginTxt.errorTitle, error);
+  //     return;
+  //   }
+  //   // if (newValues.path == '/isLoggedIn' && isLoggedIn === true)
+  //   //   Alert.alert('Login successfully', 'Yay!');
+  // };
 
   onTypingDomain = text => {};
 

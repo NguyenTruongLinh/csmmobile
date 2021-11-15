@@ -340,6 +340,7 @@ export const UserStoreModel = types
       } else {
         self.error = LoginTxt.errorLoginCantConnect;
       }
+      self.error && Alert.alert(LoginTxt.errorTitle, self.error);
       self.isLoggedIn = false;
     },
     logout: flow(function* () {
