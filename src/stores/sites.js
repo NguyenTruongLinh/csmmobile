@@ -156,9 +156,16 @@ export const SitesMapModel = types
       );
     },
     get filteredOamSites() {
-      return self.oamSites.filter(site =>
-        site.name.toLowerCase().includes(self.siteFilter.toLowerCase())
-      );
+      return self.oamSites
+        .filter(site =>
+          site.name.toLowerCase().includes(self.siteFilter.toLowerCase())
+        )
+        .sort((siteA, siteB) =>
+          utils.compareStrings(
+            siteA.name.toLowerCase(),
+            siteB.name.toLowerCase()
+          )
+        );
     },
     get filteredDVRs() {
       return self.selectedSiteDVRs.filter(dvr =>
