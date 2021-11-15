@@ -8,6 +8,7 @@ import {
   TextInput,
   BackHandler,
   StyleSheet,
+  Image,
 } from 'react-native';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
@@ -17,6 +18,7 @@ import Ripple from 'react-native-material-ripple';
 import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 import variables from '../../styles/variables';
 import ROUTERS from '../../consts/routes';
+import {No_Data} from '../../consts/images';
 
 const Item = ({title}) => (
   <View style={styles.item}>
@@ -31,6 +33,9 @@ class OAMSitesView extends Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      listHeight: 0,
+    };
   }
 
   componentDidMount() {
@@ -83,8 +88,25 @@ class OAMSitesView extends Component {
     sitesStore.setSiteFilter(value);
   };
 
+  renderNoData = () => {
+    return (
+      <View style={[styles.noDataContainer, {height: this.state.listHeight}]}>
+        <Image source={No_Data} style={styles.noDataImg}></Image>
+        <Text style={styles.noDataTxt}>There is no data.</Text>
+      </View>
+    );
+  };
+
+  onFlatListLayout = event => {
+    const {height} = event.nativeEvent.layout;
+    this.setState({
+      listHeight: height,
+    });
+  };
+
   render() {
     const {sitesStore} = this.props;
+    const noData = !sitesStore.isLoading && sitesStore.filteredOamSites == 0;
     return (
       <View style={{flex: 1, backgroundColor: CMSColors.White, paddingTop: 16}}>
         <View style={commonStyles.flatSearchBarContainer}>
@@ -98,15 +120,17 @@ class OAMSitesView extends Component {
             iconPosition="right"
           />
         </View>
-        <FlatList
-          style={{flex: 1}}
-          renderItem={this.renderRow}
-          data={sitesStore.filteredOamSites}
-          keyExtractor={item => item.key}
-          onRefresh={this.refreshLiveData}
-          refreshing={sitesStore.isLoading}
-          ListEmptyComponent={null} //noData && this.renderNoData()}
-        />
+        <View style={{flex: 1}} onLayout={this.onFlatListLayout}>
+          <FlatList
+            style={{flex: 1}}
+            renderItem={this.renderRow}
+            data={sitesStore.filteredOamSites}
+            keyExtractor={item => item.key}
+            onRefresh={this.refreshLiveData}
+            refreshing={sitesStore.isLoading}
+            ListEmptyComponent={noData && this.renderNoData()}
+          />
+        </View>
       </View>
     );
   }
@@ -180,6 +204,21 @@ const styles = StyleSheet.create({
     paddingLeft: 24,
     textAlignVertical: 'center',
     color: CMSColors.RowOptions,
+  },
+  noDataContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataImg: {
+    width: 100,
+    height: 100,
+  },
+  noDataTxt: {
+    marginTop: 12,
+    paddingBottom: 50,
+    fontSize: 16,
+    color: CMSColors.PrimaryText,
   },
 });
 
