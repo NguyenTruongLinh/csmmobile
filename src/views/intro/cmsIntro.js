@@ -202,7 +202,10 @@ class CMSIntroView extends Component {
             <View style={styles.nextContainer}>
               <Button
                 enable={true}
-                style={styles.nextButton}
+                style={[
+                  styles.nextButton,
+                  {minWidth: this.state.showGetStartedButton ? 150 : 100},
+                ]}
                 // type={'primary'}
                 type={'primary'}
                 caption={
