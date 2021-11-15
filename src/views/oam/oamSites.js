@@ -19,6 +19,7 @@ import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 import variables from '../../styles/variables';
 import ROUTERS from '../../consts/routes';
 import {No_Data} from '../../consts/images';
+import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 const Item = ({title}) => (
   <View style={styles.item}>
@@ -42,8 +43,22 @@ class OAMSitesView extends Component {
     __DEV__ && console.log('PVMSitesView componentDidmmount');
 
     const {sitesStore} = this.props;
+    this.setHeader();
     sitesStore.getOAMSites();
   }
+
+  setHeader = () => {
+    const {navigation} = this.props;
+    const searchButton = this.searchbarRef
+      ? this.searchbarRef.getSearchButton(() => this.setHeader())
+      : null;
+
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={commonStyles.headerContainer}>{searchButton}</View>
+      ),
+    });
+  };
 
   componentWillUnmount() {
     __DEV__ && console.log('RTCStreamingView componentWillUnmount');
@@ -108,18 +123,12 @@ class OAMSitesView extends Component {
     const {sitesStore} = this.props;
     const noData = !sitesStore.isLoading && sitesStore.filteredOamSites == 0;
     return (
-      <View style={{flex: 1, backgroundColor: CMSColors.White, paddingTop: 16}}>
-        <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={sitesStore.siteFilter}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View>
+      <View style={{flex: 1, backgroundColor: CMSColors.White}}>
+        <CMSSearchbar
+          ref={r => (this.searchbarRef = r)}
+          onFilter={this.onFilter}
+          value={sitesStore.regionFilter}
+        />
         <View style={{flex: 1}} onLayout={this.onFlatListLayout}>
           <FlatList
             style={{flex: 1}}
