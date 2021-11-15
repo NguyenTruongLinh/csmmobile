@@ -321,6 +321,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     flex: 1,
+    padding: 5,
   },
   listText: {
     flex: 1,
