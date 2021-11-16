@@ -41,7 +41,11 @@ class CounterView extends Component {
           name={icon}
         />
         <View style={styles.body}>
-          <Text style={[styles.title, {color: color}]}>{this.props.title}</Text>
+          <View style={styles.titleContainer}>
+            <Text style={[styles.title, {color: color}]}>
+              {this.props.title}
+            </Text>
+          </View>
           <Text
             numberOfLines={1}
             style={[
@@ -74,46 +78,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomColor: '#fff',
     borderBottomWidth: 2,
-    // borderColor: '#fff',
-    // borderWidth: 2,
   },
   icon: {
-    // flex: 1,
     width: 60,
     paddingLeft: 15,
-    // borderColor: '#fff',
-    // borderWidth: 2,
   },
   body: {
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'space-between',
-    // paddingTop: 18,
-    // alignItems: 'stretch',
-    // alignItems: 'center',
-    // backgroundColor: 'green',
+  },
+  titleContainer: {
+    flex: 1.5,
+    paddingHorizontal: 10,
+    paddingBottom: 4,
+    justifyContent: 'flex-end',
   },
   title: {
-    flex: 1,
     fontSize: normalize(16),
     fontWeight: 'bold',
-    paddingTop: 4,
-    // paddingTop: 18,
     textAlign: 'center',
-    textAlignVertical: 'bottom',
-    paddingHorizontal: 10,
-    // backgroundColor: 'blue',
-    paddingBottom: 10,
   },
   counter: {
     flex: 2,
-    // fontSize:  normalize( DEFAULT_COUNTER_SIZE),
     fontWeight: 'bold',
     textAlign: 'center',
-    // backgroundColor: 'green',
-    textAlignVertical: 'top',
-    // borderColor: '#fff',
-    // borderWidth: 2,
   },
 });
 
