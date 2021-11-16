@@ -204,6 +204,9 @@ class OAMDetailView extends Component {
 
     let backColor = oamStore.data.backColor || '#008000';
     let foreColor = oamStore.data.foreColor || '#ffffff';
+    let untilCapacityText =
+      untilCapacity && untilCapacity > 0 ? untilCapacity.toString() : 'Full';
+
     return (
       <View
         style={{
@@ -234,7 +237,7 @@ class OAMDetailView extends Component {
           <CounterView
             style={{flex: 1}}
             title={capacityTitle || 'UNTIL CAPACITY'}
-            count={untilCapacity}
+            count={untilCapacityText}
             color={foreColor}
             borderAlpha={BORDER_ALPHA}
             icon="family"
