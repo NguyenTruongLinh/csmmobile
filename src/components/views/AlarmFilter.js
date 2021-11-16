@@ -587,7 +587,11 @@ export default class AlarmFilter extends Component {
             selected={stime}
           />
         </View>
-        <View style={{paddingTop: 75}}>
+        <View
+          style={{
+            marginTop: 43,
+            justifyContent: 'center',
+          }}>
           <IconCustom
             name="arrow-to"
             size={30}
