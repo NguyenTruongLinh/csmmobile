@@ -2,7 +2,7 @@
 // <!-- START MODULES -->
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {View, Text, Image, Platform} from 'react-native';
+import {View, Text, Image, Platform, StyleSheet} from 'react-native';
 import {inject, observer} from 'mobx-react';
 
 import HomeWidget from '../../components/containers/HomeWidget';
@@ -63,136 +63,124 @@ class HomeView extends Component {
 
   render() {
     return (
-      <View
-        style={{
-          flex: 1,
-          flexDirection: 'column',
-          backgroundColor: CMSColors.White,
-        }}>
-        <View
-          style={{
-            flex: 5,
-          }}
-        />
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: '76%',
-            backgroundColor: CMSColors.HomeHeader,
-            borderBottomLeftRadius: 28,
-            borderBottomRightRadius: 28,
-          }}
-        />
-        <View
-          style={{
-            flex: 30,
-            margin: 25,
-            padding: 20,
-            borderRadius: 16,
-
-            flexDirection: 'row',
-            backgroundColor: CMSColors.White,
-            ...Platform.select({
-              ios: {
-                shadowRadius: 10,
-                shadowColor: CMSColors.BoxShadow,
-              },
-              android: {
-                elevation: 10,
-              },
-            }),
-          }}>
-          <View style={{flex: 1, marginRight: 14}}>
+      <View style={styles.container}>
+        <View style={styles.header} />
+        <View style={styles.headerBackground} />
+        <View style={[styles.topWidgetsContainer]}>
+          <View style={styles.leftWidget}>
             <HomeWidget
               icon={Home_Alarm}
               title="Alarm"
-              alertCount={5}
-              titleStyle={{
-                fontSize: 24,
-                fontWeight: '700',
-                color: CMSColors.Dark_Blue,
-              }}
+              // alertCount={5}
+              titleStyle={styles.topWidgetTitle}
               onPress={this.onAlarmPress}
             />
           </View>
-          <View style={{flex: 1, marginLeft: 14}}>
+          <View style={styles.rightWidget}>
             <HomeWidget
               icon={Home_Video}
               title="Video"
-              titleStyle={{
-                fontSize: 24,
-                fontWeight: '700',
-                color: CMSColors.Dark_Blue,
-              }}
+              titleStyle={styles.topWidgetTitle}
               onPress={this.onVideoPress}
             />
           </View>
         </View>
-        <View
-          style={{
-            flex: 28,
-            flexDirection: 'row',
-            margin: 25,
-            marginTop: 0,
-          }}>
-          <View style={{flex: 1, marginRight: 14}}>
+        <View style={styles.widgetRow}>
+          <View style={styles.leftWidget}>
             <HomeWidget
               icon={Home_Health}
               title="Health Monitor"
-              alertCount={1}
-              titleStyle={{
-                fontSize: 16,
-                fontWeight: '500',
-              }}
+              // alertCount={1}
+              titleStyle={styles.normalWidgetTitle}
               onPress={this.onHealthPress}
             />
           </View>
-          <View style={{flex: 1, marginLeft: 14}}>
+          <View style={styles.rightWidget}>
             <HomeWidget
               icon={Home_SmartER}
               title="Smart-ER"
-              alertCount={12}
-              titleStyle={{
-                fontSize: 16,
-                fontWeight: '500',
-              }}
+              // alertCount={12}
+              titleStyle={styles.normalWidgetTitle}
               onPress={this.onSmartERPress}
             />
           </View>
         </View>
-        <View
-          style={{
-            flex: 28,
-            flexDirection: 'row',
-            margin: 25,
-            marginTop: 0,
-          }}>
-          <View style={{flex: 1, marginRight: 14}}>
+        <View style={styles.widgetRow}>
+          <View style={styles.leftWidget}>
             <HomeWidget
               icon={Home_OAM}
               title="OAM"
-              alertCount={1}
-              titleStyle={{
-                fontSize: 16,
-                fontWeight: '500',
-              }}
+              // alertCount={1}
+              titleStyle={styles.normalWidgetTitle}
               onPress={this.onOAMPress}
             />
           </View>
-          <View style={{flex: 1, marginLeft: 14}}></View>
+          <View style={styles.rightWidget}></View>
         </View>
-        <View
-          style={{
-            flex: 9,
-            flexDirection: 'row',
-          }}
-        />
+        <View style={styles.footer} />
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: CMSColors.White,
+  },
+  header: {
+    flex: 5,
+  },
+  footer: {
+    flex: 9,
+    flexDirection: 'row',
+  },
+  headerBackground: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: '76%',
+    backgroundColor: CMSColors.HomeHeader,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  topWidgetsContainer: {
+    flex: 30,
+    margin: 25,
+    padding: 20,
+    borderRadius: 16,
+
+    flexDirection: 'row',
+    backgroundColor: CMSColors.White,
+    ...Platform.select({
+      ios: {
+        shadowRadius: 10,
+        shadowColor: CMSColors.BoxShadow,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
+  },
+  topWidgetTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: CMSColors.Dark_Blue,
+  },
+  leftWidget: {flex: 1, marginRight: 14},
+  rightWidget: {flex: 1, marginLeft: 14},
+  normalWidgetTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  widgetRow: {
+    flex: 28,
+    flexDirection: 'row',
+    margin: 25,
+    marginTop: 0,
+  },
+});
 
 export default inject('appStore')(observer(HomeView));

@@ -230,7 +230,7 @@ class AlertsView extends Component {
                   padding: 2,
                   fontSize: 12,
                 }}>
-                {DateTime.fromISO(item.timezone).toFormat(
+                {DateTime.fromISO(item.timezone, {zone: 'utc'}).toFormat(
                   DateFormat.Alert_Date
                 )}
               </Text>
