@@ -323,7 +323,9 @@ export default class AlarmFilter extends Component {
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         automaticallyAdjustContentInsets={false}
-        style={{flex: 1}}>
+        style={{
+          maxHeight: 60,
+        }}>
         <View style={styles.contentHeader_FilterMore}>
           <View style={[styles.addMoreButtonContainer, {paddingLeft: 15}]}>
             <Button
@@ -768,7 +770,7 @@ export default class AlarmFilter extends Component {
     if (!this.state.filterMore || this.state.filterMore.length == 0) return;
 
     return (
-      <View style={{flex: 9}}>
+      <View style={{flex: 1}}>
         <FlatList
           data={this.state.filterMore} // {this.state.dataSource}
           renderItem={this.renderRow}
@@ -951,7 +953,6 @@ const styles = StyleSheet.create({
   contentBody: {
     flex: 85,
     backgroundColor: CMSColors.White, // CMSColors.DividerColor24_HEX,
-    height: '100%',
   },
 
   contentHeader_FilterMore: {
