@@ -51,8 +51,8 @@ const ROUTERS = {
   OAM_SITES: 'oam',
   OAM_DETAIL: 'oamdetail',
 
-  POS: 'pos',
-  POS_STACK: 'posstack',
+  SMARTER: 'pos',
+  SMARTER_STACK: 'posstack',
   TRANSACTIONS: 'trans',
   TRAN_DETAIL: 'trandetail',
   TRAN_DETAIL_FCM: 'trandetailFCM',

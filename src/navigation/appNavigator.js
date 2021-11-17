@@ -13,10 +13,10 @@ import LoginView from '../views/auth/login';
 
 import HomeView from '../views/home/home';
 
-import SummaryView from '../views/pos/summary';
-import ExceptionsView from '../views/pos/transactions';
-import TransactionDetailView from '../views/pos/transactionDetail';
-import TransactionFCMView from '../views/pos/transactionDetailFCM';
+import SummaryView from '../views/smarter/summary';
+import ExceptionsView from '../views/smarter/transactions';
+import TransactionDetailView from '../views/smarter/transactionDetail';
+import TransactionFCMView from '../views/smarter/transactionDetailFCM';
 
 import OAMSitesView from '../views/oam/oamSites';
 import OAMDetailView from '../views/oam/detail';
@@ -105,7 +105,7 @@ const HomeNavigator = () => (
   <HOStack.Navigator initialRouteName={ROUTERS.HOME} headerMode="none">
     <HOStack.Screen name={ROUTERS.HOME} component={HomeView} />
     <HOStack.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} />
-    <HOStack.Screen name={ROUTERS.POS_STACK} component={POSStack} />
+    <HOStack.Screen name={ROUTERS.SMARTER_STACK} component={POSStack} />
     <HOStack.Screen name={ROUTERS.OAM_STACK} component={OAMStack} />
   </HOStack.Navigator>
 );
@@ -137,7 +137,7 @@ const CMSMainTab = () => (
     />
     {/* Hidden tabs: can only access from Home screen*/}
     {/* <BottomTab.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} />
-    <BottomTab.Screen name={ROUTERS.POS_STACK} component={POSStack} />
+    <BottomTab.Screen name={ROUTERS.SMARTER_STACK} component={POSStack} />
     <BottomTab.Screen name={ROUTERS.OAM_STACK} component={OAMStack} /> */}
   </BottomTab.Navigator>
 );

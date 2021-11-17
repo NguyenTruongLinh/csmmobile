@@ -8,7 +8,7 @@ import appStore from './stores/appStore';
 import userStore from './stores/user';
 import videoStore from './stores/video';
 import alarmStore from './stores/alarm';
-import posStore from './stores/pos';
+import posStore from './stores/smarter';
 import oamStore from './stores/oam';
 import sitesStore from './stores/sites';
 import healthStore from './stores/health';
