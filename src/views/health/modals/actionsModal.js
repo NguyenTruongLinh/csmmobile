@@ -5,9 +5,10 @@ import React from 'react';
 import {View, Text, StyleSheet, Dimensions, Platform} from 'react-native';
 import {inject, observer} from 'mobx-react';
 import Modal from 'react-native-modal';
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
 
 // import InputTextIcon from '../../../components/controls/InputTextIcon';
+import CMSRipple from '../../../components/controls/CMSRipple';
 import {IconCustom, ListViewHeight} from '../../../components/CMSStyleSheet';
 
 import snackbarUtil from '../../../util/snackbar';
@@ -95,7 +96,7 @@ class AlertActionsModal extends React.Component {
               height - (showDismissAllButtonInHealthDetail ? 210 : 140),
           },
         ]}>
-        <Ripple
+        <CMSRipple
           style={[
             styles.actionRowContainer,
             // {borderWidth: 1, borderColor: 'red'},
@@ -107,8 +108,8 @@ class AlertActionsModal extends React.Component {
             size={variables.fix_fontSize_Icon}
           />
           <Text style={styles.actionText}>{VIDEO_TXT.LIVE}</Text>
-        </Ripple>
-        <Ripple
+        </CMSRipple>
+        <CMSRipple
           style={styles.actionRowContainer}
           onPress={() => this.onLiveSearchVideo(false, data)}>
           <IconCustom
@@ -117,9 +118,9 @@ class AlertActionsModal extends React.Component {
             size={variables.fix_fontSize_Icon}
           />
           <Text style={styles.actionText}>{VIDEO_TXT.SEARCH}</Text>
-        </Ripple>
+        </CMSRipple>
         {showDismissAllButtonInHealthDetail && (
-          <Ripple
+          <CMSRipple
             style={styles.actionRowContainer}
             onPress={this.onDismissAlert}>
             <IconCustom
@@ -130,7 +131,7 @@ class AlertActionsModal extends React.Component {
             <Text style={styles.actionText}>
               {siteAlerts ? HEALTH_TXT.DISMISS_ALL : HEALTH_TXT.DISMISS_CURRENT}
             </Text>
-          </Ripple>
+          </CMSRipple>
         )}
       </Modal>
     );

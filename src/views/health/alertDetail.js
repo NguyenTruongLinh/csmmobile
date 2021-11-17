@@ -12,9 +12,10 @@ import {
 } from 'react-native';
 import {reaction} from 'mobx';
 
-import Ripple from 'react-native-material-ripple';
-import {SwipeRow} from 'react-native-swipe-list-view';
+// import Ripple from 'react-native-material-ripple';
+// import {SwipeRow} from 'react-native-swipe-list-view';
 
+import CMSRipple from '../../components/controls/CMSRipple';
 import AlertActionModal from './modals/actionsModal';
 import AlertDismissModal from './modals/dismissModal';
 import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -258,7 +259,7 @@ class AlertDetailView extends Component {
         ]}
       />
     ) : (
-      <Ripple
+      <CMSRipple
         style={[
           styles.listContainer,
           {
@@ -287,7 +288,7 @@ class AlertDetailView extends Component {
           numberOfLines={1}>
           {channelName}
         </Text>
-      </Ripple>
+      </CMSRipple>
     );
   };
 

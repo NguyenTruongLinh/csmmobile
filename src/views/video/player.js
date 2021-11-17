@@ -19,6 +19,7 @@ import Orientation from 'react-native-orientation-locker';
 import TimePicker from 'react-native-24h-timepicker';
 import {DateTime} from 'luxon';
 
+import CMSRipple from '../../components/controls/CMSRipple';
 import CMSImage from '../../components/containers/CMSImage';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import TimeRuler from '../../components/controls/BetterTimeRuler';
@@ -611,18 +612,18 @@ class VideoPlayerView extends Component {
           // {justifyContent: 'space-between', alignContent: 'center'},
         ]}>
         {isLive ? null : (
-          <TouchableOpacity
+          <CMSRipple
             onPress={() => !isLive && this.setState({showCalendar: true})}>
             <Text style={textStyle}>{date}</Text>
-          </TouchableOpacity>
+          </CMSRipple>
         )}
         {isLive ? null : <Text style={textStyle}> - </Text>}
-        <TouchableOpacity
+        <CMSRipple
           onPress={() =>
             !isLive && this.timePickerRef && this.timePickerRef.open()
           }>
           <Text style={textStyle}>{time}</Text>
-        </TouchableOpacity>
+        </CMSRipple>
       </View>
     );
   };
@@ -830,7 +831,7 @@ class VideoPlayerView extends Component {
         ]}
       />
     ) : (
-      <TouchableOpacity
+      <CMSRipple
         style={[
           styles.channelContainer,
           {
@@ -857,7 +858,7 @@ class VideoPlayerView extends Component {
           numberOfLines={1}>
           {name}
         </Text>
-      </TouchableOpacity>
+      </CMSRipple>
     );
   };
 

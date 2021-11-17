@@ -10,10 +10,11 @@ import {
   StyleSheet,
 } from 'react-native';
 
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
 import {SwipeRow} from 'react-native-swipe-list-view';
 import {DateTime} from 'luxon';
 
+import CMSRipple from '../../components/controls/CMSRipple';
 import AlertActionModal from './modals/actionsModal';
 import AlertDismissModal from './modals/dismissModal';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
@@ -209,7 +210,7 @@ class AlertsView extends Component {
 
   renderNormalAlertItem = item => {
     return (
-      <Ripple style={styles.alertRipple} underlayColor={CMSColors.Underlay}>
+      <CMSRipple style={styles.alertRipple} underlayColor={CMSColors.Underlay}>
         <View style={styles.alertContainer}>
           <View style={styles.alertIconContainer}>
             <IconCustom name="icon-dvr" size={36} color={CMSColors.Dark_Gray} />
@@ -237,13 +238,13 @@ class AlertsView extends Component {
             </View>
           </View>
         </View>
-      </Ripple>
+      </CMSRipple>
     );
   };
 
   renderBackItem = item => {
     return (
-      <Ripple
+      <CMSRipple
         style={styles.backRowRipple}
         onPress={() => {
           this.setState({
@@ -261,7 +262,7 @@ class AlertsView extends Component {
           />
         </View>
         {/* </View> */}
-      </Ripple>
+      </CMSRipple>
     );
   };
 
@@ -323,7 +324,7 @@ class AlertsView extends Component {
         swipeToOpenPercent={10}
         rightOpenValue={item.canDismiss ? -55 : 0}>
         {this.renderBackItem(item)}
-        <Ripple
+        <CMSRipple
           onPress={() => {
             this.gotoAlertDetail(item);
           }}
@@ -343,7 +344,7 @@ class AlertsView extends Component {
             />
             {this.renderContentAlertWithSnapshot(item)}
           </View>
-        </Ripple>
+        </CMSRipple>
       </SwipeRow>
     );
   };
@@ -354,7 +355,7 @@ class AlertsView extends Component {
     const itemWidth = width / ALERTS_GRID_LAYOUT - 2 * itemPadding;
 
     return (
-      <Ripple
+      <CMSRipple
         onPress={() => {
           this.gotoAlertDetail(item);
         }}
@@ -387,7 +388,7 @@ class AlertsView extends Component {
           />
           {this.renderContentAlertWithSnapshot(item)}
         </View>
-      </Ripple>
+      </CMSRipple>
     );
   };
 

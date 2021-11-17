@@ -10,10 +10,11 @@ import {
   Image,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
 import Modal from 'react-native-modal';
 import {DateTime} from 'luxon';
 
+import CMSRipple from '../../components/controls/CMSRipple';
 import AlarmItem from './alarmItem';
 import AlarmFilter from '../../components/views/AlarmFilter';
 import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -440,9 +441,9 @@ class AlarmsSearchView extends Component {
 
   renderAlarmItem = ({item}) => {
     return (
-      <Ripple onPress={() => this.onSelectAlarm(item)}>
+      <CMSRipple onPress={() => this.onSelectAlarm(item)}>
         <AlarmItem data={item} />
-      </Ripple>
+      </CMSRipple>
     );
   };
 

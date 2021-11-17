@@ -10,12 +10,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
 import {SwipeRow} from 'react-native-swipe-list-view';
 
+import CMSRipple from '../../components/controls/CMSRipple';
 import AlertDismissModal from '../health/modals/dismissModal';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
-import InputTextIcon from '../../components/controls/InputTextIcon';
+// import InputTextIcon from '../../components/controls/InputTextIcon';
 // import BackButton from '../../components/controls/BackButton';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
@@ -281,7 +282,7 @@ class SitesView extends Component {
         // friction={3}
       >
         {this.renderBackRow(item)}
-        <Ripple
+        <CMSRipple
           rippleOpacity={0.8}
           onPress={() => this.onSiteSelected(item)}
           style={styles.listItemRipple}>
@@ -302,7 +303,7 @@ class SitesView extends Component {
               <Text style={styles.alertsCount}>{item.total}</Text>
             </View>
           )}
-        </Ripple>
+        </CMSRipple>
       </SwipeRow>
     );
   };

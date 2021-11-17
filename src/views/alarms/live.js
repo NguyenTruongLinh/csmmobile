@@ -12,8 +12,9 @@ import {
   StyleSheet,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
 
+import CMSRipple from '../../components/controls/CMSRipple';
 import AlarmItem from './alarmItem';
 // import InputTextIcon from '../components/controls/InputTextIcon';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';

@@ -52,7 +52,7 @@ class HomeView extends Component {
   onSmartERPress = () => {
     const {navigation} = this.props;
 
-    navigation.navigate(ROUTERS.POS_STACK);
+    navigation.navigate(ROUTERS.SMARTER_STACK);
   };
 
   onOAMPress = () => {

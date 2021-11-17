@@ -14,8 +14,9 @@ import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
 import Modal from 'react-native-modal';
 import {SwipeRow} from 'react-native-swipe-list-view';
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
 
+import CMSRipple from '../../components/controls/CMSRipple';
 import AlertActionModal from './modals/actionsModal';
 import AlertDismissModal from './modals/dismissModal';
 // import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -252,7 +253,7 @@ class HealthDetailView extends Component {
             )}
           </View>
         </View>
-        <Ripple
+        <CMSRipple
           rippleOpacity={0.8}
           onPress={() => this.onAlertTypeSelected(item)}
           style={styles.frontRowRipple}>
@@ -276,7 +277,7 @@ class HealthDetailView extends Component {
               />
             </View>
           )}
-        </Ripple>
+        </CMSRipple>
       </SwipeRow>
     );
   };
@@ -314,9 +315,13 @@ class HealthDetailView extends Component {
           placeHolder="Dismiss descriptions"
         /> */}
         <AlertActionModal
-          data={{
-            siteId: healthStore.selectedSite.id,
-          }}
+          data={
+            healthStore.selectedSite
+              ? {
+                  siteId: healthStore.selectedSite.id,
+                }
+              : null
+          }
           siteAlerts={true}
           navigation={navigation}
         />

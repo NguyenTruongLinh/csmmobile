@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
 import {View, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {inject, observer} from 'mobx-react';
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
 
 // import InputTextIcon from '../../components/controls/InputTextIcon';
+import CMSRipple from '../../components/controls/CMSRipple';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
@@ -120,7 +121,7 @@ class RegionsView extends Component {
     const itemHeight = Dimensions.get('window').height / 16;
     return (
       <View style={{height: itemHeight + 1}}>
-        <Ripple
+        <CMSRipple
           style={{
             height: itemHeight,
             backgroundColor: CMSColors.White,
@@ -134,7 +135,7 @@ class RegionsView extends Component {
           rippleOpacity={0.8}
           onPress={() => this.onRegionSelected(item)}>
           <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
-        </Ripple>
+        </CMSRipple>
       </View>
     );
   };

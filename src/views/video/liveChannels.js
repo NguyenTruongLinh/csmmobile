@@ -6,7 +6,7 @@ import {
   Dimensions,
   StyleSheet,
   Text,
-  TouchableOpacity,
+  // TouchableOpacity,
   AppState,
   // BackHandler,
 } from 'react-native';
@@ -21,9 +21,10 @@ import RTCStreamingView from './rtc';
 // import AuthenModal from '../../components/common/AuthenModal';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import InputTextIcon from '../../components/controls/InputTextIcon';
+// import InputTextIcon from '../../components/controls/InputTextIcon';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
+import CMSRipple from '../../components/controls/CMSRipple';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -405,11 +406,11 @@ class LiveChannelsView extends React.Component {
               height: videoWindow.height,
             },
           ]}>
-          <TouchableOpacity
+          <CMSRipple
             style={{width: '100%', height: '100%', borderWidth: 0}}
             onPress={() => this.onChannelSelect(item.data[i])}>
             {this.renderVideoPlayer(item.data[i], i)}
-          </TouchableOpacity>
+          </CMSRipple>
         </View>
       );
     }

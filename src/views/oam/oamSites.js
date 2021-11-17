@@ -10,12 +10,14 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
+
+// import Ripple from 'react-native-material-ripple';
+
+import CMSRipple from '../../components/controls/CMSRipple';
+import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
+
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
-import InputTextIcon from '../components/controls/InputTextIcon';
-import {Comps as CompTxt} from '../../localization/texts';
-import Ripple from 'react-native-material-ripple';
-import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 import variables from '../../styles/variables';
 import ROUTERS from '../../consts/routes';
 import {No_Data} from '../../consts/images';
@@ -77,7 +79,7 @@ class OAMSitesView extends Component {
 
   renderRow = ({item}) => {
     return (
-      <Ripple
+      <CMSRipple
         rippleOpacity={0.8}
         onPress={() => this.onSiteSelected(item)}
         style={styles.listItemRipple}>
@@ -89,7 +91,7 @@ class OAMSitesView extends Component {
           />
           <Text style={styles.siteName}>{item.name}</Text>
         </View>
-      </Ripple>
+      </CMSRipple>
     );
   };
 
