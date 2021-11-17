@@ -13,10 +13,10 @@ import LoginView from '../views/auth/login';
 
 import HomeView from '../views/home/home';
 
-import SummaryView from '../views/smarter/summary';
-import ExceptionsView from '../views/smarter/transactions';
-import TransactionDetailView from '../views/smarter/transactionDetail';
-import TransactionFCMView from '../views/smarter/transactionDetailFCM';
+// import SummaryView from '../views/smarter/summary';
+// import ExceptionsView from '../views/smarter/transactions';
+// import TransactionDetailView from '../views/smarter/transactionDetail';
+// import TransactionFCMView from '../views/smarter/transactionDetailFCM';
 
 import OAMSitesView from '../views/oam/oamSites';
 import OAMDetailView from '../views/oam/detail';
@@ -26,6 +26,7 @@ import VideoStack from './videoNavigator';
 import SettingsStack from './settingsNavigator';
 import AlarmStack from './alarmNavigator';
 import HealthStack from './healthNavigator';
+import SmartERStack from './smarterNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
 import ROUTERS, {getHeaderTitle} from '../consts/routes';
@@ -84,28 +85,30 @@ const OAMStack = () => (
 //   </HStack.Navigator>
 // );
 
-const PStack = createStackNavigator();
-const POSStack = () => (
-  <PStack.Navigator initialRouteName={ROUTERS.POS} headerMode="float">
-    <PStack.Screen name={ROUTERS.POS} component={SummaryView} />
-    <PStack.Screen name={ROUTERS.TRANSACTIONS} component={ExceptionsView} />
-    <PStack.Screen
-      name={ROUTERS.TRAN_DETAIL}
-      component={TransactionDetailView}
-    />
-    <PStack.Screen
-      name={ROUTERS.TRAN_DETAIL_FCM}
-      component={TransactionFCMView}
-    />
-  </PStack.Navigator>
-);
+// const PStack = createStackNavigator();
+// const POSStack = () => (
+//   <PStack.Navigator
+//     initialRouteName={ROUTERS.SMARTER_DASHBOARD}
+//     headerMode="float">
+//     <PStack.Screen name={ROUTERS.SMARTER_DASHBOARD} component={SummaryView} />
+//     <PStack.Screen name={ROUTERS.TRANSACTIONS} component={ExceptionsView} />
+//     <PStack.Screen
+//       name={ROUTERS.TRAN_DETAIL}
+//       component={TransactionDetailView}
+//     />
+//     <PStack.Screen
+//       name={ROUTERS.TRAN_DETAIL_FCM}
+//       component={TransactionFCMView}
+//     />
+//   </PStack.Navigator>
+// );
 
 const HOStack = createStackNavigator();
 const HomeNavigator = () => (
   <HOStack.Navigator initialRouteName={ROUTERS.HOME} headerMode="none">
     <HOStack.Screen name={ROUTERS.HOME} component={HomeView} />
     <HOStack.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} />
-    <HOStack.Screen name={ROUTERS.SMARTER_STACK} component={POSStack} />
+    <HOStack.Screen name={ROUTERS.SMARTER_STACK} component={SmartERStack} />
     <HOStack.Screen name={ROUTERS.OAM_STACK} component={OAMStack} />
   </HOStack.Navigator>
 );
@@ -166,8 +169,6 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
       // }}
       ref={ref => {
         // __DEV__ && console.log('GOND NavContainer ref = ', ref);
-        // navigationService.setTopLevelNavigator(ref);
-        // if (typeof navigatorSetter == 'function') navigatorSetter(ref);
         appStore.setNavigator(ref);
       }}
       onReady={() => {

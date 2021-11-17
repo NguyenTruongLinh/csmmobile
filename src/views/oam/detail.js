@@ -5,21 +5,13 @@ import {
   View,
   StyleSheet,
   Text,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  BackHandler,
   KeyboardAvoidingView,
   Platform,
-  AppState,
   Dimensions,
-  ScrollView,
   ActivityIndicator,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
-import Ripple from 'react-native-material-ripple';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import CMSColors from '../../styles/cmscolors';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';

@@ -53,9 +53,11 @@ const ROUTERS = {
 
   SMARTER: 'pos',
   SMARTER_STACK: 'posstack',
-  TRANSACTIONS: 'trans',
-  TRAN_DETAIL: 'trandetail',
-  TRAN_DETAIL_FCM: 'trandetailFCM',
+  SMARTER_DASHBOARD: 'posdashboard',
+  TRANSACTIONS: 'postrans',
+  TRANS_DETAIL: 'postrandetail',
+  TRANS_DETAIL_FCM: 'postrandetailFCM',
+  TRANS_VIDEO: 'posvideo',
 
   OPTIONS: 'options',
   OPTIONS_NAVIGATOR: 'optionsnavi',
@@ -116,7 +118,7 @@ export const getHeaderTitle = route => {
     case ROUTERS.TRANSACTIONS:
       return 'Transactions';
     case ROUTERS.TRAN_DETAIL:
-    case ROUTERS.TRAN_DETAIL_FCM:
+    case ROUTERS.TRANS_DETAIL_FCM:
       return 'Transaction detail';
 
     case ROUTERS.OPTIONS:
@@ -165,8 +167,8 @@ export const getCurrentRoute = route => {
 
     case ROUTERS.POS:
     case ROUTERS.TRANSACTIONS:
-    case ROUTERS.TRAN_DETAIL:
-    case ROUTERS.TRAN_DETAIL_FCM:
+    case ROUTERS.TRANS_DETAIL:
+    case ROUTERS.TRANS_DETAIL_FCM:
       return ROUTERS.POS;
 
     case ROUTERS.OPTIONS:

@@ -22,7 +22,7 @@ const _Setting_Video_Direct = require('../assets/images/common/direct-connect.pn
 const _Setting_Video_Cloud = require('../assets/images/common/media-stream.png');
 const _Setting_Video_Relay = require('../assets/images/common/relay.png');
 
-const _No_Data = require('../assets/images/common/folder.png');
+const _No_Data = require('../assets/images/common/no_data.png');
 
 export const No_Image = no_img;
 export const No_Image_16_9 = no_img_16_9;
