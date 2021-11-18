@@ -42,7 +42,7 @@ class CMSTabbar extends React.Component {
   // };
 
   render() {
-    const {navigation, state, oamStore} = this.props;
+    const {navigation, state, oamStore, userStore} = this.props;
     const currentIndex = state.index;
     // const currentRoute = state.routes[state.index];
     const {width, height} = Dimensions.get('window');
@@ -69,18 +69,27 @@ class CMSTabbar extends React.Component {
       <View style={[styles.container, {height: height / 10}]}>
         {state.routes.map((route, index) => {
           const isSelected = index === currentIndex;
-          const textStyle = isSelected ? styles.textSelected : undefined;
+          const isDisable = userStore.disableTabIndexes.includes(index);
+          const textStyle = isDisable
+            ? styles.textDisabled
+            : isSelected
+            ? styles.textSelected
+            : undefined;
           return (
             <TouchableOpacity
               key={route.name}
-              onPress={() => navigation.jumpTo(route.name)}
+              onPress={() => (isDisable ? {} : navigation.jumpTo(route.name))}
               style={styles.tab}>
               <IconCustom
                 style={styles.icon}
                 name={TabIcons[index]}
                 size={30}
                 color={
-                  isSelected ? CMSColors.PrimaryActive : CMSColors.SecondaryText
+                  isDisable
+                    ? CMSColors.disableItemColor
+                    : isSelected
+                    ? CMSColors.PrimaryActive
+                    : CMSColors.SecondaryText
                 }
               />
               {/* <Image
@@ -108,7 +117,7 @@ class CMSTabbar extends React.Component {
   }
 }
 
-export default inject('oamStore')(observer(CMSTabbar));
+export default inject('oamStore', 'userStore')(observer(CMSTabbar));
 
 const styles = StyleSheet.create({
   container: {
@@ -135,6 +144,9 @@ const styles = StyleSheet.create({
   },
   textSelected: {
     color: CMSColors.PrimaryActive,
+  },
+  textDisabled: {
+    color: CMSColors.disableItemColor,
   },
   highlightContainer: {
     alignItems: 'center',

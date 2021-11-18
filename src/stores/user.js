@@ -22,6 +22,17 @@ import {isNullOrUndef} from '../util/general';
 import snackbarUtil from '../util/snackbar';
 import {LocalDBName, MODULE_PERMISSIONS} from '../consts/misc';
 
+const MODULE_TAB_MAP = new Map([
+  [MODULE_PERMISSIONS.VSC, [1]],
+  [MODULE_PERMISSIONS.SITE, [2]],
+]);
+
+const MODULE_HOME_WIDGET_MAP = new Map([
+  [MODULE_PERMISSIONS.VSC, [1, 4]],
+  [MODULE_PERMISSIONS.SITE, [0, 2]],
+  [MODULE_PERMISSIONS.REBAR, [3]],
+]);
+
 const ModuleModel = types
   .model({
     functionId: types.number,
@@ -244,6 +255,26 @@ export const UserStoreModel = types
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
     onLogout: () => __DEV__ && console.log('GOND onLogout event not defined!'),
   }))
+  .views(self => ({
+    get disableTabIndexes() {
+      let result = [];
+      for (const [key, value] of MODULE_TAB_MAP.entries()) {
+        if (!self.hasPermission(key)) {
+          result.push(...value);
+        }
+      }
+      return result;
+    },
+    get disableHomeWidgetIndexes() {
+      let result = [];
+      for (const [key, value] of MODULE_HOME_WIDGET_MAP.entries()) {
+        if (!self.hasPermission(key)) {
+          result.push(...value);
+        }
+      }
+      return result;
+    },
+  }))
   .actions(self => ({
     setConfigApi() {
       apiService.updateConfig(
@@ -298,7 +329,7 @@ export const UserStoreModel = types
       } else {
         self.loginFailed(res);
       }
-      appStore.setLoading(false);
+      // appStore.setLoading(false);
     }),
     loginSuccess: flow(function* (data) {
       try {
@@ -342,6 +373,7 @@ export const UserStoreModel = types
       }
       self.error && Alert.alert(LoginTxt.errorTitle, self.error);
       self.isLoggedIn = false;
+      appStore.setLoading(false);
     },
     logout: flow(function* () {
       if (!self.deleteLocal()) return false;
@@ -384,6 +416,7 @@ export const UserStoreModel = types
         // TODO: should we?
         // return uPhotoRes && modulesRes; // && alertTypesRes;
         self.onLogin();
+        appStore.setLoading(false);
         return true;
       } catch (err) {
         __DEV__ && console.log('GOND getDataPostLogin failed: ', err);

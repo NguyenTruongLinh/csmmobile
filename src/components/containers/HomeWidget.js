@@ -30,11 +30,12 @@ export default class HomeWidget extends React.Component {
   // }
 
   render() {
-    const {icon, iconSize, title, titleStyle, alertCount, onPress} = this.props;
+    const {icon, iconSize, title, titleStyle, alertCount, onPress, isDisable} =
+      this.props;
 
     return (
       <TouchableOpacity
-        onPress={onPress}
+        onPress={isDisable ? () => {} : onPress}
         style={{
           flex: 1,
           backgroundColor: CMSColors.WidgetBackground,
@@ -44,7 +45,7 @@ export default class HomeWidget extends React.Component {
           borderColor: CMSColors.WidgetBorder,
         }}>
         <View style={{flex: 20, flexDirection: 'row-reverse'}}>
-          {alertCount && (
+          {alertCount && !isDisable && (
             <View
               style={{
                 width: '24%',
@@ -69,13 +70,23 @@ export default class HomeWidget extends React.Component {
           }}>
           <Image
             source={icon}
-            style={{
-              width: iconSize ?? '65%',
-              height: iconSize ?? '65%',
-            }}
+            style={[
+              {
+                width: iconSize ?? '65%',
+                height: iconSize ?? '65%',
+              },
+              isDisable ? {tintColor: CMSColors.disableItemColor} : {},
+            ]}
             resizeMode="contain"
           />
-          <Text style={[{marginTop: 25}, titleStyle]}>{title}</Text>
+          <Text
+            style={[
+              {marginTop: 25},
+              titleStyle,
+              isDisable ? {color: CMSColors.disableItemColor} : {},
+            ]}>
+            {title}
+          </Text>
         </View>
         <View style={{flex: 20}} />
       </TouchableOpacity>

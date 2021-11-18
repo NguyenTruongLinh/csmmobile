@@ -101,13 +101,13 @@ export const MODULES = {
 };
 
 export const MODULE_PERMISSIONS = {
-  SITE: 2,
+  SITE: 2, //normal 1, 3// ALARM // HEALTH + ALARM
   BAM: 3,
   DASHBOARD: 4,
   ADMINISTRATION: 8,
   INCIDENT_REPORTS: 9,
-  REBAR: 12,
-  VSC: 14,
+  REBAR: 12, //normal 2, 3 // SMART-ER
+  VSC: 14, //normal 3 // VIDEO
   MENU_DASHBOARD_FD: 16,
   MENU_CUSTOMIZE_FD: 17,
   MENU_HEALTHSCREENING: 18,

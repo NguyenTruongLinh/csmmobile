@@ -62,6 +62,8 @@ class HomeView extends Component {
   };
 
   render() {
+    const {userStore} = this.props;
+    const disableIndexes = userStore.disableHomeWidgetIndexes;
     return (
       <View style={styles.container}>
         <View style={styles.header} />
@@ -69,6 +71,7 @@ class HomeView extends Component {
         <View style={[styles.topWidgetsContainer]}>
           <View style={styles.leftWidget}>
             <HomeWidget
+              isDisable={disableIndexes.includes(0)}
               icon={Home_Alarm}
               title="Alarm"
               // alertCount={5}
@@ -78,6 +81,7 @@ class HomeView extends Component {
           </View>
           <View style={styles.rightWidget}>
             <HomeWidget
+              isDisable={disableIndexes.includes(1)}
               icon={Home_Video}
               title="Video"
               titleStyle={styles.topWidgetTitle}
@@ -88,6 +92,7 @@ class HomeView extends Component {
         <View style={styles.widgetRow}>
           <View style={styles.leftWidget}>
             <HomeWidget
+              isDisable={disableIndexes.includes(2)}
               icon={Home_Health}
               title="Health Monitor"
               // alertCount={1}
@@ -97,6 +102,7 @@ class HomeView extends Component {
           </View>
           <View style={styles.rightWidget}>
             <HomeWidget
+              isDisable={disableIndexes.includes(3)}
               icon={Home_SmartER}
               title="Smart-ER"
               // alertCount={12}
@@ -108,6 +114,7 @@ class HomeView extends Component {
         <View style={styles.widgetRow}>
           <View style={styles.leftWidget}>
             <HomeWidget
+              isDisable={disableIndexes.includes(4)}
               icon={Home_OAM}
               title="OAM"
               // alertCount={1}
@@ -183,4 +190,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('appStore')(observer(HomeView));
+export default inject('appStore', 'userStore')(observer(HomeView));
