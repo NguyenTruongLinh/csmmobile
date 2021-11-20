@@ -359,12 +359,19 @@ export const ConditionFilterException = {
   EXCEPTION: 0,
 };
 
-export const SortField = {
+export const ExceptionSortField = {
   Employee: 0,
   RiskFactor: 1,
   TotalAmount: 2,
   RatioToSale: 3,
 };
+
+export const ExceptionSortFieldName = [
+  'EMPLOYEE',
+  'RISK FACTOR',
+  'TOTAL AMOUNT',
+  'RATIO TO SALE',
+];
 
 export const ChannelStatus = {
   DISABLE: 0,

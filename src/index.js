@@ -8,7 +8,7 @@ import appStore from './stores/appStore';
 import userStore from './stores/user';
 import videoStore from './stores/video';
 import alarmStore from './stores/alarm';
-import posStore from './stores/smarter';
+import exceptionStore from './stores/smarter';
 import oamStore from './stores/oam';
 import sitesStore from './stores/sites';
 import healthStore from './stores/health';
@@ -37,7 +37,7 @@ const Main = () => {
               appStore,
               alarmStore,
               userStore,
-              posStore,
+              exceptionStore,
               oamStore,
               sitesStore,
               healthStore,
@@ -56,7 +56,7 @@ const Main = () => {
       sitesStore={sitesStore}
       videoStore={videoStore}
       alarmStore={alarmStore}
-      posStore={posStore}
+      exceptionStore={exceptionStore}
       healthStore={healthStore}
       oamStore={oamStore}>
       <App />

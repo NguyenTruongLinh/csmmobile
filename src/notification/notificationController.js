@@ -213,7 +213,6 @@ class NotificationController extends React.Component {
   };
 
   static displayLocalNotification = ({id, title, body, messageId, data}) => {
-    // console.log('GOND2 ', id, ', body: ', body, ', data: ', data);
     let idNumber = typeof id == 'number' ? id : parseInt(id, 16);
     idNumber = isNaN(idNumber) ? undefined : idNumber;
     // if (idNumber) PushNotification.cancelLocalNotification(idNumber);
@@ -234,7 +233,7 @@ class NotificationController extends React.Component {
       alertAction: 'view',
       category: CHANNEL_ID,
     };
-    // console.log('GOND displayLocalNotification: ', notificationRequest);
+    // __DEV__ && console.log('GOND displayLocalNotification: ', notificationRequest);
 
     Platform.OS === 'ios'
       ? PushNotification.localNotification(notificationRequest)
@@ -313,7 +312,7 @@ class NotificationController extends React.Component {
 
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
-      if (Platform.OS === 'ios') {
+      if (Platform.OS === 'ios' && content && typeof content === 'string') {
         content = content.replace(/null/g, '""'); // content.split('null').join('');
       }
       NotificationController.displayLocalNotification({

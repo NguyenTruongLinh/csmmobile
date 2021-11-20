@@ -117,3 +117,25 @@ export const HEALTH = {
   NOTIF_HEALTHL: 'CMS Health.',
   ALERT_DISMISSED: 'Alert dismissed.',
 };
+
+export const SMARTER = {
+  SHOW_CHART: 'SHOW CHART',
+  SHOW_DATA: 'SHOW DATA',
+  SEARCH_CONDITIONS: 'Search conditions',
+  ORDER_TIME: 'Order time',
+  CASHIER: 'Cashier',
+  REG: 'Reg #',
+  SUB_TOTAL: 'Sub total',
+  TAX: 'Tax',
+  TOTAL: 'Total',
+  FLAG_WEIGHT: 'Flag weight',
+  FLAG: 'Flag',
+  PAYMENT: 'Payment',
+  CHANGE: 'Change',
+};
+
+export const COMMON = {
+  NO_DATA: 'There is no data',
+  FROM: 'From',
+  TO: 'To',
+};

@@ -102,9 +102,9 @@ class AlarmsLiveView extends Component {
 
   renderAlarmItem = ({item}) => {
     return (
-      <Ripple onPress={() => this.onSelectAlarm(item)}>
+      <CMSRipple onPress={() => this.onSelectAlarm(item)}>
         <AlarmItem data={item} />
-      </Ripple>
+      </CMSRipple>
     );
   };
 

@@ -64,7 +64,7 @@ class NotifySettingView extends React.Component {
 
     const [res, _] = await Promise.all([
       this.props.userStore.getNotifySettings(),
-      this.props.posStore.getTransactionTypes(),
+      this.props.exceptionStore.getTransactionTypes(),
     ]);
     const {selectedNotifies, selectedExceptions} =
       this.props.userStore.settings;
@@ -253,7 +253,7 @@ class NotifySettingView extends React.Component {
 
   render_FilterModel = () => {
     let {showedModal, modalheight, selectedExceptions} = this.state;
-    let {exceptionTypesData} = this.props.posStore;
+    let {exceptionTypesData} = this.props.exceptionStore;
     // console.log(
     //   'GOND render_FilterModel, exceptionTypesData = ',
     //   exceptionTypesData
@@ -659,4 +659,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('userStore', 'posStore')(observer(NotifySettingView));
+export default inject(
+  'userStore',
+  'exceptionStore'
+)(observer(NotifySettingView));

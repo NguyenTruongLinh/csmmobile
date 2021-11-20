@@ -41,7 +41,7 @@ class SettingsView extends Component {
       healthStore,
       oamStore,
       sitesStore,
-      posStore,
+      exceptionStore,
     } = this.props;
     this.props;
     if (userStore.logout()) {
@@ -50,7 +50,7 @@ class SettingsView extends Component {
       healthStore.cleanUp();
       oamStore.cleanUp();
       sitesStore.cleanUp();
-      posStore.cleanUp();
+      exceptionStore.cleanUp();
     }
   };
 
@@ -360,5 +360,5 @@ export default inject(
   'healthStore',
   'oamStore',
   'sitesStore',
-  'posStore'
+  'exceptionStore'
 )(observer(SettingsView));
