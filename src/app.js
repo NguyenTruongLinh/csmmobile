@@ -402,7 +402,7 @@ class App extends React.Component {
   //     Actions.currentScene !== ROUTERS.LOGIN &&
   //     Actions.currentScene !== ROUTERS.SPLASHPAGE &&
   //     // && Actions.currentScene !== ROUTERS.HOME
-  //     Actions.currentScene !== ROUTERS.TRAN_DETAIL
+  //     Actions.currentScene !== ROUTERS.TRANS_DETAIL
   //   ) {
   //     return (
   //       <CMSBottomBar

@@ -2,7 +2,7 @@ import {types, onSnapshot, getRoot} from 'mobx-state-tree';
 import {AlarmModel} from './alarm';
 import {HealthModel} from './health';
 import {OAMModel} from './oam';
-import {POSModel} from './pos';
+import {POSModel} from './smarter';
 import {SitesMapModel} from './sites';
 // import {UserDataModel} from './user';
 import {VideoModel} from './video';
@@ -15,7 +15,7 @@ const getTypeFromJson = json => {
   if (identifier.startsWith('alarm')) return reference(AlarmModel);
   if (identifier.startsWith('health')) return reference(HealthModel);
   if (identifier.startsWith('oam')) return reference(OAMModel);
-  if (identifier.startsWith('pos')) return reference(POSModel);
+  if (identifier.startsWith('smarter')) return reference(POSModel);
   if (identifier.startsWith('sites')) return reference(SitesMapModel);
   // if (identifier.startsWith('user')) return reference(UserDataModel);
   if (identifier.startsWith('video')) return reference(VideoModel);

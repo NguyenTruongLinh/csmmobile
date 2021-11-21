@@ -3,7 +3,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import BackButton from '../components/controls/BackButton';
 
-import SummaryView from '../views/smarter/summary';
+import DashboardView from '../views/smarter/summary';
 import ExceptionsView from '../views/smarter/transactions';
 import TransactionDetailView from '../views/smarter/transactionDetail';
 import TransactionFCMView from '../views/smarter/transactionDetailFCM';
@@ -31,7 +31,10 @@ export default function SmartERStack() {
         headerTitle: getHeaderTitle(route),
         headerLeft: () => <BackButton navigator={navigation} />,
       })}>
-      <PStack.Screen name={ROUTERS.SMARTER_DASHBOARD} component={SummaryView} />
+      <PStack.Screen
+        name={ROUTERS.SMARTER_DASHBOARD}
+        component={DashboardView}
+      />
       <PStack.Screen name={ROUTERS.TRANSACTIONS} component={ExceptionsView} />
       <PStack.Screen
         name={ROUTERS.TRANS_DETAIL}

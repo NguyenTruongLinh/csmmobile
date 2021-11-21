@@ -2,11 +2,18 @@ import {flow, types, applySnapshot} from 'mobx-state-tree';
 // import SiteStore from './sites';
 import BigNumber from 'bignumber.js';
 import BigNumberPrimitive from './types/bignumber';
+import {DateTime} from 'luxon';
 
 import userStore from './user';
 import apiService from '../services/api';
 
 import {Exception} from '../consts/apiRoutes';
+import {
+  DateFormat,
+  ExceptionSortField,
+  ExceptionSortFieldName,
+  GroupByException,
+} from '../consts/misc';
 import snackbar from '../util/snackbar';
 
 const ExceptionFilterModel = types.model({
@@ -109,7 +116,7 @@ const parseExceptionGroup = _data => {
 const ExceptionParamsModel = types
   .model({
     // Site: types.maybeNull(),
-    siteKey: types.number,
+    siteKey: types.maybeNull(types.number),
     sort: types.number,
     groupBy: types.number,
     emprisk: types.string,
@@ -117,23 +124,64 @@ const ExceptionParamsModel = types
     pSize: types.number,
     sDate: types.string,
     eDate: types.string,
-    sites: types.string,
+    // sites: types.maybeNull(types.string),
+    sites: types.array(types.number),
   })
   .actions(self => ({
-    parse(_params) {
-      self.sites = _params.sites;
-      self.sort = _params.sort;
-      self.groupBy = _params.groupby;
-      self.emprisk = _params.emprisk;
-      self.page = _params.page;
-      self.pSize = _params.psize;
-      self.sDate = _params.sdate;
-      self.eDate = _params.edate;
-      self.sites = _params.sites;
+    setSite(siteKey) {
+      self.siteKey = siteKey;
+    },
+    setParams(params) {
+      if (
+        !params ||
+        typeof params != 'object' ||
+        Object.keys(params).length == 0
+      ) {
+        console.log(
+          'GOND ExceptionParams params input is not an object: ',
+          params
+        );
+        return;
+      }
+      const {
+        siteKey,
+        sort,
+        groupBy,
+        emprisk,
+        page,
+        pSize,
+        sDate,
+        eDate,
+        sites,
+      } = params;
 
-      self.siteKey = ''; // add later?
+      self.siteKey = siteKey ?? self.siteKey;
+      self.sort = sort ?? self.sort;
+      self.groupBy = groupBy ?? self.groupBy;
+      self.emprisk = emprisk ?? self.emprisk;
+      self.page = page ?? self.page;
+      self.pSize = pSize ?? self.pSize;
+      self.sDate = sDate ?? self.sDate;
+      self.eDate = eDate ?? self.eDate;
+      self.sites = sites ?? self.sites;
     },
   }));
+
+const parseExceptionParams = _params => {
+  return ExceptionParamsModel.create({
+    sites: _params.sites,
+    sort: _params.sort,
+    groupBy: _params.groupby,
+    emprisk: _params.emprisk,
+    page: _params.page,
+    pSize: _params.psize,
+    sDate: _params.sdate,
+    eDate: _params.edate,
+    sites: _params.sites,
+
+    siteKey: '', // add later?
+  });
+};
 
 const ExceptionTypeModel = types
   .model({
@@ -169,19 +217,66 @@ const parseExceptionType = _data =>
 export const POSModel = types
   .model({
     showChartView: types.boolean,
-    param: types.maybeNull(ExceptionParamsModel),
+    filterParams: types.maybeNull(ExceptionParamsModel),
     searchSiteText: types.string,
     // isBackFromFCM: types.boolean,
-    exceptionsGroupBySite: types.array(ExceptionGroupModel),
+    exceptionsGroup: types.maybeNull(ExceptionGroupModel),
     // exceptionsGroupByEmployee: types.array(ExceptionGroupModel), // use with computed views
     exceptionTypes: types.array(ExceptionTypeModel),
+
+    isLoading: types.boolean,
   })
   .views(self => ({
     get exceptionTypesData() {
       return self.exceptionTypes.map(item => item.data);
     },
+    get startDateTime() {
+      return self.filterParams && self.filterParams.sDate
+        ? DateTime.fromFormat(
+            self.filterParams.sDate,
+            DateFormat.QuerryDateTime,
+            {zone: 'utc'}
+          )
+        : DateTime.now().setZone('utc').minus({days: 1}).startOf('day');
+    },
+    get endtDateTime() {
+      return self.filterParams && self.filterParams.eDate
+        ? DateTime.fromFormat(
+            self.filterParams.eDate,
+            DateFormat.QuerryDateTime,
+            {zone: 'utc'}
+          )
+        : DateTime.now().setZone('utc').minus({days: 1}).endOf('day');
+    },
+    get sortFieldName() {
+      return ExceptionSortFieldName[
+        self.filterParams
+          ? self.filterParams.sort ?? ExceptionSortField.RiskFactor
+          : ExceptionSortField.RiskFactor
+      ];
+    },
   }))
   .actions(self => ({
+    // #region Setters
+    setDefaultParams(siteKeys) {
+      const yesterday = DateTime.now().minus({days: 1});
+
+      self.filterParams = ExceptionParamsModel.create({
+        sites: siteKeys,
+        sort: ExceptionSortField.RiskFactor,
+        groupBy: GroupByException.SITE,
+        emprisk: 'emprisk',
+        page: 1,
+        pSize: 20,
+        // sDate: yesterday.startOf('day').toFormat(DateFormat.QuerryDateTime),
+        sDate: '20210901000000',
+        eDate: yesterday.endOf('day').toFormat(DateFormat.QuerryDateTime),
+
+        // siteKey: '', // add later?
+      });
+    },
+    // #endregion Setters
+    // #region Get data
     getTransactionTypes: flow(function* getTransactionTypes() {
       let res = yield apiService.get(
         Exception.controller,
@@ -199,6 +294,43 @@ export const POSModel = types
       // __DEV__ &&
       //   console.log('GOND self.exceptionTypes = ', self.exceptionTypes);
     }),
+    getExceptionsSummary: flow(function* () {
+      self.isLoading = true;
+      try {
+        const res = yield apiService.get(
+          Exception.controller,
+          '',
+          '',
+          self.filterParams
+        );
+        __DEV__ && console.log('GOND getExceptionsSummary = ', res);
+
+        self.exceptionsGroup = parseExceptionGroup(res);
+      } catch (error) {
+        __DEV__ && console.log('GOND getExceptionsSummary error = ', error);
+      }
+      self.isLoading = false;
+    }),
+    getExceptionsSummaryBySite: flow(function* (siteKey) {
+      self.isLoading = true;
+      self.filterParams.setParams({siteKey});
+      try {
+        const res = yield apiService.get(
+          Exception.controller,
+          '',
+          '',
+          self.filterParams
+        );
+        __DEV__ && console.log('GOND getExceptionsSummaryBySite = ', res);
+
+        self.exceptionsGroup = parseExceptionGroup(res);
+      } catch (error) {
+        __DEV__ &&
+          console.log('GOND getExceptionsSummaryBySite error = ', error);
+      }
+      self.isLoading = false;
+    }),
+    // #endregion Get data
     cleanUp() {
       applySnapshot(self, storeDefault);
     },
@@ -206,11 +338,12 @@ export const POSModel = types
 
 const storeDefault = {
   showChartView: true,
-  param: null,
+  filterParams: null,
   searchSiteText: '',
   // isBackFromFCM: types.boolean(false),
-  exceptionsGroupBySite: [],
+  exceptionsGroup: null,
   exceptionTypes: [],
+  isLoading: false,
 };
 
 const exceptionStore = POSModel.create(storeDefault);

@@ -13,7 +13,7 @@ import LoginView from '../views/auth/login';
 
 import HomeView from '../views/home/home';
 
-// import SummaryView from '../views/smarter/summary';
+// import DashboardView from '../views/smarter/summary';
 // import ExceptionsView from '../views/smarter/transactions';
 // import TransactionDetailView from '../views/smarter/transactionDetail';
 // import TransactionFCMView from '../views/smarter/transactionDetailFCM';
@@ -90,7 +90,7 @@ const OAMStack = () => (
 //   <PStack.Navigator
 //     initialRouteName={ROUTERS.SMARTER_DASHBOARD}
 //     headerMode="float">
-//     <PStack.Screen name={ROUTERS.SMARTER_DASHBOARD} component={SummaryView} />
+//     <PStack.Screen name={ROUTERS.SMARTER_DASHBOARD} component={DashboardView} />
 //     <PStack.Screen name={ROUTERS.TRANSACTIONS} component={ExceptionsView} />
 //     <PStack.Screen
 //       name={ROUTERS.TRAN_DETAIL}
