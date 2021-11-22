@@ -222,7 +222,7 @@ class NotificationController extends React.Component {
       title: title,
       message: /*Platform.OS == 'android' ? encodeURI(body) :*/ body,
       messageId: messageId,
-      userInfo: JSON.stringify(data),
+      userInfo: Platform.OS == 'ios' ? data : JSON.stringify(data),
       invokeApp: true,
       // for android:
       channelId: CHANNEL_ID,
@@ -312,6 +312,7 @@ class NotificationController extends React.Component {
 
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
+      __DEV__ && console.log('GOND show local notify, content: ', content);
       if (Platform.OS === 'ios' && content && typeof content === 'string') {
         content = content.replace(/null/g, '""'); // content.split('null').join('');
       }
