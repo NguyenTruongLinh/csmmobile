@@ -38,6 +38,7 @@ class OAMSitesView extends Component {
     super(props);
     this.state = {
       listHeight: 0,
+      selectedSite: null,
     };
   }
 
@@ -67,31 +68,70 @@ class OAMSitesView extends Component {
     this.props.sitesStore.onSitesViewExit();
   }
 
-  onSiteSelected = item => {
-    const {sitesStore, oamStore, navigation} = this.props;
-    sitesStore.selectSite(item.key);
-    if (item.dvrs && item.dvrs[0]) {
-      oamStore.setTitle(item.name);
-      oamStore.setKdvr(item.dvrs[0].kDVR);
+  onDvrSelected = dvr => {
+    const {oamStore, navigation} = this.props;
+    if (dvr) {
+      oamStore.setTitle(dvr.name);
+      oamStore.setKdvr(dvr.kDVR);
       navigation.push(ROUTERS.OAM_DETAIL);
     }
   };
 
+  onSiteSelected = item => {
+    const {sitesStore, oamStore, navigation} = this.props;
+    sitesStore.selectSite(item.key);
+    if (item.dvrs) {
+      if (item.dvrs.length <= 1) {
+        oamStore.setTitle(item.name);
+        oamStore.setKdvr(item.dvrs[0].kDVR);
+        navigation.push(ROUTERS.OAM_DETAIL);
+      } else {
+        this.setState({
+          selectedSite: this.state.selectedSite == item ? null : item,
+        });
+      }
+    }
+  };
+
+  notifyRenderDvrs(item) {
+    return (
+      item == this.state.selectedSite &&
+      this.state.selectedSite.dvrs.map(dvr => (
+        <CMSRipple
+          rippleOpacity={0.8}
+          onPress={() => this.onDvrSelected(dvr)}
+          style={[styles.listItemRipple, {paddingLeft: 48}]}>
+          <View style={styles.siteNameContainer}>
+            <IconCustom
+              name="icon-dvr"
+              color={CMSColors.IconButton}
+              size={variables.fix_fontSize_Icon}
+            />
+            <Text style={styles.siteName}>{dvr.name}</Text>
+          </View>
+        </CMSRipple>
+      ))
+    );
+  }
+
   renderRow = ({item}) => {
     return (
-      <CMSRipple
-        rippleOpacity={0.8}
-        onPress={() => this.onSiteSelected(item)}
-        style={styles.listItemRipple}>
-        <View style={styles.siteNameContainer}>
-          <IconCustom
-            name="sites"
-            color={CMSColors.IconButton}
-            size={variables.fix_fontSize_Icon}
-          />
-          <Text style={styles.siteName}>{item.name}</Text>
-        </View>
-      </CMSRipple>
+      <View>
+        <CMSRipple
+          rippleOpacity={0.8}
+          onPress={() => this.onSiteSelected(item)}
+          style={styles.listItemRipple}>
+          <View style={styles.siteNameContainer}>
+            <IconCustom
+              name="sites"
+              color={CMSColors.IconButton}
+              size={variables.fix_fontSize_Icon}
+            />
+            <Text style={styles.siteName}>{item.name}</Text>
+          </View>
+        </CMSRipple>
+        {this.notifyRenderDvrs(item)}
+      </View>
     );
   };
 
