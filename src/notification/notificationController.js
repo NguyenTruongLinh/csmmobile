@@ -322,6 +322,7 @@ class NotificationController extends React.Component {
         id: data.msg_id,
         data: {type, action, content},
       });
+      userStore.getWidgetCounts();
     }
   };
 

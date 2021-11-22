@@ -1,7 +1,7 @@
 import {types, flow} from 'mobx-state-tree';
 import {Alert} from 'react-native';
 
-import {MODULES, Orient} from '../consts/misc';
+import {WIDGET_COUNTS, MODULES, Orient} from '../consts/misc';
 import APP_INFO from '../consts/appInfo';
 import ROUTERS from '../consts/routes';
 
@@ -53,6 +53,15 @@ const parseModule = _module => {
     functionId: _module.FunctionID,
     functionName: _module.FunctionName,
   });
+};
+
+const WidgetCountModel = types.model({
+  id: types.identifier,
+  total: types.number,
+});
+
+const parseWidgetCount = (map, newCounts) => {
+  newCounts.map(count => map.put({id: '' + count.Id, total: count.Total}));
 };
 
 const APIModel = types
@@ -213,9 +222,9 @@ const AlertTypeModel = types.model({
   id: types.identifierNumber,
   kAlertSeverity: types.number,
   name: types.string,
-  cmsWebType: types.number,
-  cmsWebGroup: types.number,
-  displayStatus: types.number,
+  cmsWebType: types.maybeNull(types.number),
+  cmsWebGroup: types.maybeNull(types.number),
+  displayStatus: types.maybeNull(types.number),
 });
 
 const parseAlertType = _data => {
@@ -250,6 +259,9 @@ export const UserStoreModel = types
     routes: types.array(types.string),
     //
     settings: types.maybeNull(UserSettingsModel),
+    //
+    widgetCounts: types.map(WidgetCountModel),
+    widgetCountAutoUpdateFlag: types.boolean,
   })
   .volatile(self => ({
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
@@ -404,6 +416,7 @@ export const UserStoreModel = types
             self.getPrivilege(),
             self.getAlertTypesSettings(),
             self.registerToken(),
+            // self.getWidgetCounts(),
           ]);
         __DEV__ &&
           console.log(
@@ -480,6 +493,68 @@ export const UserStoreModel = types
         }
       }
       return false;
+    }),
+    getWidgetCounts: flow(function* () {
+      if (self.user && self.user.userId) {
+        try {
+          let res = yield apiService.get(
+            UserRoute.controller,
+            self.user.userId,
+            UserRoute.alertCount
+          );
+          __DEV__ && console.log('GOND user getWidgetCounts: res = ', res);
+          if (!Array.isArray(res)) return false;
+          parseWidgetCount(self.widgetCounts, res);
+          __DEV__ &&
+            console.log(
+              'GOND user self.widgetCounts.get(WIDGET_COUNTS.HEALTH).total: = ',
+              self.widgetCounts.get(WIDGET_COUNTS.HEALTH).total
+            );
+          return true;
+        } catch (err) {
+          __DEV__ && console.log('GOND get user getWidgetCounts failed: ', err);
+          return false;
+        }
+      }
+      return false;
+    }),
+    getWidgetCount(widgetId) {
+      let obj = self.widgetCounts.get(widgetId);
+      __DEV__ &&
+        console.log(
+          'GOND get user getWidgetCount widgetId ',
+          widgetId,
+          'obj: ',
+          obj
+        );
+      return obj ? obj.total : 0;
+    },
+    intervalUpdateWidgetCounts() {
+      return setInterval(function () {
+        self.getWidgetCounts();
+        __DEV__ && console.log('GOND intervalUpdateWidgetCounts ...');
+      }, 5 * 60 * 1000);
+    },
+    resetWidgetCount: flow(function* (widgetId) {
+      if (self.getWidgetCount(widgetId) === 0) return true;
+      self.widgetCounts.put({id: '' + widgetId, total: 0});
+      try {
+        const res = yield apiService.post(
+          UserRoute.controller,
+          self.user.userId,
+          UserRoute.resetAlert,
+          {Id: widgetId}
+        );
+        if (res.error) {
+          __DEV__ && console.log('GOND resetWidgetCount failed: ', res);
+          return false;
+        }
+        __DEV__ && console.log('GOND resetWidgetCount res: ', res);
+        return true;
+      } catch (ex) {
+        __DEV__ && console.log('GOND resetWidgetCount failed: ', ex);
+        return false;
+      }
     }),
     // #endregion
     // #region local data
@@ -709,7 +784,7 @@ export const UserStoreModel = types
         self.user.userId,
         AccountRoute.getAlertSettings
       );
-      // __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
+      __DEV__ && console.log('GOND getAlertTypesSettings: ', res);
       if (!res || res.error) {
         __DEV__ && console.log('!!! GOND getAlertTypesSetting failed: ', res);
         // snackbarUtil.handleRequestFailed();
@@ -746,6 +821,8 @@ const userStore = UserStoreModel.create({
     selectedExceptions: [],
     alertTypes: [],
   }),
+  widgetCounts: {},
+  widgetCountAutoUpdateFlag: false,
 });
 
 export default userStore;

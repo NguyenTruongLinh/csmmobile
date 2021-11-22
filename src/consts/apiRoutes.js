@@ -52,6 +52,8 @@ export const DVR = {
 export const Users = {
   controller: 'users',
   updateProfile: 'updateprofile',
+  alertCount: 'AlertCount',
+  resetAlert: 'ResetAlert',
 };
 
 export const Exception = {

@@ -3,6 +3,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {View, Text, Image, Platform, StyleSheet} from 'react-native';
+import {useIsFocused} from '@react-navigation/native';
 import {inject, observer} from 'mobx-react';
 
 import HomeWidget from '../../components/containers/HomeWidget';
@@ -17,21 +18,45 @@ import {
 } from '../../consts/images';
 import ROUTERS from '../../consts/routes';
 import CMSColors from '../../styles/cmscolors';
+import {WIDGET_COUNTS} from '../../consts/misc';
 
 class HomeView extends Component {
   constructor(props) {
     super(props);
   }
 
+  notifyClearIntervals() {
+    if (this.interval) clearInterval(this.interval);
+  }
+
   componentDidMount() {
     if (__DEV__) console.log('Home componentDidMount');
-    const {appStore} = this.props;
+    const {appStore, userStore, navigation} = this.props;
     appStore.naviService && appStore.naviService.onReady();
+
+    this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
+      __DEV__ && console.log('Home componentWillBeFocused');
+      userStore.getWidgetCounts();
+      this.notifyClearIntervals();
+      this.interval = userStore.intervalUpdateWidgetCounts();
+    });
+
+    this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
+      __DEV__ && console.log('Home componentWillBeBlurred');
+      this.notifyClearIntervals();
+    });
+  }
+
+  componentWillUnmount() {
+    __DEV__ && console.log('Home componentWillUnmount');
+    this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
+    this.unsubscribleBlurEvent && this.unsubscribleBlurEvent();
+    this.notifyClearIntervals();
   }
 
   onAlarmPress = () => {
-    const {navigation} = this.props;
-
+    const {navigation, userStore} = this.props;
+    userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
     navigation.navigate(ROUTERS.ALARM_STACK);
   };
 
@@ -42,7 +67,8 @@ class HomeView extends Component {
   };
 
   onHealthPress = () => {
-    const {navigation} = this.props;
+    const {navigation, userStore} = this.props;
+    userStore.resetWidgetCount(WIDGET_COUNTS.HEALTH);
     __DEV__ &&
       console.log('GOND onHealthPress, navi state: ', navigation.state);
 
@@ -50,13 +76,15 @@ class HomeView extends Component {
   };
 
   onSmartERPress = () => {
-    const {navigation} = this.props;
+    const {navigation, userStore} = this.props;
+    userStore.resetWidgetCount(WIDGET_COUNTS.SMART_ER);
 
     navigation.navigate(ROUTERS.SMARTER_STACK);
   };
 
   onOAMPress = () => {
-    const {navigation} = this.props;
+    const {navigation, userStore} = this.props;
+    userStore.resetWidgetCount(WIDGET_COUNTS.OAM);
 
     navigation.navigate(ROUTERS.OAM_STACK);
   };
@@ -74,7 +102,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(0)}
               icon={Home_Alarm}
               title="Alarm"
-              // alertCount={5}
+              alertCount={userStore.getWidgetCount(WIDGET_COUNTS.ALARM)}
               titleStyle={styles.topWidgetTitle}
               onPress={this.onAlarmPress}
             />
@@ -95,7 +123,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(2)}
               icon={Home_Health}
               title="Health Monitor"
-              // alertCount={1}
+              alertCount={userStore.getWidgetCount(WIDGET_COUNTS.HEALTH)}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onHealthPress}
             />
@@ -105,7 +133,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(3)}
               icon={Home_SmartER}
               title="Smart-ER"
-              // alertCount={12}
+              alertCount={userStore.getWidgetCount(WIDGET_COUNTS.SMART_ER)}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onSmartERPress}
             />
@@ -117,7 +145,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(4)}
               icon={Home_OAM}
               title="OAM"
-              // alertCount={1}
+              alertCount={userStore.getWidgetCount(WIDGET_COUNTS.OAM)}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onOAMPress}
             />

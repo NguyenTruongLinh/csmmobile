@@ -45,7 +45,7 @@ export default class HomeWidget extends React.Component {
           borderColor: CMSColors.WidgetBorder,
         }}>
         <View style={{flex: 20, flexDirection: 'row-reverse'}}>
-          {alertCount && !isDisable && (
+          {!isNaN(alertCount) && alertCount > 0 && !isDisable && (
             <View
               style={{
                 width: '24%',

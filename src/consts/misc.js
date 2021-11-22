@@ -95,6 +95,13 @@ export const LOGIN_ACTIONS = {
   LOGIN_ERROR_SHOWED: 'ERROR_SHOWED',
 };
 
+export const WIDGET_COUNTS = {
+  ALARM: '602',
+  HEALTH: '603',
+  SMART_ER: '604',
+  OAM: '607',
+};
+
 export const MODULES = {
   MODULE_SITE: 'MODULE_SITE',
   MODULE_REBAR: 'MODULE_REBAR',
