@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {View, StyleSheet, Text, processColor} from 'react-native';
+import {View, StyleSheet, Text, processColor, Dimensions} from 'react-native';
 import CMSTrendingLine from './CMSTrendingLine';
 import {isNullOrUndef} from '../../util/general';
 import CMSColors from '../../../styles/cmscolors';
@@ -117,7 +117,6 @@ class TrendingView extends Component {
   //   );
   //   return null;
   // }
-
   static getDerivedStateFromProps(nextProps, prevState) {
     let dataCount =
       nextProps.historicalData.length + nextProps.forecastData.length;
@@ -222,6 +221,28 @@ class TrendingView extends Component {
         }*/
     // console.log('GOND xAxisLabels:', xAxisLabels)
     const processedColor = processColor(nextProps.color);
+
+    function calValueFontSize(values) {
+      const {width} = Dimensions.get('window');
+      // const hisTotalLen = historicalValues.reduce(
+      //   (acc, cordinates) => '' + acc + cordinates.y
+      // );
+      let totalString = '';
+      values.map(item => {
+        totalString = totalString + item.y;
+      });
+
+      return (7 * width * 18) / (360 * totalString.length);
+    }
+
+    const valueTextSize = Math.min(
+      Math.min(
+        calValueFontSize(historicalValues),
+        calValueFontSize(forecastValues)
+      ),
+      18
+    );
+
     const historicalConfig = {
       drawHighlightIndicators: false,
       drawCircles: false,
@@ -230,7 +251,7 @@ class TrendingView extends Component {
       textLegendRotation: textLabelRotation,
       color: processedColor,
       valueTextColor: processedColor,
-      valueTextSize: 9,
+      valueTextSize: valueTextSize,
       lineWidth: 2,
     };
     const forecastConfig = {
@@ -275,11 +296,19 @@ class TrendingView extends Component {
   render() {
     const {color, borderAlpha} = this.props;
     const {chartData, xAxis, dataPoint} = this.state;
+    const {width} = Dimensions.get('window');
+
+    let hisTotalString = '';
+    chartData.dataSets[0].values.map(item => {
+      hisTotalString = hisTotalString + item.y;
+    });
+
     return (
       <View
         style={[styles.container, {borderBottomColor: color + borderAlpha}]}>
         <Text style={[styles.title, {color: color}]}>
-          {dataPoint} hours data trend{' '}
+          {/* {JSON.stringify(chartData.dataSets[0].values)} hours data trend{' '} */}
+          {hisTotalString.length}
         </Text>
         <CMSTrendingLine
           style={styles}
