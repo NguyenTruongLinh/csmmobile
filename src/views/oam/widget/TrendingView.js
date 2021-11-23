@@ -307,8 +307,7 @@ class TrendingView extends Component {
       <View
         style={[styles.container, {borderBottomColor: color + borderAlpha}]}>
         <Text style={[styles.title, {color: color}]}>
-          {/* {JSON.stringify(chartData.dataSets[0].values)} hours data trend{' '} */}
-          {hisTotalString.length}
+          {dataPoint} hours data trend{' '}
         </Text>
         <CMSTrendingLine
           style={styles}
