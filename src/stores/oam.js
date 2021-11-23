@@ -143,7 +143,7 @@ function parseOAMDismissInfo(dismissInfo) {
     serverID: dismissInfo.ServerID,
   };
 }
-function parseOAMData(data) {
+function parseOAMData(data, selfKdvr) {
   let historycals = parseTimedValueList(data.Historycals);
   __DEV__ && console.log('HAI get OAM data: historycals = ', historycals);
   let foreCasts = parseTimedValueList(data.ForeCasts);
@@ -169,7 +169,7 @@ function parseOAMData(data) {
     offline: data.Offline,
     kAlertEvent: data.KAlertEvent,
     kAlertType: data.KAlertType,
-    kDVR: data.KDVR,
+    kDVR: data.KDVR || selfKdvr,
     dvrName: data.DVRName,
     siteName: data.SiteName,
     serverID: data.ServerID,
@@ -210,7 +210,7 @@ export const OAMModel = types
         );
         // newData = MOCK_DATA;
         __DEV__ && console.log('HAI get OAM data: ', JSON.stringify(newData));
-        self.data = oamData.create(parseOAMData(newData));
+        self.data = oamData.create(parseOAMData(newData, self.kdvr));
         self.notifyShowSnackBarMessage();
       } catch (err) {
         __DEV__ && console.log('GOND Could not get sites data! ', err);

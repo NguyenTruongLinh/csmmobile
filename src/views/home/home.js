@@ -38,7 +38,10 @@ class HomeView extends Component {
       __DEV__ && console.log('Home componentWillBeFocused');
       userStore.getWidgetCounts();
       this.notifyClearIntervals();
-      this.interval = userStore.intervalUpdateWidgetCounts();
+      this.interval = setInterval(function () {
+        userStore.getWidgetCounts();
+        __DEV__ && console.log('GOND intervalUpdateWidgetCounts ...');
+      }, 30 * 1000);
     });
 
     this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
