@@ -15,18 +15,20 @@ class LoadingOverlay extends React.Component {
   render() {
     return (
       <View
-        style={
-          ([styles.container],
+        style={[
+          styles.container,
           {
             height: Dimensions.get('window').height,
             backgroundColor:
               this.props.backgroundColor ?? CMSColors.PrimaryActive,
-          })
-        }>
+          },
+        ]}>
         <ActivityIndicator
           style={[styles.centerIndicator]}
           size="large"
-          color={CMSColors.ActivityIndicator_color_Login}
+          color={
+            this.props.indicatorColor ?? CMSColors.ActivityIndicator_color_Login
+          }
         />
       </View>
     );

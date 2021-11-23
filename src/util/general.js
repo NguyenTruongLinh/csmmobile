@@ -363,7 +363,7 @@ exports.getIconAlertType = alertID => {
   }
 };
 
-exports.formatnumber = n => {
+exports.formatNumber = n => {
   return n ? String(n).replace(/(.)(?=(\d{3})+$)/g, '$1,') : '0';
 };
 

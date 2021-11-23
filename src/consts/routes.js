@@ -113,8 +113,8 @@ export const getHeaderTitle = route => {
     case ROUTERS.OAM_DETAIL:
       return 'OAM';
 
-    case ROUTERS.POS:
-      return 'POS';
+    case ROUTERS.SMARTER_DASHBOARD:
+      return 'Smart-ER';
     case ROUTERS.TRANSACTIONS:
       return 'Transactions';
     case ROUTERS.TRAN_DETAIL:

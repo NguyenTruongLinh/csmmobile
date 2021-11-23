@@ -410,14 +410,18 @@ export const UserStoreModel = types
     }),
     getDataPostLogin: flow(function* () {
       try {
-        const [uPhotoRes, modulesRes, alertTypesRes, registerTokenRes] =
-          yield Promise.all([
-            self.getUserPhoto(),
-            self.getPrivilege(),
-            self.getAlertTypesSettings(),
-            self.registerToken(),
-            // self.getWidgetCounts(),
-          ]);
+        const [
+          uPhotoRes,
+          modulesRes,
+          alertTypesRes,
+          registerTokenRes,
+        ] = yield Promise.all([
+          self.getUserPhoto(),
+          self.getPrivilege(),
+          self.getAlertTypesSettings(),
+          self.registerToken(),
+          // self.getWidgetCounts(),
+        ]);
         __DEV__ &&
           console.log(
             'GOND getDataPostLogin ',
@@ -530,10 +534,11 @@ export const UserStoreModel = types
       return obj ? obj.total : 0;
     },
     intervalUpdateWidgetCounts() {
+      // return;
       return setInterval(function () {
         self.getWidgetCounts();
         __DEV__ && console.log('GOND intervalUpdateWidgetCounts ...');
-      }, 5 * 60 * 1000);
+      }, 30000); // 30 secs
     },
     resetWidgetCount: flow(function* (widgetId) {
       if (self.getWidgetCount(widgetId) === 0) return true;

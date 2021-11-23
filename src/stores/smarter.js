@@ -22,7 +22,7 @@ const ExceptionFilterModel = types.model({
   selectedSites: types.array(types.number),
 });
 
-const ExceptionModel = types.model({
+const EmployeeExceptionModel = types.model({
   riskFactor: types.number,
   countRisk: types.number,
   totalAmount: types.number,
@@ -31,24 +31,43 @@ const ExceptionModel = types.model({
   date: types.string, // Date?
   employerId: types.maybeNull(types.number),
   employerName: types.maybeNull(types.string),
+  // storeId: types.maybeNull(types.number),
+  // storeName: types.maybeNull(types.string),
+  exceptionAmount: types.number,
+  // siteKey: types.number,
+  // siteName: types.string,
+  // pacId: types.number,
+  // employees: types.array(types)
+});
+
+const SiteExceptionModel = types.model({
+  riskFactor: types.number,
+  countRisk: types.number,
+  totalAmount: types.number,
+  percentToSale: types.number,
+  totalTran: types.number,
+  date: types.string, // Date?
+  // employerId: types.maybeNull(types.number),
+  // employerName: types.maybeNull(types.string),
   storeId: types.maybeNull(types.number),
   storeName: types.maybeNull(types.string),
   exceptionAmount: types.number,
   siteKey: types.number,
   siteName: types.string,
   pacId: types.number,
+  employees: types.array(EmployeeExceptionModel),
 });
 
-const parseException = _ex => {
-  return ExceptionModel.create({
+const parseSiteException = _ex => {
+  return SiteExceptionModel.create({
     riskFactor: _ex.RiskFactor,
     countRisk: _ex.CountRisk,
     totalAmount: _ex.TotalAmount,
     percentToSale: _ex.PercentToSale,
     totalTran: _ex.TotalTran,
     date: _ex.Date,
-    employerId: _ex.EmployerId,
-    employerName: _ex.EmployerName,
+    // employerId: _ex.EmployerId,
+    // employerName: _ex.EmployerName,
     storeId: _ex.StoreId,
     storeName: _ex.StoreName,
     exceptionAmount: _ex.ExceptionAmount,
@@ -66,7 +85,7 @@ const ExceptionGroupModel = types.model({
   numberSite: types.number,
   totalRiskFactors: types.number,
   exceptionAmount: types.number,
-  data: types.array(ExceptionModel),
+  data: types.array(SiteExceptionModel),
   currentPage: types.number,
   totalPages: types.number,
   pageSize: types.number,
@@ -96,7 +115,7 @@ const ExceptionGroupModel = types.model({
 // }));
 
 const parseExceptionGroup = _data => {
-  return ExceptionGroup.create({
+  return ExceptionGroupModel.create({
     sumRiskFactors: _data.SumRiskFactors,
     totalAmount: _data.TotalAmount,
     totalRatio: BigNumber(_data.TotalRatio),
@@ -108,7 +127,7 @@ const parseExceptionGroup = _data => {
     pageSize: _data.PageSize,
     data:
       _data.Data && Array.isArray(_data.Data)
-        ? _data.Data.map(_ex => parseException(_ex))
+        ? _data.Data.map(_ex => parseSiteException(_ex))
         : [],
   });
 };
@@ -116,7 +135,7 @@ const parseExceptionGroup = _data => {
 const ExceptionParamsModel = types
   .model({
     // Site: types.maybeNull(),
-    siteKey: types.maybeNull(types.number),
+    // siteKey: types.maybeNull(types.number),
     sort: types.number,
     groupBy: types.number,
     emprisk: types.string,
@@ -128,9 +147,9 @@ const ExceptionParamsModel = types
     sites: types.array(types.number),
   })
   .actions(self => ({
-    setSite(siteKey) {
-      self.siteKey = siteKey;
-    },
+    // setSite(siteKey) {
+    //   self.siteKey = siteKey;
+    // },
     setParams(params) {
       if (
         !params ||
@@ -144,7 +163,7 @@ const ExceptionParamsModel = types
         return;
       }
       const {
-        siteKey,
+        // siteKey,
         sort,
         groupBy,
         emprisk,
@@ -155,7 +174,7 @@ const ExceptionParamsModel = types
         sites,
       } = params;
 
-      self.siteKey = siteKey ?? self.siteKey;
+      // self.siteKey = siteKey ?? self.siteKey;
       self.sort = sort ?? self.sort;
       self.groupBy = groupBy ?? self.groupBy;
       self.emprisk = emprisk ?? self.emprisk;
@@ -225,6 +244,7 @@ export const POSModel = types
     exceptionTypes: types.array(ExceptionTypeModel),
 
     isLoading: types.boolean,
+    isGroupLoading: types.boolean,
   })
   .views(self => ({
     get exceptionTypesData() {
@@ -239,7 +259,7 @@ export const POSModel = types
           )
         : DateTime.now().setZone('utc').minus({days: 1}).startOf('day');
     },
-    get endtDateTime() {
+    get endDateTime() {
       return self.filterParams && self.filterParams.eDate
         ? DateTime.fromFormat(
             self.filterParams.eDate,
@@ -254,6 +274,9 @@ export const POSModel = types
           ? self.filterParams.sort ?? ExceptionSortField.RiskFactor
           : ExceptionSortField.RiskFactor
       ];
+    },
+    get exceptionsGroupData() {
+      return self.exceptionsGroup ? self.exceptionsGroup.data : [];
     },
   }))
   .actions(self => ({
@@ -311,16 +334,14 @@ export const POSModel = types
       }
       self.isLoading = false;
     }),
-    getExceptionsSummaryBySite: flow(function* (siteKey) {
-      self.isLoading = true;
-      self.filterParams.setParams({siteKey});
+    getSiteDetailData: flow(function* (siteKey) {
+      self.isGroupLoading = true;
+      // self.filterParams.setParams({siteKey});
       try {
-        const res = yield apiService.get(
-          Exception.controller,
-          '',
-          '',
-          self.filterParams
-        );
+        const res = yield apiService.get(Exception.controller, '', '', {
+          ...self.filterParams,
+          siteKey,
+        });
         __DEV__ && console.log('GOND getExceptionsSummaryBySite = ', res);
 
         self.exceptionsGroup = parseExceptionGroup(res);
@@ -328,7 +349,7 @@ export const POSModel = types
         __DEV__ &&
           console.log('GOND getExceptionsSummaryBySite error = ', error);
       }
-      self.isLoading = false;
+      self.isGroupLoading = false;
     }),
     // #endregion Get data
     cleanUp() {
@@ -344,6 +365,7 @@ const storeDefault = {
   exceptionsGroup: null,
   exceptionTypes: [],
   isLoading: false,
+  isGroupLoading: false,
 };
 
 const exceptionStore = POSModel.create(storeDefault);

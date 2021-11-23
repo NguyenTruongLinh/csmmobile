@@ -222,7 +222,7 @@ class NotificationController extends React.Component {
       title: title,
       message: /*Platform.OS == 'android' ? encodeURI(body) :*/ body,
       messageId: messageId,
-      userInfo: Platform.OS == 'ios' ? data : JSON.stringify(data),
+      userInfo: data, // Platform.OS == 'ios' ? data : JSON.stringify(data),
       invokeApp: true,
       // for android:
       channelId: CHANNEL_ID,
