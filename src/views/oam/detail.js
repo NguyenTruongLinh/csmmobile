@@ -9,6 +9,7 @@ import {
   Platform,
   Dimensions,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
@@ -52,59 +53,29 @@ class OAMDetailView extends Component {
     };
   }
 
-  // onDimensionChange = event => {
-  //   //setTimeout(()=>{
-  //   this.setFullScreenDefault();
-  //   //},1000)
-  // };
-
-  // _orientationDidChange = ort => {
-  //   this.setState({orientation: ort});
-  // };
-
   componentWillUnmount() {
     const {videoStore} = this.props;
     __DEV__ && console.log('RTCStreamingView componentWillUnmount');
-    // Orientation.unlockAllOrientations();
-    // Dimensions.removeEventListener('change', this.onDimensionChange);
-    // AppState.removeEventListener('change', this._handleAppStateChange);
-    // if (this.props.onBack)
-    //   BackHandler.removeEventListener('hardwareBackPress', this.props.onBack);
-    // Orientation.removeDeviceOrientationListener(this._orientationDidChange);
     videoStore.onExitSinglePlayer();
     videoStore.releaseStreams();
+    this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
+    this.unsubscribleBlurEvent && this.unsubscribleBlurEvent();
   }
 
   componentDidMount() {
     const {navigation, oamStore} = this.props;
     __DEV__ && console.log('RTCStreamingView componentDidMount');
-    // AppState.addEventListener('change', this._handleAppStateChange);
-    // Dimensions.addEventListener('change', this.onDimensionChange);
-    // if (this.props.onBack)
-    //   BackHandler.addEventListener('hardwareBackPress', this.props.onBack);
-    // Orientation.addDeviceOrientationListener(this._orientationDidChange);
     navigation.setOptions({
       headerShown: this.isHeaderShown,
     });
-  }
 
-  // _handleAppStateChange = nextAppState => {
-  //   //console.log('GOND PVM detail handleAppStateChange this.state.appState: ', this.state.appState)
-  //   if (
-  //     this.state.appState.match(/Inactive|background/) &&
-  //     nextAppState === 'active'
-  //   ) {
-  //     if (this.props.api && this.props.selectedSite.KDVR > 0) {
-  //       this.props.actions.getPVMData(
-  //         this.props.api,
-  //         this.props.selectedSite.KDVR
-  //       );
-  //     }
-  //   }
-  //   this.setState({
-  //     appState: nextAppState,
-  //   });
-  // };
+    this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
+      StatusBar.setHidden(!this.isHeaderShown);
+    });
+    this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
+      StatusBar.setHidden(false);
+    });
+  }
 
   renderFullScreenButton(foreColor) {
     return (
@@ -157,6 +128,7 @@ class OAMDetailView extends Component {
       </View>
     );
   }
+
   onFullScreenPress = () => {
     const {oamStore} = this.props;
     this.isHeaderShown = !this.isHeaderShown;
@@ -164,6 +136,7 @@ class OAMDetailView extends Component {
     this.props.navigation.setOptions({
       headerShown: this.isHeaderShown,
     });
+    StatusBar.setHidden(!this.isHeaderShown);
   };
 
   render() {
