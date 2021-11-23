@@ -86,7 +86,7 @@ class AcknowledgePopup extends Component {
                 size={24}
                 color={CMSColors.PrimaryColor}
               />
-              <Text style={{paddingLeft: 10}}> {warningMessages[0]}</Text>
+              <Text style={{paddingLeft: 10}}> {warningMessages[index]}</Text>
             </Ripple>
           ) : null;
         })}
