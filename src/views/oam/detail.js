@@ -170,7 +170,9 @@ class OAMDetailView extends Component {
     let backColor = oamStore.data.backColor || '#008000';
     let foreColor = oamStore.data.foreColor || '#ffffff';
     let untilCapacityText =
-      untilCapacity && untilCapacity > 0 ? untilCapacity.toString() : 'Full';
+      !isNaN(untilCapacity) && untilCapacity >= 0
+        ? untilCapacity.toString()
+        : 'Full';
 
     return (
       <View
