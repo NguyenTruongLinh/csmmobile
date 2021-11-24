@@ -105,7 +105,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(0)}
               icon={Home_Alarm}
               title="Alarm"
-              alertCount={userStore.getWidgetCount(WIDGET_COUNTS.ALARM)}
+              alertCount={userStore.alarmWidgetCount}
               titleStyle={styles.topWidgetTitle}
               onPress={this.onAlarmPress}
             />
@@ -126,7 +126,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(2)}
               icon={Home_Health}
               title="Health Monitor"
-              alertCount={userStore.getWidgetCount(WIDGET_COUNTS.HEALTH)}
+              alertCount={userStore.healthWidgetCount}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onHealthPress}
             />
@@ -136,7 +136,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(3)}
               icon={Home_SmartER}
               title="Smart-ER"
-              alertCount={userStore.getWidgetCount(WIDGET_COUNTS.SMART_ER)}
+              alertCount={userStore.smartWidgetCount}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onSmartERPress}
             />
@@ -148,7 +148,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(4)}
               icon={Home_OAM}
               title="OAM"
-              alertCount={userStore.getWidgetCount(WIDGET_COUNTS.OAM)}
+              alertCount={userStore.oamWidgetCount}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onOAMPress}
             />

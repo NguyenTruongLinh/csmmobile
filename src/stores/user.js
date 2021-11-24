@@ -60,10 +60,6 @@ const WidgetCountModel = types.model({
   total: types.number,
 });
 
-const parseWidgetCount = (map, newCounts) => {
-  newCounts.map(count => map.put({id: '' + count.Id, total: count.Total}));
-};
-
 const APIModel = types
   .model({
     url: types.string,
@@ -244,6 +240,13 @@ const UserSettingsModel = types.model({
   alertTypes: types.array(AlertTypeModel),
 });
 
+const WidgeCountsModel = types.model({
+  602: types.maybeNull(types.number),
+  603: types.maybeNull(types.number),
+  604: types.maybeNull(types.number),
+  607: types.maybeNull(types.number),
+});
+
 export const UserStoreModel = types
   .model({
     user: types.maybeNull(UserModel),
@@ -260,8 +263,7 @@ export const UserStoreModel = types
     //
     settings: types.maybeNull(UserSettingsModel),
     //
-    widgetCounts: types.map(WidgetCountModel),
-    widgetCountAutoUpdateFlag: types.boolean,
+    widgetCounts: types.maybeNull(WidgeCountsModel),
   })
   .volatile(self => ({
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
@@ -285,6 +287,24 @@ export const UserStoreModel = types
         }
       }
       return result;
+    },
+    get alarmWidgetCount() {
+      return self.widgetCounts
+        ? self.widgetCounts[WIDGET_COUNTS.ALARM] || 0
+        : 0;
+    },
+    get healthWidgetCount() {
+      return self.widgetCounts
+        ? self.widgetCounts[WIDGET_COUNTS.HEALTH] || 0
+        : 0;
+    },
+    get smartWidgetCount() {
+      return self.widgetCounts
+        ? self.widgetCounts[WIDGET_COUNTS.SMART_ER] || 0
+        : 0;
+    },
+    get oamWidgetCount() {
+      return self.widgetCounts ? self.widgetCounts[WIDGET_COUNTS.OAM] || 0 : 0;
     },
   }))
   .actions(self => ({
@@ -410,18 +430,14 @@ export const UserStoreModel = types
     }),
     getDataPostLogin: flow(function* () {
       try {
-        const [
-          uPhotoRes,
-          modulesRes,
-          alertTypesRes,
-          registerTokenRes,
-        ] = yield Promise.all([
-          self.getUserPhoto(),
-          self.getPrivilege(),
-          self.getAlertTypesSettings(),
-          self.registerToken(),
-          // self.getWidgetCounts(),
-        ]);
+        const [uPhotoRes, modulesRes, alertTypesRes, registerTokenRes] =
+          yield Promise.all([
+            self.getUserPhoto(),
+            self.getPrivilege(),
+            self.getAlertTypesSettings(),
+            self.registerToken(),
+            // self.getWidgetCounts(),
+          ]);
         __DEV__ &&
           console.log(
             'GOND getDataPostLogin ',
@@ -508,12 +524,11 @@ export const UserStoreModel = types
           );
           __DEV__ && console.log('GOND user getWidgetCounts: res = ', res);
           if (!Array.isArray(res)) return false;
-          parseWidgetCount(self.widgetCounts, res);
-          __DEV__ &&
-            console.log(
-              'GOND user self.widgetCounts.get(WIDGET_COUNTS.HEALTH).total: = ',
-              self.widgetCounts.get(WIDGET_COUNTS.HEALTH).total
-            );
+          let data = {};
+          res.map(item => {
+            data['' + item.Id] = item.Total;
+          });
+          self.widgetCounts = WidgeCountsModel.create(data);
           return true;
         } catch (err) {
           __DEV__ && console.log('GOND get user getWidgetCounts failed: ', err);
@@ -522,17 +537,6 @@ export const UserStoreModel = types
       }
       return false;
     }),
-    getWidgetCount(widgetId) {
-      let obj = self.widgetCounts.get(widgetId);
-      __DEV__ &&
-        console.log(
-          'GOND get user getWidgetCount widgetId ',
-          widgetId,
-          'obj: ',
-          obj
-        );
-      return obj ? obj.total : 0;
-    },
     intervalUpdateWidgetCounts() {
       // return;
       return setInterval(function () {
@@ -826,8 +830,7 @@ const userStore = UserStoreModel.create({
     selectedExceptions: [],
     alertTypes: [],
   }),
-  widgetCounts: {},
-  widgetCountAutoUpdateFlag: false,
+  widgetCounts: null,
 });
 
 export default userStore;
