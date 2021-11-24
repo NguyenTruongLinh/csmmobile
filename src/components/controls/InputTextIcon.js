@@ -306,9 +306,6 @@ export default class InputTextIcon extends PureComponent {
         // onPress={() =>  __DEV__ && console.log('GOND icon customed name: ', iconCustom)}
       />
     ) : null;
-    const revealIconStyle = this.state.revealHidden
-      ? {}
-      : {color: CMSColors.PrimaryActive};
 
     return (
       <View style={{marginTop: -20, flexDirection: 'row', alignSelf: 'center'}}>
@@ -371,9 +368,13 @@ export default class InputTextIcon extends PureComponent {
         </View>
         {secureTextEntry && revealable && iconPosition != 'right' ? (
           <IconCustom
-            name={'turn-visibility-off-button'}
+            name={
+              this.state.revealHidden
+                ? 'ic_remove_red_eye_24px'
+                : 'turn-visibility-off-button'
+            }
             size={variable.fix_fontSize_Icon}
-            style={[{color: baseColor}, styles.rightIcon, revealIconStyle]}
+            style={[{color: baseColor}, styles.rightIcon]}
             onPress={() => {
               //  __DEV__ && console.log('GOND icon customed name: ', iconCustom);
               this.setState({revealHidden: !this.state.revealHidden});
