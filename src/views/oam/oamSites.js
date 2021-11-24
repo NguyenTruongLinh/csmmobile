@@ -113,6 +113,21 @@ class OAMSitesView extends Component {
       ))
     );
   }
+  notifyRenderArrow(item) {
+    return (
+      item.dvrs &&
+      item.dvrs.length > 1 && (
+        <IconCustom
+          name={
+            item == this.state.selectedSite ? 'expand-arrow' : 'expand-button'
+          }
+          color={CMSColors.IconButton}
+          size={12}
+          style={styles.arrowIcon}
+        />
+      )
+    );
+  }
 
   renderRow = ({item}) => {
     return (
@@ -130,6 +145,9 @@ class OAMSitesView extends Component {
             <Text style={styles.siteName}>{item.name}</Text>
           </View>
         </CMSRipple>
+
+        {this.notifyRenderArrow(item)}
+
         {this.notifyRenderDvrs(item)}
       </View>
     );
@@ -270,6 +288,11 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
     fontSize: 16,
     color: CMSColors.PrimaryText,
+  },
+  arrowIcon: {
+    position: 'absolute',
+    right: 20,
+    top: ListViewHeight / 2 - 6,
   },
 });
 
