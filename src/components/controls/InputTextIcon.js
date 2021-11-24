@@ -308,6 +308,9 @@ export default class InputTextIcon extends PureComponent {
     ) : null;
     const showFishEye =
       secureTextEntry && revealable && iconPosition != 'right';
+    const revealIconStyle = this.state.revealHidden
+      ? {}
+      : {color: CMSColors.PrimaryActive};
     return (
       <View style={{marginTop: -20, flexDirection: 'row', alignSelf: 'center'}}>
         {iconPosition == 'left' && CIcon}
@@ -380,7 +383,7 @@ export default class InputTextIcon extends PureComponent {
                 : 'turn-visibility-off-button'
             }
             size={variable.fix_fontSize_Icon}
-            style={[{color: baseColor}, styles.rightIcon]}
+            style={[styles.rightIcon, {color: 'gray'}]}
             onPress={() => {
               //  __DEV__ && console.log('GOND icon customed name: ', iconCustom);
               this.setState({revealHidden: !this.state.revealHidden});
