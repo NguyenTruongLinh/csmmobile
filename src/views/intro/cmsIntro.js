@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
-
+import {normalize} from '../../util/general';
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 
 // import appStore from '../../stores/appStore';
@@ -161,6 +161,7 @@ class CMSIntroView extends Component {
               type={'flat'}
               caption={'SKIP'}
               onPress={this.onSkipIntro}
+              captionStyle={styles.buttonCaption}
             />
           </View>
           <View style={styles.listContainer}>
@@ -196,6 +197,7 @@ class CMSIntroView extends Component {
                   type={'flat'}
                   caption={'BACK'}
                   onPress={this.onBackStep}
+                  captionStyle={styles.buttonCaption}
                 />
               )}
             </View>
@@ -204,13 +206,14 @@ class CMSIntroView extends Component {
                 enable={true}
                 style={[
                   styles.nextButton,
-                  {minWidth: this.state.showGetStartedButton ? 150 : 100},
+                  // {minWidth: this.state.showGetStartedButton ? 150 : 100},
                 ]}
                 // type={'primary'}
                 type={'primary'}
                 caption={
                   this.state.showGetStartedButton ? 'GET STARTED' : 'NEXT'
                 }
+                captionStyle={styles.buttonCaption}
                 onPress={this.onNextStep}
               />
             </View>
@@ -261,6 +264,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 56,
     flexWrap: 'wrap',
     fontFamily: 'Roboto-Regular',
+    marginTop: 20,
   },
   skipContainer: {
     flex: 1,
@@ -288,17 +292,24 @@ const styles = StyleSheet.create({
     // height: 63,
     // marginLeft: 28,
     // marginRight: 49,
+    // marginHorizontal: 24,
     margin: 42,
     alignSelf: 'flex-start',
   },
   nextContainer: {flex: 1, alignContent: 'flex-end'},
   nextButton: {
     // backgroundColor: CMSColors.PrimaryActive,
-    // height: 63,
+    height: 48,
+    minWidth: 127,
     // marginLeft: 49,
     // marginRight: 35,
-    margin: 42,
+    marginHorizontal: 24,
+    marginVertical: 42,
     alignSelf: 'flex-end',
+  },
+  buttonCaption: {
+    fontSize: normalize(15),
+    fontWeight: 'bold',
   },
 });
 
