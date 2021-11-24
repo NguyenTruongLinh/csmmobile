@@ -293,8 +293,9 @@ const styles = StyleSheet.create({
     // marginLeft: 28,
     // marginRight: 49,
     // marginHorizontal: 24,
-    margin: 42,
+    margin: 16,
     alignSelf: 'flex-start',
+    minWidth: 127,
   },
   nextContainer: {flex: 1, alignContent: 'flex-end'},
   nextButton: {
@@ -304,7 +305,6 @@ const styles = StyleSheet.create({
     // marginLeft: 49,
     // marginRight: 35,
     marginHorizontal: 24,
-    marginVertical: 42,
     alignSelf: 'flex-end',
   },
   buttonCaption: {
