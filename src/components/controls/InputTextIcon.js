@@ -306,7 +306,8 @@ export default class InputTextIcon extends PureComponent {
         // onPress={() =>  __DEV__ && console.log('GOND icon customed name: ', iconCustom)}
       />
     ) : null;
-
+    const showFishEye =
+      secureTextEntry && revealable && iconPosition != 'right';
     return (
       <View style={{marginTop: -20, flexDirection: 'row', alignSelf: 'center'}}>
         {iconPosition == 'left' && CIcon}
@@ -316,7 +317,12 @@ export default class InputTextIcon extends PureComponent {
           onResponderRelease={this.focus}
           style={styles.flex}>
           <TextField
-            style={[styles.input, inputStyle, style]}
+            style={[
+              styles.input,
+              inputStyle,
+              style,
+              showFishEye ? {paddingRight: 40} : {},
+            ]}
             selectionColor={noBorder ? CMSColors.Transparent : tintColor}
             tintColor={noBorder ? CMSColors.Transparent : tintColor}
             baseColor={noBorder ? CMSColors.Transparent : baseColor}
@@ -366,7 +372,7 @@ export default class InputTextIcon extends PureComponent {
             <Counter {...{baseColor, errorColor, count, limit}} />
           </Animated.View>
         </View>
-        {secureTextEntry && revealable && iconPosition != 'right' ? (
+        {showFishEye ? (
           <IconCustom
             name={
               this.state.revealHidden
@@ -406,6 +412,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 10,
     padding: 10,
+    backgroundColor: 'white',
   },
   input: {
     top: 2,

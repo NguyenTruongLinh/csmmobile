@@ -211,7 +211,7 @@ class LoginView extends Component {
     // );
 
     return (
-      <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
         <KeyboardAwareScrollView
           // keyBoardShouldPersistTaps="always"
           ref={r => {
