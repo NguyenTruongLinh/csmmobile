@@ -289,22 +289,20 @@ export const UserStoreModel = types
       return result;
     },
     get alarmWidgetCount() {
-      return self.widgetCounts
-        ? self.widgetCounts[WIDGET_COUNTS.ALARM] || 0
-        : 0;
+      return (self.widgetCounts && self.widgetCounts[WIDGET_COUNTS.ALARM]) || 0;
     },
     get healthWidgetCount() {
-      return self.widgetCounts
-        ? self.widgetCounts[WIDGET_COUNTS.HEALTH] || 0
-        : 0;
+      return (
+        (self.widgetCounts && self.widgetCounts[WIDGET_COUNTS.HEALTH]) || 0
+      );
     },
     get smartWidgetCount() {
-      return self.widgetCounts
-        ? self.widgetCounts[WIDGET_COUNTS.SMART_ER] || 0
-        : 0;
+      return (
+        (self.widgetCounts && self.widgetCounts[WIDGET_COUNTS.SMART_ER]) || 0
+      );
     },
     get oamWidgetCount() {
-      return self.widgetCounts ? self.widgetCounts[WIDGET_COUNTS.OAM] || 0 : 0;
+      return (self.widgetCounts && self.widgetCounts[WIDGET_COUNTS.OAM]) || 0;
     },
   }))
   .actions(self => ({
@@ -545,8 +543,8 @@ export const UserStoreModel = types
       }, 30000); // 30 secs
     },
     resetWidgetCount: flow(function* (widgetId) {
-      if (self.getWidgetCount(widgetId) === 0) return true;
-      self.widgetCounts.put({id: '' + widgetId, total: 0});
+      if (self.widgetCounts[widgetId] === 0) return true;
+      self.widgetCounts[widgetId] = 0;
       try {
         const res = yield apiService.post(
           UserRoute.controller,
