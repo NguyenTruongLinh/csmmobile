@@ -371,6 +371,7 @@ export const ExceptionSortField = {
   RiskFactor: 1,
   TotalAmount: 2,
   RatioToSale: 3,
+  Count: 4,
 };
 
 export const ExceptionSortFieldName = [

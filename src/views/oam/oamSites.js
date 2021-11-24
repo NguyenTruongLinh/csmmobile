@@ -133,6 +133,7 @@ class OAMSitesView extends Component {
     return (
       <View>
         <CMSRipple
+          delayTime={item.dvrs && item.dvrs.length > 1 ? 0 : undefined}
           rippleOpacity={0.8}
           onPress={() => this.onSiteSelected(item)}
           style={styles.listItemRipple}>

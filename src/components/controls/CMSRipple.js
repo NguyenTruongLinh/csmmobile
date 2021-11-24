@@ -4,6 +4,10 @@ import Ripple from 'react-native-material-ripple';
 const REST_TIME = 1500;
 
 export default class CMSRipple extends React.Component {
+  static defaultProps = {
+    delayTime: REST_TIME,
+  };
+
   constructor(props) {
     super(props);
 
@@ -11,15 +15,15 @@ export default class CMSRipple extends React.Component {
       resting: false,
     };
 
-    this._isMmounted = false;
+    this._isMounted = false;
   }
 
   componentDidMount() {
-    this._isMmounted = true;
+    this._isMounted = true;
   }
 
   componentWillUnmount() {
-    this._isMmounted = false;
+    this._isMounted = false;
   }
 
   componentDidCatch(error, info) {
@@ -28,20 +32,26 @@ export default class CMSRipple extends React.Component {
   }
 
   onPress = event => {
-    if (this.state.resting) return;
-
-    this.setState(
-      {
-        resting: true,
-      },
-      () => {
-        setTimeout(() => {
-          if (this._isMmounted) {
-            this.setState({resting: false});
-          }
-        }, REST_TIME);
+    if (this.props.delayTime !== 0) {
+      if (this.state.resting) {
+        __DEV__ &&
+          console.log('GOND CMSRipple is resting...', this.props.delayTime);
+        return;
       }
-    );
+
+      this.setState(
+        {
+          resting: true,
+        },
+        () => {
+          setTimeout(() => {
+            if (this._isMounted) {
+              this.setState({resting: false});
+            }
+          }, this.props.delayTime);
+        }
+      );
+    }
 
     this.props.onPress(event);
   };

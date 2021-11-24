@@ -29,8 +29,8 @@ const EmployeeExceptionModel = types.model({
   percentToSale: types.number,
   totalTran: types.number,
   date: types.string, // Date?
-  employerId: types.maybeNull(types.number),
-  employerName: types.maybeNull(types.string),
+  employeeId: types.maybeNull(types.number),
+  employeeName: types.maybeNull(types.string),
   // storeId: types.maybeNull(types.number),
   // storeName: types.maybeNull(types.string),
   exceptionAmount: types.number,
@@ -237,7 +237,7 @@ export const POSModel = types
   .model({
     showChartView: types.boolean,
     filterParams: types.maybeNull(ExceptionParamsModel),
-    searchSiteText: types.string,
+    groupFilter: types.string,
     // isBackFromFCM: types.boolean,
     exceptionsGroup: types.maybeNull(ExceptionGroupModel),
     // exceptionsGroupByEmployee: types.array(ExceptionGroupModel), // use with computed views
@@ -245,10 +245,18 @@ export const POSModel = types
 
     isLoading: types.boolean,
     isGroupLoading: types.boolean,
+
+    sortField: types.optional(
+      types.number,
+      ExceptionSortField.RiskFactor /*ExceptionSortField.RatioToSale*/
+    ),
   })
   .views(self => ({
     get exceptionTypesData() {
       return self.exceptionTypes.map(item => item.data);
+    },
+    get totalRiskFactors() {
+      return self.exceptionsGroup ? self.exceptionsGroup.totalRiskFactors : 0;
     },
     get startDateTime() {
       return self.filterParams && self.filterParams.sDate
@@ -268,15 +276,67 @@ export const POSModel = types
           )
         : DateTime.now().setZone('utc').minus({days: 1}).endOf('day');
     },
+    // get sortFieldName() {
+    //   return ExceptionSortFieldName[
+    //     self.filterParams
+    //       ? self.filterParams.sort ?? ExceptionSortField.RiskFactor
+    //       : ExceptionSortField.RiskFactor
+    //   ];
+    // },
     get sortFieldName() {
-      return ExceptionSortFieldName[
-        self.filterParams
-          ? self.filterParams.sort ?? ExceptionSortField.RiskFactor
-          : ExceptionSortField.RiskFactor
-      ];
+      return ExceptionSortFieldName[self.sortField];
     },
     get exceptionsGroupData() {
       return self.exceptionsGroup ? self.exceptionsGroup.data : [];
+    },
+    get filteredGroupsData() {
+      return self.groupFilter.length == 0
+        ? self.exceptionsGroupData
+        : self.exceptionsGroupData.filter(d =>
+            d.siteName
+              .toLowerCase()
+              .includes(
+                self.groupFilter.toLowerCase() ||
+                  d.employees.find(e =>
+                    e.employerName
+                      .toLowerCase()
+                      .includes(self.groupFilter.toLowerCase())
+                  )
+              )
+          );
+    },
+    get chartData() {
+      const data = self.exceptionsGroup
+        ? self.exceptionsGroup.data.map(x => {
+            let value = 0;
+            switch (self.sortField) {
+              case ExceptionSortField.RiskFactor:
+                value = x.riskFactor;
+                break;
+              case ExceptionSortField.TotalAmount:
+                value = x.totalAmount;
+                break;
+              case ExceptionSortField.RatioToSale:
+                value = x.percentToSale;
+                break;
+              default:
+                console.log('GOND chartValues unknown field: ', self.sortField);
+                break;
+            }
+
+            return {
+              name: x.siteName,
+              value,
+            };
+          })
+        : [];
+
+      return data.sort((a, b) => a.value - b.value);
+    },
+    get displaySortFields() {
+      return Object.values(ExceptionSortField).filter(
+        x => x != ExceptionSortField.Employee && x != ExceptionSortField.Count
+      );
     },
   }))
   .actions(self => ({
@@ -286,7 +346,7 @@ export const POSModel = types
 
       self.filterParams = ExceptionParamsModel.create({
         sites: siteKeys,
-        sort: ExceptionSortField.RiskFactor,
+        sort: ExceptionSortField.RatioToSale,
         groupBy: GroupByException.SITE,
         emprisk: 'emprisk',
         page: 1,
@@ -297,6 +357,19 @@ export const POSModel = types
 
         // siteKey: '', // add later?
       });
+    },
+    setFilterParams(params) {
+      self.filterParams.setParams(params);
+    },
+    setGroupFilter(value) {
+      self.groupFilter = value;
+    },
+    setSortField(value) {
+      if (value < 0 || value >= ExceptionSortField.Count) {
+        console.log('GOND setSortField out of bound: ', value);
+        return;
+      }
+      self.sortField = value;
     },
     // #endregion Setters
     // #region Get data
@@ -334,20 +407,56 @@ export const POSModel = types
       }
       self.isLoading = false;
     }),
-    getSiteDetailData: flow(function* (siteKey) {
+    getGroupDetailData: flow(function* (siteKey) {
+      let siteIndex = self.exceptionsGroupData.findIndex(
+        d => d.siteKey == siteKey
+      );
+      if (siteIndex < 0) {
+        console.log('GOND get Exception group data, site not found!');
+        return;
+      }
       self.isGroupLoading = true;
       // self.filterParams.setParams({siteKey});
+      if (self.exceptionsGroupData[siteIndex].employees.length > 0) {
+        __DEV__ &&
+          console.log(
+            'GOND get Exception group data, site data already existed!'
+          );
+        return;
+      }
       try {
         const res = yield apiService.get(Exception.controller, '', '', {
           ...self.filterParams,
-          siteKey,
+          groupBy: GroupByException.EMPL,
+          sites: [siteKey].toString(),
+          // siteKey,
         });
-        __DEV__ && console.log('GOND getExceptionsSummaryBySite = ', res);
+        __DEV__ && console.log('GOND getGroupDetailData = ', res);
 
-        self.exceptionsGroup = parseExceptionGroup(res);
+        if (
+          !res ||
+          !res.Data ||
+          !Array.isArray(res.Data) ||
+          res.Data.length == 0
+        ) {
+          __DEV__ && console.log('GOND getGroupDetailData no data:', res);
+          return;
+        }
+        self.exceptionsGroupData[siteIndex].employees = res.Data.map(item =>
+          EmployeeExceptionModel.create({
+            riskFactor: item.RiskFactor,
+            countRisk: item.CountRisk,
+            totalAmount: item.TotalAmount,
+            percentToSale: item.PercentToSale,
+            totalTran: item.TotalTran,
+            date: item.Date,
+            employeeId: item.EmployerId,
+            employeeName: item.EmployerName,
+            exceptionAmount: item.ExceptionAmount,
+          })
+        );
       } catch (error) {
-        __DEV__ &&
-          console.log('GOND getExceptionsSummaryBySite error = ', error);
+        __DEV__ && console.log('GOND getGroupDetailData error = ', error);
       }
       self.isGroupLoading = false;
     }),
@@ -360,7 +469,7 @@ export const POSModel = types
 const storeDefault = {
   showChartView: true,
   filterParams: null,
-  searchSiteText: '',
+  groupFilter: '',
   // isBackFromFCM: types.boolean(false),
   exceptionsGroup: null,
   exceptionTypes: [],

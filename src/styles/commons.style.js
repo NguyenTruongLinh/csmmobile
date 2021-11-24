@@ -1,7 +1,7 @@
 'use strict';
 import variable from './variables';
 import {StyleSheet, Platform} from 'react-native';
-import cmscolors, {transparent} from './cmscolors';
+import CMSColors, {transparent} from './cmscolors';
 
 module.exports = StyleSheet.create({
   rowsViewContainer: {
@@ -11,7 +11,7 @@ module.exports = StyleSheet.create({
   },
   normalViewContainer: {
     flex: 1,
-    backgroundColor: cmscolors.White,
+    backgroundColor: CMSColors.White,
   },
   // Component ActivityIndicator
   spinnerCenter: {
@@ -26,7 +26,7 @@ module.exports = StyleSheet.create({
   },
   buttonSaveText: {
     fontSize: 16,
-    color: '#436D8F',
+    color: CMSColors.PrimaryColor,
   },
   buttonSearchHeader: {
     width: 40,
@@ -51,7 +51,7 @@ module.exports = StyleSheet.create({
   flatSearchBarContainer: {
     paddingLeft: 21,
     height: 50,
-    backgroundColor: cmscolors.White,
+    backgroundColor: CMSColors.White,
   },
   // Component PullToRefreshListView
   PullToRefreshListView_Style: {
@@ -65,5 +65,31 @@ module.exports = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
+  },
+  modalButtonCancelContainer: {
+    height: 50,
+    flex: 2,
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  modalButtonApplyContainer: {
+    height: 50,
+    flex: 2,
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
+  modalButtonCancel: {
+    height: 50,
+    flex: 1,
+    justifyContent: 'center',
+    borderColor: CMSColors.PrimaryActive,
+    borderWidth: 1,
+    margin: 3,
+  },
+  modalButtonApply: {
+    height: 50,
+    flex: 1,
+    backgroundColor: CMSColors.PrimaryActive,
+    margin: 3,
   },
 });
