@@ -28,7 +28,7 @@ export const Login = {
   errorLoginIncorrect: 'Incorrect username or password.',
   errorLoginCantConnect: 'Cannot connect to server.',
   copyRight:
-    '© 2021 i3 International Inc. The i3 logos are property of I3 International Inc & i3 America Nevada Inc. All right reserved.',
+    '© 2021 i3 International Inc. The i3 logos are property of i3 International Inc & i3 America Nevada Inc. All rights reserved.',
 };
 
 export const Tabbar = {

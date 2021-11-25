@@ -127,4 +127,7 @@ module.exports = {
   Green: '#449D43',
   Yellow: '#F9A825',
   Red: '#A72D2A',
+
+  //icon
+  InputIconColor: '#757575',
 };

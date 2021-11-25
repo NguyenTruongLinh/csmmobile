@@ -212,6 +212,18 @@ class LoginView extends Component {
 
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+        <Button
+          style={styles.closeButton}
+          enable={true}
+          type={'flat'}
+          iconCustom={'clear-button'}
+          iconSize={16}
+          iconStyleEnable={{
+            color: CMSColors.ColorText,
+          }}
+          // iconStyleDisable={{}}
+          onPress={this.onBack}
+        />
         <KeyboardAwareScrollView
           // keyBoardShouldPersistTaps="always"
           ref={r => {
@@ -229,20 +241,7 @@ class LoginView extends Component {
             style={{
               flex: 1,
             }}>
-            <View style={styles.closeButtonContainer}>
-              <Button
-                style={styles.closeButton}
-                enable={true}
-                type={'flat'}
-                iconCustom={'clear-button'}
-                iconSize={16}
-                iconStyleEnable={{
-                  color: CMSColors.ColorText,
-                }}
-                // iconStyleDisable={{}}
-                onPress={this.onBack}
-              />
-            </View>
+            <View style={styles.closeButtonContainer}></View>
             <View style={styles.space} />
             <View style={styles.logoContainer}>
               <Image
@@ -266,6 +265,7 @@ class LoginView extends Component {
                 styles.content,
                 styles.centerContent,
                 // { flex: 35 },
+                ,
               ]}>
               {/* <View style={styles.centerContent}> */}
               <View style={styles.space} />
@@ -288,6 +288,7 @@ class LoginView extends Component {
                   tintColor={CMSColors.PrimaryText}
                   textColor={CMSColors.PrimaryText}
                   baseColor={CMSColors.PrimaryText}
+                  iconColor={CMSColors.InputIconColor}
                   error={errors.domain}
                   disabled={false}
                   secureTextEntry={false}
@@ -313,6 +314,7 @@ class LoginView extends Component {
                   tintColor={CMSColors.PrimaryText}
                   textColor={CMSColors.PrimaryText}
                   baseColor={CMSColors.PrimaryText}
+                  iconColor={CMSColors.InputIconColor}
                   secureTextEntry={false}
                 />
                 <InputTextIcon
@@ -334,6 +336,7 @@ class LoginView extends Component {
                   tintColor={CMSColors.PrimaryText}
                   textColor={CMSColors.PrimaryText}
                   baseColor={CMSColors.PrimaryText}
+                  iconColor={CMSColors.InputIconColor}
                   secureTextEntry={true}
                   revealable={true}
                 />
@@ -387,7 +390,7 @@ const styles = StyleSheet.create({
     flex: 1,
     // paddingLeft: width * 0.1,
     // paddingRight: width * 0.1,
-    paddingHorizontal: width * 0.1,
+    marginHorizontal: width * 0.1,
   },
   closeButtonContainer: {
     height: 30,
@@ -396,8 +399,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   closeButton: {
-    // width: width * 0.1,
-    alignItems: 'center',
+    width: 30,
+    // alignItems: 'center',
+    position: 'absolute',
+    right: width * 0.1 - 30,
   },
   logo: {
     tintColor: CMSColors.Dark_Blue,
@@ -439,7 +444,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   content: {
-    maxWidth: variable.deviceWidth > 370 ? 400 : variable.deviceWidth,
+    maxWidth: variable.deviceWidth,
     backgroundColor: CMSColors.Transparent,
   },
   captionStyle: {

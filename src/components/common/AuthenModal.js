@@ -141,6 +141,7 @@ class AuthenModal extends Component {
             placeholder=""
             disabled={false}
             secureTextEntry={false}
+            iconColor={CMSColors.InputIconColor}
           />
           <InputTextIcon
             ref={r => (this._refs.password = r)}
@@ -157,6 +158,7 @@ class AuthenModal extends Component {
             secureTextEntry={!showpass}
             limit={32}
             revealable={true}
+            iconColor={CMSColors.InputIconColor}
           />
           {/* {check_box} */}
         </View>

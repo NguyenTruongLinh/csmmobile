@@ -220,6 +220,7 @@ export default class InputTextIcon extends PureComponent {
       tintColor,
       baseColor,
       textColor,
+      iconColor,
       errorColor,
       secureTextEntry,
       revealable,
@@ -294,7 +295,11 @@ export default class InputTextIcon extends PureComponent {
       <Icon
         name={icon}
         size={variable.fix_fontSize_Icon}
-        style={[{color: baseColor}, styles.icon, label ? {} : {paddingTop: 28}]}
+        style={[
+          {color: iconColor || baseColor},
+          styles.icon,
+          label ? {} : {paddingTop: 28},
+        ]}
         // onPress={() =>  __DEV__ && console.log('GOND icon name: ', icon)}
       />
     ) : null;
@@ -302,7 +307,11 @@ export default class InputTextIcon extends PureComponent {
       <IconCustom
         name={iconCustom}
         size={variable.fix_fontSize_Icon}
-        style={[{color: baseColor}, styles.icon, label ? {} : {paddingTop: 28}]}
+        style={[
+          {color: iconColor || baseColor},
+          styles.icon,
+          label ? {} : {paddingTop: 28},
+        ]}
         // onPress={() =>  __DEV__ && console.log('GOND icon customed name: ', iconCustom)}
       />
     ) : null;
@@ -383,7 +392,7 @@ export default class InputTextIcon extends PureComponent {
                 : 'turn-visibility-off-button'
             }
             size={variable.fix_fontSize_Icon}
-            style={[styles.rightIcon, {color: 'gray'}]}
+            style={[{color: iconColor || baseColor}, styles.rightIcon]}
             onPress={() => {
               //  __DEV__ && console.log('GOND icon customed name: ', iconCustom);
               this.setState({revealHidden: !this.state.revealHidden});
