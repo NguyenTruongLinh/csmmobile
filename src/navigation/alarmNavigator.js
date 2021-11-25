@@ -42,7 +42,25 @@ export default function AlarmStack() {
       />
       <AStack.Screen name={ROUTERS.ALARM_SEARCH} component={AlarmsSearchView} />
       <AStack.Screen name={ROUTERS.ALARM_DETAIL} component={AlarmDetailView} />
-      <AStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
+      <AStack.Screen
+        name={ROUTERS.VIDEO_PLAYER}
+        component={VideoPlayerView}
+        options={({route, navigation}) => ({
+          headerLeft: () => (
+            <BackButton
+              navigator={navigation}
+              icon="clear-button"
+              color={CMSColors.White}
+            />
+          ),
+          headerStyle: {
+            backgroundColor: CMSColors.DarkElement,
+          },
+          headerTitleStyle: {
+            color: CMSColors.White,
+          },
+        })}
+      />
     </AStack.Navigator>
   );
 }

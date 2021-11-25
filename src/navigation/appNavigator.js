@@ -33,6 +33,7 @@ import ROUTERS, {getHeaderTitle} from '../consts/routes';
 
 import BackButton from '../components/controls/BackButton';
 import variables from '../styles/variables';
+import CMSColors from '../styles/cmscolors';
 // import cmscolors from '../styles/cmscolors';
 
 // const getHeaderOptions = route => {
@@ -68,7 +69,25 @@ const OAMStack = () => (
     headerMode="float">
     <OAStack.Screen name={ROUTERS.OAM_SITES} component={OAMSitesView} />
     <OAStack.Screen name={ROUTERS.OAM_DETAIL} component={OAMDetailView} />
-    <OAStack.Screen name={ROUTERS.VIDEO_PLAYER} component={VideoPlayerView} />
+    <OAStack.Screen
+      name={ROUTERS.VIDEO_PLAYER}
+      component={VideoPlayerView}
+      options={({route, navigation}) => ({
+        headerLeft: () => (
+          <BackButton
+            navigator={navigation}
+            icon="clear-button"
+            color={CMSColors.White}
+          />
+        ),
+        headerStyle: {
+          backgroundColor: CMSColors.DarkElement,
+        },
+        headerTitleStyle: {
+          color: CMSColors.White,
+        },
+      })}
+    />
   </OAStack.Navigator>
 );
 
