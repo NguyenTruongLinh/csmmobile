@@ -48,12 +48,13 @@ export default class HomeWidget extends React.Component {
           {!isNaN(alertCount) && alertCount > 0 && !isDisable && (
             <View
               style={{
-                width: '24%',
+                minWidth: '24%',
                 height: '100%',
                 backgroundColor: CMSColors.PrimaryActive,
                 borderBottomLeftRadius: 10,
                 borderTopRightRadius: 16,
                 justifyContent: 'center',
+                paddingHorizontal: 5,
               }}>
               <Text style={{textAlign: 'center', color: CMSColors.White}}>
                 {alertCount}
