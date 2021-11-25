@@ -71,7 +71,7 @@ class OAMSitesView extends Component {
   onDvrSelected = dvr => {
     const {oamStore, navigation} = this.props;
     if (dvr) {
-      oamStore.setTitle(dvr.name);
+      oamStore.setTitle(`${this.state.selectedSite.name} - ${dvr.name}`);
       oamStore.setKdvr(dvr.kDVR);
       navigation.push(ROUTERS.OAM_DETAIL);
     }
