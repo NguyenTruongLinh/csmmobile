@@ -66,6 +66,49 @@ module.exports = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
   },
+  modalContainer: {
+    flexDirection: 'column',
+    flex: 1,
+    marginTop: '10%',
+    backgroundColor: CMSColors.DividerColor24_HEX,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  modalHeader: {
+    // flex: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    backgroundColor: CMSColors.White,
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+        shadowOffset: {
+          height: 0,
+          width: 0,
+        },
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  modalFooter: {
+    height: 50,
+    backgroundColor: CMSColors.White,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    color: CMSColors.PrimaryText,
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   modalButtonCancelContainer: {
     height: 50,
     flex: 2,

@@ -121,7 +121,6 @@ export const HEALTH = {
 export const SMARTER = {
   SHOW_CHART: 'SHOW CHART',
   SHOW_DATA: 'SHOW DATA',
-  SEARCH_CONDITIONS: 'Search conditions',
   SORT_MODAL_TITLE: 'Risk factor type',
   TOTAL_RISK: 'Total risk factor',
   ORDER_TIME: 'Order time',
@@ -134,6 +133,7 @@ export const SMARTER = {
   FLAG: 'Flag',
   PAYMENT: 'Payment',
   CHANGE: 'Change',
+  FILTER_MODAL_TITLE: 'Search conditions',
 };
 
 export const COMMON = {

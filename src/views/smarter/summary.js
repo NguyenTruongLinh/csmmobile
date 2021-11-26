@@ -28,6 +28,7 @@ import {
 } from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
 import InputTextIcon from '../../components/controls/InputTextIcon';
+import ExceptionSearchModal from './FilterModal';
 
 import {formatNumber, isNullOrUndef} from '../../util/general';
 import {
@@ -52,7 +53,7 @@ class DashboardView extends React.Component {
       // sortField: ExceptionSortField.RatioToSale,
       showChart: true, // Only 2 modes: show chart or show data
       showSortModal: false,
-      showFilterModal: false,
+      showFilterModal: true, // false,
       activeGroup: null,
     };
 
@@ -113,14 +114,23 @@ class DashboardView extends React.Component {
 
   onSelectEmployee = employee => {
     const {exceptionStore, navigation} = this.props;
+    __DEV__ && console.log('GOND onSelectEmployee: ', employee);
   };
 
   onSelectGroup = async updatedSections => {
+    if (updatedSections.length === 0) {
+      this.setState({activeGroup: []});
+      return;
+    }
+
     const {exceptionStore} = this.props;
     __DEV__ && console.log('GOND on section changed: ', updatedSections);
+
     let selectedSection = updatedSections.find(
       idx => idx != this.state.activeGroup
     );
+    __DEV__ &&
+      console.log('GOND on section changed selectedSection: ', selectedSection);
     if (
       isNullOrUndef(selectedSection) ||
       selectedSection >= exceptionStore.filteredGroupsData.length
@@ -236,14 +246,13 @@ class DashboardView extends React.Component {
                 height: 48,
                 backgroundColor: CMSColors.White,
                 borderBottomWidth: 0.5,
-                borderColor: 'rgb(204, 204, 204)',
+                borderColor: CMSColors.BorderColorListRow,
               },
               isActive == true
                 ? {
-                    backgroundColor: CMSColors.White,
                     borderBottomWidth: 0,
                   }
-                : null,
+                : {},
             ]}>
             <View style={{marginLeft: 19, marginRight: 14}}>
               <IconCustom
@@ -464,12 +473,6 @@ class DashboardView extends React.Component {
             iconPosition="right"
           />
         </View>
-        {/* <FlatList
-          data={exceptionStore.filteredGroupsData}
-          renderItem={this.renderDataItem}
-          keyExtractor={(item, index) => item.siteKey ?? 'grp_' + index}
-          refreshing={exceptionStore.isLoading}
-        /> */}
         <Accordion
           activeSections={[this.state.activeGroup]}
           style={{}}
@@ -477,7 +480,7 @@ class DashboardView extends React.Component {
           renderHeader={this.renderGroupHeader}
           renderContent={this.renderGroupContent}
           onChange={this.onSelectGroup}
-          touchableComponent={props => <CMSRipple {...props} />}
+          touchableComponent={props => <CMSRipple {...props} delayTime={0} />}
         />
       </View>
     );
@@ -513,7 +516,7 @@ class DashboardView extends React.Component {
               config: {
                 drawValues: true,
                 valueTextSize: 16,
-                valueTextColor: processColor('white'),
+                valueTextColor: processColor('black'),
                 visible: true,
                 valueFormatter: exceptionStore.chartData.map(
                   x => x.name + ' - ' + x.value
@@ -624,7 +627,7 @@ class DashboardView extends React.Component {
 
   render() {
     const {exceptionStore, sitesStore} = this.props;
-    const {showChart} = this.state;
+    const {showChart, showFilterModal} = this.state;
     const content = showChart ? this.renderChartView() : this.renderDataView();
 
     return (
@@ -633,7 +636,7 @@ class DashboardView extends React.Component {
           style={{
             flex: 1,
             flexDirection: 'row',
-            paddingHorizontal: 7,
+            paddingHorizontal: 12,
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
@@ -689,6 +692,18 @@ class DashboardView extends React.Component {
           </View>
         </View>
         {this.renderSortModal()}
+        <ExceptionSearchModal
+          isVisible={showFilterModal}
+          sitesStore={sitesStore}
+          sites={sitesStore.sitesList}
+          filteredSites={sitesStore.filteredSites}
+          dateFrom={exceptionStore.startDateTime}
+          dateTo={exceptionStore.endDateTime}
+          onDismiss={() => this.setState({showFilterModal: false})}
+          onSubmit={() => {
+            this.setState({showFilterModal: false});
+          }}
+        />
       </View>
     );
   }

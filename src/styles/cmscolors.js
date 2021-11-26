@@ -118,6 +118,7 @@ module.exports = {
   Dismiss: 'rgba(239, 173, 78, 1)',
   TotalAlerts: 'rgba(217, 83, 79, 1)',
   Underlay: '#AAA',
+  ChartLine: '#FFC107',
 
   //Bottom Bar
   BackgroundBar: '#fff',

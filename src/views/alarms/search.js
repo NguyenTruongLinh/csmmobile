@@ -599,9 +599,9 @@ const styles = StyleSheet.create({
   },
   modal_footer: {
     height: footer_height,
-    backgroundColor: CMSColors.modalfooter,
+    backgroundColor: CMSColors.ModalFooter,
     borderTopWidth: 1,
-    borderColor: CMSColors.footer_border,
+    borderColor: CMSColors.FooterBorder,
     //alignItems: 'flex-end',
     //paddingRight: 10,
     flexDirection: 'row',
@@ -610,10 +610,6 @@ const styles = StyleSheet.create({
   modal_footer_Apply: {
     height: footer_height,
     backgroundColor: CMSColors.White,
-    // borderTopWidth: 1,
-    // borderColor: CMSColors.footer_border,
-    //alignItems: 'flex-end',
-    //paddingRight: 10,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
