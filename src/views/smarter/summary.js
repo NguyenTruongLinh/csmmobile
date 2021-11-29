@@ -22,6 +22,7 @@ import CMSRipple from '../../components/controls/CMSRipple';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import LoadingOverlay from '../../components/common/loadingOverlay';
 import {
+  Icon,
   IconCustom,
   MaterialIcons,
   ListViewHeight,
@@ -88,9 +89,9 @@ class DashboardView extends React.Component {
     if (sitesStore.sitesList.length == 0) {
       await sitesStore.getSiteTree();
     }
-    // if (!exceptionStore.filterParams) {
-    exceptionStore.setDefaultParams(sitesStore.sitesList.map(s => s.key));
-    // }
+    if (!exceptionStore.filterParams) {
+      exceptionStore.setDefaultParams(sitesStore.sitesList.map(s => s.key));
+    }
     await exceptionStore.getExceptionsSummary();
   };
 
@@ -107,8 +108,18 @@ class DashboardView extends React.Component {
     // const selectedItem = nativeEvent.x;
     // if (!selectedItem) return;
 
-    // __DEV__ && console.log('GOND on chart click selected item: ', selectedItem);
-    this.onSelectGroup([nativeEvent.x]);
+    __DEV__ &&
+      console.log(
+        'GOND on chart click selected item: ',
+        nativeEvent
+      );
+    let index = nativeEvent.data
+      ? this.props.exceptionStore.filteredGroupsData.findIndex(
+          data => data.siteKey == nativeEvent.data.key
+        )
+      : null;
+    if (index < 0) index = null;
+    this.onSelectGroup([index]);
     this.setState({showChart: false});
   };
 
@@ -119,7 +130,7 @@ class DashboardView extends React.Component {
 
   onSelectGroup = async updatedSections => {
     if (updatedSections.length === 0) {
-      this.setState({activeGroup: []});
+      this.setState({activeGroup: null});
       return;
     }
 
@@ -145,6 +156,25 @@ class DashboardView extends React.Component {
     const groupData = exceptionStore.filteredGroupsData[selectedSection];
     await exceptionStore.getGroupDetailData(groupData.siteKey);
     this.setState({activeGroup: selectedSection});
+  };
+
+  onSubmitFilter = ({dateFrom, dateTo, selectedSites}) => {
+    const {exceptionStore} = this.props;
+    exceptionStore.setFilterParams({
+      sort: exceptionStore.sortField,
+      sDate: dateFrom.toFormat(DateFormat.QuerryDateTime),
+      eDate: dateTo.toFormat(DateFormat.QuerryDateTime),
+      sites: selectedSites,
+    });
+    __DEV__ &&
+      console.log(
+        'GOND SmartER onSubmitFilter, sDate: ',
+        dateFrom.toISO(),
+        exceptionStore.startDateTime
+      );
+
+    this.setState({showFilterModal: false});
+    this.getData();
   };
 
   renderSortModal = () => {
@@ -490,10 +520,14 @@ class DashboardView extends React.Component {
     const {exceptionStore} = this.props;
     __DEV__ &&
       console.log('GOND renderChart chartValues: ', exceptionStore.chartData);
-    const backgroundDataSet = exceptionStore.chartData.map(() => ({
+    const backgroundDataSet = exceptionStore.chartData.map(data => ({
       y: exceptionStore.chartData[exceptionStore.chartData.length - 1].value,
+      key: data.key,
     }));
-    const labelDataSet = exceptionStore.chartData.map(() => ({y: 0}));
+    const labelDataSet = exceptionStore.chartData.map(data => ({
+      y: 0,
+      key: data.key,
+    }));
 
     return (
       // <Animatable.View ref={r => (this.chartViewRef = r)}>
@@ -526,6 +560,7 @@ class DashboardView extends React.Component {
             {
               values: exceptionStore.chartData.map(data => ({
                 y: data.value,
+                key: data.key,
               })),
               label: '',
               config: {
@@ -700,9 +735,7 @@ class DashboardView extends React.Component {
           dateFrom={exceptionStore.startDateTime}
           dateTo={exceptionStore.endDateTime}
           onDismiss={() => this.setState({showFilterModal: false})}
-          onSubmit={() => {
-            this.setState({showFilterModal: false});
-          }}
+          onSubmit={this.onSubmitFilter}
         />
       </View>
     );

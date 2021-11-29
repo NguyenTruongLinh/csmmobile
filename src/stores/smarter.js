@@ -1,4 +1,4 @@
-import {flow, types, applySnapshot} from 'mobx-state-tree';
+import {flow, types, applySnapshot, getSnapshot} from 'mobx-state-tree';
 // import SiteStore from './sites';
 import BigNumber from 'bignumber.js';
 import BigNumberPrimitive from './types/bignumber';
@@ -223,8 +223,8 @@ const ExceptionTypeModel = types
 const parseExceptionType = _data =>
   ExceptionTypeModel.create({
     id: _data.Id,
-    name: _data.Name,
-    desc: _data.Desc,
+    name: _data.Name ?? '',
+    desc: _data.Desc ?? '',
     flagTime: _data.FlagTime,
     typeWeight: _data.TypeWeight,
     color: _data.Color,
@@ -246,10 +246,7 @@ export const POSModel = types
     isLoading: types.boolean,
     isGroupLoading: types.boolean,
 
-    sortField: types.optional(
-      types.number,
-      ExceptionSortField.RiskFactor /*ExceptionSortField.RatioToSale*/
-    ),
+    sortField: types.optional(types.number, ExceptionSortField.RatioToSale),
   })
   .views(self => ({
     get exceptionTypesData() {
@@ -327,6 +324,7 @@ export const POSModel = types
             return {
               name: x.siteName,
               value,
+              key: x.siteKey,
             };
           })
         : [];
@@ -392,6 +390,11 @@ export const POSModel = types
     }),
     getExceptionsSummary: flow(function* () {
       self.isLoading = true;
+      __DEV__ &&
+        console.log(
+          'GOND getExceptionsSummary, params = ',
+          getSnapshot(self.filterParams)
+        );
       try {
         const res = yield apiService.get(
           Exception.controller,

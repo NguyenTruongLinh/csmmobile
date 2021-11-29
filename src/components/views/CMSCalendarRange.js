@@ -72,7 +72,9 @@ export default class CMSCalendarRange extends React.Component {
       let current = dateFrom.plus({days: 1});
       while (current < dateTo) {
         dateRangeObj[current.toFormat(DateFormat.CalendarDate)] = {
-          ...selectedStyle,
+          // ...selectedStyle,
+          color: CMSColors.HighlightedDates,
+          textColor: CMSColors.ColorText,
           marked: true,
           selected: true,
         };
@@ -90,7 +92,11 @@ export default class CMSCalendarRange extends React.Component {
   }
 
   onDayPress = ({day, dateString, month, timestamp, year}) => {
-    const {dateFrom, dateTo} = this.props;
+    const {dateFrom, dateTo, onDateChange} = this.props;
+    if (!onDateChange || typeof onDateChange != 'function') {
+      __DEV__ && console.log('GOND CMSCalendarRange onDateChange not defined!');
+      return;
+    }
     __DEV__ &&
       console.log(
         'GOND CMSCalendarRange day pressed: ',
@@ -106,18 +112,22 @@ export default class CMSCalendarRange extends React.Component {
         ' to = ',
         dateTo
       );
-    const selectedDate = DateTime.fromISO(dateString);
+    const selectedDate = DateTime.fromISO(dateString, {zone: 'utc'});
     // Disable future selection
-    if (selectedDate > DateTime.now()) return;
+    if (selectedDate > DateTime.utc()) return;
 
     if (
       dateFrom.startOf('day').toSeconds() == dateTo.startOf('day').toSeconds()
     ) {
+      const [from, to] =
+        dateFrom <= selectedDate
+          ? [dateFrom, selectedDate]
+          : [selectedDate, dateFrom];
       __DEV__ &&
         console.log('GOND CMSCalendarRange day pressed date from == to ');
       this.props.onDateChange({
-        from: dateFrom,
-        to: selectedDate,
+        from,
+        to,
       });
     } else {
       __DEV__ &&
@@ -140,7 +150,7 @@ export default class CMSCalendarRange extends React.Component {
   };
 
   render() {
-    const today = DateTime.now();
+    const today = DateTime.utc();
     let markedData = {};
     markedData[today.toFormat(DateFormat.CalendarDate)] = {
       marked: true,
@@ -164,11 +174,10 @@ export default class CMSCalendarRange extends React.Component {
         markingType={'period'}
         onDayPress={this.onDayPress}
         markedDates={markedData}
-        // markedDates={this.state.dateRange}
         hideExtraDays={true}
         // pastScrollRange={36}
         futureScrollRange={0}
-        initialNumToRender={12}
+        initialNumToRender={6}
         animateScroll={false}
       />
       // </View>

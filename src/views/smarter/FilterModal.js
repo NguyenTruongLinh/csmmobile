@@ -6,13 +6,12 @@ import {
   StyleSheet,
   ScrollView,
   Platform,
-  Keyboard,
   FlatList,
 } from 'react-native';
 // import {CalendarList} from 'react-native-calendars';
 import {DateTime} from 'luxon';
 import Ripple from 'react-native-material-ripple';
-// import Accordion from 'react-native-collapsible/Accordion';
+import Accordion from 'react-native-collapsible/Accordion';
 import {AccordionList} from 'accordion-collapse-react-native';
 import Modal from 'react-native-modal';
 
@@ -56,8 +55,8 @@ export default class ExceptionSearchModal extends Component {
     onDismiss: () =>
       __DEV__ &&
       console.log('GOND ExceptionSearchModal onDismiss not defined!'),
-    dateFrom: DateTime.now().minus({days: 1}).startOf('day'),
-    dateTo: DateTime.now().minus({days: 1}).endOf('day'),
+    dateFrom: DateTime.utc().minus({days: 1}).startOf('day'),
+    dateTo: DateTime.utc().minus({days: 1}).endOf('day'),
     sites: [],
     isVisible: false,
   };
@@ -67,11 +66,11 @@ export default class ExceptionSearchModal extends Component {
 
     this.state = {
       // istest : false,
-      // activeSection: 'sec_site', // 'sec_calendar',
+      activeSection: 'sec_calendar',
       isSortAZ: true,
       dateFrom: props.dateFrom,
       dateTo: props.dateTo,
-      selectedSites: [],
+      selectedSites: props.sites.map(s => s.key),
       contentHeight: 460,
     };
 
@@ -126,30 +125,57 @@ export default class ExceptionSearchModal extends Component {
     onSubmit && onSubmit({dateFrom, dateTo, selectedSites});
   };
 
-  // onChangeSection = openSections => {
-  //   if (openSections.length === 0) this.setState({activeSection: null});
-  //   __DEV__ &&
-  //     console.log(
-  //       'GOND SMARTER filter on section changed: ',
-  //       openSections,
-  //       ', current: ',
-  //       this.state.activeSection
-  //     );
-  //   const selectedSection = openSections.find(
-  //     s => s != this.state.activeSection
-  //   );
-  //   __DEV__ &&
-  //     console.log('GOND SMARTER filter selectedSections: ', selectedSection);
+  onChangeSection = openSections => {
+    if (openSections.length === 0) this.setState({activeSection: null});
+    __DEV__ &&
+      console.log(
+        'GOND SMARTER filter on section changed: ',
+        openSections,
+        ', current: ',
+        this.state.activeSection
+      );
+    const selectedSection = openSections.find(
+      s => s != this.state.activeSection
+    );
+    __DEV__ &&
+      console.log('GOND SMARTER filter selectedSections: ', selectedSection);
 
-  //   if (selectedSection) this.setState({activeSection: selectedSection});
-  // };
+    if (selectedSection) this.setState({activeSection: selectedSection});
+  };
 
   onDateChange = ({from, to}) => {
+    __DEV__ &&
+      console.log('GOND SmartER filter onDateChange, from ', from.toISO());
     this.setState({dateFrom: from, dateTo: to});
   };
 
+  isSelectAllSites = () => {
+    const {sitesStore, sites, filteredSites} = this.props;
+    const {selectedSites, isSortAZ, contentHeight} = this.state;
+
+    __DEV__ &&
+      console.log(
+        'GOND compare selected sites: ',
+        selectedSites,
+        sites,
+        ' --- length cmp = ',
+        sites.length === selectedSites.length,
+        ' ---  find diff = ',
+        sites.find(s => !selectedSites.includes(s.key))
+      );
+
+    return (
+      sites.length === selectedSites.length &&
+      !(sites.find(s => !selectedSites.includes(s.key)) ?? false)
+    );
+  };
+
   onSelectAllSites = () => {
-    this.setState({selectedSites: this.props.sites.map(s => s.key)});
+    this.setState({
+      selectedSites: this.isSelectAllSites()
+        ? []
+        : this.props.sites.map(s => s.key),
+    });
   };
 
   renderHeader = () => {
@@ -200,8 +226,6 @@ export default class ExceptionSearchModal extends Component {
   };
 
   renderContent = () => {
-    // const {alarmStore, sitesStore} = this.props;
-    // const {from, to, params} = this.state;
     // __DEV__ &&
     //   console.log(
     //     'GOND render SMARTERFilter active Sections = ',
@@ -210,47 +234,17 @@ export default class ExceptionSearchModal extends Component {
 
     return (
       <View style={{flex: 75}} onLayout={this.onContentLayout}>
-        {/* <Accordion
+        <Accordion
           expandMultiple={false}
-          sections={Object.values(FILTER_SECTIONS)}
+          // sections={Object.values(FILTER_SECTIONS)}
+          sections={FILTER_PARAMS}
           activeSections={[this.state.activeSection]}
           renderHeader={this.renderSectionHeader}
           renderContent={this.renderSectionContent}
           onChange={this.onChangeSection}
           touchableComponent={props => <Ripple {...props} />}
           // renderAsFlatList={true}
-          keyExtractor={item => {
-            switch (item) {
-              case FILTER_SECTIONS.CALENDAR:
-                return 'sec_calendar';
-              case FILTER_SECTIONS.SITES:
-                return 'sec_site';
-            }
-          }}
-        /> */}
-        <AccordionList
-          list={Object.values(FILTER_PARAMS)}
-          header={this.renderSectionHeader}
-          body={this.renderSectionContent}
           keyExtractor={item => item.key}
-          // onToggle={(key, index, isActive) => {
-          //   __DEV__ &&
-          //     console.log(
-          //       'GOND SMARTER Filter accordion onToogle: ',
-          //       key,
-          //       index,
-          //       isActive,
-          //       this.calendarRef
-          //     );
-          //   if (
-          //     index == FILTER_SECTIONS.CALENDAR &&
-          //     isActive &&
-          //     this.calendarRef
-          //   ) {
-          //     __DEV__ && console.log('GOND OOOOOOOOOOOOOOOOO');
-          //     this.calendarRef.scrollToEnd({animated: false});
-          //   }
-          // }}
         />
       </View>
     );
@@ -309,7 +303,7 @@ export default class ExceptionSearchModal extends Component {
 
   renderSiteItem = ({item}) => {
     const {selectedSites} = this.state;
-    __DEV__ && console.log('GOND renderSiteItem selected: ', selectedSites);
+    // __DEV__ && console.log('GOND renderSiteItem selected: ', selectedSites);
     const isSelected = selectedSites.includes(item.key);
 
     return (
@@ -343,13 +337,10 @@ export default class ExceptionSearchModal extends Component {
   renderSitesSelection = () => {
     const {sitesStore, sites, filteredSites} = this.props;
     const {selectedSites, isSortAZ, contentHeight} = this.state;
-    const isSelectedAll =
-      sites.length === selectedSites.length &&
-      (sites.find(s => !selectedSites.includes(s.key)) ?? false);
+    const isSelectedAll = this.isSelectAllSites();
 
     return (
-      <ScrollView
-        style={{backgroundColor: CMSColors.White, height: contentHeight}}>
+      <View style={{backgroundColor: CMSColors.White, height: contentHeight}}>
         <View
           style={{
             height: 40,
@@ -418,7 +409,7 @@ export default class ExceptionSearchModal extends Component {
             />
           </View>
         </View>
-      </ScrollView>
+      </View>
     );
   };
 
@@ -429,6 +420,16 @@ export default class ExceptionSearchModal extends Component {
 
     switch (item.id) {
       case FILTER_SECTIONS.CALENDAR:
+        return (
+          <View style={{height: contentHeight}}>
+            <CMSCalendarRange
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onDateChange={this.onDateChange}
+            />
+          </View>
+        );
+
         return (
           // <View style={{height: '100%'}}>
           <ScrollView

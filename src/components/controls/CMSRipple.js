@@ -32,10 +32,14 @@ export default class CMSRipple extends React.Component {
   }
 
   onPress = event => {
-    if (this.props.delayTime !== 0) {
+    const {onPress, delayTime} = this.props;
+    if (!onPress && typeof onPress != 'function') {
+      __DEV__ && console.log('GOND CMSRipple onPress not defined!');
+      return;
+    }
+    if (delayTime !== 0) {
       if (this.state.resting) {
-        __DEV__ &&
-          console.log('GOND CMSRipple is resting...', this.props.delayTime);
+        __DEV__ && console.log('GOND CMSRipple is resting...', delayTime);
         return;
       }
 
@@ -48,12 +52,12 @@ export default class CMSRipple extends React.Component {
             if (this._isMounted) {
               this.setState({resting: false});
             }
-          }, this.props.delayTime);
+          }, delayTime);
         }
       );
     }
 
-    this.props.onPress(event);
+    onPress(event);
   };
 
   render() {
