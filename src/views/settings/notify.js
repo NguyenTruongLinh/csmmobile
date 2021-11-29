@@ -66,8 +66,10 @@ class NotifySettingView extends React.Component {
       this.props.userStore.getNotifySettings(),
       this.props.exceptionStore.getTransactionTypes(),
     ]);
-    const {selectedNotifies, selectedExceptions} =
-      this.props.userStore.settings;
+    const {
+      selectedNotifies,
+      selectedExceptions,
+    } = this.props.userStore.settings;
     if (res) {
       this.setState({
         selectedNotifies: [...selectedNotifies],
@@ -136,9 +138,13 @@ class NotifySettingView extends React.Component {
     let AlertTypeFilter = alertTypes.filter(
       x =>
         ![
-          37, 107, 108,
+          37,
+          107,
+          108,
           // temperature alarms (Ax19)
-          113, 114, 115,
+          113,
+          114,
+          115,
         ].includes(x.id)
     );
     AlertTypeFilter.map(x => {
@@ -386,7 +392,7 @@ class NotifySettingView extends React.Component {
           <View style={[styles.containIconCheck]}>
             <Icon
               name="check-square"
-              color={CMSColors.PrimaryColor}
+              color={CMSColors.PrimaryActive}
               size={24}
             />
           </View>
@@ -417,7 +423,7 @@ class NotifySettingView extends React.Component {
                   ? styles.rowButton_icon_check
                   : styles.rowButton_icon_uncheck,
               ]}
-              disabled={true}
+              disabled={false}
               color={
                 item.isCheck == true ? CMSColors.White : CMSColors.RowOptions
               }
@@ -632,7 +638,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   rowButton_icon_check: {
-    backgroundColor: CMSColors.PrimaryColor,
+    backgroundColor: CMSColors.PrimaryActive,
   },
   rowButton_icon_uncheck: {
     backgroundColor: '#D8D8D8',
