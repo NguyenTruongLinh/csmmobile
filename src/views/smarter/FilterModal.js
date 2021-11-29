@@ -71,6 +71,7 @@ export default class ExceptionSearchModal extends Component {
       dateTo: props.dateTo,
       selectedSites: props.sites.map(s => s.key),
       contentHeight: 460,
+      waitForSiteData: true,
     };
 
     this.calendarRef = null;
@@ -89,12 +90,17 @@ export default class ExceptionSearchModal extends Component {
     // }
   }
 
-  // static getDerivedStateFromProps(nextProps) {
-  //   let {dateFrom, dateTo} = nextProps;
-  //   return {
-  //     dateRange: AlarmFilter.createDateRange(dateFrom, dateTo),
-  //   };
-  // }
+  static getDerivedStateFromProps(nextProps, prevState) {
+    let {sites} = nextProps;
+    if (prevState.waitForSiteData && sites.length > 0) {
+      return {
+        selectedSites: sites.map(s => s.key),
+        waitForSiteData: false,
+      };
+    }
+
+    return {};
+  }
 
   onContentLayout = event => {
     const {width, height} = event.nativeEvent.layout;
