@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import snackbarUtil from '../util/snackbar';
 import util from '../util/general';
 
-import {No_Image} from '../consts/images';
+import {No_Image, No_Image_16_9} from '../consts/images';
 import {AlertTypes, AlertType_Support, AlertNames} from '../consts/misc';
 import {ACConfig, Alert, AlertType} from '../consts/apiRoutes';
 
@@ -33,7 +33,7 @@ const AlarmSnapshot = types
     getImage: flow(function* (kDVR, kAlertEvent, isTempSDAlert) {
       if (self.channelNo < 0 || (!isTempSDAlert && self.time == 0)) {
         __DEV__ && console.log('GOND get snapshot no image');
-        self.image = {url_thumnail: No_Image};
+        self.image = {url_thumnail: No_Image_16_9};
         return;
       }
       // __DEV__ &&
@@ -65,11 +65,11 @@ const AlarmSnapshot = types
           self.image = {base64_thumnail: res.data};
         } else {
           __DEV__ && console.log('GOND get snapshot image failed: ', res);
-          self.image = {url_thumnail: No_Image};
+          self.image = {url_thumnail: No_Image_16_9};
         }
       } catch (err) {
         __DEV__ && console.log('GOND get snapshot image error: ', err);
-        self.image = {url_thumnail: No_Image};
+        self.image = {url_thumnail: No_Image_16_9};
       }
       self.isLoading = false;
     }),
