@@ -12,7 +12,6 @@ import {
 import {DateTime} from 'luxon';
 import Ripple from 'react-native-material-ripple';
 import Accordion from 'react-native-collapsible/Accordion';
-import {AccordionList} from 'accordion-collapse-react-native';
 import Modal from 'react-native-modal';
 
 import CMSCalendarRange from '../../components/views/CMSCalendarRange';
