@@ -54,7 +54,7 @@ class DashboardView extends React.Component {
       // sortField: ExceptionSortField.RatioToSale,
       showChart: true, // Only 2 modes: show chart or show data
       showSortModal: false,
-      showFilterModal: true, // false,
+      showFilterModal: false,
       activeGroup: null,
     };
 
@@ -108,11 +108,7 @@ class DashboardView extends React.Component {
     // const selectedItem = nativeEvent.x;
     // if (!selectedItem) return;
 
-    __DEV__ &&
-      console.log(
-        'GOND on chart click selected item: ',
-        nativeEvent
-      );
+    __DEV__ && console.log('GOND on chart click selected item: ', nativeEvent);
     let index = nativeEvent.data
       ? this.props.exceptionStore.filteredGroupsData.findIndex(
           data => data.siteKey == nativeEvent.data.key
