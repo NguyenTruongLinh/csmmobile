@@ -365,7 +365,7 @@ class LiveChannelsView extends React.Component {
         style={{
           ...styles.layoutModalContainer,
           marginBottom: 0,
-          marginTop: height * 0.75,
+          marginTop: height - 220,
           marginLeft: 0,
           marginRight: 0,
           borderTopLeftRadius: 12,
@@ -578,9 +578,9 @@ const styles = StyleSheet.create({
   },
   layoutModalTitle: {
     alignContent: 'center',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
-    paddingBottom: 25,
+    paddingBottom: 36,
     paddingTop: 25,
   },
   layoutModalBody: {
