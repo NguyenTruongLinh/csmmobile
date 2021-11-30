@@ -14,6 +14,7 @@ const NavigationService = types
   .model({
     _navigator: types.frozen(),
     isReady: types.boolean,
+    isReadyForPushShowing: types.boolean,
   })
   .volatile(self => ({
     state: null,
@@ -30,6 +31,17 @@ const NavigationService = types
     },
     onStateChange(newState) {
       self.state = newState;
+      if (!self.isReadyForPushShowing)
+        self.isReadyForPushShowing =
+          newState &&
+          newState.routeNames &&
+          JSON.stringify(newState.routeNames) ==
+            JSON.stringify([
+              'homenavi',
+              'videostack',
+              'alarmstack',
+              'optionsnavi',
+            ]);
     },
 
     // setNavigationStore(store) {
@@ -54,6 +66,7 @@ const NavigationService = types
       //     params,
       //   })
       // );
+      console.log(`navigate routeName`, routeName, `options`, options);
       self._navigator.navigate(routeName, options);
     },
 

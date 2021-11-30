@@ -335,9 +335,11 @@ class NotificationController extends React.Component {
       appStore,
       oamStore,
       message,
+      debug,
     } = props;
 
     __DEV__ && console.log('GOND onNotificationOpened: ', props);
+    __DEV__ && console.log('GOND onNotificationOpened: debug = ', debug);
     const {naviService} = appStore ?? {};
     if (!message || (!message.content && !message.data)) {
       console.log('GOND OnOpenNotifyHandler message content not exist');

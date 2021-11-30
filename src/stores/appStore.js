@@ -94,6 +94,7 @@ const appStore = types
       _navigator: null,
       isReady: false,
       // _navStore: NavigationModel.create({paramsMap: {}}),
+      isReadyForPushShowing: false,
     }),
     showSearchBar: false,
   });

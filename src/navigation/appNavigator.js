@@ -281,9 +281,14 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
         appStore.setNavigator(ref);
       }}
       onReady={() => {
+        __DEV__ && console.log('GOND NavigationContainer onReady!!!!!');
         naviService && naviService.onReady(true);
       }}
-      onStateChange={state => naviService && naviService.onStateChange(state)}>
+      onStateChange={state => {
+        __DEV__ &&
+          console.log('GOND onStateChange state = ' + JSON.stringify(state));
+        naviService && naviService.onStateChange(state);
+      }}>
       {isLoggedIn && notificationController}
 
       {isLoading ? (

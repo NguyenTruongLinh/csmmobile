@@ -21,7 +21,7 @@ const Main = () => {
   PushNotification.configure({
     requestPermissions: true,
     onNotification: notification => {
-      __DEV__ && console.log('GOND PN onNotification evt: ', notification);
+      __DEV__ && console.log('GOND onNotification evt: ', notification);
       const {userInteraction} = notification;
       if (userInteraction) {
         __DEV__ &&
@@ -30,7 +30,7 @@ const Main = () => {
             appStore.naviService
           );
         naviCheckInterval = setInterval(() => {
-          if (appStore.naviService.isReady && naviCheckInterval) {
+          if (appStore.naviService.isReadyForPushShowing && naviCheckInterval) {
             clearInterval(naviCheckInterval);
             naviCheckInterval = null;
             NotificationController.onNotificationOpened({
