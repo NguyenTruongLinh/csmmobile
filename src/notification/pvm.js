@@ -111,12 +111,8 @@ function onOpenPVMEvent(
       oamStore.setTitle(title);
       oamStore.setKdvr(content.KDVR);
       navigator.navigate(ROUTERS.HOME_NAVIGATOR, {
-        screen: ROUTERS.OAM_STACK,
+        screen: ROUTERS.OAM_DETAIL,
         initial: false,
-        params: {
-          screen: ROUTERS.OAM_DETAIL,
-          initial: false,
-        },
       });
       break;
     default:

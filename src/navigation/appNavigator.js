@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Fragment} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
@@ -22,10 +22,24 @@ import OAMSitesView from '../views/oam/oamSites';
 import OAMDetailView from '../views/oam/detail';
 import VideoPlayerView from '../views/video/player';
 
+import SitesView from '../views/sitetree/sites';
+
+// import HealthView from '../views/health/health';
+import HealthDetailView from '../views/health/healthDetail';
+import AlertsView from '../views/health/alerts';
+import AlertDetailView from '../views/health/alertDetail';
+
+import DashboardView from '../views/smarter/summary';
+import ExceptionsView from '../views/smarter/transactions';
+import TransactionDetailView from '../views/smarter/transactionDetail';
+import TransactionFCMView from '../views/smarter/transactionDetailFCM';
+
+import ChannelsListView from '../views/video/channelsList';
+import ChannelsSettingView from '../views/video/channelsSetting';
+
 import VideoStack from './videoNavigator';
 import SettingsStack from './settingsNavigator';
 import AlarmStack from './alarmNavigator';
-import HealthStack from './healthNavigator';
 import SmartERStack from './smarterNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
@@ -51,91 +65,171 @@ import CMSColors from '../styles/cmscolors';
 //   };
 // };
 
-const OAStack = createStackNavigator();
-const OAMStack = () => (
-  <OAStack.Navigator
-    initialRouteName={ROUTERS.OAM_SITES}
-    screenOptions={({route, navigation}) => ({
-      headerStyle: {
-        // backgroundColor: CMSColors.White,
-        borderBottomWidth: 1,
-      },
-      headerStatusBarHeight: variables.StatusBarHeight,
-      headerTitleAlign: 'center',
-      headerMode: 'screen',
-      headerTitle: getHeaderTitle(route),
-      headerLeft: () => <BackButton navigator={navigation} />,
-    })}
-    headerMode="float">
-    <OAStack.Screen name={ROUTERS.OAM_SITES} component={OAMSitesView} />
-    <OAStack.Screen name={ROUTERS.OAM_DETAIL} component={OAMDetailView} />
-    <OAStack.Screen
-      name={ROUTERS.VIDEO_PLAYER}
-      component={VideoPlayerView}
-      options={({route, navigation}) => ({
-        headerLeft: () => (
-          <BackButton
-            navigator={navigation}
-            icon="clear-button"
-            color={CMSColors.White}
-          />
-        ),
-        headerStyle: {
-          backgroundColor: CMSColors.DarkElement,
-        },
-        headerTitleStyle: {
-          color: CMSColors.White,
-        },
-      })}
-    />
-  </OAStack.Navigator>
-);
-
-// const HStack = createStackNavigator();
+// const HOStack = createStackNavigator();
 // const HealthStack = () => (
-//   <HStack.Navigator initialRouteName={ROUTERS.HEALTH_SITES} headerMode="float">
-//     <HStack.Screen name={ROUTERS.HEALTH_SITES} component={HealthView} />
-//     <HStack.Screen name={ROUTERS.HEALTH_DETAIL} component={HealthDetailView} />
-//     <HStack.Screen name={ROUTERS.HEALTH_ALERTS} component={AlertsView} />
-//     <HStack.Screen
+//   <HOStack.Navigator initialRouteName={ROUTERS.HEALTH_SITES} headerMode="float">
+//     <HOStack.Screen name={ROUTERS.HEALTH_SITES} component={HealthView} />
+//     <HOStack.Screen name={ROUTERS.HEALTH_DETAIL} component={HealthDetailView} />
+//     <HOStack.Screen name={ROUTERS.HEALTH_ALERTS} component={AlertsView} />
+//     <HOStack.Screen
 //       name={ROUTERS.HEALTH_ALERT_DETAIL}
 //       component={AlertDetailView}
 //     />
-//   </HStack.Navigator>
+//   </HOStack.Navigator>
 // );
 
-// const PStack = createStackNavigator();
+// const HOStack = createStackNavigator();
 // const POSStack = () => (
-//   <PStack.Navigator
+//   <HOStack.Navigator
 //     initialRouteName={ROUTERS.SMARTER_DASHBOARD}
 //     headerMode="float">
-//     <PStack.Screen name={ROUTERS.SMARTER_DASHBOARD} component={DashboardView} />
-//     <PStack.Screen name={ROUTERS.TRANSACTIONS} component={ExceptionsView} />
-//     <PStack.Screen
+//     <HOStack.Screen name={ROUTERS.SMARTER_DASHBOARD} component={DashboardView} />
+//     <HOStack.Screen name={ROUTERS.TRANSACTIONS} component={ExceptionsView} />
+//     <HOStack.Screen
 //       name={ROUTERS.TRAN_DETAIL}
 //       component={TransactionDetailView}
 //     />
-//     <PStack.Screen
+//     <HOStack.Screen
 //       name={ROUTERS.TRAN_DETAIL_FCM}
 //       component={TransactionFCMView}
 //     />
-//   </PStack.Navigator>
+//   </HOStack.Navigator>
 // );
 
+const screenOptions = ({route, navigation}) => ({
+  headerStyle: {
+    // backgroundColor: CMSColors.White,
+    borderBottomWidth: 1,
+  },
+  headerStatusBarHeight: variables.StatusBarHeight,
+  headerTitleAlign: 'center',
+  headerMode: 'screen',
+  headerTitle: getHeaderTitle(route),
+  headerLeft: () => <BackButton navigator={navigation} />,
+});
+
+const clearButtonScreenOptions = ({route, navigation}) => ({
+  headerLeft: () => (
+    <BackButton
+      navigator={navigation}
+      icon="clear-button"
+      color={CMSColors.White}
+    />
+  ),
+  headerStyle: {
+    backgroundColor: CMSColors.DarkElement,
+  },
+  headerTitleStyle: {
+    color: CMSColors.White,
+  },
+});
+
 const HOStack = createStackNavigator();
+const OAMScreens = () => (
+  <Fragment>
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.OAM_SITES}
+      component={OAMSitesView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.OAM_DETAIL}
+      component={OAMDetailView}
+    />
+  </Fragment>
+);
+
+const HealthScreens = () => (
+  <Fragment>
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.HEALTH_SITES}
+      component={SitesView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.HEALTH_DETAIL}
+      component={HealthDetailView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.HEALTH_ALERTS}
+      component={AlertsView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.HEALTH_ALERT_DETAIL}
+      component={AlertDetailView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.HEALTH_CHANNELS}
+      component={ChannelsListView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.VIDEO_CHANNELS_SETTING}
+      component={ChannelsSettingView}
+    />
+  </Fragment>
+);
+
+const SmartERScreens = () => (
+  <Fragment>
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.SMARTER_DASHBOARD}
+      component={DashboardView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.TRANSACTIONS}
+      component={ExceptionsView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.TRANS_DETAIL}
+      component={TransactionDetailView}
+    />
+    <HOStack.Screen
+      options={screenOptions}
+      name={ROUTERS.TRANS_DETAIL_FCM}
+      component={TransactionFCMView}
+    />
+  </Fragment>
+);
+
 const HomeNavigator = () => (
-  <HOStack.Navigator initialRouteName={ROUTERS.HOME} headerMode="none">
-    <HOStack.Screen name={ROUTERS.HOME} component={HomeView} />
-    <HOStack.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} />
-    <HOStack.Screen name={ROUTERS.SMARTER_STACK} component={SmartERStack} />
-    <HOStack.Screen name={ROUTERS.OAM_STACK} component={OAMStack} />
+  <HOStack.Navigator initialRouteName={ROUTERS.HOME} headerMode="screen">
+    <HOStack.Screen
+      options={({route, navigation}) => ({
+        headerStyle: {
+          height: 0,
+        },
+        headerMode: 'none',
+        headerTitle: '',
+      })}
+      name={ROUTERS.HOME}
+      component={HomeView}
+    />
+    {/* <HOStack.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} /> */}
+    {/* <HOStack.Screen name={ROUTERS.SMARTER_STACK} component={SmartERStack} /> */}
+    {HealthScreens()}
+    {SmartERScreens()}
+    {OAMScreens()}
+    <HOStack.Screen
+      name={ROUTERS.VIDEO_PLAYER}
+      component={VideoPlayerView}
+      options={clearButtonScreenOptions}
+    />
   </HOStack.Navigator>
 );
 
 const BottomTab = createBottomTabNavigator();
 const CMSMainTab = () => (
   <BottomTab.Navigator
-    initialRouteName={ROUTERS.HOME}
+    initialRouteName={ROUTERS.HOME_NAVIGATOR}
     headerMode="none"
     backBehavior="none"
     sceneContainerStyle={{
@@ -146,11 +240,7 @@ const CMSMainTab = () => (
     tabBar={props => {
       return <CMSTabbar {...props} />;
     }}>
-    <BottomTab.Screen
-      name={ROUTERS.HOME_NAVIGATOR}
-      component={HomeNavigator}
-      screenOptions={{unmountOnBlur: true}}
-    />
+    <BottomTab.Screen name={ROUTERS.HOME_NAVIGATOR} component={HomeNavigator} />
     <BottomTab.Screen name={ROUTERS.VIDEO_STACK} component={VideoStack} />
     <BottomTab.Screen name={ROUTERS.ALARM_STACK} component={AlarmStack} />
     <BottomTab.Screen
@@ -195,6 +285,7 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
       }}
       onStateChange={state => naviService && naviService.onStateChange(state)}>
       {isLoggedIn && notificationController}
+
       {isLoading ? (
         <LoadingOverlay />
       ) : showIntro ? (

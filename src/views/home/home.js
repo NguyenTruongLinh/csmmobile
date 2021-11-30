@@ -75,21 +75,21 @@ class HomeView extends Component {
     __DEV__ &&
       console.log('GOND onHealthPress, navi state: ', navigation.state);
 
-    navigation.navigate(ROUTERS.HEALTH_STACK);
+    navigation.navigate(ROUTERS.HEALTH_SITES);
   };
 
   onSmartERPress = () => {
     const {navigation, userStore} = this.props;
     userStore.resetWidgetCount(WIDGET_COUNTS.SMART_ER);
 
-    navigation.navigate(ROUTERS.SMARTER_STACK);
+    navigation.navigate(ROUTERS.SMARTER_DASHBOARD);
   };
 
   onOAMPress = () => {
     const {navigation, userStore} = this.props;
     userStore.resetWidgetCount(WIDGET_COUNTS.OAM);
 
-    navigation.navigate(ROUTERS.OAM_STACK);
+    navigation.navigate(ROUTERS.OAM_SITES);
   };
 
   render() {

@@ -217,16 +217,13 @@ const onOpenAlertEvent = async props => {
           site,
           userStore.settings.alertTypes
         );
-        naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
-          screen: ROUTERS.HEALTH_STACK,
-          params: naviParams,
-        });
+        naviService.navigate(ROUTERS.HOME_NAVIGATOR, naviParams);
         return;
       }
       case NOTIFY_ACTION.DELETE: {
         if (!currentRoute.includes(ROUTERS.HEALTH)) {
           naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
-            screen: ROUTERS.HEALTH_STACK,
+            screen: ROUTERS.HEALTH_SITES,
           });
         }
         return null;
@@ -262,17 +259,14 @@ const onOpenAlertEvent = async props => {
         // console.log('GOND onOpen NVR status, dvrs = ', dvrs);
         healthStore.onNVRStatusNotification(alert, dvrs, site);
         naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
-          screen: ROUTERS.HEALTH_STACK,
-          params: {
-            screen: ROUTERS.HEALTH_ALERTS,
-            initial: false,
-          },
+          screen: ROUTERS.HEALTH_ALERTS,
+          initial: false,
         });
         return;
       }
       default: {
         if (!currentRoute.includes(ROUTERS.HEALTH)) {
-          naviService.navigate(ROUTERS.HEALTH_STACK);
+          naviService.navigate(ROUTERS.HEALTH_SITES);
         }
         return;
       }
@@ -305,7 +299,7 @@ const onOpenAlertSetting = props => {
     //   console.log('GOND onAlertSettings, current Top route: ', currentRoute);
 
     if (!currentRoute.includes(ROUTERS.HEALTH))
-      naviService.navigate(ROUTERS.HEALTH_STACK);
+      naviService.navigate(ROUTERS.HEALTH_SITES);
   }
 };
 
