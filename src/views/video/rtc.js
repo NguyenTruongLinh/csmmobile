@@ -663,7 +663,7 @@ class RTCStreamingView extends Component {
   render() {
     const {remoteStream, channelName, isLoading, connectionStatus, error} =
       this.props.viewer;
-    const {width, height, channelInfoPosTop} = this.props;
+    const {width, height} = this.props;
     // const {error} = this.state;
     const noVideo =
       connectionStatus === STREAM_STATUS.NOVIDEO || this.props.noVideo;
@@ -692,9 +692,7 @@ class RTCStreamingView extends Component {
           style={{width: width, height: height}}
           resizeMode="stretch">
           {/* <View style={{width: width, height: height}}> */}
-          <Text style={[styles.channelInfo, {top: channelInfoPosTop}]}>
-            {channelName ?? 'Unknown'}
-          </Text>
+          <Text style={styles.channelInfo}>{channelName ?? 'Unknown'}</Text>
           <View style={styles.statusView}>
             <View style={styles.textContainer}>
               <Text style={styles.textMessage}>{connectionStatus}</Text>

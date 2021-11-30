@@ -403,15 +403,8 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      channelInfoPosTop,
-      streamData,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams} = this.state;
@@ -430,9 +423,7 @@ class HLSStreamingView extends React.Component {
           style={{width: width, height: height}}
           resizeMode="stretch">
           {/* <View style={{width: width, height: height}}> */}
-          <Text style={[styles.channelInfo, {top: channelInfoPosTop}]}>
-            {channel.name ?? 'Unknown'}
-          </Text>
+          <Text style={styles.channelInfo}>{channel.name ?? 'Unknown'}</Text>
           <View style={styles.statusView}>
             <View style={styles.textContainer}>
               <Text style={styles.textMessage}>{connectionStatus}</Text>

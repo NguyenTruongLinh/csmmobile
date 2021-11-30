@@ -158,6 +158,7 @@ class VideoPlayerView extends Component {
     // dongpt: TODO handle Orientation
     Orientation.lockToPortrait();
     // this.unsubSearchTimeReaction();
+    StatusBar.setHidden(false);
   }
 
   //#region Event handlers
@@ -269,6 +270,7 @@ class VideoPlayerView extends Component {
     } else {
       Orientation.lockToPortrait();
     }
+    StatusBar.setHidden(videoStore.isFullscreen);
   };
 
   onSwitchLiveSearch = () => {
@@ -473,12 +475,6 @@ class VideoPlayerView extends Component {
     const {selectedStream} = videoStore;
     const {pause, sWidth, sHeight} = this.state;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
-    const channelInfoPosTop = videoStore.isFullscreen
-      ? StatusBar.currentHeight +
-        (this.state.showController
-          ? ((sHeight - StatusBar.currentHeight) * 15) / 100
-          : 0)
-      : 0;
     // __DEV__ && console.log('GOND renderVid player: ', selectedStream);
     if (!selectedStream) {
       return (
@@ -492,7 +488,6 @@ class VideoPlayerView extends Component {
     let playerProps = {
       width: sWidth,
       height: height,
-      channelInfoPosTop: channelInfoPosTop,
       hdMode: videoStore.hdMode,
       isLive: videoStore.isLive,
       noVideo: videoStore.isLive ? false : videoStore.noVideo, // this.isNoDataSearch,
