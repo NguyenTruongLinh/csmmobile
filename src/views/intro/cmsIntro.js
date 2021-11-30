@@ -301,14 +301,14 @@ const styles = StyleSheet.create({
   nextButton: {
     // backgroundColor: CMSColors.PrimaryActive,
     height: 48,
-    minWidth: 127,
+    width: 136,
     // marginLeft: 49,
     // marginRight: 35,
     marginHorizontal: 24,
     alignSelf: 'flex-end',
   },
   buttonCaption: {
-    fontSize: normalize(15),
+    fontSize: normalize(14),
     fontWeight: 'bold',
   },
 });
