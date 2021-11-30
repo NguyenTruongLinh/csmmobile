@@ -388,9 +388,7 @@ const dim = Dimensions.get('window');
 const styles = StyleSheet.create({
   viewContainer: {
     flex: 1,
-    // paddingLeft: width * 0.1,
-    // paddingRight: width * 0.1,
-    marginHorizontal: width * 0.1,
+    paddingHorizontal: width * 0.1,
   },
   closeButtonContainer: {
     height: 30,
@@ -403,6 +401,8 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     position: 'absolute',
     right: width * 0.1 - 30,
+    top: width * 0.1 - 36,
+    zIndex: 10,
   },
   logo: {
     tintColor: CMSColors.Dark_Blue,
