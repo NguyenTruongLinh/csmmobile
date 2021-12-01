@@ -1,5 +1,6 @@
 import {CommonActions, StackActions} from '@react-navigation/native';
 import {types} from 'mobx-state-tree';
+import ROUTERS from '../consts/routes';
 
 // import {
 //   RouteParams,
@@ -37,10 +38,10 @@ const NavigationService = types
           newState.routeNames &&
           JSON.stringify(newState.routeNames) ==
             JSON.stringify([
-              'homenavi',
-              'videostack',
-              'alarmstack',
-              'optionsnavi',
+              ROUTERS.HOME_NAVIGATOR,
+              ROUTERS.VIDEO_STACK,
+              ROUTERS.ALARM_STACK,
+              ROUTERS.OPTIONS_NAVIGATOR,
             ]);
     },
 
