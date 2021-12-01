@@ -321,7 +321,14 @@ export default class InputTextIcon extends PureComponent {
       ? {}
       : {color: CMSColors.PrimaryActive};
     return (
-      <View style={{marginTop: -20, flexDirection: 'row', alignSelf: 'center'}}>
+      <View
+        style={{
+          marginTop: -20,
+          flexDirection: 'row',
+          alignSelf: 'center',
+          borderColor: 'transparent',
+          borderWidth: 1,
+        }}>
         {iconPosition == 'left' && CIcon}
         {iconPosition == 'left' && CIconCustom}
         <View
