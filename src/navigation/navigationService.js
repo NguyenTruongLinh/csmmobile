@@ -14,7 +14,7 @@ const NavigationService = types
   .model({
     _navigator: types.frozen(),
     isReady: types.boolean,
-    isReadyForPushShowing: types.boolean,
+    isReadyForPushShowing: types.maybeNull(types.boolean),
   })
   .volatile(self => ({
     state: null,
