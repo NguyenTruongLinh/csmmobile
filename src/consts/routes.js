@@ -13,6 +13,8 @@ const ROUTERS = {
   INTRO_WELCOME: 'welcome',
 
   LOGIN: 'login',
+  PASSWORD_EXPIRED: 'passwordexpired',
+  ACCOUNT_LOCKED: 'accountlocked',
 
   HOME_TAB: 'hometab',
   HOME_NAVIGATOR: 'homenavi',

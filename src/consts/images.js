@@ -23,6 +23,7 @@ const _Setting_Video_Cloud = require('../assets/images/common/media-stream.png')
 const _Setting_Video_Relay = require('../assets/images/common/relay.png');
 
 const _No_Data = require('../assets/images/common/no_data.png');
+const _lock = require('../assets/images/common/lock.png');
 
 export const No_Image = no_img;
 export const No_Image_16_9 = no_img_16_9;
@@ -49,3 +50,4 @@ export const Setting_Video_Cloud = _Setting_Video_Cloud;
 export const Setting_Video_Relay = _Setting_Video_Relay;
 
 export const No_Data = _No_Data;
+export const Lock = _lock;

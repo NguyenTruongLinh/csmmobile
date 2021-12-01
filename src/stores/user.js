@@ -353,7 +353,7 @@ export const UserStoreModel = types
       self.setConfigApi();
       // const res = await apiService.login(username, password);
       const res = yield apiService.login(username, password);
-      __DEV__ && console.log('GOND login res = ', res);
+      __DEV__ && console.log('GOND login res = ', JSON.stringify(res));
       if (res && res.status == 200 && res.Result) {
         self.loginSuccess(res);
       } else {

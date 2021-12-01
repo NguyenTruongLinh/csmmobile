@@ -42,7 +42,9 @@ class WelcomeView extends Component {
     this.props.appStore.naviService.navigate(ROUTERS.LOGIN);
   };
 
-  onGoPro = () => {};
+  onGoPro = () => {
+    this.props.appStore.naviService.navigate(ROUTERS.ACCOUNT_LOCKED);
+  };
 
   render() {
     const {width, height} = Dimensions.get('window');

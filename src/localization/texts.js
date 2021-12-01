@@ -27,6 +27,10 @@ export const Login = {
   errorTitle: 'Login Error',
   errorLoginIncorrect: 'Incorrect username or password.',
   errorLoginCantConnect: 'Cannot connect to server.',
+  accountLocked:
+    'Account is disabled for %d hour due to reaching the maximum failed login attempts',
+  phoneContactTitle: 'Contact i3 tech via phone:',
+  phoneContactNumber: '1.866.840.0004',
   copyRight:
     '© 2021 i3 International Inc. The i3 logos are property of i3 International Inc & i3 America Nevada Inc. All rights reserved.',
 };

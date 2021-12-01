@@ -48,6 +48,8 @@ import ROUTERS, {getHeaderTitle} from '../consts/routes';
 import BackButton from '../components/controls/BackButton';
 import variables from '../styles/variables';
 import CMSColors from '../styles/cmscolors';
+import AccountLocked from '../views/auth/accountLocked';
+import passwordExpired from '../views/auth/passwordExpired';
 // import cmscolors from '../styles/cmscolors';
 
 // const getHeaderOptions = route => {
@@ -313,6 +315,15 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
             component={WelcomeView}
           />
           <WelcomeStack.Screen name={ROUTERS.LOGIN} component={LoginView} />
+          {/* AccountLocked} /> */}
+          <WelcomeStack.Screen
+            name={ROUTERS.PASSWORD_EXPIRED}
+            component={passwordExpired}
+          />
+          <WelcomeStack.Screen
+            name={ROUTERS.ACCOUNT_LOCKED}
+            component={AccountLocked}
+          />
         </WelcomeStack.Navigator>
       )}
     </NavigationContainer>
