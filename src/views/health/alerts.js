@@ -181,32 +181,32 @@ class AlertsView extends Component {
     navigation.push(ROUTERS.HEALTH_ALERT_DETAIL);
   };
 
-  getSnapShot = alert => {
-    if (!alert) return;
-    const {selectedAlertTypeId} = this.props.healthStore;
+  // getSnapShot = alert => {
+  //   if (!alert) return;
+  //   const {selectedAlertTypeId} = this.props.healthStore;
 
-    if (selectedAlertTypeId == AlertTypes.DVR_Sensor_Triggered)
-      return {
-        controller: 'alert',
-        action: 'imagetime',
-        id: alert.timezone,
-        param: {
-          thumb: true,
-          download: false,
-          next: false,
-          kdvr: alert.KDVR,
-          ch: alert.ChannelNo,
-        },
-        no_img: No_Image,
-      };
-    return {
-      controller: 'channel',
-      action: 'image',
-      param: null,
-      id: alert.kChannel,
-      no_img: No_Image,
-    };
-  };
+  //   if (selectedAlertTypeId == AlertTypes.DVR_Sensor_Triggered)
+  //     return {
+  //       controller: 'alert',
+  //       action: 'imagetime',
+  //       id: alert.timezone,
+  //       param: {
+  //         thumb: true,
+  //         download: false,
+  //         next: false,
+  //         kdvr: alert.KDVR,
+  //         ch: alert.ChannelNo,
+  //       },
+  //       no_img: No_Image,
+  //     };
+  //   return {
+  //     controller: 'channel',
+  //     action: 'image',
+  //     param: null,
+  //     id: alert.kChannel,
+  //     no_img: No_Image,
+  //   };
+  // };
 
   renderNormalAlertItem = item => {
     return (
@@ -384,7 +384,7 @@ class AlertsView extends Component {
                 item.saveImage(image);
               }
             }}
-            domain={this.getSnapShot(item)}
+            domain={healthStore.getAlertSnapShot(item)} // {this.getSnapShot(item)}
           />
           {this.renderContentAlertWithSnapshot(item)}
         </View>
@@ -415,8 +415,10 @@ class AlertsView extends Component {
 
   render() {
     const {healthStore, navigation} = this.props;
-    const {/*showDismissModal,*/ isListView, selectedAlertForDismiss} =
-      this.state;
+    const {
+      /*showDismissModal,*/ isListView,
+      selectedAlertForDismiss,
+    } = this.state;
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>

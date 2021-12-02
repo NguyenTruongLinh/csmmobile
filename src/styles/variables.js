@@ -360,4 +360,7 @@ export default {
   // min-width: 1025px (t? size n�y tr? l�n l� danh cho desktop th�ng thu?ng).
 
   errorLogStyle: 'color: red; font-style: bold',
+
+  //
+  exceptionFlagOffset: 5,
 };

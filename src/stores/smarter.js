@@ -4,17 +4,20 @@ import BigNumber from 'bignumber.js';
 import BigNumberPrimitive from './types/bignumber';
 import {DateTime} from 'luxon';
 
-import userStore from './user';
 import apiService from '../services/api';
 
-import {Exception} from '../consts/apiRoutes';
+import snackbar from '../util/snackbar';
+import {getRandomId} from '../util/general';
+
+import {Exception as ExceptionRoute, CommonActions} from '../consts/apiRoutes';
 import {
   DateFormat,
   ExceptionSortField,
   ExceptionSortFieldName,
   GroupByException,
 } from '../consts/misc';
-import snackbar from '../util/snackbar';
+
+import {No_Image} from '../consts/images';
 
 const ExceptionFilterModel = types.model({
   dateFrom: types.Date,
@@ -23,6 +26,7 @@ const ExceptionFilterModel = types.model({
 });
 
 const EmployeeExceptionModel = types.model({
+  id: types.optional(types.identifier, () => getRandomId()),
   riskFactor: types.number,
   countRisk: types.number,
   totalAmount: types.number,
@@ -34,10 +38,9 @@ const EmployeeExceptionModel = types.model({
   // storeId: types.maybeNull(types.number),
   // storeName: types.maybeNull(types.string),
   exceptionAmount: types.number,
-  // siteKey: types.number,
-  // siteName: types.string,
-  // pacId: types.number,
-  // employees: types.array(types)
+  siteKey: types.number,
+  siteName: types.string,
+  pacId: types.number,
 });
 
 const SiteExceptionModel = types.model({
@@ -127,7 +130,9 @@ const parseExceptionGroup = _data => {
     pageSize: _data.PageSize,
     data:
       _data.Data && Array.isArray(_data.Data)
-        ? _data.Data.map(_ex => parseSiteException(_ex))
+        ? _data.Data.map(_ex => parseSiteException(_ex)).sort(
+            (x, y) => y.totalRiskFactors - x.totalRiskFactors
+          )
         : [],
   });
 };
@@ -146,6 +151,20 @@ const ExceptionParamsModel = types
     // sites: types.maybeNull(types.string),
     sites: types.array(types.number),
   })
+  .views(self => ({
+    get requestParams() {
+      return {
+        sort: self.sort,
+        groupby: self.groupBy,
+        emprisk: self.emprisk,
+        page: self.page,
+        psize: self.pSize,
+        sdate: self.sDate,
+        edate: self.eDate,
+        sites: self.sites,
+      };
+    },
+  }))
   .actions(self => ({
     // setSite(siteKey) {
     //   self.siteKey = siteKey;
@@ -202,23 +221,22 @@ const parseExceptionParams = _params => {
   });
 };
 
-const ExceptionTypeModel = types
-  .model({
-    id: types.identifierNumber,
-    name: types.string,
-    desc: types.string,
-    flagTime: types.maybeNull(types.string),
-    typeWeight: types.number,
-    color: types.string,
-    isSystem: types.boolean,
-    readOnly: types.boolean,
-    userId: types.number,
-  })
-  .views(self => ({
-    get data() {
-      return {...self};
-    },
-  }));
+const ExceptionTypeModel = types.model({
+  id: types.identifierNumber,
+  name: types.string,
+  desc: types.string,
+  flagTime: types.maybeNull(types.string),
+  typeWeight: types.number,
+  color: types.string,
+  isSystem: types.boolean,
+  readOnly: types.boolean,
+  userId: types.maybeNull(types.number),
+});
+// .views(self => ({
+//   get data() {
+//     return {...self};
+//   },
+// }));
 
 const parseExceptionType = _data =>
   ExceptionTypeModel.create({
@@ -233,15 +251,147 @@ const parseExceptionType = _data =>
     userId: _data.UserID,
   });
 
+const PaymentTaxModel = types.model({
+  id: types.number,
+  name: types.string,
+  amount: types.number,
+  isHighlightName: types.optional(types.boolean, false),
+  isHighlightValue: types.optional(types.boolean, false),
+  color: types.maybeNull(types.string),
+});
+
+const parsePaymentTaxData = _data =>
+  PaymentTaxModel.create({
+    id: _data.Id,
+    name: _data.Name,
+    amount: _data.Amount ?? 0,
+    isHighlightName: _data.IsHighlightName,
+    isHighlightValue: _data.IsHighlightValue,
+    color: _data.Color,
+  });
+
+const TransactionModel = types
+  .model({
+    id: types.optional(types.identifier, () => getRandomId()),
+    tranId: types.number,
+    tranNo: types.number,
+    pacId: types.number,
+    storeId: types.maybeNull(types.number),
+    storeName: types.optional(types.string, 'N/A'),
+    employeeId: types.maybeNull(types.number),
+    employeeName: types.optional(types.string, ''),
+    registerId: types.maybeNull(types.number),
+    registerName: types.optional(types.string, 'N/A'),
+    camId: types.maybeNull(types.number),
+    camName: types.optional(types.string, ''),
+    shiftId: types.maybeNull(types.number),
+    shiftName: types.optional(types.string, 'N/A'),
+    checkId: types.maybeNull(types.number),
+    checkName: types.optional(types.string, 'N/A'),
+    cardId: types.maybeNull(types.number),
+    cardName: types.optional(types.string, 'N/A'),
+    terminalId: types.maybeNull(types.number),
+    terminalName: types.optional(types.string, 'N/A'),
+    tranDate: types.string,
+    dvrDate: types.string,
+    dvrStartDate: types.maybeNull(types.string),
+    // year: types.number,
+    // quarter: types.number,
+    // month: types.number,
+    // week: types.number,
+    // day: types.number,
+    // hour: types.number,
+    subTotal: types.maybeNull(types.number),
+    changeAmount: types.number,
+    total: types.number,
+    taxs: types.array(PaymentTaxModel),
+    payments: types.array(PaymentTaxModel),
+    exceptionTypes: types.array(types.reference(ExceptionTypeModel)),
+    notes: types.array(types.string),
+    exceptionAmount: types.number,
+  })
+  .volatile(self => ({
+    snapshot: null,
+  }))
+  .actions(self => ({
+    saveImage(data) {
+      self.snapshot = data;
+    },
+  }));
+
+const parseTransactionData = (_data, exceptionTypesConfig) =>
+  TransactionModel.create({
+    tranId: _data.TranId,
+    tranNo: _data.TranNo,
+    pacId: _data.PacId,
+    storeId: _data.StoreId,
+    storeName: _data.StoreName,
+    employeeId: _data.EmployeeId,
+    employeeName: _data.EmployeeName,
+    registerId: _data.RegisterId,
+    registerName: _data.RegisterName,
+    camId: _data.CamId,
+    camName: _data.CamName,
+    shiftId: _data.ShiftId,
+    ShiftName: _data.ShiftName,
+    checkId: _data.CheckId,
+    checkName: _data.CheckName,
+    cardId: _data.CardId,
+    cardName: _data.CardName,
+    terminalId: _data.TerminalId,
+    terminalName: _data.TerminalName,
+    tranDate: _data.TranDate,
+    dvrDate: _data.DvrDate,
+    dvrStartDate: _data.DvrStartDate,
+    // year: types.number,
+    // quarter: types.number,
+    // month: types.number,
+    // week: types.number,
+    // day: types.number,
+    // hour: types.number,
+    subTotal: _data.SubTotal,
+    changeAmount: _data.ChangeAmount,
+    total: _data.Total,
+    taxs:
+      _data.Taxs && Array.isArray(_data.Taxs)
+        ? _data.Taxs.map(item => parsePaymentTaxData(item))
+        : [],
+    payments:
+      _data.Payments && Array.isArray(_data.Payments)
+        ? _data.Payments.map(item => parsePaymentTaxData(item))
+        : [],
+    exceptionTypes:
+      _data.ExceptionTypes &&
+      Array.isArray(_data.ExceptionTypes) &&
+      exceptionTypesConfig &&
+      exceptionTypesConfig.length > 0
+        ? _data.ExceptionTypes.reduce((result, item) => {
+            if (
+              exceptionTypesConfig.find(t => t.id == item.Id) &&
+              !result.includes(item.Id)
+            )
+              result.push(item.Id);
+            return result;
+          }, []).sort((x, y) => y.id - x.id)
+        : [],
+    notes: _data.Notes,
+    exceptionAmount: _data.ExceptionAmount,
+  });
+
 export const POSModel = types
   .model({
     showChartView: types.boolean,
     filterParams: types.maybeNull(ExceptionParamsModel),
     groupFilter: types.string,
+    transactionFilter: types.string,
     // isBackFromFCM: types.boolean,
     exceptionsGroup: types.maybeNull(ExceptionGroupModel),
     // exceptionsGroupByEmployee: types.array(ExceptionGroupModel), // use with computed views
-    exceptionTypes: types.array(ExceptionTypeModel),
+    exceptionTypesConfig: types.array(ExceptionTypeModel),
+    selectedEmployee: types.maybeNull(types.reference(EmployeeExceptionModel)),
+
+    transactionsList: types.array(TransactionModel),
+    selectedTransaction: types.maybeNull(types.reference(TransactionModel)),
 
     isLoading: types.boolean,
     isGroupLoading: types.boolean,
@@ -250,7 +400,7 @@ export const POSModel = types
   })
   .views(self => ({
     get exceptionTypesData() {
-      return self.exceptionTypes.map(item => item.data);
+      return self.exceptionTypesConfig.map(item => getSnapshot(item));
     },
     get totalRiskFactors() {
       return self.exceptionsGroup ? self.exceptionsGroup.totalRiskFactors : 0;
@@ -301,6 +451,21 @@ export const POSModel = types
                   )
               )
           );
+    },
+    get filteredTransactions() {
+      return self.transactionFilter.length == 0
+        ? self.transactionsList
+        : transactionsList.filter(trans => {
+            const filterStr = self.transactionFilter.toLowerCase();
+            return (
+              trans.camName.toLowerCase().includes(filterStr) ||
+              trans.shiftName.toLowerCase().includes(filterStr) ||
+              trans.checkName.toLowerCase().includes(filterStr) ||
+              trans.cardName.toLowerCase().includes(filterStr) ||
+              trans.terminalName.toLowerCase().includes(filterStr) ||
+              trans.tranDate.toLowerCase().includes(filterStr)
+            );
+          });
     },
     get chartData() {
       const data = self.exceptionsGroup
@@ -362,6 +527,9 @@ export const POSModel = types
     setGroupFilter(value) {
       self.groupFilter = value;
     },
+    setExceptionFilter(value) {
+      self.exceptionFilter = value;
+    },
     setSortField(value) {
       if (value < 0 || value >= ExceptionSortField.Count) {
         console.log('GOND setSortField out of bound: ', value);
@@ -369,26 +537,33 @@ export const POSModel = types
       }
       self.sortField = value;
     },
+    selectEmployee(value) {
+      self.selectedEmployee = value;
+    },
     // #endregion Setters
     // #region Get data
-    getTransactionTypes: flow(function* getTransactionTypes() {
+    getExceptionTypes: flow(function* () {
       let res = yield apiService.get(
-        Exception.controller,
+        ExceptionRoute.controller,
         apiService.configToken.userId,
-        Exception.getTransactionTypes
+        ExceptionRoute.getTransactionTypes
       );
 
       // __DEV__ && console.log('GOND exceptionTypes = ', res);
       if (!res || res.error) {
         snackbar.handleRequestFailed();
       }
-      self.exceptionTypes = Array.isArray(res)
+      self.exceptionTypesConfig = Array.isArray(res)
         ? res.map(item => parseExceptionType(item))
         : [];
       // __DEV__ &&
-      //   console.log('GOND self.exceptionTypes = ', self.exceptionTypes);
+      //   console.log('GOND self.exceptionTypesConfig = ', self.exceptionTypesConfig);
     }),
     getExceptionsSummary: flow(function* () {
+      if (!self.filterParams) {
+        __DEV__ && console.log('GOND getExceptionsSummary, params not set yet');
+        return;
+      }
       self.isLoading = true;
       __DEV__ &&
         console.log(
@@ -397,10 +572,10 @@ export const POSModel = types
         );
       try {
         const res = yield apiService.get(
-          Exception.controller,
+          ExceptionRoute.controller,
           '',
           '',
-          self.filterParams
+          self.filterParams.requestParams
         );
         __DEV__ && console.log('GOND getExceptionsSummary = ', res);
 
@@ -418,6 +593,10 @@ export const POSModel = types
         console.log('GOND get Exception group data, site not found!');
         return;
       }
+
+      if (!self.filterParams) {
+        self.setDefaultParams([siteKey]);
+      }
       self.isGroupLoading = true;
       // self.filterParams.setParams({siteKey});
       if (self.exceptionsGroupData[siteIndex].employees.length > 0) {
@@ -428,9 +607,9 @@ export const POSModel = types
         return;
       }
       try {
-        const res = yield apiService.get(Exception.controller, '', '', {
-          ...self.filterParams,
-          groupBy: GroupByException.EMPL,
+        const res = yield apiService.get(ExceptionRoute.controller, '', '', {
+          ...self.filterParams.requestParams,
+          groupby: GroupByException.EMPL,
           sites: [siteKey].toString(),
           // siteKey,
         });
@@ -456,14 +635,95 @@ export const POSModel = types
             employeeId: item.EmployerId,
             employeeName: item.EmployerName,
             exceptionAmount: item.ExceptionAmount,
+
+            siteKey: item.SiteKey,
+            siteName: item.SiteName,
+            pacId: item.PacId,
           })
-        );
+        ).sort((x, y) => y.riskFactor - x.riskFactor);
       } catch (error) {
         __DEV__ && console.log('GOND getGroupDetailData error = ', error);
       }
       self.isGroupLoading = false;
     }),
+    getEmployeeTransactions: flow(function* (employee, page = 1) {
+      let _employee =
+        employee ?? self.selectedEmployee ? self.selectedEmployee : null;
+      if (!_employee || page <= 0) {
+        __DEV__ &&
+          console.log('GOND getEmployeeTransactions none employee selected');
+        return;
+      }
+      self.isLoading = true;
+      if (!self.filterParams) {
+        self.setDefaultParams([_employee.siteKey]);
+      }
+
+      if (self.exceptionTypesConfig.length == 0) {
+        yield self.getExceptionTypes();
+      }
+
+      try {
+        const res = yield apiService.get(
+          ExceptionRoute.controller,
+          _employee.employeeId,
+          '',
+          {
+            ...self.filterParams.requestParams,
+            sites: _employee.siteKey,
+            groupby: GroupByException.EMPL,
+            page,
+          }
+        );
+        __DEV__ && console.log('GOND getEmployeeTransactions = ', res);
+
+        if (
+          !res ||
+          !res.Data ||
+          !Array.isArray(res.Data) ||
+          res.Data.length == 0
+        ) {
+          __DEV__ && console.log('GOND getEmployeeTransactions no data:', res);
+          self.isLoading = false;
+          return;
+        }
+
+        // parse data:
+        if (page > 1) {
+          res.Data.forEach(trans => {
+            const newTrans = parseTransactionData(
+              trans,
+              self.exceptionTypesConfig
+            );
+            self.transactionsList.push(newTrans);
+          });
+        } else {
+          self.transactionsList = res.Data.map(trans =>
+            parseTransactionData(trans, self.exceptionTypesConfig)
+          );
+        }
+      } catch (error) {
+        __DEV__ && console.log('GOND getGroupDetailData error = ', error);
+      }
+      self.isLoading = false;
+    }),
     // #endregion Get data
+    // #region Utilities
+    getTransactionSnapShot(trans) {
+      if (!trans) return;
+      return {
+        controller: ExceptionRoute.controller,
+        action: CommonActions.image,
+        id: trans.tranId,
+        param: {
+          thumb: true,
+          download: false,
+          next: false,
+        },
+        no_img: No_Image,
+      };
+    },
+    // #endregion Utilities
     cleanUp() {
       applySnapshot(self, storeDefault);
     },
@@ -473,11 +733,15 @@ const storeDefault = {
   showChartView: true,
   filterParams: null,
   groupFilter: '',
+  transactionFilter: '',
   // isBackFromFCM: types.boolean(false),
   exceptionsGroup: null,
   exceptionTypes: [],
+  transactionsList: [],
   isLoading: false,
   isGroupLoading: false,
+
+  selectedEmployee: null,
 };
 
 const exceptionStore = POSModel.create(storeDefault);

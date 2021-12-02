@@ -3,9 +3,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {View, Image, ActivityIndicator} from 'react-native';
+import CryptoJS from 'crypto-js';
 
 import apiService from '../../services/api';
 import {isNullOrUndef} from '../util/general';
+
+import {File, CommonActions} from '../../consts/apiRoutes';
 import {No_Image} from '../../consts/images';
 
 class CMSImage extends React.Component {
@@ -19,15 +22,17 @@ class CMSImage extends React.Component {
     this._isMounted = false;
   }
 
-  // static propTypes = {
-  //   styles: PropTypes.style,
-  //   styleImage: PropTypes.style,
-  // };
+  static propTypes = {
+    styles: PropTypes.object,
+    styleImage: PropTypes.object,
+    twoStepsLoading: PropTypes.bool,
+  };
 
   loadImage = async () => {
-    const {domain, source} = this.props;
+    const {domain, source, twoStepsLoading} = this.props;
     this.setState({isLoading: true});
-    let imgData = await this.loadImageAsync(domain, source);
+    let imgData = await this.loadImageAsync(domain, source, twoStepsLoading);
+    __DEV__ && console.log('GOND loadImage imgData =', imgData);
     if (this._isMounted) {
       this.onLoadingCompleted(domain, imgData);
       this.setState({isLoading: false, image: imgData});
@@ -40,7 +45,7 @@ class CMSImage extends React.Component {
    * @param {string} source
    * @returns
    */
-  loadImageAsync = async (data, source) => {
+  loadImageAsync = async (data, source, isTwoSteps) => {
     // __DEV__ && console.log('GOND loadImageAsync, source: ', source);
     if (source) {
       return {uri: 'data:image/jpeg;base64,' + this.props.source};
@@ -48,17 +53,48 @@ class CMSImage extends React.Component {
       if (isNullOrUndef(data)) {
         return null;
       }
+
       if (typeof data == 'object') {
-        let resposne = await apiService.getBase64Stream(
-          data.controller,
-          data.id,
-          data.action,
-          data.param
-        );
-        // __DEV__ && console.log('GOND loadImageAsync res = ', resposne);
-        let imgbase64 = resposne.data || '';
+        let response = {};
+        const noImage = data.no_img ?? No_Image;
+
+        if (isTwoSteps) {
+          let pathResponse = await apiService.get(
+            data.controller,
+            data.id,
+            CommonActions.image
+          );
+          // __DEV__ &&
+          //   console.log('GOND loadImageAsync step 1 res = ', pathResponse);
+
+          if (pathResponse && !pathResponse.isCloud) {
+            if (pathResponse.isExist && pathResponse.url_thumnail) {
+              const dataPath = CryptoJS.enc.Base64.stringify(
+                CryptoJS.enc.Utf8.parse(pathResponse.url_thumnail)
+              );
+              response = await apiService.getBase64Stream(
+                File.controler,
+                dataPath
+              );
+
+              // __DEV__ &&
+              //   console.log('GOND loadImageAsync step 2 res = ', response);
+            }
+          } else if (pathResponse.isCloud == true) {
+            response = pathResponse;
+          }
+        } else {
+          response = await apiService.getBase64Stream(
+            data.controller,
+            data.id,
+            data.action,
+            data.param
+          );
+        }
+        // __DEV__ && console.log('GOND loadImageAsync res = ', response);
+        let imgbase64 = response.data;
         if (imgbase64) return {uri: 'data:image/jpeg;base64,' + imgbase64};
-        else return data.no_img ?? No_Image;
+        else return noImage;
       } else return data;
     }
   };

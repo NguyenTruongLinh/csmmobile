@@ -305,7 +305,7 @@ class NotificationController extends React.Component {
         onVideoNotifEvent({videoStore, action, content, cmd});
         break;
       case NOTIFY_TYPE.PVM:
-        __DEV__ && console.log('HAI onPVM Notification: ', data);
+        // __DEV__ && console.log('HAI onPVM Notification: ', data);
         notif = onPVMEvent(oamStore, action, content, cmd);
         break;
     }
@@ -322,7 +322,7 @@ class NotificationController extends React.Component {
         id: data.msg_id,
         data: {type, action, content},
       });
-      userStore.getWidgetCounts();
+      userStore && userStore.getWidgetCounts();
     }
   };
 

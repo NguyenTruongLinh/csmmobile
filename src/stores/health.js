@@ -5,7 +5,12 @@ import apiService from '../services/api';
 import utils from '../util/general';
 import snackbarUtil from '../util/snackbar';
 
-import {Health as HealthRoute, Alert as AlertRoute} from '../consts/apiRoutes';
+import {
+  Health as HealthRoute,
+  Alert as AlertRoute,
+  Channel as ChannelRoute,
+  CommonActions,
+} from '../consts/apiRoutes';
 import {AlertTypes, AlertNames} from '../consts/misc';
 import {No_Image} from '../consts/images';
 import ROUTERS from '../consts/routes';
@@ -668,8 +673,8 @@ export const HealthModel = types
 
       if (_alertType == AlertTypes.DVR_Sensor_Triggered)
         return {
-          controller: 'alert',
-          action: 'imagetime',
+          controller: AlertRoute.controller,
+          action: CommonActions.imageTime,
           id: alert.timezone,
           param: {
             thumb: true,
@@ -681,8 +686,8 @@ export const HealthModel = types
           no_img: No_Image,
         };
       return {
-        controller: 'channel',
-        action: 'image',
+        controller: ChannelRoute.controller,
+        action: CommonActions.image,
         param: null,
         id: alert.kChannel,
         no_img: No_Image,

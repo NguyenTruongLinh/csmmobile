@@ -31,8 +31,6 @@ export const Alert = {
   getByDvr: 'dvr',
   ignoreMutiAlertType: 'IgnoreMutiAlertType',
   ignoreMutiAlertSite: 'IgnoreMutiAlertSite',
-  imageTime: 'imagetime',
-  image: 'image',
 };
 
 export const Health = {
@@ -96,4 +94,13 @@ export const OAM = {
 
 export const FCM = {
   controller: 'fcm',
+};
+
+export const File = {
+  controler: 'file',
+};
+
+export const CommonActions = {
+  imageTime: 'imagetime',
+  image: 'image',
 };
