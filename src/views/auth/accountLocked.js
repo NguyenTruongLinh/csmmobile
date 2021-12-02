@@ -32,6 +32,7 @@ import CMSColors from '../../styles/cmscolors';
 import {I3_Logo, Lock} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
+import ROUTERS from '../../consts/routes';
 
 // const backgroundImg = require('../../assets/images/intro/welcome.png');
 // const launchscreenLogo = require('../../assets/images/CMS-logo-white.png');
@@ -59,8 +60,10 @@ class AccountLocked extends Component {
 
   onBack = () => {
     // __DEV__ && console.log('GOND Login onback <');
-    // navigationService.back();
-    this.props.appStore.naviService.back();
+    this.props.navigation.goBack();
+  };
+  onBackToLoginPress = () => {
+    this.props.navigation.replace(ROUTERS.LOGIN);
   };
   onPhonePress = () => {
     const args = {
@@ -72,6 +75,7 @@ class AccountLocked extends Component {
     });
   };
   render() {
+    const {userStore} = this.props;
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
         <Button
@@ -108,7 +112,10 @@ class AccountLocked extends Component {
             <Image source={Lock} style={styles.lock} resizeMode="contain" />
             <View style={{flex: 0.3}} />
             <Text style={styles.textAccInfo}>
-              {LoginTxt.accountLocked.replace('%s', '99 hours')}
+              {LoginTxt.accountLocked.replace(
+                '%s',
+                `${userStore.loginInfo.lockedTime} minutes`
+              )}
             </Text>
             <View style={{flex: 0.2}} />
             <View style={styles.textContainer}>
@@ -123,7 +130,7 @@ class AccountLocked extends Component {
               caption="BACK TO LOGIN"
               type="primary"
               captionStyle={{}}
-              onPress={this.onLogin}
+              onPress={this.onBackToLoginPress}
               enable={true}
             />
           </View>

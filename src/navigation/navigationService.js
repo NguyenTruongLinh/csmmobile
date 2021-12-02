@@ -67,7 +67,8 @@ const NavigationService = types
       //     params,
       //   })
       // );
-      console.log(`navigate routeName`, routeName, `options`, options);
+      __DEV__ &&
+        console.log(`navigate routeName`, routeName, `options`, options);
       self._navigator.navigate(routeName, options);
     },
 

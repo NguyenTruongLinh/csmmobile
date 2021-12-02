@@ -22,6 +22,12 @@ import {isNullOrUndef} from '../util/general';
 import snackbarUtil from '../util/snackbar';
 import {LocalDBName, MODULE_PERMISSIONS} from '../consts/misc';
 
+const LOGIN_FAIL_CAUSES = {
+  USER_LOCK: 'USER_LOCK',
+  USER_NOT_EXIST: 'USER_NOT_EXIST',
+  EXPIRED_PASSWORD: 'EXPIRED_PASSWORD',
+};
+
 const MODULE_TAB_MAP = new Map([
   [MODULE_PERMISSIONS.VSC, [1]],
   [MODULE_PERMISSIONS.SITE, [2]],
@@ -173,6 +179,7 @@ const LoginModel = types
     domainname: types.string,
     username: types.string,
     password: types.string,
+    lockedTime: types.maybeNull(types.number),
   })
   .actions(self => ({
     getData() {
@@ -397,11 +404,28 @@ export const UserStoreModel = types
     }),
     loginFailed(data) {
       if (data.status === 401) {
-        self.error = LoginTxt.errorLoginIncorrect;
+        const retMess = data.Result.ReturnMessage;
+        const failInfos = retMess && retMess[0] && retMess[0].split(';');
+        const failReason = failInfos && failInfos[0];
+        if (failReason == LOGIN_FAIL_CAUSES.USER_LOCK) {
+          self.loginInfo.lockedTime =
+            failInfos &&
+            failInfos[1] &&
+            !isNaN(failInfos[1]) &&
+            Number.parseInt(failInfos[1]);
+          setTimeout(() => {
+            appStore.naviService.navigate(ROUTERS.ACCOUNT_LOCKED);
+          }, 0);
+        } else if (failReason == LOGIN_FAIL_CAUSES.EXPIRED_PASSWORD) {
+          setTimeout(() => {
+            appStore.naviService.navigate(ROUTERS.PASSWORD_EXPIRED);
+          }, 0);
+        } else {
+          Alert.alert(LoginTxt.errorTitle, LoginTxt.errorLoginIncorrect);
+        }
       } else {
-        self.error = LoginTxt.errorLoginCantConnect;
+        Alert.alert(LoginTxt.errorTitle, LoginTxt.errorLoginCantConnect);
       }
-      self.error && Alert.alert(LoginTxt.errorTitle, self.error);
       self.isLoggedIn = false;
       appStore.setLoading(false);
     },

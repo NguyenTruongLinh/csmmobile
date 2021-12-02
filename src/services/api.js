@@ -355,12 +355,12 @@ class Api {
       let res = await this._login(uid, pas);
       //response =  await this.GetDVRs();
 
-      if (res.status == 200) {
-        let rs = await res.json();
-        return {status: res.status, Result: rs};
-      } else {
-        return res;
-      }
+      // if (res.status == 200) {
+      let rs = await res.json();
+      return {status: res.status, Result: rs};
+      // } else {
+      //   return res;
+      // }
     } catch (ex) {
       __DEV__ && console.log('GOND LOGIN Exception: ', ex);
       return {status: undefined, Result: undefined};

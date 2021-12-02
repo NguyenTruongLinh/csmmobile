@@ -43,7 +43,7 @@ class WelcomeView extends Component {
   };
 
   onGoPro = () => {
-    this.props.appStore.naviService.navigate(ROUTERS.ACCOUNT_LOCKED);
+    // this.props.appStore.naviService.navigate(ROUTERS.PASSWORD_EXPIRED);
   };
 
   render() {
