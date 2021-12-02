@@ -8,11 +8,14 @@ import {
   Linking,
   Alert,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import {onPatch} from 'mobx-state-tree';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import call from 'react-native-phone-call';
+
 // import validatejs from 'validate.js';
 
 import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -59,7 +62,15 @@ class AccountLocked extends Component {
     // navigationService.back();
     this.props.appStore.naviService.back();
   };
-
+  onPhonePress = () => {
+    const args = {
+      number: LoginTxt.phoneContactNumber.replace(/\./g, ''),
+      prompt: false,
+    };
+    call(args).catch(error => {
+      __DEV__ && console.log(`onPhonePress error`, error);
+    });
+  };
   render() {
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -90,29 +101,33 @@ class AccountLocked extends Component {
             style={{
               flex: 1,
             }}>
-            <View style={styles.closeButtonContainer}></View>
-            <View style={styles.space} />
+            <View style={styles.topSpace}></View>
+            <View style={{flex: 0.3}} />
             <Image source={CMS_Logo} style={styles.logo} resizeMode="contain" />
-            <View style={styles.space} />
+            <View style={{flex: 0.3}} />
             <Image source={Lock} style={styles.lock} resizeMode="contain" />
-            <View style={styles.space} />
+            <View style={{flex: 0.3}} />
+            <Text style={styles.textAccInfo}>
+              {LoginTxt.accountLocked.replace('%s', '99 hours')}
+            </Text>
+            <View style={{flex: 0.2}} />
             <View style={styles.textContainer}>
-              <Text style={styles.textBold}>{LoginTxt.accountLocked}</Text>
-              <Text style={styles.textDesc}>{LoginTxt.description}</Text>
+              <Text style={styles.textDesc}>{LoginTxt.phoneContactTitle}</Text>
+              <TouchableOpacity onPress={this.onPhonePress}>
+                <Text style={styles.phone}>{LoginTxt.phoneContactNumber}</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.space} />
-            <View style={styles.buttonsContainer}>
-              <Button
-                style={styles.buttonLogin}
-                caption="BACK TO LOGIN"
-                type="primary"
-                captionStyle={{}}
-                onPress={this.onLogin}
-                enable={true}
-              />
-            </View>
+            <View style={{flex: 0.6}} />
+            <Button
+              style={styles.buttonLogin}
+              caption="BACK TO LOGIN"
+              type="primary"
+              captionStyle={{}}
+              onPress={this.onLogin}
+              enable={true}
+            />
           </View>
-          <View style={styles.space} />
+          <View style={{flex: 0.15}} />
           <View style={styles.copyRight}>
             <Image
               source={I3_Logo}
@@ -143,49 +158,57 @@ const styles = StyleSheet.create({
     top: width * 0.1 - 36,
     zIndex: 10,
   },
-  closeButtonContainer: {
+  topSpace: {
     height: 30,
-    flexDirection: 'column',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-  },
-  logoContainer: {
-    height: 60,
-    flexDirection: 'column',
   },
   logo: {
     tintColor: CMSColors.Dark_Blue,
-    width: width * 0.3,
+    height: 56,
     alignSelf: 'center',
   },
   space: {
-    // flex: 0.3,
+    flex: 0.3,
   },
   lock: {
-    width: 50,
-    height: 50,
+    width: 100,
+    height: 100,
     alignSelf: 'center',
   },
+  space_text: {
+    flex: 0.15,
+  },
   space_footer: {
-    // flex: 0.05,
+    flex: 0.05,
   },
   buttonsContainer: {
     alignItems: 'center',
     flexDirection: 'column',
+    borderColor: 'blue',
+    borderWidth: 1,
   },
   buttonLogin: {
     width: '100%',
   },
   textContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  textTitle: {fontSize: 20, fontWeight: 'normal'},
-  textBold: {
+  textAccInfo: {
     fontSize: 19,
     fontWeight: 'bold',
+    textAlign: 'center',
+    color: CMSColors.PrimaryText,
+    lineHeight: 25,
   },
   textDesc: {
-    fontSize: 15,
+    textAlign: 'center',
+    fontSize: 14,
+    color: CMSColors.SecondaryText,
+  },
+  phone: {
+    fontWeight: 'bold',
+    color: CMSColors.PrimaryActive,
   },
   copyRight: {
     flexDirection: 'row',

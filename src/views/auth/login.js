@@ -259,88 +259,77 @@ class LoginView extends Component {
               <Text style={styles.textDesc}>{LoginTxt.description}</Text>
             </View>
             <View style={styles.space} />
-            <View
-              style={[
-                styles.all,
-                styles.content,
-                styles.centerContent,
-                // { flex: 35 },
-                ,
-              ]}>
-              {/* <View style={styles.centerContent}> */}
-              <View style={styles.space} />
-              <View style={styles.inputsContainer}>
-                <InputTextIcon
-                  ref={r => (this._refs.domain = r)}
-                  name="domain"
-                  value={domain.replace(Domain.urlI3care, '')}
-                  maxLength={60}
-                  enablesReturnKeyAutomatically={true}
-                  onEndEditing={this.onEndEditing}
-                  onChangeText={this.onTypingDomain}
-                  onSubmitEditing={this.onSubmitDomain}
-                  onFocus={this.onFocus}
-                  returnKeyType="next"
-                  iconCustom="earth-grid-select-language-button"
-                  label={LoginTxt.domain}
-                  autoCapitalize={'none'}
-                  autoCorrect={false}
-                  tintColor={CMSColors.PrimaryText}
-                  textColor={CMSColors.PrimaryText}
-                  baseColor={CMSColors.PrimaryText}
-                  iconColor={CMSColors.InputIconColor}
-                  error={errors.domain}
-                  disabled={false}
-                  secureTextEntry={false}
-                />
-                <InputTextIcon
-                  ref={r => (this._refs.username = r)}
-                  name="username"
-                  maxLength={60}
-                  value={this.state.username}
-                  autoCorrect={false}
-                  enablesReturnKeyAutomatically={true}
-                  onEndEditing={this.onEndEditing}
-                  onFocus={this.onFocus}
-                  onChangeText={this.onTypingUsername}
-                  onSubmitEditing={this.onSubmitUserName}
-                  returnKeyType="next"
-                  autoCapitalize={'none'}
-                  iconCustom="user-shape"
-                  label={LoginTxt.username}
-                  placeholder=""
-                  // error={errors.username}
-                  disabled={false}
-                  tintColor={CMSColors.PrimaryText}
-                  textColor={CMSColors.PrimaryText}
-                  baseColor={CMSColors.PrimaryText}
-                  iconColor={CMSColors.InputIconColor}
-                  secureTextEntry={false}
-                />
-                <InputTextIcon
-                  ref={r => (this._refs.password = r)}
-                  name="password"
-                  maxLength={60}
-                  autoCapitalize={'none'}
-                  value={this.state.password}
-                  autoCorrect={false}
-                  enablesReturnKeyAutomatically={true}
-                  onEndEditing={this.onEndEditing}
-                  onFocus={this.onFocus}
-                  returnKeyType="next"
-                  iconCustom="locked-padlock"
-                  label={LoginTxt.password}
-                  placeholder=""
-                  // error={errors.password}
-                  disabled={false}
-                  tintColor={CMSColors.PrimaryText}
-                  textColor={CMSColors.PrimaryText}
-                  baseColor={CMSColors.PrimaryText}
-                  iconColor={CMSColors.InputIconColor}
-                  secureTextEntry={true}
-                  revealable={true}
-                />
-              </View>
+            <View style={[styles.content, styles.centerContent]}>
+              <InputTextIcon
+                ref={r => (this._refs.domain = r)}
+                name="domain"
+                value={domain.replace(Domain.urlI3care, '')}
+                maxLength={60}
+                enablesReturnKeyAutomatically={true}
+                onEndEditing={this.onEndEditing}
+                onChangeText={this.onTypingDomain}
+                onSubmitEditing={this.onSubmitDomain}
+                onFocus={this.onFocus}
+                returnKeyType="next"
+                iconCustom="earth-grid-select-language-button"
+                label={LoginTxt.domain}
+                autoCapitalize={'none'}
+                autoCorrect={false}
+                tintColor={CMSColors.PrimaryText}
+                textColor={CMSColors.PrimaryText}
+                baseColor={CMSColors.PrimaryText}
+                iconColor={CMSColors.InputIconColor}
+                error={errors.domain}
+                disabled={false}
+                secureTextEntry={false}
+              />
+              <InputTextIcon
+                ref={r => (this._refs.username = r)}
+                name="username"
+                maxLength={60}
+                value={this.state.username}
+                autoCorrect={false}
+                enablesReturnKeyAutomatically={true}
+                onEndEditing={this.onEndEditing}
+                onFocus={this.onFocus}
+                onChangeText={this.onTypingUsername}
+                onSubmitEditing={this.onSubmitUserName}
+                returnKeyType="next"
+                autoCapitalize={'none'}
+                iconCustom="user-shape"
+                label={LoginTxt.username}
+                placeholder=""
+                // error={errors.username}
+                disabled={false}
+                tintColor={CMSColors.PrimaryText}
+                textColor={CMSColors.PrimaryText}
+                baseColor={CMSColors.PrimaryText}
+                iconColor={CMSColors.InputIconColor}
+                secureTextEntry={false}
+              />
+              <InputTextIcon
+                ref={r => (this._refs.password = r)}
+                name="password"
+                maxLength={60}
+                autoCapitalize={'none'}
+                value={this.state.password}
+                autoCorrect={false}
+                enablesReturnKeyAutomatically={true}
+                onEndEditing={this.onEndEditing}
+                onFocus={this.onFocus}
+                returnKeyType="next"
+                iconCustom="locked-padlock"
+                label={LoginTxt.password}
+                placeholder=""
+                // error={errors.password}
+                disabled={false}
+                tintColor={CMSColors.PrimaryText}
+                textColor={CMSColors.PrimaryText}
+                baseColor={CMSColors.PrimaryText}
+                iconColor={CMSColors.InputIconColor}
+                secureTextEntry={true}
+                revealable={true}
+              />
             </View>
             <View style={styles.space} />
             <View style={styles.buttonsContainer}>
@@ -417,8 +406,6 @@ const styles = StyleSheet.create({
   centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    // paddingLeft: 7,
-    // paddingRight: 7,
     paddingHorizontal: 7,
     flexDirection: 'column',
   },
@@ -431,7 +418,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   inputsContainer: {
-    alignItems: 'center',
+    // alignItems: 'center',
   },
   buttonsContainer: {
     alignItems: 'center',

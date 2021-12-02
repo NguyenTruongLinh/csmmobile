@@ -60,6 +60,7 @@
     "react-native-modal": "^12.1.0",
     "react-native-orientation-locker": "^1.3.0",
     "react-native-paper": "^4.9.1",
+    "react-native-phone-call": "^1.0.9",
     "react-native-push-notification": "^8.0.1",
     "react-native-radio-buttons": "^1.0.0",
     "react-native-ratings": "github:phungthanhdong/react-native-ratings",

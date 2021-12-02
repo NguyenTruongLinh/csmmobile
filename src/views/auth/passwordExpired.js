@@ -8,11 +8,14 @@ import {
   Linking,
   Alert,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import {onPatch} from 'mobx-state-tree';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import call from 'react-native-phone-call';
+
 // import validatejs from 'validate.js';
 
 import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -26,7 +29,7 @@ import {Domain} from '../../consts/misc';
 import APP_INFO from '../../consts/appInfo';
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
-import {I3_Logo} from '../../consts/images';
+import {I3_Logo, Lock} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
 
@@ -44,61 +47,40 @@ class PasswordExpired extends Component {
     const {loginInfo} = props.userStore;
 
     this.state = {
-      canLogin: false,
-      domain: loginInfo ? loginInfo.domainname : '',
       username: loginInfo ? loginInfo.username : '',
-      password: '',
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: '',
       errors: {
-        domain: '',
         username: '',
-        password: '',
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
       },
     };
     this._refs = {
-      domain: null,
       username: null,
-      password: null,
+      oldPassword: null,
+      newPassword: null,
+      confirmPassword: null,
     };
     this.keyboardView = null;
-    this.lastLoginError = '';
-    // onPatch(props.userStore, this.onStoreChanged);
+
+    this.state = {};
   }
 
   componentDidMount() {
     __DEV__ && console.log('PasswordExpired componentDidMount');
-    this.props.appStore.setLoading(false);
-    // this.setState({domain: this.props.userStore.loginInfo ?? ''});
   }
 
   componentWillUnmount() {
     __DEV__ && console.log('PasswordExpired componentWillUnmount');
   }
 
-  // static getDerivedStateFromProps(nextProps, nextState) {
-  //   __DEV__ && console.log('PasswordExpired getDerivedStateFromProps: ', nextProps);
-  // }
-
-  // onStoreChanged = newValues => {
-  //   const {error, isLoggedIn} = this.props.userStore;
-  //   if (error != this.lastLoginError) {
-  //     this.lastLoginError = error;
-  //     error && Alert.alert(LoginTxt.errorTitle, error);
-  //     return;
-  //   }
-  //   // if (newValues.path == '/isLoggedIn' && isLoggedIn === true)
-  //   //   Alert.alert('Login successfully', 'Yay!');
-  // };
-
-  onTypingDomain = text => {};
-
-  onSubmitDomain = () => {
-    this._refs.username && this._refs.username.focus();
-  };
-
-  onTypingUsername = text => {};
-
-  onSubmitUserName = () => {
-    this._refs.password && this._refs.password.focus();
+  onBack = () => {
+    // __DEV__ && console.log('GOND Login onback <');
+    // navigationService.back();
+    this.props.appStore.naviService.back();
   };
 
   onEndEditing = (event, name) => {
@@ -123,93 +105,13 @@ class PasswordExpired extends Component {
     this.setState({errors});
   };
 
-  removeSpecificPort = domain => {
-    let ssl_port = ':443';
-    let nonssl_port = ':80';
-    let isSSL = domain.startsWith('https://');
-    let specificPort = isSSL ? ssl_port : nonssl_port;
+  onTypingUsername = text => {};
 
-    if (domain.endsWith(specificPort) || domain.includes(specificPort + '/'))
-      domain = domain.replace(specificPort, '');
-    if (domain.endsWith('/')) {
-      domain = domain.substring(0, domain.length - 1);
-    }
-    return domain;
-  };
-
-  validatedomain = domain => {
-    if (!domain) return;
-
-    if (!domain.startsWith('http://') && !domain.startsWith('https://'))
-      domain = 'https://' + domain;
-
-    // let options = {
-    //   schemes: ['http', 'https'],
-    //   allowLocal: true,
-    //   message: 'Domain is not a valid url.',
-    // };
-    // __DEV__ && console.log('GOND validate domain: ', domain);
-    // return validators.url({website: domain}, options);
-    return isValidHttpUrl(domain) ? null : 'Domain is not a valid url.';
-  };
-
-  onLogin = () => {
-    const {username, password} = this.state;
-    let domain = '' + this.state.domain;
-    if (!domain) return;
-
-    const regexSubName = /^[A-z0-9]+$/;
-    if (regexSubName.test(domain)) {
-      domain = Domain.urlI3care + domain;
-    }
-
-    if (
-      !domain.startsWith(domain, 'http://') &&
-      !domain.startsWith(domain, 'https://')
-    )
-      domain = 'https://' + domain;
-
-    let invalidMsg = this.validatedomain(domain);
-    if (invalidMsg) {
-      this.setState({errors: {domain: invalidMsg}});
-      return;
-    }
-
-    domain = this.removeSpecificPort(domain);
-
-    if (this.props.userStore) {
-      this.props.userStore.login(domain, username, password);
-    } else {
-      __DEV__ &&
-        console.log('GOND Login failed, no userStore available!', this.props);
-    }
-  };
-
-  onBack = () => {
-    // __DEV__ && console.log('GOND Login onback <');
-    // navigationService.back();
-    this.props.appStore.naviService.back();
+  onSubmitUserName = () => {
+    this._refs.password && this._refs.password.focus();
   };
 
   render() {
-    const {width} = Dimensions.get('window');
-    const {domain, username, password, errors} = this.state;
-    // const {isLoading} = this.props.appStore;
-    // const {error} = this.props.userStore;
-    // console.log('GOND login render isLoading: ', isLoading);
-
-    // if (error)
-    // console.log(
-    //   'GOND login domain = ',
-    //   domain,
-    //   ', usn = ',
-    //   username,
-    //   ', psw = ',
-    //   password,
-    //   ', isloading = ',
-    //   this.props.appStore.isLoading
-    // );
-
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
         <Button
@@ -221,153 +123,137 @@ class PasswordExpired extends Component {
           iconStyleEnable={{
             color: CMSColors.ColorText,
           }}
-          // iconStyleDisable={{}}
           onPress={this.onBack}
         />
+
         <KeyboardAwareScrollView
-          // keyBoardShouldPersistTaps="always"
           ref={r => {
             this.keyboardView = r;
           }}
-          // enableAutomaticScroll={true}
           contentContainerStyle={{flex: 1}}
-          getTextInputRefs={() => [
-            this._refs.domain,
-            this._refs.username,
-            this._refs.password,
-          ]}
+          getTextInputRefs={() => [this._refs.username, this._refs.password]}
           style={styles.viewContainer}>
           <View
             style={{
               flex: 1,
+              // height: 450,
             }}>
-            <View style={styles.closeButtonContainer}></View>
-            <View style={styles.space} />
-            <View style={styles.logoContainer}>
-              <Image
-                source={CMS_Logo}
-                style={styles.logo}
-                resizeMode="contain"
+            <View style={styles.topSpace}></View>
+            <View style={{flex: 0.3}} />
+            <Image source={CMS_Logo} style={styles.logo} resizeMode="contain" />
+            <View style={{flex: 0.3}} />
+            <Text style={styles.textTitle}>{LoginTxt.changePasswordTitte}</Text>
+            <View style={{flex: 0.05}} />
+            <Text style={styles.textDesc}>
+              {LoginTxt.changePassworDescription}
+            </Text>
+            <View style={{flex: 0.1}} />
+            <View style={[styles.content, styles.centerContent]}>
+              <InputTextIcon
+                ref={r => (this._refs.username = r)}
+                name="username"
+                maxLength={60}
+                value={this.state.username}
+                autoCorrect={false}
+                enablesReturnKeyAutomatically={true}
+                onEndEditing={this.onEndEditing}
+                onFocus={this.onFocus}
+                onChangeText={this.onTypingUsername}
+                onSubmitEditing={this.onSubmitUserName}
+                returnKeyType="next"
+                autoCapitalize={'none'}
+                iconCustom="user-shape"
+                label={LoginTxt.username}
+                placeholder=""
+                // error={errors.username}
+                disabled={false}
+                tintColor={CMSColors.PrimaryText}
+                textColor={CMSColors.PrimaryText}
+                baseColor={CMSColors.PrimaryText}
+                iconColor={CMSColors.InputIconColor}
+                secureTextEntry={false}
+              />
+              <InputTextIcon
+                ref={r => (this._refs.password = r)}
+                name="oldPassword"
+                maxLength={60}
+                autoCapitalize={'none'}
+                value={this.state.password}
+                autoCorrect={false}
+                enablesReturnKeyAutomatically={true}
+                onEndEditing={this.onEndEditing}
+                onFocus={this.onFocus}
+                returnKeyType="next"
+                iconCustom="locked-padlock"
+                label={LoginTxt.oldPassword}
+                placeholder=""
+                // error={errors.password}
+                disabled={false}
+                tintColor={CMSColors.PrimaryText}
+                textColor={CMSColors.PrimaryText}
+                baseColor={CMSColors.PrimaryText}
+                iconColor={CMSColors.InputIconColor}
+                secureTextEntry={true}
+                revealable={true}
+              />
+              <InputTextIcon
+                // ref={r => (this._refs.password = r)}
+                name="newPassword"
+                maxLength={60}
+                autoCapitalize={'none'}
+                value={this.state.password}
+                autoCorrect={false}
+                enablesReturnKeyAutomatically={true}
+                onEndEditing={this.onEndEditing}
+                onFocus={this.onFocus}
+                returnKeyType="next"
+                iconCustom="locked-padlock"
+                label={LoginTxt.newPassword}
+                placeholder=""
+                // error={errors.password}
+                disabled={false}
+                tintColor={CMSColors.PrimaryText}
+                textColor={CMSColors.PrimaryText}
+                baseColor={CMSColors.PrimaryText}
+                iconColor={CMSColors.InputIconColor}
+                secureTextEntry={true}
+                revealable={true}
+              />
+              <InputTextIcon
+                // ref={r => (this._refs.password = r)}
+                name="confirmPassword"
+                maxLength={60}
+                autoCapitalize={'none'}
+                value={this.state.password}
+                autoCorrect={false}
+                enablesReturnKeyAutomatically={true}
+                onEndEditing={this.onEndEditing}
+                onFocus={this.onFocus}
+                returnKeyType="next"
+                iconCustom="locked-padlock"
+                label={LoginTxt.confirmPassword}
+                placeholder=""
+                // error={errors.password}
+                disabled={false}
+                tintColor={CMSColors.PrimaryText}
+                textColor={CMSColors.PrimaryText}
+                baseColor={CMSColors.PrimaryText}
+                iconColor={CMSColors.InputIconColor}
+                secureTextEntry={true}
+                revealable={true}
               />
             </View>
-            <View style={styles.space} />
-            <View style={styles.textContainer}>
-              <Text style={styles.textTitle}>
-                {LoginTxt.title}
-                <Text style={styles.textBold}>{LoginTxt.titleBold}</Text>
-              </Text>
-              <Text style={styles.textDesc}>{LoginTxt.description}</Text>
-            </View>
-            <View style={styles.space} />
-            <View
-              style={[
-                styles.all,
-                styles.content,
-                styles.centerContent,
-                // { flex: 35 },
-                ,
-              ]}>
-              {/* <View style={styles.centerContent}> */}
-              <View style={styles.space} />
-              <View style={styles.inputsContainer}>
-                <InputTextIcon
-                  ref={r => (this._refs.domain = r)}
-                  name="domain"
-                  value={domain.replace(Domain.urlI3care, '')}
-                  maxLength={60}
-                  enablesReturnKeyAutomatically={true}
-                  onEndEditing={this.onEndEditing}
-                  onChangeText={this.onTypingDomain}
-                  onSubmitEditing={this.onSubmitDomain}
-                  onFocus={this.onFocus}
-                  returnKeyType="next"
-                  iconCustom="earth-grid-select-language-button"
-                  label={LoginTxt.domain}
-                  autoCapitalize={'none'}
-                  autoCorrect={false}
-                  tintColor={CMSColors.PrimaryText}
-                  textColor={CMSColors.PrimaryText}
-                  baseColor={CMSColors.PrimaryText}
-                  iconColor={CMSColors.InputIconColor}
-                  error={errors.domain}
-                  disabled={false}
-                  secureTextEntry={false}
-                />
-                <InputTextIcon
-                  ref={r => (this._refs.username = r)}
-                  name="usernameXXXXXXXXXXXXXXX"
-                  maxLength={60}
-                  value={this.state.username}
-                  autoCorrect={false}
-                  enablesReturnKeyAutomatically={true}
-                  onEndEditing={this.onEndEditing}
-                  onFocus={this.onFocus}
-                  onChangeText={this.onTypingUsername}
-                  onSubmitEditing={this.onSubmitUserName}
-                  returnKeyType="next"
-                  autoCapitalize={'none'}
-                  iconCustom="user-shape"
-                  label={LoginTxt.username}
-                  placeholder=""
-                  // error={errors.username}
-                  disabled={false}
-                  tintColor={CMSColors.PrimaryText}
-                  textColor={CMSColors.PrimaryText}
-                  baseColor={CMSColors.PrimaryText}
-                  iconColor={CMSColors.InputIconColor}
-                  secureTextEntry={false}
-                />
-                <InputTextIcon
-                  ref={r => (this._refs.password = r)}
-                  name="password"
-                  maxLength={60}
-                  autoCapitalize={'none'}
-                  value={this.state.password}
-                  autoCorrect={false}
-                  enablesReturnKeyAutomatically={true}
-                  onEndEditing={this.onEndEditing}
-                  onFocus={this.onFocus}
-                  returnKeyType="next"
-                  iconCustom="locked-padlock"
-                  label={LoginTxt.password}
-                  placeholder=""
-                  // error={errors.password}
-                  disabled={false}
-                  tintColor={CMSColors.PrimaryText}
-                  textColor={CMSColors.PrimaryText}
-                  baseColor={CMSColors.PrimaryText}
-                  iconColor={CMSColors.InputIconColor}
-                  secureTextEntry={true}
-                  revealable={true}
-                />
-              </View>
-            </View>
-            <View style={styles.space} />
-            <View style={styles.buttonsContainer}>
-              <Button
-                style={styles.buttonLogin}
-                caption="LOGINXXXXXXXXXXXX"
-                type="primary"
-                captionStyle={{}}
-                onPress={this.onLogin}
-                enable={
-                  domain && username && password // &&
-                  // !this.props.appStore.isLoading
-                }
-              />
-              <Button
-                style={styles.buttonPassword}
-                caption="FORGOT PASSWORD?"
-                type="flat"
-                captionStyle={{}}
-                onPress={() => {
-                  Linking.openURL(APP_INFO.ContactUrl);
-                }}
-                enable={true}
-              />
-            </View>
+            <View style={{flex: 0.3}} />
+            <Button
+              style={styles.buttonLogin}
+              caption="SUBMIT"
+              type="primary"
+              captionStyle={{}}
+              onPress={this.onLogin}
+              enable={true}
+            />
           </View>
-          <View style={styles.space_footer} />
+          <View style={{flex: 0.05}} />
           <View style={styles.copyRight}>
             <Image
               source={I3_Logo}
@@ -390,12 +276,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: width * 0.1,
   },
-  closeButtonContainer: {
-    height: 30,
-    flexDirection: 'column',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-  },
   closeButton: {
     width: 30,
     // alignItems: 'center',
@@ -404,51 +284,65 @@ const styles = StyleSheet.create({
     top: width * 0.1 - 36,
     zIndex: 10,
   },
+  topSpace: {
+    height: 30,
+  },
   logo: {
     tintColor: CMSColors.Dark_Blue,
-    width: width * 0.3,
-    height: '100%',
+    height: 56,
     alignSelf: 'center',
   },
-  logoContainer: {
-    height: 60,
-    flexDirection: 'column',
+  space: {
+    flex: 0.3,
   },
-  centerContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    // paddingLeft: 7,
-    // paddingRight: 7,
-    paddingHorizontal: 7,
-    flexDirection: 'column',
+  lock: {
+    width: 100,
+    height: 100,
+    alignSelf: 'center',
   },
-  textContainer: {
-    alignItems: 'center',
+  space_text: {
+    flex: 0.15,
   },
-  textTitle: {fontSize: 20, fontWeight: 'normal'},
-  textBold: {fontWeight: 'bold'},
-  textDesc: {
-    fontSize: 15,
-  },
-  inputsContainer: {
-    alignItems: 'center',
+  space_footer: {
+    flex: 0.05,
   },
   buttonsContainer: {
     alignItems: 'center',
     flexDirection: 'column',
+    borderColor: 'blue',
+    borderWidth: 1,
   },
   buttonLogin: {
     width: '100%',
   },
-  buttonPassword: {
-    width: '100%',
+  textContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: CMSColors.PrimaryText,
+  },
+  textDesc: {
+    fontSize: 14,
+    color: CMSColors.SecondaryText,
+    lineHeight: 20,
+  },
+  phone: {
+    fontWeight: 'bold',
+    color: CMSColors.PrimaryActive,
   },
   content: {
     maxWidth: variable.deviceWidth,
     backgroundColor: CMSColors.Transparent,
   },
-  captionStyle: {
-    color: CMSColors.TextButtonLogin,
+  centerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    flexDirection: 'column',
   },
   copyRight: {
     flexDirection: 'row',
@@ -463,12 +357,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11,
     marginLeft: 5,
-  },
-  space: {
-    flex: 0.3,
-  },
-  space_footer: {
-    flex: 0.05,
   },
 });
 

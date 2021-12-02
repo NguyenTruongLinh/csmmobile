@@ -315,7 +315,7 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
             component={WelcomeView}
           />
           <WelcomeStack.Screen name={ROUTERS.LOGIN} component={LoginView} />
-          {/* AccountLocked} /> */}
+
           <WelcomeStack.Screen
             name={ROUTERS.PASSWORD_EXPIRED}
             component={passwordExpired}
