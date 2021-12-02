@@ -76,6 +76,7 @@ class AccountLocked extends Component {
   };
   render() {
     const {userStore} = this.props;
+    const lockedTime = userStore.loginInfo.lockedTime;
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
         <Button
@@ -114,7 +115,7 @@ class AccountLocked extends Component {
             <Text style={styles.textAccInfo}>
               {LoginTxt.accountLocked.replace(
                 '%s',
-                `${userStore.loginInfo.lockedTime} minutes`
+                `${lockedTime} ${lockedTime > 1 ? 'minutes' : 'minute'}`
               )}
             </Text>
             <View style={{flex: 0.2}} />
