@@ -30,6 +30,7 @@ import {
 import Button from '../../components/controls/Button';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import ExceptionSearchModal from './FilterModal';
+import NoDataView from '../../components/views/NoData';
 
 import {formatNumber, isNullOrUndef} from '../../util/general';
 import {
@@ -39,6 +40,7 @@ import {
   GroupByException,
 } from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
+import ROUTERS from '../../consts/routes';
 import {
   SMARTER as SMARTER_TXT,
   COMMON as COMMON_TXT,
@@ -92,6 +94,7 @@ class DashboardView extends React.Component {
     if (!exceptionStore.filterParams) {
       exceptionStore.setDefaultParams(sitesStore.sitesList.map(s => s.key));
     }
+    exceptionStore.getExceptionTypes();
     await exceptionStore.getExceptionsSummary();
   };
 
@@ -122,6 +125,9 @@ class DashboardView extends React.Component {
   onSelectEmployee = employee => {
     const {exceptionStore, navigation} = this.props;
     __DEV__ && console.log('GOND onSelectEmployee: ', employee);
+
+    exceptionStore.selectEmployee(employee.id);
+    navigation.push(ROUTERS.TRANSACTIONS);
   };
 
   onSelectGroup = async updatedSections => {
@@ -186,23 +192,15 @@ class DashboardView extends React.Component {
         // onSwipeOut={() => this.setState({showSortModal: false})}
         onBackButtonPress={() => this.setState({showSortModal: false})}
         backdropOpacity={0.5}
-        style={{
-          flex: 1,
-          marginBottom: 0,
-          marginLeft: 0,
-          marginRight: 0,
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-          flexDirection: 'column',
-          justifyContent: 'center',
-          backgroundColor: CMSColors.White,
-          marginTop: height - (displaySortFields.length * ListViewHeight + 100),
-        }}>
-        <View
-          style={{height: 70, alignItems: 'center', justifyContent: 'center'}}>
-          <Text style={{textAlign: 'center', fontSize: 24, fontWeight: 'bold'}}>
-            {SMARTER_TXT.SORT_MODAL_TITLE}
-          </Text>
+        style={[
+          styles.sortModal,
+          {
+            marginTop:
+              height - (displaySortFields.length * ListViewHeight + 100),
+          },
+        ]}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>{SMARTER_TXT.SORT_MODAL_TITLE}</Text>
         </View>
         <FlatList
           data={displaySortFields}
@@ -210,15 +208,7 @@ class DashboardView extends React.Component {
           renderItem={({item}) => {
             return (
               <CMSRipple
-                style={{
-                  width: '100%',
-                  height: ListViewHeight,
-                  borderBottomWidth: 1,
-                  borderBottomColor: CMSColors.BorderColorListRow,
-                  paddingLeft: 14,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}
+                style={styles.sortItemRipple}
                 onPress={() => {
                   exceptionStore.setSortField(item);
                   this.setState({showSortModal: false});
@@ -236,7 +226,7 @@ class DashboardView extends React.Component {
                   }
                   size={20}
                 />
-                <Text style={{marginLeft: 14}}>
+                <Text style={styles.sortItemText}>
                   {ExceptionSortFieldName[item]}
                 </Text>
               </CMSRipple>
@@ -252,78 +242,47 @@ class DashboardView extends React.Component {
     const {exceptionStore} = this.props;
 
     return (
-      <View>
-        <CMSRipple
-          rippleOpacity={0.87}
-          onPress={() => {
-            // console.log('11111111111111111111111');
-            // this.onSelectGroup(data, index);
-            if (index == this.state.activeGroup) {
-              this.setState({activeGroup: undefined});
-            }
-          }}>
-          <View
-            style={[
-              {
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: 5,
-                height: 48,
-                backgroundColor: CMSColors.White,
-                borderBottomWidth: 0.5,
-                borderColor: CMSColors.BorderColorListRow,
-              },
-              isActive == true
-                ? {
-                    borderBottomWidth: 0,
-                  }
-                : {},
-            ]}>
-            <View style={{marginLeft: 19, marginRight: 14}}>
-              <IconCustom
-                name="sites"
-                size={24}
-                color={CMSColors.PrimaryText}
-              />
-            </View>
-            <View
-              style={{
-                flex: 1,
-                margin: 5,
-                minHeight: 40,
-                justifyContent: 'center',
-                backgroundColor: CMSColors.transparent,
-              }}>
-              <Text
-                style={{
-                  flexWrap: 'wrap',
-                  flexShrink: 1,
-                  fontSize: 16,
-                  color: CMSColors.PrimaryText,
-                  backgroundColor: CMSColors.transparent,
-                }}>
-                {data.siteName}
-              </Text>
-            </View>
-            <View
-              style={{
-                backgroundColor: CMSColors.BtnNumberListRow,
-                minWidth: 65,
-                height: 24,
-                borderRadius: 3,
-                // padding: 5,
-                margin: 5,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Text style={{fontSize: 16, color: CMSColors.TextNumberListRow}}>
-                {formatNumber(data.riskFactor)}
-              </Text>
-            </View>
+      <CMSRipple
+        delayTime={0}
+        rippleOpacity={0.87}
+        onPress={() => {
+          // console.log('11111111111111111111111');
+          // this.onSelectGroup(data, index);
+          if (index == this.state.activeGroup) {
+            this.setState({activeGroup: undefined});
+          }
+        }}>
+        <View
+          style={[
+            {
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 5,
+              height: 48,
+              backgroundColor: CMSColors.White,
+              // borderBottomWidth: 0.5,
+              // borderColor: CMSColors.BorderColorListRow,
+            },
+            // isActive == true
+            //   ? {
+            //       borderBottomWidth: 0,
+            //     }
+            //   : {},
+          ]}>
+          <View style={styles.siteIconContainer}>
+            <IconCustom name="sites" size={24} color={CMSColors.PrimaryText} />
           </View>
-        </CMSRipple>
-      </View>
+          <View style={styles.siteNameContainer}>
+            <Text style={styles.siteNameText}>{data.siteName}</Text>
+          </View>
+          <View style={styles.siteRiskContainer}>
+            <Text style={styles.siteRiskText}>
+              {formatNumber(data.riskFactor)}
+            </Text>
+          </View>
+        </View>
+      </CMSRipple>
     );
   };
 
@@ -332,28 +291,8 @@ class DashboardView extends React.Component {
 
     return (
       <CMSRipple onPress={() => this.onSelectEmployee(item)} style={{}}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            paddingHorizontal: 5,
-            paddingVertical: 15,
-            backgroundColor: CMSColors.DividerColor16,
-            borderBottomWidth: 0.5,
-            borderColor: CMSColors.BorderColorListRow,
-            //backgroundColor: '#F6F6F6',
-          }}>
-          <View
-            style={{
-              backgroundColor: CMSColors.DividerColor3,
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              marginLeft: 30,
-              marginRight: 14,
-            }}>
+        <View style={styles.groupItemContainer}>
+          <View style={styles.userIconContainer}>
             <IconCustom
               name="user-shape"
               size={20}
@@ -361,33 +300,17 @@ class DashboardView extends React.Component {
             />
           </View>
 
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              marginLeft: 10,
-            }}>
-            <Text style={{fontSize: 16, color: CMSColors.PrimaryText}}>
-              {item.employeeName}
-            </Text>
+          <View style={styles.employeeNameContainer}>
+            <Text style={styles.employeeNameText}>{item.employeeName}</Text>
           </View>
-          <View
-            style={{
-              marginLeft: 10,
-              // padding: 5,
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-            }}>
-            <Text
-              style={{marginRight: 10, fontSize: 16, color: CMSColors.Danger}}>
+          <View style={styles.employeeNameRiskContainer}>
+            <Text style={styles.employeeNameRiskText}>
               {formatNumber(item.riskFactor)}
             </Text>
             <IconCustom
-              style={{}}
               name="keyboard-right-arrow-button"
               size={20}
-              color={CMSColors.DividerColor}
+              color={CMSColors.ColorText} // {CMSColors.DividerColor}
             />
           </View>
         </View>
@@ -405,26 +328,7 @@ class DashboardView extends React.Component {
 
     return (
       <View style={{flex: 1}}>
-        <View
-          style={{
-            height: 54,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            backgroundColor: CMSColors.White,
-            paddingHorizontal: 10,
-            ...Platform.select({
-              ios: {
-                shadowOpacity: 0.3,
-                shadowRadius: 1,
-              },
-              android: {
-                elevation: 1,
-                borderTopWidth: 1,
-                borderBottomWidth: 1,
-                borderColor: 'rgb(204, 204, 204)',
-              },
-            }),
-          }}>
+        <View style={styles.groupInfoContainer}>
           <View style={styles.itemInfo}>
             <Text style={styles.textTitleInfo}>Total transaction</Text>
             <Text style={styles.textValueInfo}>
@@ -452,37 +356,37 @@ class DashboardView extends React.Component {
     );
   };
 
-  renderDataItem = data => {
-    const {exceptionStore} = this.props;
-    const {item} = data;
+  // renderDataItem = data => {
+  //   const {exceptionStore} = this.props;
+  //   const {item} = data;
 
-    return (
-      <Accordion
-        activeSections={[0]}
-        style={{}}
-        sections={[
-          item,
-          // {
-          //   title: {
-          //     // rowID: parseInt(rowID),
-          //     siteKey: item.siteKey,
-          //     name: item.siteName,
-          //     riskFactor: item.riskFactor,
-          //     totalTran: item.totalTran,
-          //     totalAmount: item.totalAmount,
-          //     percentToSale: item.percentToSale,
-          //   },
+  //   return (
+  //     <Accordion
+  //       activeSections={[0]}
+  //       style={{}}
+  //       sections={[
+  //         item,
+  //         // {
+  //         //   title: {
+  //         //     // rowID: parseInt(rowID),
+  //         //     siteKey: item.siteKey,
+  //         //     name: item.siteName,
+  //         //     riskFactor: item.riskFactor,
+  //         //     totalTran: item.totalTran,
+  //         //     totalAmount: item.totalAmount,
+  //         //     percentToSale: item.percentToSale,
+  //         //   },
 
-          //   content: item.employees,
-          // },
-        ]}
-        renderHeader={this.renderGroupHeader}
-        renderContent={this.renderGroupContent}
-        onChange={() => {}}
-        touchableComponent={props => <CMSRipple {...props} />}
-      />
-    );
-  };
+  //         //   content: item.employees,
+  //         // },
+  //       ]}
+  //       renderHeader={this.renderGroupHeader}
+  //       renderContent={this.renderGroupContent}
+  //       onChange={() => {}}
+  //       touchableComponent={props => <CMSRipple {...props} />}
+  //     />
+  //   );
+  // };
 
   renderDataView() {
     const {exceptionStore, sitesStore} = this.props;
@@ -505,8 +409,11 @@ class DashboardView extends React.Component {
           sections={exceptionStore.filteredGroupsData}
           renderHeader={this.renderGroupHeader}
           renderContent={this.renderGroupContent}
+          renderAsFlatList={true}
           onChange={this.onSelectGroup}
-          touchableComponent={props => <CMSRipple {...props} delayTime={0} />}
+          touchableComponent={props => (
+            <CMSRipple {...props} rippleOpacity={0.87} delayTime={0} />
+          )}
         />
       </View>
     );
@@ -541,19 +448,6 @@ class DashboardView extends React.Component {
               },
             },
             {
-              values: labelDataSet,
-              label: '',
-              config: {
-                drawValues: true,
-                valueTextSize: 16,
-                valueTextColor: processColor('black'),
-                visible: true,
-                valueFormatter: exceptionStore.chartData.map(
-                  x => x.name + ' - ' + x.value
-                ),
-              },
-            },
-            {
               values: exceptionStore.chartData.map(data => ({
                 y: data.value,
                 key: data.key,
@@ -561,7 +455,6 @@ class DashboardView extends React.Component {
               label: '',
               config: {
                 color: processColor('#FFC107'),
-                // barShadowColor: processColor('lightgrey'),
                 highlightAlpha: 90,
                 highlightColor: processColor('#FFC107'),
                 drawValues: false,
@@ -574,12 +467,32 @@ class DashboardView extends React.Component {
                 // ),
               },
             },
+            {
+              values: labelDataSet,
+              label: '',
+              config: {
+                drawValues: true,
+                valueTextSize: 14,
+                valueTextColor: processColor('black'),
+                visible: true,
+                valueFormatter: exceptionStore.chartData.map(
+                  x => x.name + ' - ' + formatNumber(x.value)
+                ),
+              },
+            },
           ],
-          config: {barWidth: 0.14},
+          config: {
+            barWidth: 0.3,
+            // group: {
+            //   fromX: 0,
+            //   groupSpace: 0.01,
+            //   barSpace: 0.001,
+            // },
+          },
         }}
         xAxis={{
           valueFormatter: exceptionStore.chartData.map(
-            x => x.name + ' - ' + x.value
+            x => x.name + ' - ' + formatNumber(x.value)
           ),
           granularityEnabled: true,
           granularity: 1,
@@ -590,10 +503,11 @@ class DashboardView extends React.Component {
           // centerAxisLabels: true,
         }}
         yAxis={{
+          inverted: true,
           left: {
             drawLabels: false,
-            drawGridLines: false,
-            drawAxisLine: false,
+            // drawGridLines: false,
+            // drawAxisLine: false,
           },
           right: {
             // axisMinimum: 0,
@@ -603,7 +517,7 @@ class DashboardView extends React.Component {
             // granularityEnabled: true,
             drawLabels: false,
             drawGridLines: false,
-            drawAxisLine: false,
+            // drawAxisLine: false,
           },
         }}
         legend={{enabled: false}}
@@ -615,10 +529,15 @@ class DashboardView extends React.Component {
         // }}
         chartDescription={{text: ''}}
         drawBorders={false}
-        drawGridBackground={false}
+        // drawGridBackground={false}
         drawValueAboveBar={true}
         onSelect={this.onChartEvent}
+        animation={{durationY: 500}}
         style={{flex: 1}}
+        // extraOffsets={{
+        //   left: 0,
+        //   right: 0,
+        // }}
       />
       // </Animatable.View>
     );
@@ -626,32 +545,15 @@ class DashboardView extends React.Component {
 
   renderChartView = () => {
     const {exceptionStore, sitesStore} = this.props;
-    return exceptionStore.isLoading || sitesStore.isLoading ? (
-      <LoadingOverlay
-        backgroundColor={CMSColors.White}
-        indicatorColor={CMSColors.PrimaryActive}
-      />
-    ) : (
+    return (
       <View style={{flex: 1}}>
-        <View
-          style={{flex: 1, justifyContent: 'center', alignContent: 'center'}}>
-          <Text style={{fontSize: 16, textAlign: 'center'}}>
-            {SMARTER_TXT.TOTAL_RISK}
-          </Text>
-          <Text style={{fontSize: 35, textAlign: 'center', fontWeight: 'bold'}}>
+        <View style={styles.chartHeader}>
+          <Text style={styles.chartHeaderText}>{SMARTER_TXT.TOTAL_RISK}</Text>
+          <Text style={styles.chartHeaderRiskValue}>
             {exceptionStore.totalRiskFactors}
           </Text>
         </View>
-        <View
-          style={{
-            flex: 4,
-            margin: 10,
-            marginTop: 0,
-            // borderColor: CMSColors.DividerColor,
-            // borderWidth: 1,
-          }}>
-          {this.renderChart()}
-        </View>
+        <View style={styles.chartContainer}>{this.renderChart()}</View>
       </View>
     );
   };
@@ -659,25 +561,28 @@ class DashboardView extends React.Component {
   render() {
     const {exceptionStore, sitesStore} = this.props;
     const {showChart, showFilterModal} = this.state;
-    const content = showChart ? this.renderChartView() : this.renderDataView();
+    const content =
+      exceptionStore.isLoading || sitesStore.isLoading ? (
+        <LoadingOverlay
+          backgroundColor={CMSColors.White}
+          indicatorColor={CMSColors.PrimaryActive}
+        />
+      ) : showChart ? (
+        this.renderChartView()
+      ) : (
+        this.renderDataView()
+      );
 
     return (
       <View style={{flex: 1}}>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            paddingHorizontal: 12,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View style={{flexDirection: 'row'}}>
+        <View style={styles.topInfoContainer}>
+          <View style={styles.calendarIcon}>
             <IconCustom
               name={'power-connection-indicator'}
               color={CMSColors.ColorText}
               size={22}
             />
-            <Text style={{marginLeft: 5, fontSize: 16}}>
+            <Text style={styles.dateRangeText}>
               {exceptionStore.startDateTime.toFormat(
                 DateFormat.POS_Filter_Date
               ) +
@@ -688,10 +593,7 @@ class DashboardView extends React.Component {
           <View style={{}}>
             {/* <Text style={{marginRight: 7}}>{exceptionStore.sortFieldName}</Text> */}
             <Button
-              style={{
-                height: 42,
-                padding: 5,
-              }}
+              style={styles.sortButton}
               caption={exceptionStore.sortFieldName}
               type={'flat'}
               enable={true}
@@ -701,27 +603,28 @@ class DashboardView extends React.Component {
             />
           </View>
         </View>
-        <View style={{flex: 11, backgroundColor: CMSColors.White}}>
-          <View style={{flex: 10}}>{content}</View>
-          <View style={{flex: 1}}>
-            <Button
-              style={{
-                height: 42,
-                padding: 5,
-              }}
-              caption={
-                showChart ? SMARTER_TXT.SHOW_DATA : SMARTER_TXT.SHOW_CHART
-              }
-              iconCustom="view-list-button"
-              iconSize={18}
-              type={'flat'}
-              enable={true}
-              onPress={() => {
-                this.setState({showChart: !showChart});
-              }}
-            />
+        {exceptionStore.exceptionsGroupData.length == 0 ? (
+          <NoDataView style={{flex: 11}} />
+        ) : (
+          <View style={styles.mainViewContainer}>
+            <View style={{flex: 10}}>{content}</View>
+            <View style={{flex: 1}}>
+              <Button
+                style={styles.switchViewButton}
+                caption={
+                  showChart ? SMARTER_TXT.SHOW_DATA : SMARTER_TXT.SHOW_CHART
+                }
+                iconCustom="view-list-button"
+                iconSize={18}
+                type={'flat'}
+                enable={true}
+                onPress={() => {
+                  this.setState({showChart: !showChart});
+                }}
+              />
+            </View>
           </View>
-        </View>
+        )}
         {this.renderSortModal()}
         <ExceptionSearchModal
           isVisible={showFilterModal}
@@ -739,6 +642,113 @@ class DashboardView extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  sortModal: {
+    flex: 1,
+    marginBottom: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    backgroundColor: CMSColors.White,
+  },
+  modalHeader: {height: 70, alignItems: 'center', justifyContent: 'center'},
+  modalTitle: {textAlign: 'center', fontSize: 24, fontWeight: 'bold'},
+  sortItemRipple: {
+    width: '100%',
+    height: ListViewHeight,
+    borderBottomWidth: 1,
+    borderBottomColor: CMSColors.BorderColorListRow,
+    paddingLeft: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sortItemText: {marginLeft: 14},
+  siteIconContainer: {marginLeft: 19, marginRight: 14},
+  siteNameContainer: {
+    flex: 1,
+    margin: 5,
+    minHeight: 40,
+    justifyContent: 'center',
+    backgroundColor: CMSColors.transparent,
+  },
+  siteNameText: {
+    flexWrap: 'wrap',
+    flexShrink: 1,
+    fontSize: 16,
+    color: CMSColors.PrimaryText,
+    backgroundColor: CMSColors.transparent,
+  },
+  siteRiskContainer: {
+    backgroundColor: CMSColors.BtnNumberListRow,
+    minWidth: 65,
+    height: 24,
+    borderRadius: 3,
+    // padding: 5,
+    margin: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  siteRiskText: {fontSize: 16, color: CMSColors.TextNumberListRow},
+  groupItemContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+    paddingVertical: 15,
+    backgroundColor: CMSColors.White, // CMSColors.DividerColor16,
+    // borderBottomWidth: 0.5,
+    // borderColor: CMSColors.BorderColorListRow,
+    //backgroundColor: '#F6F6F6',
+  },
+  userIconContainer: {
+    backgroundColor: CMSColors.Transparent, // CMSColors.DividerColor3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
+    // borderRadius: 20,
+    // marginLeft: 30,
+    // marginRight: 14,
+    marginHorizontal: 14,
+  },
+  employeeNameContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    // marginLeft: 10,
+  },
+  employeeNameText: {fontSize: 16, color: CMSColors.PrimaryText},
+  employeeNameRiskContainer: {
+    marginLeft: 10,
+    // padding: 5,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  employeeNameRiskText: {
+    marginRight: 10,
+    fontSize: 16,
+    color: CMSColors.Danger,
+  },
+  groupInfoContainer: {
+    height: 54,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: CMSColors.White,
+    paddingHorizontal: 10,
+    // ...Platform.select({
+    //   ios: {
+    //     shadowOpacity: 0.3,
+    //     shadowRadius: 1,
+    //   },
+    //   android: {
+    //     elevation: 1,
+    //     borderTopWidth: 1,
+    //     borderBottomWidth: 1,
+    //     borderColor: 'rgb(204, 204, 204)',
+    //   },
+    // }),
+  },
   itemInfo: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -752,6 +762,33 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: CMSColors.Dark_Gray_2,
+  },
+  chartHeader: {flex: 1, justifyContent: 'center', alignContent: 'center'},
+  chartHeaderText: {fontSize: 16, textAlign: 'center'},
+  chartHeaderRiskValue: {fontSize: 35, textAlign: 'center', fontWeight: 'bold'},
+  chartContainer: {
+    flex: 4,
+    marginLeft: -35,
+    marginTop: 0,
+  },
+  topInfoContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  calendarIcon: {flexDirection: 'row'},
+  dateRangeText: {marginLeft: 5, fontSize: 16},
+  sortButton: {
+    height: 42,
+    padding: 5,
+  },
+  mainViewContainer: {flex: 11, backgroundColor: CMSColors.White},
+  switchViewButton: {
+    height: 42,
+    padding: 5,
+    backgroundColor: CMSColors.White,
   },
 });
 
