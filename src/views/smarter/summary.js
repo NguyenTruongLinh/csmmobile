@@ -561,17 +561,17 @@ class DashboardView extends React.Component {
   render() {
     const {exceptionStore, sitesStore} = this.props;
     const {showChart, showFilterModal} = this.state;
-    const content =
-      exceptionStore.isLoading || sitesStore.isLoading ? (
-        <LoadingOverlay
-          backgroundColor={CMSColors.White}
-          indicatorColor={CMSColors.PrimaryActive}
-        />
-      ) : showChart ? (
-        this.renderChartView()
-      ) : (
-        this.renderDataView()
-      );
+    const isLoading = exceptionStore.isLoading || sitesStore.isLoading;
+    const content = isLoading ? (
+      <LoadingOverlay
+        backgroundColor={CMSColors.White}
+        indicatorColor={CMSColors.PrimaryActive}
+      />
+    ) : showChart ? (
+      this.renderChartView()
+    ) : (
+      this.renderDataView()
+    );
 
     return (
       <View style={{flex: 1}}>
@@ -590,21 +590,23 @@ class DashboardView extends React.Component {
                 exceptionStore.endDateTime.toFormat(DateFormat.POS_Filter_Date)}
             </Text>
           </View>
-          <View style={{}}>
-            {/* <Text style={{marginRight: 7}}>{exceptionStore.sortFieldName}</Text> */}
-            <Button
-              style={styles.sortButton}
-              caption={exceptionStore.sortFieldName}
-              type={'flat'}
-              enable={true}
-              onPress={() => {
-                this.setState({showSortModal: true});
-              }}
-            />
-          </View>
+          {showChart && (
+            <View style={{}}>
+              {/* <Text style={{marginRight: 7}}>{exceptionStore.sortFieldName}</Text> */}
+              <Button
+                style={styles.sortButton}
+                caption={exceptionStore.sortFieldName}
+                type={'flat'}
+                enable={true}
+                onPress={() => {
+                  this.setState({showSortModal: true});
+                }}
+              />
+            </View>
+          )}
         </View>
         {exceptionStore.exceptionsGroupData.length == 0 ? (
-          <NoDataView style={{flex: 11}} />
+          <NoDataView isLoading={isLoading} style={{flex: 11}} />
         ) : (
           <View style={styles.mainViewContainer}>
             <View style={{flex: 10}}>{content}</View>

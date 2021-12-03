@@ -42,6 +42,7 @@ class ExceptionsView extends Component {
       isListView: true,
     };
     this._isMounted = false;
+    this.currentPage = 1;
   }
 
   componentDidMount() {
@@ -122,13 +123,10 @@ class ExceptionsView extends Component {
     return trans.exceptionTypes.map((flag, index) => (
       <View
         key={'flag_' + index}
-        style={{
-          position: 'absolute',
-          left: index * variables.exceptionFlagOffset,
-          backgroundColor: CMSColors.Transparent,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
+        style={[
+          styles.flagsContainer,
+          {left: index * variables.exceptionFlagOffset},
+        ]}>
         <IconCustom size={20} color={flag.color} name="ic_flag_black_48px" />
       </View>
     ));
@@ -156,8 +154,8 @@ class ExceptionsView extends Component {
             styleImage={styles.alertThumb}
             styles={styles.thumbContainer}
           />
-          <View style={{flex: 2}}>
-            <Text style={{padding: 2, fontSize: 16}}>#{item.tranNo}</Text>
+          <View style={styles.transInfoContainer}>
+            <Text style={styles.transNoText}>#{item.tranNo}</Text>
 
             <View style={styles.thumbSub}>
               <View style={styles.thumbSubIcon}>
@@ -167,11 +165,7 @@ class ExceptionsView extends Component {
                   color={CMSColors.SecondaryText}
                 />
               </View>
-              <Text
-                style={{
-                  padding: 2,
-                  fontSize: 12,
-                }}>
+              <Text style={styles.transDateText}>
                 {DateTime.fromISO(item.tranDate, {zone: 'utc'}).toFormat(
                   DateFormat.Alert_Date
                 )}
@@ -179,15 +173,7 @@ class ExceptionsView extends Component {
             </View>
           </View>
         </View>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row-reverse',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            // borderColor: 'red',
-            // borderWidth: 1,
-          }}>
+        <View style={styles.transInfoFlags}>
           {this.renderExceptionFlags(item)}
         </View>
       </CMSRipple>
@@ -205,69 +191,44 @@ class ExceptionsView extends Component {
           this.gotoTransactionDetail(item);
         }}
         underlayColor={CMSColors.Underlay}
-        style={{flex: 1}}>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: CMSColors.White,
-            borderColor: CMSColors.BorderColorListRow,
-            padding: itemPadding,
-          }}>
-          <CMSImage
-            id={'grid_' + DateTime.now().toMillis()}
-            src={item.image ? item.image : undefined}
-            styleImage={[
-              styles.alertThumbGrid,
-              {width: itemWidth, height: Math.floor((itemWidth * 9) / 16)},
-            ]}
-            styles={{flex: 8}}
-            twoStepsLoading={true}
-            dataCompleteHandler={(param, image) => {
-              if (image) {
-                item.saveImage(image);
-              }
-            }}
-            domain={this.props.exceptionStore.getTransactionSnapShot(item)}
-          />
-          <View style={{flexDirection: 'row', paddingHorizontal: 5}}>
-            <View style={{flex: 3}}>
-              <Text style={{paddingVertical: 2, fontSize: 16}}>
-                #{item.tranNo}
-              </Text>
+        style={[styles.gridItemContainer, {padding: itemPadding}]}>
+        <CMSImage
+          id={'grid_' + DateTime.now().toMillis()}
+          src={item.image ? item.image : undefined}
+          styleImage={[
+            styles.alertThumbGrid,
+            {width: itemWidth, height: Math.floor((itemWidth * 9) / 16)},
+          ]}
+          styles={styles.gridSnapshot}
+          twoStepsLoading={true}
+          dataCompleteHandler={(param, image) => {
+            if (image) {
+              item.saveImage(image);
+            }
+          }}
+          domain={this.props.exceptionStore.getTransactionSnapShot(item)}
+        />
+        <View style={styles.gridInfoContainer}>
+          <View style={styles.gridInfoLeft}>
+            <Text style={styles.transNoText}>#{item.tranNo}</Text>
 
-              <View style={styles.thumbSub}>
-                <View style={styles.thumbSubIcon}>
-                  <IconCustom
-                    name="clock-with-white-face"
-                    size={12}
-                    color={CMSColors.SecondaryText}
-                  />
-                </View>
-                <Text
-                  style={{
-                    paddingVertical: 2,
-                    fontSize: 12,
-                  }}>
-                  {DateTime.fromISO(item.tranDate, {zone: 'utc'}).toFormat(
-                    DateFormat.Alert_Date
-                  )}
-                </Text>
+            <View style={styles.thumbSub}>
+              <View style={styles.thumbSubIcon}>
+                <IconCustom
+                  name="clock-with-white-face"
+                  size={12}
+                  color={CMSColors.SecondaryText}
+                />
               </View>
+              <Text style={styles.transDateText}>
+                {DateTime.fromISO(item.tranDate, {zone: 'utc'}).toFormat(
+                  DateFormat.Alert_Date
+                )}
+              </Text>
             </View>
-            <View
-              style={{
-                flex: 1,
-                flexDirection: 'row-reverse',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                // borderColor: 'red',
-                // borderWidth: 1,
-              }}>
-              {this.renderExceptionFlags(item)}
-            </View>
+          </View>
+          <View style={styles.transInfoFlags}>
+            {this.renderExceptionFlags(item)}
           </View>
         </View>
       </CMSRipple>
@@ -279,7 +240,7 @@ class ExceptionsView extends Component {
     const {/*showDismissModal,*/ isListView} = this.state;
 
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={styles.viewContainer}>
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
@@ -295,7 +256,13 @@ class ExceptionsView extends Component {
           numColumns={isListView ? 1 : ALERTS_GRID_LAYOUT}
           onRefresh={this.getData}
           refreshing={exceptionStore.isLoading}
-          onEndReached={() => console.log('GOND TODO: load more data!')}
+          onEndReached={() => {
+            this.currentPage++;
+            exceptionStore.getEmployeeTransactions(
+              exceptionStore.selectedEmployee,
+              this.currentPage
+            );
+          }}
         />
       </View>
     );
@@ -303,6 +270,7 @@ class ExceptionsView extends Component {
 }
 
 const styles = StyleSheet.create({
+  viewContainer: {flex: 1, flexDirection: 'column'},
   thumbSub: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -385,6 +353,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 5,
   },
+  flagsContainer: {
+    position: 'absolute',
+    backgroundColor: CMSColors.Transparent,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  transInfoContainer: {flex: 2},
+  transNoText: {padding: 2, fontSize: 16},
+  transDateText: {
+    padding: 2,
+    fontSize: 12,
+  },
+  transInfoFlags: {
+    flex: 1,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    // borderColor: 'red',
+    // borderWidth: 1,
+  },
+  gridItemContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: CMSColors.White,
+    borderColor: CMSColors.BorderColorListRow,
+  },
+  gridSnapshot: {flex: 8},
+  gridInfoContainer: {flexDirection: 'row', paddingHorizontal: 5},
+  gridInfoLeft: {flex: 3},
 });
 
 export default inject('exceptionStore')(observer(ExceptionsView));

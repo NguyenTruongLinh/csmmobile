@@ -5,6 +5,7 @@ import {View, Text, Image, StyleSheet} from 'react-native';
 
 import PropTypes from 'prop-types';
 
+import LoadingOverlay from '../common/loadingOverlay';
 import {No_Data} from '../../consts/images';
 
 import CMSColors from '../../styles/cmscolors';
@@ -30,6 +31,8 @@ export default class NoDataView extends React.Component {
   };
 
   render() {
+    const {isLoading} = this.props;
+
     return (
       <View
         style={[
@@ -38,8 +41,17 @@ export default class NoDataView extends React.Component {
           //{height: this.props.height}
         ]}
         onLayout={this.onLayout}>
-        <Image source={No_Data} style={styles.noDataImg}></Image>
-        <Text style={styles.noDataTxt}>{COMMON_TXT.NO_DATA}</Text>
+        {isLoading ? (
+          <LoadingOverlay
+            backgroundColor={CMSColors.White}
+            indicatorColor={CMSColors.PrimaryActive}
+          />
+        ) : (
+          <View>
+            <Image source={No_Data} style={styles.noDataImg}></Image>
+            <Text style={styles.noDataTxt}>{COMMON_TXT.NO_DATA}</Text>
+          </View>
+        )}
       </View>
     );
   }

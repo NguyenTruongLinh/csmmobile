@@ -24,7 +24,10 @@ class CMSImage extends React.Component {
 
   static propTypes = {
     styles: PropTypes.object,
-    styleImage: PropTypes.object,
+    styleImage: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.arrayOf(PropTypes.object),
+    ]),
     twoStepsLoading: PropTypes.bool,
   };
 

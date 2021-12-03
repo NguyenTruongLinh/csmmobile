@@ -654,6 +654,10 @@ export const POSModel = types
           console.log('GOND getEmployeeTransactions none employee selected');
         return;
       }
+      if (page == 1) {
+        self.transactionsList = [];
+      }
+
       self.isLoading = true;
       if (!self.filterParams) {
         self.setDefaultParams([_employee.siteKey]);
