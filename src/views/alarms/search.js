@@ -64,6 +64,7 @@ class AlarmsSearchView extends Component {
     };
 
     this.searchbarRef = null;
+    this.currentPage = 1;
   }
 
   componentDidMount() {
@@ -152,6 +153,7 @@ class AlarmsSearchView extends Component {
       };
 
       __DEV__ && console.log('GOND AlarmFilter onSubmit: ', newParams);
+      this.currentPage = 1;
       this.setState(
         {
           params: newParams,
@@ -166,6 +168,7 @@ class AlarmsSearchView extends Component {
   refreshData = () => {
     const {alarmStore} = this.props;
 
+    this.currentPage = 1;
     alarmStore.getAlarms(this.buildSearchParam(), true);
   };
 
@@ -308,6 +311,16 @@ class AlarmsSearchView extends Component {
     if (this.state.params.hasOwnProperty(nameP)) {
       params[nameP] = undefined;
       this.setState({params});
+    }
+  };
+
+  onLoadMore = pullDistance => {
+    const {alarmStore} = this.props;
+
+    // TODO:
+    if (!alarmStore.isLoading) {
+      this.currentPage++;
+      alarmStore.alarmStore.getAlarms(this.buildSearchParam(), true);
     }
   };
 
@@ -536,6 +549,7 @@ class AlarmsSearchView extends Component {
             onRefresh={this.refreshData}
             refreshing={alarmStore.isLoading}
             ListEmptyComponent={noData && this.renderNoData()}
+            // onEndReached={this.onLoadMore}
           />
         </View>
         {actionButton}

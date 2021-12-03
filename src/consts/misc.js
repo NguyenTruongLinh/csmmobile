@@ -587,3 +587,5 @@ export const NVRPlayerConfig = {
   QueryStringUTCDateFormat: 'yyyyMMdd',
   Search_Duration: 10 * 60,
 };
+
+export const DataPageSize = 30;

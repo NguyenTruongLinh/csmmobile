@@ -1,11 +1,26 @@
 import React, {PropTypes} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Text} from 'react-native';
 // import Calendar from 'rn-date-range';
 import {CalendarList, Calendar} from 'react-native-calendars';
 import {DateTime} from 'luxon';
 
 import CMSColors from '../../styles/cmscolors';
 import {DateFormat} from '../../consts/misc';
+
+const Months = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 export default class CMSCalendarRange extends React.Component {
   constructor(props) {
@@ -179,10 +194,24 @@ export default class CMSCalendarRange extends React.Component {
         futureScrollRange={0}
         initialNumToRender={6}
         animateScroll={false}
+        renderHeader={date => (
+          <View style={styles.monthContainer}>
+            <Text style={styles.monthText}>
+              {Months[date.getMonth()] + ' ' + date.getFullYear()}
+            </Text>
+          </View>
+        )}
       />
       // </View>
     );
   }
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  monthContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 5,
+  },
+  monthText: {textAlign: 'left', fontSize: 18},
+});

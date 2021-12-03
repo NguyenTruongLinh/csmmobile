@@ -11,8 +11,9 @@ import {
   FlatList,
   Modal,
 } from 'react-native';
-// import Calendar from 'rn-date-range';
-import {CalendarList} from 'react-native-calendars';
+
+// import {CalendarList} from 'react-native-calendars';
+import CMSCalendarRange from './CMSCalendarRange';
 import {DateTime} from 'luxon';
 import Ripple from 'react-native-material-ripple';
 
@@ -54,7 +55,7 @@ export default class AlarmFilter extends Component {
       panel: Panels.DateSelect,
       filterMore: filters,
       authmodal: false,
-      dateRange: AlarmFilter.createDateRange(dateFrom, dateTo),
+      dateRange: CMSCalendarRange.createDateRange(dateFrom, dateTo),
     };
   }
 
@@ -76,6 +77,7 @@ export default class AlarmFilter extends Component {
    * @param {DateTime} from
    * @param {DateTime} to
    */
+  /*
   static createDateRange(from, to) {
     const dateRangeObj = {};
     const selectedStyle = {
@@ -114,11 +116,12 @@ export default class AlarmFilter extends Component {
     }
     return dateRangeObj;
   }
+  */
 
   static getDerivedStateFromProps(nextProps) {
     let {dateFrom, dateTo} = nextProps;
     return {
-      dateRange: AlarmFilter.createDateRange(dateFrom, dateTo),
+      dateRange: CMSCalendarRange.createDateRange(dateFrom, dateTo),
     };
   }
 
@@ -128,8 +131,20 @@ export default class AlarmFilter extends Component {
     let {params} = props;
     if (!params) return [];
     let filterMore = [];
-    let {sdate, edate, sty, aty, ara, ano, sta, sid, vty, aid, avaid, time} =
-      props.params;
+    let {
+      sdate,
+      edate,
+      sty,
+      aty,
+      ara,
+      ano,
+      sta,
+      sid,
+      vty,
+      aid,
+      avaid,
+      time,
+    } = props.params;
     //Status
     if (sta) filterMore.push(FilterMore.Status);
 
@@ -172,6 +187,7 @@ export default class AlarmFilter extends Component {
   //   }
   // };
 
+  /*
   onDayPress = ({day, dateString, month, timestamp, year}) => {
     const {dateFrom, dateTo} = this.props;
     __DEV__ &&
@@ -296,6 +312,7 @@ export default class AlarmFilter extends Component {
       />
     );
   };
+  */
 
   // onDimensionChange = event => {
   //   const {width, height} = event.window;
@@ -309,6 +326,18 @@ export default class AlarmFilter extends Component {
   //   }
   //   //console.log( event.nativeEvent.layout);
   // };
+
+  renderDate = () => {
+    const {dateFrom, dateTo, onDateChange} = this.props;
+
+    return (
+      <CMSCalendarRange
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateChange={onDateChange}
+      />
+    );
+  };
 
   renderFilterMore = () => {
     const hasStatus = this.state.filterMore.includes(FilterMore.Status);
