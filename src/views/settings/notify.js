@@ -64,7 +64,7 @@ class NotifySettingView extends React.Component {
 
     const [res, _] = await Promise.all([
       this.props.userStore.getNotifySettings(),
-      this.props.exceptionStore.getTransactionTypes(),
+      this.props.exceptionStore.getExceptionTypes(),
     ]);
     const {
       selectedNotifies,
