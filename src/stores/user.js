@@ -536,6 +536,23 @@ export const UserStoreModel = types
       }
       return false;
     }),
+    changePassword: flow(function* (username, oldPassword, newPassword) {
+      // if (self.user && self.user.userId) {
+      try {
+        const res = yield apiService.changePassword(
+          username,
+          oldPassword,
+          newPassword
+        );
+        __DEV__ && console.log('GOND user changePassword: ', res);
+        return true;
+      } catch (err) {
+        __DEV__ && console.log('GOND user changePassword failed: ', err);
+        return false;
+      }
+      // }
+      // return false;
+    }),
     getWidgetCounts: flow(function* () {
       if (self.user && self.user.userId) {
         try {

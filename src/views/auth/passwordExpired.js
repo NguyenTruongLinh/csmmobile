@@ -51,12 +51,10 @@ class PasswordExpired extends Component {
       oldPassword: '',
       newPassword: '',
       confirmPassword: '',
-      errors: {
-        username: '',
-        oldPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      },
+      newPasswordError: '',
+      confirmPasswordError: '',
+      newPasswordErrorFlag: false,
+      confirmPasswordErrorFlag: false,
     };
     this._refs = {
       username: null,
@@ -66,7 +64,7 @@ class PasswordExpired extends Component {
     };
     this.keyboardView = null;
 
-    this.state = {};
+    // this.state = {};
   }
 
   componentDidMount() {
@@ -89,29 +87,106 @@ class PasswordExpired extends Component {
       if (text != this.state[name]) {
         this.setState({[name]: text});
       }
+      this.updateError(name, text);
     }
+  };
+
+  updateError = (name, text) => {
+    // if (name === 'newPassword') {
+    //   this.setState({newPasswordError: text.length < 10 ? '< 10 chars' : ''});
+    // } else if (name === 'confirmPassword') {
+    //   this.setState({
+    //     confirmPasswordError:
+    //       !this.state.newPasswordError && text != this.state.newPassword
+    //         ? 'not the same'
+    //         : '',
+    //   });
+    // }
+    this.setState({
+      newPasswordErrorFlag:
+        name === 'newPassword' || this.state.newPasswordErrorFlag,
+      confirmPasswordErrorFlag:
+        name === 'confirmPassword' || this.state.confirmPasswordErrorFlag,
+    });
   };
 
   onFocus = event => {
-    let {errors = {}} = this.state;
-    // this._scrollToInput(findNodeHandle(event.target));
-    for (let name in errors) {
-      let ref = this._refs[name];
-      // __DEV__ && console.log('GOND onFocus ref = ', ref);
-      if (ref && ref.isFocused && ref.isFocused()) {
-        delete errors[name];
-      }
-    }
-    this.setState({errors});
+    // let {errors = {}} = this.state;
+    // // this._scrollToInput(findNodeHandle(event.target));
+    // for (let name in errors) {
+    //   let ref = this._refs[name];
+    //   // __DEV__ && console.log('GOND onFocus ref = ', ref);
+    //   if (ref && ref.isFocused && ref.isFocused()) {
+    //     delete errors[name];
+    //   }
+    // }
+    // // this.setState({errors});
   };
 
-  onTypingUsername = text => {};
+  onTypingNewPassword = text => {
+    const newPasswordError =
+      text.length > 0 && text.length < 10
+        ? 'Password must contain at least 10 characters'
+        : null;
+    const confirmPasswordError =
+      !newPasswordError &&
+      this.state.confirmPassword.length > 0 &&
+      text != this.state.confirmPassword
+        ? 'Password does not match!'
+        : null;
+    this.setState({
+      newPasswordError,
+      confirmPasswordError,
+    });
+  };
 
-  onSubmitUserName = () => {
-    this._refs.password && this._refs.password.focus();
+  onTypingConfirmPassword = text => {
+    const confirmPasswordError =
+      text.length > 0 &&
+      !this.state.newPasswordError &&
+      text != this.state.newPassword
+        ? 'Password does not match!'
+        : '';
+    this.setState({
+      confirmPasswordError,
+    });
+  };
+
+  onUserNameNextPress = () => {
+    this._refs.oldPassword && this._refs.oldPassword.focus();
+  };
+  onOldPasswordNextPress = () => {
+    this._refs.newPassword && this._refs.newPassword.focus();
+  };
+  onNewPasswordNextPress = () => {
+    this._refs.confirmPassword && this._refs.confirmPassword.focus();
+  };
+
+  onSubmit = () => {
+    const {username, oldPassword, newPassword} = this.state;
+    if (this.props.userStore) {
+      this.props.userStore.changePassword(username, oldPassword, newPassword);
+    } else {
+      __DEV__ &&
+        console.log(
+          'GOND onSubmit failed, no userStore available!',
+          this.props
+        );
+    }
   };
 
   render() {
+    const {
+      domain,
+      username,
+      oldPassword,
+      newPassword,
+      confirmPassword,
+      newPasswordError,
+      confirmPasswordError,
+      newPasswordErrorFlag,
+      confirmPasswordErrorFlag,
+    } = this.state;
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
         <Button
@@ -139,6 +214,11 @@ class PasswordExpired extends Component {
               // height: 450,
             }}>
             <View style={styles.topSpace}></View>
+            <Text>newPasswordError {this.state.newPasswordError}</Text>
+            <Text>
+              newPasswordErrorFlag{' '}
+              {this.state.newPasswordErrorFlag ? 'true' : 'false'}
+            </Text>
             <View style={{flex: 0.3}} />
             <Image source={CMS_Logo} style={styles.logo} resizeMode="contain" />
             <View style={{flex: 0.3}} />
@@ -158,8 +238,7 @@ class PasswordExpired extends Component {
                 enablesReturnKeyAutomatically={true}
                 onEndEditing={this.onEndEditing}
                 onFocus={this.onFocus}
-                onChangeText={this.onTypingUsername}
-                onSubmitEditing={this.onSubmitUserName}
+                onSubmitEditing={this.onUserNameNextPress}
                 returnKeyType="next"
                 autoCapitalize={'none'}
                 iconCustom="user-shape"
@@ -174,7 +253,7 @@ class PasswordExpired extends Component {
                 secureTextEntry={false}
               />
               <InputTextIcon
-                ref={r => (this._refs.password = r)}
+                ref={r => (this._refs.oldPassword = r)}
                 name="oldPassword"
                 maxLength={60}
                 autoCapitalize={'none'}
@@ -183,11 +262,12 @@ class PasswordExpired extends Component {
                 enablesReturnKeyAutomatically={true}
                 onEndEditing={this.onEndEditing}
                 onFocus={this.onFocus}
+                onSubmitEditing={this.onOldPasswordNextPress}
                 returnKeyType="next"
                 iconCustom="locked-padlock"
                 label={LoginTxt.oldPassword}
                 placeholder=""
-                // error={errors.password}
+                // error={errors.oldPassword}
                 disabled={false}
                 tintColor={CMSColors.PrimaryText}
                 textColor={CMSColors.PrimaryText}
@@ -197,20 +277,22 @@ class PasswordExpired extends Component {
                 revealable={true}
               />
               <InputTextIcon
-                // ref={r => (this._refs.password = r)}
+                ref={r => (this._refs.newPassword = r)}
                 name="newPassword"
                 maxLength={60}
                 autoCapitalize={'none'}
-                value={this.state.password}
+                value={this.state.newPassword}
                 autoCorrect={false}
                 enablesReturnKeyAutomatically={true}
                 onEndEditing={this.onEndEditing}
+                onChangeText={this.onTypingNewPassword}
                 onFocus={this.onFocus}
+                onSubmitEditing={this.onNewPasswordNextPress}
                 returnKeyType="next"
                 iconCustom="locked-padlock"
                 label={LoginTxt.newPassword}
                 placeholder=""
-                // error={errors.password}
+                error={newPasswordErrorFlag && newPasswordError}
                 disabled={false}
                 tintColor={CMSColors.PrimaryText}
                 textColor={CMSColors.PrimaryText}
@@ -220,20 +302,26 @@ class PasswordExpired extends Component {
                 revealable={true}
               />
               <InputTextIcon
-                // ref={r => (this._refs.password = r)}
+                ref={r => (this._refs.confirmPassword = r)}
                 name="confirmPassword"
                 maxLength={60}
                 autoCapitalize={'none'}
-                value={this.state.password}
+                value={this.state.confirmPassword}
                 autoCorrect={false}
                 enablesReturnKeyAutomatically={true}
+                onChangeText={this.onTypingConfirmPassword}
                 onEndEditing={this.onEndEditing}
                 onFocus={this.onFocus}
                 returnKeyType="next"
                 iconCustom="locked-padlock"
                 label={LoginTxt.confirmPassword}
                 placeholder=""
-                // error={errors.password}
+                error={confirmPasswordErrorFlag && confirmPasswordError}
+                //   !this.state.confirmPassword ||
+                //   this.state.confirmPassword === this.state.newPassword
+                //     ? ''
+                //     : LoginTxt.confirmPasswordError
+                // }
                 disabled={false}
                 tintColor={CMSColors.PrimaryText}
                 textColor={CMSColors.PrimaryText}
@@ -249,8 +337,11 @@ class PasswordExpired extends Component {
               caption="SUBMIT"
               type="primary"
               captionStyle={{}}
-              onPress={this.onLogin}
-              enable={true}
+              onPress={this.onSubmit}
+              enable={
+                username && oldPassword && newPassword && confirmPassword // &&
+                // !this.props.appStore.isLoading
+              }
             />
           </View>
           <View style={{flex: 0.05}} />

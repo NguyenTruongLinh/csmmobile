@@ -9,6 +9,7 @@ export const Account = {
   modules: 'modules',
   getNotifySettings: 'settingnotify',
   updateNotifySettings: 'EditUserNotifySettings',
+  changePassword: 'changePassword',
 };
 
 export const AlertType = {

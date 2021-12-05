@@ -20,8 +20,8 @@ export const Login = {
   titleBold: 'i3 CMS APP',
   description: 'Please Sign in to continue',
   domain: 'Domain',
-  username: 'Username',
-  password: 'Password',
+  username: 'Username*',
+  password: 'Password*',
   login: 'LOGIN',
   skip: 'FORGOT PASSWORD?',
   errorTitle: 'Login Error',
@@ -37,6 +37,8 @@ export const Login = {
   oldPassword: 'Old password*',
   newPassword: 'New password*',
   confirmPassword: 'Confirm new password*',
+  newPasswordError: 'Password must contain at least 10 characters',
+  confirmPasswordError: 'Password does not match!',
   copyRight:
     '© 2021 i3 International Inc. The i3 logos are property of i3 International Inc & i3 America Nevada Inc. All rights reserved.',
 };
