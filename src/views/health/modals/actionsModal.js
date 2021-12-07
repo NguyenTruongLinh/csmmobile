@@ -60,7 +60,7 @@ class AlertActionsModal extends React.Component {
     if (data.kDVR) {
       videoStore.onAlertPlay(isLive, data);
       setTimeout(() => {
-        navigation.push(ROUTERS.HEALTH_VIDEO);
+        navigation.push(ROUTERS.VIDEO_PLAYER);
       }, 500);
     } else if (data.siteId) {
       sitesStore.selectSite(data.siteId);
