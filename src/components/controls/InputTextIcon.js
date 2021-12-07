@@ -1,5 +1,5 @@
 import React, {PureComponent} from 'react';
-import {View, Animated, Easing, StyleSheet, Platform} from 'react-native';
+import {View, Animated, Easing, StyleSheet, Platform, Text} from 'react-native';
 import {TextField} from 'react-native-material-textfield';
 import Helper from 'react-native-material-textfield/src/components/helper';
 import Counter from 'react-native-material-textfield/src/components/counter';
@@ -324,11 +324,9 @@ export default class InputTextIcon extends PureComponent {
     return (
       <View
         style={{
-          marginTop: marginTopExtended ? 0 : -20,
+          marginTop: -20, //marginTopExtended ? 0 : -20,
           flexDirection: 'row',
           alignSelf: 'center',
-          borderColor: 'transparent',
-          borderWidth: 1,
         }}>
         {iconPosition == 'left' && CIcon}
         {iconPosition == 'left' && CIconCustom}
@@ -391,6 +389,21 @@ export default class InputTextIcon extends PureComponent {
             </View>
             <Counter {...{baseColor, errorColor, count, limit}} />
           </Animated.View>
+          {Platform.OS === 'android' &&
+            !this.state.focused &&
+            !this.state.errored && (
+              <View
+                style={{
+                  width: '100%',
+                  height: 10,
+                  position: 'absolute',
+                  backgroundColor: 'white',
+                  borderTopColor: 'lightgray',
+                  borderTopWidth: 1,
+                  bottom: 0,
+                }}
+              />
+            )}
         </View>
         {showFishEye ? (
           <IconCustom
@@ -400,7 +413,11 @@ export default class InputTextIcon extends PureComponent {
                 : 'turn-visibility-off-button'
             }
             size={variable.fix_fontSize_Icon}
-            style={[{color: iconColor || baseColor}, styles.rightIcon]}
+            style={[
+              {color: iconColor || baseColor},
+              styles.rightIcon,
+              this.state.errored ? {bottom: 28} : {},
+            ]}
             onPress={() => {
               //  __DEV__ && console.log('GOND icon customed name: ', iconCustom);
               this.setState({revealHidden: !this.state.revealHidden});
@@ -430,7 +447,7 @@ const styles = StyleSheet.create({
     width: 40,
     position: 'absolute',
     right: 0,
-    bottom: 10,
+    bottom: 12,
     padding: 10,
     backgroundColor: 'white',
   },

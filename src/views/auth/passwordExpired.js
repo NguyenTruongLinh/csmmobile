@@ -328,7 +328,7 @@ class PasswordExpired extends Component {
                 //     ? ''
                 //     : LoginTxt.confirmPasswordError
                 // }
-                marginTopExtended={newPasswordErrorFlag && newPasswordError}
+                // marginTopExtended={newPasswordErrorFlag && newPasswordError}
                 disabled={false}
                 tintColor={CMSColors.PrimaryText}
                 textColor={CMSColors.PrimaryText}
