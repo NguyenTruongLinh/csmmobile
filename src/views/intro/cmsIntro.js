@@ -8,6 +8,7 @@ import {
   Animated,
   Dimensions,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import {normalize} from '../../util/general';
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
   nextButton: {
     // backgroundColor: CMSColors.PrimaryActive,
     height: 48,
-    width: 136,
+    width: Platform.OS === 'android' ? 136 : 148,
     // marginLeft: 49,
     // marginRight: 35,
     marginHorizontal: 24,
