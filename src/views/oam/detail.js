@@ -211,7 +211,7 @@ class OAMDetailView extends Component {
           />
         </View>
         <WaitTime
-          style={{flex: 1}}
+          style={{flex: 0.8}}
           estWaitTime={estWaitTime}
           color={foreColor}
           borderAlpha={BORDER_ALPHA}
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     minHeight: 45,
   },
   occupancyView: {
-    flex: 1.5,
+    flex: 1.2,
     flexDirection: 'row',
   },
   analyzeViews: {

@@ -1,6 +1,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {View, StyleSheet, Text, processColor, Dimensions} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  processColor,
+  Dimensions,
+  Platform,
+} from 'react-native';
 import CMSTrendingLine from './CMSTrendingLine';
 import {isNullOrUndef} from '../../util/general';
 import CMSColors from '../../../styles/cmscolors';
@@ -220,27 +227,25 @@ class TrendingView extends Component {
             textLabelRotation = - Math.PI/2;
         }*/
     // console.log('GOND xAxisLabels:', xAxisLabels)
+
     const processedColor = processColor(nextProps.color);
 
     function calValueFontSize(values) {
       const {width} = Dimensions.get('window');
-      // const hisTotalLen = historicalValues.reduce(
-      //   (acc, cordinates) => '' + acc + cordinates.y
-      // );
-      let totalString = '';
-      values.map(item => {
-        totalString = totalString + item.y;
-      });
-
-      return (7 * width * 18) / (360 * totalString.length);
+      let max = 0;
+      for (let i = 0; i < values.length - 1; i++) {
+        max = Math.max(`${values[i].y}${values[i + 1].y}`.length, max);
+      }
+      const BASE_FONT_SIZE = 6;
+      const BASE_MAX = 6;
+      const BASE_SCREEN_WIDTH = 360;
+      return (BASE_FONT_SIZE * width * BASE_MAX) / (BASE_SCREEN_WIDTH * max);
     }
 
     const valueTextSize = Math.min(
-      Math.min(
-        calValueFontSize(historicalValues),
-        calValueFontSize(forecastValues)
-      ),
-      18
+      calValueFontSize(historicalValues),
+      calValueFontSize(forecastValues),
+      Platform.OS === 'android' ? 10 : 8
     );
 
     const historicalConfig = {

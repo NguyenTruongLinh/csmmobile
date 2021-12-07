@@ -33,10 +33,14 @@ class WaitTime extends Component {
   }
 
   render() {
-    const {color, borderAlpha} = this.props;
+    const {style, color, borderAlpha} = this.props;
     return (
       <View
-        style={[styles.container, {borderBottomColor: color + borderAlpha}]}>
+        style={[
+          styles.container,
+          {borderBottomColor: color + borderAlpha},
+          style,
+        ]}>
         <Text style={[styles.title, {color: color}]}>Est. wait time</Text>
         <Text style={[styles.time, {color: color}]}>
           {this.state.estWaitTime}
