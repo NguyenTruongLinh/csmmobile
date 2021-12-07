@@ -433,10 +433,10 @@ class Api {
 
   async changePassword(username, oldPass, newPass) {
     try {
-      let response = await this._getApiKey('account');
-      if (response.status != 200) {
-        return {status: response.status, Result: undefined};
-      }
+      // let response = await this._getApiKey('account');
+      // if (response.status != 200) {
+      //   return {status: response.status, Result: undefined};
+      // }
       // let enc_user = AES.encrypt(username, this.configToken.apiKey);
       // let uid = enc_user.toString();
       enc_user = AES.encrypt(oldPass, this.configToken.apiKey);

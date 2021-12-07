@@ -227,6 +227,7 @@ export default class InputTextIcon extends PureComponent {
       iconPosition,
       placeholder,
       noBorder,
+      marginTopExtended,
       ...props
     } = this.props;
     let {focused, focus, error, errored, height, text = ''} = this.state;
@@ -323,7 +324,7 @@ export default class InputTextIcon extends PureComponent {
     return (
       <View
         style={{
-          marginTop: -20,
+          marginTop: marginTopExtended ? 0 : -20,
           flexDirection: 'row',
           alignSelf: 'center',
           borderColor: 'transparent',
@@ -375,7 +376,7 @@ export default class InputTextIcon extends PureComponent {
             containerStyle={styles.textFieldContainerStyle}
             inputContainerStyle={styles.textFieldInputContainerStyle}
           />
-          {/* <Animated.View style={helperContainerStyle}>
+          <Animated.View style={helperContainerStyle}>
             <View style={styles.flex}>
               <Helper
                 style={errorStyle}
@@ -389,7 +390,7 @@ export default class InputTextIcon extends PureComponent {
               />
             </View>
             <Counter {...{baseColor, errorColor, count, limit}} />
-          </Animated.View> */}
+          </Animated.View>
         </View>
         {showFishEye ? (
           <IconCustom

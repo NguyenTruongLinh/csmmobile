@@ -415,11 +415,11 @@ export const UserStoreModel = types
             Number.parseInt(failInfos[1]);
           setTimeout(() => {
             appStore.naviService.navigate(ROUTERS.ACCOUNT_LOCKED);
-          }, 0);
+          }, 200);
         } else if (failReason == LOGIN_FAIL_CAUSES.EXPIRED_PASSWORD) {
           setTimeout(() => {
             appStore.naviService.navigate(ROUTERS.PASSWORD_EXPIRED);
-          }, 0);
+          }, 200);
         } else {
           Alert.alert(LoginTxt.errorTitle, LoginTxt.errorLoginIncorrect);
         }

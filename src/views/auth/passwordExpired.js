@@ -9,6 +9,7 @@ import {
   Alert,
   Dimensions,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
@@ -55,6 +56,7 @@ class PasswordExpired extends Component {
       confirmPasswordError: '',
       newPasswordErrorFlag: false,
       confirmPasswordErrorFlag: false,
+      isInputFocus: false,
     };
     this._refs = {
       username: null,
@@ -69,15 +71,33 @@ class PasswordExpired extends Component {
 
   componentDidMount() {
     __DEV__ && console.log('PasswordExpired componentDidMount');
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      this._keyboardDidShow.bind(this)
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      this._keyboardDidHide.bind(this)
+    );
   }
 
   componentWillUnmount() {
     __DEV__ && console.log('PasswordExpired componentWillUnmount');
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+  }
+
+  _keyboardDidShow() {
+    setTimeout(() => {
+      this.setState({isInputFocus: true});
+    }, 100);
+  }
+
+  _keyboardDidHide() {
+    this.setState({isInputFocus: false});
   }
 
   onBack = () => {
-    // __DEV__ && console.log('GOND Login onback <');
-    // navigationService.back();
     this.props.appStore.naviService.back();
   };
 
@@ -92,16 +112,6 @@ class PasswordExpired extends Component {
   };
 
   updateError = (name, text) => {
-    // if (name === 'newPassword') {
-    //   this.setState({newPasswordError: text.length < 10 ? '< 10 chars' : ''});
-    // } else if (name === 'confirmPassword') {
-    //   this.setState({
-    //     confirmPasswordError:
-    //       !this.state.newPasswordError && text != this.state.newPassword
-    //         ? 'not the same'
-    //         : '',
-    //   });
-    // }
     this.setState({
       newPasswordErrorFlag:
         name === 'newPassword' || this.state.newPasswordErrorFlag,
@@ -110,18 +120,7 @@ class PasswordExpired extends Component {
     });
   };
 
-  onFocus = event => {
-    // let {errors = {}} = this.state;
-    // // this._scrollToInput(findNodeHandle(event.target));
-    // for (let name in errors) {
-    //   let ref = this._refs[name];
-    //   // __DEV__ && console.log('GOND onFocus ref = ', ref);
-    //   if (ref && ref.isFocused && ref.isFocused()) {
-    //     delete errors[name];
-    //   }
-    // }
-    // // this.setState({errors});
-  };
+  onFocus = event => {};
 
   onTypingNewPassword = text => {
     const newPasswordError =
@@ -130,6 +129,7 @@ class PasswordExpired extends Component {
         : null;
     const confirmPasswordError =
       !newPasswordError &&
+      text.length > 0 &&
       this.state.confirmPassword.length > 0 &&
       text != this.state.confirmPassword
         ? 'Password does not match!'
@@ -206,21 +206,27 @@ class PasswordExpired extends Component {
             this.keyboardView = r;
           }}
           contentContainerStyle={{flex: 1}}
-          getTextInputRefs={() => [this._refs.username, this._refs.password]}
+          getTextInputRefs={() => [
+            this._refs.username,
+            this._refs.oldPassword,
+            this._refs.newPassword,
+            this._refs.confirmPassword,
+          ]}
           style={styles.viewContainer}>
           <View
             style={{
               flex: 1,
-              // height: 450,
             }}>
             <View style={styles.topSpace}></View>
-            <Text>newPasswordError {this.state.newPasswordError}</Text>
-            <Text>
-              newPasswordErrorFlag{' '}
-              {this.state.newPasswordErrorFlag ? 'true' : 'false'}
-            </Text>
             <View style={{flex: 0.3}} />
-            <Image source={CMS_Logo} style={styles.logo} resizeMode="contain" />
+            <Image
+              source={CMS_Logo}
+              style={[
+                styles.logo,
+                {display: this.state.isInputFocus ? 'none' : 'flex'},
+              ]}
+              resizeMode="contain"
+            />
             <View style={{flex: 0.3}} />
             <Text style={styles.textTitle}>{LoginTxt.changePasswordTitte}</Text>
             <View style={{flex: 0.05}} />
@@ -322,6 +328,7 @@ class PasswordExpired extends Component {
                 //     ? ''
                 //     : LoginTxt.confirmPasswordError
                 // }
+                marginTopExtended={newPasswordErrorFlag && newPasswordError}
                 disabled={false}
                 tintColor={CMSColors.PrimaryText}
                 textColor={CMSColors.PrimaryText}
@@ -332,6 +339,11 @@ class PasswordExpired extends Component {
               />
             </View>
             <View style={{flex: 0.3}} />
+            <View
+              style={{
+                height: this.state.isInputFocus ? 160 : 0,
+              }}
+            />
             <Button
               style={styles.buttonLogin}
               caption="SUBMIT"
