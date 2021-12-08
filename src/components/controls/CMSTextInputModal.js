@@ -6,6 +6,7 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   ScrollView,
+  Keyboard,
 } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -31,9 +32,39 @@ class CMSTextInputModal extends React.Component {
 
     this.state = {
       textInput: '',
-      // focused: false,
+      isInputFocus: false,
+      keyboardHeight: 0,
     };
     this.inputRef = null;
+  }
+
+  componentDidMount() {
+    __DEV__ && console.log('CMSTextInputModal componentDidMount');
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      this._keyboardDidShow.bind(this)
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      this._keyboardDidHide.bind(this)
+    );
+  }
+
+  componentWillUnmount() {
+    __DEV__ && console.log('CMSTextInputModal componentWillUnmount');
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+  }
+
+  _keyboardDidShow(e) {
+    this.setState({
+      isInputFocus: true,
+      keyboardHeight: e.endCoordinates.height,
+    });
+  }
+
+  _keyboardDidHide() {
+    this.setState({isInputFocus: false});
   }
 
   onSubmit = () => {
@@ -83,7 +114,8 @@ class CMSTextInputModal extends React.Component {
           styles.modalcontainer,
           {
             marginTop:
-              height - (this.inputRef && this.inputRef.isFocused() ? 650 : 283),
+              height -
+              (this.state.isInputFocus ? this.state.keyboardHeight + 283 : 283),
           },
         ]}>
         <View style={[styles.modalView]}>
