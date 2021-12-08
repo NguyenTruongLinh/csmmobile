@@ -6,7 +6,7 @@ import util from '../util/general';
 
 import {No_Image, No_Image_16_9} from '../consts/images';
 import {AlertTypes, AlertType_Support, AlertNames} from '../consts/misc';
-import {ACConfig, Alert, AlertType} from '../consts/apiRoutes';
+import {ACConfig, Alert, AlertType, CommonActions} from '../consts/apiRoutes';
 
 const ID_Canned_Message = 5;
 
@@ -48,7 +48,7 @@ const AlarmSnapshot = types
         const res = yield apiService.getBase64Stream(
           Alert.controller,
           String(isTempSDAlert ? kAlertEvent : self.time),
-          isTempSDAlert ? Alert.image : Alert.imageTime,
+          isTempSDAlert ? CommonActions.image : CommonActions.imageTime,
           {
             thumb: false,
             kdvr: kDVR,
@@ -234,7 +234,7 @@ const AlarmData = types
         const res = yield apiService.getBase64Stream(
           Alert.controller,
           String(self.isTempSDAlert ? self.kAlertEvent : self.snapshot[0].time),
-          self.isTempSDAlert ? Alert.image : Alert.imageTime,
+          self.isTempSDAlert ? CommonActions.image : CommonActions.imageTime,
           {
             thumb: true,
             kdvr: self.kDVR,
