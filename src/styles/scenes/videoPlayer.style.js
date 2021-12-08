@@ -4,7 +4,12 @@ import CMSColors from '../cmscolors';
 import {View, StyleSheet, Platform} from 'react-native';
 
 module.exports = StyleSheet.create({
-  channelInfo: {color: CMSColors.White, position: 'absolute', zIndex: 1},
+  channelInfo: {
+    color: CMSColors.White,
+    position: 'absolute',
+    left: 10,
+    zIndex: 1,
+  },
   statusView: {
     width: '100%',
     height: '100%',
