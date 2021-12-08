@@ -1,5 +1,13 @@
 import React, {Component} from 'react';
-import {View, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
+import {
+  View,
+  FlatList,
+  Text,
+  Dimensions,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+} from 'react-native';
 import {inject, observer} from 'mobx-react';
 // import Ripple from 'react-native-material-ripple';
 
@@ -16,6 +24,7 @@ import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
 import {Comps as CompTxt} from '../../localization/texts';
 import {reaction} from 'mobx';
+import {No_Data} from '../../consts/images';
 
 class RegionsView extends Component {
   constructor(props) {
@@ -140,8 +149,25 @@ class RegionsView extends Component {
     );
   };
 
+  renderNoData = () => {
+    return (
+      <View style={[styles.noDataContainer, {height: this.state.listHeight}]}>
+        <Image source={No_Data} style={styles.noDataImg}></Image>
+        <Text style={styles.noDataTxt}>There is no data.</Text>
+      </View>
+    );
+  };
+
+  onFlatListLayout = event => {
+    const {height} = event.nativeEvent.layout;
+    this.setState({
+      listHeight: height,
+    });
+  };
+
   render() {
     const {sitesStore} = this.props;
+    const noData = !sitesStore.isLoading && sitesStore.filteredRegions == 0;
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
@@ -177,19 +203,39 @@ class RegionsView extends Component {
             {sitesStore.filteredRegions.length + ' regions'}
           </Text>
         </View>
-        <FlatList
-          // ref={ref => (this.sitesListRef = ref)}
-          renderItem={this.renderItem}
-          keyExtractor={item => item.key}
-          data={this.props.sitesStore.filteredRegions}
-          onRefresh={this.getRegionsList}
-          refreshing={
-            this.props.sitesStore ? this.props.sitesStore.isLoading : false
-          }
-        />
+        <View style={{flex: 1}} onLayout={this.onFlatListLayout}>
+          <FlatList
+            // ref={ref => (this.sitesListRef = ref)}
+            renderItem={this.renderItem}
+            keyExtractor={item => item.key}
+            data={this.props.sitesStore.filteredRegions}
+            onRefresh={this.getRegionsList}
+            refreshing={
+              this.props.sitesStore ? this.props.sitesStore.isLoading : false
+            }
+            ListEmptyComponent={noData && this.renderNoData()}
+          />
+        </View>
       </View>
     );
   }
 }
 
+const styles = StyleSheet.create({
+  noDataContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataImg: {
+    width: 100,
+    height: 100,
+  },
+  noDataTxt: {
+    marginTop: 12,
+    paddingBottom: 50,
+    fontSize: 16,
+    color: CMSColors.PrimaryText,
+  },
+});
 export default inject('appStore', 'sitesStore')(observer(RegionsView));
