@@ -6,7 +6,7 @@ import {View, Image, ActivityIndicator} from 'react-native';
 import CryptoJS from 'crypto-js';
 
 import apiService from '../../services/api';
-import {isNullOrUndef} from '../util/general';
+import {isNullOrUndef, isValidHttpUrl, stringtoBase64} from '../util/general';
 
 import {File, CommonActions} from '../../consts/apiRoutes';
 import {No_Image} from '../../consts/images';
@@ -32,13 +32,24 @@ class CMSImage extends React.Component {
   };
 
   loadImage = async () => {
-    const {domain, source, twoStepsLoading} = this.props;
+    const {domain, source, twoStepsLoading, srcUrl} = this.props;
+    if (srcUrl && isValidHttpUrl(srcUrl)) {
+      this.setState({
+        isLoading: false,
+        image: {uri: srcUrl},
+      });
+      return;
+    }
+
     this.setState({isLoading: true});
     let imgData = await this.loadImageAsync(domain, source, twoStepsLoading);
     __DEV__ && console.log('GOND loadImage imgData =', imgData);
     if (this._isMounted) {
       this.onLoadingCompleted(domain, imgData);
-      this.setState({isLoading: false, image: imgData});
+      this.setState({
+        isLoading: false,
+        image: imgData.url_thumnail ? {uri: imgData.url_thumnail} : imgData,
+      });
     }
   };
 
@@ -71,20 +82,30 @@ class CMSImage extends React.Component {
           //   console.log('GOND loadImageAsync step 1 res = ', pathResponse);
 
           if (pathResponse && !pathResponse.isCloud) {
-            if (pathResponse.isExist && pathResponse.url_thumnail) {
-              const dataPath = CryptoJS.enc.Base64.stringify(
-                CryptoJS.enc.Utf8.parse(pathResponse.url_thumnail)
-              );
-              response = await apiService.getBase64Stream(
-                File.controler,
-                dataPath
-              );
+            if (pathResponse.isExist) {
+              if (pathResponse.url_thumnail) {
+                // const dataPath = CryptoJS.enc.Base64.stringify(
+                //   CryptoJS.enc.Utf8.parse(pathResponse.url_thumnail)
+                // );
+                const dataPath = stringtoBase64(pathResponse.url_thumnail);
+                response = await apiService.getBase64Stream(
+                  File.controller,
+                  dataPath
+                );
 
-              // __DEV__ &&
-              //   console.log('GOND loadImageAsync step 2 res = ', response);
+                // __DEV__ &&
+                //   console.log('GOND loadImageAsync step 2 res = ', response);
+                if (response.data)
+                  return {
+                    ...pathResponse,
+                    url_thumnail: {
+                      uri: 'data:image/jpeg;base64,' + response.data,
+                    },
+                  };
+              }
             }
           } else if (pathResponse.isCloud == true) {
-            response = pathResponse;
+            return pathResponse;
           }
         } else {
           response = await apiService.getBase64Stream(

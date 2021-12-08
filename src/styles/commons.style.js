@@ -69,6 +69,7 @@ module.exports = StyleSheet.create({
   modalContainer: {
     flexDirection: 'column',
     flex: 1,
+    margin: 0,
     marginTop: '10%',
     backgroundColor: CMSColors.DividerColor24_HEX,
     borderTopLeftRadius: 12,
@@ -82,6 +83,8 @@ module.exports = StyleSheet.create({
     borderTopRightRadius: 12,
     backgroundColor: CMSColors.White,
     justifyContent: 'center',
+  },
+  modalHeaderSeparator: {
     ...Platform.select({
       ios: {
         shadowOpacity: 0.3,
@@ -134,5 +137,27 @@ module.exports = StyleSheet.create({
     flex: 1,
     backgroundColor: CMSColors.PrimaryActive,
     margin: 3,
+  },
+  actionSearchButton: {
+    position: 'absolute',
+    right: 35,
+    bottom: 28,
+    width: 63,
+    height: 63,
+    borderRadius: 45,
+    backgroundColor: CMSColors.PrimaryActive,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowOffset: {width: 14, height: 14},
+        shadowColor: 'black',
+        shadowOpacity: 0.7,
+        shadowRadius: 45,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
 });

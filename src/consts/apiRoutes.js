@@ -35,7 +35,7 @@ export const Alert = {
 };
 
 export const Health = {
-  controler: 'Mobile_SiteAlert',
+  controller: 'Mobile_SiteAlert',
   summaryController: 'alertsummary',
   dvrAlerts: 'GetAlertLastByDvrs',
   dvrSensorAlerts: 'GetSensorsAlertByDvrs',
@@ -59,6 +59,10 @@ export const Exception = {
   controller: 'exception',
   get: 'get',
   getTransactionTypes: 'GetTransactionTypes',
+};
+
+export const Transaction = {
+  controller: 'transaction',
 };
 
 export const Channel = {
@@ -98,7 +102,8 @@ export const FCM = {
 };
 
 export const File = {
-  controler: 'file',
+  controller: 'file',
+  getMedia: 'media',
 };
 
 export const CommonActions = {

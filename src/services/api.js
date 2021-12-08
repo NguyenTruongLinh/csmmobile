@@ -6,6 +6,8 @@ import {HttpModel} from '../actions/types';
 import JSONbig from 'json-bigint';
 import AES from 'crypto-js/aes';
 
+import {stringtoBase64} from '../util/general';
+
 const _get = 'GET';
 const _Post = 'POST';
 const _Put = 'PUT';
@@ -314,7 +316,7 @@ class Api {
 
     let requestHttpMethod = _get;
     try {
-      __DEV__ && console.log('GOND api::getBase64Stream url = ', url);
+      // __DEV__ && console.log('GOND api::getBase64Stream url = ', url);
       let request = this._fetchBlob(url, requestHttpMethod);
 
       return request
@@ -465,6 +467,13 @@ class Api {
   _connectionSignalRfail(error) {
     __DEV__ && console.log('Signal Fail');
     console.log(error);
+  }
+
+  getMediaUrl(controller, action, media) {
+    return this._url(controller, stringtoBase64(media), action, {
+      key: this.base64HmacSHA256(media),
+      auth: this.configToken.token,
+    });
   }
 }
 

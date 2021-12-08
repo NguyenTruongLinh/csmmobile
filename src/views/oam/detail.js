@@ -132,7 +132,8 @@ class OAMDetailView extends Component {
   onFullScreenPress = () => {
     const {oamStore} = this.props;
     this.isHeaderShown = !this.isHeaderShown;
-    oamStore.setIsBottomTabShown(this.isHeaderShown);
+    // oamStore.setIsBottomTabShown(this.isHeaderShown);
+    this.props.appStore.hideBottomTabs(!this.isHeaderShown);
     this.props.navigation.setOptions({
       headerShown: this.isHeaderShown,
     });
@@ -350,4 +351,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('oamStore', 'videoStore')(observer(OAMDetailView));
+export default inject(
+  'oamStore',
+  'videoStore',
+  'appStore'
+)(observer(OAMDetailView));

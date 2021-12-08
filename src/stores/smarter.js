@@ -7,9 +7,14 @@ import {DateTime} from 'luxon';
 import apiService from '../services/api';
 
 import snackbar from '../util/snackbar';
-import {getRandomId} from '../util/general';
+import {getRandomId, isValidHttpUrl, stringtoBase64} from '../util/general';
 
-import {Exception as ExceptionRoute, CommonActions} from '../consts/apiRoutes';
+import {
+  Exception as ExceptionRoute,
+  Transaction as TransactionRoute,
+  File as FileRoute,
+  CommonActions,
+} from '../consts/apiRoutes';
 import {
   DateFormat,
   ExceptionSortField,
@@ -270,6 +275,25 @@ const parsePaymentTaxData = _data =>
     color: _data.Color,
   });
 
+const TransactionItemModel = types.model({
+  id: types.number,
+  itemLine: types.number,
+  quantity: types.number,
+  total: types.number,
+  itemCodeName: types.string,
+  descriptionName: types.string,
+});
+
+const parseTransactionItem = item =>
+  TransactionItemModel.create({
+    id: item.Id,
+    itemLine: item.ItemLine,
+    quantity: item.Qty,
+    total: item.Total,
+    itemCodeName: item.ItemCodeName ?? '',
+    descriptionName: item.DescriptionName ?? '',
+  });
+
 const TransactionModel = types
   .model({
     id: types.optional(types.identifier, () => getRandomId()),
@@ -309,13 +333,83 @@ const TransactionModel = types
     exceptionTypes: types.array(types.reference(ExceptionTypeModel)),
     notes: types.array(types.string),
     exceptionAmount: types.number,
+    detail: types.array(TransactionItemModel),
   })
   .volatile(self => ({
     snapshot: null,
+    media: null,
+    isCloud: false,
+    mediaSize: 0,
+  }))
+  .views(self => ({
+    get orderTime() {
+      return DateTime.fromISO(self.tranDate, {zone: 'utc'}).toFormat(
+        DateFormat.TranDate
+      );
+    },
+    get hasVideo() {
+      return self.media && self.mediaSize > 0;
+    },
   }))
   .actions(self => ({
     saveImage(data) {
-      self.snapshot = data;
+      if (!data.isExist) return;
+      self.media = data.url_media;
+      self.snapshot = data.url_thumnail;
+      self.isCloud = data.isCloud;
+      if (data.MediaSize && data.MediaSize > 0) self.mediaSize = data.MediaSize;
+
+      if (!self.isCloud) {
+        // get Video url
+        try {
+          self.media = apiService.getMediaUrl(
+            FileRoute.controller,
+            FileRoute.getMedia,
+            self.media
+          );
+          __DEV__ &&
+            console.log('GOND Get transaction video url: ', self.media);
+
+          return self.media;
+        } catch (error) {
+          __DEV__ &&
+            console.log('GOND Get transaction video url faled: ', error);
+        }
+      }
+    },
+    addDetails(data) {
+      if (!data || !Array.isArray(data)) {
+        __DEV__ &&
+          console.log('GOND Transaction detail data not valid: ', data);
+        return;
+      }
+
+      self.detail = data.map(item => parseTransactionItem(item));
+    },
+    getVideoUrl() {
+      if (!self.media || self.mediaSize <= 0) {
+        __DEV__ &&
+          console.log(
+            'GOND Get trans video url, nomedia: ',
+            self.media,
+            self.mediaSize
+          );
+        return null;
+      }
+      if (self.isCloud || isValidHttpUrl(self.media)) return self.media;
+
+      try {
+        self.media = apiService.getMediaUrl(
+          FileRoute.controller,
+          FileRoute.getMedia,
+          self.media
+        );
+        __DEV__ && console.log('GOND Get transaction video url: ', self.media);
+
+        return self.media;
+      } catch (error) {
+        __DEV__ && console.log('GOND Get transaction video url faled: ', error);
+      }
     },
   }));
 
@@ -513,9 +607,11 @@ export const POSModel = types
         groupBy: GroupByException.SITE,
         emprisk: 'emprisk',
         page: 1,
-        pSize: 20,
-        sDate: yesterday.startOf('day').toFormat(DateFormat.QuerryDateTime),
-        // sDate: '20210901000000',
+        pSize: __DEV__ ? 5 : 20,
+        sDate: __DEV__
+          ? '20210901000000'
+          : yesterday.startOf('day').toFormat(DateFormat.QuerryDateTime),
+        // sDate: '20210901000000', // for testing
         eDate: yesterday.endOf('day').toFormat(DateFormat.QuerryDateTime),
 
         // siteKey: '', // add later?
@@ -539,6 +635,9 @@ export const POSModel = types
     },
     selectEmployee(value) {
       self.selectedEmployee = value;
+    },
+    selectTransaction(value) {
+      self.selectedTransaction = value;
     },
     // #endregion Setters
     // #region Get data
@@ -670,7 +769,7 @@ export const POSModel = types
       try {
         const res = yield apiService.get(
           ExceptionRoute.controller,
-          _employee.employeeId,
+          _employee.employeeId ?? '0',
           '',
           {
             ...self.filterParams.requestParams,
@@ -707,7 +806,41 @@ export const POSModel = types
           );
         }
       } catch (error) {
-        __DEV__ && console.log('GOND getGroupDetailData error = ', error);
+        __DEV__ && console.log('GOND getEmployeeTransactions error = ', error);
+      }
+      self.isLoading = false;
+    }),
+    getTransaction: flow(function* (transactionId) {
+      let _trans = self.selectedTransaction ? self.selectedTransaction : null;
+      if (transactionId) {
+        _trans =
+          self.transactionsList.find(t => t.tranId == transactionId) ?? _trans;
+      }
+
+      __DEV__ && console.log('GOND getTransaction: selected!', _trans);
+      if (!_trans) {
+        __DEV__ &&
+          console.log(
+            'GOND getTransaction: transactionId not valid nor provided!'
+          );
+        return;
+      }
+      self.isLoading = true;
+      __DEV__ &&
+        console.log(
+          'GOND getExceptionsSummary, params = ',
+          getSnapshot(self.filterParams)
+        );
+      try {
+        const res = yield apiService.get(
+          TransactionRoute.controller,
+          _trans.tranId
+        );
+        __DEV__ && console.log('GOND getTransaction = ', res);
+
+        _trans.addDetails(res.Details);
+      } catch (error) {
+        __DEV__ && console.log('GOND getTransaction error = ', error);
       }
       self.isLoading = false;
     }),

@@ -36,7 +36,7 @@ exports.autoKey = function () {
   return guid.toString();
 };
 
-exports.Utf8ArrayToStr = function (array) {
+exports.utf8ArrayToStr = function (array) {
   // from http://stackoverflow.com/questions/8936984/uint8array-to-string-in-javascript
   var out, i, len, c;
   var char2, char3;
@@ -78,7 +78,7 @@ exports.Utf8ArrayToStr = function (array) {
   return out;
 };
 
-exports.ToBytesInt32 = function (num) {
+exports.toBytesInt32 = function (num) {
   var emptyArr = [0, 0, 0, 0];
   if (Number.isInteger(num) && num >= 0) {
     var arr = new Uint8Array([
@@ -93,7 +93,7 @@ exports.ToBytesInt32 = function (num) {
   }
 };
 
-exports.ToBytesInt16 = function (num) {
+exports.toBytesInt16 = function (num) {
   var emptyArr = [0, 0];
   if (Number.isInteger(num) && num >= 0) {
     var arr = new Uint8Array([num & 0x000000ff, (num & 0x0000ff00) >> 8]);
@@ -103,7 +103,7 @@ exports.ToBytesInt16 = function (num) {
   }
 };
 
-exports.ToBytesString = function (str) {
+exports.toBytesString = function (str) {
   var utf8 = unescape(encodeURIComponent(str));
 
   var arr = [];
@@ -113,25 +113,25 @@ exports.ToBytesString = function (str) {
   return arr;
 };
 
-exports.GetDataToSendServer = function (content) {
+exports.getDataToSendServer = function (content) {
   //type: int, is type
   // content: base64 string
   //this functions returns a Buffer
   var arrBytes = [];
-  var txtArrBytes = exports.Base64ToBytesArray(content);
-  arrBytes = exports.ToBytesInt32(txtArrBytes.length + 6);
-  arrBytes = arrBytes.concat(exports.ToBytesInt32(1));
+  var txtArrBytes = exports.base64ToBytesArray(content);
+  arrBytes = exports.toBytesInt32(txtArrBytes.length + 6);
+  arrBytes = arrBytes.concat(exports.toBytesInt32(1));
   // remove 2 end bytes
   arrBytes.pop();
   arrBytes.pop();
   //
-  arrBytes = arrBytes.concat(exports.ToBytesInt32(3));
+  arrBytes = arrBytes.concat(exports.toBytesInt32(3));
   arrBytes = arrBytes.concat(txtArrBytes);
   var _dataSendToSv = new Buffer(arrBytes);
   return _dataSendToSv;
 };
 
-exports.Base64ToBytesArray = function (base64str) {
+exports.base64ToBytesArray = function (base64str) {
   var bytes = base64.toByteArray(base64str);
   var arr = [];
   for (var i = 0; i < bytes.length; i++) {
@@ -140,7 +140,7 @@ exports.Base64ToBytesArray = function (base64str) {
   return arr;
 };
 
-exports.Base64ToString = function (uinit8) {
+exports.base64ToString = function (uinit8) {
   var arr = [];
   for (var i = 0; i < uinit8.length; i++) {
     arr.push(uinit8[i]);
@@ -148,14 +148,14 @@ exports.Base64ToString = function (uinit8) {
   return base64.fromByteArray(arr);
 };
 
-exports.StringtoBase64 = function (str) {
+exports.stringtoBase64 = function (str) {
   if (!str) return '';
   let wordArray = CryptoJS.enc.Utf8.parse(str);
   let ret = CryptoJS.enc.Base64.stringify(wordArray);
   return ret;
 };
 
-exports.Uinit8ToArr = function (uinit8) {
+exports.uinit8ToArr = function (uinit8) {
   var arr = [];
   for (var i = 0; i < uinit8.length; i++) {
     arr.push(uinit8[i]);
@@ -163,7 +163,7 @@ exports.Uinit8ToArr = function (uinit8) {
   return arr;
 };
 
-exports.ByteArrayToInt = function (/*byte[]*/ byteArray) {
+exports.byteArrayToInt = function (/*byte[]*/ byteArray) {
   var value = 0;
   for (var i = byteArray.length - 1; i >= 0; i--) {
     value = value * 256 + byteArray[i];
@@ -172,7 +172,7 @@ exports.ByteArrayToInt = function (/*byte[]*/ byteArray) {
   return value;
 };
 
-exports.GetDataToSendServerToGetVideoStream = function (
+exports.getDataToSendServerToGetVideoStream = function (
   resolution_x,
   resolution_y,
   video_source_index
@@ -204,9 +204,9 @@ exports.GetDataToSendServerToGetVideoStream = function (
     '" /> ' +
     '</ALL_SETTINGS>';
 
-  var _content_bytes = exports.ToBytesString(_content);
-  var _data_bytes = exports.ToBytesInt32(_content_bytes.length + 2);
-  var _type_bytes = exports.ToBytesInt32(2002);
+  var _content_bytes = exports.toBytesString(_content);
+  var _data_bytes = exports.toBytesInt32(_content_bytes.length + 2);
+  var _type_bytes = exports.toBytesInt32(2002);
   _type_bytes.pop();
   _type_bytes.pop();
   _data_bytes = _data_bytes.concat(_type_bytes);
@@ -215,7 +215,7 @@ exports.GetDataToSendServerToGetVideoStream = function (
   return new Buffer(_data_bytes);
 };
 
-exports.Uinit8ArrToArray = function (uinit8) {
+exports.uint8ArrToArray = function (uinit8) {
   var arr = [];
   for (var i = 0; i < uinit8.length; i++) {
     arr.push(uinit8[i]);
@@ -300,7 +300,7 @@ exports.AES_decrypt = function (input, key) {
   return uid;
 };
 
-exports.UnixTime_To_Date = function (unix) {
+exports.unixTimeToDate = function (unix) {
   let date = new Date(Date.UTC(1970, 0, 1, 0, 0, 0, 0));
   date.setSeconds(unix);
   return date;
@@ -589,7 +589,7 @@ exports.getRandomClientId = () => {
 };
 
 exports.isValidHttpUrl = val => {
-  if (!val || val.length == 0) return;
+  if (!val || val.length == 0) return false;
   // toString.call(val) === '[object URL]';
 
   __DEV__ && console.log('GOND isValidHttpUrl: ', val);

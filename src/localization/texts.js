@@ -146,6 +146,8 @@ export const SMARTER = {
   PAYMENT: 'Payment',
   CHANGE: 'Change',
   FILTER_MODAL_TITLE: 'Search conditions',
+  TRANSACTION: 'Transaction',
+  DOWNLOAD: 'Download',
 };
 
 export const COMMON = {

@@ -178,7 +178,7 @@ function parseOAMData(data, selfKdvr) {
 export const OAMModel = types
   .model({
     title: types.maybeNull(types.string),
-    isBottomTabShown: types.boolean,
+    // isBottomTabShown: types.boolean,
     kdvr: types.number,
     data: types.maybeNull(oamData),
     isAckPopupVisible: types.boolean,
@@ -198,9 +198,9 @@ export const OAMModel = types
       self.data = null;
       self.fetchData();
     },
-    setIsBottomTabShown(isBottomTabShown) {
-      self.isBottomTabShown = isBottomTabShown;
-    },
+    // setIsBottomTabShown(isBottomTabShown) {
+    //   self.isBottomTabShown = isBottomTabShown;
+    // },
     fetchData: flow(function* fetchData() {
       try {
         let newData = yield apiService.get(
@@ -282,7 +282,7 @@ export const OAMModel = types
 
 const oamStore = OAMModel.create({
   title: null,
-  isBottomTabShown: true,
+  // isBottomTabShown: true,
   kdvr: -1,
   data: null,
   dismissInfo: null,

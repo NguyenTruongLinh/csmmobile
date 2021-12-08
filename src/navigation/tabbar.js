@@ -27,22 +27,10 @@ const HideTabbarScreens = [ROUTERS.VIDEO_PLAYER, ROUTERS.HEALTH_VIDEO];
 class CMSTabbar extends React.Component {
   constructor(props) {
     super(props);
-
-    // if (typeof props.naviSetter == 'function') {
-    //   props.naviSetter(props.navigation);
-    // }
   }
 
-  // getCurrentRouteName = (state) => {
-  //   while (state) {
-  //     const currentRoute = state.routes[state.index];
-  //     state = currentRoute.state;
-  //     if (!state) return currentRoute.name;
-  //   }
-  // };
-
   render() {
-    const {navigation, state, oamStore, userStore} = this.props;
+    const {navigation, state, appStore, userStore} = this.props;
     const currentIndex = state.index;
     // const currentRoute = state.routes[state.index];
     const {width, height} = Dimensions.get('window');
@@ -61,8 +49,9 @@ class CMSTabbar extends React.Component {
       //   currentRoute.state.routes[currentRoute.state.index].name
       // )
       HideTabbarScreens.includes(getCurrentRouteName(state)) ||
-      (getCurrentRouteName(state) == ROUTERS.OAM_DETAIL &&
-        !oamStore.isBottomTabShown)
+      !appStore.showTabbar
+      // (getCurrentRouteName(state) == ROUTERS.OAM_DETAIL &&
+      //   !oamStore.isBottomTabShown)
     )
       return null;
     return (
@@ -117,7 +106,7 @@ class CMSTabbar extends React.Component {
   }
 }
 
-export default inject('oamStore', 'userStore')(observer(CMSTabbar));
+export default inject('appStore', 'userStore')(observer(CMSTabbar));
 
 const styles = StyleSheet.create({
   container: {

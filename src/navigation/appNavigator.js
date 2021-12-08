@@ -101,7 +101,8 @@ import passwordExpired from '../views/auth/passwordExpired';
 const screenOptions = ({route, navigation}) => ({
   headerStyle: {
     // backgroundColor: CMSColors.White,
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
+    borderBottomColor: CMSColors.DividerColor54,
   },
   headerStatusBarHeight: variables.StatusBarHeight,
   headerTitleAlign: 'center',
@@ -287,8 +288,8 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
         naviService && naviService.onReady(true);
       }}
       onStateChange={state => {
-        __DEV__ &&
-          console.log('GOND onStateChange state = ' + JSON.stringify(state));
+        // __DEV__ &&
+        //   console.log('GOND onStateChange state = ' + JSON.stringify(state));
         naviService && naviService.onStateChange(state);
       }}>
       {isLoggedIn && notificationController}

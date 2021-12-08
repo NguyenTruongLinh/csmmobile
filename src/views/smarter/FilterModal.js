@@ -188,6 +188,7 @@ export default class ExceptionSearchModal extends Component {
       <View
         style={[
           commonStyles.modalHeader,
+          commonStyles.modalHeaderSeparator,
           {
             flex: 10,
           },

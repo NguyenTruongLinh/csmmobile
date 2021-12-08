@@ -462,25 +462,7 @@ class AlarmsSearchView extends Component {
 
   renderActionButton() {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          right: 35,
-          bottom: 28,
-          width: 63,
-          height: 63,
-          borderRadius: 45,
-          backgroundColor: CMSColors.PrimaryActive,
-          justifyContent: 'center',
-          alignItems: 'center',
-          // android's shadow
-          elevation: 5,
-          // ios's shadow check later
-          shadowOffset: {width: 14, height: 14},
-          shadowColor: 'black',
-          shadowOpacity: 0.7,
-          shadowRadius: 45,
-        }}>
+      <View style={commonStyles.actionSearchButton}>
         <CMSTouchableIcon
           iconCustom="search_solid_advancedfind"
           onPress={() => this.setState({showFilterModal: true})}

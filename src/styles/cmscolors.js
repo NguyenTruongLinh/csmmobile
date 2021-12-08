@@ -57,7 +57,7 @@ module.exports = {
   DarkBackground: '#183E63',
   BorderColor: 'rgba(0, 0, 0, .38)',
   DarkElement: '#353535',
-  DarkTheme: '#000000',
+  DarkTheme: Black,
 
   ErrorColor: 'red',
   IndicatorColor: 'rgb(245, 200, 10)',

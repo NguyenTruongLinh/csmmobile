@@ -72,7 +72,10 @@ class ExceptionsView extends Component {
 
     navigation.setOptions({
       headerTitle:
-        selectedEmployee.employeeName + ' - ' + selectedEmployee.siteName, //TODO:
+        (selectedEmployee.employeeName &&
+        selectedEmployee.employeeName.length > 0
+          ? selectedEmployee.employeeName + ' - '
+          : '') + selectedEmployee.siteName,
       headerRight: () => (
         <View style={commonStyles.headerContainer}>
           <CMSTouchableIcon
@@ -110,9 +113,22 @@ class ExceptionsView extends Component {
     exceptionStore.setExceptionFilter(value);
   };
 
+  onLoadMore = pullDistance => {
+    const {exceptionStore} = this.props;
+
+    if (!exceptionStore.isLoading) {
+      this.currentPage++;
+      exceptionStore.getEmployeeTransactions(
+        exceptionStore.selectedEmployee,
+        this.currentPage
+      );
+    }
+  };
+
   gotoTransactionDetail = trans => {
     const {exceptionStore, navigation} = this.props;
     __DEV__ && console.log('GOND SMARTER Select trans: ', trans);
+    exceptionStore.selectTransaction(trans.id);
 
     navigation.push(ROUTERS.TRANS_DETAIL);
   };
@@ -133,7 +149,7 @@ class ExceptionsView extends Component {
   };
 
   renderItemListView = ({item}) => {
-    __DEV__ && console.log('GOND SMARTER render trans item: ', item);
+    // __DEV__ && console.log('GOND SMARTER render trans item: ', item);
 
     return (
       <CMSRipple
@@ -143,11 +159,12 @@ class ExceptionsView extends Component {
         <View style={styles.transContainer}>
           <CMSImage
             id={'list_' + DateTime.now().toMillis()}
-            src={item.image}
+            src={!item.isCloud ? item.snapshot : undefined}
+            srcUrl={item.isCloud ? item.snapshot : undefined}
             domain={this.props.exceptionStore.getTransactionSnapShot(item)} // {this.getSnapShot(item)}
-            dataCompleteHandler={(param, image) => {
-              if (image) {
-                item.saveImage(image);
+            dataCompleteHandler={(param, imageData) => {
+              if (imageData) {
+                item.saveImage(imageData);
               }
             }}
             twoStepsLoading={true}
@@ -256,13 +273,7 @@ class ExceptionsView extends Component {
           numColumns={isListView ? 1 : ALERTS_GRID_LAYOUT}
           onRefresh={this.getData}
           refreshing={exceptionStore.isLoading}
-          onEndReached={() => {
-            this.currentPage++;
-            exceptionStore.getEmployeeTransactions(
-              exceptionStore.selectedEmployee,
-              this.currentPage
-            );
-          }}
+          onEndReached={this.onLoadMore}
         />
       </View>
     );

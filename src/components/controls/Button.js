@@ -7,11 +7,13 @@ import * as MaterialButton from '@geuntabuwono/react-native-material-buttons';
 
 import CMSColors from '../../styles/cmscolors';
 import {Text} from '../CMSText';
-import CMSStyleSheet from '../CMSStyleSheet';
+import {
+  Icon,
+  IconCustom,
+  MaterialIcons,
+  FontSize as FONT_SIZE,
+} from '../CMSStyleSheet';
 
-const Icon = CMSStyleSheet.Icon;
-const IconCustom = CMSStyleSheet.IconCustom;
-const FONT_SIZE = CMSStyleSheet.FontSize;
 const HEIGHT = 50;
 
 class Button extends Component {
@@ -39,37 +41,35 @@ class Button extends Component {
    * @returns JSXElement
    */
   renderIcon(enable_style, disable_style) {
-    let icon;
-    if (this.props.icon) {
-      let size = this.props.iconSize || FONT_SIZE;
-      icon = (
-        <Icon
-          name={this.props.icon}
-          size={size}
-          style={
-            this.props.enable
-              ? [styles.caption, enable_style, styles.icon]
-              : [styles.caption, disable_style, styles.icon]
-          }
-        />
-      );
+    const size = this.props.iconSize || FONT_SIZE;
+    const {icon, iconMaterial, iconCustom, enable} = this.props;
+    let IconComponent = null;
+    let iconName = '';
+
+    if (icon) {
+      IconComponent = Icon;
+      iconName = icon;
     }
-    if (this.props.iconCustom) {
-      let size = this.props.iconSize || FONT_SIZE;
-      // __DEV__ && console.log('GOND enable_style = ', enable_style);
-      icon = (
-        <IconCustom
-          name={this.props.iconCustom}
-          size={size}
-          style={
-            this.props.enable
-              ? [styles.caption_Icon, enable_style, styles.icon]
-              : [styles.caption_Icon, disable_style, styles.icon]
-          }
-        />
-      );
+    if (iconMaterial) {
+      IconComponent = MaterialIcons;
+      iconName = iconMaterial;
     }
-    return icon;
+    if (iconCustom) {
+      IconComponent = IconCustom;
+      iconName = iconCustom;
+    }
+
+    return IconComponent ? (
+      <IconComponent
+        name={iconName}
+        size={size}
+        style={
+          enable
+            ? [styles.caption_Icon, enable_style, styles.icon]
+            : [styles.caption_Icon, disable_style, styles.icon]
+        }
+      />
+    ) : null;
   }
 
   /**

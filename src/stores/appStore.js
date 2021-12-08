@@ -33,6 +33,7 @@ const appStore = types
     isLoading: types.boolean,
     naviService: NavigationService,
     showSearchBar: types.boolean,
+    showTabbar: types.boolean,
   })
   .views(self => ({
     get getDeviceInfo() {
@@ -76,6 +77,9 @@ const appStore = types
       __DEV__ && console.log('GOND store.enableSearchbar ', value);
       self.showSearchBar = value;
     },
+    hideBottomTabs(isHide) {
+      self.showTabbar = !isHide;
+    },
   }))
   .create({
     nextScene: '',
@@ -97,6 +101,7 @@ const appStore = types
       isReadyForPushShowing: false,
     }),
     showSearchBar: false,
+    showTabbar: true,
   });
 
 export default appStore;
