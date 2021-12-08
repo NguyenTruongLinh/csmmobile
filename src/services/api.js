@@ -1,3 +1,4 @@
+import {Platform, PermissionsAndroid} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import uuid from 'react-native-uuid';
 //import urlhelpers from 'url-parse';
@@ -6,12 +7,22 @@ import {HttpModel} from '../actions/types';
 import JSONbig from 'json-bigint';
 import AES from 'crypto-js/aes';
 
-import {stringtoBase64} from '../util/general';
+import {stringtoBase64, isValidHttpUrl} from '../util/general';
+import snackbarUtil from '../util/snackbar';
 
-const _get = 'GET';
-const _Post = 'POST';
-const _Put = 'PUT';
-const _Delete = 'DELETE';
+import {File as FileRoute} from '../consts/apiRoutes';
+
+// const _get = 'GET';
+// const _Post = 'POST';
+// const _Put = 'PUT';
+// const _Delete = 'DELETE';
+
+const Methods = {
+  Get: 'GET',
+  Post: 'POST',
+  Put: 'PUT',
+  Delete: 'DELETE',
+};
 
 class Api {
   // constructor(config, configToken) {
@@ -110,7 +121,7 @@ class Api {
       let header = this._defaultHeader(this.config.appId);
       let url = this._baseUrl(controller);
       console.log(url);
-      let response = await fetch(url, {method: _get, headers: header});
+      let response = await fetch(url, {method: Methods.Get, headers: header});
 
       __DEV__ &&
         console.log(
@@ -142,7 +153,7 @@ class Api {
     let url = this._baseUrl('account');
     let body = JSON.stringify({UserName: _uid, Password: _pass});
     let response = await fetch(url, {
-      method: _Post,
+      method: Methods.Post,
       headers: header,
       timeout: 30000,
       body: body,
@@ -187,7 +198,7 @@ class Api {
         body
       );
     let response = await fetch(url, {
-      method: _Post,
+      method: Methods.Post,
       headers: header,
       timeout: 30000,
       body: body,
@@ -213,7 +224,7 @@ class Api {
   }
 
   // Token(method, url, jsoncontent) {
-  //   let _method = _get;
+  //   let _method = Methods.Get;
   //   if (method != undefined && method != null) _method = method;
   //   let token = this._generateToken(this.config.appId, _method, url, jsoncontent);
   //   let header = this._defaultHeader(this.config.appId);
@@ -314,7 +325,7 @@ class Api {
       }
     }
 
-    let requestHttpMethod = _get;
+    let requestHttpMethod = Methods.Get;
     try {
       // __DEV__ && console.log('GOND api::getBase64Stream url = ', url);
       let request = this._fetchBlob(url, requestHttpMethod);
@@ -369,13 +380,13 @@ class Api {
 
   _get(controller, id = '', action = '', params) {
     let url = this._url(controller, id, action, params);
-    let requestHttpMethod = _get;
+    let requestHttpMethod = Methods.Get;
     return this._fetch(url, requestHttpMethod);
   }
 
   async post(controller, id = '', action = '', value = null) {
     let url = this._baseUrl(controller, id, action);
-    let requestHttpMethod = _Post;
+    let requestHttpMethod = Methods.Post;
     let request_content =
       value === null || value === undefined ? '' : JSON.stringify(value);
     __DEV__ &&
@@ -391,7 +402,7 @@ class Api {
 
   async put(controller, id = '', action = '', value = null) {
     let url = this._baseUrl(controller, id, action);
-    let requestHttpMethod = _Put;
+    let requestHttpMethod = Methods.Put;
     let request_content =
       value === null || value === undefined ? '' : JSON.stringify(value);
     // __DEV__ && console.log('GOND api::put url = ', url, ', content = ', request_content);
@@ -401,7 +412,7 @@ class Api {
 
   async delete(controller, id = '', action = '', value = null) {
     let url = this._baseUrl(controller, id, action);
-    let requestHttpMethod = _Delete;
+    let requestHttpMethod = Methods.Delete;
     let request_content =
       value === null || value === undefined ? '' : JSON.stringify(value);
     let response = await this._fetch(url, requestHttpMethod, request_content);
@@ -474,6 +485,60 @@ class Api {
       key: this.base64HmacSHA256(media),
       auth: this.configToken.token,
     });
+  }
+
+  async downloadFile(fileUrl, mimeType, dirPath) {
+    if (Platform.OS == 'android') {
+      const hasPermission = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      );
+      if (!hasPermission) {
+        const isGranted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+        __DEV__ &&
+          console.log('GOND download file, request permission: ', isGranted);
+
+        if (!isGranted) {
+          snackbarUtil.onError(
+            'Cannot download due to storage access permission. Please enable it!'
+          );
+          return;
+        }
+      }
+    }
+
+    const path =
+      dirPath ?? Platform.OS == 'ios'
+        ? RNFetchBlob.fs.dirs.DocumentDir
+        : RNFetchBlob.fs.dirs.DownloadDir;
+
+    const url = isValidHttpUrl(fileUrl)
+      ? fileUrl
+      : this.getMediaUrl(FileRoute.controller, FileRoute.getMedia, fileUrl);
+    if (!isValidHttpUrl(url)) {
+      snackbarUtil.onError('Not a valid url, download failed!');
+      __DEV__ && console.log('GOND download not valid url: ', url);
+      return;
+    }
+
+    const fileName = url.split('/').pop();
+    __DEV__ && console.log('GOND downloading file: ', fileName, ', url: ', url);
+
+    let res = await RNFetchBlob.config({
+      path: path + '/' + fileName,
+      // overwrite: true,
+      // addAndroidDownloads: {
+      //   path: path + '/' + fileName + '?append=true',
+      //   useDownloadManager: true,
+      //   mediaScannable: true,
+      //   mime: mimeType ?? 'video/mp4',
+      //   notification: true,
+      // },
+    }).fetch(Methods.Get, url);
+
+    __DEV__ && console.log('GOND downloaded result: ', res);
+    return res;
   }
 }
 

@@ -3,6 +3,7 @@ import {flow, types, applySnapshot, getSnapshot} from 'mobx-state-tree';
 import BigNumber from 'bignumber.js';
 import BigNumberPrimitive from './types/bignumber';
 import {DateTime} from 'luxon';
+import Share from 'react-native-share';
 
 import apiService from '../services/api';
 
@@ -21,6 +22,10 @@ import {
   ExceptionSortFieldName,
   GroupByException,
 } from '../consts/misc';
+import {
+  COMMON as COMMON_TXT,
+  SMARTER as SMARTER_TXT,
+} from '../localization/texts';
 
 import {No_Image} from '../consts/images';
 
@@ -386,31 +391,50 @@ const TransactionModel = types
 
       self.detail = data.map(item => parseTransactionItem(item));
     },
-    getVideoUrl() {
-      if (!self.media || self.mediaSize <= 0) {
-        __DEV__ &&
-          console.log(
-            'GOND Get trans video url, nomedia: ',
-            self.media,
-            self.mediaSize
-          );
-        return null;
-      }
-      if (self.isCloud || isValidHttpUrl(self.media)) return self.media;
+    // getVideoUrl() {
+    //   if (!self.media || self.mediaSize <= 0) {
+    //     __DEV__ &&
+    //       console.log(
+    //         'GOND Get trans video url, nomedia: ',
+    //         self.media,
+    //         self.mediaSize
+    //       );
+    //     return null;
+    //   }
+    //   if (self.isCloud || isValidHttpUrl(self.media)) return self.media;
 
+    //   try {
+    //     self.media = apiService.getMediaUrl(
+    //       FileRoute.controller,
+    //       FileRoute.getMedia,
+    //       self.media
+    //     );
+    //     __DEV__ && console.log('GOND Get transaction video url: ', self.media);
+
+    //     return self.media;
+    //   } catch (error) {
+    //     __DEV__ && console.log('GOND Get transaction video url faled: ', error);
+    //   }
+    // },
+    downloadVideo: flow(function* () {
       try {
-        self.media = apiService.getMediaUrl(
-          FileRoute.controller,
-          FileRoute.getMedia,
-          self.media
-        );
-        __DEV__ && console.log('GOND Get transaction video url: ', self.media);
-
-        return self.media;
-      } catch (error) {
-        __DEV__ && console.log('GOND Get transaction video url faled: ', error);
+        if (!self.media || self.mediaSize == 0) {
+          __DEV__ && console.log('GOND Download video transaction no media');
+          return;
+        }
+        const res = yield apiService.downloadFile(self.media);
+        if (res) {
+          Share.open({
+            url: `${res.path()}`,
+            title: COMMON_TXT.CMS_APP,
+            message: SMARTER_TXT.SHARE_MESSAGE,
+            subject: SMARTER_TXT.SHARE_SUBJECT,
+          });
+        }
+      } catch (err) {
+        console.log('GOND Download video transaction failed: ', err);
       }
-    },
+    }),
   }));
 
 const parseTransactionData = (_data, exceptionTypesConfig) =>

@@ -138,13 +138,16 @@ class TransactionDetailView extends Component {
     );
   };
 
-  onVideoDownload = () => {};
+  onVideoDownload = () => {
+    if (this.props.exceptionStore.selectedTransaction)
+      this.props.exceptionStore.selectedTransaction.downloadVideo();
+  };
 
   renderFullscreenBill = () => {
     const {selectedTransaction, isLoading} = this.props.exceptionStore;
     return (
       <View style={[styles.viewContainer, styles.contentView]}>
-        <View style={{height: 42}} />
+        {/* <View style={{height: 42}} /> */}
         <Button
           style={styles.button}
           caption={SMARTER_TXT.FLAG}
