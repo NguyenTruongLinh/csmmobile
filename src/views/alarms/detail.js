@@ -166,7 +166,9 @@ class AlarmDetailView extends Component {
                 : ALARM_TXT.NONEMPLOYEE
               : currentSnapshot.channelName}
           </Text>
-          <Text style={{fontSize: 16, textAlign: 'center'}}>{siteName}</Text>
+          <Text style={{fontSize: 16, textAlign: 'center'}} numberOfLines={1}>
+            {siteName}
+          </Text>
         </View>
       ),
       headerTitleAlign: 'center',

@@ -113,6 +113,7 @@ class OAMSitesView extends Component {
       ))
     );
   }
+
   notifyRenderArrow(item) {
     return (
       item.dvrs &&
@@ -250,6 +251,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     paddingLeft: 14,
+    marginRight: 50,
   },
   alertsCountContainer: {
     justifyContent: 'center',
