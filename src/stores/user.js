@@ -404,7 +404,7 @@ export const UserStoreModel = types
     }),
     loginFailed(data) {
       if (data.status === 401) {
-        const retMess = data.Result.ReturnMessage;
+        const retMess = data.Result && data.Result.ReturnMessage;
         const failInfos = retMess && retMess[0] && retMess[0].split(';');
         const failReason = failInfos && failInfos[0];
         if (failReason == LOGIN_FAIL_CAUSES.USER_LOCK) {

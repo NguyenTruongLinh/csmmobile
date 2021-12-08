@@ -10,6 +10,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Keyboard,
+  Platform,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
@@ -40,7 +41,7 @@ import {Login as LoginTxt} from '../../localization/texts';
 // const validators = validatejs.validators;
 // <!-- END CONSTS -->
 // ----------------------------------------------------
-const {width} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 class PasswordExpired extends Component {
   constructor(props) {
@@ -223,7 +224,10 @@ class PasswordExpired extends Component {
               source={CMS_Logo}
               style={[
                 styles.logo,
-                {display: this.state.isInputFocus ? 'none' : 'flex'},
+                {
+                  display:
+                    height < 1000 && this.state.isInputFocus ? 'none' : 'flex',
+                },
               ]}
               resizeMode="contain"
             />
