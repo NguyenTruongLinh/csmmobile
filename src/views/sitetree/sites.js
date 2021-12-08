@@ -55,11 +55,14 @@ class SitesView extends Component {
     this.props.sitesStore.onSitesViewExit();
     this.onFilter('');
     // BackHandler.removeEventListener('hardwareBackPress', this.onBack);
+    this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
+    this.unsubscribleBlurEvent && this.unsubscribleBlurEvent();
   }
 
   async componentDidMount() {
     this._isMounted = true;
     // const {sitesStore, healthStore, userStore, route} = this.props;
+    const {navigation} = this.props;
     if (__DEV__)
       console.log('SitesView componentDidMount: ', this.searchbarRef);
 
@@ -72,14 +75,25 @@ class SitesView extends Component {
     //   }
     // };
 
+    this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
+      if (this.blurFlag) {
+        this.blurFlag = false;
+        this.getData(true);
+      }
+    });
+
+    this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
+      this.blurFlag = true;
+    });
+
     await this.getData();
+
     this.setHeader();
   }
 
   getData = async isReload => {
     const {sitesStore, healthStore, userStore, route} = this.props;
     const {isHealthRoute} = this.state;
-
     if (
       !sitesStore.selectedRegion ||
       !sitesStore.hasRegions
