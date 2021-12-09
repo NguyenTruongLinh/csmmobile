@@ -521,7 +521,7 @@ export const POSModel = types
     notifiedTransaction: types.maybeNull(TransactionModel),
 
     isLoading: types.boolean,
-    isGroupLoading: types.boolean,
+    // isGroupLoading: types.boolean,
 
     sortField: types.optional(types.number, ExceptionSortField.RatioToSale),
   })
@@ -729,13 +729,14 @@ export const POSModel = types
       if (!self.filterParams) {
         self.setDefaultParams([siteKey]);
       }
-      self.isGroupLoading = true;
+      // self.isGroupLoading = true;
       // self.filterParams.setParams({siteKey});
       if (self.exceptionsGroupData[siteIndex].employees.length > 0) {
         __DEV__ &&
           console.log(
             'GOND get Exception group data, site data already existed!'
           );
+        // self.isGroupLoading = false;
         return;
       }
       try {
@@ -754,6 +755,7 @@ export const POSModel = types
           res.Data.length == 0
         ) {
           __DEV__ && console.log('GOND getGroupDetailData no data:', res);
+          // self.isGroupLoading = false;
           return;
         }
         self.exceptionsGroupData[siteIndex].employees = res.Data.map(item =>
@@ -776,7 +778,7 @@ export const POSModel = types
       } catch (error) {
         __DEV__ && console.log('GOND getGroupDetailData error = ', error);
       }
-      self.isGroupLoading = false;
+      // self.isGroupLoading = false;
     }),
     getEmployeeTransactions: flow(function* (employee, page = 1) {
       let _employee =
@@ -909,7 +911,7 @@ const storeDefault = {
   exceptionTypes: [],
   transactionsList: [],
   isLoading: false,
-  isGroupLoading: false,
+  // isGroupLoading: false,
 
   selectedEmployee: null,
 };

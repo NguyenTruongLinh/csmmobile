@@ -18,7 +18,7 @@ class LoadingOverlay extends React.Component {
         style={[
           styles.container,
           {
-            height: Dimensions.get('window').height,
+            height: this.props.height ?? Dimensions.get('window').height,
             backgroundColor:
               this.props.backgroundColor ?? CMSColors.PrimaryActive,
           },

@@ -58,16 +58,24 @@ class DashboardView extends React.Component {
       showSortModal: false,
       showFilterModal: false,
       activeGroup: null,
+      loadingDetail: false,
     };
 
     this.chartViewRef = null;
     this.dataViewRef = null;
+    this._isMounted = false;
   }
 
   componentDidMount() {
-    __DEV__ && console.log('ExceptionsSummaryView componentWillUnmount');
+    __DEV__ && console.log('ExceptionsSummaryView componentDidMount');
+    this._isMounted = true;
     this.getData();
     this.setHeader();
+  }
+
+  componentWillUnmount() {
+    __DEV__ && console.log('ExceptionsSummaryView componentWillUnmount');
+    this._isMounted = false;
   }
 
   setHeader = () => {
@@ -156,8 +164,13 @@ class DashboardView extends React.Component {
       return;
     }
     const groupData = exceptionStore.filteredGroupsData[selectedSection];
-    await exceptionStore.getGroupDetailData(groupData.siteKey);
-    this.setState({activeGroup: selectedSection});
+    this.setState(
+      {activeGroup: selectedSection, loadingDetail: true},
+      async () => {
+        await exceptionStore.getGroupDetailData(groupData.siteKey);
+        this._isMounted && this.setState({loadingDetail: false});
+      }
+    );
   };
 
   onSubmitFilter = ({dateFrom, dateTo, selectedSites}) => {
@@ -325,8 +338,25 @@ class DashboardView extends React.Component {
     )
       return;
     const {exceptionStore} = this.props;
+    const {loadingDetail} = this.state;
 
-    return (
+    return loadingDetail ? (
+      <View
+        style={{
+          flex: 1,
+          height: 54,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: CMSColors.White,
+          paddingHorizontal: 10,
+        }}>
+        <LoadingOverlay
+          height={48}
+          backgroundColor={CMSColors.White}
+          indicatorColor={CMSColors.PrimaryActive}
+        />
+      </View>
+    ) : (
       <View style={{flex: 1}}>
         <View style={styles.groupInfoContainer}>
           <View style={styles.itemInfo}>
