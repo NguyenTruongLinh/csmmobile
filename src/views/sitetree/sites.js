@@ -378,8 +378,8 @@ class SitesView extends Component {
           </View>
         )}
         <View style={{flex: 1}} onLayout={this.onFlatListLayout}>
-          <Text>{siteData == 0 ? 'siteData == 0' : 'siteData != 0'}</Text>
-          <Text>{isLoading ? 'isLoading' : '!isLoading'}</Text>
+          {/* <Text>{siteData == 0 ? 'siteData == 0' : 'siteData != 0'}</Text>
+          <Text>{isLoading ? 'isLoading' : '!isLoading'}</Text> */}
           <FlatList
             ref={ref => (this.sitesListRef = ref)}
             renderItem={this.renderItem}
