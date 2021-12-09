@@ -462,7 +462,7 @@ class AlarmsSearchView extends Component {
 
   renderActionButton() {
     return (
-      <View style={commonStyles.actionSearchButton}>
+      <View style={commonStyles.floatingActionButton}>
         <CMSTouchableIcon
           iconCustom="search_solid_advancedfind"
           onPress={() => this.setState({showFilterModal: true})}

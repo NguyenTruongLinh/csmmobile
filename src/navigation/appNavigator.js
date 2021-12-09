@@ -119,6 +119,9 @@ const clearButtonScreenOptions = ({route, navigation}) => ({
       color={CMSColors.White}
     />
   ),
+  headerStatusBarHeight: variables.StatusBarHeight,
+  headerTitleAlign: 'center',
+  headerMode: 'screen',
   headerStyle: {
     backgroundColor: CMSColors.DarkElement,
   },

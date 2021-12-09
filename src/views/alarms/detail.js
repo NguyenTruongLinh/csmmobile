@@ -77,7 +77,11 @@ class AlarmDetailView extends Component {
     this.initReactions();
 
     // Preload video streaming: Live mode
-    let res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm);
+    let res = await videoStore.onAlertPlay(
+      true,
+      alarmStore.selectedAlarm,
+      true
+    );
   }
 
   componentWillUnmount() {

@@ -147,7 +147,7 @@ class VideoPlayerView extends Component {
     if (videoStore.isFullscreen) {
       this.onFullscreenPress();
     }
-    if (!videoStore.isAlertPlay) {
+    if (!videoStore.isPreloadStream) {
       videoStore.onExitSinglePlayer(route.name);
       videoStore.selectedStream &&
         videoStore.selectedStream.setStreamStatus({

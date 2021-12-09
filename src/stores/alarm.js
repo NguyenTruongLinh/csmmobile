@@ -225,6 +225,12 @@ const AlarmData = types
           return areaName ? areaName + ': Social distance' : 'Social distance';
       }
     },
+    get searchTime() {
+      if (!self.timezone) return null;
+      const date = new Date(self.timezone);
+      date.setSeconds(date.getSeconds() - 1);
+      return date.toISOString();
+    },
   }))
   .actions(self => ({
     getThumbnail: flow(function* getThumbnail() {

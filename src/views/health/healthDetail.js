@@ -26,6 +26,7 @@ import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 
 import {getIconAlertType} from '../../util/general';
 
+import commonStyles from '../../styles/commons.style';
 import variables from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
@@ -146,7 +147,7 @@ class HealthDetailView extends Component {
 
   renderActionButton() {
     return (
-      <View style={styles.actionButtonContainer}>
+      <View style={commonStyles.floatingActionButton}>
         <CMSTouchableIcon
           iconCustom="grid-view-9"
           onPress={() => {

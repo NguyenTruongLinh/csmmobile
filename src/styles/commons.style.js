@@ -138,7 +138,7 @@ module.exports = StyleSheet.create({
     backgroundColor: CMSColors.PrimaryActive,
     margin: 3,
   },
-  actionSearchButton: {
+  floatingActionButton: {
     position: 'absolute',
     right: 35,
     bottom: 28,

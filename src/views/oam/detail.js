@@ -118,7 +118,7 @@ class OAMDetailView extends Component {
 
   renderActionButton() {
     return (
-      <View style={styles.actionButtonContainer}>
+      <View style={commonStyles.floatingActionButton}>
         <CMSTouchableIcon
           iconCustom="videocam-filled-tool"
           onPress={() => this.gotoLiveVideo()}

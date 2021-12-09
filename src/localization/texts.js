@@ -149,9 +149,12 @@ export const SMARTER = {
   FILTER_MODAL_TITLE: 'Search conditions',
   TRANSACTION: 'Transaction',
   DOWNLOAD: 'Download',
+  SHARE_MESSAGE: 'Download Video Exception',
+  SHARE_SUBJECT: 'Video Exception',
 };
 
 export const COMMON = {
+  CMS_APP: 'CMS App',
   NO_DATA: 'There is no data',
   FROM: 'From',
   TO: 'To',

@@ -24,6 +24,7 @@ import LoadingOverlay from '../../components/common/loadingOverlay';
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
 import {SMARTER as SMARTER_TXT} from '../../localization/texts';
+import ROUTERS from '../../consts/routes';
 
 const ViewModes = {
   normal: 0,
@@ -48,6 +49,8 @@ class TransactionDetailView extends Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('TransactionDetailView componentWillUnmount');
+
+    this.props.videoStore.releaseStreams();
   }
 
   componentDidMount() {
@@ -141,6 +144,33 @@ class TransactionDetailView extends Component {
   onVideoDownload = () => {
     if (this.props.exceptionStore.selectedTransaction)
       this.props.exceptionStore.selectedTransaction.downloadVideo();
+  };
+
+  gotoVideo = () => {
+    const {navigation, videoStore, exceptionStore} = this.props;
+    const transaction = exceptionStore.selectedTransaction;
+    if (transaction.pacId <= 0) {
+      __DEV__ &&
+        console.log('GOND transaction video: not valid dvr: ', transaction);
+      return;
+    }
+    videoStore.onAlertPlay(false, transaction);
+    setTimeout(() => {
+      navigation.push(ROUTERS.VIDEO_PLAYER);
+    }, 200);
+  };
+
+  renderActionButton = () => {
+    return (
+      <View style={commonStyles.floatingActionButton}>
+        <CMSTouchableIcon
+          iconCustom="searching-magnifying-glass"
+          onPress={this.gotoVideo}
+          size={28}
+          color={CMSColors.White}
+        />
+      </View>
+    );
   };
 
   renderFullscreenBill = () => {
@@ -266,6 +296,7 @@ class TransactionDetailView extends Component {
     const {showFlagModal, viewMode} = this.state;
 
     let content = null;
+    const actionButton = this.renderActionButton();
 
     switch (viewMode) {
       case ViewModes.normal:
@@ -296,6 +327,7 @@ class TransactionDetailView extends Component {
         ) : (
           content
         )}
+        {actionButton}
         <FlagWeightModal
           isVisible={showFlagModal}
           data={selectedTransaction.exceptionTypes}
@@ -325,5 +357,6 @@ const styles = StyleSheet.create({
 
 export default inject(
   'exceptionStore',
+  'videoStore',
   'appStore'
 )(observer(TransactionDetailView));

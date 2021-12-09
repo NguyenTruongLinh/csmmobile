@@ -355,6 +355,14 @@ const TransactionModel = types
     get hasVideo() {
       return self.media && self.mediaSize > 0;
     },
+    get searchTime() {
+      const date = new Date(self.dvrStartDate ?? self.dvrDate);
+      date.setSeconds(date.getSeconds() - 5);
+      return date.toISOString();
+    },
+    get kDVR() {
+      return self.pacId;
+    },
   }))
   .actions(self => ({
     saveImage(data) {
@@ -510,6 +518,7 @@ export const POSModel = types
 
     transactionsList: types.array(TransactionModel),
     selectedTransaction: types.maybeNull(types.reference(TransactionModel)),
+    notifiedTransaction: types.maybeNull(TransactionModel),
 
     isLoading: types.boolean,
     isGroupLoading: types.boolean,

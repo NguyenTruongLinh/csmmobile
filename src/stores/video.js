@@ -234,11 +234,11 @@ export const VideoModel = types
     paused: types.optional(types.boolean, false),
     noVideo: types.optional(types.boolean, false),
     showAuthenModal: types.boolean,
-    isSingleMode: types.boolean,
-    frameTime: types.number,
+    // isSingleMode: types.boolean,
+    // frameTime: types.number,
     searchDate: types.maybeNull(types.frozen()), // luxon DateTime
     searchPlayTime: types.maybeNull(types.string),
-    displayDateTime: types.maybeNull(types.string),
+    // displayDateTime: types.maybeNull(types.string),
     // timezone: types.maybeNull(TimezoneModel),
     dvrTimezone: types.maybeNull(TimezoneModel),
     timezoneOffset: types.maybeNull(types.number), // offset value
@@ -253,8 +253,12 @@ export const VideoModel = types
     forceDstHour: types.maybeNull(types.number),
 
     isAlertPlay: types.optional(types.boolean, false),
+    isPreloadStream: types.optional(types.boolean, false),
   })
   .volatile(self => ({
+    frameTime: 0,
+    frameTimeString: null,
+
     recordingDates: {},
     timeline: [],
     hlsTimestamps: [],
@@ -455,9 +459,13 @@ export const VideoModel = types
             );
           return self.searchDate;
         }
-        return self.isAlertPlay ? result.minus({seconds: 1}) : result;
+        // return self.isAlertPlay ? result.minus({seconds: 1}) : result;
+        return result;
       } else {
-        return self.searchDate;
+        return (
+          self.searchDate ??
+          DateTime.now().setZone(self.timezone).startOf('day')
+        );
       }
     },
     get searchPlayTimeBySeconds() {
@@ -539,6 +547,12 @@ export const VideoModel = types
 
       __DEV__ && console.log('LiveChannelsView build video data: ', result);
       return result;
+    },
+    get displayDateTime() {
+      return (
+        self.frameTimeString ??
+        self.searchPlayTimeLuxon.toFormat(NVRPlayerConfig.FrameFormat)
+      );
     },
   }))
   .actions(self => {
@@ -675,7 +689,7 @@ export const VideoModel = types
         self.directTimeDiff = value;
       },
       setDisplayDateTime(value) {
-        self.displayDateTime = value;
+        self.frameTimeString = value;
       },
       setSearchDate(value, format) {
         __DEV__ && console.log('GOND setSearchDate ', value);
@@ -953,22 +967,22 @@ export const VideoModel = types
       },
       setNoVideo(value) {
         self.noVideo = value;
-        self.displayDateTime = self.searchDate.toFormat(
-          NVRPlayerConfig.FrameFormat
-        );
+        // self.displayDateTime = self.searchDate.toFormat(
+        //   NVRPlayerConfig.FrameFormat
+        // );
       },
       setPlayTimeForSearch(value) {
         self.searchPlayTime = value;
       },
       onExitSinglePlayer(currentRoute) {
-        self.isSingleMode = false;
+        // self.isSingleMode = false;
         self.selectedChannel = null;
         self.searchBegin = null;
         self.searchEnd = null;
         self.frameTime = 0;
         self.searchDate = null;
         self.searchPlayTime = null;
-        self.displayDateTime = '';
+        self.frameTimeString = null;
         self.isLoading = false;
         self.isFullscreen = false;
         self.hdMode = false;
@@ -1238,6 +1252,7 @@ export const VideoModel = types
       // #region direct connection
       getDirectInfos: flow(function* (channelNo) {
         self.isLoading = true;
+        self.directStreams = [];
         // if (!self.allChannels || self.allChannels.length <= 0) {
         //   yield self.getDvrChannels();
         // }
@@ -2154,21 +2169,22 @@ export const VideoModel = types
       }),
       // #endregion Get and receive videoinfos
       // #region Alert play
-      onAlertPlay: flow(function* (isLive, alertData) {
+      onAlertPlay: flow(function* (isLive, alertData, isPreload = false) {
         __DEV__ && console.log('GOND onAlertPlay: ', alertData);
         self.isAlertPlay = true;
+        self.isPreloadStream = isPreload;
         self.kDVR = alertData.kDVR;
         self.isLive = isLive;
-        self.isSingleMode = true;
-        if (alertData.timezone) {
-          self.searchPlayTime = alertData.timezone;
+        // self.isSingleMode = true;
+        if (alertData.searchTime) {
+          self.searchPlayTime = alertData.searchTime;
           // }
-          self.searchDate = DateTime.fromISO(alertData.timezone, {
+          self.searchDate = DateTime.fromISO(alertData.searchTime, {
             zone: 'utc',
           }).startOf('day');
         } else {
           self.searchDate = self.timezoneName
-            ? DateTime.now().setZone(self.timezone).startOf('day')
+            ? DateTime.now().setZone(self.searchTime).startOf('day')
             : DateTime.now();
         }
         yield self.getDisplayingChannels();
@@ -2201,7 +2217,7 @@ export const VideoModel = types
         __DEV__ && console.log('GOND onHealthPlay: ', data);
         self.kDVR = data.kDVR;
         self.isLive = isLive;
-        self.isSingleMode = true;
+        // self.isSingleMode = true;
         if (self.timezoneName) {
           self.searchDate = DateTime.now()
             .setZone(self.timezone)
@@ -2299,11 +2315,11 @@ const storeDefault = {
   hdMode: false,
   // paused: false,
   showAuthenModal: false,
-  isSingleMode: false,
-  frameTime: 0,
+  // isSingleMode: false,
+  // frameTime: 0,
   searchBegin: null,
   searchEnd: null,
-  displayDateTime: '',
+  frameTimeString: null,
   // timezone: null,
   recordingDates: [],
   timeline: [],
