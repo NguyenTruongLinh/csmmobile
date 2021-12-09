@@ -8,6 +8,7 @@ import {
   BackHandler,
   Dimensions,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 // import Ripple from 'react-native-material-ripple';
@@ -28,6 +29,7 @@ import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
 import {Comps as CompTxt} from '../../localization/texts';
+import {No_Data} from '../../consts/images';
 
 // const ListViewHeight = 56; // Dimensions.get('window').height / 16;
 
@@ -41,6 +43,7 @@ class SitesView extends Component {
     //   enableSearchbar: false,
     // };
     this.state = {
+      listHeight: 0,
       isHealthRoute: route.name == ROUTERS.HEALTH_SITES,
     };
 
@@ -322,12 +325,32 @@ class SitesView extends Component {
     );
   };
 
+  renderNoData = () => {
+    return (
+      <View style={[styles.noDataContainer, {height: this.state.listHeight}]}>
+        <Image source={No_Data} style={styles.noDataImg}></Image>
+        <Text style={styles.noDataTxt}>There is no data.</Text>
+      </View>
+    );
+  };
+
+  onFlatListLayout = event => {
+    const {height} = event.nativeEvent.layout;
+    this.setState({
+      listHeight: height,
+    });
+  };
+
   render() {
     const {sitesStore, healthStore} = this.props;
     const {isHealthRoute} = this.state;
     const siteData = isHealthRoute
       ? healthStore.filteredSites
       : sitesStore.filteredSites;
+    const isLoading = isHealthRoute
+      ? healthStore.isLoading
+      : sitesStore.isLoading;
+    const noData = isLoading && siteData == 0;
 
     return (
       <View style={styles.screenContainer}>
@@ -354,14 +377,19 @@ class SitesView extends Component {
             </Text>
           </View>
         )}
-        <FlatList
-          ref={ref => (this.sitesListRef = ref)}
-          renderItem={this.renderItem}
-          keyExtractor={item => item.key ?? item.id}
-          data={siteData}
-          onRefresh={this.getData}
-          refreshing={sitesStore.isLoading || healthStore.isLoading}
-        />
+        <View style={{flex: 1}} onLayout={this.onFlatListLayout}>
+          <Text>{siteData == 0 ? 'siteData == 0' : 'siteData != 0'}</Text>
+          <Text>{isLoading ? 'isLoading' : '!isLoading'}</Text>
+          <FlatList
+            ref={ref => (this.sitesListRef = ref)}
+            renderItem={this.renderItem}
+            keyExtractor={item => item.key ?? item.id}
+            data={siteData}
+            onRefresh={this.getData}
+            refreshing={isLoading}
+            ListEmptyComponent={noData && this.renderNoData()}
+          />
+        </View>
         <AlertDismissModal
           callback={() => {
             healthStore.selectSite(null);
@@ -447,6 +475,21 @@ const styles = StyleSheet.create({
     paddingLeft: 24,
     textAlignVertical: 'center',
     color: CMSColors.RowOptions,
+  },
+  noDataContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataImg: {
+    width: 100,
+    height: 100,
+  },
+  noDataTxt: {
+    marginTop: 12,
+    paddingBottom: 50,
+    fontSize: 16,
+    color: CMSColors.PrimaryText,
   },
 });
 

@@ -31,6 +31,9 @@ class RegionsView extends Component {
     super(props);
     this._isMounted = false;
     this.reactions = [];
+    this.state = {
+      listHeight: 0,
+    };
   }
 
   componentWillUnmount() {

@@ -7,7 +7,7 @@ module.exports = StyleSheet.create({
   channelInfo: {
     color: CMSColors.White,
     position: 'absolute',
-    left: 10,
+    // left: 10,
     zIndex: 1,
   },
   statusView: {

@@ -43,7 +43,7 @@ class OAMSitesView extends Component {
   }
 
   componentDidMount() {
-    __DEV__ && console.log('PVMSitesView componentDidmmount');
+    __DEV__ && console.log('OAMSitesView componentDidMount');
 
     const {sitesStore} = this.props;
     this.setHeader();

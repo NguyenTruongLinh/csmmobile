@@ -422,8 +422,14 @@ class HLSStreamingView extends React.Component {
           source={NVR_Play_NoVideo_Image}
           style={{width: width, height: height}}
           resizeMode="stretch">
-          {/* <View style={{width: width, height: height}}> */}
-          <Text style={styles.channelInfo}>{channel.name ?? 'Unknown'}</Text>
+          {/* <View style={{width: width, height: height}}> */}{' '}
+          <Text
+            style={[
+              styles.channelInfo,
+              {left: videoStore.isFullscreen ? 10 : 0},
+            ]}>
+            {channel.name ?? 'Unknown'}
+          </Text>
           <View style={styles.statusView}>
             <View style={styles.textContainer}>
               <Text style={styles.textMessage}>{connectionStatus}</Text>

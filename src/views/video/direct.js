@@ -858,7 +858,7 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo, noVideo} = this.props;
+    const {width, height, serverInfo, noVideo, videoStore} = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
@@ -874,7 +874,11 @@ class DirectVideoView extends React.Component {
           style={{width: width, height: height}}
           resizeMode="stretch">
           {/* <View style={{width: width, height: height}}> */}
-          <Text style={styles.channelInfo}>
+          <Text
+            style={[
+              styles.channelInfo,
+              {left: videoStore.isFullscreen ? 10 : 0},
+            ]}>
             {serverInfo.channelName ?? 'Unknown'}
           </Text>
           <View style={styles.statusView}>
