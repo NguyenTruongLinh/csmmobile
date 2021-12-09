@@ -141,10 +141,14 @@ class DirectVideoView extends React.Component {
         reaction(
           () => videoStore.selectedChannel,
           newChannelNo => {
-            this.stop();
+            this.pause();
             __DEV__ &&
               console.log('GOND direct on Channel changed: ', newChannelNo);
-            setTimeout(() => this.setNativePlayback(), 1000);
+            this.props.serverInfo.setStreamStatus({
+              isLoading: true,
+              connectionStatus: STREAM_STATUS.CONNECTING,
+            });
+            setTimeout(() => this.setNativePlayback(), 500);
           }
         ),
         reaction(
