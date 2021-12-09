@@ -27,6 +27,11 @@ import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {NATIVE_MESSAGE} from '../../consts/video';
 import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 
+import {Login as LoginTxt} from '../../localization/texts'; //'../../localization/texts';
+import cmscolors from '../../styles/cmscolors';
+
+import Snackbar from 'react-native-snackbar';
+
 import {
   Video_State,
   Limit_Time_Allow_Change_Live_Search,
@@ -52,6 +57,7 @@ class DirectVideoView extends React.Component {
       //   noVideo: false,
       width: props.width,
       height: props.height,
+      showLoginSuccessFlag: true,
     };
     // should set search time from alert/exception
     this.shouldSetTime = true;
@@ -493,6 +499,12 @@ class DirectVideoView extends React.Component {
           });
           this.props.videoStore.resetNVRAuthentication();
         }
+        if (this.lastLogin.userName && this.lastLogin.password)
+          Snackbar.show({
+            text: LoginTxt.errorLoginIncorrect,
+            duration: Snackbar.LENGTH_LONG,
+            backgroundColor: cmscolors.Danger,
+          });
         break;
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
         __DEV__ && console.log('GOND onDirectVideoMessage: login success');
@@ -512,6 +524,15 @@ class DirectVideoView extends React.Component {
         //     }
         //   }, 100);
         // }
+        if (this.state.showLoginSuccessFlag)
+          setTimeout(() => {
+            Snackbar.show({
+              text: LoginTxt.loginSuccess,
+              duration: Snackbar.LENGTH_LONG,
+              backgroundColor: cmscolors.Success,
+            });
+          }, 500);
+        this.setState({showLoginSuccessFlag: false});
         break;
       case NATIVE_MESSAGE.SVR_REJECT_ACCEPT:
         // this.setState({

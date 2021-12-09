@@ -26,6 +26,7 @@ export const Login = {
   skip: 'FORGOT PASSWORD?',
   errorTitle: 'Login Error',
   errorLoginIncorrect: 'Incorrect username or password.',
+  loginSuccess: 'Login successfully',
   errorLoginCantConnect: 'Cannot connect to server.',
   accountLocked:
     'Account is disabled for %s due to reaching the maximum failed login attempts',
