@@ -331,13 +331,13 @@ const TransactionModel = types
     // day: types.number,
     // hour: types.number,
     subTotal: types.maybeNull(types.number),
-    changeAmount: types.number,
-    total: types.number,
+    changeAmount: types.maybeNull(types.number),
+    total: types.maybeNull(types.number),
     taxs: types.array(PaymentTaxModel),
     payments: types.array(PaymentTaxModel),
     exceptionTypes: types.array(types.reference(ExceptionTypeModel)),
     notes: types.array(types.string),
-    exceptionAmount: types.number,
+    exceptionAmount: types.maybeNull(types.number),
     detail: types.array(TransactionItemModel),
   })
   .volatile(self => ({
@@ -445,7 +445,7 @@ const TransactionModel = types
     }),
   }));
 
-const parseTransactionData = (_data, exceptionTypesConfig) =>
+const _parseTransactionData = (_data, exceptionTypesConfig) =>
   TransactionModel.create({
     tranId: _data.TranId,
     tranNo: _data.TranNo,
@@ -502,6 +502,9 @@ const parseTransactionData = (_data, exceptionTypesConfig) =>
         : [],
     notes: _data.Notes,
     exceptionAmount: _data.ExceptionAmount,
+    detail: _data.Details
+      ? _data.Details.map(item => parseTransactionItem(item))
+      : [],
   });
 
 export const POSModel = types
@@ -829,7 +832,7 @@ export const POSModel = types
         // parse data:
         if (page > 1) {
           res.Data.forEach(trans => {
-            const newTrans = parseTransactionData(
+            const newTrans = _parseTransactionData(
               trans,
               self.exceptionTypesConfig
             );
@@ -837,7 +840,7 @@ export const POSModel = types
           });
         } else {
           self.transactionsList = res.Data.map(trans =>
-            parseTransactionData(trans, self.exceptionTypesConfig)
+            _parseTransactionData(trans, self.exceptionTypesConfig)
           );
         }
       } catch (error) {
@@ -846,38 +849,57 @@ export const POSModel = types
       self.isLoading = false;
     }),
     getTransaction: flow(function* (transactionId) {
-      let _trans = self.selectedTransaction ? self.selectedTransaction : null;
-      if (transactionId) {
-        _trans =
-          self.transactionsList.find(t => t.tranId == transactionId) ?? _trans;
-      }
+      // dongpt: OMG how to prevent this b#ll sh!t?
+      if (
+        self.notifiedTransaction &&
+        transactionId == self.notifiedTransaction.tranId &&
+        self.selectedTransaction &&
+        self.selectedTransaction.tranId == transactionId
+      )
+        return self.notifiedTransaction;
 
-      __DEV__ && console.log('GOND getTransaction: selected!', _trans);
-      if (!_trans) {
+      let _transId =
+        transactionId ??
+        (self.selectedTransaction ? self.selectedTransaction.tranId : null);
+      if (!_transId) {
         __DEV__ &&
           console.log(
-            'GOND getTransaction: transactionId not valid nor provided!'
+            'GOND getTransaction no transId nor selected transaction!!!'
           );
         return;
       }
+
+      // __DEV__ && console.log('GOND getTransaction: selected!', _trans);
+      // if (!_trans) {
+      //   __DEV__ &&
+      //     console.log(
+      //       'GOND getTransaction: transactionId not valid nor provided!'
+      //     );
+      //   return;
+      // }
+
       self.isLoading = true;
-      __DEV__ &&
-        console.log(
-          'GOND getExceptionsSummary, params = ',
-          getSnapshot(self.filterParams)
-        );
+      let resultTrans = null;
       try {
-        const res = yield apiService.get(
-          TransactionRoute.controller,
-          _trans.tranId
-        );
+        const res = yield apiService.get(TransactionRoute.controller, _transId);
         __DEV__ && console.log('GOND getTransaction = ', res);
 
-        _trans.addDetails(res.Details);
+        const _trans = self.transactionsList.find(
+          t => t.tranId == transactionId
+        );
+        if (_trans) {
+          _trans.addDetails(res.Details);
+          resultTrans = trans;
+        } else {
+          self.notifiedTransaction = _parseTransactionData(res);
+          resultTrans = self.notifiedTransaction;
+        }
       } catch (error) {
         __DEV__ && console.log('GOND getTransaction error = ', error);
+        return;
       }
       self.isLoading = false;
+      return resultTrans;
     }),
     // #endregion Get data
     // #region Utilities
@@ -895,6 +917,27 @@ export const POSModel = types
         no_img: No_Image,
       };
     },
+    onExceptionNotification: flow(function* (data) {
+      if (!data || !data.TranID) {
+        __DEV__ &&
+          console.log(
+            'GOND onExceptionNotification: transaction ID not exist: ',
+            data
+          );
+        return false;
+      }
+
+      __DEV__ && console.log('GOND onExceptionNotification notifData: ', data);
+      const result = yield self.getTransaction(data.TranID);
+      try {
+        __DEV__ && console.log('GOND onExceptionNotification trans: ', result);
+        if (result) self.selectTransaction(result.id);
+      } catch (err) {
+        __DEV__ && console.log('GOND assign notified exception failed: ', err);
+        return false;
+      }
+      return true;
+    }),
     // #endregion Utilities
     cleanUp() {
       applySnapshot(self, storeDefault);

@@ -107,10 +107,7 @@ const NavigationService = types
     },
 
     popToTop(immediate = true) {
-      self._navigator.dispatch({
-        type: StackActions.popToTop(),
-        immediate,
-      });
+      self._navigator.dispatch(StackActions.popToTop());
     },
 
     reset({actions, index}) {

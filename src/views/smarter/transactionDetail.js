@@ -54,10 +54,18 @@ class TransactionDetailView extends Component {
   }
 
   componentDidMount() {
-    __DEV__ && console.log('TransactionDetailView componentDidMount');
+    __DEV__ &&
+      console.log(
+        'TransactionDetailView componentDidMount: ',
+        this.props.exceptionStore.selectedTransaction
+      );
     //this.props.RefeshPage(!this.props.app.stateapp)
+    const {route} = this.props;
 
-    this.getData();
+    if (!route || !route.params || !route.params.fromNotify) {
+      this.getData();
+    }
+
     this.setHeader();
   }
 

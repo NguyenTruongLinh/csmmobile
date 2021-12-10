@@ -141,7 +141,11 @@ class DirectVideoView extends React.Component {
         reaction(
           () => videoStore.selectedChannel,
           newChannelNo => {
-            this.pause();
+            if (Platform.OS == 'android') {
+              this.stop();
+            } else {
+              this.pause();
+            }
             __DEV__ &&
               console.log('GOND direct on Channel changed: ', newChannelNo);
             this.props.serverInfo.setStreamStatus({
@@ -464,9 +468,14 @@ class DirectVideoView extends React.Component {
   };
 
   onVideoMessage = (msgid, value) => {
-    const {videoStore, serverInfo, searchPlayTime, isLive, singlePlayer} =
-      this.props;
-    // __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+    const {
+      videoStore,
+      serverInfo,
+      searchPlayTime,
+      isLive,
+      singlePlayer,
+    } = this.props;
+    __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
 
     switch (msgid) {
       case NATIVE_MESSAGE.CONNECTING:

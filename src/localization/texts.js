@@ -151,6 +151,7 @@ export const SMARTER = {
   DOWNLOAD: 'Download',
   SHARE_MESSAGE: 'Download Video Exception',
   SHARE_SUBJECT: 'Video Exception',
+  NOTIFY_TITLE: 'POS Exception',
 };
 
 export const COMMON = {

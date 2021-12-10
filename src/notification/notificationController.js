@@ -16,6 +16,7 @@ import {
   onAlertSetting,
   onOpenAlertSetting,
 } from './alert';
+import {onExceptionEvent, onOpenExceptionEvent} from './exception';
 import {NOTIFY_TYPE} from '../consts/misc';
 
 const CHANNEL_ID = 'CMS_Channel';
@@ -233,7 +234,8 @@ class NotificationController extends React.Component {
       alertAction: 'view',
       category: CHANNEL_ID,
     };
-    // __DEV__ && console.log('GOND displayLocalNotification: ', notificationRequest);
+    __DEV__ &&
+      console.log('GOND displayLocalNotification: ', notificationRequest);
 
     Platform.OS === 'ios'
       ? PushNotification.localNotification(notificationRequest)
@@ -248,6 +250,7 @@ class NotificationController extends React.Component {
       userStore,
       appStore,
       oamStore,
+      exceptionStore,
       message,
       shouldValidate,
     } = props;
@@ -287,19 +290,21 @@ class NotificationController extends React.Component {
         // notif = onUserEvent(dispatch, action, content);
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
-        __DEV__ && console.log('GOND onAlertType Notification: ', data);
+        // __DEV__ && console.log('GOND onAlertType Notification: ', data);
         notif = onAlertSetting({...props, action, content});
         break;
       case NOTIFY_TYPE.ALERT:
-        __DEV__ && console.log('GOND onAlert Notification: ', props);
+        // __DEV__ && console.log('GOND onAlert Notification: ', props);
         notif = await onAlertEvent({...props, action, content});
-        __DEV__ && console.log('GOND onAlert notif: ', notif);
+        // __DEV__ && console.log('GOND onAlert notif: ', notif);
         break;
       case NOTIFY_TYPE.ALARM:
         notif = onAlarmEvent({...props, action, content});
         break;
       case NOTIFY_TYPE.EXCEPTION:
-        // notif = onExceptionEvent(dispatch, action, content);
+        __DEV__ && console.log('GOND SmartER Notification: ', data);
+        notif = onExceptionEvent({exceptionStore, action, content});
+        __DEV__ && console.log('GOND onSmartER notif: ', notif);
         break;
       case NOTIFY_TYPE.STREAMING:
         onVideoNotifEvent({videoStore, action, content, cmd});
@@ -334,6 +339,7 @@ class NotificationController extends React.Component {
       userStore,
       appStore,
       oamStore,
+      exceptionStore,
       message,
       debug,
     } = props;
@@ -373,22 +379,22 @@ class NotificationController extends React.Component {
         break;
       case NOTIFY_TYPE.ALERT:
         onOpenAlertEvent({...props, naviService, action, content});
-        // testing only
-        // setTimeout(
-        //   () =>
-        //     NotificationController.displayLocalNotification({
-        //       ...message,
-        //       body: message.message || 'Alert again',
-        //       id: DateTime.now().toSeconds(),
-        //     }),
-        //   1000
-        // );
         break;
       case NOTIFY_TYPE.ALARM:
         onOpenAlarmEvent({alarmStore, naviService, action, content});
         break;
       case NOTIFY_TYPE.EXCEPTION:
-        // onOpenExceptionEvent( dispatch,action, content, noti_disable);
+        onOpenExceptionEvent({exceptionStore, naviService, action, content});
+        // testing only
+        setTimeout(
+          () =>
+            NotificationController.displayLocalNotification({
+              ...message,
+              body: message.message || 'POS again',
+              id: DateTime.now().toSeconds(),
+            }),
+          1000
+        );
         break;
       case NOTIFY_TYPE.PVM:
         onOpenPVMEvent(oamStore, naviService, action, content);
@@ -412,7 +418,8 @@ export default inject(
   'alarmStore',
   'healthStore',
   'sitesStore',
-  'oamStore'
+  'oamStore',
+  'exceptionStore'
 )(
   observer(NotificationController)
   // observer(props => {
