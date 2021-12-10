@@ -43,6 +43,7 @@ class SitesView extends Component {
     //   enableSearchbar: false,
     // };
     this.state = {
+      isLoadingRegardLessStep: true,
       listHeight: 0,
       isHealthRoute: route.name == ROUTERS.HEALTH_SITES,
     };
@@ -97,6 +98,7 @@ class SitesView extends Component {
   getData = async isReload => {
     const {sitesStore, healthStore, userStore, route} = this.props;
     const {isHealthRoute} = this.state;
+    this.setState({isLoadingRegardLessStep: true});
     if (
       !sitesStore.selectedRegion ||
       !sitesStore.hasRegions
@@ -112,6 +114,7 @@ class SitesView extends Component {
       await healthStore.getHealthData(sitesStore.sitesList);
     } // else if (route.name == ROUTERS.VIDEO_SITES) {
     // }
+    this.setState({isLoadingRegardLessStep: false});
   };
 
   setHeader = () => {
@@ -347,10 +350,7 @@ class SitesView extends Component {
     const siteData = isHealthRoute
       ? healthStore.filteredSites
       : sitesStore.filteredSites;
-    const isLoading = isHealthRoute
-      ? healthStore.isLoading
-      : sitesStore.isLoading;
-    const noData = isLoading && siteData == 0;
+    const noData = !this.state.isLoadingRegardLessStep && siteData == 0;
 
     return (
       <View style={styles.screenContainer}>
@@ -386,7 +386,7 @@ class SitesView extends Component {
             keyExtractor={item => item.key ?? item.id}
             data={siteData}
             onRefresh={this.getData}
-            refreshing={isLoading}
+            refreshing={this.state.isLoadingRegardLessStep}
             ListEmptyComponent={noData && this.renderNoData()}
           />
         </View>
