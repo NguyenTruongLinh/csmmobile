@@ -45,7 +45,7 @@ const onAlertEvent = async props => {
   }
   if (!alert) return;
   // __DEV__ && console.log('GOND onAlertEvent 2');
-  if (userStore.settings.alertTypes.length == 0) {
+  if (userStore && userStore.settings.alertTypes.length == 0) {
     await userStore.getAlertTypesSettings();
   }
   // __DEV__ && console.log('GOND onAlertEvent 3');
@@ -102,7 +102,7 @@ const onAlertEvent = async props => {
       //"KAlert":417030},"Sites":6553,"Kdvr":3,"Kchannel":0,"KAlert":417030,"Description":""}
       const {User} = alert.Detail;
       const site = null;
-      if (alert.Sites)
+      if (alert.Sites && sitesStore)
         site = await sitesStore.getSiteByKey(
           Array.isArray(alert.Sites) ? alert.Sites[0] : alert.Sites
         );
@@ -146,7 +146,7 @@ const onAlertEvent = async props => {
         const kDVR =
           alert.NVRs && alert.NVRs.length > 0 ? alert.NVRs[0].Key : null;
         let site = null;
-        if (kDVR) site = await sitesStore.getSiteByKDVR(kDVR);
+        if (kDVR && sitesStore) site = await sitesStore.getSiteByKDVR(kDVR);
 
         let alertName = getAlertName(
           alert.AlertType,
@@ -168,7 +168,7 @@ const onAlertEvent = async props => {
     }
   }
 
-  if (shouldRefresh) healthStore.refresh(true);
+  if (shouldRefresh && healthStore) healthStore.refresh(true);
   if (noti && noti != {}) {
     // __DEV__ && console.log('GOND onAlertEvent 5');
     noti.title = 'CMS Health.';
@@ -279,8 +279,10 @@ const onOpenAlertEvent = async props => {
 const onAlertSetting = async props => {
   if (action === NOTIFY_ACTION.EDIT) {
     const {userStore, healthStore} = props;
-    await userStore.getAlertTypesSettings();
-    healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);
+    if (userStore && healthStore) {
+      await userStore.getAlertTypesSettings();
+      healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);
+    }
   }
 
   return {

@@ -6,7 +6,7 @@ export function onVideoNotifEvent({videoStore, action, content, cmd}) {
   __DEV__ && console.log('GOND onVideoNotifEvent ', action, content);
   switch (action) {
     case NOTIFY_ACTION.STREAM_CREATED:
-      videoStore.onReceiveStreamInfo(content, cmd);
+      videoStore && videoStore.onReceiveStreamInfo(content, cmd);
       // } else {
       //   __DEV__ &&
       //     console.log(
@@ -19,7 +19,7 @@ export function onVideoNotifEvent({videoStore, action, content, cmd}) {
       break;
     case NOTIFY_ACTION.STREAM_NEW:
       // videoStore.onReceiveHLSStream(content);
-      videoStore.onReceiveStreamInfo(content, cmd);
+      videoStore && videoStore.onReceiveStreamInfo(content, cmd);
       break;
   }
 }
