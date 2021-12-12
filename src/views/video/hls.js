@@ -422,7 +422,6 @@ class HLSStreamingView extends React.Component {
           source={NVR_Play_NoVideo_Image}
           style={{width: width, height: height}}
           resizeMode="stretch">
-          {/* <View style={{width: width, height: height}}> */}{' '}
           <Text
             style={[
               styles.channelInfo,
@@ -492,7 +491,6 @@ class HLSStreamingView extends React.Component {
               ) : null
             }
           </View>
-          {/* </View> */}
         </ImageBackground>
       </View>
     );

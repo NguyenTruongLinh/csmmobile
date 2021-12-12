@@ -350,6 +350,8 @@ class VideoPlayerView extends Component {
   onSwitchChannel = channelNo => {
     const {videoStore} = this.props;
 
+    if (videoStore.selectedChannel && channelNo == videoStore.selectedChannel)
+      return;
     videoStore.selectChannel(channelNo);
   };
 
