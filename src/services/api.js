@@ -496,13 +496,13 @@ class Api {
     let res = await RNFetchBlob.config({
       path: path + '/' + fileName,
       // overwrite: true,
-      // addAndroidDownloads: {
-      //   path: path + '/' + fileName + '?append=true',
-      //   useDownloadManager: true,
-      //   mediaScannable: true,
-      //   mime: mimeType ?? 'video/mp4',
-      //   notification: true,
-      // },
+      addAndroidDownloads: {
+        path: path + '/' + fileName + '?append=true',
+        useDownloadManager: true,
+        mediaScannable: true,
+        mime: mimeType ?? 'video/mp4',
+        notification: true,
+      },
     }).fetch(Methods.Get, url);
 
     __DEV__ && console.log('GOND downloaded result: ', res);
