@@ -120,19 +120,7 @@ class Api {
     try {
       let header = this._defaultHeader(this.config.appId);
       let url = this._baseUrl(controller);
-      console.log(url);
       let response = await fetch(url, {method: Methods.Get, headers: header});
-
-      __DEV__ &&
-        console.log(
-          `GOND user _getApiKey  url = `,
-          url,
-          'headers = ',
-          header,
-          'response = ',
-          JSON.stringify(response.json())
-        );
-
       if (response.status == 200) {
         let header = response.headers;
         let sid = header.get('SID');
@@ -177,49 +165,24 @@ class Api {
     }
     return response;
   }
-  async _changePassword(_userName, _oldPass, _newPass) {
+  async _changePassword(_userName, _oldPass, _newPass, _apiKey) {
     let header = this._defaultHeader(this.config.appId);
-    //header.SID = this.ApiToken.Id;
     header.set('SID', this.configToken.id);
+    header.set('RESERVED', _apiKey);
     let url = this._baseUrl('Account/0/ChangePasswordExpired');
     let body = JSON.stringify({
       UserName: _userName,
       CurrentPassword: _oldPass,
       NewPassword: _newPass,
     });
-    __DEV__ && console.log(`GOND user _changePassword _userName = `, _userName);
-    __DEV__ &&
-      console.log(
-        `GOND user _changePassword url = `,
-        url,
-        'headers = ',
-        header,
-        `body = `,
-        body
-      );
+
+    __DEV__ && console.log('_changePassword body = ', body);
     let response = await fetch(url, {
       method: Methods.Post,
       headers: header,
       timeout: 30000,
       body: body,
     });
-    __DEV__ &&
-      console.log(
-        `_changePassword response.status = `,
-        response.status,
-        'response = ',
-        response,
-        'json = ',
-        response.json()
-      );
-    if (response.status == 200) {
-      // header = response.headers;
-      // let raw_token = header.get('www-authenticate');
-      // let hindex = raw_token.indexOf('3rd-auth ');
-      // if (hindex >= 0)
-      //   raw_token = raw_token.substr(hindex + '3rd-auth '.length);
-      // this.configToken.token = raw_token;
-    }
     return response;
   }
 
@@ -446,17 +409,22 @@ class Api {
 
   async changePassword(username, oldPass, newPass) {
     try {
-      // let response = await this._getApiKey('account');
-      // if (response.status != 200) {
-      //   return {status: response.status, Result: undefined};
-      // }
+      let response = await this._getApiKey('account');
+      if (response.status != 200) {
+        return {status: response.status, Result: undefined};
+      }
       // let enc_user = AES.encrypt(username, this.configToken.apiKey);
       // let uid = enc_user.toString();
       enc_user = AES.encrypt(oldPass, this.configToken.apiKey);
       let oldPas = enc_user.toString();
       enc_user = AES.encrypt(newPass, this.configToken.apiKey);
       let newPas = enc_user.toString();
-      let res = await this._changePassword(username, oldPas, newPas);
+      let res = await this._changePassword(
+        username,
+        oldPas,
+        newPas,
+        this.configToken.apiKey
+      );
       //response =  await this.GetDVRs();
 
       // if (res.status == 200) {

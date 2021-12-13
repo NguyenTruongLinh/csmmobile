@@ -72,6 +72,13 @@ const NavigationService = types
       self._navigator.navigate(routeName, options);
     },
 
+    replace(routeName, options) {
+      self.back();
+      setTimeout(() => {
+        self.navigate(routeName, options);
+      }, 200);
+    },
+
     push(routeName, params) {
       if (
         self._navigator._navigation &&
@@ -92,7 +99,6 @@ const NavigationService = types
         );
       }
     },
-
     goBack() {
       self.back();
     },

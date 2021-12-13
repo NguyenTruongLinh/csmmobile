@@ -1,5 +1,6 @@
 import {types, flow} from 'mobx-state-tree';
 import {Alert} from 'react-native';
+import Snackbar from 'react-native-snackbar';
 
 import {WIDGET_COUNTS, MODULES, Orient} from '../consts/misc';
 import APP_INFO from '../consts/appInfo';
@@ -22,10 +23,16 @@ import {isNullOrUndef} from '../util/general';
 import snackbarUtil from '../util/snackbar';
 import {LocalDBName, MODULE_PERMISSIONS} from '../consts/misc';
 
+import cmscolors from '../styles/cmscolors';
+
 const LOGIN_FAIL_CAUSES = {
   USER_LOCK: 'USER_LOCK',
   USER_NOT_EXIST: 'USER_NOT_EXIST',
   EXPIRED_PASSWORD: 'EXPIRED_PASSWORD',
+};
+const PASS_CHANGE_FAIL_CAUSES = {
+  DATA_NOT_FOUND: 'DATA_NOT_FOUND',
+  USER_PASSWORD_EXISTED: 'USER_PASSWORD_EXISTED',
 };
 
 const MODULE_TAB_MAP = new Map([
@@ -545,7 +552,33 @@ export const UserStoreModel = types
           newPassword
         );
         __DEV__ && console.log('GOND user changePassword: ', res);
-        return true;
+        if (res && res.status == 200 && res.Result && !res.Result.error) {
+          Snackbar.show({
+            text: LoginTxt.passwordChangedSuccess,
+            duration: Snackbar.LENGTH_LONG,
+            backgroundColor: cmscolors.Success,
+          });
+          appStore.naviService.replace(ROUTERS.LOGIN, {});
+          return true;
+        } else if (
+          res.Result &&
+          res.Result.message &&
+          Array.isArray(res.Result.message) &&
+          res.Result.message.length > 0
+        ) {
+          Alert.alert(
+            LoginTxt.passwordChangeErrorTitle,
+            (res.Result &&
+              res.Result.message[0] ==
+                PASS_CHANGE_FAIL_CAUSES.USER_PASSWORD_EXISTED &&
+              LoginTxt.userPassswordExisted.replace(
+                '%d',
+                res.Result.message[1]
+              )) ||
+              LoginTxt.errorLoginIncorrect
+          );
+          return false;
+        }
       } catch (err) {
         __DEV__ && console.log('GOND user changePassword failed: ', err);
         return false;

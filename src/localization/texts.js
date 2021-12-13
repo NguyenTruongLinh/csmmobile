@@ -40,6 +40,10 @@ export const Login = {
   confirmPassword: 'Confirm new password*',
   newPasswordError: 'Password must contain at least 10 characters',
   confirmPasswordError: 'Password does not match!',
+  passwordChangeErrorTitle: 'Password change failed',
+  passwordChangedSuccess: 'Password changed successfully',
+  userPassswordExisted:
+    'New password has been used for the last %d times. Please choose another password.',
   copyRight:
     '© 2021 i3 International Inc. The i3 logos are property of i3 International Inc & i3 America Nevada Inc. All rights reserved.',
 };

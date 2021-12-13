@@ -355,8 +355,12 @@ class PasswordExpired extends Component {
               captionStyle={{}}
               onPress={this.onSubmit}
               enable={
-                username && oldPassword && newPassword && confirmPassword // &&
-                // !this.props.appStore.isLoading
+                username &&
+                oldPassword &&
+                newPassword &&
+                confirmPassword &&
+                !newPasswordError &&
+                !confirmPasswordError
               }
             />
           </View>
