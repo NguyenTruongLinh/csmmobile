@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import PropTypes from 'prop-types';
 
 import {inject, observer} from 'mobx-react';
+import {reaction} from 'mobx';
 // import Video from 'react-native-video';
 import VideoPlayer from 'react-native-video-player';
 
@@ -45,12 +47,17 @@ class TransactionDetailView extends Component {
       videoWidth: width,
       videoHeight: (1.1 * (width * 9)) / 16,
     };
+
+    this.reactions = [];
   }
 
   componentWillUnmount() {
     __DEV__ && console.log('TransactionDetailView componentWillUnmount');
 
+    this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
+    this.unsubBackEvent && this.unsubBackEvent();
     this.props.videoStore.releaseStreams();
+    this.props.exceptionStore.onExitTransactionDetail();
   }
 
   componentDidMount() {
@@ -59,15 +66,33 @@ class TransactionDetailView extends Component {
         'TransactionDetailView componentDidMount: ',
         this.props.exceptionStore.selectedTransaction
       );
-    //this.props.RefeshPage(!this.props.app.stateapp)
-    const {route} = this.props;
+    const {route, navigation} = this.props;
 
     if (!route || !route.params || !route.params.fromNotify) {
       this.getData();
     }
 
     this.setHeader();
+    this.initReactions();
+
+    this.unsubBackEvent = navigation.addListener('beforeRemove', e => {
+      if (!this.state.viewMode == ViewModes.normal) {
+        e.preventDefault();
+        this.onExitFullscren();
+      }
+    });
   }
+
+  initReactions = () => {
+    const {exceptionStore} = this.props;
+
+    this.reactions = [
+      reaction(
+        () => exceptionStore.selectedTransaction,
+        () => this.setHeader()
+      ),
+    ];
+  };
 
   setHeader = () => {
     const {exceptionStore, navigation} = this.props;
@@ -84,18 +109,15 @@ class TransactionDetailView extends Component {
         viewMode == ViewModes.fullscreenVideo
           ? null
           : SMARTER_TXT.TRANSACTION +
-            ' #' +
-            exceptionStore.selectedTransaction.tranNo,
+            (exceptionStore.selectedTransaction
+              ? ' #' + exceptionStore.selectedTransaction.tranNo
+              : ''),
       headerRight: fullscreenMode
         ? () => (
             <View style={commonStyles.headerContainer}>
               <CMSTouchableIcon
                 size={20}
-                onPress={() =>
-                  this.setState({viewMode: ViewModes.normal}, () =>
-                    this.setHeader()
-                  )
-                }
+                onPress={() => this.onExitFullscren()}
                 color={
                   viewMode == ViewModes.fullscreenVideo
                     ? CMSColors.White
@@ -119,6 +141,10 @@ class TransactionDetailView extends Component {
   getData = () => {
     const {exceptionStore} = this.props;
     exceptionStore.getTransaction();
+  };
+
+  onExitFullscren = () => {
+    this.setState({viewMode: ViewModes.normal}, () => this.setHeader());
   };
 
   onLayout = event => {
@@ -150,8 +176,12 @@ class TransactionDetailView extends Component {
   };
 
   onVideoDownload = () => {
-    if (this.props.exceptionStore.selectedTransaction)
-      this.props.exceptionStore.selectedTransaction.downloadVideo();
+    const {selectedTransaction} = this.props.exceptionStore;
+    if (
+      selectedTransaction &&
+      typeof selectedTransaction.downloadVideo == 'function'
+    )
+      selectedTransaction.downloadVideo();
   };
 
   gotoVideo = () => {
@@ -190,6 +220,7 @@ class TransactionDetailView extends Component {
           style={styles.button}
           caption={SMARTER_TXT.FLAG}
           iconCustom="ic_flag_black_48px"
+          iconSize={24}
           captionStyle={{color: CMSColors.PrimaryActive, fontSize: 20}}
           type="flat"
           enable={true}
@@ -289,7 +320,7 @@ class TransactionDetailView extends Component {
         </View>
         <TouchableOpacity
           onPress={this.onViewBill}
-          style={{flex: 1, marginTop: 16}}>
+          style={[styles.contentView, styles.defaultBillContainer]}>
           <TransactionBillView
             isLoading={isLoading}
             transaction={selectedTransaction}
@@ -302,6 +333,8 @@ class TransactionDetailView extends Component {
   render() {
     const {selectedTransaction, isLoading} = this.props.exceptionStore;
     const {showFlagModal, viewMode} = this.state;
+
+    if (!selectedTransaction) return <View />;
 
     let content = null;
     const actionButton = this.renderActionButton();
@@ -361,6 +394,7 @@ const styles = StyleSheet.create({
     marginTop: 42,
     justifyContent: 'center',
   },
+  defaultBillContainer: {flex: 1, marginTop: 16},
 });
 
 export default inject(

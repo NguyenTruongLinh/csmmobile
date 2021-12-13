@@ -69,8 +69,28 @@ class DashboardView extends React.Component {
   componentDidMount() {
     __DEV__ && console.log('ExceptionsSummaryView componentDidMount');
     this._isMounted = true;
-    this.getData();
+    const {route, navigation} = this.props;
+
+    __DEV__ &&
+      console.log('ExceptionsSummaryView route.params = ', route.params);
+    if (
+      route.params &&
+      route.params.redirect &&
+      Object.values(ROUTERS).includes(route.params.redirect)
+    ) {
+      __DEV__ &&
+        console.log(
+          'ExceptionsSummaryView navigate to ',
+          route.params.redirect
+        );
+      navigation.navigate({
+        name: route.params.redirect,
+        params: route.params.params,
+      });
+    }
+
     this.setHeader();
+    this.getData();
   }
 
   componentWillUnmount() {

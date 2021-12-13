@@ -43,7 +43,7 @@ class CMSImage extends React.Component {
 
     this.setState({isLoading: true});
     let imgData = await this.loadImageAsync(domain, source, twoStepsLoading);
-    __DEV__ && console.log('GOND loadImage imgData =', imgData);
+    // __DEV__ && console.log('GOND loadImage imgData =', imgData);
     if (this._isMounted) {
       this.onLoadingCompleted(domain, imgData);
       this.setState({

@@ -301,8 +301,9 @@ const parseTransactionItem = item =>
 
 const TransactionModel = types
   .model({
-    id: types.optional(types.identifier, () => getRandomId()),
-    tranId: types.number,
+    // id: types.optional(types.identifier, () => getRandomId()),
+    // tranId: types.number,
+    tranId: types.identifierNumber,
     tranNo: types.number,
     pacId: types.number,
     storeId: types.maybeNull(types.number),
@@ -362,6 +363,9 @@ const TransactionModel = types
     },
     get kDVR() {
       return self.pacId;
+    },
+    get id() {
+      return self.tranId;
     },
   }))
   .actions(self => ({
@@ -528,6 +532,9 @@ export const POSModel = types
 
     sortField: types.optional(types.number, ExceptionSortField.RatioToSale),
   })
+  // .volatile(self => ({
+  //   retainNotifiedTransaction: null,
+  // }))
   .views(self => ({
     get exceptionTypesData() {
       return self.exceptionTypesConfig.map(item => getSnapshot(item));
@@ -884,12 +891,14 @@ export const POSModel = types
         const res = yield apiService.get(TransactionRoute.controller, _transId);
         __DEV__ && console.log('GOND getTransaction = ', res);
 
-        const _trans = self.transactionsList.find(
-          t => t.tranId == transactionId
-        );
+        const _trans =
+          self.notifiedTransaction &&
+          self.notifiedTransaction.tranId == _transId
+            ? self.notifiedTransaction
+            : self.transactionsList.find(t => t.tranId == _transId);
         if (_trans) {
           _trans.addDetails(res.Details);
-          resultTrans = trans;
+          resultTrans = _trans;
         } else {
           self.notifiedTransaction = _parseTransactionData(res);
           resultTrans = self.notifiedTransaction;
@@ -926,7 +935,7 @@ export const POSModel = types
           );
         return false;
       }
-
+      self.selectedTransaction = null;
       __DEV__ && console.log('GOND onExceptionNotification notifData: ', data);
       const result = yield self.getTransaction(data.TranID);
       try {
@@ -939,6 +948,11 @@ export const POSModel = types
       return true;
     }),
     // #endregion Utilities
+    onExitTransactionDetail() {
+      __DEV__ &&
+        console.log('GOND onExitTransactionDetail ', self.selectedTransaction);
+      self.selectedTransaction = null;
+    },
     cleanUp() {
       applySnapshot(self, storeDefault);
     },

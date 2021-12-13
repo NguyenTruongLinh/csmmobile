@@ -65,16 +65,6 @@ const onOpenExceptionEvent = async props => {
   try {
     const alert = typeof content === 'object' ? content : JSON.parse(content);
     if (!alert) return;
-    const currentRoute = naviService.getCurrentRouteName();
-    const topRoute = naviService.getTopRouteName();
-    console.log(
-      'GOND onOpenExceptionEvent: ',
-      alert,
-      ', currently at: ',
-      topRoute,
-      ' - ',
-      currentRoute
-    );
 
     switch (action) {
       case NOTIFY_ACTION.ADD:
@@ -82,36 +72,52 @@ const onOpenExceptionEvent = async props => {
       case NOTIFY_ACTION.REFRESH:
         if (exceptionStore && naviService) {
           const res = await exceptionStore.onExceptionNotification(alert);
+          const currentRoute = naviService.getCurrentRouteName();
+          const topRoute = naviService.getTopRouteName();
+          console.log(
+            'GOND onOpenExceptionEvent: ',
+            alert,
+            ', currently at: ',
+            topRoute,
+            ' - ',
+            currentRoute
+          );
+
           if (res) {
             if (currentRoute == ROUTERS.TRANS_DETAIL) {
-              naviService.back();
-              setTimeout(
-                () =>
-                  naviService.navigate(ROUTERS.TRANS_DETAIL, {
-                    fromNotify: true,
-                  }),
-                500
-              );
+              // Do nothing
+              // naviService.back();
+              // setTimeout(
+              //   () =>
+              //     naviService.navigate(ROUTERS.TRANS_DETAIL, {
+              //       fromNotify: true,
+              //     }),
+              //   500
+              // );
             } else if (currentRoute == ROUTERS.SMARTER_DASHBOARD) {
               naviService.navigate(ROUTERS.TRANS_DETAIL, {fromNotify: true});
             } else if (topRoute == ROUTERS.HOME_NAVIGATOR) {
               if (currentRoute != ROUTERS.HOME) naviService.popToTop();
               setTimeout(
                 () =>
-                  naviService.navigate(ROUTERS.SMARTER_DASHBOARD, {
-                    screen: ROUTERS.TRANS_DETAIL,
-                    initial: false,
+                  naviService.navigate({
+                    // screen: ROUTERS.TRANS_DETAIL,
+                    // initial: false,
+                    name: ROUTERS.SMARTER_DASHBOARD,
                     params: {
+                      redirect: ROUTERS.TRANS_DETAIL,
                       fromNotify: true,
                     },
                   }),
                 500
               );
             } else {
+              // console.log('GOND onOpenExceptionEvent: 4');
               naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
                 screen: ROUTERS.SMARTER_DASHBOARD,
                 params: {
-                  screen: ROUTERS.TRANS_DETAIL,
+                  redirect: ROUTERS.TRANS_DETAIL,
+                  // screen: ROUTERS.TRANS_DETAIL,
                   params: {fromNotify: true},
                 },
                 initial: false,
