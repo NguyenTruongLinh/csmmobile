@@ -223,8 +223,13 @@ class AlarmItem extends React.Component {
   // };
 
   renderDescription = () => {
-    let {description, kAlertTypeVA, kAlertType, status, customDescription} =
-      this.props.data;
+    let {
+      description,
+      kAlertTypeVA,
+      kAlertType,
+      status,
+      customDescription,
+    } = this.props.data;
     // let descriptCustomVA = '';
     // let areaName = '';
     // // console.log('GOND renderDescription kAlertType = ', kAlertType)
@@ -324,19 +329,29 @@ class AlarmItem extends React.Component {
             resizeMode="contain"
           />
         </View>
-        <CMSTouchableIcon
+        {/* <CMSTouchableIcon
           size={18}
           disabled={true}
-          color={CMSColors.White}
+          color={CMSColors.Transparent}
           styles={{
             width: 25,
             height: 25,
-            backgroundColor: CMSColors.PrimaryColor,
+            backgroundColor: CMSColors.PrimaryActive,
             justifyContent: 'center',
             alignItems: 'center',
           }}
           iconCustom={iconName}
-        />
+        /> */}
+        <View
+          style={{
+            width: 25,
+            height: 25,
+            backgroundColor: CMSColors.PrimaryActive,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <IconCustom size={18} color={CMSColors.White} name={iconName} />
+        </View>
       </View>
     );
   }
