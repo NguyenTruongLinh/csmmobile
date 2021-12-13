@@ -386,15 +386,16 @@ class NotificationController extends React.Component {
       case NOTIFY_TYPE.EXCEPTION:
         onOpenExceptionEvent({exceptionStore, naviService, action, content});
         // testing only
-        setTimeout(
-          () =>
-            NotificationController.displayLocalNotification({
-              ...message,
-              body: message.message || 'POS again',
-              id: DateTime.now().toSeconds(),
-            }),
-          1000
-        );
+        __DEV__ &&
+          setTimeout(
+            () =>
+              NotificationController.displayLocalNotification({
+                ...message,
+                body: message.message || 'POS again',
+                id: DateTime.now().toSeconds(),
+              }),
+            1000
+          );
         break;
       case NOTIFY_TYPE.PVM:
         onOpenPVMEvent(oamStore, naviService, action, content);
