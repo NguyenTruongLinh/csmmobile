@@ -14,7 +14,7 @@ import Ripple from 'react-native-material-ripple';
 
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import {Icon} from '../../components/CMSStyleSheet';
+import {MaterialIcons} from '../../components/CMSStyleSheet';
 
 import snackbar from '../util/snackbar';
 // import {CLOUD_TYPE} from '../../consts/video';
@@ -139,14 +139,12 @@ class VideosettingView extends Component {
       (selectedValue == item.value && item.value && isStreamingAvailable) ||
       (!item.value && !selectedValue);
 
-    const checkBox = isChecked ? (
-      <View style={[styles.containIconCheck]}>
-        <Icon name="check-circle" color={CMSColors.PrimaryColor} size={24} />
-      </View>
-    ) : (
-      <View style={[styles.containIconCheck]}>
-        <Icon name="circle" color={CMSColors.DividerColor} size={24} />
-      </View>
+    const checkBox = (
+      <MaterialIcons
+        name={isChecked ? 'radio-button-checked' : 'radio-button-unchecked'}
+        color={CMSColors.PrimaryActive}
+        size={20}
+      />
     );
     return (
       <Ripple
