@@ -118,12 +118,8 @@ class App extends React.Component {
     // if (isLoggedIn) this.props.videoStore.getCloudSetting();
     const {appStore, userStore, videoStore, healthStore} = this.props;
     userStore.addAuthenticationEventListeners({
-      onLogin: () => {
-        __DEV__ && console.log('GOND onLogin called');
-        videoStore.getCloudSetting();
-        if (userStore.settings.alertTypes.length > 0)
-          healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);
-      },
+      onLogin: this.onLogin,
+      onLogout: this.onLogout,
     });
 
     appStore.setLoading(true);
@@ -378,16 +374,18 @@ class App extends React.Component {
     );
   };
 
-  onLogIn = () => {
-    __DEV__ && console.log('GOND %%% ON LOGGED IN! user = ', nextProps.user);
-    // if (nextProps.user.Api)
-    //   this.props.GetCloudType(nextProps.user.Api, nextProps.user.Api._ApiToken.devId);
-    // else
-    //   console.log('%c Warning! Cannot get cloud config user API not defined!', 'color: red; font-style: bold')
+  onLogin = () => {
+    const {videoStore, userStore, healthStore} = this.props;
+
+    __DEV__ && console.log('GOND %%% ON LOGGED IN!');
+    videoStore.getCloudSetting();
+    if (userStore.settings.alertTypes.length > 0)
+      healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);
   };
 
-  onLogOut = () => {
+  onLogout = () => {
     __DEV__ && console.log('GOND %%% ON LOGGED OUT!');
+    this.notifController && this.notifController.clearAllNotifications();
   };
 
   // renderBottomBar = () => {
@@ -453,7 +451,9 @@ class App extends React.Component {
 
   render() {
     const {appStore} = this.props;
-    const notificationController = <NotificationController />;
+    const notificationController = (
+      <NotificationController ref={r => (this.notifController = r)} />
+    );
     // showIntro = true; // testing
     const {isLoggedIn} = this.props.userStore;
 

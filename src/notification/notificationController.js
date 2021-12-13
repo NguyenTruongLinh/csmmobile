@@ -213,6 +213,10 @@ class NotificationController extends React.Component {
     return true;
   };
 
+  clearAllNotifications = () => {
+    PushNotification.cancelAllLocalNotifications();
+  };
+
   static displayLocalNotification = ({id, title, body, messageId, data}) => {
     let idNumber = typeof id == 'number' ? id : parseInt(id, 16);
     idNumber = isNaN(idNumber) ? undefined : idNumber;
