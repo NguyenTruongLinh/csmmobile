@@ -474,6 +474,18 @@ public class FFMpegFrameView extends View {
         this.invalidate(img_rect);
         //this.invalidate();
     }
+
+    public void Refresh(boolean isSearch)
+    {
+        this.UpdateFrame(null);
+        if( video_thread != null)
+        {
+            video_thread.interrupt();
+            video_thread = null;
+        }
+        valid_first_frame = false;
+    }
+
     public  void  Stop()
     {
         if( video_thread == null)

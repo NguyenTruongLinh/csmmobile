@@ -44,6 +44,7 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
     public static final String REACT_CLASS = "FFMpegFrameViewManager";
     private ReactContext mReactContext;
     FFMpegFrameView instance;
+    private boolean isSearch = false;
 
     public FFMpegFrameViewManager(ReactApplicationContext reactContext) {
         mReactContext = reactContext;
@@ -85,6 +86,15 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
     @ReactProp(name = "firstrun")
     public void setFirstRun(FFMpegFrameView view, @Nullable boolean firstrun){
         view.setFirstRun(firstrun);
+    }
+
+    @ReactProp(name = "refresh")
+    public void setRefresh(FFMpegFrameView view, @Nullable boolean refresh)
+    {
+        if(refresh) {
+            // view.UpdateFrame(null);
+            view.Refresh(isSearch);
+        }
     }
 
     @ReactProp(name = "stop")
@@ -161,7 +171,7 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         Log.i("GOND", "setStart 2");
         boolean by_channel = source.getBoolean("byChannel");
         Log.i("GOND", "setStart 3");
-        boolean issearch = source.getBoolean("searchMode");
+        /*boolean*/ isSearch = source.getBoolean("searchMode");
         Log.i("GOND", "setStart 4");
         boolean HD = false;
         if( source.hasKey("hd"))
@@ -191,7 +201,7 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
             }
         }
         Log.i("GOND", "setStart 6");
-        if(issearch) {
+        if(isSearch) {
             DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss");
             DateTime dt = formatter.parseDateTime(source.getString("date"));
             int interval = source.getInt("interval");

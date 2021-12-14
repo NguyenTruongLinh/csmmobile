@@ -386,7 +386,7 @@ class LiveChannelsView extends React.Component {
     );
   };
 
-  renderRow = ({item}) => {
+  renderRow = ({item, index}) => {
     const {viewableWindow, videoWindow} = this.state;
     console.log(
       'GOND renderRow videoWindow = ',
@@ -395,7 +395,9 @@ class LiveChannelsView extends React.Component {
       item
     );
     const playerViews = [];
+
     for (let i = 0; i < item.data.length; i++) {
+      const videoIndex = item.data.length * index + i;
       playerViews.push(
         <View
           key={item.key + '_' + i}
@@ -409,7 +411,7 @@ class LiveChannelsView extends React.Component {
           <CMSRipple
             style={{width: '100%', height: '100%', borderWidth: 0}}
             onPress={() => this.onChannelSelect(item.data[i])}>
-            {this.renderVideoPlayer(item.data[i], i)}
+            {this.renderVideoPlayer(item.data[i], videoIndex)}
           </CMSRipple>
         </View>
       );
@@ -446,6 +448,7 @@ class LiveChannelsView extends React.Component {
       isLive: true,
       hdMode: false,
       // streamStatus: item.streamStatus,
+      index,
     };
     let player = null;
     // __DEV__ && console.log('GOND renderVid password ', videoStore.nvrPassword);

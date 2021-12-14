@@ -203,15 +203,15 @@ const styles = StyleSheet.create({
     }),
   },
   topWidgetTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 21,
+    fontWeight: 'bold',
     color: CMSColors.Dark_Blue,
   },
   leftWidget: {flex: 1, marginRight: 14},
   rightWidget: {flex: 1, marginLeft: 14},
   normalWidgetTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
   },
   widgetRow: {
     flex: 28,

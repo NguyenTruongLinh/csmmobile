@@ -159,7 +159,8 @@ class DirectVideoView extends React.Component {
           () => videoStore.hdMode,
           hdMode => {
             // singlePlayer &&
-            this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps({hd: hdMode});
+            // this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps({hd: hdMode});
+            this.setNative({hd: hdMode});
           }
         ),
         reaction(
@@ -268,7 +269,7 @@ class DirectVideoView extends React.Component {
                 'GOND on gridLayout changed: ',
                 this.props.serverInfo.channelName
               );
-            this.stop();
+            this.setNative({refresh: true}, true);
             setTimeout(() => this.setNativePlayback(), 1000);
           }
         ),
@@ -435,16 +436,18 @@ class DirectVideoView extends React.Component {
     if (willPause) {
       this.pause();
       setTimeout(() => {
-        if (this._isMounted && this.ffmpegPlayer && serverInfo.server) {
-          this.ffmpegPlayer.setNativeProps({
-            startplayback: playbackInfo,
-          });
+        if (this._isMounted /*&& this.ffmpegPlayer*/ && serverInfo.server) {
+          // this.ffmpegPlayer.setNativeProps({
+          //   startplayback: playbackInfo,
+          // });
+          this.setNative({startplayback: playbackInfo});
         }
       }, 500);
     } else {
-      this.ffmpegPlayer.setNativeProps({
-        startplayback: playbackInfo,
-      });
+      // this.ffmpegPlayer.setNativeProps({
+      //   startplayback: playbackInfo,
+      // });
+      this.setNative({startplayback: playbackInfo});
     }
   };
 
@@ -474,6 +477,7 @@ class DirectVideoView extends React.Component {
       searchPlayTime,
       isLive,
       singlePlayer,
+      index,
     } = this.props;
     __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
 
@@ -512,7 +516,11 @@ class DirectVideoView extends React.Component {
           });
           this.props.videoStore.resetNVRAuthentication();
         }
-        if (this.lastLogin.userName && this.lastLogin.password)
+        if (
+          this.lastLogin.userName &&
+          this.lastLogin.password &&
+          (index == 0 || singlePlayer)
+        )
           Snackbar.show({
             text: LoginTxt.errorLoginIncorrect,
             duration: Snackbar.LENGTH_LONG,
@@ -537,7 +545,7 @@ class DirectVideoView extends React.Component {
         //     }
         //   }, 100);
         // }
-        if (this.state.showLoginSuccessFlag)
+        if (this.state.showLoginSuccessFlag && (index == 0 || singlePlayer))
           setTimeout(() => {
             Snackbar.show({
               text: LoginTxt.loginSuccess,
@@ -747,34 +755,72 @@ class DirectVideoView extends React.Component {
     }
   };
 
-  stop = () => {
-    if (this.ffmpegPlayer) {
-      __DEV__ &&
-        console.log('GOND on direct stop: ', this.props.serverInfo.channelName);
-      // __DEV__ && console.trace();
-      this.ffmpegPlayer.setNativeProps({
-        stop: true,
-      });
+  setNative = (params, immediate = false) => {
+    const {index, singlePlayer, serverInfo} = this.props;
+
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND ~~~ direct setnative, idx = ',
+    //     index,
+    //     singlePlayer,
+    //     serverInfo.channelName
+    //   );
+    if (index && !singlePlayer && !immediate) {
+      setTimeout(() => {
+        __DEV__ &&
+          console.log(
+            `GOND ~~~ setnative ${index}, time: ${DateTime.now().toFormat(
+              'hh:mm:ss'
+            )} `,
+            serverInfo.channelName
+          );
+        this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps(params);
+      }, 1000 * index);
+    } else {
+      this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps(params);
     }
+  };
+
+  stop = () => {
+    // if (this.ffmpegPlayer) {
+    //   __DEV__ &&
+    //     console.log('GOND on direct stop: ', this.props.serverInfo.channelName);
+    //   // __DEV__ && console.trace();
+    //   this.ffmpegPlayer.setNativeProps({
+    //     stop: true,
+    //   });
+    // }
+    this.setNative({stop: true});
   };
 
   pause = value => {
     const {serverInfo, isLive, videoStore, hdMode} = this.props;
 
-    if (this._isMounted && this.ffmpegPlayer && serverInfo.server) {
-      if (value === true || value == undefined)
-        this.ffmpegPlayer.setNativeProps({
-          pause: true,
-        });
-      else {
-        this.ffmpegPlayer.setNativeProps({
+    if (this._isMounted /*&& this.ffmpegPlayer*/ && serverInfo.server) {
+      if (value === true || value == undefined) {
+        // this.ffmpegPlayer.setNativeProps({
+        //   pause: true,
+        // });
+        this.setNative({pause: true});
+      } else {
+        // this.ffmpegPlayer.setNativeProps({
+        //   startplayback: {
+        //     ...serverInfo.playData,
+        //     searchMode: !isLive,
+        //     date: isLive
+        //       ? undefined
+        //       : // : this.lastFrameTime ?? videoStore.searchDateString,
+        //         this.lastFrameTime ?? videoStore.searchDateString,
+        //     hd: hdMode,
+        //   },
+        // });
+        this.setNative({
           startplayback: {
             ...serverInfo.playData,
             searchMode: !isLive,
             date: isLive
               ? undefined
-              : // : this.lastFrameTime ?? videoStore.searchDateString,
-                this.lastFrameTime ?? videoStore.searchDateString,
+              : this.lastFrameTime ?? videoStore.searchDateString,
             hd: hdMode,
           },
         });
