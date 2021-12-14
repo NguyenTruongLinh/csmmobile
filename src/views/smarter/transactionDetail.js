@@ -58,6 +58,10 @@ class TransactionDetailView extends Component {
     this.unsubBackEvent && this.unsubBackEvent();
     this.props.videoStore.releaseStreams();
     this.props.exceptionStore.onExitTransactionDetail();
+
+    // Just for sure
+    if (!this.props.appStore.showTabbar)
+      this.props.appStore.hideBottomTabs(false);
   }
 
   componentDidMount() {
@@ -145,6 +149,7 @@ class TransactionDetailView extends Component {
 
   onExitFullscren = () => {
     this.setState({viewMode: ViewModes.normal}, () => this.setHeader());
+    this.props.appStore.hideBottomTabs(false);
   };
 
   onLayout = event => {
