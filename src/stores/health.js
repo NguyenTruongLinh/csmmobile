@@ -149,7 +149,6 @@ export const HealthModel = types
     //
     dismissModalShown: types.optional(types.boolean, false),
     selectedAlert: types.safeReference(AlertModel),
-    actionsModalShown: types.optional(types.boolean, false),
 
     //
     needRefresh: types.optional(types.boolean, false),
@@ -240,8 +239,15 @@ export const HealthModel = types
       }
       self.selectedAlert = value == undefined ? self.alertsList[0] : value;
     },
-    showActionsModal(isShow) {
-      self.actionsModalShown = isShow;
+    nextAlert() {
+      let selectedIndex = self.selectedAlertIndex;
+      if (selectedIndex < self.alertsList.length - 1)
+        self.selectAlert(self.alertsList[selectedIndex + 1]);
+    },
+    previousAlert() {
+      let selectedIndex = self.selectedAlertIndex;
+      if (selectedIndex > 0)
+        self.selectAlert(self.alertsList[selectedIndex - 1]);
     },
     showDismissModal(isShow) {
       self.dismissModalShown = isShow;
