@@ -156,6 +156,7 @@ class ProfileView extends React.Component {
           styles={styles.avatar}
           image={
             <CMSImage
+              id={user.avatar.slice(-20)}
               Services={this.props.Services}
               styleImage={styles.image}
               styles={styles.avatar}

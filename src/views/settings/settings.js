@@ -90,6 +90,7 @@ class SettingsView extends Component {
         styles={styles.avatar}
         image={
           <CMSImage
+            id={user.avatar.slice(-20)}
             styleImage={styles.image}
             styles={styles.avatar}
             source={user.avatar}

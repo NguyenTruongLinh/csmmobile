@@ -32,7 +32,7 @@ function onPVMEvent(oamStore, action, contentObj, cmd) {
     contentObj.SiteName +
     (contentObj.DVRName ? ' - ' + contentObj.DVRName : '');
 
-  oamStore.notifyRefeshFromPN(contentObj);
+  oamStore && oamStore.notifyRefeshFromPN(contentObj);
 
   if (action === NOTIFY_ACTION.WARNING || action === NOTIFY_ACTION.DIMISS) {
     PushNotification.getDeliveredNotifications(notifications => {

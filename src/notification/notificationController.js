@@ -10,6 +10,7 @@ import {DateTime} from 'luxon';
 import {onVideoNotifEvent} from './video';
 import {onAlarmEvent, onOpenAlarmEvent} from './alarm';
 import {onPVMEvent, onOpenPVMEvent} from './pvm';
+import {onUserEvent, onOpenUserEvent} from './user';
 import {
   onAlertEvent,
   onOpenAlertEvent,
@@ -291,7 +292,7 @@ class NotificationController extends React.Component {
         };
         break;
       case NOTIFY_TYPE.USER:
-        // notif = onUserEvent(dispatch, action, content);
+        notif = onUserEvent(userStore, action, content);
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
         // __DEV__ && console.log('GOND onAlertType Notification: ', data);
@@ -376,7 +377,7 @@ class NotificationController extends React.Component {
       case NOTIFY_TYPE.DVR:
         break;
       case NOTIFY_TYPE.USER:
-        // onOpenOnUserEvent(dispatch,action, content, noti_disable);
+        onOpenUserEvent(userStore, naviService, action, content);
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
         onOpenAlertSetting({...props, naviService, action, content});

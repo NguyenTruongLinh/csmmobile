@@ -10,6 +10,7 @@ export const Account = {
   getNotifySettings: 'settingnotify',
   updateNotifySettings: 'EditUserNotifySettings',
   changePassword: 'changePassword',
+  profile: 'profile',
 };
 
 export const AlertType = {
