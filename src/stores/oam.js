@@ -198,6 +198,16 @@ export const OAMModel = types
       self.data = null;
       self.fetchData();
     },
+    notifyUpdate(site) {
+      if (site.Childs) {
+        const found = site.Childs.find(dvr => dvr.KDVR == self.kdvr);
+        if (found) {
+          let title =
+            site.Childs.length > 1 ? site.Name + ' - ' + found.Name : site.Name;
+          self.setTitle(title);
+        }
+      }
+    },
     // setIsBottomTabShown(isBottomTabShown) {
     //   self.isBottomTabShown = isBottomTabShown;
     // },

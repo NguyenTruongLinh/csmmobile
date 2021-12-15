@@ -286,6 +286,12 @@ class HealthDetailView extends Component {
   render() {
     const {healthStore, navigation} = this.props;
     const {/*showDismissModal,*/ selectedAlertForDismiss} = this.state;
+
+    navigation.setOptions({
+      headerTitle: healthStore.selectedSite
+        ? healthStore.selectedSite.siteName
+        : healthStore.currentSiteName,
+    });
     // __DEV__ &&
     //   console.log(
     //     'GOND render Health detail: ',

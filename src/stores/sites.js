@@ -17,7 +17,7 @@ export const DVRModel = types
       return {kDVR, name};
     },
   }));
-const parseDVR = data => {
+export const parseDVR = data => {
   return DVRModel.create({
     kDVR: data.KDVR,
     name: data.Name,
@@ -43,7 +43,19 @@ const SiteModel = types
       return {key, name, regionKey, defaultKDVR, dvrs};
     },
   }))
-  .actions(self => ({}));
+  .actions(self => ({
+    notifyUpdate(site) {
+      if (self.key === site.Key) {
+        let dvrs = Array.isArray(site.Childs)
+          ? site.Childs.map(item => parseDVR(item))
+          : [];
+        self.name = site.Name;
+        self.regionKey = site.RegionKey;
+        self.defaultKDVR = site.DefaultKDVR;
+        self.dvrs = dvrs;
+      }
+    },
+  }));
 
 const parseSite = _site => {
   let dvrs = Array.isArray(_site.Childs)
@@ -511,6 +523,9 @@ export const SitesMapModel = types
       self.endLoad();
       return true;
     }),
+    updateSite(_site) {
+      self.sitesList.map(site => site.notifyUpdate(_site));
+    },
     cleanUp() {
       applySnapshot(self, storeDefault);
     },

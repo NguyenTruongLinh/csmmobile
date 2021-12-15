@@ -43,7 +43,7 @@ class SitesView extends Component {
     //   enableSearchbar: false,
     // };
     this.state = {
-      isLoadingRegardLessStep: true,
+      isLoadingRegardlessStep: true,
       listHeight: 0,
       isHealthRoute: route.name == ROUTERS.HEALTH_SITES,
     };
@@ -98,7 +98,7 @@ class SitesView extends Component {
   getData = async isReload => {
     const {sitesStore, healthStore, userStore, route} = this.props;
     const {isHealthRoute} = this.state;
-    this.setState({isLoadingRegardLessStep: true});
+    this.setState({isLoadingRegardlessStep: true});
     if (
       !sitesStore.selectedRegion ||
       !sitesStore.hasRegions
@@ -114,7 +114,7 @@ class SitesView extends Component {
       await healthStore.getHealthData(sitesStore.sitesList);
     } // else if (route.name == ROUTERS.VIDEO_SITES) {
     // }
-    this.setState({isLoadingRegardLessStep: false});
+    this.setState({isLoadingRegardlessStep: false});
   };
 
   setHeader = () => {
@@ -350,7 +350,7 @@ class SitesView extends Component {
     const siteData = isHealthRoute
       ? healthStore.filteredSites
       : sitesStore.filteredSites;
-    const noData = !this.state.isLoadingRegardLessStep && siteData == 0;
+    const noData = !this.state.isLoadingRegardlessStep && siteData == 0;
 
     return (
       <View style={styles.screenContainer}>
@@ -386,7 +386,7 @@ class SitesView extends Component {
             keyExtractor={item => item.key ?? item.id}
             data={siteData}
             onRefresh={this.getData}
-            refreshing={this.state.isLoadingRegardLessStep}
+            refreshing={this.state.isLoadingRegardlessStep}
             ListEmptyComponent={noData && this.renderNoData()}
           />
         </View>

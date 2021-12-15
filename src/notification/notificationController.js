@@ -11,6 +11,7 @@ import {onVideoNotifEvent} from './video';
 import {onAlarmEvent, onOpenAlarmEvent} from './alarm';
 import {onPVMEvent, onOpenPVMEvent} from './pvm';
 import {onUserEvent, onOpenUserEvent} from './user';
+import {onSiteEvent} from './site';
 import {
   onAlertEvent,
   onOpenAlertEvent,
@@ -254,6 +255,7 @@ class NotificationController extends React.Component {
       healthStore,
       userStore,
       appStore,
+      sitesStore,
       oamStore,
       exceptionStore,
       message,
@@ -283,7 +285,7 @@ class NotificationController extends React.Component {
     let notif = null;
     switch (type) {
       case NOTIFY_TYPE.SITE:
-        // notif = onSiteEvent(dispatch, action, content);
+        notif = onSiteEvent(sitesStore, healthStore, oamStore, action, content);
         break;
       case NOTIFY_TYPE.DVR:
         notif = {

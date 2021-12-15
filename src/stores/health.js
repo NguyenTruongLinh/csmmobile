@@ -1,6 +1,6 @@
 import {types, applySnapshot, flow, getSnapshot} from 'mobx-state-tree';
 
-import {DVRModel} from './sites';
+import {DVRModel, parseDVR} from './sites';
 import apiService from '../services/api';
 import utils from '../util/general';
 import snackbarUtil from '../util/snackbar';
@@ -48,6 +48,15 @@ const SiteHealthModel = types
       self.isDismissAll = model.isDismissAll;
       self.siteName = model.siteName;
       self.dvrs = model.dvrs.map(dvr => DVRModel.create(dvr));
+    },
+    notifyUpdate(site) {
+      if (self.id == site.Key) {
+        let dvrs = Array.isArray(site.Childs)
+          ? site.Childs.map(item => parseDVR(item))
+          : [];
+        self.siteName = site.Name;
+        self.dvrs = dvrs;
+      }
     },
   }));
 
@@ -721,6 +730,9 @@ export const HealthModel = types
     },
     onExitAlertDetailView() {
       self.selectedAlert = undefined;
+    },
+    updateSite(_site) {
+      self.siteHealthList.map(healthSite => healthSite.notifyUpdate(_site));
     },
     cleanUp() {
       applySnapshot(self, storeDefault);

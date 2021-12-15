@@ -111,6 +111,11 @@ class NVRsView extends Component {
 
   render() {
     const {/*appStore,*/ sitesStore, navigation} = this.props;
+    if (sitesStore.selectedSite != null) {
+      navigation.setOptions({
+        headerTitle: sitesStore.selectedSite.name ?? 'Unknown site',
+      });
+    }
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
         {/* <HeaderWithSearch
