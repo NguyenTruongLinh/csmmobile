@@ -62,6 +62,10 @@ RCT_EXPORT_VIEW_PROPERTY(hdmode, BOOL);
 
 RCT_EXPORT_VIEW_PROPERTY(seekpos, NSDictionary);
 
+RCT_EXPORT_VIEW_PROPERTY(refresh, BOOL);
+
+RCT_EXPORT_VIEW_PROPERTY(disconnect, BOOL);
+
 #pragma mark - Events
 
 RCT_EXPORT_VIEW_PROPERTY(onFFMPegFrameChange, RCTDirectEventBlock);

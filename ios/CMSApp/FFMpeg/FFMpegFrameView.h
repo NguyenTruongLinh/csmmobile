@@ -108,6 +108,8 @@ typedef enum
 @property(nonatomic, assign) NSDictionary *seekpos;
 @property(nonatomic, assign) NSString *src;
 @property(nonatomic, assign) BOOL hdmode;
+@property(nonatomic, assign) BOOL refresh;
+@property(nonatomic, assign) BOOL disconnect;
 @property (nonatomic, copy) RCTDirectEventBlock onFFMPegFrameChange;
 
 - (instancetype)initWithEventDispatcher: (RCTEventDispatcher *)eventDispatcher NS_DESIGNATED_INITIALIZER;

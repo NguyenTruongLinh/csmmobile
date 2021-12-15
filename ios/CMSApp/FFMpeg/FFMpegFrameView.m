@@ -359,6 +359,7 @@ const uint32_t numLayers = 24;
                                                                               }];
       [self handleResponseMessage:IMC_MSG_CONNECTION_CONNECT fromView:self withData:selectedServer];
     }
+    videoPlayerStatus = STATE_PLAY;
     
     [self checkIsSearch];
   }
@@ -520,6 +521,49 @@ const uint32_t numLayers = 24;
   
   //NSLog(@"Shark: setNeedsDisplay on set Pause");
   [self setNeedsDisplay];
+}
+
+-(void)setDisconnect:(BOOL)disconnect {
+  if(disconnect){
+    NSLog(@"GOND: ******* on disconnect ******");
+    videoPlayerStatus = STATE_STOP;
+    [controllerThread disconnectAllServers];
+    
+    if(connectedServerList.count > 0)
+    {
+      for (ImcConnectedServer* connectedServer in connectedServerList)
+      {
+          // [self.mainDisplayVideo removeScreenForServer:connectedServer.server_address andPort:connectedServer.server_port];
+          
+          [connectedServer resetChannelConfigs];
+          
+          connectedServer.connected = FALSE;
+      }
+      for (NSInteger i = 0; i < IMC_MAX_DISPLAY_SCREEN; i++) {
+        [self.mainDisplayVideo resetScreen:i];
+      }
+      
+      [self handleResponseMessage:IMC_MSG_CONNECTION_DISCONNECT fromView:self withData:nil];
+      [connectedServerList removeAllObjects];
+    }
+    [mainDisplayVideo remoteAllLayers];
+    [mainDisplayVideo resetDisplayMapping];
+  }
+}
+
+-(void)setRefresh:(BOOL)refresh {
+  if(refresh){
+    // videoPlayerStatus = STATE_STOP;
+    if(connectedServerList.count > 0)
+    {
+      for (NSInteger i = 0; i < IMC_MAX_DISPLAY_SCREEN; i++) {
+        [self.mainDisplayVideo resetScreen:i];
+      }
+    }
+    
+    [mainDisplayVideo remoteAllLayers];
+    [mainDisplayVideo resetDisplayMapping];
+  }
 }
 
 -(void)setStop:(BOOL)stop{
@@ -880,7 +924,8 @@ const uint32_t numLayers = 24;
           
           if (connectedServerList.count == 0 && self.mainDisplayVideo.fullscreenView != -1)
           {
-            self.mainDisplayVideo.fullscreenView = -1;
+            self.mainDisplayVideo.fullscreenView = 0; // -1;
+            NSLog(@"============== GOND -1 msgDisconnect");
           }
           
           if (self.currentServer && [self.currentServer.server_address isEqualToString:foundServer.server_address]) {
