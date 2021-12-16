@@ -140,9 +140,9 @@ class App extends React.Component {
     Orientation.removeDeviceOrientationListener(this._orientationDidChange);
     //Forgetting to remove the listener will cause pop executes multiple times
     // BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
-    if (Platform.OS === 'ios') {
+    this.keyboardDidShowListener && this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener && this.keyboardDidHideListener.remove();
+    if (Platform.OS === 'ios' && this.appStateEventListener) {
       this.appStateEventListener.remove();
     }
   }

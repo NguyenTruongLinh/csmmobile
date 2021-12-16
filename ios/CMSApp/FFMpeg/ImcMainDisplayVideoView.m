@@ -13,7 +13,7 @@
 #import "ImcImageView.h"
 #import "AppDelegate.h"
 
-const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen will display logo image
+const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen will display logo image
 
 @interface ImcMainDisplayVideoView(PrivateMethod)
 -(NSInteger)numOfDisplayChannel;
@@ -133,6 +133,8 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
     displayScreens = [[NSArray alloc] initWithObjects:screens count:IMC_MAX_DISPLAY_SCREEN];
     
     currentDiv = IMC_DIV_1;
+//    fullscreenView = 0; // -1;
+//    fullscreenIndex = 0; // -1;
     fullscreenView = -1;
     fullscreenIndex = -1;
     touchedViewIndex = -1;
@@ -196,7 +198,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   for(CALayer* layer in displayLayers )
   {
-    NSLog(@"GOND remoe all layers");
+    NSLog(@"GOND remove all layers");
     layer.sublayers = nil;
     [layer removeFromSuperlayer];
     
@@ -222,6 +224,7 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
   [self resetDisplayMapping];
   currentDiv = div;
   fullscreenView = -1;
+  NSLog(@"============== GOND -1 updateDivision");
   [self remoteAllLayers];
   [self initDisplayRectwithDiv:div];
   needToClearScreen = TRUE;
@@ -699,16 +702,17 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
             // NSLog(@"GOND drawLayer added sublayers = %lu", layer.sublayers.count);
           }
 		  
-		      if([screen needDrawScreen])
+//		      if([screen needDrawScreen])
           {
             screen.lastDisplayImage = screen.displayImage;
             screen.lastUpdateTime = [NSDate date];
           }
-          else if([screen timeFromLastUpdate] > TIME_REFRESS_IMAGE)
+          /*else if([screen timeFromLastUpdate] > TIME_REFRESH_IMAGE)
           {
+            NSLog(@"GOND drawLayer timeout display logo ----------");
             screen.displayImage = logoImage;
             screen.lastUpdateTime = [NSDate date];
-          }
+          }*/
           /*
           CGRect displayRect;
           
@@ -803,6 +807,10 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
         }
 #endif
 */
+      }
+      else
+      {
+        NSLog(@"+++++ CANNOT RENDER FULLSCREEN VIEW = %d +++++", fullscreenView);
       }
       // For CMSMobile now only display 1 channel per reactnative view
 //       else if( fullscreenView == -1 )
@@ -1220,8 +1228,11 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
       }
       else
       {
+//        fullscreenView = 0; // -1;
+//        fullscreenIndex = 0; // -1;
         fullscreenIndex = -1;
         fullscreenView = -1;
+        NSLog(@"============== GOND -1 onDoubleTap 1");
       }
     }
   }
@@ -1250,8 +1261,11 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
     }
     
     currentFullScreen.showPtzIcon = YES;
+//    fullscreenView = 0; // -1;
+//    fullscreenIndex = 0; // -1;
     fullscreenView = -1;
     fullscreenIndex = -1;
+    NSLog(@"============== GOND -1 onDoubleTap 2");
     //needToClearScreen = true;
     
     [self initDisplayRectwithDiv:currentDiv];
@@ -1275,8 +1289,11 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
     ImcScreenDisplay* currentFullScreen = [displayScreens objectAtIndex:currentFullScreenView.screenIndex];
     currentFullScreen.showPtzIcon = YES;
     
+//    fullscreenView = 0; // -1;
+//    fullscreenIndex = 0; // -1;
     fullscreenView = -1;
     fullscreenIndex = -1;
+    NSLog(@"============== GOND -1 exitFullscreenMode");
     needToClearScreen = true;
     [self initDisplayRectwithDiv:currentDiv];
     
@@ -1890,8 +1907,11 @@ const int TIME_REFRESS_IMAGE = 20; // if there is no video in 20 seconds, screen
         if( displayScreen.enablePtz )
           [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
         
+//        fullscreenView = 0; // -1;
+//        fullscreenIndex = 0; // -1;
         fullscreenView = -1;
         fullscreenIndex = -1;
+        NSLog(@"============== GOND -1 removeScreenForServer");
         needToClearScreen = true;
         [self initDisplayRectwithDiv:currentDiv];
         [self resetDisplayMapping];

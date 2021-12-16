@@ -524,6 +524,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setDisconnect:(BOOL)disconnect {
+  // NSLog(@"GOND: ******* on disconnect: %d", disconnect);
   if(disconnect){
     NSLog(@"GOND: ******* on disconnect ******");
     videoPlayerStatus = STATE_STOP;
@@ -553,7 +554,8 @@ const uint32_t numLayers = 24;
 
 -(void)setRefresh:(BOOL)refresh {
   if(refresh){
-    // videoPlayerStatus = STATE_STOP;
+    // NSLog(@"GOND: $$$$$$$ on refresh: %d", refresh);
+    videoPlayerStatus = STATE_PAUSE;
     if(connectedServerList.count > 0)
     {
       for (NSInteger i = 0; i < IMC_MAX_DISPLAY_SCREEN; i++) {
@@ -561,7 +563,7 @@ const uint32_t numLayers = 24;
       }
     }
     
-    [mainDisplayVideo remoteAllLayers];
+    // [mainDisplayVideo remoteAllLayers];
     [mainDisplayVideo resetDisplayMapping];
   }
 }
