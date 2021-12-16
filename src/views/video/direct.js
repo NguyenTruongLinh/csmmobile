@@ -141,11 +141,8 @@ class DirectVideoView extends React.Component {
         reaction(
           () => videoStore.selectedChannel,
           newChannelNo => {
-            if (Platform.OS == 'android') {
-              this.stop();
-            } else {
-              this.pause();
-            }
+            this.stop();
+            
             __DEV__ &&
               console.log('GOND direct on Channel changed: ', newChannelNo);
             this.props.serverInfo.setStreamStatus({
@@ -311,95 +308,13 @@ class DirectVideoView extends React.Component {
     );
   };
 
-  /*
-  componentDidUpdate(prevProps) {
-    if (!this._isMounted) return;
-    const prevServerInfo = prevProps.serverInfo;
-    const {
-      serverInfo,
-      hdMode,
-      isLive,
-      searchDate,
-      // searchPlayTime,
-      paused,
-      videoStore,
-      singlePlayer,
-      // username,
-      // password,
-    } = this.props;
-
-    if (!serverInfo || Object.keys(serverInfo).length == 0) return;
-
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND DirectPlayer did update, prevServerInfo = ',
-    //     prevServerInfo,
-    //     '\n - serverInfo = ',
-    //     serverInfo
-    //   );
-
-    try {
-      if (this.ffmpegPlayer && serverInfo) {
-        let willPlayback = false;
-        if (
-          // JSON.stringify({...prevServerInfo.playData}) !=
-          // JSON.stringify({...serverInfo.playData})
-          prevServerInfo.playData.userName != serverInfo.playData.userName ||
-          prevServerInfo.playData.password != serverInfo.playData.password ||
-          prevServerInfo.playData.channelNo != serverInfo.playData.channelNo ||
-          prevServerInfo.playData.kChannel != serverInfo.playData.kChannel
-        ) {
-          this.setState({message: ''});
-          __DEV__ &&
-            console.log('GOND DirectPlayer login ... ', {
-              ...serverInfo,
-            });
-          willPlayback = true;
-        }
-        
-        // These following only use on single player view
-        if (!singlePlayer) return;
-
-        if (hdMode != prevProps.hdMode) {
-          this.ffmpegPlayer.setNativeProps({hd: hdMode});
-        }
-
-        if (isLive != prevProps.isLive) {
-          __DEV__ &&
-            console.log(
-              'GOND direct switch mode : ',
-              isLive ? 'live' : 'search',
-              videoStore.searchDateString
-            );
-          willPlayback = true;
-        }
-        if (searchDate != prevProps.searchDate) {
-          __DEV__ &&
-            console.log(
-              'GOND searchDate changed ',
-              prevProps.searchDate,
-              ' -> ',
-              searchDate
-            );
-          willPlayback = true;
-        }
-        if (paused != prevProps.paused) {
-          this.pause(paused);
-        }
-
-        // Finally:
-        if (willPlayback) {
-          this.pause();
-          setTimeout(() => {
-            this.setNativePlayback();
-          }, 1000);
-        }
-      }
-    } catch (err) {
-      __DEV__ && console.log('GOND update playback failed: ', err);
-    }
-  }
-  */
+  reconnect = () => {
+    this.props.serverInfo.setStreamStatus({
+      isLoading: true,
+      connectionStatus: STREAM_STATUS.RECONNECTING,
+    });
+    this.setNativePlayback();
+  };
 
   setNativePlayback = (willPause = false, paramsObject = {}) => {
     const {serverInfo, videoStore, isLive, hdMode} = this.props;
@@ -570,7 +485,7 @@ class DirectVideoView extends React.Component {
         __DEV__ && console.log('GOND onDirectVideoMessage: Wrong server ID');
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.ERROR,
+          connectionStatus: STREAM_STATUS.WRONG_SERVER,
         });
         break;
       case NATIVE_MESSAGE.LOGIN_MESSAGE_VIDEO_PORT_ERROR:
@@ -578,7 +493,7 @@ class DirectVideoView extends React.Component {
         __DEV__ && console.log('GOND onDirectVideoMessage: Video port error');
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.ERROR,
+          connectionStatus: STREAM_STATUS.PORT_ERROR,
         });
         break;
       case NATIVE_MESSAGE.CANNOT_CONNECT_SERVER:
@@ -590,6 +505,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           connectionStatus: STREAM_STATUS.ERROR,
         });
+        setTimeout(() => this.reconnect(), 1000);
         break;
       case NATIVE_MESSAGE.ORIENTATION_CHANGED:
         break;

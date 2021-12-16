@@ -114,9 +114,11 @@ export const STREAM_STATUS = {
   TIMEOUT: 'Time out.',
   NOVIDEO: 'No video.',
   DISCONNECTED: 'Disconnected.',
-  NO_PERMISSION: "You don't have permission",
-  DISABLED: 'Channel disabled',
-  CHANGED: 'Server info changed',
+  NO_PERMISSION: "You don't have permission.",
+  DISABLED: 'Channel disabled.',
+  CHANGED: 'Server info changed.',
+  WRONG_SERVER: 'Wrong server id.',
+  PORT_ERROR: 'Video port error.',
 };
 
 export const ALARM = {
