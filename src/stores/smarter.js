@@ -953,6 +953,16 @@ export const POSModel = types
         console.log('GOND onExitTransactionDetail ', self.selectedTransaction);
       self.selectedTransaction = null;
     },
+    updateSite(site) {
+      self.exceptionsGroup &&
+        self.exceptionsGroup.data.map(item => {
+          if (item.siteKey == site.Key) item.siteName = site.Name;
+          item.employees &&
+            item.employees.map(employee => {
+              if (employee.siteKey == site.Key) employee.siteName = site.Name;
+            });
+        });
+    },
     cleanUp() {
       applySnapshot(self, storeDefault);
     },

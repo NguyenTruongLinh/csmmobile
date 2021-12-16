@@ -6,7 +6,14 @@ function updateSite(sitesStore) {
   sitesStore.updateSite;
 }
 
-function onSiteEvent(sitesStore, healthStore, oamStore, action, content) {
+function onSiteEvent(
+  sitesStore,
+  healthStore,
+  oamStore,
+  exceptionStore,
+  action,
+  content
+) {
   let noti = null;
   let type = null;
   __DEV__ && console.log('onSiteEvent', `content=${JSON.stringify(content)}`);
@@ -40,6 +47,7 @@ function onSiteEvent(sitesStore, healthStore, oamStore, action, content) {
     sitesStore.updateSite(content);
     healthStore.updateSite(content);
     oamStore.notifyUpdate(content);
+    exceptionStore.updateSite(content);
   }
   noti.isContent = false;
   return noti;

@@ -285,7 +285,14 @@ class NotificationController extends React.Component {
     let notif = null;
     switch (type) {
       case NOTIFY_TYPE.SITE:
-        notif = onSiteEvent(sitesStore, healthStore, oamStore, action, content);
+        notif = onSiteEvent(
+          sitesStore,
+          healthStore,
+          oamStore,
+          exceptionStore,
+          action,
+          content
+        );
         break;
       case NOTIFY_TYPE.DVR:
         notif = {

@@ -253,8 +253,17 @@ class ExceptionsView extends Component {
   };
 
   render() {
-    const {exceptionStore} = this.props;
+    const {exceptionStore, navigation} = this.props;
     const {/*showDismissModal,*/ isListView} = this.state;
+
+    const {selectedEmployee} = exceptionStore;
+    navigation.setOptions({
+      headerTitle:
+        (selectedEmployee.employeeName &&
+        selectedEmployee.employeeName.length > 0
+          ? selectedEmployee.employeeName + ' - '
+          : '') + selectedEmployee.siteName,
+    });
 
     return (
       <View style={styles.viewContainer}>

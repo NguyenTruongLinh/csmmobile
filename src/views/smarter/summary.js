@@ -465,6 +465,12 @@ class DashboardView extends React.Component {
             <CMSRipple {...props} rippleOpacity={0.87} delayTime={0} />
           )}
         />
+        {exceptionStore.filteredGroupsData &&
+          exceptionStore.filteredGroupsData.length > 0 && (
+            <Text style={styles.dummyBugFixingText}>
+              {exceptionStore.filteredGroupsData[0].siteName}
+            </Text>
+          )}
       </View>
     );
   }
@@ -841,6 +847,9 @@ const styles = StyleSheet.create({
     height: 42,
     padding: 5,
     backgroundColor: CMSColors.White,
+  },
+  dummyBugFixingText: {
+    display: 'none',
   },
 });
 
