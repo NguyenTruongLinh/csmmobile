@@ -51,25 +51,7 @@ function onUserEvent(userStore, action, content) {
       noti = {
         body: user + ' has updated.',
       };
-      // refreshUserAsync(userStore);
-      // __DEV__ &&
-      //   console.log(
-      //     'onUserEvent',
-      //     `appStore.naviService.getCurrentRouteName()=${appStore.naviService.getCurrentRouteName()}`
-      //   );
-      // if (
-      //   appStore &&
-      //   userStore &&
-      //   appStore.naviService &&
-      //   appStore.naviService.getCurrentRouteName() == 'xxx'
-      // )
-      __DEV__ && console.log('refreshUser', `userStore=${userStore}`);
-      if (userStore) {
-        userStore.refreshUser();
-      }
-      // else {
-      //   ProfileView.refeshUserFlag = true;
-      // }
+      userStore && userStore.refreshUserFromNotif();
       break;
     case NOTIFY_ACTION.DELETE:
       noti = {

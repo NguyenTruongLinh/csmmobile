@@ -457,30 +457,30 @@ export const UserStoreModel = types
       self.routes = [];
       return true;
     }),
-    getDataPostLogin: flow(function* (refeshUserFlag) {
+    getDataPostLogin: flow(function* (refreshUserFlag) {
       try {
         const [
+          refreshUserRes,
           uPhotoRes,
           modulesRes,
           alertTypesRes,
           registerTokenRes,
-          refreshUserRes,
         ] = yield Promise.all([
+          refreshUserFlag ? self.refreshUser() : self.dummyFunction(),
           self.getUserPhoto(),
           self.getPrivilege(),
           self.getAlertTypesSettings(),
           self.registerToken(),
-          refeshUserFlag ? self.refreshUser() : self.dummyFunction(),
           // self.getWidgetCounts(),
         ]);
         __DEV__ &&
           console.log(
             'GOND getDataPostLogin ',
+            refreshUserRes,
             uPhotoRes,
             modulesRes,
             alertTypesRes,
-            registerTokenRes,
-            refreshUserRes
+            registerTokenRes
           );
         // TODO: should we?
         // return uPhotoRes && modulesRes; // && alertTypesRes;
@@ -497,9 +497,6 @@ export const UserStoreModel = types
       return false;
     }),
     refreshUser: flow(function* () {
-      // let profile = await api.Get(Account.controller, user.UserID.toString(),'profile' );
-      __DEV__ &&
-        console.log('refreshUser', `userId=${self.user && self.user.userId}`);
       if (self.user && self.user.userId) {
         try {
           let res = yield apiService.get(
@@ -507,18 +504,19 @@ export const UserStoreModel = types
             self.user.userId,
             AccountRoute.profile
           );
-          __DEV__ && console.log('refreshUser', `res=${JSON.stringify(res)}`);
           self.user.parse(res);
-          yield self.getUserPhoto();
           self.saveLocal();
-          __DEV__ &&
-            console.log('refreshUser', `user.avatar=${self.user.avatar}`);
+          return true;
         } catch (err) {
-          __DEV__ && console.log('refreshUser failed: ', err);
+          __DEV__ && console.log('GOND refreshUser failed: ', err);
           return false;
         }
-
-        return false;
+      }
+      return false;
+    }),
+    refreshUserFromNotif: flow(function* () {
+      if (self.user && self.user.userId) {
+        yield self.getDataPostLogin(true);
       }
       return false;
     }),
@@ -741,7 +739,6 @@ export const UserStoreModel = types
         yield appStore.loadLocalData();
       }
       if (shouldLogin) {
-        // yield self.refreshUser();
         self.isLoggedIn = yield self.getDataPostLogin(true);
         if (!self.isLoggedIn) self.deleteLocal();
         // __DEV__ && console.log('GOND self.isLoggedIn: ', self.isLoggedIn);
