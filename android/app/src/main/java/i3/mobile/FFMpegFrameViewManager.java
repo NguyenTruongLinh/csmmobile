@@ -97,6 +97,14 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         }
     }
 
+    @ReactProp(name = "disconnect")
+    public void setDisconnect(FFMpegFrameView view, @Nullable boolean disconnect)
+    {
+        if(disconnect) {
+            view.Stop();
+        }
+    }
+
     @ReactProp(name = "stop")
     public void setStop(FFMpegFrameView view, @Nullable boolean stop)
     {

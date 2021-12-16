@@ -932,7 +932,7 @@ export const VideoModel = types
         if (self.noVideo) {
           self.setNoVideo(false);
         }
-        if ((self.cloudType = CLOUD_TYPE.HLS)) {
+        if (self.cloudType == CLOUD_TYPE.HLS) {
           if (self.selectedStream) {
             self.selectedStream.setHD(self.hdMode);
           }
