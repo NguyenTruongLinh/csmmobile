@@ -37,12 +37,13 @@ class CustomVariables {
   static userEventFlag = false;
 }
 
-function onUserEvent(appStore, userStore, action, content) {
+function onUserEvent(notifExtraData, appStore, userStore, action, content) {
   let noti = null;
   let user = getDisplayName(userStore);
   let title = 'CMS User.';
   let isContent = false;
   let logout = false;
+  let refresh = false;
   __DEV__ &&
     console.log('onUserEvent', `userStore.user=${userStore && userStore.user}`);
   __DEV__ && console.log('onUserEvent', `content=${JSON.stringify(content)}`);
@@ -51,7 +52,7 @@ function onUserEvent(appStore, userStore, action, content) {
       noti = {
         body: user + ' has updated.',
       };
-      userStore && userStore.refreshUserFromNotif(appStore);
+      refresh = true;
       break;
     case NOTIFY_ACTION.DELETE:
       noti = {
@@ -86,11 +87,20 @@ function onUserEvent(appStore, userStore, action, content) {
     PushNotification.removeAllDeliveredNotifications();
     userStore.logout();
   }
+  if (refresh && userStore) {
+    userStore.refreshUserFromNotif(user, noti, notifExtraData);
+    return null;
+  }
   return noti;
 }
 
-function onOpenUserEvent(userStore, naviService, action, content) {
-  if (action == NOTIFY_ACTION.REFRESH)
+function onOpenUserEvent(appStore, userStore, naviService, action, content) {
+  if (action == NOTIFY_ACTION.USER_PERMISSION_REFRESH) {
+    appStore.setLoading(true);
+    setTimeout(() => {
+      appStore.setLoading(false);
+    }, 500);
+  } else if (action == NOTIFY_ACTION.REFRESH)
     naviService.navigate(ROUTERS.OPTIONS_NAVIGATOR);
 }
 

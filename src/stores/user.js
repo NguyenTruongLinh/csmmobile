@@ -2,7 +2,7 @@ import {types, flow} from 'mobx-state-tree';
 import {Alert} from 'react-native';
 import Snackbar from 'react-native-snackbar';
 
-import {WIDGET_COUNTS, MODULES, Orient} from '../consts/misc';
+import {WIDGET_COUNTS, MODULES, Orient, NOTIFY_ACTION} from '../consts/misc';
 import APP_INFO from '../consts/appInfo';
 import ROUTERS from '../consts/routes';
 
@@ -24,6 +24,7 @@ import snackbarUtil from '../util/snackbar';
 import {LocalDBName, MODULE_PERMISSIONS} from '../consts/misc';
 
 import cmscolors from '../styles/cmscolors';
+import notificationController from '../notification/notificationController';
 
 const LOGIN_FAIL_CAUSES = {
   USER_LOCK: 'USER_LOCK',
@@ -278,6 +279,8 @@ export const UserStoreModel = types
     settings: types.maybeNull(UserSettingsModel),
     //
     widgetCounts: types.maybeNull(WidgeCountsModel),
+    //
+    moduleUpdatedFlag: types.boolean,
   })
   .volatile(self => ({
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
@@ -514,12 +517,25 @@ export const UserStoreModel = types
       }
       return false;
     }),
-    refreshUserFromNotif: flow(function* (appStore) {
-      appStore.setLoading(true);
+    refreshUserFromNotif: flow(function* (user, noti, notifExtraData) {
       if (self.user && self.user.userId) {
         yield self.getDataPostLogin(true);
+        if (self.moduleUpdatedFlag)
+          noti.body = user + "'s permission has updated.";
+        __DEV__ &&
+          console.log(
+            'refreshUserFromNotif',
+            `notifExtraData=${JSON.stringify(notifExtraData)}`
+          );
+        if (self.moduleUpdatedFlag)
+          notifExtraData.data.action = NOTIFY_ACTION.USER_PERMISSION_REFRESH;
+
+        notificationController.displayLocalNotification({
+          ...noti,
+          ...notifExtraData,
+        });
+        return true;
       }
-      appStore.setLoading(false);
       return false;
     }),
     passwordUpdated(data) {
@@ -548,6 +564,24 @@ export const UserStoreModel = types
       }
       return false;
     }),
+    getDisableTabIndexes() {
+      let result = [];
+      for (const [key, value] of MODULE_TAB_MAP.entries()) {
+        if (!self.hasPermission(key)) {
+          result.push(...value);
+        }
+      }
+      return result;
+    },
+    getDisableHomeWidgetIndexes() {
+      let result = [];
+      for (const [key, value] of MODULE_HOME_WIDGET_MAP.entries()) {
+        if (!self.hasPermission(key)) {
+          result.push(...value);
+        }
+      }
+      return result;
+    },
     getPrivilege: flow(function* () {
       if (self.user && self.user.userId) {
         try {
@@ -570,7 +604,22 @@ export const UserStoreModel = types
             //   res.status == 200 &&
             //   Array.isArray(res.data))
           ) {
+            self.moduleUpdatedFlag = false;
+            const prevDisableTabIndexes = self.getDisableTabIndexes();
+            const prevDisableHomeWidgetIndexes =
+              self.getDisableHomeWidgetIndexes();
             self.modules = res.map(item => parseModule(item));
+            self.moduleUpdatedFlag =
+              JSON.stringify(prevDisableTabIndexes) !=
+                JSON.stringify(self.getDisableTabIndexes()) ||
+              JSON.stringify(prevDisableHomeWidgetIndexes) !=
+                JSON.stringify(self.getDisableHomeWidgetIndexes());
+            __DEV__ &&
+              console.log(
+                'getPrivilege',
+                `self.moduleUpdatedFlag=${self.moduleUpdatedFlag}`
+              );
+
             return true;
           }
         } catch (err) {
@@ -940,6 +989,7 @@ const userStore = UserStoreModel.create({
     alertTypes: [],
   }),
   widgetCounts: null,
+  moduleUpdatedFlag: false,
 });
 
 export default userStore;

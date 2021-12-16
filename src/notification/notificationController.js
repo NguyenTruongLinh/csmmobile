@@ -301,7 +301,18 @@ class NotificationController extends React.Component {
         };
         break;
       case NOTIFY_TYPE.USER:
-        notif = onUserEvent(appStore, userStore, action, content);
+        const notifExtraData = {
+          messageId,
+          id: data.msg_id,
+          data: {type, action, content},
+        };
+        notif = onUserEvent(
+          notifExtraData,
+          appStore,
+          userStore,
+          action,
+          content
+        );
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
         // __DEV__ && console.log('GOND onAlertType Notification: ', data);
@@ -369,7 +380,11 @@ class NotificationController extends React.Component {
     let msgData = message.content ?? message.data;
     msgData = typeof msgData === 'object' ? msgData : JSON.parse(msgData);
     let {type, action, content} = msgData;
-    __DEV__ && console.log('GOND onNotificationOpened content = ', content);
+    __DEV__ &&
+      console.log(
+        'onNotificationOpened',
+        `content=${JSON.stringify(content)} | type=${type} | action=${action}`
+      );
     content = typeof content === 'object' ? content : JSON.parse(content);
     // __DEV__ && console.log('GOND1 OnOpenNotifyHandler: serverid', serverid, ', is valid: ', isValid(serverid))
     if (!content) {
@@ -386,7 +401,7 @@ class NotificationController extends React.Component {
       case NOTIFY_TYPE.DVR:
         break;
       case NOTIFY_TYPE.USER:
-        onOpenUserEvent(userStore, naviService, action, content);
+        onOpenUserEvent(appStore, userStore, naviService, action, content);
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
         onOpenAlertSetting({...props, naviService, action, content});
