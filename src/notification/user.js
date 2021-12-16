@@ -37,7 +37,7 @@ class CustomVariables {
   static userEventFlag = false;
 }
 
-function onUserEvent(userStore, action, content) {
+function onUserEvent(appStore, userStore, action, content) {
   let noti = null;
   let user = getDisplayName(userStore);
   let title = 'CMS User.';
@@ -51,7 +51,7 @@ function onUserEvent(userStore, action, content) {
       noti = {
         body: user + ' has updated.',
       };
-      userStore && userStore.refreshUserFromNotif();
+      userStore && userStore.refreshUserFromNotif(appStore);
       break;
     case NOTIFY_ACTION.DELETE:
       noti = {

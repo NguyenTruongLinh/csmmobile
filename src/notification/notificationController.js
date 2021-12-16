@@ -301,7 +301,7 @@ class NotificationController extends React.Component {
         };
         break;
       case NOTIFY_TYPE.USER:
-        notif = onUserEvent(userStore, action, content);
+        notif = onUserEvent(appStore, userStore, action, content);
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
         // __DEV__ && console.log('GOND onAlertType Notification: ', data);

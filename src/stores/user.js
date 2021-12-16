@@ -514,10 +514,12 @@ export const UserStoreModel = types
       }
       return false;
     }),
-    refreshUserFromNotif: flow(function* () {
+    refreshUserFromNotif: flow(function* (appStore) {
+      appStore.setLoading(true);
       if (self.user && self.user.userId) {
         yield self.getDataPostLogin(true);
       }
+      appStore.setLoading(false);
       return false;
     }),
     passwordUpdated(data) {
