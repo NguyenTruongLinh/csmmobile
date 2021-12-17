@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Keyboard,
+  Platform,
 } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -120,11 +121,21 @@ class CMSTextInputModal extends React.Component {
         ]}>
         <View style={[styles.modalView]}>
           {title.length > 0 && (
-            <View style={styles.header}>
+            <View
+              style={[
+                styles.header,
+                Platform.OS == 'ios' ? {height: 80} : {flex: 2},
+              ]}>
               <Text style={styles.headerText}>{title}</Text>
             </View>
           )}
-          <View style={[styles.body]}>
+          <View
+            style={[
+              styles.body,
+              Platform.OS == 'ios'
+                ? {paddingBottom: 70, justifyContent: 'flex-start'}
+                : {},
+            ]}>
             <InputText
               ref={r => (this.inputRef = r)}
               value={textInput}
@@ -144,7 +155,11 @@ class CMSTextInputModal extends React.Component {
               // onBlur={() => this.setState({focused: false})}
             />
           </View>
-          <View style={[styles.footer]}>
+          <View
+            style={[
+              styles.footer,
+              Platform.OS == 'ios' ? {position: 'absolute', top: 283 - 70} : {},
+            ]}>
             <Button
               style={styles.button}
               type="flat"
@@ -200,7 +215,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 12,
   },
   header: {
-    flex: 2,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
