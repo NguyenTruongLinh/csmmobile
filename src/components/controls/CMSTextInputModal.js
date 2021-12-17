@@ -116,7 +116,7 @@ class CMSTextInputModal extends React.Component {
           {
             marginTop:
               height -
-              (this.state.isInputFocus ? this.state.keyboardHeight + 283 : 283),
+              (this.state.isInputFocus ? this.state.keyboardHeight + 333 : 333),
           },
         ]}>
         <View style={[styles.modalView]}>
@@ -124,7 +124,7 @@ class CMSTextInputModal extends React.Component {
             <View
               style={[
                 styles.header,
-                Platform.OS == 'ios' ? {height: 80} : {flex: 2},
+                // Platform.OS == 'ios' ? {height: 80} : {flex: 2},
               ]}>
               <Text style={styles.headerText}>{title}</Text>
             </View>
@@ -133,7 +133,7 @@ class CMSTextInputModal extends React.Component {
             style={[
               styles.body,
               Platform.OS == 'ios'
-                ? {paddingBottom: 70, justifyContent: 'flex-start'}
+                ? {paddingBottom: 100, justifyContent: 'flex-start'}
                 : {},
             ]}>
             <InputText
@@ -158,7 +158,9 @@ class CMSTextInputModal extends React.Component {
           <View
             style={[
               styles.footer,
-              Platform.OS == 'ios' ? {position: 'absolute', top: 283 - 70} : {},
+              Platform.OS == 'ios'
+                ? {position: 'absolute', top: 333 - 100, left: 8}
+                : {},
             ]}>
             <Button
               style={styles.button}
@@ -195,7 +197,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'column',
     backgroundColor: CMSColors.White,
-    paddingLeft: normalize(24),
+    paddingLeft: normalize(8),
+    paddingRight: normalize(8),
     // paddingTop: normalize(20),
     paddingBottom: normalize(8),
     borderTopLeftRadius: 12,
@@ -215,9 +218,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 12,
   },
   header: {
-    alignItems: 'center',
+    height: 60,
+    alignItems: 'flex-end',
     justifyContent: 'center',
     flexDirection: 'row',
+    // borderColor: 'red',
+    // borderWidth: 1,
     // marginLeft: normalize(21),
     // marginBottom: normalize(7),
   },
@@ -231,16 +237,20 @@ const styles = StyleSheet.create({
     flex: 5,
     flexDirection: 'column',
     // padding: 10,
-    marginRight: normalize(24),
+    marginHorizontal: normalize(10),
     // marginBottom: normalize(8),
-    // marginTop: 14,
+    marginTop: 10,
+    // borderColor: 'red',
+    // borderWidth: 1,
   },
   footer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    marginBottom: 21,
+    marginBottom: 50,
+    // borderColor: 'red',
+    // borderWidth: 1,
   },
   textInput: {
     width: '100%',
@@ -262,10 +272,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderColor: CMSColors.PrimaryActive,
     borderWidth: 1,
-    margin: 10,
+    marginRight: 5,
+    marginLeft: 10,
   },
   buttonSave: {
     backgroundColor: CMSColors.PrimaryActive,
+    marginRight: 10,
+    marginLeft: 5,
   },
 });
 
