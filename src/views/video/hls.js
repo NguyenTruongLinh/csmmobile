@@ -134,6 +134,11 @@ class HLSStreamingView extends React.Component {
           newTimezone => {
             const {timeBeginPlaying} = this.state;
             if (newTimezone != timeBeginPlaying.zone.name) {
+              __DEV__ &&
+                console.log(
+                  'HLSStreamingView new timezone: ',
+                  videoStore.timezone
+                );
               this.setState({
                 timeBeginPlaying: this.state.timeBeginPlaying.setZone(
                   videoStore.timezone
@@ -241,7 +246,8 @@ class HLSStreamingView extends React.Component {
     // });
     // this.frameTime = 0;
     // TODO: new search time
-    if (!isLive) this.lastSearchTime = this.computeTime(this.frameTime);
+    if (!isLive && this.frameTime > 0)
+      this.lastSearchTime = this.computeTime(this.frameTime);
     streamData.reconnect(isLive, hdMode);
   };
 
@@ -282,6 +288,7 @@ class HLSStreamingView extends React.Component {
             );
         } else {
           this.frameTime = hlsTimestamps[this.tsIndex];
+          // __DEV__ && console.log('GOND HLS onProgress 1:', this.frameTime);
         }
       }
     } else {
@@ -403,8 +410,14 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams} = this.state;

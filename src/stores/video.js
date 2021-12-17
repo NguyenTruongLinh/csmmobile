@@ -440,28 +440,41 @@ export const VideoModel = types
         : 0;
     },
     get searchPlayTimeLuxon() {
+      // __DEV__ &&
+      //   console.log('GOND searchPlayTimeLuxon 1: ', self.searchPlayTime);
       if (self.searchPlayTime) {
-        const timezone = self.isAlertPlay ? 'utc' : self.timezone;
+        const timezone = self.timezone; // self.isAlertPlay ? 'utc' : self.timezone;
         let result = DateTime.fromFormat(
           self.searchPlayTime,
           NVRPlayerConfig.RequestTimeFormat,
           {zone: timezone}
         );
+        // __DEV__ && console.log('GOND searchPlayTimeLuxon 2: ', result);
         if (!result.isValid) {
-          result = DateTime.fromISO(self.searchPlayTime, {zone: timezone});
+          result = DateTime.fromISO(self.searchPlayTime, {
+            zone: timezone,
+          });
+          // __DEV__ && console.log('GOND searchPlayTimeLuxon 3: ', result);
+
+          if (!result.isValid) {
+            __DEV__ &&
+              console.log(
+                'GOND searchPlayTimeLuxon: invalid time input format ',
+                self.searchPlayTime
+              );
+            return self.searchDate;
+          }
         }
 
-        if (!result.isValid) {
-          __DEV__ &&
-            console.log(
-              'GOND search play time: invalid time input format ',
-              self.searchPlayTime
-            );
-          return self.searchDate;
-        }
-        // return self.isAlertPlay ? result.minus({seconds: 1}) : result;
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND searchPlayTimeLuxon: ',
+        //     result,
+        //     result.toFormat(NVRPlayerConfig.FrameFormat)
+        //   );
         return result;
       } else {
+        // __DEV__ && console.log('GOND searchPlayTimeLuxon 4: ', result);
         return (
           self.searchDate ??
           DateTime.now().setZone(self.timezone).startOf('day')
@@ -806,6 +819,8 @@ export const VideoModel = types
           daylightDate: parseDSTDate(data.DaylightDate),
           standardDate: parseDSTDate(data.StandardDate),
         });
+        // __DEV__ &&
+        //   console.log(`GOND HLS get timezone: `, tzName, self.timezone);
 
         // correct search date after timezone acquired
         const startOfSearchDay = self.searchDate
@@ -1632,7 +1647,7 @@ export const VideoModel = types
           isLoading: true,
         });
 
-        requestParams = [
+        let requestParams = [
           {
             ID: apiService.configToken.devId,
             sid: self.selectedStream.targetUrl.sid,
@@ -2177,7 +2192,16 @@ export const VideoModel = types
         self.isLive = isLive;
         // self.isSingleMode = true;
         if (alertData.searchTime) {
-          self.searchPlayTime = alertData.searchTime;
+          const dtObj = DateTime.fromISO(alertData.searchTime, {
+            zone: 'utc',
+            setZone: true,
+          });
+          if (dtObj.isValid)
+            self.searchPlayTime = dtObj.toFormat(
+              NVRPlayerConfig.RequestTimeFormat
+            );
+          else self.searchPlayTime = alertData.searchTime;
+
           // }
           self.searchDate = DateTime.fromISO(alertData.searchTime, {
             zone: 'utc',
