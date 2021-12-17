@@ -109,7 +109,7 @@ class AlarmDetailView extends Component {
     ];
   };
 
-  setHeader = () => {
+  setHeader = headerRightOnly => {
     const {alarmStore} = this.props;
     const {selectedAlarm} = alarmStore;
     if (!selectedAlarm) return;
@@ -142,41 +142,51 @@ class AlarmDetailView extends Component {
       selectedAlarm.siteName && selectedAlarm.siteName.length > 0
         ? selectedAlarm.siteName
         : selectedAlarm.serverID;
-    this.props.navigation.setOptions({
-      headerRight: () => (
-        <Button
-          style={[
-            commonStyles.buttonSave,
-            // {borderWidth: 2, borderColor: 'red'},
-          ]}
-          caption={SettingsTxt.save}
-          enable={canSave}
-          onPress={() =>
-            alarmStore.updateSelectedAlarm({
-              rate: rating.rateId,
-              note,
-            })
+    const headerRightCb = () => (
+      <Button
+        style={[
+          commonStyles.buttonSave,
+          // {borderWidth: 2, borderColor: 'red'},
+        ]}
+        caption={SettingsTxt.save}
+        enable={canSave}
+        onPress={() =>
+          alarmStore.updateSelectedAlarm({
+            rate: rating.rateId,
+            note,
+          })
+        }
+        styleCaption={commonStyles.buttonSaveText}
+        type="flat"
+      />
+    );
+    const headerTitleCb = () => (
+      <View style={{flexDirection: 'column', marginLeft: -20}}>
+        <Text style={{fontWeight: 'bold', fontSize: 18}}>
+          {selectedAlarm.isTempSDAlert
+            ? selectedAlarm.dvrUser && selectedAlarm.dvrUser.length > 0
+              ? selectedAlarm.dvrUser
+              : ALARM_TXT.NONEMPLOYEE
+            : currentSnapshot.channelName}
+        </Text>
+        <Text style={{fontSize: 16, textAlign: 'center'}} numberOfLines={1}>
+          {siteName}
+        </Text>
+      </View>
+    );
+
+    this.props.navigation.setOptions(
+      headerRightOnly
+        ? {
+            headerRight: headerRightCb,
+            headerTitleAlign: 'center',
           }
-          styleCaption={commonStyles.buttonSaveText}
-          type="flat"
-        />
-      ),
-      headerTitle: () => (
-        <View style={{flexDirection: 'column', marginLeft: -20}}>
-          <Text style={{fontWeight: 'bold', fontSize: 18}}>
-            {selectedAlarm.isTempSDAlert
-              ? selectedAlarm.dvrUser && selectedAlarm.dvrUser.length > 0
-                ? selectedAlarm.dvrUser
-                : ALARM_TXT.NONEMPLOYEE
-              : currentSnapshot.channelName}
-          </Text>
-          <Text style={{fontSize: 16, textAlign: 'center'}} numberOfLines={1}>
-            {siteName}
-          </Text>
-        </View>
-      ),
-      headerTitleAlign: 'center',
-    });
+        : {
+            headerRight: headerRightCb,
+            headerTitle: headerTitleCb,
+            headerTitleAlign: 'center',
+          }
+    );
   };
 
   onLayout = event => {
@@ -193,12 +203,12 @@ class AlarmDetailView extends Component {
   };
 
   onNoteChange = value => {
-    this.setState({note: value}, () => this.setHeader());
+    this.setState({note: value}, () => this.setHeader(true));
   };
 
   onRatingChange = value => {
     this.setState({rating: this.props.alarmStore.getRate(5 - value)}, () =>
-      this.setHeader()
+      this.setHeader(true)
     );
   };
 

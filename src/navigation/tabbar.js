@@ -34,9 +34,7 @@ class CMSTabbar extends React.Component {
     if (!isDisable) {
       navigation.jumpTo(routeName);
       if (routeName == ROUTERS.ALARM_STACK)
-        setTimeout(() => {
-          userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
-        }, 300);
+        userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
     }
   };
 
