@@ -654,7 +654,6 @@ export const POSModel = types
         sDate: __DEV__
           ? '20210901000000'
           : yesterday.startOf('day').toFormat(DateFormat.QuerryDateTime),
-        // sDate: '20210901000000', // for testing
         eDate: yesterday.endOf('day').toFormat(DateFormat.QuerryDateTime),
 
         // siteKey: '', // add later?
