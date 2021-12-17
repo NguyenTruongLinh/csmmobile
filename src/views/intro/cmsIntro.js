@@ -63,6 +63,8 @@ const IntroData = [
   },
 ];
 
+const {width} = Dimensions.get('window');
+
 class CMSIntroView extends Component {
   constructor(props) {
     super(props);
@@ -302,7 +304,7 @@ const styles = StyleSheet.create({
   nextButton: {
     // backgroundColor: CMSColors.PrimaryActive,
     height: 48,
-    width: Platform.OS === 'android' ? 136 : 148,
+    width: Platform.OS === 'android' && width < 600 ? 136 : 148,
     // marginLeft: 49,
     // marginRight: 35,
     marginHorizontal: 24,
