@@ -695,7 +695,10 @@ class RTCStreamingView extends Component {
           <Text
             style={[
               styles.channelInfo,
-              {left: videoStore.isFullscreen ? 10 : 0},
+              {
+                left: videoStore.isFullscreen ? 20 : 0,
+                top: videoStore.isFullscreen ? 20 : 0,
+              },
             ]}>
             {channelName ?? 'Unknown'}
           </Text>
