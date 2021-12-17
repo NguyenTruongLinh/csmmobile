@@ -19,7 +19,6 @@ export function onAlarmEvent({alarmStore, naviService, action, content}) {
   switch (action) {
     case NOTIFY_ACTION.ADD:
       if (currentRoute == ROUTERS.ALARM_LIVE) {
-        // reloadAlarms(dispatch);
         alarmStore && alarmStore.getAlarms({aty: AlertType_Support});
       } else {
         let strAlertType = String(alert.KAlertType);

@@ -263,7 +263,7 @@ class NotificationController extends React.Component {
     } = props;
     const {data, messageId} = message;
     // const {videoStore, alarmStore, appStore} = this.props;
-    // const naviService = appStore ? appStore.naviService : null;
+    const naviService = appStore ? appStore.naviService : null;
 
     // __DEV__ && console.log('GOND onNotificationReceived: ', data);
     if (shouldValidate && !this.validate(data)) {
@@ -324,7 +324,7 @@ class NotificationController extends React.Component {
         // __DEV__ && console.log('GOND onAlert notif: ', notif);
         break;
       case NOTIFY_TYPE.ALARM:
-        notif = onAlarmEvent({...props, action, content});
+        notif = onAlarmEvent({...props, naviService, action, content});
         break;
       case NOTIFY_TYPE.EXCEPTION:
         __DEV__ && console.log('GOND SmartER Notification: ', data);
