@@ -154,12 +154,12 @@ const UserModel = types
   .actions(self => ({
     parse(_user) {
       self.userId = _user.UserID;
-      self.userName = _user.UName ?? '';
-      self.firstName = _user.FName ?? '';
-      self.lastName = _user.LName ?? '';
-      self.email = _user.Email ?? '';
+      self.userName = _user.UName ?? self.userName;
+      self.firstName = _user.FName ?? self.firstName;
+      self.lastName = _user.LName ?? self.lastName;
+      self.email = _user.Email ?? self.email;
       self.avatar = _user.UPhoto ?? '';
-      self.isAdmin = _user.IsAdmin ?? '';
+      self.isAdmin = _user.IsAdmin ?? false;
       // self.isAuth = true;
     },
     updateProfile({firstName, lastName, email, avatar}) {
@@ -372,6 +372,7 @@ export const UserStoreModel = types
       const res = yield apiService.login(username, password);
       __DEV__ && console.log('GOND login res = ', JSON.stringify(res));
       if (res && res.status == 200 && res.Result) {
+        self.user.userName = username;
         self.loginSuccess(res);
       } else {
         self.loginFailed(res);
@@ -727,11 +728,12 @@ export const UserStoreModel = types
     // #region local data
     saveLocal: flow(function* () {
       try {
-        let data = self.user.data;
+        let data = {...self.user};
         data.api = self.api.data;
         data.domain = self.domain;
         let localUser = yield dbService.getFirstData(LocalDBName.user);
 
+        // __DEV__ && console.log('GOND user save local data: ', data);
         if (!localUser) {
           yield dbService.add(LocalDBName.user, data);
         } else {

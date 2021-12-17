@@ -127,8 +127,10 @@ const AlarmData = types
     channelNo: types.number,
     alertType: types.string,
     chanMask: types.maybeNull(types.frozen(BigNumber)),
-    thumb: types.maybeNull(types.frozen()),
   })
+  .volatile(self => ({
+    thumb: null,
+  }))
   .views(self => ({
     get snapshotItems() {
       let res = self.snapshot.map(ss => ({
@@ -300,9 +302,11 @@ const AlarmData = types
     setThumbnail(value) {
       self.thumb = value;
     },
-    update({rateId, note}) {
-      self.rate = rateId;
-      self.note = note;
+    update({rateId, note, user}) {
+      self.rate = rateId ?? self.rate;
+      self.note = note ?? self.note;
+      self.cmsUser = user ?? self.cmsUser;
+      self.status = 1;
     },
   }));
 
@@ -407,9 +411,11 @@ export const AlarmModel = types
     searchPage: types.number,
     selectedAlarm: types.maybeNull(types.reference(AlarmData)),
     notifiedAlarm: types.maybeNull(AlarmData),
+    isSearch: types.optional(types.boolean, false),
   })
-  // .volatile(self => ({
-  // }))
+  .volatile(self => ({
+    lastParams: {aty: AlertType_Support},
+  }))
   .views(self => ({
     get filteredLiveData() {
       if (!self.filterText) return self.liveAlarms;
@@ -506,19 +512,27 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND get getVAConfigs error: ', err);
       }
     }),
-    getAlarms: flow(function* getAlarms(params, isSearch) {
+    getAlarms: flow(function* (params, isSearch) {
+      if (params) self.lastParams = params;
+      self.isSearch = isSearch ?? self.isSearch;
+
       self.isLoading = true;
-      if (isSearch) {
+      if (self.isSearch) {
         self.searchAlarms = [];
       } else {
         self.liveAlarms = [];
       }
       try {
-        const res = yield apiService.get(Alert.controller, null, null, params);
+        const res = yield apiService.get(
+          Alert.controller,
+          null,
+          null,
+          params ?? self.lastParams
+        );
         __DEV__ &&
           console.log(
             'GOND get getAlarms ',
-            isSearch ? 'search: ' : 'live: ',
+            self.isSearch ? 'search: ' : 'live: ',
             res
           );
 
@@ -554,7 +568,7 @@ export const AlarmModel = types
 
             return alarm;
           });
-          if (isSearch) {
+          if (self.isSearch) {
             self.searchAlarms = data;
           } else {
             self.liveAlarms = data;
@@ -576,14 +590,14 @@ export const AlarmModel = types
       return resConfig && resVAAlert && resAlarms;
     }),
     onNewSnapshot(alarm) {
-      __DEV__ && console.log('GOND onAlarm NewSnapshot: ', alarm);
+      // __DEV__ && console.log('GOND onAlarm NewSnapshot: ', alarm);
+      // TODO
     },
-    updateSelectedAlarm: flow(function* ({rate, note}) {
+    updateSelectedAlarm: flow(function* ({rate, note, user}) {
       self.isLoading = true;
       const rateId = rate == -1 ? ID_Canned_Message : rate;
-      self.selectedAlarm.update({rateId, note});
       try {
-        const res = apiService.put(
+        const res = yield apiService.put(
           Alert.controller,
           String(self.selectedAlarm.kAlertEvent),
           '',
@@ -594,6 +608,10 @@ export const AlarmModel = types
             Rate: rateId,
           }
         );
+        // __DEV__ && console.log('GOND updateSelectedAlarm: ', res);
+        if (!res.error)
+          self.selectedAlarm.update({rateId, note, user});
+
         snackbarUtil.handleSaveResult(res);
       } catch (err) {
         __DEV__ && console.log('GOND update alarm error: ', err);

@@ -58,6 +58,7 @@ class AlarmDetailView extends Component {
     this.scrollX = new Animated.Value(0);
     this.reactions = [];
     this._isMounted = false;
+    this.shouldReloadOnExit = false;
   }
 
   async componentDidMount() {
@@ -93,6 +94,10 @@ class AlarmDetailView extends Component {
     videoStore.onExitSinglePlayer();
     videoStore.releaseStreams();
     this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
+
+    // if (this.shouldReloadOnExit) {
+    //   alarmStore.getAlarms();
+    // }
   }
 
   initReactions = () => {
@@ -150,12 +155,7 @@ class AlarmDetailView extends Component {
         ]}
         caption={SettingsTxt.save}
         enable={canSave}
-        onPress={() =>
-          alarmStore.updateSelectedAlarm({
-            rate: rating.rateId,
-            note,
-          })
-        }
+        onPress={this.onSave}
         styleCaption={commonStyles.buttonSaveText}
         type="flat"
       />
@@ -202,13 +202,28 @@ class AlarmDetailView extends Component {
     });
   };
 
+  onSave = async () => {
+    const {rating, note} = this.state;
+    const {userStore, alarmStore} = this.props;
+
+    // console.log('GOND onAlarm saved: ', userStore.user);
+    await alarmStore.updateSelectedAlarm({
+      rate: rating.rateId,
+      note,
+      user: userStore.user ? userStore.user.userName : undefined,
+    });
+    // console.log('GOND onAlarm saved 2: ', alarmStore.selectedAlarm);
+    this.shouldReloadOnExit = true;
+    this.forceUpdate();
+  };
+
   onNoteChange = value => {
-    this.setState({note: value}, () => this.setHeader(true));
+    this.setState({note: value}, () => this.setHeader());
   };
 
   onRatingChange = value => {
     this.setState({rating: this.props.alarmStore.getRate(5 - value)}, () =>
-      this.setHeader(true)
+      this.setHeader()
     );
   };
 
@@ -846,4 +861,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('alarmStore', 'videoStore')(observer(AlarmDetailView));
+export default inject(
+  'alarmStore',
+  'videoStore',
+  'userStore'
+)(observer(AlarmDetailView));
