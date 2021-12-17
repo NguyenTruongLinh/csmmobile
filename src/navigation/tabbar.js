@@ -14,6 +14,7 @@ import {Tabbar as Labels} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
 import {IconCustom} from '../components/CMSStyleSheet';
 import ROUTERS from '../consts/routes';
+import {WIDGET_COUNTS} from '../consts/misc';
 
 const TabIcons = [
   'ic_home_24px',
@@ -28,6 +29,16 @@ class CMSTabbar extends React.Component {
   constructor(props) {
     super(props);
   }
+
+  onTabPress = (isDisable, navigation, routeName, userStore) => {
+    if (!isDisable) {
+      navigation.jumpTo(routeName);
+      if (routeName == ROUTERS.ALARM_STACK)
+        setTimeout(() => {
+          userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
+        }, 300);
+    }
+  };
 
   render() {
     const {navigation, state, appStore, userStore} = this.props;
@@ -67,7 +78,9 @@ class CMSTabbar extends React.Component {
           return (
             <TouchableOpacity
               key={route.name}
-              onPress={() => (isDisable ? {} : navigation.jumpTo(route.name))}
+              onPress={() =>
+                this.onTabPress(isDisable, navigation, route.name, userStore)
+              }
               style={styles.tab}>
               <IconCustom
                 style={styles.icon}
