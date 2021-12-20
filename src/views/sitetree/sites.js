@@ -314,7 +314,8 @@ class SitesView extends Component {
                 size={variables.fix_fontSize_Icon}
               />
             )}
-            <Text style={styles.siteName}>
+            <Text
+              style={[styles.siteName, {paddingLeft: isHealthRoute ? 14 : 0}]}>
               {isHealthRoute ? item.siteName : item.name}
             </Text>
           </View>
@@ -449,7 +450,7 @@ const styles = StyleSheet.create({
   siteName: {
     fontSize: 16,
     fontWeight: '500',
-    paddingLeft: 14,
+    // paddingLeft: 14,
     marginRight: 30,
   },
   alertsCountContainer: {

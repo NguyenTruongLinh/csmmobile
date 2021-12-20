@@ -49,7 +49,7 @@ module.exports = StyleSheet.create({
     alignItems: 'center',
   },
   flatSearchBarContainer: {
-    paddingLeft: 21,
+    paddingLeft: 18,
     height: 50,
     backgroundColor: CMSColors.White,
   },
