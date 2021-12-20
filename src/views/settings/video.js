@@ -141,9 +141,10 @@ class VideosettingView extends Component {
 
     const checkBox = (
       <MaterialIcons
+        style={{marginTop: 15, marginRight: 8}}
         name={isChecked ? 'radio-button-checked' : 'radio-button-unchecked'}
         color={CMSColors.PrimaryActive}
-        size={20}
+        size={28}
       />
     );
     return (
