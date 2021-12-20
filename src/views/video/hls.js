@@ -410,14 +410,8 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      streamData,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams} = this.state;
@@ -439,8 +433,7 @@ class HLSStreamingView extends React.Component {
             style={[
               styles.channelInfo,
               {
-                left: videoStore.isFullscreen ? 20 : 0,
-                top: videoStore.isFullscreen ? 20 : 0,
+                top: videoStore.isFullscreen ? '10%' : 0,
               },
             ]}>
             {channel.name ?? 'Unknown'}

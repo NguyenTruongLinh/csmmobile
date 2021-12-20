@@ -875,8 +875,7 @@ class DirectVideoView extends React.Component {
             style={[
               styles.channelInfo,
               {
-                left: videoStore.isFullscreen ? 20 : 0,
-                top: videoStore.isFullscreen ? 20 : 0,
+                top: videoStore.isFullscreen ? '10%' : 0,
               },
             ]}>
             {serverInfo.channelName ?? 'Unknown'}
