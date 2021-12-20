@@ -221,7 +221,7 @@ class SettingsView extends Component {
                   color={CMSColors.RowOptions}
                 />
               </View> */}
-              <Text style={styles.listText}>Logout</Text>
+              <Text style={[styles.listText, {color: '#d9534f'}]}>Logout</Text>
 
               <View style={styles.listEnterIcon}>
                 <IconCustom
