@@ -218,12 +218,12 @@ class AlarmDetailView extends Component {
   };
 
   onNoteChange = value => {
-    this.setState({note: value}, () => this.setHeader());
+    this.setState({note: value}, () => this.setHeader(true));
   };
 
   onRatingChange = value => {
     this.setState({rating: this.props.alarmStore.getRate(5 - value)}, () =>
-      this.setHeader()
+      this.setHeader(true)
     );
   };
 
