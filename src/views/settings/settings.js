@@ -222,14 +222,6 @@ class SettingsView extends Component {
                 />
               </View> */}
               <Text style={[styles.listText, {color: '#d9534f'}]}>Logout</Text>
-
-              <View style={styles.listEnterIcon}>
-                <IconCustom
-                  name="keyboard-right-arrow-button"
-                  size={16}
-                  color={CMSColors.RowOptions}
-                />
-              </View>
             </View>
           </Ripple>
         </ScrollView>
