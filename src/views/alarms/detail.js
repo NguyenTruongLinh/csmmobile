@@ -709,7 +709,8 @@ class AlarmDetailView extends Component {
     return (
       <View style={styles.container} onLayout={this.onLayout}>
         <KeyboardAwareScrollView>
-          <View style={{flex: 1, height: imgSize.height, flexDirection: 'row'}}>
+          <View
+            style={{flex: 1, height: imgSize.height, flexDirection: 'column'}}>
             <FlatList
               pagingEnabled={true}
               style={{flex: 1}}
@@ -736,13 +737,13 @@ class AlarmDetailView extends Component {
             <View
               style={{
                 position: 'absolute',
-                justifyContent: 'center',
-                alignItems: 'flex-end',
-                left: 0,
-                right: 0,
-                height: '100%',
-                flexDirection: 'row',
-                paddingBottom: 5,
+                alignItems: 'center',
+                width: '100%',
+                top: imgSize.height - 18,
+                // right: 0,
+                // height: '100%',
+                // flexDirection: 'row',
+                // paddingBottom: 5,
               }}>
               <LiquidLike
                 data={selectedAlarm ? selectedAlarm.snapshot : []}
