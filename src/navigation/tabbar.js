@@ -33,8 +33,6 @@ class CMSTabbar extends React.Component {
   onTabPress = (isDisable, navigation, routeName, userStore) => {
     if (!isDisable) {
       navigation.jumpTo(routeName);
-      if (routeName == ROUTERS.ALARM_STACK)
-        userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
     }
   };
 

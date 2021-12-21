@@ -704,6 +704,7 @@ export const UserStoreModel = types
       }, 30000); // 30 secs
     },
     resetWidgetCount: flow(function* (widgetId) {
+      __DEV__ && console.log('GOND resetWidgetCount widgetId: ', widgetId);
       if (self.widgetCounts[widgetId] === 0) return true;
       self.widgetCounts[widgetId] = 0;
       try {

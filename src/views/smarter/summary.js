@@ -38,6 +38,7 @@ import {
   ExceptionSortField,
   ExceptionSortFieldName,
   GroupByException,
+  WIDGET_COUNTS,
 } from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
 import ROUTERS from '../../consts/routes';
@@ -69,7 +70,7 @@ class DashboardView extends React.Component {
   componentDidMount() {
     __DEV__ && console.log('ExceptionsSummaryView componentDidMount');
     this._isMounted = true;
-    const {route, navigation} = this.props;
+    const {route, navigation, userStore} = this.props;
 
     __DEV__ &&
       console.log('ExceptionsSummaryView route.params = ', route.params);
@@ -91,6 +92,7 @@ class DashboardView extends React.Component {
 
     this.setHeader();
     this.getData();
+    userStore.resetWidgetCount(WIDGET_COUNTS.SMART_ER);
   }
 
   componentWillUnmount() {
@@ -853,4 +855,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('exceptionStore', 'sitesStore')(observer(DashboardView));
+export default inject(
+  'exceptionStore',
+  'sitesStore',
+  'userStore'
+)(observer(DashboardView));

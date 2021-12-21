@@ -30,6 +30,7 @@ import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
 import {Comps as CompTxt} from '../../localization/texts';
 import {No_Data} from '../../consts/images';
+import {WIDGET_COUNTS} from '../../consts/misc';
 
 // const ListViewHeight = 56; // Dimensions.get('window').height / 16;
 
@@ -66,7 +67,8 @@ class SitesView extends Component {
   async componentDidMount() {
     this._isMounted = true;
     // const {sitesStore, healthStore, userStore, route} = this.props;
-    const {navigation} = this.props;
+    const {navigation, userStore} = this.props;
+    const {isHealthRoute} = this.state;
     if (__DEV__)
       console.log('SitesView componentDidMount: ', this.searchbarRef);
 
@@ -93,6 +95,9 @@ class SitesView extends Component {
     await this.getData();
 
     this.setHeader();
+    if (isHealthRoute) {
+      userStore.resetWidgetCount(WIDGET_COUNTS.HEALTH);
+    }
   }
 
   getData = async isReload => {

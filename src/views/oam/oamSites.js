@@ -22,6 +22,7 @@ import variables from '../../styles/variables';
 import ROUTERS from '../../consts/routes';
 import {No_Data} from '../../consts/images';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
+import {WIDGET_COUNTS} from '../../consts/misc';
 
 const Item = ({title}) => (
   <View style={styles.item}>
@@ -45,9 +46,10 @@ class OAMSitesView extends Component {
   componentDidMount() {
     __DEV__ && console.log('OAMSitesView componentDidMount');
 
-    const {sitesStore} = this.props;
+    const {sitesStore, userStore} = this.props;
     this.setHeader();
     sitesStore.getOAMSites();
+    userStore.resetWidgetCount(WIDGET_COUNTS.OAM);
   }
 
   setHeader = () => {
@@ -299,4 +301,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('sitesStore', 'oamStore')(observer(OAMSitesView));
+export default inject(
+  'sitesStore',
+  'oamStore',
+  'userStore'
+)(observer(OAMSitesView));

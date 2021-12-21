@@ -18,7 +18,6 @@ import {
 } from '../../consts/images';
 import ROUTERS from '../../consts/routes';
 import CMSColors from '../../styles/cmscolors';
-import {WIDGET_COUNTS} from '../../consts/misc';
 
 class HomeView extends Component {
   constructor(props) {
@@ -58,20 +57,17 @@ class HomeView extends Component {
   }
 
   onAlarmPress = () => {
-    const {navigation, userStore} = this.props;
-    userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
+    const {navigation} = this.props;
     navigation.navigate(ROUTERS.ALARM_STACK);
   };
 
   onVideoPress = () => {
     const {navigation} = this.props;
-
     navigation.navigate(ROUTERS.VIDEO_STACK);
   };
 
   onHealthPress = () => {
-    const {navigation, userStore} = this.props;
-    userStore.resetWidgetCount(WIDGET_COUNTS.HEALTH);
+    const {navigation} = this.props;
     __DEV__ &&
       console.log('GOND onHealthPress, navi state: ', navigation.state);
 
@@ -79,16 +75,12 @@ class HomeView extends Component {
   };
 
   onSmartERPress = () => {
-    const {navigation, userStore} = this.props;
-    userStore.resetWidgetCount(WIDGET_COUNTS.SMART_ER);
-
+    const {navigation} = this.props;
     navigation.navigate(ROUTERS.SMARTER_DASHBOARD);
   };
 
   onOAMPress = () => {
-    const {navigation, userStore} = this.props;
-    userStore.resetWidgetCount(WIDGET_COUNTS.OAM);
-
+    const {navigation} = this.props;
     navigation.navigate(ROUTERS.OAM_SITES);
   };
 

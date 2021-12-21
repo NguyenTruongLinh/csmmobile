@@ -24,7 +24,7 @@ import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 
 import {Comps as CompTxt} from '../../localization/texts';
-import {AlertType_Support} from '../../consts/misc';
+import {AlertType_Support, WIDGET_COUNTS} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
 import {No_Data, No_Image} from '../../consts/images';
 
@@ -38,6 +38,8 @@ class AlarmsLiveView extends Component {
   componentDidMount() {
     __DEV__ && console.log('AlarmsLive componentDidMount');
 
+    const {userStore} = this.props;
+    userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
     this.props.alarmStore.getLiveData(this.buildRequestParams());
     // this.refreshLiveData();
     this.setHeader();
@@ -181,4 +183,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('alarmStore')(observer(AlarmsLiveView));
+export default inject('alarmStore', 'userStore')(observer(AlarmsLiveView));
