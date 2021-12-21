@@ -84,45 +84,12 @@ const onOpenExceptionEvent = async props => {
           );
 
           if (res) {
-            if (currentRoute == ROUTERS.TRANS_DETAIL) {
-              // Do nothing
-              // naviService.back();
-              // setTimeout(
-              //   () =>
-              //     naviService.navigate(ROUTERS.TRANS_DETAIL, {
-              //       fromNotify: true,
-              //     }),
-              //   500
-              // );
-            } else if (currentRoute == ROUTERS.SMARTER_DASHBOARD) {
-              naviService.navigate(ROUTERS.TRANS_DETAIL, {fromNotify: true});
-            } else if (topRoute == ROUTERS.HOME_NAVIGATOR) {
-              if (currentRoute != ROUTERS.HOME) naviService.popToTop();
-              setTimeout(
-                () =>
-                  naviService.navigate({
-                    // screen: ROUTERS.TRANS_DETAIL,
-                    // initial: false,
-                    name: ROUTERS.SMARTER_DASHBOARD,
-                    params: {
-                      redirect: ROUTERS.TRANS_DETAIL,
-                      fromNotify: true,
-                    },
-                  }),
-                500
-              );
-            } else {
-              // console.log('GOND onOpenExceptionEvent: 4');
-              naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
-                screen: ROUTERS.SMARTER_DASHBOARD,
-                params: {
-                  redirect: ROUTERS.TRANS_DETAIL,
-                  // screen: ROUTERS.TRANS_DETAIL,
-                  params: {fromNotify: true},
-                },
-                initial: false,
-              });
-            }
+            naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
+              screen: ROUTERS.HOME,
+              initial: false,
+            });
+            naviService.navigate(ROUTERS.SMARTER_DASHBOARD);
+            naviService.navigate(ROUTERS.TRANS_DETAIL);
           }
         }
         break;
