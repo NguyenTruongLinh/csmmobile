@@ -704,7 +704,7 @@ class RTCStreamingView extends Component {
         <ImageBackground
           source={NVR_Play_NoVideo_Image}
           style={{width: width, height: height}}
-          resizeMode="stretch">
+          resizeMode="cover">
           {/* <View style={{width: width, height: height}}> */}{' '}
           <Text
             style={[

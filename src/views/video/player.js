@@ -485,6 +485,7 @@ class VideoPlayerView extends Component {
         <Image
           style={{width: width, height: height}}
           source={NVR_Play_NoVideo_Image}
+          resizeMode="cover"
         />
       );
     }
