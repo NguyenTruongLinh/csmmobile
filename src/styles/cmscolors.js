@@ -132,4 +132,7 @@ module.exports = {
 
   //icon
   InputIconColor: '#757575',
+
+  //filter
+  FilterRowBg: '#f7f7f7',
 };

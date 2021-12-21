@@ -131,20 +131,8 @@ export default class AlarmFilter extends Component {
     let {params} = props;
     if (!params) return [];
     let filterMore = [];
-    let {
-      sdate,
-      edate,
-      sty,
-      aty,
-      ara,
-      ano,
-      sta,
-      sid,
-      vty,
-      aid,
-      avaid,
-      time,
-    } = props.params;
+    let {sdate, edate, sty, aty, ara, ano, sta, sid, vty, aid, avaid, time} =
+      props.params;
     //Status
     if (sta) filterMore.push(FilterMore.Status);
 
@@ -997,9 +985,11 @@ const styles = StyleSheet.create({
   rowListFilterContain: {
     backgroundColor: CMSColors.White,
     marginTop: 6,
-    // paddingLeft: 12,
-    // paddingRight: 12,
     paddingHorizontal: 12,
+    marginHorizontal: 12,
+    // borderColor: 'red',
+    // borderWidth: 1,
+    backgroundColor: CMSColors.FilterRowBg,
   },
   rowListFilterTimeContain: {
     backgroundColor: CMSColors.White,
@@ -1007,14 +997,16 @@ const styles = StyleSheet.create({
     // paddingLeft: 12,
     // paddingRight: 12,
     paddingHorizontal: 12,
+    marginHorizontal: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    backgroundColor: CMSColors.FilterRowBg,
   },
   rowListFilter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: CMSColors.White,
+    // backgroundColor: CMSColors.White,
     //flex: 1,
     height: 48,
   },
