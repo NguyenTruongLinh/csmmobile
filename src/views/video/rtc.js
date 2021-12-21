@@ -374,8 +374,13 @@ class RTCStreamingView extends Component {
     const msgObj =
       typeof msg.data == 'string' ? JSON.parse(msg.data) : msg.data;
     const {msg_type, data} = msgObj;
-    const {videoStore, viewer, searchTime, searchPlayTime, noVideo} =
-      this.props;
+    const {
+      videoStore,
+      viewer,
+      searchTime,
+      searchPlayTime,
+      noVideo,
+    } = this.props;
 
     if ((data.error_code && data.error_code != '0') || data.status == 'FAIL') {
       viewer.setStreamStatus({
@@ -594,15 +599,19 @@ class RTCStreamingView extends Component {
           error: '',
         });
 
-        if (!videoStore.isLive && this.shouldSetTime && searchPlayTime) {
+        if (
+          !videoStore.isLive &&
+          this.shouldSetTime &&
+          videoStore.searchPlayTimeLuxon
+        ) {
           setTimeout(() => {
             if (this._isMounted && viewer) {
-              const searchTime = DateTime.fromISO(searchPlayTime, {
-                zone: videoStore.timezone,
-              });
+              // const searchTime = DateTime.fromISO(searchPlayTime, {
+              //   zone: videoStore.timezone,
+              // });
               this.setState(
                 {
-                  startTs: searchTime.toSeconds(),
+                  startTs: searchPlayTimeLuxon.toSeconds(), // searchTime.toSeconds(),
                 },
                 () => this.startPlayback()
               );
@@ -661,8 +670,13 @@ class RTCStreamingView extends Component {
   };
 
   render() {
-    const {remoteStream, channelName, isLoading, connectionStatus, error} =
-      this.props.viewer;
+    const {
+      remoteStream,
+      channelName,
+      isLoading,
+      connectionStatus,
+      error,
+    } = this.props.viewer;
     const {width, height, videoStore} = this.props;
     // const {error} = this.state;
     const noVideo =

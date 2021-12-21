@@ -388,7 +388,13 @@ export const VideoModel = types
       if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
         return util.isNullOrUndef(self.timezoneOffset)
           ? DateTime.local().zone.name
-          : `UTC${self.timezoneOffset == 0 ? '' : self.timezoneOffset}`;
+          : `UTC${
+              self.timezoneOffset > 0
+                ? '+' + self.timezoneOffset
+                : self.timezoneOffset < 0
+                ? self.timezoneOffset
+                : ''
+            }`;
       } else {
         return self.timezoneName ?? DateTime.local().zone.name;
       }
@@ -441,7 +447,11 @@ export const VideoModel = types
     },
     get searchPlayTimeLuxon() {
       // __DEV__ &&
-      //   console.log('GOND searchPlayTimeLuxon 1: ', self.searchPlayTime);
+      //   console.log(
+      //     'GOND searchPlayTimeLuxon 1: ',
+      //     self.searchPlayTime,
+      //     self.timezone
+      //   );
       if (self.searchPlayTime) {
         const timezone = self.timezone; // self.isAlertPlay ? 'utc' : self.timezone;
         let result = DateTime.fromFormat(
@@ -462,13 +472,13 @@ export const VideoModel = types
                 'GOND searchPlayTimeLuxon: invalid time input format ',
                 self.searchPlayTime
               );
-            return self.searchDate;
+            return self.searchDate ?? DateTime.now().startOf('day');
           }
         }
 
         // __DEV__ &&
         //   console.log(
-        //     'GOND searchPlayTimeLuxon: ',
+        //     'GOND searchPlayTimeLuxon 4: ',
         //     result,
         //     result.toFormat(NVRPlayerConfig.FrameFormat)
         //   );
@@ -724,7 +734,15 @@ export const VideoModel = types
           if (self.timezoneName) {
             self.searchDate.setZone(self.timezoneName);
           } else if (self.timezoneOffset) {
-            self.searchDate.setZone(`UTC${self.timezoneOffset}`);
+            self.searchDate.setZone(
+              `UTC${
+                self.timezoneOffset > 0
+                  ? '+' + self.timezoneOffset
+                  : self.timezoneOffset < 0
+                  ? self.timezoneOffset
+                  : ''
+              }`
+            );
           }
           // else : 'local'
           self.setDisplayDateTime(
@@ -840,7 +858,7 @@ export const VideoModel = types
           });
         }
       },
-      setTimezone(value) {
+      setTimezoneOffset(value) {
         if (util.isNullOrUndef(value)) {
           __DEV__ && console.log('GOND setTimezone, is null: ', value);
           return;
@@ -1936,6 +1954,7 @@ export const VideoModel = types
         return result;
       },
       buildTimelineData: flow(function* (data) {
+        if (!self.selectedStream) return;
         let jTimeStamp = data;
         if (jTimeStamp && jTimeStamp.BigData) {
           if (self.cloudType == CLOUD_TYPE.HLS) {

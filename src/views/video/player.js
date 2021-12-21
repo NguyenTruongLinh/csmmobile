@@ -476,25 +476,26 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     const {selectedStream} = videoStore;
     const {pause, sWidth, sHeight} = this.state;
+    const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
     // __DEV__ && console.log('GOND renderVid player: ', selectedStream);
     if (!selectedStream) {
       return (
         <Image
-          style={{width: sWidth, height: height}}
+          style={{width: width, height: height}}
           source={NVR_Play_NoVideo_Image}
         />
       );
     }
 
     let playerProps = {
-      width: sWidth,
+      width: width,
       height: height,
       hdMode: videoStore.hdMode,
       isLive: videoStore.isLive,
       noVideo: videoStore.isLive ? false : videoStore.noVideo, // this.isNoDataSearch,
       searchDate: videoStore.searchDate,
-      searchPlayTime: videoStore.searchPlayTime,
+      // searchPlayTime: videoStore.searchPlayTime,
       paused: videoStore.paused,
       singlePlayer: true,
     };
@@ -597,7 +598,7 @@ class VideoPlayerView extends Component {
 
     const textStyle = [
       styles.datetime,
-      {fontSize: normalize(isFullscreen ? 24 : 32)},
+      {fontSize: normalize(isFullscreen ? 22 : 28)},
     ];
 
     return (

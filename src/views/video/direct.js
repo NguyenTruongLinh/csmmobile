@@ -64,6 +64,7 @@ class DirectVideoView extends React.Component {
     this.reactions = [];
     this.lastLogin = {userName: '', password: ''};
     this.pauseOnFilterCounter = 0;
+    this.lastFrameTime = null;
     this.lastTimestamp = 0;
   }
 
@@ -395,7 +396,7 @@ class DirectVideoView extends React.Component {
     const {
       videoStore,
       serverInfo,
-      searchPlayTime,
+      // searchPlayTime,
       isLive,
       singlePlayer,
       index,
@@ -527,6 +528,8 @@ class DirectVideoView extends React.Component {
           console.log('GOND NOVIDEO, channel: ', serverInfo.channelName);
 
         if (singlePlayer) {
+          __DEV__ && console.log('GOND NOVIDEO, channel: ', serverInfo);
+          this.stop();
           serverInfo.setStreamStatus({
             isLoading: false,
             connectionStatus: STREAM_STATUS.NOVIDEO,
@@ -640,19 +643,18 @@ class DirectVideoView extends React.Component {
           }
           videoStore.setTimeline(timeData);
           if (timeData[0] && timeData[0].timezone) {
-            videoStore.setTimezone(timeData[0].timezone);
+            videoStore.setTimezoneOffset(timeData[0].timezone);
           }
 
           // dongpt: set play time from alert/exception after receiving timeline
-          if (!isLive && this.shouldSetTime && searchPlayTime) {
+          const {searchPlayTimeLuxon} = videoStore;
+          this.lastFrameTime = searchPlayTimeLuxon;
+          if (!isLive && this.shouldSetTime && searchPlayTimeLuxon) {
             setTimeout(() => {
               if (this._isMounted && this.ffmpegPlayer) {
-                const searchTime = DateTime.fromISO(searchPlayTime, {
-                  zone: 'utc',
-                });
                 const secondsValue =
-                  searchTime.toSeconds() -
-                  searchTime.startOf('day').toSeconds();
+                  searchPlayTimeLuxon.toSeconds() -
+                  searchPlayTimeLuxon.startOf('day').toSeconds();
                 __DEV__ &&
                   console.log(
                     'GOND Direct on play search at time: ',
@@ -711,6 +713,12 @@ class DirectVideoView extends React.Component {
         this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps(params);
       }, 500 * index);
     } else {
+      __DEV__ &&
+        console.log(
+          `GOND ~~~ setnative in single player`,
+          serverInfo.channelName,
+          params
+        );
       this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps(params);
     }
   };
@@ -733,32 +741,36 @@ class DirectVideoView extends React.Component {
 
     if (this._isMounted /*&& this.ffmpegPlayer*/ && serverInfo.server) {
       if (value === true || value == undefined) {
-        // this.ffmpegPlayer.setNativeProps({
-        //   pause: true,
-        // });
         this.setNative({pause: true});
       } else {
-        // this.ffmpegPlayer.setNativeProps({
+        // this.setNative({
         //   startplayback: {
         //     ...serverInfo.playData,
         //     searchMode: !isLive,
         //     date: isLive
         //       ? undefined
-        //       : // : this.lastFrameTime ?? videoStore.searchDateString,
-        //         this.lastFrameTime ?? videoStore.searchDateString,
+        //       : this.lastFrameTime ?? videoStore.searchDateString,
+        //     // : videoStore.searchDateString,
         //     hd: hdMode,
         //   },
         // });
-        this.setNative({
-          startplayback: {
-            ...serverInfo.playData,
-            searchMode: !isLive,
-            date: isLive
-              ? undefined
-              : this.lastFrameTime ?? videoStore.searchDateString,
-            hd: hdMode,
-          },
-        });
+
+        __DEV__ &&
+          console.log('GOND unpause this.lastFrameTime = ', this.lastFrameTime);
+        if (this.lastFrameTime) {
+          this.playAt(
+            this.lastFrameTime.toSeconds() -
+              this.lastFrameTime.startOf('day').toSeconds()
+          );
+        } else {
+          this.setNative({
+            startplayback: {
+              ...serverInfo.playData,
+              searchMode: !isLive,
+              hd: hdMode,
+            },
+          });
+        }
       }
     }
   };
@@ -774,6 +786,7 @@ class DirectVideoView extends React.Component {
       this.ffmpegPlayer.setNativeProps({
         seekpos: {pos: value, hd: this.props.videoStore.hdMode},
       });
+      this.lastTimestamp = 0;
       // setTimeout(() => this.ffmpegPlayer && this.pause(false), 200);
     } else {
       __DEV__ && console.log('GOND direct playAt ffmpegPlayer not available!');
@@ -783,7 +796,7 @@ class DirectVideoView extends React.Component {
   onFrameTime = frameTime => {
     const {videoStore} = this.props;
     const {timestamp, value} = frameTime;
-    if (timestamp <= this.lastTimestamp) return;
+    // if (timestamp <= this.lastTimestamp) return;
     this.lastTimestamp = timestamp;
 
     if (value) {
@@ -811,13 +824,15 @@ class DirectVideoView extends React.Component {
         {zone: 'utc'}
       ).toSeconds();
       videoStore.setFrameTime(frameTime);
-      this.lastFrameTime =
-        Platform.OS == 'android'
-          ? DateTime.fromFormat(
-              value,
-              NVRPlayerConfig.ResponseTimeFormat
-            ).toFormat(NVRPlayerConfig.RequestTimeFormat)
-          : value;
+      this.lastFrameTime = DateTime.fromFormat(
+        value,
+        NVRPlayerConfig.ResponseTimeFormat,
+        {zone: videoStore.timezone}
+      );
+      // this.lastFrameTime =
+      // Platform.OS == 'android'
+      //   ? DateTime.fromFormat(value, NVRPlayerConfig.ResponseTimeFormat).toFormat(NVRPlayerConfig.RequestTimeFormat)
+      //   : value;
       // const timeDiff =
       //   timestamp -
       //   DateTime.fromFormat(value, NVRPlayerConfig.ResponseTimeFormat, {
