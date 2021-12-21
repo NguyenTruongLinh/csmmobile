@@ -47,7 +47,8 @@ import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
-const iconSize = normalize(28);
+const IconSize = normalize(28);
+const IconViewSize = IconSize * 3;
 
 class VideoPlayerView extends Component {
   static defaultProps = {
@@ -582,7 +583,7 @@ class VideoPlayerView extends Component {
           style={[
             styles.footerButtonsWrap,
             {
-              paddingBottom: (sHeight * 0.2 - iconSize) / 4,
+              paddingBottom: (sHeight * 0.2 - IconSize) / 4,
             },
           ]}>
           {this.renderFeatureButtons()}
@@ -632,55 +633,67 @@ class VideoPlayerView extends Component {
     }
 
     const {videoStore} = this.props;
-    const {isLive, selectedChannelIndex, displayChannels, paused} = videoStore;
+    const {
+      isLive,
+      selectedChannelIndex,
+      displayChannels,
+      paused,
+      noVideo,
+    } = videoStore;
     const {sHeight} = this.state;
-    // const iconSize = normalize(28); // normalize(sHeight * 0.035);
+    // const IconSize = normalize(28); // normalize(sHeight * 0.035);
 
     return (
       <View style={styles.controlsContainer}>
-        {selectedChannelIndex > 0 ? (
-          <IconCustom
-            name="keyboard-left-arrow-button"
-            size={iconSize}
-            onPress={this.onPrevious}
-            style={[
-              styles.controlButton,
-              {
-                justifyContent: 'flex-start',
-              },
-            ]}
-          />
-        ) : (
-          <View />
-        )}
-        {!isLive && this.playerRef ? (
-          <IconCustom
-            name={paused ? 'play' : 'pause'}
-            size={iconSize + 4}
-            style={styles.pauseButton}
-            onPress={() => {
-              // const willPause = paused;
-              // this.setState({pause: willPause});
-              // this.playerRef.pause();
-              videoStore.pause();
-            }}
-          />
-        ) : null}
-        {selectedChannelIndex < displayChannels.length - 1 ? (
-          <IconCustom
-            name="keyboard-right-arrow-button"
-            size={iconSize}
-            onPress={this.onNext}
-            style={[
-              styles.controlButton,
-              {
-                justifyContent: 'flex-end',
-              },
-            ]}
-          />
-        ) : (
-          <View />
-        )}
+        <View style={styles.controlButtonContainer}>
+          {selectedChannelIndex > 0 ? (
+            <IconCustom
+              name="keyboard-left-arrow-button"
+              size={IconSize}
+              onPress={this.onPrevious}
+              style={[
+                styles.controlButton,
+                {
+                  justifyContent: 'flex-start',
+                },
+              ]}
+            />
+          ) : (
+            <View />
+          )}
+        </View>
+        <View style={styles.controlButtonContainer}>
+          {!isLive && this.playerRef && !noVideo ? (
+            <IconCustom
+              name={paused ? 'play' : 'pause'}
+              size={IconSize + 4}
+              style={styles.pauseButton}
+              onPress={() => {
+                // const willPause = paused;
+                // this.setState({pause: willPause});
+                // this.playerRef.pause();
+                videoStore.pause();
+              }}
+            />
+          ) : null}
+        </View>
+        <View style={styles.controlButtonContainer}>
+          {selectedChannelIndex < displayChannels.length - 1 ? (
+            <IconCustom
+              name="keyboard-right-arrow-button"
+              size={IconSize}
+              onPress={this.onNext}
+              style={[
+                styles.controlButton,
+                {
+                  justifyContent: 'flex-end',
+                },
+              ]}
+            />
+          ) : (
+            <View />
+          )}
+        </View>
       </View>
     );
   };
@@ -688,7 +701,7 @@ class VideoPlayerView extends Component {
   renderFeatureButtons = () => {
     const {videoStore} = this.props;
     // const {sWidth, sHeight} = this.state;
-    // const iconSize = normalize(28); // normalize(sHeight * 0.035);
+    // const IconSize = normalize(28); // normalize(sHeight * 0.035);
     return (
       <View
         style={
@@ -712,7 +725,7 @@ class VideoPlayerView extends Component {
                   : 'videocam-filled-tool'
               }
               color={CMSColors.White}
-              size={iconSize}
+              size={IconSize}
               // style={styles.buttonStyle}
               onPress={this.onSwitchLiveSearch}
               // disabled={videoStore.isLoading || !this.playerRef}
@@ -729,7 +742,7 @@ class VideoPlayerView extends Component {
                   ? CMSColors.PrimaryActive
                   : CMSColors.White
               }
-              size={iconSize}
+              size={IconSize}
               // style={styles.buttonStyle}
               onPress={() => videoStore.switchHD()}
               disabled={
@@ -748,7 +761,7 @@ class VideoPlayerView extends Component {
                   ? 'out-fullscreen'
                   : 'switch-to-full-screen-button'
               }
-              size={iconSize}
+              size={IconSize}
               color={CMSColors.White}
               // style={styles.buttonStyle}
               onPress={this.onFullscreenPress}
@@ -1012,11 +1025,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  controlButtonContainer: {
+    width: IconViewSize,
+    height: IconViewSize,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // margin: 14,
+  },
   controlButton: {
     color: CMSColors.White,
     backgroundColor: CMSColors.OpacityButton,
     padding: 7,
-    margin: 14,
   },
   pauseButton: {
     justifyContent: 'center',
