@@ -145,7 +145,7 @@ class HealthDetailView extends Component {
   //   );
   // };
 
-  renderActionButton() {
+  renderActionButton = () => {
     return (
       <View style={commonStyles.floatingActionButton}>
         <CMSTouchableIcon
@@ -159,7 +159,7 @@ class HealthDetailView extends Component {
         />
       </View>
     );
-  }
+  };
 
   // renderActionsModal = () => {
   //   const {height} = Dimensions.get('window');

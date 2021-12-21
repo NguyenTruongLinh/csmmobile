@@ -53,12 +53,13 @@ class ChannelsListView extends React.Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('ChannelsListView componentWillUnmount');
-    const {videoStore, sitesStore} = this.props;
+    const {videoStore, sitesStore, healthStore} = this.props;
     this._isMounted = false;
 
     videoStore.releaseStreams();
     videoStore.setChannelFilter('');
     sitesStore.deselectDVR();
+    sitesStore.onNVRsViewExit();
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     this.onFilter('');
   }
@@ -101,6 +102,7 @@ class ChannelsListView extends React.Component {
   }
 
   setHeader = enableSettingButton => {
+    if (!this._isMounted) return;
     const {
       navigation,
       videoStore,

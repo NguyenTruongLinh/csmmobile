@@ -295,6 +295,7 @@ export const HealthModel = types
         __DEV__ && console.log('GOND get health data: ', res);
 
         if (res.summary.length > 0) {
+          self.selectedSite && (self.selectedSite = null);
           self.siteHealthList = res.summary
             .map(siteData => {
               let site = sitesList.find(s => s.key == siteData.Id);
