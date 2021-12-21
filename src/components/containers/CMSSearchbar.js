@@ -101,6 +101,11 @@ class CMSSearchbar extends React.Component {
           iconCustom="searching-magnifying-glass"
           disabled={false}
           iconPosition="right"
+          iconStyle={{
+            position: 'absolute',
+            right: -10,
+            top: 5,
+          }}
         />
       </Animated.View>
     ) : null;

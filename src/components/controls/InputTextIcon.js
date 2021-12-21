@@ -228,6 +228,7 @@ export default class InputTextIcon extends PureComponent {
       placeholder,
       noBorder,
       marginTopExtended,
+      iconStyle,
       ...props
     } = this.props;
     let {focused, focus, error, errored, height, text = ''} = this.state;
@@ -312,6 +313,7 @@ export default class InputTextIcon extends PureComponent {
           {color: iconColor || baseColor},
           styles.icon,
           label ? {} : {paddingTop: 28},
+          iconStyle || {},
         ]}
         // onPress={() =>  __DEV__ && console.log('GOND icon customed name: ', iconCustom)}
       />
