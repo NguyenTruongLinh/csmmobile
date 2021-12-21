@@ -157,7 +157,7 @@ class SitesView extends Component {
     __DEV__ && console.log('SitesView regionButton: ', regionButton);
 
     let options = {};
-    if (sitesStore.selectedRegion == null) {
+    if (sitesStore.selectedRegion != null) {
       options = {
         headerLeft: () => null,
         headerRight: () => (
