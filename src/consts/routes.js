@@ -70,6 +70,13 @@ const ROUTERS = {
   // OPTIONS_LOGOUT: 'optionslogout',
 };
 
+export const INIT_ROUTE_MAP = new Map([
+  [ROUTERS.HOME_NAVIGATOR, ROUTERS.HOME],
+  [ROUTERS.VIDEO_STACK, ROUTERS.VIDEO_REGIONS],
+  [ROUTERS.ALARM_STACK, ROUTERS.ALARM_LIVE],
+  [ROUTERS.OPTIONS_NAVIGATOR, ROUTERS.OPTIONS],
+]);
+
 export default ROUTERS;
 
 export const getHeaderTitle = route => {

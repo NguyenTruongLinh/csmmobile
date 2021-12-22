@@ -73,7 +73,12 @@ const onOpenAlarmEvent = async props => {
     const alarm = typeof content === 'object' ? content : JSON.parse(content);
     if (!alarm) return;
     const currentRoute = naviService.getCurrentRouteName();
-    console.log('GOND onOpenAlarmEvent content: ', content);
+    console.log(
+      'GOND onOpenAlarmEvent content: ',
+      content,
+      'action = ',
+      action
+    );
 
     switch (action) {
       case NOTIFY_ACTION.NVR_STATUS:
@@ -85,7 +90,7 @@ const onOpenAlarmEvent = async props => {
         // await alarmStore.getAlarms({aty: AlertType_Support});
         // const alarmData = parseAlarmData(alarm);
 
-        navigator.navigate(ROUTERS.ALARM_STACK, {
+        naviService.navigate(ROUTERS.ALARM_STACK, {
           screen: ROUTERS.ALARM_LIVE,
           initial: false,
         });

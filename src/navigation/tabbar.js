@@ -13,7 +13,7 @@ import {getCurrentRouteName} from '../util/general';
 import {Tabbar as Labels} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
 import {IconCustom} from '../components/CMSStyleSheet';
-import ROUTERS from '../consts/routes';
+import ROUTERS, {INIT_ROUTE_MAP} from '../consts/routes';
 import {WIDGET_COUNTS} from '../consts/misc';
 
 const TabIcons = [
@@ -32,7 +32,11 @@ class CMSTabbar extends React.Component {
 
   onTabPress = (isDisable, navigation, routeName, userStore) => {
     if (!isDisable) {
-      navigation.jumpTo(routeName);
+      __DEV__ && console.log('onTabPress', `routeName=${routeName}`);
+      navigation.navigate(routeName, {
+        screen: INIT_ROUTE_MAP.get(routeName),
+        initial: false,
+      });
     }
   };
 
