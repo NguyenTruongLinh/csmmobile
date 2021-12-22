@@ -114,8 +114,14 @@ function onOpenPVMEvent(
         screen: ROUTERS.HOME,
         initial: false,
       });
-      navigator.navigate(ROUTERS.OAM_SITES);
-      navigator.navigate(ROUTERS.OAM_DETAIL);
+      navigator.navigate(ROUTERS.HOME_NAVIGATOR, {
+        screen: ROUTERS.OAM_SITES,
+        initial: false,
+      });
+      navigator.navigate(ROUTERS.HOME_NAVIGATOR, {
+        screen: ROUTERS.OAM_DETAIL,
+        initial: false,
+      });
       break;
     default:
       break;

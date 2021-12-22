@@ -226,7 +226,10 @@ const onOpenAlertEvent = async props => {
         return;
       }
       case NOTIFY_ACTION.DELETE: {
-        naviService.navigate(ROUTERS.HEALTH_SITES);
+        navigator.navigate(ROUTERS.HOME_NAVIGATOR, {
+          screen: ROUTERS.HEALTH_SITES,
+          initial: false,
+        });
         return null;
       }
       case NOTIFY_ACTION.NVR_STATUS: {
@@ -259,12 +262,21 @@ const onOpenAlertEvent = async props => {
         );
         // console.log('GOND onOpen NVR status, dvrs = ', dvrs);
         healthStore.onNVRStatusNotification(alert, dvrs, site);
-        naviService.navigate(ROUTERS.HEALTH_SITES);
-        naviService.navigate(ROUTERS.HEALTH_ALERTS);
+        navigator.navigate(ROUTERS.HOME_NAVIGATOR, {
+          screen: ROUTERS.HEALTH_SITES,
+          initial: false,
+        });
+        navigator.navigate(ROUTERS.HOME_NAVIGATOR, {
+          screen: ROUTERS.HEALTH_ALERTS,
+          initial: false,
+        });
         return;
       }
       default: {
-        naviService.navigate(ROUTERS.HEALTH_SITES);
+        navigator.navigate(ROUTERS.HOME_NAVIGATOR, {
+          screen: ROUTERS.HEALTH_SITES,
+          initial: false,
+        });
         return;
       }
     }

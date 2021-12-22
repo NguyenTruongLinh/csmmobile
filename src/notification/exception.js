@@ -88,8 +88,14 @@ const onOpenExceptionEvent = async props => {
               screen: ROUTERS.HOME,
               initial: false,
             });
-            naviService.navigate(ROUTERS.SMARTER_DASHBOARD);
-            naviService.navigate(ROUTERS.TRANS_DETAIL);
+            naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
+              screen: ROUTERS.SMARTER_DASHBOARD,
+              initial: false,
+            });
+            naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
+              screen: ROUTERS.TRANS_DETAIL,
+              initial: false,
+            });
           }
         }
         break;
