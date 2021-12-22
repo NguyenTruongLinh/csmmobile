@@ -701,7 +701,12 @@ class DirectVideoView extends React.Component {
         console.log('GOND ==^^^== DirectVideo ServerMessage ==^^^==', value);
         break;
       case NATIVE_MESSAGE.SHOULD_RECONNECT:
-        __DEV__ && console.log('GOND Request reconnecting from native ...');
+      case NATIVE_MESSAGE.SERVER_DISCONNECTED:
+        __DEV__ &&
+          console.log(
+            'GOND Request reconnecting from native ... msgid: ',
+            msgid
+          );
         this.reconnect();
         break;
       default:

@@ -117,6 +117,8 @@ export const NATIVE_MESSAGE = {
   RULER_DST: 23,
   UNKNOWN: 24,
   SERVER_MESSAGE: 25,
+  SHOULD_RECONNECT: 26,
+  SERVER_DISCONNECTED: 27,
 };
 
 export const arrayof24HTime = [
