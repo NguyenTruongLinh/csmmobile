@@ -124,10 +124,10 @@ const UserModel = types
     userName: types.string,
     firstName: types.string,
     lastName: types.string,
-    email: types.string,
+    email: types.maybeNull(types.string),
     avatar: types.maybeNull(types.string),
     // isAuth: types.boolean,
-    isAdmin: types.boolean,
+    isAdmin: types.maybeNull(types.boolean),
   })
   .views(self => ({
     get dataForProfileUpdate() {
@@ -766,13 +766,42 @@ export const UserStoreModel = types
     }),
     loadLocalData: flow(function* () {
       const savedData = yield dbService.getFirstData(LocalDBName.user);
+      const savedDomain = yield dbService.getFirstData(LocalDBName.domain);
 
-      // __DEV__ && console.log('GOND user load local data: ', savedData);
+      __DEV__ &&
+        console.log('GOND user load local data: ', savedData, savedDomain);
       if (savedData && typeof savedData === 'object') {
         try {
-          self.user = UserModel.create(savedData);
-          self.domain = savedData.domain ?? '';
-          self.api = APIModel.create(savedData.api);
+          if (
+            savedDomain &&
+            savedDomain.Url &&
+            (savedData.UserName || savedData.Token)
+          ) {
+            self.user = UserModel.create({
+              userId: savedData.UserId ?? null,
+              userName: savedData.UserName ?? '',
+              firstName: savedData.FName ?? '',
+              lastName: savedData.LName ?? '',
+              email: savedData.Email ?? '',
+              isAdmin: savedData.IsAdmin ?? false,
+            });
+
+            self.domain = savedDomain.Url;
+
+            self.api = APIModel.create({
+              url: self.domain + Route,
+              appId: APP_INFO.AppId,
+              version: APP_INFO.Version,
+              id: '',
+              apiKey: savedData.ApiKey ?? '',
+              token: savedData.Token ?? '',
+            });
+          } else {
+            self.user = UserModel.create(savedData);
+            self.api = APIModel.create(savedData.api);
+            self.domain = savedData.domain ?? '';
+          }
+
           self.setConfigApi();
           apiService.updateUserId(self.user.userId);
         } catch (err) {

@@ -8,7 +8,7 @@ export const ApiSetting = {
 };
 
 export const LocalDBName = {
-  domain: 'domain',
+  domain: 'domains',
   user: 'users',
   alertConfig: 'alertconfigs',
   device: 'deviceid',
