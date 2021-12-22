@@ -85,6 +85,10 @@ const onOpenAlarmEvent = async props => {
         // await alarmStore.getAlarms({aty: AlertType_Support});
         // const alarmData = parseAlarmData(alarm);
 
+        navigator.navigate(ROUTERS.ALARM_STACK, {
+          screen: ROUTERS.ALARM_LIVE,
+          initial: false,
+        });
         const params = alarmStore.onAlarmNotification(alarm)
           ? {screen: ROUTERS.ALARM_DETAIL, initial: false}
           : undefined;
