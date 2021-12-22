@@ -414,7 +414,7 @@ class DirectVideoView extends React.Component {
       singlePlayer,
       index,
     } = this.props;
-    __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
+    // __DEV__ && console.log('GOND onDirectVideoMessage: ', msgid, ' - ', value);
 
     switch (msgid) {
       case NATIVE_MESSAGE.CONNECTING:
@@ -698,6 +698,11 @@ class DirectVideoView extends React.Component {
       case NATIVE_MESSAGE.UNKNOWN:
         break;
       case NATIVE_MESSAGE.SERVER_MESSAGE:
+        console.log('GOND ==^^^== DirectVideo ServerMessage ==^^^==', value);
+        break;
+      case NATIVE_MESSAGE.SHOULD_RECONNECT:
+        __DEV__ && console.log('GOND Request reconnecting from native ...');
+        this.reconnect();
         break;
       default:
         break;
