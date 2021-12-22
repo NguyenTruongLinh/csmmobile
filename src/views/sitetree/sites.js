@@ -157,7 +157,7 @@ class SitesView extends Component {
     __DEV__ && console.log('SitesView regionButton: ', regionButton);
 
     let options = {};
-    if (sitesStore.selectedRegion != null) {
+    if (sitesStore.selectedRegion == null) {
       options = {
         headerLeft: () => null,
         headerRight: () => (
@@ -170,6 +170,9 @@ class SitesView extends Component {
     } else {
       options = {
         headerTitle: sitesStore.selectedRegion.name ?? 'Unknow region',
+        headerRight: () => (
+          <View style={commonStyles.headerContainer}>{searchButton}</View>
+        ),
       };
     }
 

@@ -131,6 +131,16 @@ class DirectVideoView extends React.Component {
     this.reactions.forEach(unsubsribe => unsubsribe());
   }
 
+  refreshVideo = () => {
+    this.setNative({refresh: true}, true);
+
+    this.props.serverInfo.setStreamStatus({
+      isLoading: true,
+      connectionStatus: STREAM_STATUS.CONNECTING,
+    });
+    setTimeout(() => this.setNativePlayback(), 500);
+  };
+
   initReactions = () => {
     const {videoStore, singlePlayer} = this.props;
 
@@ -144,19 +154,20 @@ class DirectVideoView extends React.Component {
           () => videoStore.selectedChannel,
           (newChannelNo, previousValue) => {
             // this.stop();
-            if (newChannelNo == null || previousValue == null) return;
-            this.setNative({refresh: true}, true);
-
             __DEV__ &&
               console.log(
-                'GOND ------- direct on Channel changed: ',
+                'GOND direct selectedChannel reaction 1: ',
                 newChannelNo
               );
-            this.props.serverInfo.setStreamStatus({
-              isLoading: true,
-              connectionStatus: STREAM_STATUS.CONNECTING,
-            });
-            setTimeout(() => this.setNativePlayback(), 1000);
+            if (/*newChannelNo == null ||*/ previousValue == null) return;
+            // this.setNative({refresh: true}, true);
+
+            // this.props.serverInfo.setStreamStatus({
+            //   isLoading: true,
+            //   connectionStatus: STREAM_STATUS.CONNECTING,
+            // });
+            // setTimeout(() => this.setNativePlayback(), 1000);
+            this.refreshVideo();
           }
         ),
         reaction(
@@ -237,6 +248,7 @@ class DirectVideoView extends React.Component {
         reaction(
           () => videoStore.selectedChannel,
           (value, previousValue) => {
+            __DEV__ && console.log('GOND direct selectedChannel reaction 2');
             // __DEV__ &&
             //   console.log('GOND directPlayer selectedChannel changed ', previousValue, ' -> ', value);
             // const {serverInfo, singlePlayer} = this.props;
@@ -260,7 +272,8 @@ class DirectVideoView extends React.Component {
               // value == serverInfo.channelNo
             ) {
               // this.pause(false);
-              this.setNativePlayback();
+              // this.setNativePlayback();
+              this.refreshVideo();
             }
             // }
           }

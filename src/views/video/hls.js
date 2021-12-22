@@ -66,10 +66,10 @@ class HLSStreamingView extends React.Component {
   componentWillUnmount() {
     __DEV__ && console.log('HLSStreamingView componentWillUnmount');
     this._isMounted = false;
-    if (this.checkStreamTO) {
-      clearTimeout(this.checkStreamTO);
-    }
-    this.reactions.forEach(unsubsribe => unsubsribe());
+    // if (this.checkStreamTO) {
+    //   clearTimeout(this.checkStreamTO);
+    // }
+    this.reactions.forEach(unsubscribe => unsubscribe());
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
@@ -239,6 +239,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onError = error => {
+    if (!this._isMounted) return;
     __DEV__ && console.log('GOND HLS onError: ', error);
     const {streamData, isLive, hdMode} = this.props;
     // this.setState({
@@ -410,8 +411,14 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams} = this.state;
@@ -485,7 +492,7 @@ class HLSStreamingView extends React.Component {
                   selectedTextTrack={{type: 'disabled'}}
                   rate={1.0}
                   automaticallyWaitsToMinimizeStalling={false}
-                  // preferredForwardBufferDuration={2}
+                  preferredForwardBufferDuration={2}
                   playInBackground={true}
                   playWhenInactive={true}
                   useTextureView={false}

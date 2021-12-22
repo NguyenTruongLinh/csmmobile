@@ -544,6 +544,10 @@ export const VideoModel = types
             : [];
           break;
       }
+      while (videoDataList.length % self.gridLayout != 0)
+        videoDataList.push({});
+
+      return videoDataList ?? [];
 
       if (
         !videoDataList ||
@@ -643,9 +647,10 @@ export const VideoModel = types
         //     `GOND selected Channel ${value} find stream data = : `,
         //     self.videoData
         //   );
-        const foundStream = self.videoData.find(row => {
-          return row.data.find(s => s.channelNo == value);
-        });
+        // const foundStream = self.videoData.find(row => {
+        //   return row.data.find(s => s.channelNo == value);
+        // });
+        const foundStream = self.videoData.find(s => s.channelNo == value);
         __DEV__ && console.log('GOND foundStream: ', foundStream);
         if (!foundStream) {
           __DEV__ &&
@@ -1562,6 +1567,7 @@ export const VideoModel = types
             __DEV__ && console.log(`GOND get multi HLS URL: No active channel`);
             return false;
           }
+          if (self.hlsStreams.length > 0) self.releaseHLSStreams();
           self.hlsStreams = self.activeChannels.map(ch => {
             const newConnection = HLSStreamModel.create({
               // id: util.getRandomId(),
@@ -2287,6 +2293,20 @@ export const VideoModel = types
         return true;
       }),
       // #endregion Alert play
+      releaseHLSStreams() {
+        self.hlsStreams.forEach(s => {
+          s.release();
+          util.isValidHttpUrl(s.liveUrl.url) &&
+            self.stopHLSStream(s.channelNo, s.liveUrl.sid);
+          util.isValidHttpUrl(s.liveHDUrl.url) &&
+            self.stopHLSStream(s.channelNo, s.liveHDUrl.sid);
+          util.isValidHttpUrl(s.searchUrl.url) &&
+            self.stopHLSStream(s.channelNo, s.searchUrl.sid);
+          util.isValidHttpUrl(s.searchHDUrl.url) &&
+            self.stopHLSStream(s.channelNo, s.searchHDUrl.sid);
+        });
+        self.hlsStreams = [];
+      },
       releaseStreams() {
         __DEV__ &&
           console.log(
@@ -2299,17 +2319,19 @@ export const VideoModel = types
             self.directStreams = [];
             break;
           case CLOUD_TYPE.HLS:
-            self.hlsStreams.forEach(s => {
-              util.isValidHttpUrl(s.liveUrl.url) &&
-                self.stopHLSStream(s.channelNo, s.liveUrl.sid);
-              util.isValidHttpUrl(s.liveHDUrl.url) &&
-                self.stopHLSStream(s.channelNo, s.liveHDUrl.sid);
-              util.isValidHttpUrl(s.searchUrl.url) &&
-                self.stopHLSStream(s.channelNo, s.searchUrl.sid);
-              util.isValidHttpUrl(s.searchHDUrl.url) &&
-                self.stopHLSStream(s.channelNo, s.searchHDUrl.sid);
-            });
-            self.hlsStreams = [];
+            // self.hlsStreams.forEach(s => {
+            //   s.release();
+            //   util.isValidHttpUrl(s.liveUrl.url) &&
+            //     self.stopHLSStream(s.channelNo, s.liveUrl.sid);
+            //   util.isValidHttpUrl(s.liveHDUrl.url) &&
+            //     self.stopHLSStream(s.channelNo, s.liveHDUrl.sid);
+            //   util.isValidHttpUrl(s.searchUrl.url) &&
+            //     self.stopHLSStream(s.channelNo, s.searchUrl.sid);
+            //   util.isValidHttpUrl(s.searchHDUrl.url) &&
+            //     self.stopHLSStream(s.channelNo, s.searchHDUrl.sid);
+            // });
+            // self.hlsStreams = [];
+            self.releaseHLSStreams();
             break;
           case CLOUD_TYPE.RTC:
             // self.openStreamLock = false;

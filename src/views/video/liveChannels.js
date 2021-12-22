@@ -430,7 +430,8 @@ class LiveChannelsView extends React.Component {
     );
   };
 
-  renderVideoPlayer = (item, index) => {
+  // renderVideoPlayer = (item, index) => {
+  renderVideoPlayer = ({item, index}) => {
     // __DEV__ && console.log('GOND renderVid liveChannels ', item);
     if (!item || Object.keys(item).length == 0)
       return (
@@ -490,7 +491,16 @@ class LiveChannelsView extends React.Component {
         break;
     }
 
-    return player;
+    return (
+      <CMSRipple
+        style={[
+          styles.videoRow,
+          {width: '100%', height: '100%', borderWidth: 0},
+        ]}
+        onPress={() => this.onChannelSelect(item)}>
+        {player}
+      </CMSRipple>
+    );
   };
 
   renderInfoText = () => {
@@ -541,12 +551,17 @@ class LiveChannelsView extends React.Component {
           !videoStore.isCloud ||
           videoStore.videoData.length > 0 ? (
             <FlatList
+              key={'grid_' + videoStore.gridLayout}
               ref={r => (this.videoListRef = r)}
-              renderItem={this.renderRow}
+              // renderItem={this.renderRow}
+              renderItem={this.renderVideoPlayer}
+              numColumns={videoStore.gridLayout}
               data={videoStore.videoData} // {this.state.liveData}
-              keyExtractor={item => item.key}
+              // keyExtractor={item => item.key}
+              keyExtractor={item => 'ch_' + item.channelNo}
               onRefresh={this.getChannelsInfo}
               refreshing={videoStore.isLoading}
+              maxToRenderPerBatch={videoStore.gridLayout}
             />
           ) : (
             this.renderInfoText()

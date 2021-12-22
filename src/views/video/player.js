@@ -93,31 +93,6 @@ class VideoPlayerView extends Component {
         this.eventSubscribers
       );
     this.updateHeader();
-    // this.unsubSearchTimeReaction = reaction(
-    //   () => videoStore.searchPlayTime,
-    //   (value, previousValue) => {
-    //     if (!videoStore.isLive) {
-    //       const searchTime = DateTime.fromISO(value, {
-    //         zone: 'utc',
-    //       });
-    //       __DEV__ &&
-    //         console.log(
-    //           'GOND on searchPlayTime reaction ',
-    //           value,
-    //           ' -> ',
-    //           previousValue,
-    //           '/n - DateTime = ',
-    //           searchTime
-    //         );
-
-    //       this.onSetSearchTime(
-    //         searchTime.hour,
-    //         searchTime.minute,
-    //         searchTime.second
-    //       );
-    //     }
-    //   }
-    // );
   }
 
   updateHeader = () => {
@@ -353,6 +328,8 @@ class VideoPlayerView extends Component {
 
     if (videoStore.selectedChannel && channelNo == videoStore.selectedChannel)
       return;
+
+    if (videoStore.paused) videoStore.pause(false);
     videoStore.selectChannel(channelNo);
   };
 
@@ -640,6 +617,7 @@ class VideoPlayerView extends Component {
       displayChannels,
       paused,
       noVideo,
+      selectedStream,
     } = videoStore;
     const {sHeight} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
@@ -664,7 +642,11 @@ class VideoPlayerView extends Component {
           )}
         </View>
         <View style={styles.controlButtonContainer}>
-          {!isLive && this.playerRef && !noVideo ? (
+          {!isLive &&
+          this.playerRef &&
+          !noVideo &&
+          selectedStream &&
+          !selectedStream.isLoading ? (
             <IconCustom
               name={paused ? 'play' : 'pause'}
               size={IconSize + 4}

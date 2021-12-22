@@ -85,6 +85,7 @@ export default HLSStreamModel = types
     // sync values from videoStore
     isLive: types.optional(types.boolean, false),
     isHD: types.optional(types.boolean, false),
+    isDead: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     streamTimeout: null,
@@ -290,10 +291,11 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
-            PlaybackMode: HLSPlaybackMode.LIVE /*isLive
+            PlaybackMode:
+              HLSPlaybackMode.LIVE /*isLive
             ? HLSPlaybackMode.LIVE
             : HLSPlaybackMode.LIVE_REPLAY,*/,
             HLSFragmentSelector: {
@@ -310,7 +312,8 @@ export default HLSStreamModel = types
             // DisplayFragmentTimestamp: $('#displayFragmentTimestamp').val(),
             // MaxMediaPlaylistFragmentResults: parseInt($('#maxResults').val()),
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ && console.log('GOND Get Streaming Session URL: ', response);
         self.setUrl(response.HLSStreamingSessionURL, cmd);
@@ -328,7 +331,7 @@ export default HLSStreamModel = types
         });
         // setTimeout(() => self.reconnect(), 200);
         // return false;
-        return self.reconnect();
+        if (!self.isDead) return self.reconnect();
       }
 
       self.setStreamStatus({
@@ -339,7 +342,7 @@ export default HLSStreamModel = types
       return true;
     }),
     reconnect() {
-      if (self.connectionStatus == STREAM_STATUS.TIMEOUT)
+      if (self.isDead || self.connectionStatus == STREAM_STATUS.TIMEOUT)
         return Promise.resolve(false);
       self.setUrl(null);
       self.setStreamStatus({
@@ -366,5 +369,9 @@ export default HLSStreamModel = types
           });
         }
       }, time ?? STREAM_TIMEOUT);
+    },
+    release() {
+      self.isDead = true;
+      self.streamTimeout && clearTimeout(self.streamTimeout);
     },
   }));
