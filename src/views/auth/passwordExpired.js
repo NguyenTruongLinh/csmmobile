@@ -129,7 +129,7 @@ class PasswordExpired extends Component {
         ? 'Password must contain at least 10 characters'
         : null;
     const confirmPasswordError =
-      !newPasswordError &&
+      // !newPasswordError &&
       text.length > 0 &&
       this.state.confirmPassword.length > 0 &&
       text != this.state.confirmPassword
@@ -144,7 +144,7 @@ class PasswordExpired extends Component {
   onTypingConfirmPassword = text => {
     const confirmPasswordError =
       text.length > 0 &&
-      !this.state.newPasswordError &&
+      // !this.state.newPasswordError &&
       text != this.state.newPassword
         ? 'Password does not match!'
         : '';
