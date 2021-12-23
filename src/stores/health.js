@@ -357,7 +357,7 @@ export const HealthModel = types
       const site =
         siteKey == undefined
           ? self.selectedSite
-          : self.siteHealthList.find(s => (s.id = siteKey));
+          : self.siteHealthList.find(s => s.id == siteKey);
       if (!site) {
         console.log('GOND site not existed: ', siteKey);
         snackbarUtil.onMessage('Site is not existed');
