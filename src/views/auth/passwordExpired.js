@@ -15,7 +15,6 @@ import {
 
 import {inject, observer} from 'mobx-react';
 import {onPatch} from 'mobx-state-tree';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import call from 'react-native-phone-call';
 
 // import validatejs from 'validate.js';
@@ -65,9 +64,6 @@ class PasswordExpired extends Component {
       newPassword: null,
       confirmPassword: null,
     };
-    this.keyboardView = null;
-
-    // this.state = {};
   }
 
   componentDidMount() {
@@ -201,180 +197,163 @@ class PasswordExpired extends Component {
           }}
           onPress={this.onBack}
         />
-
-        <KeyboardAwareScrollView
-          ref={r => {
-            this.keyboardView = r;
-          }}
-          contentContainerStyle={{flex: 1}}
-          getTextInputRefs={() => [
-            this._refs.username,
-            this._refs.oldPassword,
-            this._refs.newPassword,
-            this._refs.confirmPassword,
-          ]}
-          style={styles.viewContainer}>
+        <View style={styles.viewContainer}>
+          <View style={styles.topSpace}></View>
+          <View style={{flex: 0.3}} />
+          <Image
+            source={CMS_Logo}
+            style={[
+              styles.logo,
+              {
+                display:
+                  height < 1000 && this.state.isInputFocus ? 'none' : 'flex',
+              },
+            ]}
+            resizeMode="contain"
+          />
+          <View style={{flex: 0.3}} />
+          <Text style={styles.textTitle}>{LoginTxt.changePasswordTitte}</Text>
+          <View style={{flex: 0.05}} />
+          <Text style={styles.textDesc}>
+            {LoginTxt.changePassworDescription}
+          </Text>
+          <View style={{flex: 0.1}} />
+          <View style={[styles.content, styles.centerContent]}>
+            <InputTextIcon
+              ref={r => (this._refs.username = r)}
+              name="username"
+              maxLength={60}
+              value={this.state.username}
+              autoCorrect={false}
+              enablesReturnKeyAutomatically={true}
+              onEndEditing={this.onEndEditing}
+              onFocus={this.onFocus}
+              onSubmitEditing={this.onUserNameNextPress}
+              returnKeyType="next"
+              autoCapitalize={'none'}
+              iconCustom="user-shape"
+              label={LoginTxt.username}
+              placeholder=""
+              // error={errors.username}
+              disabled={false}
+              tintColor={CMSColors.PrimaryText}
+              textColor={CMSColors.PrimaryText}
+              baseColor={CMSColors.PrimaryText}
+              iconColor={CMSColors.InputIconColor}
+              secureTextEntry={false}
+            />
+            <InputTextIcon
+              ref={r => (this._refs.oldPassword = r)}
+              name="oldPassword"
+              maxLength={60}
+              autoCapitalize={'none'}
+              value={this.state.password}
+              autoCorrect={false}
+              enablesReturnKeyAutomatically={true}
+              onEndEditing={this.onEndEditing}
+              onFocus={this.onFocus}
+              onSubmitEditing={this.onOldPasswordNextPress}
+              returnKeyType="next"
+              iconCustom="locked-padlock"
+              label={LoginTxt.oldPassword}
+              placeholder=""
+              // error={errors.oldPassword}
+              disabled={false}
+              tintColor={CMSColors.PrimaryText}
+              textColor={CMSColors.PrimaryText}
+              baseColor={CMSColors.PrimaryText}
+              iconColor={CMSColors.InputIconColor}
+              secureTextEntry={true}
+              revealable={true}
+            />
+            <InputTextIcon
+              ref={r => (this._refs.newPassword = r)}
+              name="newPassword"
+              maxLength={60}
+              autoCapitalize={'none'}
+              value={this.state.newPassword}
+              autoCorrect={false}
+              enablesReturnKeyAutomatically={true}
+              onEndEditing={this.onEndEditing}
+              onChangeText={this.onTypingNewPassword}
+              onFocus={this.onFocus}
+              onSubmitEditing={this.onNewPasswordNextPress}
+              returnKeyType="next"
+              iconCustom="locked-padlock"
+              label={LoginTxt.newPassword}
+              placeholder=""
+              error={newPasswordErrorFlag && newPasswordError}
+              disabled={false}
+              tintColor={CMSColors.PrimaryText}
+              textColor={CMSColors.PrimaryText}
+              baseColor={CMSColors.PrimaryText}
+              iconColor={CMSColors.InputIconColor}
+              secureTextEntry={true}
+              revealable={true}
+            />
+            <InputTextIcon
+              ref={r => (this._refs.confirmPassword = r)}
+              name="confirmPassword"
+              maxLength={60}
+              autoCapitalize={'none'}
+              value={this.state.confirmPassword}
+              autoCorrect={false}
+              enablesReturnKeyAutomatically={true}
+              onChangeText={this.onTypingConfirmPassword}
+              onEndEditing={this.onEndEditing}
+              onFocus={this.onFocus}
+              returnKeyType="next"
+              iconCustom="locked-padlock"
+              label={LoginTxt.confirmPassword}
+              placeholder=""
+              error={confirmPasswordErrorFlag && confirmPasswordError}
+              //   !this.state.confirmPassword ||
+              //   this.state.confirmPassword === this.state.newPassword
+              //     ? ''
+              //     : LoginTxt.confirmPasswordError
+              // }
+              // marginTopExtended={newPasswordErrorFlag && newPasswordError}
+              disabled={false}
+              tintColor={CMSColors.PrimaryText}
+              textColor={CMSColors.PrimaryText}
+              baseColor={CMSColors.PrimaryText}
+              iconColor={CMSColors.InputIconColor}
+              secureTextEntry={true}
+              revealable={true}
+            />
+          </View>
+          <View style={{flex: 0.3}} />
           <View
             style={{
-              flex: 1,
-            }}>
-            <View style={styles.topSpace}></View>
-            <View style={{flex: 0.3}} />
-            <Image
-              source={CMS_Logo}
-              style={[
-                styles.logo,
-                {
-                  display:
-                    height < 1000 && this.state.isInputFocus ? 'none' : 'flex',
-                },
-              ]}
-              resizeMode="contain"
-            />
-            <View style={{flex: 0.3}} />
-            <Text style={styles.textTitle}>{LoginTxt.changePasswordTitte}</Text>
-            <View style={{flex: 0.05}} />
-            <Text style={styles.textDesc}>
-              {LoginTxt.changePassworDescription}
-            </Text>
-            <View style={{flex: 0.1}} />
-            <View style={[styles.content, styles.centerContent]}>
-              <InputTextIcon
-                ref={r => (this._refs.username = r)}
-                name="username"
-                maxLength={60}
-                value={this.state.username}
-                autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
-                onEndEditing={this.onEndEditing}
-                onFocus={this.onFocus}
-                onSubmitEditing={this.onUserNameNextPress}
-                returnKeyType="next"
-                autoCapitalize={'none'}
-                iconCustom="user-shape"
-                label={LoginTxt.username}
-                placeholder=""
-                // error={errors.username}
-                disabled={false}
-                tintColor={CMSColors.PrimaryText}
-                textColor={CMSColors.PrimaryText}
-                baseColor={CMSColors.PrimaryText}
-                iconColor={CMSColors.InputIconColor}
-                secureTextEntry={false}
-              />
-              <InputTextIcon
-                ref={r => (this._refs.oldPassword = r)}
-                name="oldPassword"
-                maxLength={60}
-                autoCapitalize={'none'}
-                value={this.state.password}
-                autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
-                onEndEditing={this.onEndEditing}
-                onFocus={this.onFocus}
-                onSubmitEditing={this.onOldPasswordNextPress}
-                returnKeyType="next"
-                iconCustom="locked-padlock"
-                label={LoginTxt.oldPassword}
-                placeholder=""
-                // error={errors.oldPassword}
-                disabled={false}
-                tintColor={CMSColors.PrimaryText}
-                textColor={CMSColors.PrimaryText}
-                baseColor={CMSColors.PrimaryText}
-                iconColor={CMSColors.InputIconColor}
-                secureTextEntry={true}
-                revealable={true}
-              />
-              <InputTextIcon
-                ref={r => (this._refs.newPassword = r)}
-                name="newPassword"
-                maxLength={60}
-                autoCapitalize={'none'}
-                value={this.state.newPassword}
-                autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
-                onEndEditing={this.onEndEditing}
-                onChangeText={this.onTypingNewPassword}
-                onFocus={this.onFocus}
-                onSubmitEditing={this.onNewPasswordNextPress}
-                returnKeyType="next"
-                iconCustom="locked-padlock"
-                label={LoginTxt.newPassword}
-                placeholder=""
-                error={newPasswordErrorFlag && newPasswordError}
-                disabled={false}
-                tintColor={CMSColors.PrimaryText}
-                textColor={CMSColors.PrimaryText}
-                baseColor={CMSColors.PrimaryText}
-                iconColor={CMSColors.InputIconColor}
-                secureTextEntry={true}
-                revealable={true}
-              />
-              <InputTextIcon
-                ref={r => (this._refs.confirmPassword = r)}
-                name="confirmPassword"
-                maxLength={60}
-                autoCapitalize={'none'}
-                value={this.state.confirmPassword}
-                autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
-                onChangeText={this.onTypingConfirmPassword}
-                onEndEditing={this.onEndEditing}
-                onFocus={this.onFocus}
-                returnKeyType="next"
-                iconCustom="locked-padlock"
-                label={LoginTxt.confirmPassword}
-                placeholder=""
-                error={confirmPasswordErrorFlag && confirmPasswordError}
-                //   !this.state.confirmPassword ||
-                //   this.state.confirmPassword === this.state.newPassword
-                //     ? ''
-                //     : LoginTxt.confirmPasswordError
-                // }
-                // marginTopExtended={newPasswordErrorFlag && newPasswordError}
-                disabled={false}
-                tintColor={CMSColors.PrimaryText}
-                textColor={CMSColors.PrimaryText}
-                baseColor={CMSColors.PrimaryText}
-                iconColor={CMSColors.InputIconColor}
-                secureTextEntry={true}
-                revealable={true}
-              />
-            </View>
-            <View style={{flex: 0.3}} />
-            <View
-              style={{
-                height: this.state.isInputFocus ? 160 : 0,
-              }}
-            />
-            <Button
-              style={styles.buttonLogin}
-              caption="SUBMIT"
-              type="primary"
-              captionStyle={{}}
-              onPress={this.onSubmit}
-              enable={
-                username &&
-                oldPassword &&
-                newPassword &&
-                confirmPassword &&
-                !newPasswordError &&
-                !confirmPasswordError
-              }
-            />
-          </View>
-          <View style={{flex: 0.05}} />
-          <View style={styles.copyRight}>
-            <Image
-              source={I3_Logo}
-              style={styles.copyRightLogo}
-              resizeMode="contain"
-            />
-            <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
-          </View>
-          <View style={styles.space_footer} />
-        </KeyboardAwareScrollView>
+              height: this.state.isInputFocus ? 160 : 0,
+            }}
+          />
+          <Button
+            style={styles.buttonLogin}
+            caption="SUBMIT"
+            type="primary"
+            captionStyle={{}}
+            onPress={this.onSubmit}
+            enable={
+              username &&
+              oldPassword &&
+              newPassword &&
+              confirmPassword &&
+              !newPasswordError &&
+              !confirmPasswordError
+            }
+          />
+        </View>
+        <View style={{flex: 0.05}} />
+        <View style={styles.copyRight}>
+          <Image
+            source={I3_Logo}
+            style={styles.copyRightLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+        </View>
+        <View style={styles.space_footer} />
       </SafeAreaView>
     );
   }

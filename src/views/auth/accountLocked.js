@@ -13,7 +13,6 @@ import {
 
 import {inject, observer} from 'mobx-react';
 import {onPatch} from 'mobx-state-tree';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import call from 'react-native-phone-call';
 
 // import validatejs from 'validate.js';
@@ -90,62 +89,46 @@ class AccountLocked extends Component {
           }}
           onPress={this.onBack}
         />
-
-        <KeyboardAwareScrollView
-          // ref={r => {
-          //   this.keyboardView = r;
-          // }}
-          contentContainerStyle={{flex: 1}}
-          // getTextInputRefs={() => [
-          //   this._refs.domain,
-          //   this._refs.username,
-          //   this._refs.password,
-          // ]}
-          style={styles.viewContainer}>
-          <View
-            style={{
-              flex: 1,
-            }}>
-            <View style={styles.topSpace}></View>
-            <View style={{flex: 0.3}} />
-            <Image source={CMS_Logo} style={styles.logo} resizeMode="contain" />
-            <View style={{flex: 0.3}} />
-            <Image source={Lock} style={styles.lock} resizeMode="contain" />
-            <View style={{flex: 0.3}} />
-            <Text style={styles.textAccInfo}>
-              {LoginTxt.accountLocked.replace(
-                '%s',
-                `${lockedTime} ${lockedTime > 1 ? 'minutes' : 'minute'}`
-              )}
-            </Text>
-            <View style={{flex: 0.2}} />
-            <View style={styles.textContainer}>
-              <Text style={styles.textDesc}>{LoginTxt.phoneContactTitle}</Text>
-              <TouchableOpacity onPress={this.onPhonePress}>
-                <Text style={styles.phone}>{LoginTxt.phoneContactNumber}</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{flex: 0.6}} />
-            <Button
-              style={styles.buttonLogin}
-              caption="BACK TO LOGIN"
-              type="primary"
-              captionStyle={{}}
-              onPress={this.onBackToLoginPress}
-              enable={true}
-            />
+        <View style={styles.viewContainer}>
+          <View style={styles.topSpace}></View>
+          <View style={{flex: 0.3}} />
+          <Image source={CMS_Logo} style={styles.logo} resizeMode="contain" />
+          <View style={{flex: 0.3}} />
+          <Image source={Lock} style={styles.lock} resizeMode="contain" />
+          <View style={{flex: 0.3}} />
+          <Text style={styles.textAccInfo}>
+            {LoginTxt.accountLocked.replace(
+              '%s',
+              `${lockedTime} ${lockedTime > 1 ? 'minutes' : 'minute'}`
+            )}
+          </Text>
+          <View style={{flex: 0.2}} />
+          <View style={styles.textContainer}>
+            <Text style={styles.textDesc}>{LoginTxt.phoneContactTitle}</Text>
+            <TouchableOpacity onPress={this.onPhonePress}>
+              <Text style={styles.phone}>{LoginTxt.phoneContactNumber}</Text>
+            </TouchableOpacity>
           </View>
-          <View style={{flex: 0.15}} />
-          <View style={styles.copyRight}>
-            <Image
-              source={I3_Logo}
-              style={styles.copyRightLogo}
-              resizeMode="contain"
-            />
-            <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
-          </View>
-          <View style={styles.space_footer} />
-        </KeyboardAwareScrollView>
+          <View style={{flex: 0.6}} />
+          <Button
+            style={styles.buttonLogin}
+            caption="BACK TO LOGIN"
+            type="primary"
+            captionStyle={{}}
+            onPress={this.onBackToLoginPress}
+            enable={true}
+          />
+        </View>
+        <View style={{flex: 0.15}} />
+        <View style={styles.copyRight}>
+          <Image
+            source={I3_Logo}
+            style={styles.copyRightLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+        </View>
+        <View style={styles.space_footer} />
       </SafeAreaView>
     );
   }

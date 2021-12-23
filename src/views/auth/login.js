@@ -12,7 +12,6 @@ import {
 
 import {inject, observer} from 'mobx-react';
 import {onPatch} from 'mobx-state-tree';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 // import validatejs from 'validate.js';
 
 import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -59,7 +58,6 @@ class LoginView extends Component {
       username: null,
       password: null,
     };
-    this.keyboardView = null;
     this.lastLoginError = '';
     // onPatch(props.userStore, this.onStoreChanged);
   }
@@ -224,149 +222,128 @@ class LoginView extends Component {
           // iconStyleDisable={{}}
           onPress={this.onBack}
         />
-        <KeyboardAwareScrollView
-          // keyBoardShouldPersistTaps="always"
-          ref={r => {
-            this.keyboardView = r;
-          }}
-          // enableAutomaticScroll={true}
-          contentContainerStyle={{flex: 1}}
-          getTextInputRefs={() => [
-            this._refs.domain,
-            this._refs.username,
-            this._refs.password,
-          ]}
-          style={styles.viewContainer}>
-          <View
-            style={{
-              flex: 1,
-            }}>
-            <View style={styles.closeButtonContainer}></View>
-            <View style={styles.space} />
-            <View style={styles.logoContainer}>
-              <Image
-                source={CMS_Logo}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            <View style={styles.space} />
-            <View style={styles.textContainer}>
-              <Text style={styles.textTitle}>
-                {LoginTxt.title}
-                <Text style={styles.textBold}>{LoginTxt.titleBold}</Text>
-              </Text>
-              <Text style={styles.textDesc}>{LoginTxt.description}</Text>
-            </View>
-            <View style={styles.space} />
-            <View style={[styles.content, styles.centerContent]}>
-              <InputTextIcon
-                ref={r => (this._refs.domain = r)}
-                name="domain"
-                value={domain.replace(Domain.urlI3care, '')}
-                maxLength={60}
-                enablesReturnKeyAutomatically={true}
-                onEndEditing={this.onEndEditing}
-                onChangeText={this.onTypingDomain}
-                onSubmitEditing={this.onSubmitDomain}
-                onFocus={this.onFocus}
-                returnKeyType="next"
-                iconCustom="earth-grid-select-language-button"
-                label={LoginTxt.domain}
-                autoCapitalize={'none'}
-                autoCorrect={false}
-                tintColor={CMSColors.PrimaryText}
-                textColor={CMSColors.PrimaryText}
-                baseColor={CMSColors.PrimaryText}
-                iconColor={CMSColors.InputIconColor}
-                error={errors.domain}
-                disabled={false}
-                secureTextEntry={false}
-              />
-              <InputTextIcon
-                ref={r => (this._refs.username = r)}
-                name="username"
-                maxLength={60}
-                value={this.state.username}
-                autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
-                onEndEditing={this.onEndEditing}
-                onFocus={this.onFocus}
-                onChangeText={this.onTypingUsername}
-                onSubmitEditing={this.onSubmitUserName}
-                returnKeyType="next"
-                autoCapitalize={'none'}
-                iconCustom="user-shape"
-                label={LoginTxt.username}
-                placeholder=""
-                // error={errors.username}
-                disabled={false}
-                tintColor={CMSColors.PrimaryText}
-                textColor={CMSColors.PrimaryText}
-                baseColor={CMSColors.PrimaryText}
-                iconColor={CMSColors.InputIconColor}
-                secureTextEntry={false}
-              />
-              <InputTextIcon
-                ref={r => (this._refs.password = r)}
-                name="password"
-                maxLength={60}
-                autoCapitalize={'none'}
-                value={this.state.password}
-                autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
-                onEndEditing={this.onEndEditing}
-                onFocus={this.onFocus}
-                returnKeyType="next"
-                iconCustom="locked-padlock"
-                label={LoginTxt.password}
-                placeholder=""
-                // error={errors.password}
-                disabled={false}
-                tintColor={CMSColors.PrimaryText}
-                textColor={CMSColors.PrimaryText}
-                baseColor={CMSColors.PrimaryText}
-                iconColor={CMSColors.InputIconColor}
-                secureTextEntry={true}
-                revealable={true}
-              />
-            </View>
-            <View style={styles.space} />
-            <View style={styles.buttonsContainer}>
-              <Button
-                style={styles.buttonLogin}
-                caption="LOGIN"
-                type="primary"
-                captionStyle={{}}
-                onPress={this.onLogin}
-                enable={
-                  domain && username && password // &&
-                  // !this.props.appStore.isLoading
-                }
-              />
-              <Button
-                style={styles.buttonPassword}
-                caption="FORGOT PASSWORD?"
-                type="flat"
-                captionStyle={{}}
-                onPress={() => {
-                  Linking.openURL(APP_INFO.ContactUrl);
-                }}
-                enable={true}
-              />
-            </View>
+        <View style={styles.viewContainer}>
+          <View style={styles.closeButtonContainer}></View>
+          <View style={styles.space} />
+          <View style={styles.logoContainer}>
+            <Image source={CMS_Logo} style={styles.logo} resizeMode="contain" />
           </View>
-          <View style={styles.space_footer} />
-          <View style={styles.copyRight}>
-            <Image
-              source={I3_Logo}
-              style={styles.copyRightLogo}
-              resizeMode="contain"
+          <View style={styles.space} />
+          <View style={styles.textContainer}>
+            <Text style={styles.textTitle}>
+              {LoginTxt.title}
+              <Text style={styles.textBold}>{LoginTxt.titleBold}</Text>
+            </Text>
+            <Text style={styles.textDesc}>{LoginTxt.description}</Text>
+          </View>
+          <View style={styles.space} />
+          <View style={[styles.content, styles.centerContent]}>
+            <InputTextIcon
+              ref={r => (this._refs.domain = r)}
+              name="domain"
+              value={domain.replace(Domain.urlI3care, '')}
+              maxLength={60}
+              enablesReturnKeyAutomatically={true}
+              onEndEditing={this.onEndEditing}
+              onChangeText={this.onTypingDomain}
+              onSubmitEditing={this.onSubmitDomain}
+              onFocus={this.onFocus}
+              returnKeyType="next"
+              iconCustom="earth-grid-select-language-button"
+              label={LoginTxt.domain}
+              autoCapitalize={'none'}
+              autoCorrect={false}
+              tintColor={CMSColors.PrimaryText}
+              textColor={CMSColors.PrimaryText}
+              baseColor={CMSColors.PrimaryText}
+              iconColor={CMSColors.InputIconColor}
+              error={errors.domain}
+              disabled={false}
+              secureTextEntry={false}
             />
-            <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+            <InputTextIcon
+              ref={r => (this._refs.username = r)}
+              name="username"
+              maxLength={60}
+              value={this.state.username}
+              autoCorrect={false}
+              enablesReturnKeyAutomatically={true}
+              onEndEditing={this.onEndEditing}
+              onFocus={this.onFocus}
+              onChangeText={this.onTypingUsername}
+              onSubmitEditing={this.onSubmitUserName}
+              returnKeyType="next"
+              autoCapitalize={'none'}
+              iconCustom="user-shape"
+              label={LoginTxt.username}
+              placeholder=""
+              // error={errors.username}
+              disabled={false}
+              tintColor={CMSColors.PrimaryText}
+              textColor={CMSColors.PrimaryText}
+              baseColor={CMSColors.PrimaryText}
+              iconColor={CMSColors.InputIconColor}
+              secureTextEntry={false}
+            />
+            <InputTextIcon
+              ref={r => (this._refs.password = r)}
+              name="password"
+              maxLength={60}
+              autoCapitalize={'none'}
+              value={this.state.password}
+              autoCorrect={false}
+              enablesReturnKeyAutomatically={true}
+              onEndEditing={this.onEndEditing}
+              onFocus={this.onFocus}
+              returnKeyType="next"
+              iconCustom="locked-padlock"
+              label={LoginTxt.password}
+              placeholder=""
+              // error={errors.password}
+              disabled={false}
+              tintColor={CMSColors.PrimaryText}
+              textColor={CMSColors.PrimaryText}
+              baseColor={CMSColors.PrimaryText}
+              iconColor={CMSColors.InputIconColor}
+              secureTextEntry={true}
+              revealable={true}
+            />
           </View>
-          <View style={styles.space_footer} />
-        </KeyboardAwareScrollView>
+          <View style={styles.space} />
+          <View style={styles.buttonsContainer}>
+            <Button
+              style={styles.buttonLogin}
+              caption="LOGIN"
+              type="primary"
+              captionStyle={{}}
+              onPress={this.onLogin}
+              enable={
+                domain && username && password // &&
+                // !this.props.appStore.isLoading
+              }
+            />
+            <Button
+              style={styles.buttonPassword}
+              caption="FORGOT PASSWORD?"
+              type="flat"
+              captionStyle={{}}
+              onPress={() => {
+                Linking.openURL(APP_INFO.ContactUrl);
+              }}
+              enable={true}
+            />
+          </View>
+        </View>
+        <View style={styles.space_footer} />
+        <View style={styles.copyRight}>
+          <Image
+            source={I3_Logo}
+            style={styles.copyRightLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+        </View>
+        <View style={styles.space_footer} />
       </SafeAreaView>
     );
   }
