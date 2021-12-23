@@ -665,6 +665,15 @@ export const UserStoreModel = types
               LoginTxt.errorLoginIncorrect
           );
           return false;
+        } else if (
+          res.Result.ReturnMessage &&
+          res.Result.ReturnMessage.length > 0
+        ) {
+          let message = '';
+          res.Result.ReturnMessage.map(
+            item => (message = message + item + '\n')
+          );
+          Alert.alert(LoginTxt.passwordChangeErrorTitle, message);
         }
       } catch (err) {
         __DEV__ && console.log('GOND user changePassword failed: ', err);
