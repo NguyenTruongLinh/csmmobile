@@ -8,6 +8,7 @@ import {
   Linking,
   Alert,
   Dimensions,
+  Platform,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     position: 'absolute',
     right: width * 0.1 - 30,
-    top: width * 0.1 - 36,
+    top: width * 0.1 - (Platform.OS == 'ios' ? 0 : 36),
     zIndex: 10,
   },
   logo: {
