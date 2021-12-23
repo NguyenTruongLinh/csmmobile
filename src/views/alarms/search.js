@@ -180,7 +180,7 @@ class AlarmsSearchView extends Component {
   onSelectAlarm = alarm => {
     const {alarmStore, navigation} = this.props;
 
-    alarmStore.selectAlarm(alarm);
+    alarmStore.selectAlarm(alarm, false);
     navigation.push(ROUTERS.ALARM_DETAIL);
   };
 

@@ -454,21 +454,14 @@ export const AlarmModel = types
     setTextFilter(value) {
       self.filterText = value.toLowerCase();
     },
-    selectAlarm(alarm) {
+    selectAlarm(alarm, fromNotify) {
       // __DEV__ && console.log('GOND selectAlarm: ', kAlertEvent);
       if (!alarm || util.isNullOrUndef(alarm.kAlertEvent)) {
         __DEV__ && console.log('GOND selectAlarm failed');
         return false;
       }
-      if (
-        self.liveAlarms.find(item => item.kAlertEvent == alarm.kAlertEvent) ||
-        self.searchAlarms.find(item => item.kAlertEvent == alarm.kAlertEvent)
-      ) {
-        self.selectedAlarm = alarm;
-      } else {
-        self.notifiedAlarm = alarm;
-        self.selectedAlarm = self.notifiedAlarm;
-      }
+      self.selectedAlarm = alarm.id;
+      if (!fromNotify) self.notifiedAlarm = null;
       return true;
     },
     applySearchParams(params) {
@@ -609,8 +602,7 @@ export const AlarmModel = types
           }
         );
         // __DEV__ && console.log('GOND updateSelectedAlarm: ', res);
-        if (!res.error)
-          self.selectedAlarm.update({rateId, note, user});
+        if (!res.error) self.selectedAlarm.update({rateId, note, user});
 
         snackbarUtil.handleSaveResult(res);
       } catch (err) {
@@ -621,10 +613,9 @@ export const AlarmModel = types
     }),
     // #region on notification events
     onAlarmNotification(data) {
-      // const alarm = parseAlarmData(data);
       try {
         self.notifiedAlarm = parseAlarmData(data);
-        return self.selectAlarm(self.notifiedAlarm);
+        return self.selectAlarm(self.notifiedAlarm, true);
       } catch (ex) {
         __DEV__ &&
           console.log('GOND parse notification alarm data failed: ', ex);
@@ -632,7 +623,7 @@ export const AlarmModel = types
     },
     // #endregion on notification events
     onExitAlarmDetail() {
-      self.selectedAlarm = null;
+      if (self.notifiedAlarm == null) self.selectedAlarm = null;
     },
     cleanUp() {
       applySnapshot(self, storeDefault);
