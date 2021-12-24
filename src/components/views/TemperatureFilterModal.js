@@ -7,11 +7,12 @@ import MultiselectCheckBoxList from '../controls/MultiselectCheckBoxList';
 
 import CMSColors from '../../styles/cmscolors';
 import {getwindow} from '../../util/general';
+import cmscolors from '../../styles/cmscolors';
 
 const {width, height} = getwindow(); //Dimensions.get('window');
 
 const header_height = 50;
-const footer_height = 50;
+const footer_height = 60;
 
 const TemperatureAlarmData = [
   {
@@ -65,13 +66,13 @@ export default class TemperatureFilter extends Component {
             style={styles.button_cancel}
             caption="Cancel"
             type="flat"
-            iconCustom="clear-button"
             enable={true}
             onPress={() => {
               this.ButtonClick(false);
             }}
           />
         </View>
+        <View style={{width: 5}}></View>
         <View style={styles.content_button_apply}>
           <Button
             style={styles.button_apply}
@@ -179,8 +180,8 @@ const styles = StyleSheet.create({
   modal_footer_Apply: {
     height: footer_height,
     backgroundColor: CMSColors.White,
-    borderTopWidth: 1,
-    borderColor: CMSColors.FooterBorder,
+    // borderTopWidth: 1,
+    // borderColor: CMSColors.FooterBorder,
     flexDirection: 'row',
     justifyContent: 'center',
   },
@@ -229,10 +230,12 @@ const styles = StyleSheet.create({
   },
 
   button_cancel: {
-    height: 50,
-    flex: 1,
+    // flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
+    borderColor: cmscolors.PrimaryActive,
+    borderWidth: 1,
+    height: 36,
   },
 
   content_button_apply: {
