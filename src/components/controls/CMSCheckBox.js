@@ -10,6 +10,7 @@ import {compareStrings} from '../../util/general';
 import {Icon, IconCustom} from '../CMSStyleSheet';
 import CMSColors from '../../styles/cmscolors';
 import {Comps as CompTxt} from '../../localization/texts';
+import CMSSearchbar from '../containers/CMSSearchbar';
 
 export default class CheckboxGroup extends Component {
   static defaultProps = {
@@ -185,7 +186,7 @@ export default class CheckboxGroup extends Component {
       <View style={styles.containIconCheck}>
         <Icon
           name={checkedIcon}
-          color={CMSColors.PrimaryColor}
+          color={CMSColors.PrimaryActive}
           size={iconSize}
         />
       </View>
@@ -199,11 +200,7 @@ export default class CheckboxGroup extends Component {
 
     let iconUnCheck = (
       <View style={styles.containIconCheck}>
-        <Icon
-          name={uncheckedIcon}
-          color={CMSColors.DividerColor}
-          size={iconSize}
-        />
+        <Icon name={uncheckedIcon} color="#757575" size={iconSize} />
       </View>
     );
 
@@ -218,7 +215,11 @@ export default class CheckboxGroup extends Component {
           iconCustom="searching-magnifying-glass"
           disabled={false}
           iconPosition="right"
-          noBorder={true}
+          iconStyle={{
+            position: 'absolute',
+            right: -10,
+            top: 5,
+          }}
         />
       </View>
     );
@@ -230,12 +231,16 @@ export default class CheckboxGroup extends Component {
         onPress={() => {
           this._onSelectAll(!this._checkSelectAll());
         }}>
-        {iconAvatar}
-        <Text style={[labelStyle, styles.labeldefault]}>All</Text>
-        {this._checkSelectAll() ? iconCheck : iconUnCheck}
+        {/* {iconAvatar} */}
+        <Text style={[labelStyle, styles.labeldefault, {marginLeft: 4}]}>
+          All
+        </Text>
+        <View style={styles.checkBoxContainer}>
+          {this._checkSelectAll() ? iconCheck : iconUnCheck}
+        </View>
       </Ripple>
     );
-
+    const MARGIN_BOTTOM = 48;
     let dataSort = this.sortItems(this.props.allData, this.props.isSortAZ);
     //  __DEV__ && console.log('GOND CMSCheckbox data = ', dataSort);
     return (
@@ -249,7 +254,10 @@ export default class CheckboxGroup extends Component {
           padding: 5,
         }}>
         {enableSearch ? header : null}
-        <KeyboardAwareScrollView scrollToEnd={true} enableOnAndroid={true}>
+        <KeyboardAwareScrollView
+          style={{marginBottom: MARGIN_BOTTOM}}
+          scrollToEnd={true}
+          enableOnAndroid={true}>
           <ScrollView style={styles.content}>
             {this.props.showSelectAll && itemAll}
             {dataSort.map((checkbox, index) => {
@@ -278,7 +286,7 @@ export default class CheckboxGroup extends Component {
                   <Text style={[labelStyle, styles.labeldefault]}>
                     {this.getLabel(checkbox)}
                   </Text>
-                  <View>
+                  <View style={styles.checkBoxContainer}>
                     {this.props.selected.includes(this.getValue(checkbox))
                       ? iconCheck
                       : iconUnCheck}
@@ -302,26 +310,29 @@ const styles = StyleSheet.create({
       width: 2,
     },
     // borderWidth: 1,
-    borderColor: 'rgb(204, 204, 204)',
+    // borderColor: 'rgb(204, 204, 204)',
     backgroundColor: CMSColors.White,
     // flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 10,
     // height: 48,
-    height: 60, // to prevent scrollview overlap header and weird behavior with parent's header
+    height: 42, // to prevent scrollview overlap header and weird behavior with parent's header
+    paddingHorizontal: 8,
   },
 
   content: {
     flex: 1,
-    paddingTop: 25,
   },
 
   labeldefault: {
     alignSelf: 'center',
+    // height: 48,
     marginLeft: 10,
     flex: 1,
     justifyContent: 'center',
     alignItems: 'flex-start',
+    fontSize: 15,
   },
 
   searchbar: {
@@ -344,7 +355,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderBottomWidth: 0.5,
     borderColor: 'rgb(204, 204, 204)',
-    paddingTop: 5,
+    // paddingTop: 5,
+    paddingLeft: 5,
   },
 
   containIconCheck: {
@@ -376,5 +388,10 @@ const styles = StyleSheet.create({
   flagCount_Text: {
     color: '#fff',
     fontSize: 10,
+  },
+
+  checkBoxContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

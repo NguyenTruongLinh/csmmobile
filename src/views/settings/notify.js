@@ -25,7 +25,7 @@ import {
   compareArrays,
 } from '../../util/general.js';
 
-import {Icon} from '../../components/CMSStyleSheet';
+import {Icon, Icon5} from '../../components/CMSStyleSheet';
 import commonStyles from '../../styles/commons.style';
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
@@ -66,10 +66,8 @@ class NotifySettingView extends React.Component {
       this.props.userStore.getNotifySettings(),
       this.props.exceptionStore.getExceptionTypes(),
     ]);
-    const {
-      selectedNotifies,
-      selectedExceptions,
-    } = this.props.userStore.settings;
+    const {selectedNotifies, selectedExceptions} =
+      this.props.userStore.settings;
     if (res) {
       this.setState({
         selectedNotifies: [...selectedNotifies],
@@ -128,23 +126,19 @@ class NotifySettingView extends React.Component {
       isCheck:
         selectedAlerts && selectedAlerts.includes(C_AlertTypes.SOCIAL_DISTANCE),
     };
-    result.push(alertAI);
-    result.push(alertSensor);
     result.push(posExceptions);
     result.push(temperatureAlerts);
+    result.push(alertAI);
+    result.push(alertSensor);
     result.push(sdAlerts);
     // let AlertTypeFilter = AlertTypes.filter(x => (x.id != 37 && x.id != 107 && x.id != 108));
     // console.log('GOND *** AlertTypes = ', AlertTypes);
     let AlertTypeFilter = alertTypes.filter(
       x =>
         ![
-          37,
-          107,
-          108,
+          37, 107, 108,
           // temperature alarms (Ax19)
-          113,
-          114,
-          115,
+          113, 114, 115,
         ].includes(x.id)
     );
     AlertTypeFilter.map(x => {
@@ -354,16 +348,13 @@ class NotifySettingView extends React.Component {
       item.isCheck = this.state.selectedExceptions.length > 0; // ? true : false;
       let filer_modal = this.render_FilterModel();
       iconL = (
-        <View style={[styles.containIcon, styles.rowButton_contain_icon]}>
-          <View style={[styles.flagCount]}>
-            <Text style={styles.flagCount_Text}>
-              {this.state.selectedExceptions.length}
-            </Text>
-          </View>
+        <View style={[styles.containIconCheck]}>
           <CMSTouchableIcon
-            size={24}
+            size={14}
+            color={CMSColors.PrimaryText}
             disabled={this.state.selectedExceptions.length == 0}
-            iconCustom="ic_flag_black_48px"
+            iconCustom="keyboard-right-arrow-button"
+            style={{selfAlign: 'center'}}
           />
         </View>
       );
@@ -371,17 +362,14 @@ class NotifySettingView extends React.Component {
       filterModal = <View>{filer_modal}</View>;
     } else if (item.id == C_AlertTypes.Alarm_Temperature) {
       let alarmFilterModal = this.renderTemperatureAlarmsModal();
+
       iconL = (
-        <View style={[styles.containIcon, styles.rowButton_contain_icon]}>
-          <View style={[styles.flagCount]}>
-            <Text style={styles.flagCount_Text}>
-              {this.state.temperatureAlarmSelected.length}
-            </Text>
-          </View>
+        <View style={[styles.containIconCheck]}>
           <CMSTouchableIcon
-            size={24}
-            disabled={this.state.temperatureAlarmSelected.length == 0}
-            iconCustom="notifications-button"
+            size={14}
+            color={CMSColors.PrimaryText}
+            disabled={this.state.selectedExceptions.length == 0}
+            iconCustom="keyboard-right-arrow-button"
           />
         </View>
       );
@@ -398,7 +386,7 @@ class NotifySettingView extends React.Component {
           </View>
         ) : (
           <View style={[styles.containIconCheck]}>
-            <Icon name="square" color={CMSColors.DividerColor} size={24} />
+            <Icon name="square-o" color="#757575" size={24} />
           </View>
         );
     }
@@ -414,7 +402,7 @@ class NotifySettingView extends React.Component {
         rippleOpacity={0.87}
         onPress={() => this.onSelectNotifyItem(item)}>
         <View style={styles.rowList}>
-          <View style={styles.rowButton_contain_icon}>
+          {/* <View style={styles.rowButton_contain_icon}>
             <CMSTouchableIcon
               size={24}
               styles={[
@@ -429,7 +417,7 @@ class NotifySettingView extends React.Component {
               }
               iconCustom={getIconAlertType(item.id)}
             />
-          </View>
+          </View> */}
           <View style={styles.rowButton_contain_name}>
             <Text style={styles.rowButton_name}>{item.name}</Text>
           </View>
@@ -651,9 +639,12 @@ const styles = StyleSheet.create({
   },
   rowButton_name: {
     margin: 5,
+    marginLeft: 10,
     paddingTop: 10,
     paddingBottom: 10,
     //fontSize: 14,
+    // borderColor: 'red',
+    // borderWidth: 1,
   },
   containIconCheck: {
     //backgroundColor: 'blue'

@@ -261,6 +261,7 @@ class LoginView extends Component {
               error={errors.domain}
               disabled={false}
               secureTextEntry={false}
+              fixAndroidBottomLine={true}
             />
             <InputTextIcon
               ref={r => (this._refs.username = r)}
@@ -285,6 +286,7 @@ class LoginView extends Component {
               baseColor={CMSColors.PrimaryText}
               iconColor={CMSColors.InputIconColor}
               secureTextEntry={false}
+              fixAndroidBottomLine={true}
             />
             <InputTextIcon
               ref={r => (this._refs.password = r)}
@@ -308,6 +310,7 @@ class LoginView extends Component {
               iconColor={CMSColors.InputIconColor}
               secureTextEntry={true}
               revealable={true}
+              fixAndroidBottomLine={true}
             />
           </View>
           <View style={styles.space} />

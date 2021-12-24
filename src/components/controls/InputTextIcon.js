@@ -229,6 +229,7 @@ export default class InputTextIcon extends PureComponent {
       noBorder,
       marginTopExtended,
       iconStyle,
+      fixAndroidBottomLine,
       ...props
     } = this.props;
     let {focused, focus, error, errored, height, text = ''} = this.state;
@@ -391,7 +392,8 @@ export default class InputTextIcon extends PureComponent {
             </View>
             <Counter {...{baseColor, errorColor, count, limit}} />
           </Animated.View>
-          {Platform.OS === 'android' &&
+          {fixAndroidBottomLine &&
+            Platform.OS === 'android' &&
             !this.state.focused &&
             !this.state.errored && (
               <View

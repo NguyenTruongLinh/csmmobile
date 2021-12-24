@@ -15,10 +15,10 @@ import {ConditionFilterException} from '../../consts/misc';
 import CheckboxGroup from './CMSCheckBox';
 import Button from './Button';
 
-import {IconCustom} from '../CMSStyleSheet';
+import {Icon, IconCustom} from '../CMSStyleSheet';
 import CMSColors from '../../styles/cmscolors';
 
-const session_header_height = 48;
+const session_header_height = 78;
 export default class MultiselectCheckBoxList extends Component {
   static defaultProps = {
     titleText: 'POS Exception settings',
@@ -64,7 +64,7 @@ export default class MultiselectCheckBoxList extends Component {
       case ConditionFilterException.EXCEPTION:
         return (
           <View key={section.type} style={styles.RowHeader}>
-            <Ripple style={styles.event}>
+            {/* <Ripple style={styles.event}>
               {this.props.showTitleIcon && (
                 <View style={styles.icon_flag}>
                   <IconCustom
@@ -73,12 +73,12 @@ export default class MultiselectCheckBoxList extends Component {
                     color={CMSColors.SecondaryText}
                   />
                 </View>
-              )}
+              )} */}
 
-              <View style={styles.contentText}>
-                <Text>{this.props.titleText}</Text>
-              </View>
-            </Ripple>
+            <View style={styles.contentText}>
+              <Text style={styles.RowHeaderText}>{this.props.titleText}</Text>
+            </View>
+            {/* </Ripple> */}
           </View>
         );
       default:
@@ -106,25 +106,28 @@ export default class MultiselectCheckBoxList extends Component {
               isNoneSelected == true ? styles.countsite_text_empty : null,
             ]}>
             {this.props.selectedItems.length +
-              ' ' +
-              this.props.itemName +
-              (this.props.selectedItems.length > 1 ? 's' : '') +
+              // ' ' +
+              // this.props.itemName +
+              // (this.props.selectedItems.length > 1 ? 's' : '') +
               ' selected'}
           </Text>
           <View>
             {this.props.enableSort ? (
-              <Button
+              <Ripple
                 style={styles.button_sort}
                 onPress={() => {
                   this.setState({isSortAZ: !this.state.isSortAZ});
-                }}
-                caption={
-                  this.state.isSortAZ == true ? 'SORT (A-Z)' : 'SORT (Z-A)'
-                }
-                type="flat"
-                iconCustom="expand-button"
-                enable={true}
-              />
+                }}>
+                <Icon
+                  name={
+                    this.state.isSortAZ == true
+                      ? 'sort-alpha-asc'
+                      : 'sort-alpha-desc'
+                  }
+                  color={CMSColors.PrimaryText}
+                  size={17}
+                />
+              </Ripple>
             ) : null}
           </View>
         </View>
@@ -147,7 +150,7 @@ export default class MultiselectCheckBoxList extends Component {
             this.props.showItemIcon ? this.props.titleIconName : undefined
           }
           showItemIcon={this.props.showItemIcon}
-          uncheckedIcon="square"
+          uncheckedIcon="square-o"
           keyname={this.props.itemId}
           textname={this.props.itemName}
           allData={this.state.data}
@@ -156,7 +159,7 @@ export default class MultiselectCheckBoxList extends Component {
           enableSort={this.props.enableSort}
           isSortAZ={this.state.isSortAZ}
           labelStyle={{
-            color: CMSColors.TextSearch,
+            color: CMSColors.PrimaryText,
           }}
           rowStyle={{
             flexDirection: 'row',
@@ -226,21 +229,26 @@ const styles = StyleSheet.create({
   RowHeader: {
     height: session_header_height,
     backgroundColor: CMSColors.RowHeaderAccordion,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    borderBottomWidth: 0.5,
-    borderColor: 'rgb(204, 204, 204)',
-    ...Platform.select({
-      ios: {
-        shadowOffset: {
-          height: 0,
-          width: 0,
-        },
-      },
-      android: {},
-    }),
+    // flexDirection: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    // borderBottomWidth: 0.5,
+    // borderColor: 'rgb(204, 204, 204)',
+    // ...Platform.select({
+    //   ios: {
+    //     shadowOffset: {
+    //       height: 0,
+    //       width: 0,
+    //     },
+    //   },
+    //   android: {},
+    // }),
   },
-
+  RowHeaderText: {
+    fontSize: 20,
+    color: CMSColors.PrimaryText,
+    fontWeight: 'bold',
+  },
   event: {
     flex: 1,
     height: 48,
@@ -265,26 +273,27 @@ const styles = StyleSheet.create({
   },
 
   containSites: {
-    backgroundColor: CMSColors.DividerColor24,
+    // borderColor: 'red',
+    // borderWidth: 1,
   },
 
   headerSites: {
-    backgroundColor: CMSColors.BGHeaderSites,
-    height: 40,
+    backgroundColor: CMSColors.FilterRowBg,
+    height: 48,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
 
   button_sort: {
-    width: 120,
-    height: 40,
-    flexDirection: 'row',
+    width: 48,
+    height: 48,
     justifyContent: 'center',
+    alignItems: 'center',
   },
 
   countsite_text: {
-    color: CMSColors.PrimaryColor,
+    color: CMSColors.PrimaryText,
     fontSize: 16,
     marginLeft: 10,
   },
