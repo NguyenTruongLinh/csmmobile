@@ -634,7 +634,9 @@ class DashboardView extends React.Component {
     return (
       <View style={{flex: 1}}>
         <View style={styles.topInfoContainer}>
-          <View style={styles.calendarIcon}>
+          <CMSRipple
+            style={styles.calendarIconContainer}
+            onPress={() => this.setState({showFilterModal: true})}>
             <IconCustom
               name={'power-connection-indicator'}
               color={CMSColors.ColorText}
@@ -647,7 +649,7 @@ class DashboardView extends React.Component {
                 ' - ' +
                 exceptionStore.endDateTime.toFormat(DateFormat.POS_Filter_Date)}
             </Text>
-          </View>
+          </CMSRipple>
           {showChart && (
             <View style={{}}>
               {/* <Text style={{marginRight: 7}}>{exceptionStore.sortFieldName}</Text> */}
@@ -838,7 +840,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  calendarIcon: {flexDirection: 'row'},
+  calendarIconContainer: {
+    flexDirection: 'row',
+    paddingVertical: 16,
+  },
   dateRangeText: {marginLeft: 5, fontSize: 16},
   sortButton: {
     height: 42,
