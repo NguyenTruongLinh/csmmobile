@@ -28,7 +28,7 @@ import {
 } from '../../localization/texts';
 
 const ITEMS_PER_ROW = 2;
-const ITEM_HEIGHT = 200;
+const ITEM_HEIGHT = 190;
 
 class ChannelsSettingView extends Component {
   constructor(props) {
@@ -214,6 +214,9 @@ class ChannelsSettingView extends Component {
       }
       result.push(row);
     }
+    __DEV__ &&
+      console.log(`buildChannelsGridData result.length = `, result.length);
+    this.setState({length: stateData.length});
     return result;
   };
 
@@ -225,8 +228,11 @@ class ChannelsSettingView extends Component {
       <TouchableOpacity
         key={channel.kChannel}
         onPress={() => this.onSelectChannel(channel)}
-        style={{flex: 1, flexDirection: 'column'}}>
-        <View style={{flex: 8}}>
+        style={styles.item}>
+        <View
+          style={{
+            flex: 8,
+          }}>
           <CMSImage
             resizeMode="cover"
             styleImage={{width: '100%', height: '100%'}}
@@ -241,25 +247,25 @@ class ChannelsSettingView extends Component {
         </View>
         <View
           style={{
-            flex: 2,
+            flex: 3,
             flexDirection: 'row',
           }}>
           <View style={{justifyContent: 'center', paddingLeft: 7}}>
             <IconCustom
               name="videocam-filled-tool"
               color={CMSColors.Green}
-              size={24}
+              size={20}
             />
           </View>
-          <View style={{flex: 1, justifyContent: 'center', paddingLeft: 7}}>
+          <View style={{flex: 1, justifyContent: 'center', padding: 7}}>
             <Text numberOfLines={2}>{channel.name}</Text>
           </View>
         </View>
         <View
           style={{
             position: 'absolute',
-            top: 14,
-            left: 14,
+            top: 10,
+            left: 12,
           }}>
           <Icon
             name={channel.isActive ? 'check-square' : 'square'}
@@ -285,8 +291,9 @@ class ChannelsSettingView extends Component {
         style={{
           flex: 1,
           flexDirection: 'row',
-          width: '100%',
+          // width: '100%',
           height: ITEM_HEIGHT,
+          marginHorizontal: 10,
         }}>
         {rowViews}
       </View>
@@ -316,7 +323,7 @@ class ChannelsSettingView extends Component {
           value={videoStore.channelFilter}
         />
         <View style={styles.summaryContainer}>
-          <Text style={styles.summaryText}>{gridData.length} channels</Text>
+          <Text style={styles.summaryText}>{this.state.length} channels</Text>
         </View>
         <View style={{flex: 1, marginBottom: 14}} onLayout={this.onLayout}>
           <FlatList
@@ -343,6 +350,22 @@ const styles = StyleSheet.create({
     paddingLeft: 24,
     textAlignVertical: 'center',
     color: CMSColors.RowOptions,
+  },
+  item: {
+    flex: 1,
+    borderRadius: 2,
+    backgroundColor: CMSColors.White,
+    flexDirection: 'column',
+    ...Platform.select({
+      ios: {
+        shadowRadius: 2,
+        shadowColor: CMSColors.BoxShadow,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+    margin: 6,
   },
 });
 export default inject('videoStore')(observer(ChannelsSettingView));
