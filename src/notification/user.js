@@ -47,7 +47,13 @@ function onUserEvent(notifExtraData, appStore, userStore, action, content) {
   __DEV__ &&
     console.log('onUserEvent', `userStore.user=${userStore && userStore.user}`);
   __DEV__ && console.log('onUserEvent', `content=${JSON.stringify(content)}`);
+  __DEV__ &&
+    console.log(
+      'onUserEvent',
+      `notifExtraData=${JSON.stringify(notifExtraData)}`
+    );
   switch (action) {
+    case NOTIFY_ACTION.EDIT:
     case NOTIFY_ACTION.REFRESH:
       noti = {
         body: user + ' has updated.',
@@ -95,13 +101,18 @@ function onUserEvent(notifExtraData, appStore, userStore, action, content) {
 }
 
 function onOpenUserEvent(appStore, userStore, naviService, action, content) {
+  __DEV__ && console.log(`onOpenUserEvent action = `, action);
   if (action == NOTIFY_ACTION.USER_PERMISSION_REFRESH) {
     appStore.setLoading(true);
     setTimeout(() => {
       appStore.setLoading(false);
     }, 500);
-  } else if (action == NOTIFY_ACTION.REFRESH)
-    naviService.navigate(ROUTERS.OPTIONS_NAVIGATOR);
+  } else if (action == NOTIFY_ACTION.EDIT || action == NOTIFY_ACTION.REFRESH) {
+    naviService.navigate(ROUTERS.OPTIONS_NAVIGATOR, {
+      screen: ROUTERS.OPTIONS_PROFILE,
+      initial: false,
+    });
+  }
 }
 
 module.exports = {
