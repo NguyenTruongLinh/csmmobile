@@ -44,10 +44,10 @@ function onSiteEvent(
   }
   noti.title = 'CMS Site.';
   if (content) {
-    sitesStore.updateSite(content);
-    healthStore.updateSite(content);
-    oamStore.notifyUpdate(content);
-    exceptionStore.updateSite(content);
+    if (sitesStore) sitesStore.updateSite(content);
+    if (healthStore) healthStore.updateSite(content);
+    if (oamStore) oamStore.notifyUpdate(content);
+    if (exceptionStore) exceptionStore.updateSite(content);
   }
   noti.isContent = false;
   return noti;
