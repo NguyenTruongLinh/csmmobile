@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   listText: {
     flex: 1,
     margin: 15,
-    padding: 5,
+    paddingLeft: 5,
     fontSize: 16,
     fontWeight: 'bold',
     color: CMSColors.ColorText,
