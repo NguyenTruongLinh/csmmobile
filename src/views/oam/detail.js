@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
+import {reaction} from 'mobx';
 
 import CMSColors from '../../styles/cmscolors';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
@@ -51,6 +52,7 @@ class OAMDetailView extends Component {
     this.state = {
       showPopup: false,
     };
+    this.reactions = [];
   }
 
   componentWillUnmount() {
@@ -60,22 +62,40 @@ class OAMDetailView extends Component {
     videoStore.releaseStreams();
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     this.unsubscribleBlurEvent && this.unsubscribleBlurEvent();
+    this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
   }
 
   componentDidMount() {
     const {navigation, oamStore} = this.props;
     __DEV__ && console.log('RTCStreamingView componentDidMount');
+
     navigation.setOptions({
       headerShown: this.isHeaderShown,
+      headerTitle: oamStore.title,
     });
-
     this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
       StatusBar.setHidden(!this.isHeaderShown);
     });
     this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
       StatusBar.setHidden(false);
     });
+    this.initReactions();
   }
+
+  initReactions = () => {
+    const {oamStore, navigation} = this.props;
+
+    this.reactions = [
+      reaction(
+        () => oamStore.title,
+        newTitle => {
+          navigation.setOptions({
+            headerTitle: newTitle,
+          });
+        }
+      ),
+    ];
+  };
 
   renderFullScreenButton(foreColor) {
     return (
@@ -142,9 +162,6 @@ class OAMDetailView extends Component {
 
   render() {
     const {oamStore, navigation} = this.props;
-    navigation.setOptions({
-      headerTitle: oamStore.title,
-    });
     const isLandscape = false;
     if (!oamStore.data)
       return (

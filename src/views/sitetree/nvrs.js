@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
+import {reaction} from 'mobx';
 // import Ripple from 'react-native-material-ripple';
 
 import CMSRipple from '../../components/controls/CMSRipple';
@@ -28,6 +29,7 @@ class NVRsView extends Component {
   constructor(props) {
     super(props);
     this._isMounted = false;
+    this.reactions = [];
   }
 
   componentWillUnmount() {
@@ -36,6 +38,7 @@ class NVRsView extends Component {
 
     // appStore.enableSearchbar(false);
     this.onFilter('');
+    this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
   }
 
   componentDidMount() {
@@ -51,7 +54,23 @@ class NVRsView extends Component {
     // });
     // this.getSitesList();
     this.setHeader();
+
+    this.initReactions();
   }
+
+  initReactions = () => {
+    const {sitesStore, navigation} = this.props;
+    this.reactions = [
+      reaction(
+        () => sitesStore.selectedSite.name,
+        newSiteName => {
+          navigation.setOptions({
+            headerTitle: newSiteName || 'Unknown site',
+          });
+        }
+      ),
+    ];
+  };
 
   setHeader = () => {
     const {sitesStore, navigation} = this.props;
@@ -62,7 +81,7 @@ class NVRsView extends Component {
 
     if (sitesStore.selectedSite != null) {
       options = {
-        headerTitle: sitesStore.selectedSite.name ?? 'Unknown site',
+        headerTitle: sitesStore.selectedSite.name || 'Unknown site',
       };
     }
     navigation.setOptions({
@@ -111,11 +130,6 @@ class NVRsView extends Component {
 
   render() {
     const {/*appStore,*/ sitesStore, navigation} = this.props;
-    if (sitesStore.selectedSite != null) {
-      navigation.setOptions({
-        headerTitle: sitesStore.selectedSite.name ?? 'Unknown site',
-      });
-    }
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
         {/* <HeaderWithSearch

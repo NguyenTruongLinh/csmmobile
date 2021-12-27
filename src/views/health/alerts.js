@@ -13,6 +13,7 @@ import {
 // import Ripple from 'react-native-material-ripple';
 import {SwipeRow} from 'react-native-swipe-list-view';
 import {DateTime} from 'luxon';
+import {reaction} from 'mobx';
 
 import CMSRipple from '../../components/controls/CMSRipple';
 import AlertActionModal from './modals/actionsModal';
@@ -53,11 +54,23 @@ class AlertsView extends Component {
     this.rowRefs = {};
     this.lastOpenRowId = null;
     this._isMounted = false;
+    this.reactions = [];
   }
 
   componentDidMount() {
+    const {healthStore} = this.props;
     __DEV__ && console.log('AlertsView componentDidMount');
     this._isMounted = true;
+
+    this.reactions = [
+      reaction(
+        () => healthStore.selectedSite.siteName,
+        newSiteName => {
+          __DEV__ && console.log('reaction newSiteName = ', newSiteName);
+          this.setHeader();
+        }
+      ),
+    ];
 
     this.setHeader();
     this.getData();
@@ -69,6 +82,7 @@ class AlertsView extends Component {
 
     this.props.healthStore.onExitAlertsView();
     this.onFilter('');
+    this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
   }
 
   setHeader = () => {
@@ -415,10 +429,8 @@ class AlertsView extends Component {
 
   render() {
     const {healthStore, navigation} = this.props;
-    const {
-      /*showDismissModal,*/ isListView,
-      selectedAlertForDismiss,
-    } = this.state;
+    const {/*showDismissModal,*/ isListView, selectedAlertForDismiss} =
+      this.state;
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>

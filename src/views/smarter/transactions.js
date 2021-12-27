@@ -1,4 +1,5 @@
 import {inject, observer} from 'mobx-react';
+import {reaction} from 'mobx';
 import React, {Component} from 'react';
 import {
   View,
@@ -43,6 +44,7 @@ class ExceptionsView extends Component {
     };
     this._isMounted = false;
     this.currentPage = 1;
+    this.reactions = [];
   }
 
   componentDidMount() {
@@ -51,7 +53,28 @@ class ExceptionsView extends Component {
 
     this.setHeader();
     this.getData();
+    this.initReactions();
   }
+
+  initReactions = () => {
+    const {exceptionStore, navigation} = this.props;
+
+    this.reactions = [
+      reaction(
+        () => exceptionStore.selectedEmployee.siteName,
+        newSiteName => {
+          const {selectedEmployee} = exceptionStore;
+          navigation.setOptions({
+            headerTitle:
+              (selectedEmployee.employeeName &&
+              selectedEmployee.employeeName.length > 0
+                ? selectedEmployee.employeeName + ' - '
+                : '') + selectedEmployee.siteName,
+          });
+        }
+      ),
+    ];
+  };
 
   componentWillUnmount() {
     __DEV__ && console.log('ExceptionsView componentWillUnmount');
@@ -59,6 +82,7 @@ class ExceptionsView extends Component {
 
     // this.props.exceptionStore.onExitAlertsView();
     this.onFilter('');
+    this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
   }
 
   setHeader = () => {
@@ -255,15 +279,6 @@ class ExceptionsView extends Component {
   render() {
     const {exceptionStore, navigation} = this.props;
     const {/*showDismissModal,*/ isListView} = this.state;
-
-    const {selectedEmployee} = exceptionStore;
-    navigation.setOptions({
-      headerTitle:
-        (selectedEmployee.employeeName &&
-        selectedEmployee.employeeName.length > 0
-          ? selectedEmployee.employeeName + ' - '
-          : '') + selectedEmployee.siteName,
-    });
 
     return (
       <View style={styles.viewContainer}>

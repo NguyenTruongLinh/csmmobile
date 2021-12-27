@@ -83,13 +83,6 @@ class AlertDetailView extends Component {
     //   Dimensions.addEventListener('change', this.onDimensionsChange),
     // ];
     this.reactions = [
-      // reaction(
-      //   () => healthStore.selectedAlert,
-      //   newValue => {
-      //     if (newValue == null || newValue == undefined)
-      //       healthStore.selectAlert(); // default first alert
-      //   }
-      // ),
       reaction(
         () => healthStore.alertsList,
         newList => {
@@ -101,8 +94,43 @@ class AlertDetailView extends Component {
           __DEV__ && console.log(': : ', healthStore.selectedAlert);
         }
       ),
+      reaction(
+        () => healthStore.selectedSite.siteName,
+        newSiteName => {
+          this.setHeader();
+        }
+      ),
     ];
+    this.setHeader();
   }
+
+  setHeader = () => {
+    const {healthStore, navigation} = this.props;
+    const {
+      selectedAlertTypeId,
+      selectedAlertType,
+      selectedSite,
+      currentSiteName,
+      alertsList,
+    } = healthStore;
+
+    __DEV__ &&
+      console.log('GOND AlertsView setHeader, selectedSite = ', selectedSite);
+
+    let options = {
+      headerTitle: `${
+        selectedAlertType
+          ? selectedAlertType.name
+          : alertsList.length > 0
+          ? healthStore.getAlertName(alertsList[0].alertId)
+          : ''
+      } - ${
+        selectedSite ? selectedSite.siteName : currentSiteName ?? 'Unknown site'
+      }`,
+    };
+
+    navigation.setOptions(options);
+  };
 
   componentWillUnmount() {
     __DEV__ && console.log('AlertDetailView componentWillUnmount');

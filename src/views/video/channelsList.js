@@ -103,13 +103,8 @@ class ChannelsListView extends React.Component {
 
   setHeader = enableSettingButton => {
     if (!this._isMounted) return;
-    const {
-      navigation,
-      videoStore,
-      healthStore,
-      sitesStore,
-      userStore,
-    } = this.props;
+    const {navigation, videoStore, healthStore, sitesStore, userStore} =
+      this.props;
     const {isListView} = this.state;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() =>
