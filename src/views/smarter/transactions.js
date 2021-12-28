@@ -140,7 +140,7 @@ class ExceptionsView extends Component {
   onLoadMore = pullDistance => {
     const {exceptionStore} = this.props;
 
-    if (!exceptionStore.isLoading) {
+    if (!exceptionStore.isLoading && exceptionStore.hasMore) {
       this.currentPage++;
       exceptionStore.getEmployeeTransactions(
         exceptionStore.selectedEmployee,

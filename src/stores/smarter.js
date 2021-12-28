@@ -531,6 +531,7 @@ export const POSModel = types
     // isGroupLoading: types.boolean,
 
     sortField: types.optional(types.number, ExceptionSortField.RatioToSale),
+    hasMore: types.boolean,
   })
   // .volatile(self => ({
   //   retainNotifiedTransaction: null,
@@ -799,6 +800,7 @@ export const POSModel = types
       }
       if (page == 1) {
         self.transactionsList = [];
+        self.hasMore = true;
       }
 
       self.isLoading = true;
@@ -832,6 +834,7 @@ export const POSModel = types
         ) {
           __DEV__ && console.log('GOND getEmployeeTransactions no data:', res);
           self.isLoading = false;
+          self.hasMore = false;
           return;
         }
 
@@ -977,6 +980,7 @@ const storeDefault = {
   exceptionTypes: [],
   transactionsList: [],
   isLoading: false,
+  hasMore: true,
   // isGroupLoading: false,
 
   selectedEmployee: null,
