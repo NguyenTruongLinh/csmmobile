@@ -246,6 +246,8 @@ class LiveChannelsView extends React.Component {
   getChannelsInfo = async () => {
     const {videoStore} = this.props;
     // let newState = {};
+    // this.stopAll();
+
     let res = await videoStore.getCloudSetting();
     res = res && (await videoStore.getDisplayingChannels());
     if (res) {
@@ -521,8 +523,8 @@ class LiveChannelsView extends React.Component {
   render() {
     // const authenModal = this.renderNVRAuthenModal();
     const {appStore, videoStore, navigation} = this.props;
-    __DEV__ &&
-      console.log('GOND channels render data = ', videoStore.videoData);
+    //  __DEV__ &&
+    // console.log('GOND channels render data = ', videoStore.videoData);
     this.playerRefs = [];
 
     return (
