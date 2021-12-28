@@ -354,7 +354,6 @@ class LiveChannelsView extends React.Component {
 
   renderLayoutModal = () => {
     const {width, height} = Dimensions.get('window');
-
     return (
       <Modal
         isVisible={this.state.showLayoutSelection}
@@ -365,7 +364,7 @@ class LiveChannelsView extends React.Component {
         style={{
           ...styles.layoutModalContainer,
           marginBottom: 0,
-          marginTop: height - 220,
+          marginTop: height - (width > 480 ? 300 : 220),
           marginLeft: 0,
           marginRight: 0,
           borderTopLeftRadius: 12,
