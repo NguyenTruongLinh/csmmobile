@@ -842,7 +842,8 @@ const styles = StyleSheet.create({
   },
   calendarIconContainer: {
     flexDirection: 'row',
-    paddingVertical: 16,
+    height: '100%',
+    alignItems: 'center',
   },
   dateRangeText: {marginLeft: 5, fontSize: 16},
   sortButton: {
