@@ -27,7 +27,7 @@
   NSLock* lockServerList;
   BOOL isRunning;
   ImcEnvSetting* env;
-  BOOL isBusy;
+//  BOOL isBusy;
   AVAudioPlayer *player;
   BOOL firstMainStreamFrame;
 }

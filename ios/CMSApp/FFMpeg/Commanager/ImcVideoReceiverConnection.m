@@ -23,7 +23,7 @@
 @end
 
 @implementation ImcVideoReceiverConnection
-@synthesize parent,disconnected, videoTimer, timerCounter, streamingRL;
+@synthesize parent,disconnected, videoTimer, timerCounter, streamingRL, streamQueue;
 
 - (id)init
 {
@@ -48,6 +48,7 @@
     rawVideo = nil;
     encodedVideo = nil;
     current_state = get_cmd;
+    streamQueue = nil;
   }
   return self;
 }
@@ -74,17 +75,24 @@
     rawVideo = nil;
     encodedVideo = nil;
     current_state = get_cmd;
+    streamQueue = nil;
   }
   return self;
 }
 
 - (void) dealloc
 {
+  // NSLog(@"---------- videoReceiver dealloc 1");
   if(!disconnected)
+  {
     [self disconnectToServer];
-  
+    // NSLog(@"---------- videoReceiver dealloc ----------");
+  }
+
   receiverBuffer = nil;
   currentData = nil;
+  streamQueue = nil;
+  parent = nil;
 }
 
 - (BOOL) connectToServer:(NSString *)address :(NSInteger)port
@@ -95,7 +103,15 @@
   CFStringRef adddress = (__bridge CFStringRef)serverAddress;
   UInt32 connectPort = (UInt32)serverPort;
   
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+  // NSLog(@"<<<<<<<<<< videoReceiver connect server before >>>>>>>>>>");
+  if(!streamQueue)
+  {
+    NSString* queueName = [NSString stringWithFormat:@"com.i3international.videostream.%@:%ld", address, (long)port];
+    streamQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_CONCURRENT);
+  }
+//  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+  dispatch_async(streamQueue, ^{
+    // NSLog(@"<<<<<<<<<< videoReceiver connect server block >>>>>>>>>>");
     
     CFReadStreamRef readStream;
     CFWriteStreamRef writeStream;
@@ -112,27 +128,28 @@
                                kCFStreamPropertyShouldCloseNativeSocket,
                                kCFBooleanTrue);
       
-      receivedDataStream = (__bridge NSInputStream *)readStream;
-      [receivedDataStream setDelegate:self];
-      streamingRL = [NSRunLoop currentRunLoop];
-      [receivedDataStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
+      self->receivedDataStream = (__bridge_transfer NSInputStream *)readStream;
+      [self->receivedDataStream setDelegate:self];
+      self->streamingRL = [NSRunLoop currentRunLoop];
+      [self->receivedDataStream scheduleInRunLoop:[NSRunLoop currentRunLoop]
                                     forMode:NSDefaultRunLoopMode];
-      [receivedDataStream open];
+      [self->receivedDataStream open];
       
       
-      sentDataStream = (__bridge NSOutputStream *)writeStream;
-      [sentDataStream setDelegate:self];
-      [sentDataStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-      [sentDataStream open];
+      self->sentDataStream = (__bridge_transfer NSOutputStream *)writeStream;
+      [self->sentDataStream setDelegate:self];
+      [self->sentDataStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+      [self->sentDataStream open];
       
-      disconnected = FALSE;
+      self->disconnected = FALSE;
       success = TRUE;
       
-      [sentDataStream write:(uint8_t*)(&connectionIndex) maxLength:sizeof(connectionIndex)];
-      [[NSRunLoop currentRunLoop] run];
+      [self->sentDataStream write:(uint8_t*)(&self->connectionIndex) maxLength:sizeof(self->connectionIndex)];
+      [self->streamingRL run];
+//      [[NSRunLoop currentRunLoop] run];
       
     }
-    
+    // NSLog(@"<<<<<<<<<< videoReceiver connect server end >>>>>>>>>>");
   });
   
   //lvtx todo: sync return value
@@ -151,6 +168,7 @@
     
     if (!disconnected) {
       [parent onDisconnect:nil];
+      // NSLog(@"++++++++++ onTimerChecking, disconected ...");
       [self disconnectToServer];
       [parent disconnect];
     }
@@ -177,23 +195,47 @@
   [streamLock lock];
   disconnected = TRUE;
   [parent postDisconnectVideoMsg:serverAddress];
-  if( sentDataStream == nil || receivedDataStream == nil )
+//  if( sentDataStream == nil || receivedDataStream == nil )
+//  {
+//    [streamLock unlock];
+//    return;
+//  }
+//
+//  [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+//  [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+//  [sentDataStream close];
+//  [receivedDataStream close];
+//  NSLog(@">>>>>>>>>> video connection closed!");
+//  [sentDataStream setDelegate:nil];
+//  [receivedDataStream setDelegate:nil];
+//
+//  sentDataStream = nil;
+//  receivedDataStream = nil;
+  if( sentDataStream != nil)
   {
-    [streamLock unlock];
-    return;
+    if (streamingRL != nil)
+      [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+    [sentDataStream close];
+    [sentDataStream setDelegate:nil];
+    sentDataStream = nil;
   }
   
-  [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
-  [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
-  [sentDataStream close];
-  [receivedDataStream close];
+  if( receivedDataStream != nil)
+  {
+    if (streamingRL != nil)
+      [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+    [receivedDataStream close];
+    [receivedDataStream setDelegate:nil];
+    receivedDataStream = nil;
+  }
   
-  sentDataStream = nil;
-  receivedDataStream = nil;
-  
+  // NSLog(@">>>>>>>>>> video connection closed!");
   [streamLock unlock];
   
-  CFRunLoopStop([streamingRL getCFRunLoop]);
+  if (streamingRL != nil) {
+    CFRunLoopStop([streamingRL getCFRunLoop]);
+    streamingRL = nil;
+  }
 }
 
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode

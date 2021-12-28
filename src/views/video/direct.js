@@ -121,12 +121,17 @@ class DirectVideoView extends React.Component {
   }
 
   componentWillUnmount() {
-    __DEV__ && console.log('DirectStreamingView componentWillUnmount');
+    __DEV__ &&
+      console.log(
+        'DirectStreamingView componentWillUnmount: ',
+        this.props.serverInfo.channelName
+      );
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }
-    // this.stop();
-    this.setNative({disconnect: true}, true);
+
+    // this.setNative({disconnect: true}, true);
+    this.stop(true);
     this._isMounted = false;
     this.reactions.forEach(unsubsribe => unsubsribe());
   }
@@ -264,8 +269,8 @@ class DirectVideoView extends React.Component {
                   ' <= ',
                   previousValue
                 );
-              // this.stop();
-              this.setNative({disconnect: true}, true);
+              this.stop();
+              // this.setNative({disconnect: true}, true);
             } else if (
               value == null &&
               previousValue != null // ||
@@ -286,7 +291,8 @@ class DirectVideoView extends React.Component {
                 'GOND on gridLayout changed: ',
                 this.props.serverInfo.channelName
               );
-            this.setNative({disconnect: true}, true);
+            // this.setNative({disconnect: true}, true);
+            this.stop();
             setTimeout(() => this.setNativePlayback(), 1000);
           }
         ),
@@ -329,14 +335,17 @@ class DirectVideoView extends React.Component {
   };
 
   reconnect = () => {
+    // this.setNative({disconnect: true}, true);
+    this.stop();
+
     this.props.serverInfo.setStreamStatus({
       isLoading: true,
       connectionStatus: STREAM_STATUS.RECONNECTING,
     });
-    this.setNativePlayback();
+    this.setNativePlayback(true, {}, true);
   };
 
-  setNativePlayback = (willPause = false, paramsObject = {}) => {
+  setNativePlayback = (delay = false, paramsObject = {}, immediate = false) => {
     const {serverInfo, videoStore, isLive, hdMode} = this.props;
     if (!this._isMounted || !this.ffmpegPlayer || !serverInfo.server) {
       __DEV__ &&
@@ -368,7 +377,7 @@ class DirectVideoView extends React.Component {
         '=== sv: ',
         serverInfo
       );
-    if (willPause) {
+    if (delay) {
       this.pause();
       setTimeout(() => {
         if (this._isMounted /*&& this.ffmpegPlayer*/ && serverInfo.server) {
@@ -738,7 +747,7 @@ class DirectVideoView extends React.Component {
     } else {
       __DEV__ &&
         console.log(
-          `GOND ~~~ setnative in single player`,
+          `GOND ~~~ setnative immediate`,
           serverInfo.channelName,
           params
         );
@@ -746,7 +755,7 @@ class DirectVideoView extends React.Component {
     }
   };
 
-  stop = () => {
+  stop = (endConnection = false) => {
     // if (this.ffmpegPlayer) {
     //   __DEV__ &&
     //     console.log('GOND on direct stop: ', this.props.serverInfo.channelName);
@@ -756,7 +765,7 @@ class DirectVideoView extends React.Component {
     //   });
     // }
     __DEV__ && console.log('GOND --- onDisconnect ---');
-    this.setNative({stop: true}, true);
+    this.setNative({disconnect: endConnection}, true);
   };
 
   pause = value => {

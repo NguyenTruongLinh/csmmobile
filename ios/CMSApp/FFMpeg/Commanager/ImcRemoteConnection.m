@@ -24,13 +24,16 @@
 
 @implementation ImcRemoteConnection
 
-@synthesize delegate,deviceSetting,deviceCameraList,serverInfo,serverVersion,snapshotChannel, waitForAccept, loginTimer, dataQueue, streamingRL;
+// __volatile BOOL isRLRunning = NO;
+
+@synthesize delegate,deviceSetting,deviceCameraList,serverInfo,serverVersion,snapshotChannel, waitForAccept, loginTimer, dataQueue, streamingRL, streamQueue;
 
 - (id)init:(ImcConnectionServer *)server
 {
   self = [super init];
   if( self )
   {
+    streamingRL             = nil;
     serverInfo              = [[ImcConnectionServer alloc] init];
     [serverInfo updateServerInfo:server];
     waitForAccept           = FALSE;
@@ -56,49 +59,68 @@
     movedBytes              = 0;
     connectionError         = FALSE;
     firstConnect            = YES;
+    streamQueue             = nil;
+    isRLRunning             = NO;
   }
   return self;
 }
 
 - (void)dealloc
 {
-  
+  NSLog(@"---------- remote connection dealloc");
   videoConnection = nil;
   receivedBuffer = nil;
   currentData = nil;
+  
+  dataQueue = nil;
+  streamQueue = nil;
+  isRLRunning = NO;
 }
 
 - (BOOL)setupConnection
 {
-  CFStringRef adddress;
+  CFStringRef address;
   if(firstConnect)
-    adddress = (__bridge CFStringRef)serverInfo.server_address;
+    address = (__bridge CFStringRef)serverInfo.server_address;
   else
-    adddress = (__bridge CFStringRef)serverInfo.public_address;
+    address = (__bridge CFStringRef)serverInfo.public_address;
   unsigned int port = (unsigned int)serverInfo.server_port;
   queueName = [NSString stringWithFormat:@"com.i3international.mobilesocket.%@:%d",serverInfo.server_address,port];
   keepAliveCounter = 0;
-  if( adddress == nil || port > 65535 )
+  if( address == nil || port > 65535 )
   {
     return FALSE;
   }
   
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    if(!dataQueue)
-      dataQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_SERIAL);
+  if(!streamQueue) {
+    NSString* qName = [NSString stringWithFormat:@"com.i3international.remotestream.%@:%ld", serverInfo.server_address, (long)port];
+    streamQueue = dispatch_queue_create([qName UTF8String], DISPATCH_QUEUE_CONCURRENT);
+  }
+  NSLog(@"[[[[[[[ remote connection connect server before ]]]]]]]");
+  isRLRunning = YES;
+//  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+  dispatch_async(streamQueue, ^{
+    if (!isRLRunning)
+    {
+      NSLog(@"[[[[[[[ remote connection connect server end 0 ]]]]]]]");
+      return;
+    }
+    if(!self->dataQueue)
+      self->dataQueue = dispatch_queue_create([self->queueName UTF8String], DISPATCH_QUEUE_SERIAL);
+    NSLog(@"[[[[[[[ remote connection connect server block ]]]]]]]");
     CFReadStreamRef readStream;
     CFWriteStreamRef writeStream;
     
     readStream = NULL;
     writeStream = NULL;
     
-    CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault, adddress, port, &readStream, &writeStream);
+    CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault, address, port, &readStream, &writeStream);
     
     
     if( readStream && writeStream )
     {
-      waitForAccept = TRUE;
-      isConnected = TRUE;
+      self->waitForAccept = TRUE;
+      self->isConnected = TRUE;
       
       CFReadStreamSetProperty(readStream,
                               kCFStreamPropertyShouldCloseNativeSocket,
@@ -107,29 +129,51 @@
                                kCFStreamPropertyShouldCloseNativeSocket,
                                kCFBooleanTrue);
       
-      receivedDataStream = (__bridge NSInputStream *)readStream;
-      sentDataStream = (__bridge NSOutputStream *)writeStream;
+      self->receivedDataStream = (__bridge_transfer NSInputStream *)readStream;
+      self->sentDataStream = (__bridge_transfer NSOutputStream *)writeStream;
       
-      [receivedDataStream setDelegate:self];
-      [sentDataStream setDelegate:self];
+      [self->receivedDataStream setDelegate:self];
+      [self->sentDataStream setDelegate:self];
       
       
-      streamingRL = [NSRunLoop currentRunLoop];
-      loginTimer = [NSTimer timerWithTimeInterval:10 target:self selector:@selector(onLoginTimeout) userInfo:nil repeats:YES];
-      [streamingRL addTimer:loginTimer forMode:NSDefaultRunLoopMode];
+      self->streamingRL = [NSRunLoop currentRunLoop];
+//      self->loginTimer = [NSTimer timerWithTimeInterval:10 target:self selector:@selector(onLoginTimeout) userInfo:nil repeats:YES];
+//      [self->streamingRL addTimer:self->loginTimer forMode:NSDefaultRunLoopMode];
+      [self startTimer];
       
-      [receivedDataStream scheduleInRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
-      [sentDataStream scheduleInRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+      [self->receivedDataStream scheduleInRunLoop:self->streamingRL forMode:NSDefaultRunLoopMode];
+      [self->sentDataStream scheduleInRunLoop:self->streamingRL forMode:NSDefaultRunLoopMode];
       
-      [receivedDataStream open];
-      [sentDataStream open];
+      [self->receivedDataStream open];
+      [self->sentDataStream open];
       
-      [streamingRL run];
+      NSLog(@"[[[[[[[ remote connection connect server run loop ]]]]]]]");
+//      [self->streamingRL run];
+      while (isRLRunning &&  [self->streamingRL runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]]);
     }
-    
+    NSLog(@"[[[[[[[ remote connection connect server end ]]]]]]]");
   });
   
   return TRUE;
+}
+
+- (void)startTimer {
+  dispatch_queue_t queue = dispatch_queue_create("com.i3international.cms.logintimer", 0);
+  self->loginTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+  dispatch_source_set_timer(self->loginTimer, dispatch_walltime(NULL, 0), 10.0 * NSEC_PER_SEC, 0.1 * NSEC_PER_SEC);
+  dispatch_source_set_event_handler(self->loginTimer, ^{
+      // call whatever you want here
+    [self onLoginTimeout];
+  });
+  dispatch_resume(self->loginTimer);
+}
+
+- (void)stopTimer {
+  if (loginTimer)
+  {
+    dispatch_cancel(loginTimer);
+    loginTimer = nil;
+  }
 }
 
 - (void)onLoginTimeout
@@ -138,8 +182,10 @@
   if( keepAliveCounter > MAX_KEEP_ALIVE_COUNTING )
   {
     keepAliveCounter = 0;
-    [loginTimer invalidate];
-    loginTimer = nil;
+    
+//    [loginTimer invalidate];
+//    loginTimer = nil;
+    [self stopTimer];
     
     if(firstConnect&&serverInfo.public_address.length > 0 &&
        ![serverInfo.public_address isEqualToString:serverInfo.server_address]) // first connected, try other IP Address
@@ -167,44 +213,81 @@
 - (void)onKeepAlive : (NSTimer*)targetTimer
 {
   keepAliveCounter++;
-  NSLog(@"******** OnKeepAlive: %ld ******", (long)keepAliveCounter);
+  // NSLog(@"******** OnKeepAlive: %ld ******", (long)keepAliveCounter);
   if(keepAliveCounter >= MAX_KEEP_ALIVE_COUNTING)
   {
     [keepAliveTimer invalidate];
     keepAliveTimer = nil;
-    [connectionLock lock];
+//    [connectionLock lock];
     //[NSThread detachNewThreadSelector:@selector(onDisconnect:) toTarget:self withObject:nil];
     [self closeStreams];
-    [connectionLock unlock];
+//    [connectionLock unlock];
     [self onDisconnect:nil];
+    NSLog(@"++++++++++ OnKeepAlive reach threshole, disconected ...");
   }
 }
 
 - (void)destroyTimers
 {
   keepAliveCounter = 0;
-  if( loginTimer )
-  {
-    [loginTimer invalidate];
-    loginTimer = nil;
-  }
+//  if( loginTimer )
+//  {
+//    [loginTimer invalidate];
+//    loginTimer = nil;
+//  }
+  [self stopTimer];
   
-  if(keepAliveTimer)
-  {
-    [keepAliveTimer invalidate];
-    keepAliveTimer = nil;
-  }
+//  if(keepAliveTimer)
+//  {
+//    [keepAliveTimer invalidate];
+//    keepAliveTimer = nil;
+//  }
 }
 
 - (void)closeStreams
 {
-  [sentDataStream close];
-  [receivedDataStream close];
-  [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
-  [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
-  sentDataStream = nil;
-  receivedDataStream = nil;
+  NSLog(@"GOND cccccccccc ImcRemoteConnection close stream cccccccccc");
+  [connectionLock lock];
+//  [sentDataStream close];
+//  [receivedDataStream close];
+//  [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+//  [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+//  NSLog(@"GOND cccccccccc ImcRemoteConnection close stream cccccccccc");
+//  [sentDataStream setDelegate:nil];
+//  [receivedDataStream setDelegate:nil];
+////  CFRelease((CFWriteStreamRef)sentDataStream);
+////  CFRelease((CFReadStreamRef)receivedDataStream);
+//  sentDataStream = nil;
+//  receivedDataStream = nil;
   
+  if( sentDataStream != nil)
+  {
+    [sentDataStream close];
+    if (streamingRL)
+      [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+    [sentDataStream setDelegate:nil];
+    sentDataStream = nil;
+  }
+  
+  if( receivedDataStream != nil)
+  {
+    [receivedDataStream close];
+    if (streamingRL)
+      [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
+    [receivedDataStream setDelegate:nil];
+    receivedDataStream = nil;
+  }
+  [connectionLock unlock];
+  
+  [self destroyTimers];
+  
+  isRLRunning = NO;
+  if(streamingRL)
+  {
+    NSLog(@"STOP RUN LOOP.......");
+    CFRunLoopStop([streamingRL getCFRunLoop]);
+    streamingRL = nil;
+  }
 }
 
 
@@ -287,10 +370,10 @@
       break;
     case NSStreamEventErrorOccurred:
     {
-      [connectionLock lock];
+//      [connectionLock lock];
       if(stream!=receivedDataStream&&stream!=sentDataStream)
       {
-        [connectionLock unlock];
+//        [connectionLock unlock];
         break;
       }
       
@@ -302,6 +385,7 @@
           firstConnect = NO;
           isConnected = NO;
           [self closeStreams];
+          [connectionLock lock];
           [self setupConnection];
           [connectionLock unlock];
           break;
@@ -318,6 +402,7 @@
           {
             [self closeStreams];
             [self onDisconnect:nil];
+            NSLog(@"++++++++ NSStreamEventErrorOccurred, disconected ...");
           }
           else
             [self.delegate handleCommand:IMC_CMD_CONNECTION_CONNECT_ERROR :status];
@@ -325,12 +410,12 @@
         }
       }
       NSLog(@"Connection Error");
-      [connectionLock unlock];
+//      [connectionLock unlock];
     }
       break;
     case NSStreamEventEndEncountered:
     {
-      [connectionLock lock];
+//      [connectionLock lock];
       if(stream==receivedDataStream||stream==sentDataStream)
       {
         if (isConnected)
@@ -338,10 +423,13 @@
           isConnected = FALSE;
           [self closeStreams];
           
+          [connectionLock lock];
           [self onDisconnect:nil];
+          [connectionLock unlock];
+          NSLog(@"++++++++ NSStreamEventEndEncountered, disconected ...");
         }
       }
-      [connectionLock unlock];
+//      [connectionLock unlock];
       
     }
       break;
@@ -859,15 +947,17 @@
             serverInfo.connected = TRUE;
             
             // connect successfull
-            if(loginTimer)
-            {
-              [loginTimer invalidate];
-              loginTimer = nil;
-            }
+//            if(loginTimer)
+//            {
+//              [loginTimer invalidate];
+//              loginTimer = nil;
+//            }
+            [self stopTimer];
             
             keepAliveCounter = 0;
-            keepAliveTimer = [NSTimer scheduledTimerWithTimeInterval:KEEP_ALIVE_CHECKING_INTERVAL target:self selector:@selector(onKeepAlive:) userInfo:nil repeats:YES];
-            [[NSRunLoop currentRunLoop] addTimer:keepAliveTimer forMode:NSDefaultRunLoopMode];
+            // dongpt: CMS removed
+            // keepAliveTimer = [NSTimer scheduledTimerWithTimeInterval:KEEP_ALIVE_CHECKING_INTERVAL target:self selector:@selector(onKeepAlive:) userInfo:nil repeats:YES];
+            // [[NSRunLoop currentRunLoop] addTimer:keepAliveTimer forMode:NSDefaultRunLoopMode];
             
           }
           else
@@ -991,7 +1081,8 @@
   if(!dataQueue)
   {
     NSLog(@"GOND socket cannot send status dataQueue nil");
-    return SOCKET_SEND_ERROR;
+    dataQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_SERIAL);
+//    return SOCKET_SEND_ERROR;
   }
   dispatch_async(dataQueue, ^{
     int sentBytes = 0;
@@ -1033,26 +1124,31 @@
 - (void)disconnect
 {
   isConnected = FALSE;
-  if( getLoginStatus )
+  // if( getLoginStatus )
   {
     NSData* packet = [ImcMobileCommand constructSimpleMsgPacket:MOBILE_MSG_DISCONNECT];
     [sentDataStream write:[packet bytes] maxLength:packet.length];
-    //[self sendData:packet];
+    // [self sendData:packet];
+    NSLog(@">>>>>>>>>> remote connection closed!");
   }
   
   [self videoSocketHasDisconnected];
   
   NSLog(@"disconnect server\n");
   
-  [connectionLock lock];
+//  [connectionLock lock];
   [self closeStreams];
-  [connectionLock unlock];
+//  [connectionLock unlock];
   
-  [self destroyTimers];
-  
-  if(streamingRL)
-    CFRunLoopStop([streamingRL getCFRunLoop]);
-  
+//  [self destroyTimers];
+//
+//  if(streamingRL)
+//  {
+//    NSLog(@"STOP RUN LOOP.......");
+//    CFRunLoopStop([streamingRL getCFRunLoop]);
+////    CFRunLoopStop(CFRunLoopGetCurrent());
+//    streamingRL = nil;
+//  }
 }
 
 
@@ -1342,6 +1438,7 @@
   {
     [videoConnection disconnectToServer];
     videoConnection = nil;
+    // NSLog(@"---------- videoReceiver nil 2");
   }
 }
 
@@ -1363,6 +1460,7 @@
   int videoSourceIndex = frame.header.sourceIndex;
   
   if (frame.header.codecType == 3) {
+    // NSLog(@"GOND postVidFrame 1 ");
     DisplayedVideoFrame* videoFrame = [[DisplayedVideoFrame alloc] init];
     
     videoFrame.channelIndex    = IMC_MAX_CHANNEL - 1;
@@ -1380,9 +1478,11 @@
   {
     for(int index = 0; index < MAX_CHANNEL; index++ )
     {
+      // NSLog(@"GOND postVidFrame 2");
       ChannelSetting* setting = (ChannelSetting*)[self.deviceSetting channelConfigAtIndex:index];
       if( setting.videoSourceInput == videoSourceIndex)
       {
+        // NSLog(@"GOND postVidFrame 2 found %d", videoSourceIndex);
         DisplayedVideoFrame* videoFrame = [[DisplayedVideoFrame alloc] init];
         
         videoFrame.channelIndex    = setting.channelID;
@@ -1408,9 +1508,10 @@
       //else if (videoSourceIndex)
     }
     
+    // NSLog(@"GOND postVidFrame 3");
     DisplayedVideoFrame* videoFrame = [[DisplayedVideoFrame alloc] init];
     
-    videoFrame.channelIndex    = videoSourceIndex;
+    videoFrame.channelIndex     = videoSourceIndex;
     videoFrame.cameraName       =  @"IMC Search Channel";;
     videoFrame.videoFrame       = frame.image;
     videoFrame.serverAddress    = serverInfo.server_address;
@@ -1545,7 +1646,7 @@
           if( delegate )
             [delegate handleCommand:IMC_CMD_DECODE_FRAME :newFrame];
           // dongpt: add nil
-		  newFrame = nil;
+		      newFrame = nil;
           break;
         }
       }

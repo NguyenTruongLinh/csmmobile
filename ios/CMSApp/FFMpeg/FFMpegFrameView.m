@@ -299,6 +299,7 @@ const uint32_t numLayers = 24;
   [self resetParam]; 
   [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
   if(startplayback.count == 0){
+    // NSLog(@"GOND qqqqqqqqqq setStartplayback failed 1");
     return;
   }
   else {
@@ -344,10 +345,12 @@ const uint32_t numLayers = 24;
     if( selectedServer.connected )
     {
       isConnecting = YES;
-      NSArray* buttonList = [NSArray arrayWithObjects:@"View channel list", @"Disconnect", nil];
+//      NSArray* buttonList = [NSArray arrayWithObjects:@"View channel list", @"Disconnect", nil];
+//      NSLog(@"GOND qqqqqqqqqq setStartplayback 2 server connected");
     }
     else if (connectedServers.count < MAX_SERVER_CONNECTION)
     {
+//      NSLog(@"GOND qqqqqqqqqq setStartplayback 2 server connecting : %d", connectedServers.count);
       [connectedServerList addObject:selectedServer];
       [self setChannels:channel];
       [self setByChannel:by_channel];
@@ -358,6 +361,10 @@ const uint32_t numLayers = 24;
                                                                               @"target": self.reactTag
                                                                               }];
       [self handleResponseMessage:IMC_MSG_CONNECTION_CONNECT fromView:self withData:selectedServer];
+    }
+    else
+    {
+      NSLog(@"GOND qqqqqqqqqq setStartplayback 3 server full, not handled");
     }
     videoPlayerStatus = STATE_PLAY;
     
@@ -525,31 +532,46 @@ const uint32_t numLayers = 24;
 
 -(void)setDisconnect:(BOOL)disconnect {
   // NSLog(@"GOND: ******* on disconnect: %d", disconnect);
-  if(disconnect){
-    NSLog(@"GOND: ******* on disconnect ******");
-    videoPlayerStatus = STATE_STOP;
-    [controllerThread disconnectAllServers];
+  // if(disconnect){
+  NSLog(@"GOND: ******* on disconnect ******");
+  videoPlayerStatus = STATE_STOP;
+  [controllerThread disconnectAllServers];
     
-    if(connectedServerList.count > 0)
+  if(connectedServerList.count > 0)
+  {
+    for (ImcConnectedServer* connectedServer in connectedServerList)
     {
-      for (ImcConnectedServer* connectedServer in connectedServerList)
-      {
-          // [self.mainDisplayVideo removeScreenForServer:connectedServer.server_address andPort:connectedServer.server_port];
-          
-          [connectedServer resetChannelConfigs];
-          
-          connectedServer.connected = FALSE;
-      }
-      for (NSInteger i = 0; i < IMC_MAX_DISPLAY_SCREEN; i++) {
-        [self.mainDisplayVideo resetScreen:i];
-      }
-      
-      [self handleResponseMessage:IMC_MSG_CONNECTION_DISCONNECT fromView:self withData:nil];
-      [connectedServerList removeAllObjects];
+        // [self.mainDisplayVideo removeScreenForServer:connectedServer.server_address andPort:connectedServer.server_port];
+        
+        [connectedServer resetChannelConfigs];
+        
+        connectedServer.connected = FALSE;
     }
-    [mainDisplayVideo remoteAllLayers];
-    [mainDisplayVideo resetDisplayMapping];
+    for (NSInteger i = 0; i < IMC_MAX_DISPLAY_SCREEN; i++)
+    {
+      [self.mainDisplayVideo resetScreen:i];
+    }
+//    if (disconnect)
+//    {
+//      [self handleCommand:IMC_CMD_CONNECTION_DISCONNECT_RESPONSE :nil];
+//    }
+//    else
+//    {
+      [self handleResponseMessage:IMC_MSG_CONNECTION_DISCONNECT fromView:self withData:nil];
+//    }
+    [connectedServerList removeAllObjects];
   }
+  [self.connectedServers removeAllObjects];
+  if (disconnect)
+  {
+    [mainDisplayVideo remoteAllLayers];
+    [controllerThread stopThread];
+    controllerThread = nil;
+    [decoderThread stopThread];
+    decoderThread = nil;
+  }
+  [mainDisplayVideo resetDisplayMapping];
+  // }
 }
 
 -(void)setRefresh:(BOOL)refresh {
@@ -563,6 +585,7 @@ const uint32_t numLayers = 24;
       }
     }
     
+//    [controllerThread stopTransferingVideo];
     // [mainDisplayVideo remoteAllLayers];
     [mainDisplayVideo resetDisplayMapping];
   }
@@ -982,6 +1005,14 @@ const uint32_t numLayers = 24;
     case IMC_MSG_GET_CONNECTION_NUMBER:
     {
       NSLog(@"GET_CONNECTION_NUMBER");
+    }
+      break;
+    case IMC_MSG_CONNECTION_NEED_RESET:
+    {
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:26],
+                                                                              @"target": self.reactTag
+                                                                              }];
     }
       break;
     case IMC_MSG_LIVE_REQUEST_MAIN_STREAM:
@@ -1764,6 +1795,7 @@ const uint32_t numLayers = 24;
 {
   switch (command) {
     case IMC_CMD_CONNECTION_CONNECT_SUCCESSFULL:
+      NSLog(@"GOND IMC_CMD_CONNECTION_CONNECT_SUCCESSFULL");
       break;
     case IMC_CMD_CONNECTION_CONNECT_RESPONSE :
     {
@@ -2964,7 +2996,7 @@ const uint32_t numLayers = 24;
   }
   
   [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                          @"msgid": [NSNumber numberWithUnsignedInteger:25],
+                                                                          @"msgid": [NSNumber numberWithUnsignedInteger:27],
                                                                           @"value": [NSString stringWithString:message],
                                                                           @"target": self.reactTag
                                                                           }];

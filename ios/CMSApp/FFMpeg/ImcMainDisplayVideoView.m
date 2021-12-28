@@ -537,7 +537,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     // NSLog(@"GOND drawLayer inCtx sublayers = ", layer.sublayers.count);
     
     NSInteger index = [displayLayers indexOfObject:layer];
-    NSLog(@"GOND drawLayer fullscreenView = %d, index = %d", fullscreenView, index);
+//    NSLog(@"GOND drawLayer fullscreenView = %d, index = %d", fullscreenView, index);
     if( index >= 0 && index < currentDiv*currentDiv)
     {
       UIFont* displayFont;
@@ -702,17 +702,18 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
             // NSLog(@"GOND drawLayer added sublayers = %lu", layer.sublayers.count);
           }
 		  
-//		      if([screen needDrawScreen])
+	      if([screen needDrawScreen])
           {
             screen.lastDisplayImage = screen.displayImage;
             screen.lastUpdateTime = [NSDate date];
           }
-          /*else if([screen timeFromLastUpdate] > TIME_REFRESH_IMAGE)
+          else if([screen timeFromLastUpdate] > TIME_REFRESH_IMAGE)
           {
             NSLog(@"GOND drawLayer timeout display logo ----------");
-            screen.displayImage = logoImage;
-            screen.lastUpdateTime = [NSDate date];
-          }*/
+            // screen.displayImage = logoImage;
+            // screen.lastUpdateTime = [NSDate date];
+            // [delegate handleResponseMessage:IMC_MSG_CONNECTION_NEED_RESET fromView:nil withData:nil];
+          }
           /*
           CGRect displayRect;
           
@@ -810,7 +811,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       }
       else
       {
-        NSLog(@"+++++ CANNOT RENDER FULLSCREEN VIEW = %d +++++", fullscreenView);
+        ImcScreenDisplay* screen = [displayScreens objectAtIndex:0];
+        NSLog(@"+++++ CANNOT RENDER FULLSCREEN VIEW = %d, cam: %@, ch: %d +++++", fullscreenView, screen.cameraName, screen.channelIndex);
       }
       // For CMSMobile now only display 1 channel per reactnative view
 //       else if( fullscreenView == -1 )

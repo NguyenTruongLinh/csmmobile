@@ -137,7 +137,7 @@
             {
                 @autoreleasepool
                 {
-                    if(indicesOfDecoders!=nil)
+                    if(indicesOfDecoders!=nil && decoderMappings.count > 0)
                     {
                         [decoderMappings removeObjectsAtIndexes:indicesOfDecoders];
                         indicesOfDecoders = nil;
@@ -517,7 +517,7 @@
                     return nil;
                 }
                 
-                NSLog(@"Core: %u Usage: %f",i,inUse / total);
+//                NSLog(@"Core: %u Usage: %f",i,inUse / total);
                 
                 [cpuCoreList addObject:@(inUse / total)];
             }
@@ -606,6 +606,7 @@
 
 -(void)releaseDecoders:(NSString *)serverAddress
 {
+  	// NSLog(@" qqqqqqq  releaseDecoders %@", serverAddress);
     [encodedFrames removeFramesWithCondition:^BOOL(id  _Nonnull obj) {
         EncodedFrame* _frame = (EncodedFrame*)obj;
         if([_frame.videoFrameInfo.serverAddress isEqualToString:serverAddress])

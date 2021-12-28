@@ -699,7 +699,7 @@ const NSUInteger kMaxCommand = 50;
   [lockCommandList lock];
   [commandList addObject:command];
   [lockCommandList unlock];
-  isBusy = FALSE;
+//  isBusy = FALSE;
   
   [lockThread lock];
   [lockThread signal];
@@ -731,7 +731,7 @@ const NSUInteger kMaxCommand = 50;
 -(void)startThread
 {
   self->isRunning = TRUE;
-  isBusy = YES;
+//  isBusy = YES;
   [NSThread detachNewThreadSelector:@selector(mainThreadProc:) toTarget:self withObject:nil];
   [self start];
 }
@@ -740,6 +740,9 @@ const NSUInteger kMaxCommand = 50;
 {
   [self clearAllCommands];
   self->isRunning = FALSE;
+  [lockThread lock];
+  [lockThread signal];
+  [lockThread unlock];
 }
 
 -(void)updateLayout:(NSInteger)layout
@@ -793,29 +796,29 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateFavoriteServerDisplayMask : (NSString*)serverAddress : (NSInteger)serverPort : (uint64_t)channelMask
 {
-  [lockServerList lock];
-  AppDelegate* appDelegate = (AppDelegate*)[[UIApplication sharedApplication] delegate];
-  for(ImcConnectedServer* serverInfo in appDelegate.connectionServerList )
-  {
-    
-    ImcRemoteConnection* server = [[ImcRemoteConnection alloc] init];
-    server.serverInfo = serverInfo;
-    
-    NSLog(@"server address: %@", serverInfo.server_address);
-    NSLog(@"server address: %@", server.serverInfo.server_address);
-    
-    if( [server.serverInfo.server_address isEqualToString:serverAddress] &&
-       server.serverInfo.server_port == serverPort )
-    {
-      server.deviceSetting.displayChannelMask = channelMask;
-      [lockCommandList lock];
-      [self handleCommand:IMC_CMD_MOBILE_SEND_SOURCE_RESQUEST_MASK :server];
-      NSLog(@"Channel Mask for Favorite Channel: %llu", channelMask);
-      [lockCommandList unlock];
-      break;
-    }
-  }
-  [lockServerList unlock];
+//  [lockServerList lock];
+//  AppDelegate* appDelegate = (AppDelegate*)[[UIApplication sharedApplication] delegate];
+//  for(ImcConnectedServer* serverInfo in appDelegate.connectionServerList )
+//  {
+//
+//    ImcRemoteConnection* server = [[ImcRemoteConnection alloc] init];
+//    server.serverInfo = serverInfo;
+//
+//    NSLog(@"server address: %@", serverInfo.server_address);
+//    NSLog(@"server address: %@", server.serverInfo.server_address);
+//
+//    if( [server.serverInfo.server_address isEqualToString:serverAddress] &&
+//       server.serverInfo.server_port == serverPort )
+//    {
+//      server.deviceSetting.displayChannelMask = channelMask;
+//      [lockCommandList lock];
+//      [self handleCommand:IMC_CMD_MOBILE_SEND_SOURCE_RESQUEST_MASK :server];
+//      NSLog(@"Channel Mask for Favorite Channel: %llu", channelMask);
+//      [lockCommandList unlock];
+//      break;
+//    }
+//  }
+//  [lockServerList unlock];
 }
 
 -(void)updateRatioView:(NSInteger)ratioView :(_Bool)sendToServer
@@ -1160,6 +1163,11 @@ const NSUInteger kMaxCommand = 50;
   for( int index = 0; index < env.connectedServers.count; index++ )
   {
     ImcRemoteConnection* remote = [env.connectedServers objectAtIndex:index];
+//    [remote sendCommand:MOBILE_MSG_STOP_SEND_VIDEO :nil :0 ];
+//    [remote sendCommand:MOBILE_MSG_EXIT :nil :0 ];
+//    [remote sendCommand:MOBILE_MSG_DISCONNECT :nil :0 ];
+    [self.decoderThread releaseDecoders:remote.serverInfo.server_address];
+    
     [remote disconnect];
   }
   [env.connectedServers removeAllObjects];
@@ -1264,7 +1272,7 @@ const NSUInteger kMaxCommand = 50;
               [delegate handleCommand:IMC_CMD_DECODE_SEARCH_FRAME :frameInfo];
           }
         }
-		// dongpt: add nil
+		    // dongpt: add nil
         frame = nil;
       }
     }

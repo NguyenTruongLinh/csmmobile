@@ -35,6 +35,7 @@
 @property (nonatomic, weak) ImcRemoteConnection* parent;
 @property (nonatomic, readonly) BOOL disconnected;
 @property (nonatomic, weak)  NSRunLoop* streamingRL;
+@property (nonatomic, strong) dispatch_queue_t streamQueue;
 @property NSTimer* videoTimer;
 @property NSInteger timerCounter;
 
