@@ -364,6 +364,7 @@ class AlertsView extends Component {
   };
 
   renderAlertItemGridView = item => {
+    const {healthStore} = this.props;
     const {width} = Dimensions.get('window');
     const itemPadding = 10;
     const itemWidth = width / ALERTS_GRID_LAYOUT - 2 * itemPadding;
