@@ -153,7 +153,7 @@ class CMSImage extends React.Component {
     const {styles, styleImage, resizeMode} = this.props;
     const {image} = this.state;
     // __DEV__ && console.log('GOND render CMSImage: ', image);
-
+    if (image && image.uri && image.uri.uri) image.uri = image.uri.uri;
     return (
       <View style={styles}>
         {this.state.isLoading ? (
