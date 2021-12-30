@@ -478,6 +478,7 @@ exports.isAlertTypeVASupported = alertId => {
 };
 
 exports.getAlertTypeVA = (status, codeName) => {
+  __DEV__ && console.log(`getAlertTypeVA status = `, status);
   switch (status) {
     case AlertTypeVA.Unknown:
       return 'Unknown';
@@ -497,10 +498,10 @@ exports.getAlertTypeVA = (status, codeName) => {
       return 'Many Human';
     case AlertTypeVA.AIDetection:
       return 'Detected';
-    case AlertTypeVA.AICamera:
-    // return 'AI Camera';
     case AlertTypeVA.AICrossWire:
-    // return 'Cross Wire';
+      return 'Crossed';
+    case AlertTypeVA.AICamera:
+      return 'AI Camera';
     default:
       return 'Unsupported alert'; // not supported yet
     // if (!codeName || typeof codeName != 'string') return '';
