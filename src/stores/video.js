@@ -620,8 +620,8 @@ export const VideoModel = types
         // __DEV__ && console.log('GOND streamReadyCallback ...');
         streamReadyCallback = fn;
       },
-      selectChannel(value) {
-        const foundChannel = self.allChannels.find(ch => ch.channelNo == value);
+      selectChannel(value, key = 'channelNo') {
+        const foundChannel = self.allChannels.find(ch => ch[key] == value);
         if (!foundChannel) {
           console.log('GOND selected Channel not found: ', value);
           snackbarUtil.onError('Selected channel not found!');
@@ -650,7 +650,9 @@ export const VideoModel = types
         // const foundStream = self.videoData.find(row => {
         //   return row.data.find(s => s.channelNo == value);
         // });
-        const foundStream = self.videoData.find(s => s.channelNo == value);
+        const foundStream = self.videoData.find(
+          s => s.channelNo == foundChannel.channelNo
+        );
         __DEV__ && console.log('GOND foundStream: ', foundStream);
         if (!foundStream) {
           __DEV__ &&
@@ -661,7 +663,7 @@ export const VideoModel = types
               // console.log(
               //   '### GOND this is unbelievable, how can this case happen, no direct stream found while channel existed!!!'
               // );
-              self.getDirectInfos(value);
+              self.getDirectInfos(foundChannel.channelNo);
               break;
             case CLOUD_TYPE.HLS:
               // create stream first for showing in player
@@ -687,7 +689,7 @@ export const VideoModel = types
               break;
           }
         }
-        self.selectedChannel = value;
+        self.selectedChannel = foundChannel.channelNo;
         return true;
       },
       setFrameTime(value, fromZone) {
@@ -2240,6 +2242,8 @@ export const VideoModel = types
 
         if (alertData.channelNo) {
           self.selectChannel(alertData.channelNo);
+        } else if (alertData.channelName) {
+          self.selectChannel(alertData.channelName, 'name');
         } else {
           self.selectChannel(self.displayChannels[0].channelNo);
         }
