@@ -26,7 +26,7 @@
 
 // __volatile BOOL isRLRunning = NO;
 
-@synthesize delegate,deviceSetting,deviceCameraList,serverInfo,serverVersion,snapshotChannel, waitForAccept, loginTimer, dataQueue, streamingRL, streamQueue;
+@synthesize delegate,deviceSetting,deviceCameraList,serverInfo,serverVersion,snapshotChannel, waitForAccept, loginTimer, dataQueue, streamingRL, remoteQueue; //, isRLRunning;
 
 - (id)init:(ImcConnectionServer *)server
 {
@@ -59,8 +59,8 @@
     movedBytes              = 0;
     connectionError         = FALSE;
     firstConnect            = YES;
-    streamQueue             = nil;
-    isRLRunning             = NO;
+    remoteQueue             = nil;
+//    isRLRunning             = NO;
   }
   return self;
 }
@@ -73,8 +73,8 @@
   currentData = nil;
   
   dataQueue = nil;
-  streamQueue = nil;
-  isRLRunning = NO;
+  remoteQueue = nil;
+//  isRLRunning = NO;
 }
 
 - (BOOL)setupConnection
@@ -92,35 +92,35 @@
     return FALSE;
   }
   
-  if(!streamQueue) {
+  if(!remoteQueue) {
     NSString* qName = [NSString stringWithFormat:@"com.i3international.remotestream.%@:%ld", serverInfo.server_address, (long)port];
-    streamQueue = dispatch_queue_create([qName UTF8String], DISPATCH_QUEUE_CONCURRENT);
+    remoteQueue = dispatch_queue_create([qName UTF8String], DISPATCH_QUEUE_SERIAL);
   }
   NSLog(@"[[[[[[[ remote connection connect server before ]]]]]]]");
-  isRLRunning = YES;
+//  isRLRunning = YES;
 //  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-  dispatch_async(streamQueue, ^{
-    if (!isRLRunning)
-    {
-      NSLog(@"[[[[[[[ remote connection connect server end 0 ]]]]]]]");
-      return;
-    }
-    if(!self->dataQueue)
-      self->dataQueue = dispatch_queue_create([self->queueName UTF8String], DISPATCH_QUEUE_SERIAL);
+//  dispatch_async(remoteQueue, ^{
+//    if (!isRLRunning || self->streamingRL)
+//    {
+//      NSLog(@"[[[[[[[ remote connection connect server end 0 ]]]]]]]");
+//      return;
+//    }
+    if(!dataQueue)
+      dataQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_SERIAL);
     NSLog(@"[[[[[[[ remote connection connect server block ]]]]]]]");
-    CFReadStreamRef readStream;
-    CFWriteStreamRef writeStream;
+    CFReadStreamRef readStream = NULL;
+    CFWriteStreamRef writeStream = NULL;
     
-    readStream = NULL;
-    writeStream = NULL;
+//    readStream = NULL;
+//    writeStream = NULL;
     
     CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault, address, port, &readStream, &writeStream);
     
     
     if( readStream && writeStream )
     {
-      self->waitForAccept = TRUE;
-      self->isConnected = TRUE;
+      waitForAccept = TRUE;
+      isConnected = TRUE;
       
       CFReadStreamSetProperty(readStream,
                               kCFStreamPropertyShouldCloseNativeSocket,
@@ -129,30 +129,33 @@
                                kCFStreamPropertyShouldCloseNativeSocket,
                                kCFBooleanTrue);
       
-      self->receivedDataStream = (__bridge_transfer NSInputStream *)readStream;
-      self->sentDataStream = (__bridge_transfer NSOutputStream *)writeStream;
+      receivedDataStream = (__bridge_transfer NSInputStream *)readStream;
+      sentDataStream = (__bridge_transfer NSOutputStream *)writeStream;
       
-      [self->receivedDataStream setDelegate:self];
-      [self->sentDataStream setDelegate:self];
+      [receivedDataStream setDelegate:self];
+      [sentDataStream setDelegate:self];
       
       
-      self->streamingRL = [NSRunLoop currentRunLoop];
+//      self->streamingRL = [NSRunLoop currentRunLoop];
 //      self->loginTimer = [NSTimer timerWithTimeInterval:10 target:self selector:@selector(onLoginTimeout) userInfo:nil repeats:YES];
 //      [self->streamingRL addTimer:self->loginTimer forMode:NSDefaultRunLoopMode];
-      [self startTimer];
       
-      [self->receivedDataStream scheduleInRunLoop:self->streamingRL forMode:NSDefaultRunLoopMode];
-      [self->sentDataStream scheduleInRunLoop:self->streamingRL forMode:NSDefaultRunLoopMode];
+//      [self->receivedDataStream scheduleInRunLoop:self->streamingRL forMode:NSDefaultRunLoopMode];
+//      [self->sentDataStream scheduleInRunLoop:self->streamingRL forMode:NSDefaultRunLoopMode];
       
-      [self->receivedDataStream open];
-      [self->sentDataStream open];
+      CFReadStreamSetDispatchQueue((__bridge CFReadStreamRef) receivedDataStream, remoteQueue);
+      CFWriteStreamSetDispatchQueue((__bridge CFWriteStreamRef) sentDataStream, remoteQueue);
+      
+      [receivedDataStream open];
+      [sentDataStream open];
       
       NSLog(@"[[[[[[[ remote connection connect server run loop ]]]]]]]");
+      [self startTimer];
 //      [self->streamingRL run];
-      while (isRLRunning &&  [self->streamingRL runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]]);
+//      while (isRLRunning && self->streamingRL && [self->streamingRL runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]]);
     }
     NSLog(@"[[[[[[[ remote connection connect server end ]]]]]]]");
-  });
+//  });
   
   return TRUE;
 }
@@ -218,10 +221,10 @@
   {
     [keepAliveTimer invalidate];
     keepAliveTimer = nil;
-//    [connectionLock lock];
+    [connectionLock lock];
     //[NSThread detachNewThreadSelector:@selector(onDisconnect:) toTarget:self withObject:nil];
     [self closeStreams];
-//    [connectionLock unlock];
+    [connectionLock unlock];
     [self onDisconnect:nil];
     NSLog(@"++++++++++ OnKeepAlive reach threshole, disconected ...");
   }
@@ -247,7 +250,7 @@
 - (void)closeStreams
 {
   NSLog(@"GOND cccccccccc ImcRemoteConnection close stream cccccccccc");
-  [connectionLock lock];
+//  [connectionLock lock];
 //  [sentDataStream close];
 //  [receivedDataStream close];
 //  [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
@@ -262,32 +265,35 @@
   
   if( sentDataStream != nil)
   {
-    [sentDataStream close];
-    if (streamingRL)
-      [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
     [sentDataStream setDelegate:nil];
+    CFWriteStreamSetDispatchQueue((CFWriteStreamRef) sentDataStream, NULL);
+    [sentDataStream close];
+//    if (streamingRL)
+//      [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
     sentDataStream = nil;
   }
   
   if( receivedDataStream != nil)
   {
-    [receivedDataStream close];
-    if (streamingRL)
-      [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
     [receivedDataStream setDelegate:nil];
+    CFReadStreamSetDispatchQueue((CFReadStreamRef) receivedDataStream, NULL);
+
+    [receivedDataStream close];
+//    if (streamingRL)
+//      [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
     receivedDataStream = nil;
   }
-  [connectionLock unlock];
+//  [connectionLock unlock];
   
-  [self destroyTimers];
+//  [self destroyTimers];
   
-  isRLRunning = NO;
-  if(streamingRL)
-  {
-    NSLog(@"STOP RUN LOOP.......");
-    CFRunLoopStop([streamingRL getCFRunLoop]);
-    streamingRL = nil;
-  }
+//  isRLRunning = NO;
+//  if(streamingRL)
+//  {
+//    NSLog(@"STOP RUN LOOP.......");
+////    CFRunLoopStop([streamingRL getCFRunLoop]);
+//    streamingRL = nil;
+//  }
 }
 
 
@@ -370,10 +376,10 @@
       break;
     case NSStreamEventErrorOccurred:
     {
-//      [connectionLock lock];
+      [connectionLock lock];
       if(stream!=receivedDataStream&&stream!=sentDataStream)
       {
-//        [connectionLock unlock];
+        [connectionLock unlock];
         break;
       }
       
@@ -385,9 +391,9 @@
           firstConnect = NO;
           isConnected = NO;
           [self closeStreams];
-          [connectionLock lock];
+//          [connectionLock lock];
           [self setupConnection];
-          [connectionLock unlock];
+//          [connectionLock unlock];
           break;
         }
       }
@@ -410,12 +416,12 @@
         }
       }
       NSLog(@"Connection Error");
-//      [connectionLock unlock];
+      [connectionLock unlock];
     }
       break;
     case NSStreamEventEndEncountered:
     {
-//      [connectionLock lock];
+      [connectionLock lock];
       if(stream==receivedDataStream||stream==sentDataStream)
       {
         if (isConnected)
@@ -423,13 +429,13 @@
           isConnected = FALSE;
           [self closeStreams];
           
-          [connectionLock lock];
+//          [connectionLock lock];
           [self onDisconnect:nil];
-          [connectionLock unlock];
+//          [connectionLock unlock];
           NSLog(@"++++++++ NSStreamEventEndEncountered, disconected ...");
         }
       }
-//      [connectionLock unlock];
+      [connectionLock unlock];
       
     }
       break;
@@ -1136,11 +1142,11 @@
   
   NSLog(@"disconnect server\n");
   
-//  [connectionLock lock];
+  [connectionLock lock];
   [self closeStreams];
-//  [connectionLock unlock];
+  [connectionLock unlock];
   
-//  [self destroyTimers];
+  [self destroyTimers];
 //
 //  if(streamingRL)
 //  {

@@ -30,6 +30,7 @@
     get_data
   };
   enum state current_state;
+//  __volatile BOOL isRLRunning;
 }
 
 @property (nonatomic, weak) ImcRemoteConnection* parent;
@@ -37,7 +38,10 @@
 @property (nonatomic, weak)  NSRunLoop* streamingRL;
 @property (nonatomic, strong) dispatch_queue_t streamQueue;
 @property NSTimer* videoTimer;
+// @property NSTimer* stopThreadTimer;
 @property NSInteger timerCounter;
+// @property (nonatomic) __volatile BOOL isRLRunning;
+
 
 - (id) initWithConnectionIndex : (NSInteger)index;
 

@@ -44,7 +44,7 @@
   BOOL connectionError;
   NSString* queueName;
   BOOL    firstConnect;
-  BOOL isRLRunning;
+//  __volatile BOOL isRLRunning;
 }
 
 @property (strong) ImcServerSetting* deviceSetting;
@@ -57,8 +57,9 @@
 //@property NSTimer* loginTimer;
 @property (nonatomic, weak)  NSRunLoop* streamingRL;
 @property (nonatomic, strong) dispatch_queue_t dataQueue;
-@property (nonatomic, strong) dispatch_queue_t streamQueue;
+@property (nonatomic, strong) dispatch_queue_t remoteQueue;
 @property (nonatomic, strong) dispatch_source_t loginTimer;
+//@property (nonatomic) __volatile BOOL isRLRunning;
 
 - (void)dealloc;
 - (id)init :(ImcConnectionServer*)server;
