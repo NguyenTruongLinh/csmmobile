@@ -438,8 +438,8 @@ export const HealthModel = types
             kdvrs: self.selectedSite.dvrs.map(dvr => dvr.kDVR).join(','),
             sdate: utils.toQueryStringUTCDateTime(self.selectedSite.sdate),
             edate: utils.toQueryStringUTCDateTime(self.selectedSite.edate),
-            // page: 0,
-            // size: 10,
+            page: 1,
+            size: self.selectedSite.dvrs.length,
           }
         );
         __DEV__ && console.log('GOND get alert type data: ', res);
