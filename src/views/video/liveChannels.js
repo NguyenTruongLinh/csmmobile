@@ -132,21 +132,14 @@ class LiveChannelsView extends React.Component {
     //   this.pauseAll(false);
     // });
 
-    /*
     reaction(
       () => videoStore.videoData,
-      (value, previousValue) => {
-        __DEV__ &&
-          console.log(
-            'GOND videoData has changed, update? ',
-            this.needUpdateVideos
-          );
-        if (this.didFilter) {
-          this.needUpdateVideos = true;
-        }
+      videoList => {
+        if (videoList && videoList.length > 0)
+          this.playerRefs = videoList.map(() => null);
+        else this.playerRefs = [];
       }
     );
-    */
 
     this.getChannelsInfo();
   }
@@ -290,6 +283,77 @@ class LiveChannelsView extends React.Component {
     setTimeout(() => {
       this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
     }, 500);
+  };
+
+  onVideosViewableChanged = ({changed, viewableItems}) => {
+    const {gridLayout, cloudType} = this.props.videoStore;
+    // __DEV__ &&
+    //   console.log('GOND onVideosViewableChanged: ', changed, this.playerRefs);
+    if (
+      cloudType == CLOUD_TYPE.HLS ||
+      cloudType == CLOUD_TYPE.RTC ||
+      viewableItems.length <= 0
+    )
+      return;
+
+    let minIndex = viewableItems[0].index;
+    let maxIndex = viewableItems[0].index;
+    viewableItems.forEach(({index}) => {
+      minIndex = index < minIndex ? index : minIndex;
+      maxIndex = index > maxIndex ? index : maxIndex;
+    });
+
+    __DEV__ &&
+      console.log(
+        'GOND onVideosViewableChanged: minIdx ',
+        minIndex,
+        'maxIdx ',
+        maxIndex
+      );
+
+    this.playerRefs.forEach((p, index) => {
+      if (index < minIndex - gridLayout || index > maxIndex + gridLayout) {
+        __DEV__ &&
+          console.log('GOND onVideosViewableChanged outbound index: ', index);
+        if (p.isPlaying) {
+          p.stop();
+          __DEV__ &&
+            console.log('GOND onVideosViewableChanged outbound stopped!');
+        }
+      } else {
+        __DEV__ &&
+          console.log('GOND onVideosViewableChanged inbound index: ', index);
+        if (!p.isPlaying) {
+          p.play();
+          __DEV__ &&
+            console.log('GOND onVideosViewableChanged inbound started!');
+        }
+      }
+    });
+
+    /*
+    changed.forEach(({item, index, isViewable}) => {
+      if (!this.playerRefs || !this.playerRefs[index]) return;
+
+      if (isViewable && !this.playerRefs[index].isPlaying) {
+        this.playerRefs[index].play();
+        __DEV__ &&
+          console.log(
+            'GOND onVideosViewableChanged start ch: ',
+            index,
+            item.channelName
+          );
+      } else if (!isViewable && this.playerRefs[index].isPlaying) {
+        this.playerRefs[index].stop();
+        __DEV__ &&
+          console.log(
+            'GOND onVideosViewableChanged stop ch: ',
+            index,
+            item.channelName
+          );
+      }
+    });
+    */
   };
 
   // pauseAll = value => {
@@ -463,7 +527,8 @@ class LiveChannelsView extends React.Component {
             serverInfo={item}
             // username={videoStore.nvrUser}
             // password={videoStore.nvrPassword}
-            ref={ref => this.playerRefs.push(ref)}
+            // ref={ref => this.playerRefs.push(ref)}
+            ref={ref => (this.playerRefs[index] = ref)}
           />
         );
         break;
@@ -474,7 +539,8 @@ class LiveChannelsView extends React.Component {
             {...playerProps}
             // channel={item.channel}
             streamData={item}
-            ref={ref => this.playerRefs.push(ref)}
+            // ref={ref => this.playerRefs.push(ref)}
+            ref={ref => (this.playerRefs[index] = ref)}
             // streamUrl={item.targetUrl.url} //{item.targetUrl ? item.targetUrl.url : null}
             timezone={videoStore.timezone}
           />
@@ -486,7 +552,8 @@ class LiveChannelsView extends React.Component {
           <RTCStreamingView
             {...playerProps}
             viewer={item}
-            ref={ref => this.playerRefs.push(ref)}
+            // ref={ref => this.playerRefs.push(ref)}
+            ref={ref => (this.playerRefs[index] = ref)}
           />
         );
         break;
@@ -563,6 +630,11 @@ class LiveChannelsView extends React.Component {
               onRefresh={this.getChannelsInfo}
               refreshing={videoStore.isLoading}
               maxToRenderPerBatch={videoStore.gridLayout}
+              onViewableItemsChanged={this.onVideosViewableChanged}
+              viewabilityConfig={{
+                minimumViewTime: 200,
+                viewAreaCoveragePercentThreshold: 25,
+              }}
             />
           ) : (
             this.renderInfoText()

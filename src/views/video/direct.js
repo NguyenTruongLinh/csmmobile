@@ -66,6 +66,7 @@ class DirectVideoView extends React.Component {
     this.pauseOnFilterCounter = 0;
     this.lastFrameTime = null;
     this.lastTimestamp = 0;
+    this.isPlaying = false;
   }
 
   componentDidMount() {
@@ -84,36 +85,44 @@ class DirectVideoView extends React.Component {
         this.onNativeMessage
       );
     }
-    const {serverInfo} = this.props;
+    const {serverInfo, index, singlePlayer, videoStore} = this.props;
+    const renderLimit = videoStore.gridLayout * (videoStore.gridLayout + 1);
+    __DEV__ &&
+      console.log('DirectStreamingView renderLimit: ', renderLimit, index);
 
-    if (this.ffmpegPlayer && serverInfo) {
-      if (
-        serverInfo.server.serverIP &&
-        serverInfo.server.port // &&
-        // !serverInfo.playing
-      ) {
-        this.props.serverInfo.setStreamStatus({
-          isLoading: true,
-          connectionStatus: STREAM_STATUS.LOGING_IN,
-        });
-        this.setNativePlayback();
-      } else {
-        // this.setState({
-        //   message: 'Error: wrong server config',
-        //   videoLoading: false,
-        // });
-        __DEV__ &&
-          console.log('GOND Direct connection wrong server config: ', {
-            ...serverInfo,
+    if (!singlePlayer && index < renderLimit) {
+      if (this.ffmpegPlayer && serverInfo) {
+        if (
+          serverInfo.server.serverIP &&
+          serverInfo.server.port // &&
+          // !serverInfo.playing
+        ) {
+          this.props.serverInfo.setStreamStatus({
+            isLoading: true,
+            connectionStatus: STREAM_STATUS.LOGING_IN,
           });
-        serverInfo.setStreamStatus({
-          isLoading: false,
-          connectionStatus: STREAM_STATUS.ERROR,
-        });
+          this.setNativePlayback();
+        } else {
+          // this.setState({
+          //   message: 'Error: wrong server config',
+          //   videoLoading: false,
+          // });
+          __DEV__ &&
+            console.log('GOND Direct connection wrong server config: ', {
+              ...serverInfo,
+            });
+          serverInfo.setStreamStatus({
+            isLoading: false,
+            connectionStatus: STREAM_STATUS.ERROR,
+          });
+        }
+      } else {
+        __DEV__ &&
+          console.log('GOND serverInfo not valid reference: ', {...serverInfo});
       }
     } else {
       __DEV__ &&
-        console.log('GOND serverInfo not valid reference: ', {...serverInfo});
+        console.log('DirectStreamingView video not start yet: ', index);
     }
 
     // reactions:
@@ -489,18 +498,19 @@ class DirectVideoView extends React.Component {
         //     }
         //   }, 100);
         // }
-        if (this.state.showLoginSuccessFlag && (index == 0 || singlePlayer))
-          setTimeout(() => {
+        setTimeout(() => {
+          if (this.state.showLoginSuccessFlag && (index == 0 || singlePlayer))
             Snackbar.show({
               text: LoginTxt.loginSuccess,
               duration: Snackbar.LENGTH_LONG,
               backgroundColor: cmscolors.Success,
             });
+          if (this._isMounted)
             serverInfo.setStreamStatus({
               isLoading: false,
-              connectionStatus: STREAM_STATUS.CONNECTED,
+              connectionStatus: STREAM_STATUS.DONE,
             });
-          }, 500);
+        }, 500);
         this.setState({showLoginSuccessFlag: false});
         break;
       case NATIVE_MESSAGE.SVR_REJECT_ACCEPT:
@@ -538,7 +548,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           connectionStatus: STREAM_STATUS.ERROR,
         });
-        setTimeout(() => this.reconnect(), 1000);
+        // setTimeout(() => this.reconnect(), 1000);
         break;
       case NATIVE_MESSAGE.ORIENTATION_CHANGED:
         break;
@@ -716,10 +726,18 @@ class DirectVideoView extends React.Component {
             'GOND Request reconnecting from native ... msgid: ',
             msgid
           );
-        this.reconnect();
+        // this.reconnect();
         break;
       default:
         break;
+    }
+  };
+
+  setPlayStatus = params => {
+    if (params.startplayback) {
+      this.isPlaying = true;
+    } else if (params.stop != undefined || params.disconnect != undefined) {
+      this.isPlaying = false;
     }
   };
 
@@ -743,6 +761,7 @@ class DirectVideoView extends React.Component {
             serverInfo.channelName
           );
         this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps(params);
+        this.setPlayStatus(params);
       }, 500 * index);
     } else {
       __DEV__ &&
@@ -752,7 +771,12 @@ class DirectVideoView extends React.Component {
           params
         );
       this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps(params);
+      this.setPlayStatus(params);
     }
+  };
+
+  play = () => {
+    this.setNativePlayback();
   };
 
   stop = (endConnection = false) => {
