@@ -106,6 +106,8 @@ class CMSSearchbar extends React.Component {
             right: -10,
             top: 5,
           }}
+          fixAndroidBottomLine={true}
+          fixAndroidBottomLineBottom={11}
         />
       </Animated.View>
     ) : null;

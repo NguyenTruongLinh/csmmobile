@@ -230,6 +230,7 @@ export default class InputTextIcon extends PureComponent {
       marginTopExtended,
       iconStyle,
       fixAndroidBottomLine,
+      fixAndroidBottomLineBottom,
       ...props
     } = this.props;
     let {focused, focus, error, errored, height, text = ''} = this.state;
@@ -399,14 +400,26 @@ export default class InputTextIcon extends PureComponent {
               <View
                 style={{
                   width: '100%',
-                  height: 10,
+                  height: 20,
                   position: 'absolute',
                   backgroundColor: 'white',
-                  borderTopColor: 'lightgray',
-                  borderTopWidth: 1,
-                  bottom: 0,
-                }}
-              />
+                  bottom: fixAndroidBottomLineBottom || 0, //0, //10
+                }}>
+                <View
+                  style={{
+                    width: '100%',
+                    height: 10,
+                  }}
+                />
+                <View
+                  style={{
+                    width: '100%',
+                    height: 10,
+                    borderTopColor: 'lightgray',
+                    borderTopWidth: 1,
+                  }}
+                />
+              </View>
             )}
         </View>
         {showFishEye ? (

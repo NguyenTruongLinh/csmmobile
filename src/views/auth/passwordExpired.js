@@ -241,6 +241,8 @@ class PasswordExpired extends Component {
               baseColor={CMSColors.PrimaryText}
               iconColor={CMSColors.InputIconColor}
               secureTextEntry={false}
+              fixAndroidBottomLine={true}
+              fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
               ref={r => (this._refs.oldPassword = r)}
@@ -265,6 +267,8 @@ class PasswordExpired extends Component {
               iconColor={CMSColors.InputIconColor}
               secureTextEntry={true}
               revealable={true}
+              fixAndroidBottomLine={true}
+              fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
               ref={r => (this._refs.newPassword = r)}
@@ -290,6 +294,8 @@ class PasswordExpired extends Component {
               iconColor={CMSColors.InputIconColor}
               secureTextEntry={true}
               revealable={true}
+              fixAndroidBottomLine={true}
+              fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
               ref={r => (this._refs.confirmPassword = r)}
@@ -320,6 +326,8 @@ class PasswordExpired extends Component {
               iconColor={CMSColors.InputIconColor}
               secureTextEntry={true}
               revealable={true}
+              fixAndroidBottomLine={true}
+              fixAndroidBottomLineBottom={0}
             />
           </View>
           <View style={{flex: 0.3}} />
