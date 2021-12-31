@@ -421,11 +421,12 @@ const styles = StyleSheet.create({
   copyRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: '6%',
   },
   copyRightLogo: {
     tintColor: CMSColors.Dark_Blue,
-    width: '32%',
-    height: '100%',
+    width: (width * 28) / 100,
+    height: (width * 28 * 132) / 300 / 100,
   },
   copyRightText: {
     flex: 1,
