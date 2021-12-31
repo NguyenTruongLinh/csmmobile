@@ -344,8 +344,10 @@ class NotifySettingView extends React.Component {
     //POS Exception
     let iconL = null;
     let filterModal = <View></View>;
+    let selectedCount = 0;
     if (item.id == 222) {
       item.isCheck = this.state.selectedExceptions.length > 0; // ? true : false;
+      selectedCount = this.state.selectedExceptions.length;
       let filer_modal = this.render_FilterModel();
       iconL = (
         <View style={[styles.containIconCheck]}>
@@ -362,7 +364,7 @@ class NotifySettingView extends React.Component {
       filterModal = <View>{filer_modal}</View>;
     } else if (item.id == C_AlertTypes.Alarm_Temperature) {
       let alarmFilterModal = this.renderTemperatureAlarmsModal();
-
+      selectedCount = this.state.temperatureAlarmSelected.length;
       iconL = (
         <View style={[styles.containIconCheck]}>
           <CMSTouchableIcon
@@ -419,7 +421,10 @@ class NotifySettingView extends React.Component {
             />
           </View> */}
           <View style={styles.rowButton_contain_name}>
-            <Text style={styles.rowButton_name}>{item.name}</Text>
+            <Text style={styles.rowButton_name}>
+              {item.name}
+              {selectedCount > 0 ? ` (${selectedCount})` : ''}
+            </Text>
           </View>
           {iconL}
           {filterModal}
