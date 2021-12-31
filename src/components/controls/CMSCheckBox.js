@@ -270,11 +270,11 @@ export default class CheckboxGroup extends Component {
                   }}>
                   {this.props.showItemIcon && (
                     <View style={styles.containIcon}>
-                      <View style={[styles.flagCount]}>
+                      {/* <View style={[styles.flagCount]}>
                         <Text style={styles.flagCount_Text}>
                           {checkbox.typeWeight}
                         </Text>
-                      </View>
+                      </View> */}
                       <IconCustom
                         name="ic_flag_black_48px"
                         color={checkbox.color}
@@ -285,6 +285,9 @@ export default class CheckboxGroup extends Component {
                   )}
                   <Text style={[labelStyle, styles.labeldefault]}>
                     {this.getLabel(checkbox)}
+                    {checkbox && checkbox.typeWeight > 0
+                      ? ` (${checkbox.typeWeight})`
+                      : ''}
                   </Text>
                   <View style={styles.checkBoxContainer}>
                     {this.props.selected.includes(this.getValue(checkbox))
