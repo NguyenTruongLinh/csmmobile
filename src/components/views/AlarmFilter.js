@@ -512,7 +512,7 @@ export default class AlarmFilter extends Component {
           onPress={() => {
             this.eventAddMoreFilter(_filterMore);
           }}
-          color={CMSColors.Dark_Gray_54}
+          color={CMSColors.PrimaryText}
           styles={styles.contentIconRemoveFilter}
           iconCustom="close"
         />
@@ -587,7 +587,7 @@ export default class AlarmFilter extends Component {
           onPress={() => {
             this.eventAddMoreFilter(_filterMore);
           }}
-          color={CMSColors.Dark_Gray_54}
+          color={CMSColors.PrimaryText}
           styles={styles.contentIconRemoveFilter}
           iconCustom="close"
         />
