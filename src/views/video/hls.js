@@ -492,7 +492,7 @@ class HLSStreamingView extends React.Component {
                   selectedTextTrack={{type: 'disabled'}}
                   rate={1.0}
                   automaticallyWaitsToMinimizeStalling={false}
-                  preferredForwardBufferDuration={2}
+                  preferredForwardBufferDuration={5}
                   playInBackground={true}
                   playWhenInactive={true}
                   useTextureView={false}

@@ -406,7 +406,8 @@ class LiveChannelsView extends React.Component {
               },
             },
             () => {
-              this.videoListRef.scrollToOffset({animated: false, offset: 0});
+              this.videoListRef &&
+                this.videoListRef.scrollToOffset({animated: false, offset: 0});
               this.setHeader(true);
             }
           );
