@@ -168,6 +168,8 @@ class LoginView extends Component {
     )
       domain = 'https://' + domain;
 
+    domain = domain.toLowerCase();
+
     let invalidMsg = this.validatedomain(domain);
     if (invalidMsg) {
       this.setState({errors: {domain: invalidMsg}});

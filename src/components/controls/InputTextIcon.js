@@ -400,15 +400,16 @@ export default class InputTextIcon extends PureComponent {
               <View
                 style={{
                   width: '100%',
-                  height: 20,
+                  height: 16,
                   position: 'absolute',
                   backgroundColor: 'white',
                   bottom: fixAndroidBottomLineBottom || 0, //0, //10
+                  // borderWidth: 1,
                 }}>
                 <View
                   style={{
                     width: '100%',
-                    height: 10,
+                    height: 6,
                   }}
                 />
                 <View
