@@ -67,6 +67,7 @@ class DirectVideoView extends React.Component {
     this.lastFrameTime = null;
     this.lastTimestamp = 0;
     this.isPlaying = false;
+    this.isViewable = false;
   }
 
   componentDidMount() {
@@ -90,7 +91,8 @@ class DirectVideoView extends React.Component {
     __DEV__ &&
       console.log('DirectStreamingView renderLimit: ', renderLimit, index);
 
-    if (!singlePlayer && index < renderLimit) {
+    if (singlePlayer || index < renderLimit) {
+      this.isViewable = true;
       if (this.ffmpegPlayer && serverInfo) {
         if (
           serverInfo.server.serverIP &&
@@ -285,9 +287,11 @@ class DirectVideoView extends React.Component {
               previousValue != null // ||
               // value == serverInfo.channelNo
             ) {
-              // this.pause(false);
-              // this.setNativePlayback();
-              this.refreshVideo();
+              if (this.isViewable) {
+                // this.pause(false);
+                // this.setNativePlayback();
+                this.refreshVideo();
+              }
             }
             // }
           }
@@ -775,6 +779,10 @@ class DirectVideoView extends React.Component {
     }
   };
 
+  setViewable = isViewable => {
+    this.isViewable = this.props.singlePlayer ? true : isViewable;
+  };
+
   play = () => {
     this.setNativePlayback();
   };
@@ -813,7 +821,7 @@ class DirectVideoView extends React.Component {
 
         __DEV__ &&
           console.log('GOND unpause this.lastFrameTime = ', this.lastFrameTime);
-        if (this.lastFrameTime) {
+        if (this.lastFrameTime && !isLive) {
           this.playAt(
             this.lastFrameTime.toSeconds() -
               this.lastFrameTime.startOf('day').toSeconds()

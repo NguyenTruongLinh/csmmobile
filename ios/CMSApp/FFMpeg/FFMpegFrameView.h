@@ -57,6 +57,8 @@ typedef enum
   BOOL m_delayPlayback;
   UIImage* defaultImg;
   CALayer* m_videoLayer;
+  // CMS added
+  NSString* m_channel;
 }
 
 @property (nonatomic) UIDeviceOrientation currentDeviceOrientation;

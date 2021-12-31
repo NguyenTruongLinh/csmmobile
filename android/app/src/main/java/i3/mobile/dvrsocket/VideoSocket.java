@@ -282,8 +282,8 @@ public class VideoSocket extends CommunicationSocket {
 
         String  datetime = SearchTimeData.getTimeDisplayFull( time, tz);
         String result[]= new String[2];
-        String astr_app = "{\"timestamp\":%d, \"value\":\"%s\"}";
-        String res = String.format(astr_app, time, datetime);
+        String astr_app = "{\"timestamp\":%d, \"value\":\"%s\",\"channel\":\"%s\"}";
+        String res = String.format(astr_app, time, datetime, str_Channel);
         super.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME, "[" + res + "]");
 
     }

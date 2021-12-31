@@ -313,6 +313,7 @@ const uint32_t numLayers = 24;
     
     ImcConnectedServer* selectedServer = [self setConnectionServer:startplayback];
     NSString* channel = [self get_obj:startplayback for_key:@"channels"];
+    m_channel = channel;
     BOOL by_channel = [[self get_obj:startplayback for_key:@"byChannel"] boolValue];
     BOOL isSearch = [[self get_obj: startplayback for_key:@"searchMode"] boolValue];
     NSNumber* interval = [self get_obj:startplayback for_key:@"interval"];
@@ -1011,6 +1012,7 @@ const uint32_t numLayers = 24;
     {
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                               @"msgid": [NSNumber numberWithUnsignedInteger:26],
+                                                                              @"value": [NSString stringWithString:m_channel],
                                                                               @"target": self.reactTag
                                                                               }];
     }
@@ -2554,7 +2556,7 @@ const uint32_t numLayers = 24;
           time = [[formatTimeDST dateFromString:sDate] timeIntervalSince1970];
         }
         
-        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\"}", time, timeTextLabel];
+        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeTextLabel, m_channel];
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
         
         //@autoreleasepool
@@ -2968,7 +2970,7 @@ const uint32_t numLayers = 24;
          
         }
         
-        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\"}", time, timeText];
+        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText];
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
         
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{

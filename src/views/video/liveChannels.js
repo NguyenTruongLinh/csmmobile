@@ -316,6 +316,7 @@ class LiveChannelsView extends React.Component {
         __DEV__ &&
           console.log('GOND onVideosViewableChanged outbound index: ', index);
         if (p.isPlaying) {
+          p.setViewable(false);
           p.stop();
           __DEV__ &&
             console.log('GOND onVideosViewableChanged outbound stopped!');
@@ -324,6 +325,7 @@ class LiveChannelsView extends React.Component {
         __DEV__ &&
           console.log('GOND onVideosViewableChanged inbound index: ', index);
         if (!p.isPlaying) {
+          p.setViewable(true);
           p.play();
           __DEV__ &&
             console.log('GOND onVideosViewableChanged inbound started!');
