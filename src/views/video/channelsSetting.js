@@ -223,7 +223,7 @@ class ChannelsSettingView extends Component {
   renderChannelItem = channel => {
     __DEV__ && console.log('GOND renderChannelItem: ', channel);
     return Object.keys(channel).length == 0 ? (
-      <View key="ch_none" style={{flex: 1}} />
+      <View key="ch_none" style={styles.itemNone} />
     ) : (
       <TouchableOpacity
         key={channel.kChannel}
@@ -365,6 +365,10 @@ const styles = StyleSheet.create({
         elevation: 2,
       },
     }),
+    margin: 6,
+  },
+  itemNone: {
+    flex: 1,
     margin: 6,
   },
 });
