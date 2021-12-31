@@ -77,7 +77,7 @@ class LiveChannelsView extends React.Component {
     this._isMounted = false;
     this.playerRefs = [];
     this.firstFocus = true;
-    this.channelsData = [];
+    // this.viewableList = [];
     // this.showAllTimeout = null;
     // this.didFilter = false;
     // this.needUpdateVideos = false;
@@ -287,8 +287,8 @@ class LiveChannelsView extends React.Component {
 
   onVideosViewableChanged = ({changed, viewableItems}) => {
     const {gridLayout, cloudType} = this.props.videoStore;
-    // __DEV__ &&
-    //   console.log('GOND onVideosViewableChanged: ', changed, this.playerRefs);
+    __DEV__ &&
+      console.log('GOND onVideosViewableChanged: ', changed, viewableItems);
     if (
       cloudType == CLOUD_TYPE.HLS ||
       cloudType == CLOUD_TYPE.RTC ||
@@ -636,7 +636,8 @@ class LiveChannelsView extends React.Component {
               onViewableItemsChanged={this.onVideosViewableChanged}
               viewabilityConfig={{
                 minimumViewTime: 200,
-                viewAreaCoveragePercentThreshold: 25,
+                // viewAreaCoveragePercentThreshold: 25,
+                itemVisiblePercentThreshold: 25,
               }}
             />
           ) : (
