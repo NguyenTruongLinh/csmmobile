@@ -2970,7 +2970,7 @@ const uint32_t numLayers = 24;
          
         }
         
-        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText];
+        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, m_channel];
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
         
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
