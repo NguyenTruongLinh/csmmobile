@@ -68,11 +68,11 @@ export default class CheckList extends Component {
             {item.isCheck == true ? (
               <Icon
                 name="check-square"
-                color={CMSColors.PrimaryColor}
+                color={CMSColors.PrimaryActive}
                 size={22}
               />
             ) : (
-              <Icon name="square" color={CMSColors.DividerColor} size={22} />
+              <Icon name="square-o" color={CMSColors.DividerColor} size={22} />
             )}
           </View>
           <View style={styles.rowButton_contain_name}>
