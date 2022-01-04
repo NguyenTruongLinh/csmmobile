@@ -315,8 +315,20 @@ class NotificationController extends React.Component {
         );
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
-        // __DEV__ && console.log('GOND onAlertType Notification: ', data);
-        notif = onAlertSetting({...props, action, content});
+        __DEV__ && console.log('GOND ALERT_TYPE content = : ', content);
+        let notifPromise = onAlertSetting({...props, action, content});
+        __DEV__ && console.log('GOND ALERT_TYPE notif = : ', notifPromise);
+        notifPromise.then(notif =>
+          NotificationController.onNotifReady(
+            notif,
+            messageId,
+            data,
+            type,
+            action,
+            content,
+            userStore
+          )
+        );
         break;
       case NOTIFY_TYPE.ALERT:
         // __DEV__ && console.log('GOND onAlert Notification: ', props);
@@ -339,7 +351,40 @@ class NotificationController extends React.Component {
         notif = onPVMEvent(oamStore, action, content, cmd);
         break;
     }
+    // const enabled = await messaging().hasPermission();
+    // if (enabled && notif) {
+    //   __DEV__ && console.log('GOND show local notify, content: ', content);
+    //   if (Platform.OS === 'ios' && content && typeof content === 'string') {
+    //     content = content.replace(/null/g, '""'); // content.split('null').join('');
+    //   }
+    //   NotificationController.displayLocalNotification({
+    //     ...notif,
+    //     messageId,
+    //     id: data.msg_id,
+    //     data: {type, action, content},
+    //   });
+    //   userStore && userStore.getWidgetCounts();
+    // }
+    NotificationController.onNotifReady(
+      notif,
+      messageId,
+      data,
+      type,
+      action,
+      content,
+      userStore
+    );
+  };
 
+  static onNotifReady = async (
+    notif,
+    messageId,
+    data,
+    type,
+    action,
+    content,
+    userStore
+  ) => {
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
       __DEV__ && console.log('GOND show local notify, content: ', content);

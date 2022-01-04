@@ -276,7 +276,7 @@ const onOpenAlertEvent = async props => {
 };
 
 const onAlertSetting = async props => {
-  if (action === NOTIFY_ACTION.EDIT) {
+  if (props.action === NOTIFY_ACTION.EDIT) {
     const {userStore, healthStore} = props;
     if (userStore && healthStore) {
       await userStore.getAlertTypesSettings();
@@ -294,7 +294,7 @@ const onAlertSetting = async props => {
 const onOpenAlertSetting = props => {
   //console.log('alerttype: ' + content);
   const {naviService} = props;
-  if (action === NOTIFY_ACTION.EDIT) {
+  if (props.action === NOTIFY_ACTION.EDIT) {
     const currentRoute = naviService.getCurrentRouteName();
     // __DEV__ &&
     // console.log('GOND onAlertSettings, current Top route: ', currentRoute);
