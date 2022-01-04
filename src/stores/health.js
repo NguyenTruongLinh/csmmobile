@@ -14,6 +14,7 @@ import {
 import {AlertTypes, AlertNames} from '../consts/misc';
 import {No_Image} from '../consts/images';
 import ROUTERS from '../consts/routes';
+import {DateTime} from 'luxon';
 
 const NonDismissableAlerts = [
   AlertTypes.DVR_is_off_line,
@@ -277,6 +278,7 @@ export const HealthModel = types
     // #endregion Setters
     // #region Get data
     getHealthData: flow(function* (sitesList) {
+      __DEV__ && console.log(`getHealthData sitesList = `, sitesList);
       // if (!alertTypes || !Array.isArray(alertTypes)) {
       //   console.log('GOND getDataHealth - alert type not provided');
       //   return;
@@ -292,7 +294,7 @@ export const HealthModel = types
           null,
           params
         );
-        __DEV__ && console.log('GOND get health data: ', res);
+        __DEV__ && console.log('GOND getHealthData get health data: ', res);
 
         if (res.summary.length > 0) {
           self.selectedSite && (self.selectedSite = null);
@@ -347,7 +349,8 @@ export const HealthModel = types
           // __DEV__ && console.log('GOND Health data: ', self.siteHealthList);
         }
       } catch (error) {
-        __DEV__ && console.log('GOND get health data failed: ', error);
+        __DEV__ &&
+          console.log('GOND getHealthData get health data failed: ', error);
         snackbarUtil.handleRequestFailed();
       }
       self.isLoading = false;
@@ -419,6 +422,7 @@ export const HealthModel = types
       return true;
     }),
     getAlertsByType: flow(function* (alertType) {
+      __DEV__ && console.log(`getAlertsByType alertType = `, alertType);
       self.isLoading = true;
       if (self.selectedAlert) self.selectedAlert = undefined;
       self.alertsList = [];
@@ -442,7 +446,8 @@ export const HealthModel = types
             size: self.selectedSite.dvrs.length,
           }
         );
-        __DEV__ && console.log('GOND get alert type data: ', res);
+        __DEV__ &&
+          console.log('GOND get alert type data: ', JSON.stringify(res));
         if (!res.Data || res.Data.length == 0) {
           console.log('GOND alert type ', _alertType, ' has no alert data');
           self.isLoading = false;
@@ -459,7 +464,11 @@ export const HealthModel = types
             name: 'KDVR ' + alert.KDVR,
           };
           __DEV__ && console.log('GOND map kdvr found:', foundDVR);
-
+          __DEV__ &&
+            console.log(
+              `GOND get alert type data alert.TimeZone = `,
+              alert.TimeZone
+            );
           return AlertModel.create({
             alertId: alert.Id ?? defaultId,
             channelName: alert.ChannelName ?? '',
@@ -476,7 +485,11 @@ export const HealthModel = types
             // ),
           });
         });
-
+        // self.alertsList.sort((a, b) => {
+        //   const secsA = DateTime.fromISO(a.timezone).toSeconds();
+        //   const secsB = DateTime.fromISO(b.timezone).toSeconds();
+        //   return secsB - secsA;
+        // });
         __DEV__ &&
           console.log(
             'GOND get site alert type data: ',
@@ -598,6 +611,15 @@ export const HealthModel = types
     // #endregion Dismiss alert
     // #region Alert notifications
     onNVRStatusNotification(alert, nvrs, site) {
+      __DEV__ &&
+        console.log(
+          `onNVRStatusNotification alert = `,
+          JSON.stringify(alert),
+          `| nvrs = `,
+          JSON.stringify(nvrs),
+          `| site = `,
+          JSON.stringify(site)
+        );
       // const kDVR = alert.NVRs[0].Key;
       // const dvr =
       //   site && site.dvrs
@@ -606,6 +628,23 @@ export const HealthModel = types
       // const timezone = alert.NVRs[alert.NVRs.length - 1].Value;
 
       self.isFromNotification = true;
+      let targetSite = self.siteHealthList.find(s => s.id == site.key);
+      if (!targetSite) {
+        targetSite = SiteHealthModel.create({
+          id: site.key,
+          total: 1,
+          sdate: alert.sdate ?? alert.Timezone ?? '',
+          edate: alert.edate ?? alert.Timezone ?? '',
+          isDismissAll: false,
+          siteName: site.name,
+          // dvrs: site.dvrs.map(dvr => dvr),
+          dvrs: site.dvrs.map(dvr =>
+            DVRModel.create({kDVR: dvr.kDVR, name: dvr.name})
+          ),
+        });
+        self.siteHealthList.push(targetSite);
+      }
+      self.selectedSite = targetSite.id;
       self.currentSiteName = site ? site.name : '';
       // self.alertsList.push(
       //   AlertModel.create({
@@ -630,6 +669,15 @@ export const HealthModel = types
         console.log('GOND onAlertNotification NVRStatus ', self.alertsList);
     },
     onAlertNotification: flow(function* (alert, site, alertTypeConfigs) {
+      __DEV__ &&
+        console.log(
+          `onAlertNotification alert = `,
+          JSON.stringify(alert),
+          `| site = `,
+          JSON.stringify(site),
+          `| alertTypeConfigs = `,
+          JSON.stringify(alertTypeConfigs)
+        );
       let targetSite = self.siteHealthList.find(s => s.id == site.key);
       if (!targetSite) {
         targetSite = SiteHealthModel.create({
