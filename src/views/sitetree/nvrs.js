@@ -24,6 +24,7 @@ import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
 // import {Comps as CompTxt} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
+import NoDataView from '../../components/views/NoData';
 
 class NVRsView extends Component {
   constructor(props) {
@@ -173,21 +174,25 @@ class NVRsView extends Component {
               textAlignVertical: 'center',
               color: CMSColors.RowOptions,
             }}>
-            {sitesStore.selectedSite
-              ? sitesStore.selectedSite.dvrsCount + ' NVRs'
+            {sitesStore.filteredDVRs
+              ? sitesStore.filteredDVRs.length + ' NVRs'
               : 0}
           </Text>
         </View>
-        <FlatList
-          ref={ref => (this.nvrsListRef = ref)}
-          renderItem={this.renderItem}
-          keyExtractor={item => item.kDVR}
-          data={sitesStore.filteredDVRs}
-          // onRefresh={this.getSitesList}
-          // refreshing={
-          //   sitesStore ? sitesStore.isLoading : false
-          // }
-        />
+        {sitesStore.filteredDVRs.length == 0 ? (
+          <NoDataView isLoading={false} style={{flex: 1}} />
+        ) : (
+          <FlatList
+            ref={ref => (this.nvrsListRef = ref)}
+            renderItem={this.renderItem}
+            keyExtractor={item => item.kDVR}
+            data={sitesStore.filteredDVRs}
+            // onRefresh={this.getSitesList}
+            // refreshing={
+            //   sitesStore ? sitesStore.isLoading : false
+            // }
+          />
+        )}
       </View>
     );
   }
