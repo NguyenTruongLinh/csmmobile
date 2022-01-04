@@ -485,11 +485,11 @@ export const HealthModel = types
             // ),
           });
         });
-        // self.alertsList.sort((a, b) => {
-        //   const secsA = DateTime.fromISO(a.timezone).toSeconds();
-        //   const secsB = DateTime.fromISO(b.timezone).toSeconds();
-        //   return secsB - secsA;
-        // });
+        self.alertsList.sort((a, b) => {
+          const secsA = DateTime.fromISO(a.timezone).toSeconds();
+          const secsB = DateTime.fromISO(b.timezone).toSeconds();
+          return secsB - secsA;
+        });
         __DEV__ &&
           console.log(
             'GOND get site alert type data: ',
