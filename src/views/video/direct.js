@@ -601,6 +601,7 @@ class DirectVideoView extends React.Component {
               if (videoStore.selectedChannel != serverInfo.channelNo) return;
 
               if (Array.isArray(valueObj) && valueObj.length > 0) {
+                __DEV__ && console.log(` SEARCH_FRAME_TIME = `, valueObj[0]);
                 this.onFrameTime(valueObj[0]);
               } else
                 console.log('GOND direct frame time not valid: ', valueObj);
@@ -864,21 +865,12 @@ class DirectVideoView extends React.Component {
     this.lastTimestamp = timestamp;
 
     if (value) {
-      let [date, time] = value.split(' ');
-      time = time ? time.split('.')[0] : '';
+      const timeString = DateTime.fromFormat(
+        value,
+        NVRPlayerConfig.ResponseTimeFormat
+      ).toFormat(NVRPlayerConfig.FrameFormat);
 
-      // const formatedDate = date + ' 00:00:00';
-      // console.log(
-      //   'GOND timeframe date = ',
-      //   formatedDate,
-      //   ', search date = ',
-      //   videoStore.searchDateString
-      // );
-      // if (formatedDate != videoStore.searchDateString) {
-      //   videoStore.setSearchDate(formatedDate);
-      // }
-      // __DEV__ && console.log('GOND direct frame time : ', frameTime);
-      videoStore.setDisplayDateTime(date && time ? date + ' - ' + time : value);
+      videoStore.setDisplayDateTime(timeString);
 
       const frameTime = DateTime.fromFormat(
         value,
@@ -887,6 +879,7 @@ class DirectVideoView extends React.Component {
           : NVRPlayerConfig.RequestTimeFormat,
         {zone: 'utc'}
       ).toSeconds();
+
       videoStore.setFrameTime(frameTime);
       this.lastFrameTime = DateTime.fromFormat(
         value,
