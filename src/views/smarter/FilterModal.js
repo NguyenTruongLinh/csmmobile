@@ -170,16 +170,17 @@ export default class ExceptionSearchModal extends Component {
       );
 
     return (
-      sites.length === selectedSites.length &&
-      !(sites.find(s => !selectedSites.includes(s.key)) ?? false)
+      filteredSites.length === selectedSites.length &&
+      !(filteredSites.find(s => !selectedSites.includes(s.key)) ?? false)
     );
   };
 
   onSelectAllSites = () => {
+    const {sitesStore, sites, filteredSites} = this.props;
     this.setState({
       selectedSites: this.isSelectAllSites()
         ? []
-        : this.props.sites.map(s => s.key),
+        : filteredSites.map(s => s.key), //this.props.sites.map(s => s.key),
     });
   };
 
@@ -340,6 +341,12 @@ export default class ExceptionSearchModal extends Component {
     );
   };
 
+  onSiteFilterChange = value => {
+    const {sitesStore, sites, filteredSites} = this.props;
+    this.setState({selectedSites: []});
+    sitesStore.setSiteFilter(value);
+  };
+
   renderSitesSelection = () => {
     const {sitesStore, sites, filteredSites} = this.props;
     const {selectedSites, isSortAZ, contentHeight} = this.state;
@@ -355,8 +362,17 @@ export default class ExceptionSearchModal extends Component {
             backgroundColor: CMSColors.White,
             padding: 10,
           }}>
-          <Text style={{fontSize: 12, color: CMSColors.ColorText}}>
-            {'' + selectedSites.length + ' sites selected'}
+          <Text
+            style={{
+              fontSize: 12,
+              color:
+                selectedSites.length == 0
+                  ? CMSColors.Danger
+                  : CMSColors.ColorText,
+            }}>
+            {selectedSites.length == 0
+              ? 'Select at least 1 site'
+              : '' + selectedSites.length + ' sites selected'}
           </Text>
           <View style={{flex: 1, alignItems: 'flex-end'}}>
             <Button
@@ -372,7 +388,7 @@ export default class ExceptionSearchModal extends Component {
           <InputTextIcon
             label=""
             value={sitesStore.siteFilter}
-            onChangeText={value => sitesStore.setSiteFilter(value)}
+            onChangeText={this.onSiteFilterChange}
             placeholder={CompTxt.searchPlaceholder}
             iconCustom="searching-magnifying-glass"
             disabled={false}
@@ -459,6 +475,11 @@ export default class ExceptionSearchModal extends Component {
   };
 
   render() {
+    __DEV__ &&
+      console.log(
+        ` selectedSites = `,
+        JSON.stringify(this.state.selectedSites)
+      );
     return (
       <Modal
         isVisible={this.props.isVisible}
