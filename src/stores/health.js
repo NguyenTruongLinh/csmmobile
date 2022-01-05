@@ -488,6 +488,7 @@ export const HealthModel = types
           const secsB = DateTime.fromISO(b.timezone).toSeconds();
           return secsB - secsA;
         });
+        if (!self.selectedAlert) self.selectAlert(self.alertsList[0]);
         __DEV__ &&
           console.log(
             'GOND get site alert type data: ',

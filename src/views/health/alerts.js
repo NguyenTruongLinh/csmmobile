@@ -35,6 +35,7 @@ import {No_Image} from '../../consts/images';
 
 import {Comps as CompTxt} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
+import NoDataView from '../../components/views/NoData';
 
 const ALERTS_GRID_LAYOUT = 2;
 
@@ -453,15 +454,19 @@ class AlertsView extends Component {
           onFilter={this.onFilter}
           value={healthStore.alertFilter}
         />
-        <FlatList
-          key={isListView ? 'list' : 'grid'}
-          renderItem={this.renderItem}
-          keyExtractor={item => (isListView ? 'list_' : 'grid_') + item.id}
-          data={healthStore.filteredAlerts}
-          numColumns={isListView ? 1 : ALERTS_GRID_LAYOUT}
-          onRefresh={this.getData}
-          refreshing={healthStore.isLoading}
-        />
+        {healthStore.filteredAlerts.length == 0 ? (
+          <NoDataView isLoading={healthStore.isLoading} style={{flex: 1}} />
+        ) : (
+          <FlatList
+            key={isListView ? 'list' : 'grid'}
+            renderItem={this.renderItem}
+            keyExtractor={item => (isListView ? 'list_' : 'grid_') + item.id}
+            data={healthStore.filteredAlerts}
+            numColumns={isListView ? 1 : ALERTS_GRID_LAYOUT}
+            onRefresh={this.getData}
+            refreshing={healthStore.isLoading}
+          />
+        )}
         {/* <CMSTextInputModal
           isVisible={showDismissModal}
           title="Dismiss alert"

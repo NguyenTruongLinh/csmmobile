@@ -42,6 +42,7 @@ import {
 } from '../../localization/texts';
 import {DateTime} from 'luxon';
 import ROUTERS from '../../consts/routes';
+import NoDataView from '../../components/views/NoData';
 
 const VIEW_PADDING = 0;
 const ITEM_PADDING = 5;
@@ -413,7 +414,6 @@ class AlertDetailView extends Component {
       });
     }, 200);
   };
-
   render() {
     const {healthStore, navigation} = this.props;
     const {showDismissAllButtonInHealthDetail, actionsModalShown} = healthStore;
@@ -427,19 +427,25 @@ class AlertDetailView extends Component {
       <View
         style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}
         onLayout={this.onViewLayout}>
-        <Swipe onSwipeLeft={this.onNext} onSwipeRight={this.onPrevious}>
-          {this.renderActiveImage(healthStore.selectedAlert)}
-        </Swipe>
-        <View style={{backgroundColor: '#f7f7f7', padding: 10}}>
-          {this.renderAlertInfo(healthStore.selectedAlert)}
-        </View>
-        <View style={{position: 'absolute', bottom: '5%'}}>
-          {healthStore.alertsList.length > 0 &&
-            this.renderImageList(
-              healthStore.alertsList,
-              healthStore.selectedAlertIndex
-            )}
-        </View>
+        {healthStore.filteredAlerts.length == 0 ? (
+          <NoDataView isLoading={healthStore.isLoading} style={{flex: 1}} />
+        ) : (
+          <View style={{flex: 1}}>
+            <Swipe onSwipeLeft={this.onNext} onSwipeRight={this.onPrevious}>
+              {this.renderActiveImage(healthStore.selectedAlert)}
+            </Swipe>
+            <View style={{backgroundColor: '#f7f7f7', padding: 10}}>
+              {this.renderAlertInfo(healthStore.selectedAlert)}
+            </View>
+            <View style={{position: 'absolute', bottom: '5%'}}>
+              {healthStore.alertsList.length > 0 &&
+                this.renderImageList(
+                  healthStore.alertsList,
+                  healthStore.selectedAlertIndex
+                )}
+            </View>
+          </View>
+        )}
         <AlertDismissModal selectedAlert={healthStore.selectedAlert} />
       </View>
     );
