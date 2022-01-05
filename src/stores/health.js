@@ -295,9 +295,8 @@ export const HealthModel = types
           params
         );
         __DEV__ && console.log('GOND getHealthData get health data: ', res);
-
         if (res.summary.length > 0) {
-          self.selectedSite && (self.selectedSite = null);
+          // self.selectedSite && (self.selectedSite = null);
           self.siteHealthList = res.summary
             .map(siteData => {
               let site = sitesList.find(s => s.key == siteData.Id);
@@ -325,7 +324,6 @@ export const HealthModel = types
                   });
                   return self.selectedSite;
                 }
-
                 return SiteHealthModel.create({
                   id: siteData.Id,
                   name: siteData.Name,
