@@ -23,16 +23,16 @@ class TransactionBillView extends Component {
     __DEV__ && console.log('GOND TransactionBill trans = ', transaction);
 
     const paymentData = [];
-    transaction.subTotal &&
-      paymentData.push({
-        label: SMARTER_TXT.SUB_TOTAL,
-        value: transaction.subTotal,
-      });
+    // transaction.subTotal &&
+    paymentData.push({
+      label: SMARTER_TXT.SUB_TOTAL,
+      value: transaction.subTotal || 0,
+    });
     transaction.taxs &&
       Array.isArray(transaction.taxs) &&
       transaction.taxs.forEach(item =>
         paymentData.push({
-          label: SMARTER_TXT.TAX + ' ' + item.name,
+          label: item.name,
           value: item.amount,
           isHighlightName: item.isHighlightName,
           isHighlightValue: item.isHighlightValue,
@@ -123,7 +123,6 @@ class TransactionBillView extends Component {
   render() {
     const {transaction, style, isLoading} = this.props;
     const {paymentData} = this.state;
-
     return (
       <ScrollView style={[styles.viewContainer, style]}>
         {this.renderHeaderInfo(SMARTER_TXT.ORDER_TIME, transaction.orderTime)}

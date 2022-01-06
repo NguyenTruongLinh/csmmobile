@@ -274,7 +274,7 @@ const parsePaymentTaxData = _data =>
   PaymentTaxModel.create({
     id: _data.Id,
     name: _data.Name,
-    amount: _data.Amount ?? 0,
+    amount: _data.Ammount ?? 0,
     isHighlightName: _data.IsHighlightName,
     isHighlightValue: _data.IsHighlightValue,
     color: _data.Color,
@@ -891,7 +891,7 @@ export const POSModel = types
       let resultTrans = null;
       try {
         const res = yield apiService.get(TransactionRoute.controller, _transId);
-        __DEV__ && console.log('GOND getTransaction = ', res);
+        __DEV__ && console.log('GOND getTransaction = ', JSON.stringify(res));
 
         const _trans =
           self.notifiedTransaction &&
