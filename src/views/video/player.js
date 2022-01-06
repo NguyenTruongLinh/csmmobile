@@ -431,7 +431,7 @@ class VideoPlayerView extends Component {
         backdropOpacity={0.1}
         style={{
           marginVertical: videoStore.isFullscreen
-            ? sHeight * 0.35
+            ? sHeight * (sHeight > 480 ? 0.1 : 0.05)
             : sHeight * 0.2,
           borderRadius: 7,
         }}>
