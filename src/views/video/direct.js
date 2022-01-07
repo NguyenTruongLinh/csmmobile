@@ -64,6 +64,7 @@ class DirectVideoView extends React.Component {
     this.lastFrameTime = null;
     this.lastTimestamp = 0;
     this.isPlaying = false;
+    this.pendingCommand = null;
     // this.isViewable = false;
   }
 
@@ -329,6 +330,14 @@ class DirectVideoView extends React.Component {
     }
   };
 
+  onReceivePlayerRef = ref => {
+    this.ffmpegPlayer = ref;
+    if (this.ffmpegPlayer && this.pendingCommand) {
+      this.setNative(this.pendingCommand);
+      this.pendingCommand = null;
+    }
+  };
+
   onLoginInfoChanged = (userName, password) => {
     __DEV__ &&
       console.log(
@@ -360,16 +369,17 @@ class DirectVideoView extends React.Component {
     const {serverInfo, videoStore, isLive, hdMode} = this.props;
     console.log('GOND direct setNativePlayback: ', serverInfo);
     if (
-      !this._isMounted ||
-      !this.ffmpegPlayer ||
+      // !this._isMounted ||
+      // !this.ffmpegPlayer ||
       !serverInfo /*.server*/ ||
       serverInfo.channels.length <= 0
     ) {
       __DEV__ &&
         console.log(
           'GOND direct setNativePlayback failed ',
-          this.ffmpegPlayer,
-          paramsObject
+          // this._isMounted,
+          // this.ffmpegPlayer,
+          serverInfo.channels
         );
       return;
     }
@@ -856,7 +866,18 @@ class DirectVideoView extends React.Component {
       this.setPlayStatus(params);
     }
     */
-    this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps(params);
+    if (!this._isMounted) return;
+    if (!this.ffmpegPlayer) {
+      __DEV__ &&
+        console.log(
+          'GOND ffmpegPlayer invalid, pending native command: ',
+          params
+        );
+      this.pendingCommand = params;
+      return;
+    }
+
+    this.ffmpegPlayer.setNativeProps(params);
     this.setPlayStatus(params);
   };
 
@@ -1058,9 +1079,7 @@ class DirectVideoView extends React.Component {
                 <FFMpegFrameViewIOS
                   width={this.state.width} // {this.state.width}
                   height={this.state.height} // {this.state.height}
-                  ref={ref => {
-                    this.ffmpegPlayer = ref;
-                  }}
+                  ref={this.onReceivePlayerRef}
                   onFFMPegFrameChange={this.onNativeMessage}
                   singlePlayer={true}
                 />
@@ -1069,9 +1088,7 @@ class DirectVideoView extends React.Component {
                   iterationCount={1}
                   width={width}
                   height={height}
-                  ref={ref => {
-                    this.ffmpegPlayer = ref;
-                  }}
+                  ref={this.onReceivePlayerRef}
                   onFFMPegFrameChange={this.onNativeMessage}
                   singlePlayer={true}
                 />
@@ -1086,9 +1103,7 @@ class DirectVideoView extends React.Component {
           <FFMpegFrameViewIOS
             width={0} // {this.state.width}
             height={0} // {this.state.height}
-            ref={ref => {
-              this.ffmpegPlayer = ref;
-            }}
+            ref={this.onReceivePlayerRef}
             onFFMPegFrameChange={this.onNativeMessage}
           />
         ) : (
@@ -1096,9 +1111,7 @@ class DirectVideoView extends React.Component {
             iterationCount={1}
             width={width}
             height={height}
-            ref={ref => {
-              this.ffmpegPlayer = ref;
-            }}
+            ref={this.onReceivePlayerRef}
             onFFMPegFrameChange={this.onNativeMessage}
           />
         )}
