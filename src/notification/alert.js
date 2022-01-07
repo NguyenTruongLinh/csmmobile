@@ -181,7 +181,8 @@ const onAlertEvent = async props => {
 const onOpenAlertEvent = async props => {
   const {healthStore, sitesStore, userStore, naviService, action, content} =
     props;
-
+  __DEV__ &&
+    console.log(`onOpenAlertEvent action = `, action, `| content = `, content);
   try {
     const alert = typeof content === 'object' ? content : JSON.parse(content);
     if (!alert) return;
@@ -259,7 +260,7 @@ const onOpenAlertEvent = async props => {
           })
         );
         // console.log('GOND onOpen NVR status, dvrs = ', dvrs);
-        healthStore.onNVRStatusNotification(alert, dvrs, site);
+        await healthStore.onNVRStatusNotification(alert, dvrs, site);
         naviService.navigate(ROUTERS.HOME_NAVIGATOR, {
           screen: ROUTERS.HEALTH_ALERTS,
           initial: false,

@@ -243,6 +243,7 @@ export const HealthModel = types
       self.alertFilter = value;
     },
     selectAlertType(value) {
+      __DEV__ && console.log(`selectAlertType value = `, JSON.stringify(value));
       self.selectedAlertType = value;
     },
     selectAlert(value) {
@@ -431,6 +432,20 @@ export const HealthModel = types
           'GOND get alert type data dvrs: ',
           getSnapshot(self.selectedSite.dvrs)
         );
+      // const params = {
+      //   kdvrs: self.selectedSite.dvrs.map(dvr => dvr.kDVR).join(','),
+      //   sdate: utils.toQueryStringUTCDateTime(self.selectedSite.sdate),
+      //   edate: utils.toQueryStringUTCDateTime(self.selectedSite.edate),
+      //   page: 1,
+      //   size: self.selectedSite.dvrs.length,
+      // };
+      // __DEV__ &&
+      //   console.log(
+      //     `getAlertsByType _alertType = `,
+      //     _alertType,
+      //     `| params = `,
+      //     params
+      //   );
       try {
         const res = yield apiService.get(
           AlertRoute.controller,
@@ -609,7 +624,7 @@ export const HealthModel = types
     }),
     // #endregion Dismiss alert
     // #region Alert notifications
-    onNVRStatusNotification(alert, nvrs, site) {
+    onNVRStatusNotification: flow(function* (alert, nvrs, site) {
       __DEV__ &&
         console.log(
           `onNVRStatusNotification alert = `,
@@ -654,19 +669,27 @@ export const HealthModel = types
       //     dvr,
       //   })
       // );
-      self.alertsList = nvrs.map(nvr =>
-        AlertModel.create({
-          id: utils.getRandomId(),
-          alertId: alert.AlertType,
-          timezone: nvr.timezone,
-          time: nvr.timezone,
-          dvr: {kDVR: nvr.kDVR, name: nvr.name},
-        })
-      );
+
+      // self.alertsList = nvrs.map(nvr =>
+      //   AlertModel.create({
+      //     id: utils.getRandomId(),
+      //     alertId: alert.AlertType,
+      //     timezone: nvr.timezone,
+      //     time: nvr.timezone,
+      //     dvr: {kDVR: nvr.kDVR, name: nvr.name},
+      //   })
+      // );
 
       __DEV__ &&
         console.log('GOND onAlertNotification NVRStatus ', self.alertsList);
-    },
+
+      let result = yield self.getHealthDetail(site.key);
+      if (!result) return null;
+
+      self.selectedAlertType = self.selectedSiteAlertTypes.find(
+        item => item.alertId == alert.AlertType
+      );
+    }),
     onAlertNotification: flow(function* (alert, site, alertTypeConfigs) {
       __DEV__ &&
         console.log(

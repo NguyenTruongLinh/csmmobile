@@ -263,6 +263,10 @@ class NotificationController extends React.Component {
     } = props;
     const {data, messageId} = message;
     // const {videoStore, alarmStore, appStore} = this.props;
+
+    __DEV__ &&
+      console.log(`onNotificationReceived message = `, JSON.stringify(message));
+
     const naviService = appStore ? appStore.naviService : null;
 
     // __DEV__ && console.log('GOND onNotificationReceived: ', data);

@@ -153,7 +153,7 @@ class AlertsView extends Component {
 
   getData = async () => {
     const {healthStore} = this.props;
-    if (healthStore.isFromNotification) return;
+    // if (healthStore.isFromNotification) return;
 
     await healthStore.getAlertsByType();
   };
