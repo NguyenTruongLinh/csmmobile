@@ -92,6 +92,7 @@ export const RTC_COMMANDS = {
 // };
 
 export const NATIVE_MESSAGE = {
+  FRAME_DATA: 0,
   CONNECTING: 1,
   CONNECTED: 2,
   LOGIN_MESSAGE: 3,

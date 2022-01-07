@@ -18,6 +18,7 @@ import Modal from 'react-native-modal';
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
 import RTCStreamingView from './rtc';
+import DirectChannelView from './directChannel';
 // import AuthenModal from '../../components/common/AuthenModal';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
@@ -286,6 +287,7 @@ class LiveChannelsView extends React.Component {
   };
 
   onVideosViewableChanged = ({changed, viewableItems}) => {
+    return;
     const {gridLayout, cloudType} = this.props.videoStore;
     __DEV__ &&
       console.log('GOND onVideosViewableChanged: ', changed, viewableItems);
@@ -454,49 +456,69 @@ class LiveChannelsView extends React.Component {
     );
   };
 
-  renderRow = ({item, index}) => {
-    const {viewableWindow, videoWindow} = this.state;
-    console.log(
-      'GOND renderRow videoWindow = ',
-      videoWindow,
-      ', item = ',
-      item
-    );
-    const playerViews = [];
+  renderDirectFrame = () => {
+    const {videoStore} = this.props;
+    const {cloudType} = videoStore;
+    const {videoWindow} = this.state;
 
-    for (let i = 0; i < item.data.length; i++) {
-      const videoIndex = item.data.length * index + i;
-      playerViews.push(
-        <View
-          key={item.key + '_' + i}
-          style={[
-            styles.videoRow,
-            {
-              width: videoWindow.width,
-              height: videoWindow.height,
-            },
-          ]}>
-          <CMSRipple
-            style={{width: '100%', height: '100%', borderWidth: 0}}
-            onPress={() => this.onChannelSelect(item.data[i])}>
-            {this.renderVideoPlayer(item.data[i], videoIndex)}
-          </CMSRipple>
-        </View>
-      );
-    }
+    if (cloudType == CLOUD_TYPE.HLS || cloudType == CLOUD_TYPE.RTC) return;
+    // console.log('GOND renderDirectFrame: ', videoStore.directConnection);
 
-    return (
-      <View
-        key={item.key}
-        style={{
-          flexDirection: 'row',
-          height: videoWindow.height,
-          width: viewableWindow.width,
-        }}>
-        {playerViews}
-      </View>
-    );
+    return videoStore.directConnection ? (
+      <DirectVideoView
+        width={videoWindow.width}
+        height={videoWindow.height}
+        isLive={true}
+        hdMode={false}
+        serverInfo={videoStore.directConnection}
+        ref={ref => (this.playerRefs = [ref])}
+      />
+    ) : null;
   };
+
+  // renderRow = ({item, index}) => {
+  //   const {viewableWindow, videoWindow} = this.state;
+  //   console.log(
+  //     'GOND renderRow videoWindow = ',
+  //     videoWindow,
+  //     ', item = ',
+  //     item
+  //   );
+  //   const playerViews = [];
+
+  //   for (let i = 0; i < item.data.length; i++) {
+  //     const videoIndex = item.data.length * index + i;
+  //     playerViews.push(
+  //       <View
+  //         key={item.key + '_' + i}
+  //         style={[
+  //           styles.videoRow,
+  //           {
+  //             width: videoWindow.width,
+  //             height: videoWindow.height,
+  //           },
+  //         ]}>
+  //         <CMSRipple
+  //           style={{width: '100%', height: '100%', borderWidth: 0}}
+  //           onPress={() => this.onChannelSelect(item.data[i])}>
+  //           {this.renderVideoPlayer(item.data[i], videoIndex)}
+  //         </CMSRipple>
+  //       </View>
+  //     );
+  //   }
+
+  //   return (
+  //     <View
+  //       key={item.key}
+  //       style={{
+  //         flexDirection: 'row',
+  //         height: videoWindow.height,
+  //         width: viewableWindow.width,
+  //       }}>
+  //       {playerViews}
+  //     </View>
+  //   );
+  // };
 
   // renderVideoPlayer = (item, index) => {
   renderVideoPlayer = ({item, index}) => {
@@ -525,13 +547,14 @@ class LiveChannelsView extends React.Component {
       case CLOUD_TYPE.DEFAULT:
       case CLOUD_TYPE.DIRECTION:
         player = (
-          <DirectVideoView
+          //<DirectVideoView
+          <DirectChannelView
             {...playerProps}
             serverInfo={item}
             // username={videoStore.nvrUser}
             // password={videoStore.nvrPassword}
             // ref={ref => this.playerRefs.push(ref)}
-            ref={ref => (this.playerRefs[index] = ref)}
+            // ref={ref => (this.playerRefs[index] = ref)}
           />
         );
         break;
@@ -562,11 +585,15 @@ class LiveChannelsView extends React.Component {
         break;
     }
 
+    // __DEV__ && console.log('GOND renderVid liveChannels ', videoWindow);
     return (
       <CMSRipple
         style={[
           styles.videoRow,
-          {width: '100%', height: '100%', borderWidth: 0},
+          {
+            width: videoWindow.width,
+            height: videoWindow.height,
+          },
         ]}
         onPress={() => this.onChannelSelect(item)}>
         {player}
@@ -599,17 +626,6 @@ class LiveChannelsView extends React.Component {
 
     return (
       <View style={styles.screenContainer}>
-        {/* <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={videoStore.channelFilter}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View> */}
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
@@ -624,7 +640,6 @@ class LiveChannelsView extends React.Component {
             <FlatList
               key={'grid_' + videoStore.gridLayout}
               ref={r => (this.videoListRef = r)}
-              // renderItem={this.renderRow}
               renderItem={this.renderVideoPlayer}
               numColumns={videoStore.gridLayout}
               data={videoStore.videoData} // {this.state.liveData}
@@ -645,6 +660,7 @@ class LiveChannelsView extends React.Component {
           )}
         </View>
         {this.renderLayoutModal()}
+        {this.renderDirectFrame()}
       </View>
     );
   }

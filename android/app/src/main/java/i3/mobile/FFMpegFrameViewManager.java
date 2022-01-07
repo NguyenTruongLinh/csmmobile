@@ -96,14 +96,21 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
             view.Refresh(isSearch);
         }
     }
+	
+	@ReactProp(name = "singlePlayer")
+    public void setSinglePlayer(FFMpegFrameView view, @Nullable boolean singlePlayer)
+    {
+        view.setSingle(singlePlayer);
+    }
 
     @ReactProp(name = "disconnect")
     public void setDisconnect(FFMpegFrameView view, @Nullable boolean disconnect)
     {
-        if(disconnect) {
+        // if(disconnect) {
             view.Stop();
-        }
+        // }
     }
+
 
     @ReactProp(name = "stop")
     public void setStop(FFMpegFrameView view, @Nullable boolean stop)

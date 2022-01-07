@@ -26,6 +26,7 @@ import {
   BEGIN_OF_DAY_STRING,
   END_OF_DAY_STRING,
 } from '../consts/video';
+import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../consts/misc';
 import {TIMEZONE_MAP} from '../consts/timezonesmap';
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../localization/texts';
@@ -52,6 +53,16 @@ const DirectServerModel = types
     get data() {
       return {...self, byChannel: true, interval: DAY_INTERVAL};
     },
+    get server() {
+      return getSnapshot(self);
+    },
+    get playData() {
+      return {
+        ...getSnapshot(self),
+        byChannel: true,
+        interval: DAY_INTERVAL,
+      };
+    },
   }))
   .actions(self => ({
     setLoginInfo(userName, password) {
@@ -62,6 +73,11 @@ const DirectServerModel = types
     setHD(value) {
       self.hd = value;
     },
+    setChannels(value) {
+      __DEV__ && console.log('GOND setChannels ', value);
+      self.channels = value.join(',');
+    },
+    setStreamStatus(statusObject) {},
   }));
 const parseDirectServer = (server /*, channelNo, isLive*/) => {
   return DirectServerModel.create({
@@ -124,6 +140,18 @@ const DirectStreamModel = types
     get kChannel() {
       return self.channel ? self.channel.kChannel : -1;
     },
+    get videoSource() {
+      return self.channel ? self.channel.videoSource : -1;
+    },
+    get serverIP() {
+      return self.server ? self.server.serverIP : null;
+    },
+    get port() {
+      return self.server ? self.server.port : null;
+    },
+    get channels() {
+      return self.channel ? String(self.channel.channelNo) : '';
+    },
     get streamStatus() {
       const {isLoading, connectionStatus, error} = self;
       return {
@@ -132,6 +160,14 @@ const DirectStreamModel = types
         error,
       };
     },
+    get videoImage() {
+      return self.videoFrame && typeof self.videoFrame == 'string'
+        ? {uri: 'data:image/jpeg;base64,' + self.videoFrame}
+        : NVR_Play_NoVideo_Image;
+    },
+  }))
+  .volatile(self => ({
+    videoFrame: null,
   }))
   .actions(self => ({
     setPlay(value) {
@@ -146,6 +182,9 @@ const DirectStreamModel = types
       isLoading != undefined && (self.isLoading = isLoading);
       needReset != undefined && (self.needReset = needReset);
       error != undefined && (self.error = error);
+    },
+    updateFrame(value) {
+      self.videoFrame = value;
     },
   }));
 
@@ -1040,6 +1079,10 @@ export const VideoModel = types
           self.isLive = true;
         }
       },
+      updateDirectFrame(channel, frameData) {
+        const target = self.directStreams.find(s => s.videoSource == channel);
+        if (target) target.updateFrame(frameData);
+      },
       // #endregion setters
       // #region Build data
       buildDirectData() {
@@ -1314,6 +1357,9 @@ export const VideoModel = types
           );
           __DEV__ && console.log('GOND direct connect infos: ', res);
           self.directConnection = parseDirectServer(res);
+          self.directConnection.setChannels(
+            self.allChannels.map(ch => ch.channelNo)
+          );
 
           // get NVR user and password from first data:
           if (
@@ -2244,6 +2290,8 @@ export const VideoModel = types
           self.selectChannel(alertData.channelNo);
         } else if (alertData.channelName) {
           self.selectChannel(alertData.channelName, 'name');
+        } else if (alertData.camName) {
+          self.selectChannel(parseInt(alertData.camName));
         } else {
           self.selectChannel(self.displayChannels[0].channelNo);
         }

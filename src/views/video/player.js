@@ -178,9 +178,8 @@ class VideoPlayerView extends Component {
       datesList.indexOf(selectedDate) < 0
     ) {
       __DEV__ && console.log('GOND: checkDataOnSearchDate NOVIDEO');
-      // this.isNoDataSearch = true;
-      // this.playerRef.pause();
-      videoStore.pause(true);
+      this.playerRef.pause();
+      // videoStore.pause(true);
       videoStore.selectedStream &&
         videoStore.selectedStream.setStreamStatus({
           isLoading: false,

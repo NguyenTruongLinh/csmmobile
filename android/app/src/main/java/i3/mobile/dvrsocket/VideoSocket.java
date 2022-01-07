@@ -5,9 +5,11 @@ import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+// import android.util.Base64;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+// import java.io.ByteArrayOutputStream;
 import java.net.SocketException;
 import java.util.TimeZone;
 
@@ -190,9 +192,15 @@ public class VideoSocket extends CommunicationSocket {
                     byte[] b = dataframe.getBuffer();
 
                     Bitmap bmp = BitmapFactory.decodeByteArray(b, 0, b.length);
-                    Message completeMessage = handler.obtainMessage(1000, bmp);
-                    //completeMessage.sendToTarget();
-                    completeMessage.sendToTarget();
+                    // // CMS TODO: on single player
+                    // Log.e("GOND", "Native send frame 1 " );
+                    // if (true) {
+                    //     Log.e("GOND", "Native send frame 1 - a" );
+                        this.sendFrameBuffer(bmp , header.sourceIndex);
+                    // } else {
+                    //     Message completeMessage = handler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER, bmp);
+                    //     completeMessage.sendToTarget();
+                    // }
                 }catch (Exception ex){
                     //Log.d("bug","bug ");
                 }
@@ -222,9 +230,15 @@ public class VideoSocket extends CommunicationSocket {
                         Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                         boolean result = ffmpeg.naDecodeImage(bmp, width, height, dataframe.getBuffer(), header.sourceIndex, false, header.index, false);
                         if( result == true) {
-                            Message completeMessage = handler.obtainMessage(1000, bmp);
-                            //completeMessage.sendToTarget();
-                            completeMessage.sendToTarget();
+                            // CMS TODO: on single player
+                            // Log.e("GOND", "Native send frame 2" );
+                            // if (true) {
+                            //     Log.e("GOND", "Native send frame 2 - a" );
+                                this.sendFrameBuffer(bmp , header.sourceIndex);
+                            // } else {
+                            //     Message completeMessage = handler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER, bmp);
+                            //     completeMessage.sendToTarget();
+                            // }
                         }
                     }
                     catch (Exception drex){}
@@ -234,9 +248,15 @@ public class VideoSocket extends CommunicationSocket {
                     byte[]b = dataframe.getBuffer();
 
                     Bitmap bmp = BitmapFactory.decodeByteArray(b, 0, b.length);
-                    Message completeMessage = handler.obtainMessage(1000, bmp);
-                    //completeMessage.sendToTarget();
-                    completeMessage.sendToTarget();
+                    // CMS TODO: on single player
+                    // Log.e("GOND", "Native send frame 3" );
+                    // if (true) {
+                    //     Log.e("GOND", "Native send frame 3 - a" );
+                        this.sendFrameBuffer(bmp , header.sourceIndex);
+                    // } else {
+                    //     Message completeMessage = handler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER, bmp);
+                    //     completeMessage.sendToTarget();
+                    // }
                 }
                 break;
             }
@@ -251,16 +271,22 @@ public class VideoSocket extends CommunicationSocket {
                         ffmpeg.getArgument(dataframe.getBuffer(), argument);
                         //onFrameTimeEvent(header.time, ServerInfo.getTimeZone().getTimeZone(),last_frame_time);
 
-//                Long time = argument.getTime();
-//                String time_format = SearchTimeData.getTimeDisplayFull( time, super.ServerInfo.getTimeZone().getTimeZone());
-//                System.out.println(time_format);
-//                DateTimeZone forTimeZone = DateTimeZone.forTimeZone( super.ServerInfo.getTimeZone().getTimeZone());
-//                DateTime dt = new DateTime( time * 1000);
-//                super.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME, time_format);
+                        // Long time = argument.getTime();
+                        // String time_format = SearchTimeData.getTimeDisplayFull( time, super.ServerInfo.getTimeZone().getTimeZone());
+                        // System.out.println(time_format);
+                        // DateTimeZone forTimeZone = DateTimeZone.forTimeZone( super.ServerInfo.getTimeZone().getTimeZone());
+                        // DateTime dt = new DateTime( time * 1000);
+                        // super.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME, time_format);
 
-                        Message completeMessage = handler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER, bmp);
-                        //completeMessage.sendToTarget();
-                        completeMessage.sendToTarget();
+                        // CMS TODO: on single player
+                        Log.e("GOND", "Native send frame 4" );
+                        // if (true) {
+                        //     Log.e("GOND", "Native send frame 4 - a" );
+                            this.sendFrameBuffer(bmp , header.sourceIndex);
+                        // } else {
+                        //     Message completeMessage = handler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER, bmp);
+                        //     completeMessage.sendToTarget();
+                        // }
                     }
                 }catch (Exception ex){}
                 break;
@@ -268,6 +294,29 @@ public class VideoSocket extends CommunicationSocket {
         }
 
     }
+
+    void sendFrameBuffer(Bitmap bmp, int channel) {
+        // if (false) {
+            Message completeMessage = handler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER, channel, 0, bmp);
+            completeMessage.sendToTarget();
+        // } else {
+        //     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        //     Bitmap bitmap = bmp;
+        //     Log.e("GOND", "sendFrameBuffer w = " + viewWidth + ", h = " + viewHeight);
+        //     if (viewWidth > 0 && viewHeight > 0) {
+        //         bitmap = Bitmap.createScaledBitmap(bmp, viewWidth, viewHeight, true);
+        //     }
+        //     bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        //     byte[] byteArray = byteArrayOutputStream .toByteArray();
+
+        //     String buffer = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        //     String astr_app = "{\"buffer\":\"%s\",\"channel\":\"%d\"}";
+        //     String res = String.format(astr_app, buffer, channel);
+        //     super.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_JS_FRAME_DATA, "[" + res + "]");
+        // }
+    }
+
     void  onFrameTimeEvent(long time, TimeZone tz, long last_frame_time){
         if( time == last_frame_time)
             return;

@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Base64;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -38,7 +39,7 @@ import org.joda.time.DateTime;
 import org.json.JSONObject;
 
 import java.lang.reflect.Array;
-
+import java.io.ByteArrayOutputStream;
 import javax.annotation.Nullable;
 
 import i3.mobile.base.Constant;
@@ -58,6 +59,7 @@ public class FFMpegFrameView extends View {
     double _width = 0;
     double _height = 0;
     boolean firstRunAlarm;
+    boolean singlePlayer = false;
     int index = 0;
     Paint mPaint = null;
     Bitmap DrawBitmap = null;
@@ -233,25 +235,31 @@ public class FFMpegFrameView extends View {
 //                if(msg.what == 1000) {
 //                    UpdateFrame( (Bitmap) msg.obj );
 //                }
-                HandlerMessage(msg.what, msg.obj);
+                HandlerMessage(msg.what, msg.obj, msg.arg1);
                 super.handleMessage(msg);
             }
         };
     }
-    private void HandlerMessage( int msgId, Object data)
+    private void HandlerMessage( int msgId, Object data, int channel)
     {
         switch (msgId)
         {
             case Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER:
-                UpdateFrame( (Bitmap) data );
+                UpdateFrame( (Bitmap) data, channel );
                 break;
             default:
-                OnEvent(msgId, data);
+                OnEvent(msgId, data, channel);
                 break;
 
         }
     }
+
     private  void  OnEvent( int msgid, Object value)
+    {
+        OnEvent(msgid, value, -1);
+    }
+
+    private  void  OnEvent( int msgid, Object value, int channel)
     {
         if( msgid == Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME && valid_first_frame == false)
         {
@@ -260,6 +268,7 @@ public class FFMpegFrameView extends View {
         try {
             WritableMap event = Arguments.createMap();
             event.putInt("msgid", msgid);
+            event.putInt("channel", channel);
             if(value != null) {
                 if (value instanceof String)
                     event.putString("value", (String) value);
@@ -307,6 +316,7 @@ public class FFMpegFrameView extends View {
     protected void onDraw(Canvas canvas) {
         //canvas.drawColor(Color.TRANSPARENT);
         super.onDraw(canvas);
+        // CMSMobile not draw here
 
         if(DrawBitmap != null)
         {
@@ -334,7 +344,6 @@ public class FFMpegFrameView extends View {
                     }
                 }
             }
-
         }
         else
         {
@@ -470,9 +479,30 @@ public class FFMpegFrameView extends View {
 
     public  void  UpdateFrame(Bitmap bmp)
     {
-        DrawBitmap = bmp;
-        this.invalidate(img_rect);
-        //this.invalidate();
+        UpdateFrame(bmp, -1);
+    }
+
+    public  void  UpdateFrame(Bitmap bmp, int channel)
+    {
+        // TODO: single channel
+        if (this.singlePlayer == true) {
+            DrawBitmap = bmp;
+            this.invalidate(img_rect);
+            // this.invalidate();
+        } else if (bmp != null) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            Bitmap bitmap = bmp;
+            // Log.e("GOND", "UpdateFrame w = " + _width + ", h = " + _height);
+            if (_width > 0 && _height > 0) {
+                // Log.e("GOND", "UpdateFrame scaled bitmap");
+                bitmap = Bitmap.createScaledBitmap(bmp, (int)_width, (int)_height, false);
+            }
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream .toByteArray();
+
+            String buffer = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_JS_FRAME_DATA, buffer, channel);
+        }
     }
 
     public void Refresh(boolean isSearch)
@@ -519,6 +549,7 @@ public class FFMpegFrameView extends View {
             this.Server.setLive(false);
             this.Server.setSearchTime(search);
             socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, true, this.ByChannel);
+            // socket_handler.setViewDimensions(_width, _height);
             socket_handler.setHDMode( HD);
             video_thread = new Thread(socket_handler);
             video_thread.start();
@@ -552,6 +583,7 @@ public class FFMpegFrameView extends View {
         if( video_thread == null || socket_handler == null || socket_handler.running == false) {
             this.Server.setLive(true);
             socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, false, this.ByChannel);
+            // socket_handler.setViewDimensions(_width, _height);
             socket_handler.setHDMode(HD);
             video_thread = new Thread(socket_handler);
             video_thread.start();
@@ -571,6 +603,11 @@ public class FFMpegFrameView extends View {
     public void setFirstRun(boolean firstrun){
         if(firstrun != firstRunAlarm)
             firstRunAlarm = firstrun;
+    }
+
+    public void setSingle(boolean isSingle){
+        if(isSingle != singlePlayer)
+        singlePlayer = isSingle;
     }
 
     public void SeekPOS(int val, boolean HD)

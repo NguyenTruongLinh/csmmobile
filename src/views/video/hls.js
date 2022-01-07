@@ -395,7 +395,7 @@ class HLSStreamingView extends React.Component {
   };
 
   pause = willPause => {
-    // this.setState({paused: willPause == undefined ? true : willPause});
+    this.setState({paused: willPause == undefined ? true : willPause});
   };
 
   playAt = value => {
@@ -421,7 +421,7 @@ class HLSStreamingView extends React.Component {
     } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
-    const {streamUrl, urlParams} = this.state;
+    const {streamUrl, urlParams, paused} = this.state;
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
@@ -469,7 +469,7 @@ class HLSStreamingView extends React.Component {
                   //source={{uri:this.state.url,type:'application/x-mpegURL'}}
                   source={{uri: streamUrl + urlParams, type: 'm3u8'}}
                   // paused={this.state.paused}
-                  paused={singlePlayer ? videoStore.paused : false}
+                  paused={singlePlayer ? videoStore.paused || paused : false}
                   ref={ref => {
                     this.player = ref;
                   }}

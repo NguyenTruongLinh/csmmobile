@@ -494,12 +494,13 @@ public class Constant
 	}
 	public  final  class EnumVideoPlaybackSatus
 	{
-		public final  static int MOBILE_CONNECTTING				= 1;
-		public final  static int MOBILE_CONNECTTED 				= 2;
-		public static final int MOBILE_LOGIN_MESSAGE				= 3;
-		public static final int MOBILE_LOGIN_FAILED				= 4;
-		public static final int MOBILE_LOGIN_SUCCCESS				= 5;
-		public static final int SVR_REJECT_ACCEPT					= 6;
+		public static final int  MOBILE_JS_FRAME_DATA 								= 0;
+		public final  static int MOBILE_CONNECTTING										= 1;
+		public final  static int MOBILE_CONNECTTED 										= 2;
+		public static final int MOBILE_LOGIN_MESSAGE									= 3;
+		public static final int MOBILE_LOGIN_FAILED										= 4;
+		public static final int MOBILE_LOGIN_SUCCCESS									= 5;
+		public static final int SVR_REJECT_ACCEPT											= 6;
 		public static final int MOBILE_LOGIN_MESSAGE_WRONG_SERVERID		= 7;
 		public static final int MOBILE_VIDEO_PORT_ERROR		= 8;
 		public static final int MOBILE_CANNOT_CONNECT_SERVER		= 9;
@@ -517,6 +518,10 @@ public class Constant
 		public static final int  MOBILE_RESPONSE_TIMEINTERVAL = 21;
 		public static final int  MOBILE_RESPONSE_DAYLIGHT = 22;
 		public static final int  MOBILE_RESPONSE_RULES_DST = 23;
+		public static final int  MOBILE_UNKNOWN = 24;
+		public static final int  MOBILE_SERVER_MESSAGE = 25;
+		public static final int  MOBILE_SHOULD_RECONNECT = 26;
+		public static final int  MOBILE_SERVER_DISCONNECTED = 27;
 
 		public static final int MOBILE_FRAME_BUFFER		= 1000;
 		//public static final char WIFI_NOT_SUPPORTED 						= 6;
