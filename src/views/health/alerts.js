@@ -36,6 +36,7 @@ import {No_Image} from '../../consts/images';
 import {Comps as CompTxt} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
 import NoDataView from '../../components/views/NoData';
+import {NonDismissableAlerts} from '../../stores/health';
 
 const ALERTS_GRID_LAYOUT = 2;
 
@@ -222,8 +223,27 @@ class AlertsView extends Component {
   //     no_img: No_Image,
   //   };
   // };
+  renderNormalAlertItem = (item, canDismiss) => {
+    return canDismiss
+      ? this.renderDismissableNormalAlertItem(item)
+      : this.renderUndismissableNormalAlertItem(item);
+  };
+  renderDismissableNormalAlertItem = item => {
+    return (
+      <SwipeRow
+        onRowOpen={() => this.onRowOpen(item)}
+        ref={r => (this.rowRefs[item.id] = r)}
+        closeOnRowPress={true}
+        disableRightSwipe={true}
+        swipeToOpenPercent={10}
+        rightOpenValue={-55}>
+        {this.renderBackItem(item)}
+        {this.renderUndismissableNormalAlertItem(item)}
+      </SwipeRow>
+    );
+  };
 
-  renderNormalAlertItem = item => {
+  renderUndismissableNormalAlertItem = item => {
     return (
       <CMSRipple style={styles.alertRipple} underlayColor={CMSColors.Underlay}>
         <View style={styles.alertContainer}>
@@ -414,7 +434,9 @@ class AlertsView extends Component {
     const {healthStore} = this.props;
     const {selectedAlertTypeId} = healthStore;
     const {isListView} = this.state;
-
+    const canDismiss =
+      healthStore.selectedAlertType &&
+      !NonDismissableAlerts.includes(healthStore.selectedAlertType.alertId);
     switch (selectedAlertTypeId) {
       case AlertTypes.DVR_Video_Loss:
       case AlertTypes.DVR_Sensor_Triggered: // removed
@@ -427,7 +449,7 @@ class AlertsView extends Component {
       case AlertTypes.CMSWEB_POS_data_missing:
       // return this.renderNormalAlertItem(item);
       default:
-        return this.renderNormalAlertItem(item);
+        return this.renderNormalAlertItem(item, canDismiss);
     }
   };
 

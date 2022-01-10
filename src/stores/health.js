@@ -16,7 +16,7 @@ import {No_Image} from '../consts/images';
 import ROUTERS from '../consts/routes';
 import {DateTime} from 'luxon';
 
-const NonDismissableAlerts = [
+export const NonDismissableAlerts = [
   AlertTypes.DVR_is_off_line,
   AlertTypes.DVR_Record_Less_Than,
   AlertTypes.CMSWEB_POS_data_missing,
