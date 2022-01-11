@@ -134,7 +134,7 @@ class ExceptionsView extends Component {
 
   onFilter = value => {
     const {exceptionStore} = this.props;
-    exceptionStore.setExceptionFilter(value);
+    exceptionStore.setTransactionFilter(value);
   };
 
   onLoadMore = pullDistance => {

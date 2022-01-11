@@ -593,9 +593,11 @@ export const POSModel = types
     get filteredTransactions() {
       return self.transactionFilter.length == 0
         ? self.transactionsList
-        : transactionsList.filter(trans => {
+        : self.transactionsList.filter(trans => {
             const filterStr = self.transactionFilter.toLowerCase();
+
             return (
+              ('' + trans.tranNo).toLowerCase().includes(filterStr) ||
               trans.camName.toLowerCase().includes(filterStr) ||
               trans.shiftName.toLowerCase().includes(filterStr) ||
               trans.checkName.toLowerCase().includes(filterStr) ||
@@ -666,8 +668,8 @@ export const POSModel = types
     setGroupFilter(value) {
       self.groupFilter = value;
     },
-    setExceptionFilter(value) {
-      self.exceptionFilter = value;
+    setTransactionFilter(value) {
+      self.transactionFilter = value;
     },
     setSortField(value) {
       if (value < 0 || value >= ExceptionSortField.Count) {
