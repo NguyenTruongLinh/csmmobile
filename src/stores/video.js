@@ -1081,7 +1081,12 @@ export const VideoModel = types
       },
       updateDirectFrame(channel, frameData) {
         const target = self.directStreams.find(s => s.videoSource == channel);
-        if (target) target.updateFrame(frameData);
+
+        if (target) {
+          // __DEV__ &&
+          //   console.log('GOND update directFrame channel: ', target.channelNo);
+          target.updateFrame(frameData);
+        }
       },
       // #endregion setters
       // #region Build data

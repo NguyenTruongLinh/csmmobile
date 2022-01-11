@@ -1490,8 +1490,9 @@
       {
         // NSLog(@"GOND postVidFrame 2 found %d", videoSourceIndex);
         DisplayedVideoFrame* videoFrame = [[DisplayedVideoFrame alloc] init];
-        
+        // NSLog(@"GOND postVideoFrame channelIndex = %d", setting.channelID);
         videoFrame.channelIndex    = setting.channelID;
+        videoFrame.sourceIndex      = videoSourceIndex;
         videoFrame.cameraName       = setting.channelName;
         videoFrame.videoFrame       = frame.image;
         videoFrame.serverAddress    = serverInfo.server_address;
@@ -1518,6 +1519,8 @@
     DisplayedVideoFrame* videoFrame = [[DisplayedVideoFrame alloc] init];
     
     videoFrame.channelIndex     = videoSourceIndex;
+    videoFrame.sourceIndex      = videoSourceIndex;
+    // NSLog(@"GOND postVideoFrame 2 channelIndex = %d", videoSourceIndex);
     videoFrame.cameraName       =  @"IMC Search Channel";;
     videoFrame.videoFrame       = frame.image;
     videoFrame.serverAddress    = serverInfo.server_address;
@@ -1635,6 +1638,7 @@
     {
       //Call decode function to decode received frame
       int videoSourceIndex = newFrame.header.sourceIndex;
+      // NSLog(@"GOND postEncodedFrame videoSourceIndex = %d", videoSourceIndex);
       for(int index = 0; index < MAX_CHANNEL; index++ )
       {
         ChannelSetting* setting = (ChannelSetting*)[self.deviceSetting channelConfigAtIndex:index];
@@ -1644,6 +1648,8 @@
           {
             newFrame.videoFrameInfo = [[DisplayedVideoFrame alloc] init];
             newFrame.videoFrameInfo.channelIndex    = setting.channelID;
+            newFrame.videoFrameInfo.sourceIndex    = videoSourceIndex;
+            // NSLog(@"GOND postEncodedFrame channelIndex = %d", setting.channelID);
             newFrame.videoFrameInfo.cameraName       = setting.channelName;
             newFrame.videoFrameInfo.videoFrame       = nil;
             newFrame.videoFrameInfo.serverAddress    = serverInfo.server_address;

@@ -337,7 +337,7 @@
 
 @implementation DisplayedVideoFrame
 
-@synthesize frameTime,channelIndex,videoFrame,cameraName,serverAddress,serverPort, frameRate, resolutionHeight, resolutionWidth, timeOffset, frameIndex, codecId, frameMode,subMainStream;
+@synthesize frameTime,channelIndex,sourceIndex,videoFrame,cameraName,serverAddress,serverPort, frameRate, resolutionHeight, resolutionWidth, timeOffset, frameIndex, codecId, frameMode,subMainStream;
 
 -(id)init
 {
@@ -346,6 +346,7 @@
   {
     frameTime = nil;
     channelIndex = -1;
+    sourceIndex = -1;
     videoFrame = nil;
     cameraName = @"";
     serverAddress = @"";

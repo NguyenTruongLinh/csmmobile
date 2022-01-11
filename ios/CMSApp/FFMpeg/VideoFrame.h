@@ -100,6 +100,7 @@ typedef enum
   NSString* serverAddress;
   NSInteger serverPort;
   NSInteger channelIndex;
+  NSInteger sourceIndex;
   NSString* cameraName;
   NSDate* frameTime;
   UIImage* videoFrame;
@@ -108,6 +109,7 @@ typedef enum
 @property (retain) NSString* serverAddress;
 @property (readwrite) NSInteger serverPort;
 @property (readwrite) NSInteger channelIndex;
+@property (readwrite) NSInteger sourceIndex;
 @property (retain) NSString* cameraName;
 @property (retain) NSDate* frameTime;
 @property (nonatomic, strong) UIImage* videoFrame;

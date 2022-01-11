@@ -428,7 +428,7 @@ class DirectVideoView extends React.Component {
   onNativeMessage = event => {
     let {msgid, value, channel} = event; //.nativeEvent;
     // __DEV__ &&
-    //   console.log('GOND onFFMpegFrameChange event = ', event.nativeEvent);
+    // console.log('GOND onFFMpegFrameChange event = ', event.nativeEvent);
     if (util.isNullOrUndef(msgid) && util.isNullOrUndef(value)) {
       if (event.nativeEvent) {
         msgid = event.nativeEvent.msgid;
@@ -1029,14 +1029,8 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      serverInfo,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
+      this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
@@ -1101,8 +1095,8 @@ class DirectVideoView extends React.Component {
       <View style={{width: 0, height: 0}}>
         {Platform.OS === 'ios' ? (
           <FFMpegFrameViewIOS
-            width={0} // {this.state.width}
-            height={0} // {this.state.height}
+            width={width} // {this.state.width}
+            height={height} // {this.state.height}
             ref={this.onReceivePlayerRef}
             onFFMPegFrameChange={this.onNativeMessage}
           />

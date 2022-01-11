@@ -148,7 +148,8 @@
                     {
                         NSInteger frameChannelIndex = encodingFrame.videoFrameInfo.channelIndex;
                         VideoEncodeDataHeader* vedHeader = (VideoEncodeDataHeader*)frameData.bytes;
-                        
+                        // NSLog(@"GOND frameChannelIndex %ld ", frameChannelIndex);
+                      
                         if (vedHeader->array_item[0].size > [frameData length]) {
                             NSLog(@"Invalid Size");
                             continue;
@@ -354,6 +355,8 @@
                                         videoFrame.serverAddress = encodingFrame.videoFrameInfo.serverAddress;
                                         videoFrame.serverPort = encodingFrame.videoFrameInfo.serverPort;
                                         videoFrame.channelIndex = encodingFrame.videoFrameInfo.channelIndex;
+                                        videoFrame.sourceIndex = encodingFrame.videoFrameInfo.sourceIndex;
+//                                        NSLog(@"GOND videoFrame.channelIndex encoding = %ld", videoFrame.channelIndex);
                                         videoFrame.subMainStream = ((FrameHeaderEx*)encodingFrame.header).subMainStream;
                                         if( encodingFrame.videoFrameInfo.frameMode == SNAPSHOT ||
                                             (videoMode == SEARCH_VIDEO &&
@@ -361,6 +364,7 @@
                                             encodingFrame.videoFrameInfo.frameMode == SEARCH_VIEW) )
                                         {
                                             videoFrame.channelIndex = vedHeader->channel_id;
+//                                            NSLog(@"GOND videoFrame.channelIndex = %ld, %hu", videoFrame.channelIndex, vedHeader->channel_id);
                                         }
                                         videoFrame.cameraName = encodingFrame.videoFrameInfo.cameraName;
                                         videoFrame.videoFrame = decodedFrame ;
@@ -424,11 +428,14 @@
                                                 videoFrame.serverAddress = encodingFrame.videoFrameInfo.serverAddress;
                                                 videoFrame.serverPort = encodingFrame.videoFrameInfo.serverPort;
                                                 videoFrame.channelIndex = encodingFrame.videoFrameInfo.channelIndex;
+                                                videoFrame.sourceIndex = encodingFrame.videoFrameInfo.sourceIndex;
+//                                                NSLog(@"GOND videoFrame.channelIndex encoding 2 = %ld", videoFrame.channelIndex);
                                                 videoFrame.subMainStream = ((FrameHeaderEx*)encodingFrame.header).subMainStream;
                                                 if ( encodingFrame.videoFrameInfo.frameMode == SNAPSHOT ||
                                                     (videoMode == SEARCH_VIDEO && encodingFrame.videoFrameInfo.channelIndex == (IMC_MAX_CHANNEL-1)&& encodingFrame.videoFrameInfo.frameMode == SEARCH_VIEW) )
                                                 {
                                                     videoFrame.channelIndex = vedHeader->channel_id;
+//                                                  NSLog(@"GOND videoFrame.channelIndex 2 = %ld, %hu", videoFrame.channelIndex, vedHeader->channel_id);
                                                 }
                                                 videoFrame.cameraName = encodingFrame.videoFrameInfo.cameraName;
                                                 videoFrame.videoFrame = decodedFrame;

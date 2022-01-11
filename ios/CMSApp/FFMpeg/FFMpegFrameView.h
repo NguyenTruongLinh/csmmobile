@@ -106,6 +106,7 @@ typedef enum
 @property(nonatomic, assign) BOOL exit;
 @property(nonatomic, assign) BOOL pause;
 @property(nonatomic, assign) BOOL firstrun;
+@property(nonatomic, assign) BOOL singlePlayer;
 @property(nonatomic, assign) int fullscreen;
 @property(nonatomic, assign) NSDictionary *seekpos;
 @property(nonatomic, assign) NSString *src;

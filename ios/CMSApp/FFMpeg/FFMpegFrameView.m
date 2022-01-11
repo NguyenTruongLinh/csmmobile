@@ -47,6 +47,7 @@ const uint32_t numLayers = 24;
 
 -(NSString* )get_obj:(NSDictionary* )_dic for_key:(NSString* )_key;
 -(NSInteger)verifyserverInfo:(ImcConnectedServer* )newServer;
+- (uint64_t) getChannelMask;
 @end
 
 @implementation FFMpegFrameView : UIView
@@ -56,6 +57,7 @@ const uint32_t numLayers = 24;
   NSNumber* _w;
   NSNumber* _h;
   NSString* _channels;
+  NSArray* channelList;
   BOOL _byChannel;
   BOOL _isSeacrh;
   BOOL _isFullScreen;
@@ -70,6 +72,7 @@ const uint32_t numLayers = 24;
   float RATIO;
   int mLastRotation;
   UIDeviceOrientation oldDeviceInterfaceHandel;
+  BOOL _isSingle;
   
   //sending progressvideo event
   NSDate *_prevProgressUpdateTime;
@@ -88,7 +91,7 @@ const uint32_t numLayers = 24;
     zoomLevel = ZOOM_LEVEL_24H;
     channelsMapping = [NSMutableArray array];
     mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
-    mainDisplayVideo.fullscreenView = 0;
+    // mainDisplayVideo.fullscreenView = 0;
     connectedServerList = [[NSMutableArray alloc] init];
     viewMaskLock = [[NSCondition alloc] init];
     channelsSearchDictionary = [NSMutableDictionary dictionary];
@@ -160,6 +163,7 @@ const uint32_t numLayers = 24;
 
 - (void)setChannels:(NSString *)value{
   _channels = value;
+  channelList = [_channels componentsSeparatedByString:@","];
 }
 
 -(void)setByChannel:(BOOL)value{
@@ -266,6 +270,13 @@ const uint32_t numLayers = 24;
   NSLog(@"firstrun: %@",firstrun ? @"YES" : @"NO");
   if(firstRunAlarm != firstrun){
     firstRunAlarm = firstrun;
+  }
+}
+
+-(void)setSinglePlayer:(BOOL)singlePlayer{
+  NSLog(@"singlePlayer: %@",singlePlayer ? @"YES" : @"NO");
+  if(_isSingle != singlePlayer){
+    _isSingle = singlePlayer;
   }
 }
 
@@ -910,7 +921,7 @@ const uint32_t numLayers = 24;
       
       for( ImcConnectedServer* server in connectedServerList )
       {
-        uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
+        uint64_t displayChannelMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
         NSInteger fullscreenChannel = [self.mainDisplayVideo fullscreenChannelForServer:server.server_address andPort:server.server_port];
         [controllerThread updateFullscreenChannel: server.server_address :server.server_port :fullscreenChannel];
         [controllerThread updateServerDisplayMask:server.server_address :server.server_port :displayChannelMask];
@@ -950,7 +961,7 @@ const uint32_t numLayers = 24;
           
           if (connectedServerList.count == 0 && self.mainDisplayVideo.fullscreenView != -1)
           {
-            self.mainDisplayVideo.fullscreenView = 0; // -1;
+            self.mainDisplayVideo.fullscreenView = -1; // 0;
             NSLog(@"============== GOND -1 msgDisconnect");
           }
           
@@ -1026,7 +1037,7 @@ const uint32_t numLayers = 24;
       for( ImcConnectedServer* server in connectedServerList )
       {
         if ([server.server_address isEqualToString:(NSString*)responseData]) {
-          uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
+          uint64_t displayChannelMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
           NSInteger fullscreenChannel = [self.mainDisplayVideo fullscreenChannelForServer:server.server_address andPort:server.server_port];
           
           [controllerThread updateMainSubStream:server.server_address :server.server_port :fullscreenChannel];
@@ -1052,7 +1063,7 @@ const uint32_t numLayers = 24;
             
             if ([server.server_address isEqualToString:(NSString*)responseData])
             {
-              uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
+              uint64_t displayChannelMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
               
               [controllerThread updateFullscreenChannel: server.server_address :server.server_port :-1];
               [controllerThread updateMainSubStream:server.server_address :server.server_port :-1];
@@ -1072,7 +1083,7 @@ const uint32_t numLayers = 24;
       [controllerThread updateLayout:self.mainDisplayVideo.currentDiv];
       for( ImcConnectedServer* server in connectedServerList )
       {
-        uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
+        uint64_t displayChannelMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
         [controllerThread updateServerDisplayMask:server.server_address :server.server_port :displayChannelMask];
       }
     }
@@ -1397,7 +1408,7 @@ const uint32_t numLayers = 24;
       
       [controllerThread updateMainSubStream:screen.serverAddress :screen.serverPort :screen.channelIndex];
       
-      uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:screen.serverAddress andPort:screen.serverPort];
+      uint64_t displayChannelMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:screen.serverAddress andPort:screen.serverPort];
       
       decoderThread.needToResetDecoderForChannelIndex = screen.channelIndex;
       
@@ -1896,13 +1907,21 @@ const uint32_t numLayers = 24;
       else
         [self.mainDisplayVideo updateDisplayChannel:newChannelMapping];
       
+      NSUInteger index = 0;
+//      NSArray* channelList = [_channels componentsSeparatedByString:@","];
       for (ImcScreenDisplay* screen in  [self.mainDisplayVideo getDisplayScreens]) {
         if([screen.serverAddress isEqualToString:updatedServer.server_address] &&
-           (screen.serverPort == updatedServer.server_port) )
-          screen.channelIndex = [_channels intValue];
+           (screen.serverPort == updatedServer.server_port) && index < channelList.count)
+//          screen.channelIndex = [_channels intValue];
+          screen.channelIndex = [[channelList objectAtIndex:index] intValue];
       }
       
-      uint64_t channelDisplayMask = [self.mainDisplayVideo getDisplayChannelForServer:updatedServer.server_address andPort:updatedServer.server_port];
+      uint64_t channelDisplayMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:updatedServer.server_address andPort:updatedServer.server_port];
+//      for(NSString* ch in channelList)
+//      {
+//        channelDisplayMask |= ((uint64_t)0x01<<[ch intValue]);
+//      }
+      
       CGSize smallSize,largeSize;
 
       [self.mainDisplayVideo getDisplaySize:&smallSize :&largeSize];
@@ -1929,7 +1948,7 @@ const uint32_t numLayers = 24;
           //Check Permission
           [self responseCheckPermission:server];
           
-          uint64_t channelDisplayMask = [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
+          uint64_t channelDisplayMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
           
           [controllerThread updateServerDisplayMask:server.server_address :server.server_port :channelDisplayMask];
           
@@ -2455,7 +2474,7 @@ const uint32_t numLayers = 24;
             //            [liveViewController changeSubToMainStreamStatus];
             [controllerThread updateMainSubStreamResponse:YES];
             
-            uint64_t displayChannelMask = [self.mainDisplayVideo getDisplayChannelForServer:screen.serverAddress andPort:screen.serverPort];
+            uint64_t displayChannelMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:screen.serverAddress andPort:screen.serverPort];
             [controllerThread updateServerDisplayMask:screen.serverAddress :screen.serverPort :displayChannelMask];
           }
         }
@@ -2921,14 +2940,32 @@ const uint32_t numLayers = 24;
   }
 }
 
+
+
 -(void)addVideoFrame:(id)videoFrame
 {
   DisplayedVideoFrame* displayFrame = (DisplayedVideoFrame*)videoFrame;
   
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [mainDisplayVideo addVideoFrame:displayFrame];
-  });
+  if (_isSingle)
+  {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [mainDisplayVideo addVideoFrame:displayFrame];
+    });
+  }
+  else
+  {
+    // send base64 frame to JS
+    NSString* encodedFrame = [UIImagePNGRepresentation(displayFrame.videoFrame) base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+    // NSLog(@"GOND send base64 frame to JS, channel %ld", (long)displayFrame.channelIndex);
+    [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+      @"msgid": [NSNumber numberWithUnsignedInteger: 0],
+      @"value": [NSString stringWithString: encodedFrame],
+      @"channel": [NSNumber numberWithInteger: displayFrame.sourceIndex],
+      @"target": self.reactTag
+      }];
+  }
   
+  /*
   if (mainDisplayVideo.fullscreenView >= 0 && mainDisplayVideo.fullscreenView < [mainDisplayVideo getDisplayView].count)
   {
     ImcViewDisplay* view = [[mainDisplayVideo getDisplayView] objectAtIndex:mainDisplayVideo.fullscreenView];
@@ -2944,6 +2981,7 @@ const uint32_t numLayers = 24;
       //[self showMainSubBtnIfNeeded];
     }
   }
+  */
   
   for (ImcScreenDisplay* screen in [mainDisplayVideo getDisplayScreens])
   {
@@ -2973,6 +3011,7 @@ const uint32_t numLayers = 24;
         NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, m_channel];
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
         
+        // NSLog(@"GOND send time frame to JS %@", str_min);
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                                 @"msgid": [NSNumber numberWithUnsignedInteger:13],
                                                                                 @"value": [NSString stringWithString: res],
@@ -3207,6 +3246,19 @@ const uint32_t numLayers = 24;
   }
   
   return 0;
+}
+
+- (uint64_t) getChannelMask
+{
+  if (_isSingle) {
+    return (uint64_t)0x01;
+  }
+  uint64_t channelDisplayMask = 0;
+  for(NSString* ch in channelList)
+  {
+    channelDisplayMask |= ((uint64_t)0x01<<[ch intValue]);
+  }
+  return channelDisplayMask;
 }
 
 @end

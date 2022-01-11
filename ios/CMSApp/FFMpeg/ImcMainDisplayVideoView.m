@@ -133,8 +133,6 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     displayScreens = [[NSArray alloc] initWithObjects:screens count:IMC_MAX_DISPLAY_SCREEN];
     
     currentDiv = IMC_DIV_1;
-//    fullscreenView = 0; // -1;
-//    fullscreenIndex = 0; // -1;
     fullscreenView = -1;
     fullscreenIndex = -1;
     touchedViewIndex = -1;
@@ -155,9 +153,9 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 
 - (void) initDisplayRectwithDiv:(IMC_DIVISION_MODE)div
 {
-  IMC_DIVISION_MODE maxDivSupport = 1; // IMC_DIV_64;
-  // if( isIphone )
-  //   maxDivSupport = IMC_DIV_16;
+  IMC_DIVISION_MODE maxDivSupport = IMC_DIV_64;
+  if( isIphone )
+    maxDivSupport = IMC_DIV_16;
   if( div > maxDivSupport )
     div = maxDivSupport;
   float stepWidth = frame.size.width/div;
@@ -214,9 +212,9 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 
 -(void) updateDivision:(IMC_DIVISION_MODE)div
 {
-  IMC_DIVISION_MODE maxDivSupport = 1; //IMC_DIV_64;
-  // if( isIphone )
-  //   maxDivSupport = IMC_DIV_16;
+  IMC_DIVISION_MODE maxDivSupport = IMC_DIV_64;
+  if( isIphone )
+    maxDivSupport = IMC_DIV_16;
   
   if( div > maxDivSupport )
     return;
@@ -292,11 +290,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   //@autoreleasepool
   {
-    
-    
     //[videoLock lock];
     DisplayedVideoFrame* displayFrame = (DisplayedVideoFrame*)videoFrame;
-    
     
     if( fullscreenView >= 0 )
     {
@@ -1230,8 +1225,6 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       }
       else
       {
-//        fullscreenView = 0; // -1;
-//        fullscreenIndex = 0; // -1;
         fullscreenIndex = -1;
         fullscreenView = -1;
         NSLog(@"============== GOND -1 onDoubleTap 1");
@@ -1263,8 +1256,6 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     }
     
     currentFullScreen.showPtzIcon = YES;
-//    fullscreenView = 0; // -1;
-//    fullscreenIndex = 0; // -1;
     fullscreenView = -1;
     fullscreenIndex = -1;
     NSLog(@"============== GOND -1 onDoubleTap 2");
@@ -1291,8 +1282,6 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     ImcScreenDisplay* currentFullScreen = [displayScreens objectAtIndex:currentFullScreenView.screenIndex];
     currentFullScreen.showPtzIcon = YES;
     
-//    fullscreenView = 0; // -1;
-//    fullscreenIndex = 0; // -1;
     fullscreenView = -1;
     fullscreenIndex = -1;
     NSLog(@"============== GOND -1 exitFullscreenMode");
@@ -1710,11 +1699,14 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
   }
   else
   {
-    for( int index = 0; index < currentDiv*currentDiv; index++ )
+    // TODO: CMS modified, optimize only viewable channels
+//    for( int index = 0; index < currentDiv*currentDiv; index++ )
+    for( int index = 0; index < displayScreens.count; index++ )
     {
-      ImcViewDisplay* viewDisplay = [displayViews objectAtIndex:index];
-      ImcScreenDisplay* screenDisplay = [displayScreens objectAtIndex:viewDisplay.screenIndex];
-      if( [screenDisplay.serverAddress isEqualToString:serverAddress] && screenDisplay.serverPort == serverPort && screenDisplay.channelIndex >= 0 )
+//      ImcViewDisplay* viewDisplay = [displayViews objectAtIndex:index];
+//      ImcScreenDisplay* screenDisplay = [displayScreens objectAtIndex:viewDisplay.screenIndex];
+      ImcScreenDisplay* screenDisplay = [displayScreens objectAtIndex:index];
+      if( /*[screenDisplay.serverAddress isEqualToString:serverAddress] && screenDisplay.serverPort == serverPort &&*/ screenDisplay.channelIndex >= 0 )
         displayChannelMask |= ((uint64_t)0x01<<screenDisplay.channelIndex);
     }
   }
@@ -1909,8 +1901,6 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
         if( displayScreen.enablePtz )
           [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
         
-//        fullscreenView = 0; // -1;
-//        fullscreenIndex = 0; // -1;
         fullscreenView = -1;
         fullscreenIndex = -1;
         NSLog(@"============== GOND -1 removeScreenForServer");

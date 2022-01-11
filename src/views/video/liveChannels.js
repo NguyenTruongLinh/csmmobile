@@ -78,6 +78,7 @@ class LiveChannelsView extends React.Component {
     this._isMounted = false;
     this.playerRefs = [];
     this.firstFocus = true;
+    this.directViewList = [];
     // this.viewableList = [];
     // this.showAllTimeout = null;
     // this.didFilter = false;
@@ -136,9 +137,14 @@ class LiveChannelsView extends React.Component {
     reaction(
       () => videoStore.videoData,
       videoList => {
-        if (videoList && videoList.length > 0)
-          this.playerRefs = videoList.map(() => null);
-        else this.playerRefs = [];
+        if (videoList && videoList.length > 0) {
+          if (
+            videoStore.cloudType == CLOUD_TYPE.HLS ||
+            videoStore.cloudType == CLOUD_TYPE.RTC
+          )
+            this.playerRefs = videoList.map(() => null);
+          else this.directViewList = videoList.map(() => null);
+        } else this.playerRefs = [];
       }
     );
 
@@ -287,7 +293,7 @@ class LiveChannelsView extends React.Component {
   };
 
   onVideosViewableChanged = ({changed, viewableItems}) => {
-    return;
+    // return;
     const {gridLayout, cloudType} = this.props.videoStore;
     __DEV__ &&
       console.log('GOND onVideosViewableChanged: ', changed, viewableItems);
@@ -313,25 +319,28 @@ class LiveChannelsView extends React.Component {
         maxIndex
       );
 
-    this.playerRefs.forEach((p, index) => {
+    this.directViewList.forEach((p, index) => {
+      if (!p) return;
       if (index < minIndex - gridLayout || index > maxIndex + gridLayout) {
         __DEV__ &&
           console.log('GOND onVideosViewableChanged outbound index: ', index);
-        if (p.isPlaying) {
-          p.setViewable(false);
-          p.stop();
-          __DEV__ &&
-            console.log('GOND onVideosViewableChanged outbound stopped!');
-        }
+        p.setViewable(false);
+        // if (p.isPlaying) {
+        //   p.setViewable(false);
+        //   p.stop();
+        //   __DEV__ &&
+        //     console.log('GOND onVideosViewableChanged outbound stopped!');
+        // }
       } else {
         __DEV__ &&
           console.log('GOND onVideosViewableChanged inbound index: ', index);
-        if (!p.isPlaying) {
-          p.setViewable(true);
-          p.play();
-          __DEV__ &&
-            console.log('GOND onVideosViewableChanged inbound started!');
-        }
+        p.setViewable(true);
+        // if (!p.isPlaying) {
+        //   p.setViewable(true);
+        //   p.play();
+        //   __DEV__ &&
+        //     console.log('GOND onVideosViewableChanged inbound started!');
+        // }
       }
     });
 
@@ -554,7 +563,7 @@ class LiveChannelsView extends React.Component {
             // username={videoStore.nvrUser}
             // password={videoStore.nvrPassword}
             // ref={ref => this.playerRefs.push(ref)}
-            // ref={ref => (this.playerRefs[index] = ref)}
+            ref={ref => (this.directViewList[index] = ref)}
           />
         );
         break;
@@ -622,7 +631,7 @@ class LiveChannelsView extends React.Component {
     const {appStore, videoStore, navigation} = this.props;
     //  __DEV__ &&
     // console.log('GOND channels render data = ', videoStore.videoData);
-    this.playerRefs = [];
+    // this.playerRefs = [];
 
     return (
       <View style={styles.screenContainer}>

@@ -57,17 +57,21 @@ class DirectChannelView extends React.Component {
     // should set search time from alert/exception
     this.reactions = [];
     this.isPlaying = false;
+    this.isViewable = false;
   }
 
   componentDidMount() {
     this._isMounted = true;
-    __DEV__ &&
-      console.log(
-        'DirectStreamingView componentDidMount , islive:',
-        this.props.serverInfo
-      );
-    const {serverInfo, index, singlePlayer, videoStore} = this.props;
+    __DEV__ && console.log('DirectChannelView componentDidMount');
+    const {index, singlePlayer, videoStore} = this.props;
 
+    const renderLimit = videoStore.gridLayout * (videoStore.gridLayout + 1);
+    __DEV__ &&
+      console.log('DirectStreamingView renderLimit: ', renderLimit, index);
+
+    if (singlePlayer || index < renderLimit) {
+      this.isViewable = true;
+    }
     // reactions:
     this.initReactions();
   }
@@ -124,11 +128,16 @@ class DirectChannelView extends React.Component {
     }, 100);
   };
 
+  setViewable = isViewable => {
+    this.isViewable = isViewable;
+  };
+
   render() {
     const {width, height, serverInfo, noVideo, videoStore} = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     const {nextFrame} = this.state;
+    // if (!this.isViewable) return <View />;
     // __DEV__ &&
     //   console.log('GOND direct render channel: ', serverInfo.channelName);
 
@@ -147,8 +156,8 @@ class DirectChannelView extends React.Component {
             width: width,
             height: height,
           }}
-          width="100%"
-          height="100%"
+          // width="100%"
+          // height="100%"
           resizeMode="cover">
           <Text
             style={[
