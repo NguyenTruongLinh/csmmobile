@@ -821,6 +821,7 @@ export const POSModel = types
             ...self.filterParams.requestParams,
             sites: _employee.siteKey,
             groupby: GroupByException.EMPL,
+            psize: 20,
             page,
           }
         );

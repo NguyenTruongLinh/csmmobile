@@ -142,6 +142,8 @@ class ExceptionsView extends Component {
 
     if (!exceptionStore.isLoading && exceptionStore.hasMore) {
       this.currentPage++;
+      __DEV__ &&
+        console.log(`onLoadMore this.currentPage = `, this.currentPage);
       exceptionStore.getEmployeeTransactions(
         exceptionStore.selectedEmployee,
         this.currentPage
@@ -233,22 +235,29 @@ class ExceptionsView extends Component {
         }}
         underlayColor={CMSColors.Underlay}
         style={[styles.gridItemContainer, {padding: itemPadding}]}>
-        <CMSImage
-          id={'grid_' + DateTime.now().toMillis()}
-          src={item.image ? item.image : undefined}
-          styleImage={[
-            styles.alertThumbGrid,
-            {width: itemWidth, height: Math.floor((itemWidth * 9) / 16)},
-          ]}
-          styles={styles.gridSnapshot}
-          twoStepsLoading={true}
-          dataCompleteHandler={(param, image) => {
-            if (image) {
-              item.saveImage(image);
-            }
-          }}
-          domain={this.props.exceptionStore.getTransactionSnapShot(item)}
-        />
+        <View
+          style={{
+            width: itemWidth,
+            height: Math.floor((itemWidth * 9) / 16),
+            backgroundColor: CMSColors.DividerColor24_HEX,
+          }}>
+          <CMSImage
+            id={'grid_' + DateTime.now().toMillis()}
+            src={item.image ? item.image : undefined}
+            styleImage={[
+              styles.alertThumbGrid,
+              {width: itemWidth, height: Math.floor((itemWidth * 9) / 16)},
+            ]}
+            styles={styles.gridSnapshot}
+            twoStepsLoading={true}
+            dataCompleteHandler={(param, image) => {
+              if (image) {
+                item.saveImage(image);
+              }
+            }}
+            domain={this.props.exceptionStore.getTransactionSnapShot(item)}
+          />
+        </View>
         <View style={styles.gridInfoContainer}>
           <View style={styles.gridInfoLeft}>
             <Text style={styles.transNoText}>#{item.tranNo}</Text>
