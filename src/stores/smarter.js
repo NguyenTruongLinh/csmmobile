@@ -140,9 +140,9 @@ const parseExceptionGroup = _data => {
     pageSize: _data.PageSize,
     data:
       _data.Data && Array.isArray(_data.Data)
-        ? _data.Data.map(_ex => parseSiteException(_ex)).sort(
-            (x, y) => y.totalRiskFactors - x.totalRiskFactors
-          )
+        ? _data.Data.map(_ex => parseSiteException(_ex)).sort((x, y) => {
+            return y.riskFactor - x.riskFactor;
+          })
         : [],
   });
 };
