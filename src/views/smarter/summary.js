@@ -455,18 +455,22 @@ class DashboardView extends React.Component {
             iconPosition="right"
           />
         </View>
-        <Accordion
-          activeSections={[this.state.activeGroup]}
-          style={{}}
-          sections={exceptionStore.filteredGroupsData}
-          renderHeader={this.renderGroupHeader}
-          renderContent={this.renderGroupContent}
-          renderAsFlatList={true}
-          onChange={this.onSelectGroup}
-          touchableComponent={props => (
-            <CMSRipple {...props} rippleOpacity={0.87} delayTime={0} />
-          )}
-        />
+        {exceptionStore.filteredGroupsData.length == 0 ? (
+          <NoDataView isLoading={false} style={{flex: 1}}></NoDataView>
+        ) : (
+          <Accordion
+            activeSections={[this.state.activeGroup]}
+            style={{}}
+            sections={exceptionStore.filteredGroupsData}
+            renderHeader={this.renderGroupHeader}
+            renderContent={this.renderGroupContent}
+            renderAsFlatList={true}
+            onChange={this.onSelectGroup}
+            touchableComponent={props => (
+              <CMSRipple {...props} rippleOpacity={0.87} delayTime={0} />
+            )}
+          />
+        )}
         {exceptionStore.filteredGroupsData &&
           exceptionStore.filteredGroupsData.length > 0 && (
             <Text style={styles.dummyBugFixingText}>
