@@ -29,6 +29,8 @@ import {
   Comps as CompTxt,
 } from '../../localization/texts';
 
+import {compareStrings} from '../../util/general';
+
 const FILTER_SECTIONS = {
   CALENDAR: 0,
   SITES: 1,
@@ -352,6 +354,11 @@ export default class ExceptionSearchModal extends Component {
     const {selectedSites, isSortAZ, contentHeight} = this.state;
     const isSelectedAll = this.isSelectAllSites();
 
+    let sortedSites = filteredSites.slice(0, filteredSites.length);
+    sortedSites.sort(
+      (a, b) => (isSortAZ ? 1 : -1) * compareStrings(a.name, b.name)
+    );
+
     return (
       <View style={{backgroundColor: CMSColors.White, height: contentHeight}}>
         <View
@@ -377,7 +384,7 @@ export default class ExceptionSearchModal extends Component {
           <View style={{flex: 1, alignItems: 'flex-end'}}>
             <Button
               style={{}}
-              caption={isSortAZ === true ? 'SORT (A-Z)' : 'SORT (Z-A)'}
+              caption={isSortAZ === true ? 'SORT (Z-A)' : 'SORT (A-Z)'}
               type="flat"
               enable={true}
               onPress={() => this.setState({isSortAZ: !isSortAZ})}
@@ -418,7 +425,7 @@ export default class ExceptionSearchModal extends Component {
           </Ripple>
           <View style={{height: '100%'}}>
             <FlatList
-              data={filteredSites}
+              data={sortedSites}
               keyExtractor={item => 'site_' + item.key}
               renderItem={this.renderSiteItem}
               style={{height: '100%'}}
