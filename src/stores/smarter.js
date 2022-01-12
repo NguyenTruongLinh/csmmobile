@@ -902,9 +902,16 @@ export const POSModel = types
             ? self.notifiedTransaction
             : self.transactionsList.find(t => t.tranId == _transId);
         if (_trans) {
+          const snapShot = getSnapshot(_parseTransactionData(res));
+          __DEV__ &&
+            console.log('GOND getTransaction IF snapShot = ', snapShot);
+          applySnapshot(_trans, snapShot);
+          __DEV__ &&
+            console.log('GOND getTransaction IF res.Details = ', res.Details);
           _trans.addDetails(res.Details);
           resultTrans = _trans;
         } else {
+          __DEV__ && console.log('GOND getTransaction ELSE ');
           self.notifiedTransaction = _parseTransactionData(res);
           resultTrans = self.notifiedTransaction;
         }

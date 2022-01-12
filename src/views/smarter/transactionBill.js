@@ -39,11 +39,11 @@ class TransactionBillView extends Component {
           color: item.color,
         })
       );
-    transaction.total &&
-      paymentData.push({
-        label: SMARTER_TXT.TOTAL,
-        value: transaction.total,
-      });
+    // transaction.total &&
+    paymentData.push({
+      label: SMARTER_TXT.TOTAL,
+      value: transaction.total,
+    });
     transaction.payments &&
       Array.isArray(transaction.payments) &&
       transaction.payments.forEach(item =>
@@ -55,11 +55,11 @@ class TransactionBillView extends Component {
           color: item.color,
         })
       );
-    transaction.changeAmount &&
-      paymentData.push({
-        label: SMARTER_TXT.CHANGE + (transaction.changeAmount > 0 ? 's' : ''),
-        value: transaction.changeAmount,
-      });
+    // transaction.changeAmount &&
+    paymentData.push({
+      label: SMARTER_TXT.CHANGE + (transaction.changeAmount > 0 ? 's' : ''),
+      value: transaction.changeAmount,
+    });
 
     __DEV__ && console.log('GOND TransactionBill paymentData = ', paymentData);
     this.state = {
@@ -93,7 +93,11 @@ class TransactionBillView extends Component {
         <View style={{flex: 8}}>
           <Text style={styles.normalText}>{item.descriptionName}</Text>
         </View>
-        <View style={{flex: 1, alignItems: 'flex-end'}}>
+        <View
+          style={{
+            flex: 2.5,
+            alignItems: 'flex-end',
+          }}>
           <Text style={styles.normalText}>${item.total}</Text>
         </View>
       </View>
