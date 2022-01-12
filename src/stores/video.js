@@ -275,6 +275,7 @@ export const VideoModel = types
     showAuthenModal: types.boolean,
     // isSingleMode: types.boolean,
     // frameTime: types.number,
+    // frameTimeString: types.string,
     searchDate: types.maybeNull(types.frozen()), // luxon DateTime
     searchPlayTime: types.maybeNull(types.string),
     // displayDateTime: types.maybeNull(types.string),
@@ -615,10 +616,9 @@ export const VideoModel = types
       return result;
     },
     get displayDateTime() {
-      return (
-        self.frameTimeString ??
-        self.searchPlayTimeLuxon.toFormat(NVRPlayerConfig.FrameFormat)
-      );
+      return self.frameTimeString && self.frameTimeString.length > 0
+        ? self.frameTimeString
+        : self.searchPlayTimeLuxon.toFormat(NVRPlayerConfig.FrameFormat);
     },
   }))
   .actions(self => {
@@ -759,6 +759,7 @@ export const VideoModel = types
       },
       setDisplayDateTime(value) {
         self.frameTimeString = value;
+        // __DEV__ && console.log('GOND setDisplayDateTime: ', value);
       },
       setSearchDate(value, format) {
         __DEV__ && console.log('GOND setSearchDate ', value);
@@ -1061,7 +1062,7 @@ export const VideoModel = types
         self.frameTime = 0;
         self.searchDate = null;
         self.searchPlayTime = null;
-        self.frameTimeString = null;
+        self.frameTimeString = '';
         self.isLoading = false;
         self.isFullscreen = false;
         self.hdMode = false;
@@ -1086,6 +1087,14 @@ export const VideoModel = types
           // __DEV__ &&
           //   console.log('GOND update directFrame channel: ', target.channelNo);
           target.updateFrame(frameData);
+        } else {
+          __DEV__ &&
+            console.log(
+              'GOND update directFrame channel not found: ',
+              channel,
+              '\n list = ',
+              self.directStreams.map(s => s.videoSource)
+            );
         }
       },
       // #endregion setters
@@ -2373,6 +2382,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
+            self.directStreams.forEach(s => s.updateFrame(null));
             self.directStreams = [];
             break;
           case CLOUD_TYPE.HLS:
@@ -2441,7 +2451,8 @@ const storeDefault = {
   // frameTime: 0,
   searchBegin: null,
   searchEnd: null,
-  frameTimeString: null,
+  frameTime: 0,
+  frameTimeString: '',
   // timezone: null,
   recordingDates: [],
   timeline: [],

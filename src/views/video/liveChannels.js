@@ -295,8 +295,8 @@ class LiveChannelsView extends React.Component {
   onVideosViewableChanged = ({changed, viewableItems}) => {
     // return;
     const {gridLayout, cloudType} = this.props.videoStore;
-    __DEV__ &&
-      console.log('GOND onVideosViewableChanged: ', changed, viewableItems);
+    // __DEV__ &&
+    //   console.log('GOND onVideosViewableChanged: ', changed, viewableItems);
     if (
       cloudType == CLOUD_TYPE.HLS ||
       cloudType == CLOUD_TYPE.RTC ||
@@ -322,8 +322,8 @@ class LiveChannelsView extends React.Component {
     this.directViewList.forEach((p, index) => {
       if (!p) return;
       if (index < minIndex - gridLayout || index > maxIndex + gridLayout) {
-        __DEV__ &&
-          console.log('GOND onVideosViewableChanged outbound index: ', index);
+        // __DEV__ &&
+        //   console.log('GOND onVideosViewableChanged outbound index: ', index);
         p.setViewable(false);
         // if (p.isPlaying) {
         //   p.setViewable(false);
@@ -332,8 +332,8 @@ class LiveChannelsView extends React.Component {
         //     console.log('GOND onVideosViewableChanged outbound stopped!');
         // }
       } else {
-        __DEV__ &&
-          console.log('GOND onVideosViewableChanged inbound index: ', index);
+        // __DEV__ &&
+        //   console.log('GOND onVideosViewableChanged inbound index: ', index);
         p.setViewable(true);
         // if (!p.isPlaying) {
         //   p.setViewable(true);
@@ -343,30 +343,6 @@ class LiveChannelsView extends React.Component {
         // }
       }
     });
-
-    /*
-    changed.forEach(({item, index, isViewable}) => {
-      if (!this.playerRefs || !this.playerRefs[index]) return;
-
-      if (isViewable && !this.playerRefs[index].isPlaying) {
-        this.playerRefs[index].play();
-        __DEV__ &&
-          console.log(
-            'GOND onVideosViewableChanged start ch: ',
-            index,
-            item.channelName
-          );
-      } else if (!isViewable && this.playerRefs[index].isPlaying) {
-        this.playerRefs[index].stop();
-        __DEV__ &&
-          console.log(
-            'GOND onVideosViewableChanged stop ch: ',
-            index,
-            item.channelName
-          );
-      }
-    });
-    */
   };
 
   // pauseAll = value => {

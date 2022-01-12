@@ -681,8 +681,8 @@ class DirectVideoView extends React.Component {
                 this.onFrameTime(valueObj[0]);
               } else
                 console.log('GOND direct frame time not valid: ', valueObj);
-            } catch {
-              console.log('GOND direct frame time not valid: ', valueObj);
+            } catch (err) {
+              console.log('GOND direct frame time not valid: ', err, value);
             }
           }
         }
@@ -900,7 +900,7 @@ class DirectVideoView extends React.Component {
     // }
     __DEV__ && console.log('GOND --- onDisconnect ---');
     // this.setNative({disconnect: endConnection}, true);
-    this.setNative({stop: true}, true);
+    this.setNative(endConnection ? {disconnect: true} : {stop: true}, true);
   };
 
   pause = value => {
@@ -948,6 +948,8 @@ class DirectVideoView extends React.Component {
    */
   playAt = value => {
     // const localValue = value - this.props.videoStore.directTimeDiff;
+    const {isLive} = this.props;
+    if (isLive) return;
     __DEV__ && console.log('GOND direct playAt: ', value);
     if (this.ffmpegPlayer) {
       this.ffmpegPlayer.setNativeProps({
@@ -963,31 +965,35 @@ class DirectVideoView extends React.Component {
   onFrameTime = frameTime => {
     const {videoStore, serverInfo} = this.props;
     const {timestamp, value, channel} = frameTime;
-    if (channel && parseInt(channel) != serverInfo.channelNo) return;
+    if (channel && parseInt(channel) != serverInfo.channelNo) {
+      __DEV__ &&
+        console.log(
+          'GOND onFrameTime wrong channel: ',
+          channel,
+          serverInfo.channelNo
+        );
+      return;
+    }
     this.lastTimestamp = timestamp;
 
     if (value) {
-      const timeString = DateTime.fromFormat(
-        value,
-        NVRPlayerConfig.ResponseTimeFormat
-      ).toFormat(NVRPlayerConfig.FrameFormat);
+      const timeFormat =
+        Platform.OS == 'android'
+          ? NVRPlayerConfig.ResponseTimeFormat
+          : NVRPlayerConfig.RequestTimeFormat;
+      const timeString = DateTime.fromFormat(value, timeFormat).toFormat(
+        NVRPlayerConfig.FrameFormat
+      );
 
       videoStore.setDisplayDateTime(timeString);
 
-      const frameTime = DateTime.fromFormat(
-        value,
-        Platform.OS == 'android'
-          ? NVRPlayerConfig.ResponseTimeFormat
-          : NVRPlayerConfig.RequestTimeFormat,
-        {zone: 'utc'}
-      ).toSeconds();
+      const frameTime = DateTime.fromFormat(value, timeFormat, {zone: 'utc'}); //.toSeconds();
+      __DEV__ && console.log('GOND onFrameTime frameTime: ', frameTime);
 
-      videoStore.setFrameTime(frameTime);
-      this.lastFrameTime = DateTime.fromFormat(
-        value,
-        NVRPlayerConfig.ResponseTimeFormat,
-        {zone: videoStore.timezone}
-      );
+      videoStore.setFrameTime(frameTime.toSeconds());
+      this.lastFrameTime = DateTime.fromFormat(value, timeFormat, {
+        zone: videoStore.timezone,
+      });
       // this.lastFrameTime =
       // Platform.OS == 'android'
       //   ? DateTime.fromFormat(value, NVRPlayerConfig.ResponseTimeFormat).toFormat(NVRPlayerConfig.RequestTimeFormat)

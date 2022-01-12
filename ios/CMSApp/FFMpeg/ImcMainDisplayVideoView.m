@@ -298,6 +298,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       ImcViewDisplay* view = [displayViews objectAtIndex:fullscreenView];
       ImcScreenDisplay* screen = [displayScreens objectAtIndex: view.screenIndex];
       
+      // CMS removed
+      /*
       if([view isZooming])
       {
         [videoLock unlock];
@@ -335,14 +337,16 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
           break;
         }
       }
+       */
+      // CMS removed end
       
       //int _channelListNeedToDisplay = [connectedServerList count];
       
       //NSLog(@"Shark: channelListNeedToDisplay: %@, channelIndex: %zd", [channelListNeedToDisplay componentsJoinedByString:@","], screen.channelIndex);
       
       if( [screen.serverAddress isEqualToString:displayFrame.serverAddress] &&
-         screen.serverPort == displayFrame.serverPort &&
-         [channelListNeedToDisplay containsObject:@(screen.channelIndex)] )
+         screen.serverPort == displayFrame.serverPort) //&&
+         //[channelListNeedToDisplay containsObject:@(screen.channelIndex)] ) // CMS removed
       {
         //NSLog(@"Shark: IN");
         
@@ -409,6 +413,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
         //        frameRates[screen.screenIndex]++;
       }
     }
+    // CMS removed
+    /*
     else
     {
       NSMutableArray* channelListNeedToDisplay = [NSMutableArray array];
@@ -510,12 +516,14 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
         }
       }
     }
+     */
     //[videoLock unlock];
   }
 }
 
 - (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx
 {
+  if (fullscreenView < 0) return; // CMS added
   //@autoreleasepool
   {
     UIGraphicsPushContext(ctx);
@@ -533,12 +541,12 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     
     NSInteger index = [displayLayers indexOfObject:layer];
 //    NSLog(@"GOND drawLayer fullscreenView = %d, index = %d", fullscreenView, index);
-    if( index >= 0 && index < currentDiv*currentDiv)
+    // if( index >= 0 && index < currentDiv*currentDiv) // CMS removed
     {
       UIFont* displayFont;
 	  // dongpt: CMSMobile display only 1 screen per reactnative view anyway
       // if( fullscreenView >= 0 && fullscreenView == index )
-      if( fullscreenView >= 0)
+      // if( fullscreenView >= 0) // CMS removed
       {
         // NSLog(@"GOND drawRect fullscreenView = %d", fullscreenView);
         ImcViewDisplay* view = [displayViews objectAtIndex:fullscreenView];
@@ -804,11 +812,13 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 #endif
 */
       }
+      /*
       else
       {
         ImcScreenDisplay* screen = [displayScreens objectAtIndex:0];
         NSLog(@"+++++ CANNOT RENDER FULLSCREEN VIEW = %d, cam: %@, ch: %d +++++", fullscreenView, screen.cameraName, screen.channelIndex);
       }
+       */
       // For CMSMobile now only display 1 channel per reactnative view
 //       else if( fullscreenView == -1 )
 //       {
@@ -1197,6 +1207,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   
 }
+
 
 -(void)onDoubleTap:(CGPoint)tapPoint
 {

@@ -87,6 +87,7 @@ const uint32_t numLayers = 24;
     _h = 0;
     firstRunAlarm = NO;
     _oldSeekpos = -1;
+    _channels = nil;
     RATIO = 16.0f/9.0f;
     zoomLevel = ZOOM_LEVEL_24H;
     channelsMapping = [NSMutableArray array];
@@ -162,8 +163,17 @@ const uint32_t numLayers = 24;
 }
 
 - (void)setChannels:(NSString *)value{
+  // NSLog(@"GOND_setter setChannels: %@", value);
   _channels = value;
   channelList = [_channels componentsSeparatedByString:@","];
+//  if (channelList.count == 1 && _isSingle)
+//  {
+//    mainDisplayVideo.fullscreenView = [[channelList objectAtIndex:0] intValue];
+//  }
+//  else
+//  {
+//    mainDisplayVideo.fullscreenView = -1;
+//  }
 }
 
 -(void)setByChannel:(BOOL)value{
@@ -274,9 +284,18 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setSinglePlayer:(BOOL)singlePlayer{
-  NSLog(@"singlePlayer: %@",singlePlayer ? @"YES" : @"NO");
+  // NSLog(@"GOND_setter singlePlayer: %@",singlePlayer ? @"YES" : @"NO");
   if(_isSingle != singlePlayer){
     _isSingle = singlePlayer;
+    if (_isSingle)
+    {
+//      if (channelList.count == 1)
+//        mainDisplayVideo.fullscreenView = [[channelList objectAtIndex:0] intValue];
+//      else
+        mainDisplayVideo.fullscreenView = 0;
+    }
+    else
+      mainDisplayVideo.fullscreenView = -1;
   }
 }
 
@@ -364,7 +383,12 @@ const uint32_t numLayers = 24;
     {
 //      NSLog(@"GOND qqqqqqqqqq setStartplayback 2 server connecting : %d", connectedServers.count);
       [connectedServerList addObject:selectedServer];
+//      NSString* previousChannel = _channels;
       [self setChannels:channel];
+//      if (![_channels isEqualToString:previousChannel] && previousChannel != nil)
+//      {
+//        [controllerThread updateServerDisplayMask:selectedServer.server_address :selectedServer.server_port :[self getChannelMask]];
+//      }
       [self setByChannel:by_channel];
       [self setIsSearch:isSearch];
       /* Display the error to the user. */
@@ -1809,6 +1833,8 @@ const uint32_t numLayers = 24;
   switch (command) {
     case IMC_CMD_CONNECTION_CONNECT_SUCCESSFULL:
       NSLog(@"GOND IMC_CMD_CONNECTION_CONNECT_SUCCESSFULL");
+//      for( ImcConnectedServer* server in connectedServerList )
+//        [controllerThread updateServerDisplayMask:server.server_address :server.server_port :[self getChannelMask]];
       break;
     case IMC_CMD_CONNECTION_CONNECT_RESPONSE :
     {
@@ -2945,12 +2971,72 @@ const uint32_t numLayers = 24;
 -(void)addVideoFrame:(id)videoFrame
 {
   DisplayedVideoFrame* displayFrame = (DisplayedVideoFrame*)videoFrame;
+  BOOL found = NO;
+  
+  for (ImcConnectedServer* server in connectedServerList) {
+    // NSLog(@"GOND compare server connected %@, frame %@", server.server_address, displayFrame.serverAddress);
+    if ([server.server_address isEqualToString:displayFrame.serverAddress]) {
+      found = YES;
+    }
+  }
+  if (!found)
+    return;
   
   if (_isSingle)
   {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [mainDisplayVideo addVideoFrame:displayFrame];
-    });
+    // NSLog(@"GOND send frame to draw context, channel %@, ch idx %ld", _channels, displayFrame.channelIndex);
+    if ((NSInteger)[_channels intValue] == displayFrame.channelIndex)
+    {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [mainDisplayVideo addVideoFrame:displayFrame];
+      });
+      
+//      for (ImcScreenDisplay* screen in [mainDisplayVideo getDisplayScreens])
+//      {
+//        if ([screen.serverAddress isEqualToString:displayFrame.serverAddress] && screen.channelIndex == displayFrame.channelIndex)
+//        {
+//          if (screen.viewIndex >= 0 && screen.viewIndex < mainDisplayVideo.currentDiv * mainDisplayVideo.currentDiv)
+//          {
+//            [viewMaskLock lock];
+//            viewMaskArray[screen.screenIndex] = YES;
+            /* Display the error to the user. */
+            NSCalendar* calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+            [calendar setTimeZone: currentServer.serverTimezone];
+            unsigned unitFlags = NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear| NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+            NSDateComponents *components = [calendar components:unitFlags fromDate:displayFrame.frameTime];
+            NSString* timeText = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",components.year, components.month, components.day, components.hour, components.minute, components.second];
+            
+            long time = 0;
+            if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
+              time = [displayFrame.frameTime timeIntervalSince1970];
+            }
+            else {
+              time = [currentServer.serverTimezone secondsFromGMT] > 0 ? [displayFrame.frameTime timeIntervalSince1970] - [currentServer.serverTimezone secondsFromGMT]
+              : [displayFrame.frameTime timeIntervalSince1970] + [currentServer.serverTimezone secondsFromGMT];
+             
+            }
+            
+            NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, m_channel];
+            NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
+            
+            // NSLog(@"GOND send time frame to JS %@", str_min);
+            [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+              @"msgid": [NSNumber numberWithUnsignedInteger:13],
+              @"value": [NSString stringWithString: res],
+              @"channel": [NSNumber numberWithInteger: displayFrame.channelIndex],
+              @"target": self.reactTag
+              }];
+//            [viewMaskLock unlock];
+//          }
+//          break;
+//        }
+//      }
+    }
+//    else
+//    {
+//      for( ImcConnectedServer* server in connectedServerList )
+//        [controllerThread updateServerDisplayMask:server.server_address :server.server_port :[self getChannelMask]];
+//    }
   }
   else
   {
@@ -2963,6 +3049,8 @@ const uint32_t numLayers = 24;
       @"channel": [NSNumber numberWithInteger: displayFrame.sourceIndex],
       @"target": self.reactTag
       }];
+    
+    displayFrame.videoFrame = nil;
   }
   
   /*
@@ -2983,45 +3071,7 @@ const uint32_t numLayers = 24;
   }
   */
   
-  for (ImcScreenDisplay* screen in [mainDisplayVideo getDisplayScreens])
-  {
-    if ([screen.serverAddress isEqualToString:displayFrame.serverAddress] && screen.channelIndex == displayFrame.channelIndex)
-    {
-      if (screen.viewIndex >= 0 && screen.viewIndex < mainDisplayVideo.currentDiv * mainDisplayVideo.currentDiv)
-      {
-        [viewMaskLock lock];
-        viewMaskArray[screen.screenIndex] = YES;
-        /* Display the error to the user. */
-        NSCalendar* calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-        [calendar setTimeZone: currentServer.serverTimezone];
-        unsigned unitFlags = NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear| NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
-        NSDateComponents *components = [calendar components:unitFlags fromDate:displayFrame.frameTime];
-        NSString* timeText = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",components.year, components.month, components.day, components.hour, components.minute, components.second];
-        
-        long time = 0;
-        if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
-          time = [displayFrame.frameTime timeIntervalSince1970];
-        }
-        else {
-          time = [currentServer.serverTimezone secondsFromGMT] > 0 ? [displayFrame.frameTime timeIntervalSince1970] - [currentServer.serverTimezone secondsFromGMT]
-          : [displayFrame.frameTime timeIntervalSince1970] + [currentServer.serverTimezone secondsFromGMT];
-         
-        }
-        
-        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, m_channel];
-        NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
-        
-        // NSLog(@"GOND send time frame to JS %@", str_min);
-        [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                @"msgid": [NSNumber numberWithUnsignedInteger:13],
-                                                                                @"value": [NSString stringWithString: res],
-                                                                                @"target": self.reactTag
-                                                                                }];
-        [viewMaskLock unlock];
-      }
-      break;
-    }
-  }
+  
 }
 
 -(void)onShowDisconnectedMsg : (ImcConnectedServer*)server
@@ -3250,9 +3300,6 @@ const uint32_t numLayers = 24;
 
 - (uint64_t) getChannelMask
 {
-  if (_isSingle) {
-    return (uint64_t)0x01;
-  }
   uint64_t channelDisplayMask = 0;
   for(NSString* ch in channelList)
   {

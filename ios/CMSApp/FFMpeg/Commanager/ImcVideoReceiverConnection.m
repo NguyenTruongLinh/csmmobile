@@ -111,16 +111,16 @@ __volatile BOOL isRLRunning = NO;
   UInt32 connectPort = (UInt32)serverPort;
   
   // NSLog(@"<<<<<<<<<< videoReceiver connect server before >>>>>>>>>>");
-  if(!streamQueue)
-  {
-    NSString* queueName = [NSString stringWithFormat:@"com.i3international.videostream.%@", [[NSProcessInfo processInfo] globallyUniqueString]];
-    streamQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_CONCURRENT);
-  }
+//  if(!streamQueue)
+//  {
+//    NSString* queueName = [NSString stringWithFormat:@"com.i3international.videostream.%@", [[NSProcessInfo processInfo] globallyUniqueString]];
+//    streamQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_CONCURRENT);
+//  }
   if (isRLRunning)
     return NO;
 //  isRLRunning = YES;
-//  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-  dispatch_async(streamQueue, ^{
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+//  dispatch_async(streamQueue, ^{
     // NSLog(@"<<<<<<<<<< videoReceiver connect server block >>>>>>>>>>");
 //    if (!self->isRLRunning)
 //      return;
