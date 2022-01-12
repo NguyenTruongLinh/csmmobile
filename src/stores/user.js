@@ -30,6 +30,7 @@ const LOGIN_FAIL_CAUSES = {
   USER_LOCK: 'USER_LOCK',
   USER_NOT_EXIST: 'USER_NOT_EXIST',
   EXPIRED_PASSWORD: 'EXPIRED_PASSWORD',
+  ACCOUNT_IS_EXPIRED: 'ACCOUNT_IS_EXPIRED',
 };
 const PASS_CHANGE_FAIL_CAUSES = {
   DATA_NOT_FOUND: 'DATA_NOT_FOUND',
@@ -438,6 +439,8 @@ export const UserStoreModel = types
           setTimeout(() => {
             appStore.naviService.navigate(ROUTERS.PASSWORD_EXPIRED);
           }, 200);
+        } else if (failReason == LOGIN_FAIL_CAUSES.ACCOUNT_IS_EXPIRED) {
+          Alert.alert(LoginTxt.errorTitle, LoginTxt.errorExpiredAccount);
         } else {
           Alert.alert(LoginTxt.errorTitle, LoginTxt.errorLoginIncorrect);
         }
