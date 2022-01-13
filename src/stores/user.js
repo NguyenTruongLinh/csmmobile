@@ -38,9 +38,8 @@ const PASS_CHANGE_FAIL_CAUSES = {
 };
 
 const MODULE_TAB_MAP = new Map([
-  [MODULE_PERMISSIONS.VSC, [0, 1, 3]],
-  [MODULE_PERMISSIONS.SITE, [0, 2, 3]],
-  [MODULE_PERMISSIONS.REBAR, [0, 3]],
+  [MODULE_PERMISSIONS.VSC, [1]],
+  [MODULE_PERMISSIONS.SITE, [2]],
 ]);
 
 const MODULE_HOME_WIDGET_MAP = new Map([
@@ -290,7 +289,7 @@ export const UserStoreModel = types
   }))
   .views(self => ({
     get disableTabIndexes() {
-      let result = [0, 1, 2, 3];
+      let result = [1, 2];
       let tmp = [];
       for (const [key, value] of MODULE_TAB_MAP.entries()) {
         if (self.hasPermission(key)) {
@@ -309,8 +308,6 @@ export const UserStoreModel = types
         }
       }
       result = result.filter(item => !tmp.includes(item));
-      __DEV__ &&
-        console.log(`hasPermission disableHomeWidgetIndexes result = `, result);
       return result;
     },
     get alarmWidgetCount() {
@@ -576,21 +573,25 @@ export const UserStoreModel = types
       return false;
     }),
     getDisableTabIndexes() {
-      let result = [];
+      let result = [1, 2];
+      let tmp = [];
       for (const [key, value] of MODULE_TAB_MAP.entries()) {
-        if (!self.hasPermission(key)) {
-          result.push(...value);
+        if (self.hasPermission(key)) {
+          tmp.push(...value);
         }
       }
+      result = result.filter(item => !tmp.includes(item));
       return result;
     },
     getDisableHomeWidgetIndexes() {
-      let result = [];
+      let result = [0, 1, 2, 3, 4];
+      let tmp = [];
       for (const [key, value] of MODULE_HOME_WIDGET_MAP.entries()) {
-        if (!self.hasPermission(key)) {
-          result.push(...value);
+        if (self.hasPermission(key)) {
+          tmp.push(...value);
         }
       }
+      result = result.filter(item => !tmp.includes(item));
       return result;
     },
     getPrivilege: flow(function* () {
