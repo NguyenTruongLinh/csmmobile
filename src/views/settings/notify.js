@@ -90,14 +90,14 @@ class NotifySettingView extends React.Component {
     let result = [];
     let alertAI = {
       id: 36,
-      name: 'VA detection',
+      name: 'Type VA',
       isCheck:
         selectedAlerts &&
         selectedAlerts.includes(C_AlertTypes.DVR_VA_detection),
     };
     let alertSensor = {
       id: 9,
-      name: 'Sensor triggered',
+      name: 'IP: Sensor triggered',
       isCheck:
         selectedAlerts &&
         selectedAlerts.includes(C_AlertTypes.DVR_Sensor_Triggered),

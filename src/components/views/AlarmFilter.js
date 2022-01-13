@@ -725,8 +725,8 @@ export default class AlarmFilter extends Component {
       }
       case FilterMore.AlertType: {
         let ds_AlertType = [
-          {id: 9, name: 'Sensor Triggered'},
-          {id: 36, name: 'VA Detection'},
+          {id: 9, name: 'IP: Sensor triggered'},
+          {id: 36, name: 'Type VA'},
           {id: 113, name: 'Temperature Out Of Range'},
           {id: 114, name: 'Not Wearing Mask'},
           {id: 115, name: 'Increasing Temperature Rate By Date'},

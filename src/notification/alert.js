@@ -78,8 +78,11 @@ const onAlertEvent = async props => {
         body:
           getAlertName(
             alert,
-            userStore ? userStore.settings.alertTypes : null
-          ) + 'resolved.',
+            userStore ? userStore.settings.alertTypes : null,
+            {
+              name: alert.SiteName,
+            }
+          ) + ' resolved.',
         isContent: false,
         id: generateNotifId(alert.AlertType, alert.KDVR),
       };

@@ -10,6 +10,8 @@ import ROUTERS from '../consts/routes';
 import {generateNotifId} from '../util/general';
 
 export function onAlarmEvent({alarmStore, naviService, action, content}) {
+  __DEV__ &&
+    console.log(`onAlarmEvent action = `, action, `| content = `, content);
   const alert = content;
   if (!alert) return;
 
@@ -27,7 +29,7 @@ export function onAlarmEvent({alarmStore, naviService, action, content}) {
           : 'Unknow alert, id = ' + strAlertType;
         noti = {
           id: generateNotifId(msg, alert.KAlertEvent ?? 0),
-          body: (alert.SiteName ?? 'Unknown site') + msg,
+          body: (alert.SiteName ?? 'Unknown site') + ': ' + msg,
           isContent: true,
         };
       }
