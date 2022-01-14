@@ -299,7 +299,7 @@ export default HLSStreamModel = types
             ? HLSPlaybackMode.LIVE
             : HLSPlaybackMode.LIVE_REPLAY,*/,
             HLSFragmentSelector: {
-              FragmentSelectorType: FragmentSelectorType.SERVER_TIMESTAMP,
+              FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
               // TimestampRange: isLive
               //   ? undefined
               //   : {
@@ -308,7 +308,7 @@ export default HLSStreamModel = types
               //     },
             },
             // ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
-            DiscontinuityMode: HLSDiscontinuityMode.ALWAYS,
+            // DiscontinuityMode: HLSDiscontinuityMode.ALWAYS,  // temp removed
             // DisplayFragmentTimestamp: $('#displayFragmentTimestamp').val(),
             // MaxMediaPlaylistFragmentResults: parseInt($('#maxResults').val()),
             Expires: HLS_MAX_EXPIRE_TIME,
