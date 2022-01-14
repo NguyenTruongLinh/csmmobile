@@ -22,6 +22,7 @@ class LoadingOverlay extends React.Component {
             backgroundColor:
               this.props.backgroundColor ?? CMSColors.PrimaryActive,
           },
+          this.props.style,
         ]}>
         <ActivityIndicator
           style={[styles.centerIndicator]}

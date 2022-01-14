@@ -27,6 +27,7 @@ import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSRipple from '../../components/controls/CMSRipple';
+import LoadingOverlay from '../../components/common/loadingOverlay';
 // import Swipe from '../../components/controls/Swipe';
 
 import util from '../../util/general';
@@ -36,26 +37,7 @@ import ROUTERS from '../../consts/routes';
 import {MODULE_PERMISSIONS} from '../../consts/misc';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
-// import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import {Comps as CompTxt, VIDEO as VIDEO_TXT} from '../../localization/texts';
-
-// const LayoutData = [
-//   {
-//     key: 'layout_2x2',
-//     value: 2,
-//     icon: 'grid-view-4',
-//   },
-//   {
-//     key: 'layout_3x33',
-//     value: 3,
-//     icon: 'grid-view-9',
-//   },
-//   {
-//     key: 'layout_4x4',
-//     value: 4,
-//     icon: 'grid-view-16',
-//   },
-// ];
 
 class LiveChannelsView extends React.Component {
   constructor(props) {
@@ -640,13 +622,25 @@ class LiveChannelsView extends React.Component {
     );
   };
 
-  onSwipeUp = () => {
-    __DEV__ && console.log('GOND LIVE : onSwipeUp');
+  onSwipe = (direction, state) => {
+    switch (direction) {
+      case swipeDirections.SWIPE_UP:
+        return this.onSwipeUp(state);
+      case swipeDirections.SWIPE_DOWN:
+        return this.onSwipeDown(state);
+      default:
+        __DEV__ && console.log('GOND LIVE : onSwipe: ', direction, state);
+        return;
+    }
+  };
+
+  onSwipeUp = state => {
+    __DEV__ && console.log('GOND LIVE : onSwipeUp: ', state);
     if (this.props.videoStore.changeGridPage(true)) this.showShortTimeLoading();
   };
 
-  onSwipeDown = () => {
-    __DEV__ && console.log('GOND LIVE : onSwipeDown');
+  onSwipeDown = state => {
+    __DEV__ && console.log('GOND LIVE : onSwipeDown: ', state);
     if (this.props.videoStore.changeGridPage(false))
       this.showShortTimeLoading();
   };
@@ -657,18 +651,30 @@ class LiveChannelsView extends React.Component {
 
     return (
       <GestureRecognizer
-        // onSwipe={(direction, state) => this.onSwipe(direction, state)}
-        onSwipeUp={state => this.onSwipeUp(state)}
-        onSwipeDown={state => this.onSwipeDown(state)}
-        // onSwipeLeft={(state) => this.onSwipeLeft(state)}
-        // onSwipeRight={(state) => this.onSwipeRight(state)}
+        onSwipe={(direction, state) => this.onSwipe(direction, state)}
         config={{
           velocityThreshold: 0.3,
-          directionalOffsetThreshold: 80,
+          directionalOffsetThreshold: 50,
         }}
         style={{
           flex: 1,
+          backgroundColor: CMSColors.Transparent,
         }}>
+        {this.state.internalLoading && (
+          <LoadingOverlay
+            height={48}
+            // backgroundColor={CMSColors.Transparent}
+            indicatorColor={CMSColors.White}
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              right: 0,
+              zIndex: 1,
+              backgroundColor: CMSColors.Transparent,
+            }}
+          />
+        )}
         <FlatList
           key={'grid_' + videoStore.gridLayout}
           ref={r => (this.videoListRef = r)}
