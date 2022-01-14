@@ -249,7 +249,7 @@
 
 - (void)closeStreams
 {
-  NSLog(@"GOND cccccccccc ImcRemoteConnection close stream cccccccccc");
+//  NSLog(@"GOND cccccccccc ImcRemoteConnection close stream cccccccccc");
 //  [connectionLock lock];
 //  [sentDataStream close];
 //  [receivedDataStream close];
@@ -1130,7 +1130,8 @@
 - (void)disconnect
 {
   isConnected = FALSE;
-  // if( getLoginStatus )
+//   if( getLoginStatus )
+  if( sentDataStream != nil)
   {
     NSData* packet = [ImcMobileCommand constructSimpleMsgPacket:MOBILE_MSG_DISCONNECT];
     [sentDataStream write:[packet bytes] maxLength:packet.length];
@@ -1470,6 +1471,7 @@
     DisplayedVideoFrame* videoFrame = [[DisplayedVideoFrame alloc] init];
     
     videoFrame.channelIndex    = IMC_MAX_CHANNEL - 1;
+    videoFrame.sourceIndex      = videoSourceIndex; // CMS added
     videoFrame.cameraName       = @"IMC Search Channel";
     videoFrame.videoFrame       = frame.image;
     videoFrame.serverAddress    = serverInfo.server_address;
@@ -1600,6 +1602,7 @@
       {
         newFrame.videoFrameInfo = [[DisplayedVideoFrame alloc] init];
         newFrame.videoFrameInfo.channelIndex     = IMC_MAX_CHANNEL-1;
+        newFrame.videoFrameInfo.sourceIndex      = frame.header.sourceIndex;
         newFrame.videoFrameInfo.cameraName       = @"IMC Search Channel";
         newFrame.videoFrameInfo.videoFrame       = nil;
         newFrame.videoFrameInfo.serverAddress    = serverInfo.server_address;
