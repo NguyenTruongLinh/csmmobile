@@ -42,7 +42,8 @@ const DirectServerModel = types
     userName: types.string,
     password: types.string,
     kDVR: types.number,
-    channels: types.string,
+    // channels: types.string,
+    channelList: types.array(types.number),
     searchMode: types.boolean,
     // byChannel: types.string,
     date: types.string,
@@ -58,10 +59,25 @@ const DirectServerModel = types
     },
     get playData() {
       return {
-        ...getSnapshot(self),
+        serverIP: self.serverIP,
+        publicIP: self.publicIP,
+        // name: self.name,
+        port: self.port,
+        serverID: self.serverID,
+        userName: self.userName,
+        password: self.password,
+        kDVR: self.kDVR,
+        searchMode: self.searchMode,
+        date: self.searchMode ? self.date : undefined,
+        hd: self.hd,
+        channels: self.channels,
+        channelList: undefined,
         byChannel: true,
         interval: DAY_INTERVAL,
       };
+    },
+    get channels() {
+      return self.channelList.join(',');
     },
   }))
   .actions(self => ({
@@ -75,10 +91,19 @@ const DirectServerModel = types
     },
     setChannels(value) {
       __DEV__ && console.log('GOND setChannels ', value);
-      self.channels = value.join(',');
+      if (value && Array.isArray(value)) {
+        // self.channels = value.join(',');
+        self.channelList = [...value];
+      } else {
+        console.log('GOND DirectConnection set channels not valid: ', value);
+      }
     },
     setStreamStatus(statusObject) {},
+    reset() {
+      self.channelList = [];
+    },
   }));
+
 const parseDirectServer = (server /*, channelNo, isLive*/) => {
   return DirectServerModel.create({
     serverIP: server.ServerIP ?? '',
@@ -89,7 +114,8 @@ const parseDirectServer = (server /*, channelNo, isLive*/) => {
     userName: server.UName,
     password: util.AES_decrypt(server.PWD, apiService.configToken.apiKey),
     kDVR: server.KDVR,
-    channels: '',
+    // channels: '',
+    channelList: [],
     searchMode: false,
     // byChannel: true,
     date: '',
@@ -114,7 +140,7 @@ const DirectStreamModel = types
       const {channelNo, name, kChannel} = self.channel;
 
       return {
-        ...self.server,
+        ...self.server.playData,
         channelNo,
         channels: '' + channelNo,
         channelName: name,
@@ -184,7 +210,11 @@ const DirectStreamModel = types
       error != undefined && (self.error = error);
     },
     updateFrame(value) {
-      self.videoFrame = value;
+      if (value && typeof value == 'string' && value.length > 0)
+        self.videoFrame = value;
+    },
+    reset() {
+      self.videoFrame = '';
     },
   }));
 
@@ -294,6 +324,7 @@ export const VideoModel = types
 
     isAlertPlay: types.optional(types.boolean, false),
     isPreloadStream: types.optional(types.boolean, false),
+    currentGridPage: types.optional(types.number, 0),
   })
   .volatile(self => ({
     frameTime: 0,
@@ -326,6 +357,9 @@ export const VideoModel = types
       )
         return self.allChannels;
       return self.activeChannels;
+    },
+    get gridItemsPerPage() {
+      return self.gridLayout * self.gridLayout;
     },
     get needAuthen() {
       return (
@@ -584,36 +618,48 @@ export const VideoModel = types
             : [];
           break;
       }
+      __DEV__ &&
+        console.log(
+          'GOND videoDataList: ',
+          self.gridItemsPerPage,
+          self.currentGridPage
+        );
+      videoDataList = videoDataList.filter(
+        (_, index) =>
+          index < self.gridItemsPerPage * (self.currentGridPage + 1) &&
+          index >= self.gridItemsPerPage * self.currentGridPage
+      );
+
       while (videoDataList.length % self.gridLayout != 0)
         videoDataList.push({});
 
       return videoDataList ?? [];
 
-      if (
-        !videoDataList ||
-        !Array.isArray(videoDataList) ||
-        videoDataList.length == 0
-      )
-        return [];
+      // if (
+      //   !videoDataList ||
+      //   !Array.isArray(videoDataList) ||
+      //   videoDataList.length == 0
+      // )
+      //   return [];
 
-      let result = [];
-      let totalRow = Math.ceil(videoDataList.length / self.gridLayout);
+      // let result = [];
+      // let totalRow = Math.ceil(videoDataList.length / self.gridLayout);
 
-      for (let row = 0; row < totalRow; row++) {
-        let newRow = {key: 'videoRow_' + row, data: []};
-        for (let col = 0; col < self.gridLayout; col++) {
-          let index = row * self.gridLayout + col;
-          if (index < videoDataList.length) {
-            newRow.data.push(videoDataList[index]);
-            __DEV__ &&
-              console.log('LiveChannelsView build video newRow.data: ', newRow);
-          } else newRow.data.push({});
-        }
-        result.push(newRow);
-      }
+      // for (let row = 0; row < totalRow; row++) {
+      //   let newRow = {key: 'videoRow_' + row, data: []};
+      //   for (let col = 0; col < self.gridLayout; col++) {
+      //     let index = row * self.gridLayout + col;
+      //     if (index < videoDataList.length) {
+      //       newRow.data.push(videoDataList[index]);
+      //       __DEV__ &&
+      //         console.log('LiveChannelsView build video newRow.data: ', newRow);
+      //     } else newRow.data.push({});
+      //   }
+      //   result.push(newRow);
+      // }
 
-      __DEV__ && console.log('LiveChannelsView build video data: ', result);
-      return result;
+      // __DEV__ && console.log('LiveChannelsView build video data: ', result);
+      // return result;
     },
     get displayDateTime() {
       return self.frameTimeString && self.frameTimeString.length > 0
@@ -638,6 +684,8 @@ export const VideoModel = types
       },
       setChannelFilter(value) {
         self.channelFilter = value;
+        self.currentGridPage = 0;
+        self.updateCurrentDirectChannel();
       },
       setLoading(value) {
         self.isLoading = value;
@@ -650,6 +698,54 @@ export const VideoModel = types
       },
       setGridLayout(value) {
         self.gridLayout = value;
+        self.currentGridPage = 0;
+        // __DEV__ && console.log('GOND direct setChannel 1');
+        self.directConnection &&
+          self.directConnection.setChannels(
+            self.directData
+              .map(s => s.channelNo)
+              .filter((_, index) => index < self.gridItemsPerPage)
+          );
+      },
+      updateCurrentDirectChannel() {
+        if (self.directConnection) {
+          self.directConnection.setChannels(
+            self.directData
+              .map(s => s.channelNo)
+              .filter(
+                (_, index) =>
+                  index < self.gridItemsPerPage * (self.currentGridPage + 1) &&
+                  index >= self.gridItemsPerPage * self.currentGridPage
+              )
+          );
+        }
+      },
+      changeGridPage(isNext) {
+        const totalPage = Math.floor(
+          self.directStreams.length / self.gridLayout
+        );
+        let changed = false;
+        if (isNext && self.currentGridPage < totalPage - 1) {
+          self.currentGridPage++;
+          changed = true;
+        } else if (!isNext && self.currentGridPage > 0) {
+          self.currentGridPage--;
+          changed = true;
+        }
+        if (changed) {
+          // self.directConnection && self.directConnection.setChannels(
+          //   self.directData
+          //     .map(s => s.channelNo)
+          //     .filter(
+          //       (_, index) =>
+          //         index < self.gridItemsPerPage * (self.currentGridPage + 1) &&
+          //         index >= self.gridItemsPerPage * self.currentGridPage
+          //     )
+          // );
+          self.updateCurrentDirectChannel();
+        }
+
+        return changed;
       },
       setStreamReadyCallback(fn) {
         if (fn && typeof fn !== 'function') {
@@ -1074,6 +1170,7 @@ export const VideoModel = types
         //
         // self.selectedHLSStream = null;
         self.isAlertPlay = false;
+        self.updateCurrentDirectChannel();
 
         __DEV__ && console.log('GOND onExitSinglePlayer: ', currentRoute);
         if (currentRoute != ROUTERS.HEALTH_VIDEO) {
@@ -1371,8 +1468,16 @@ export const VideoModel = types
           );
           __DEV__ && console.log('GOND direct connect infos: ', res);
           self.directConnection = parseDirectServer(res);
+          // __DEV__ && console.log('GOND direct setChannel 3');
+
+          self.currentGridPage = 0;
           self.directConnection.setChannels(
-            self.allChannels.map(ch => ch.channelNo)
+            self.allChannels
+              .filter(ch =>
+                ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
+              )
+              .map(ch => ch.channelNo)
+              .filter((_, index) => index < self.gridItemsPerPage)
           );
 
           // get NVR user and password from first data:
@@ -2382,8 +2487,9 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            self.directStreams.forEach(s => s.updateFrame(null));
+            self.directStreams.forEach(s => s.reset());
             self.directStreams = [];
+            self.directConnection.reset();
             break;
           case CLOUD_TYPE.HLS:
             // self.hlsStreams.forEach(s => {
@@ -2456,6 +2562,9 @@ const storeDefault = {
   // timezone: null,
   recordingDates: [],
   timeline: [],
+  isAlertPlay: false,
+  isPreloadStream: false,
+  currentGridPage: 0,
 };
 
 const videoStore = VideoModel.create(storeDefault);

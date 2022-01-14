@@ -19,12 +19,14 @@ class CMSSearchbar extends React.Component {
     value: PropTypes.string,
     onFilter: PropTypes.func,
     animation: PropTypes.bool,
+    applyOnEnter: PropTypes.bool,
   };
 
   static defaultProps = {
     value: '',
     onFilter: () => console.log('GOND CMSSearchbar: onFilter not defined yet!'),
     animation: true,
+    applyOnEnter: false,
   };
 
   constructor(props) {
@@ -34,6 +36,7 @@ class CMSSearchbar extends React.Component {
       showSearchbar: false,
       searchViewHeight: new Animated.Value(0),
       searchbarPosition: new Animated.Value(-SEARCHBAR_HEIGHT),
+      internalText: props.value,
     };
 
     this._isMounted = false;
@@ -83,9 +86,36 @@ class CMSSearchbar extends React.Component {
     );
   };
 
+  onChangeText = value => {
+    const {onFilter, applyOnEnter} = this.props;
+    this.setState({internalText: value});
+    if (!applyOnEnter) {
+      onFilter(value);
+    }
+
+    // if (applyOnEnter) {
+    //   this.setState({internalText: value});
+    // } else {
+    //   onFilter(value);
+    // }
+  };
+
+  onEnter = event => {
+    const {onFilter, applyOnEnter} = this.props;
+    const {internalText} = this.state;
+    if (applyOnEnter) {
+      onFilter(internalText);
+    }
+  };
+
   render() {
-    const {onFilter, value, animation} = this.props;
-    const {searchViewHeight, searchbarPosition, showSearchbar} = this.state;
+    const {onFilter, value, animation, applyOnEnter} = this.props;
+    const {
+      searchViewHeight,
+      searchbarPosition,
+      showSearchbar,
+      internalText,
+    } = this.state;
 
     return animation || showSearchbar ? (
       <Animated.View
@@ -95,8 +125,9 @@ class CMSSearchbar extends React.Component {
         ]}>
         <InputTextIcon
           label=""
-          value={value}
-          onChangeText={onFilter}
+          value={applyOnEnter ? internalText : value}
+          onChangeText={this.onChangeText}
+          onEndEditing={this.onEnter}
           placeholder={CompTxt.searchPlaceholder}
           iconCustom="searching-magnifying-glass"
           disabled={false}

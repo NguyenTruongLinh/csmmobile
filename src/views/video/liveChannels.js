@@ -14,6 +14,7 @@ import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
 // import {BottomModal, ModalContent} from 'react-native-modals';
 import Modal from 'react-native-modal';
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
@@ -26,6 +27,7 @@ import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSRipple from '../../components/controls/CMSRipple';
+// import Swipe from '../../components/controls/Swipe';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -73,6 +75,7 @@ class LiveChannelsView extends React.Component {
       // gridLayout: 2,
       showLayoutSelection: false,
       // liveData: [],
+      internalLoading: false,
     };
     // this.channelsCount = 0;
     this._isMounted = false;
@@ -293,7 +296,7 @@ class LiveChannelsView extends React.Component {
   };
 
   onVideosViewableChanged = ({changed, viewableItems}) => {
-    // return;
+    return;
     const {gridLayout, cloudType} = this.props.videoStore;
     // __DEV__ &&
     //   console.log('GOND onVideosViewableChanged: ', changed, viewableItems);
@@ -602,6 +605,86 @@ class LiveChannelsView extends React.Component {
     );
   };
 
+  renderScrollVideoList = () => {
+    const {videoStore} = this.props;
+
+    return (
+      <FlatList
+        key={'grid_' + videoStore.gridLayout}
+        ref={r => (this.videoListRef = r)}
+        renderItem={this.renderVideoPlayer}
+        numColumns={videoStore.gridLayout}
+        data={videoStore.videoData} // {this.state.liveData}
+        // keyExtractor={item => item.key}
+        keyExtractor={item => 'ch_' + item.channelNo}
+        onRefresh={this.getChannelsInfo}
+        refreshing={videoStore.isLoading}
+        maxToRenderPerBatch={videoStore.gridLayout}
+        onViewableItemsChanged={this.onVideosViewableChanged}
+        viewabilityConfig={{
+          minimumViewTime: 200,
+          // viewAreaCoveragePercentThreshold: 25,
+          itemVisiblePercentThreshold: 25,
+        }}
+      />
+    );
+  };
+
+  showShortTimeLoading = () => {
+    __DEV__ && console.log('GOND showShortTimeLoading - show');
+    this.setState({internalLoading: true}, () =>
+      setTimeout(() => {
+        __DEV__ && console.log('GOND showShortTimeLoading - hide');
+        this._isMounted && this.setState({internalLoading: false});
+      }, 1000)
+    );
+  };
+
+  onSwipeUp = () => {
+    __DEV__ && console.log('GOND LIVE : onSwipeUp');
+    if (this.props.videoStore.changeGridPage(true)) this.showShortTimeLoading();
+  };
+
+  onSwipeDown = () => {
+    __DEV__ && console.log('GOND LIVE : onSwipeDown');
+    if (this.props.videoStore.changeGridPage(false))
+      this.showShortTimeLoading();
+  };
+
+  renderStaticVideoList = () => {
+    const {videoStore} = this.props;
+    // __DEV__ && console.log('GOND LIVE videoData: ', videoStore.videoData);
+
+    return (
+      <GestureRecognizer
+        // onSwipe={(direction, state) => this.onSwipe(direction, state)}
+        onSwipeUp={state => this.onSwipeUp(state)}
+        onSwipeDown={state => this.onSwipeDown(state)}
+        // onSwipeLeft={(state) => this.onSwipeLeft(state)}
+        // onSwipeRight={(state) => this.onSwipeRight(state)}
+        config={{
+          velocityThreshold: 0.3,
+          directionalOffsetThreshold: 80,
+        }}
+        style={{
+          flex: 1,
+        }}>
+        <FlatList
+          key={'grid_' + videoStore.gridLayout}
+          ref={r => (this.videoListRef = r)}
+          renderItem={this.renderVideoPlayer}
+          numColumns={videoStore.gridLayout}
+          data={videoStore.videoData}
+          keyExtractor={(item, index) =>
+            'ch_' + (item && item.channelNo ? item.channelNo : 'none' + index)
+          }
+          refreshing={videoStore.isLoading || this.state.internalLoading}
+          scrollEnabled={false}
+        />
+      </GestureRecognizer>
+    );
+  };
+
   render() {
     // const authenModal = this.renderNVRAuthenModal();
     const {appStore, videoStore, navigation} = this.props;
@@ -614,6 +697,7 @@ class LiveChannelsView extends React.Component {
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
+          applyOnEnter={true}
           value={videoStore.channelFilter}
           animation={false}
         />
@@ -621,28 +705,9 @@ class LiveChannelsView extends React.Component {
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           {videoStore.isLoading ||
           !videoStore.isCloud ||
-          videoStore.videoData.length > 0 ? (
-            <FlatList
-              key={'grid_' + videoStore.gridLayout}
-              ref={r => (this.videoListRef = r)}
-              renderItem={this.renderVideoPlayer}
-              numColumns={videoStore.gridLayout}
-              data={videoStore.videoData} // {this.state.liveData}
-              // keyExtractor={item => item.key}
-              keyExtractor={item => 'ch_' + item.channelNo}
-              onRefresh={this.getChannelsInfo}
-              refreshing={videoStore.isLoading}
-              maxToRenderPerBatch={videoStore.gridLayout}
-              onViewableItemsChanged={this.onVideosViewableChanged}
-              viewabilityConfig={{
-                minimumViewTime: 200,
-                // viewAreaCoveragePercentThreshold: 25,
-                itemVisiblePercentThreshold: 25,
-              }}
-            />
-          ) : (
-            this.renderInfoText()
-          )}
+          videoStore.videoData.length > 0
+            ? this.renderStaticVideoList()
+            : this.renderInfoText()}
         </View>
         {this.renderLayoutModal()}
         {this.renderDirectFrame()}
