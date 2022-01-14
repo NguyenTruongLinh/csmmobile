@@ -39,6 +39,7 @@ import {reaction} from 'mobx';
 
 const ID_Canned_Message = 5;
 const CONTENT_INFO_HEIGHT = 92;
+const STATUS_HEIGHT = 17;
 
 class AlarmDetailView extends Component {
   constructor(props) {
@@ -330,18 +331,33 @@ class AlarmDetailView extends Component {
             style={{
               justifyContent: 'center',
               paddingRight: variable.inputPaddingLeft,
+              paddingLeft: 4,
             }}>
             <IconCustom
               name={'check-symbol'}
               size={12}
-              color={CMSColors.White}
+              color={CMSColors.Success}
             />
           </View>
           <Text
             numberOfLines={1}
-            style={{fontSize: 12, color: CMSColors.White}}>
-            {ALARM_TXT.PROCESS}
+            style={{fontSize: 14, color: CMSColors.Success}}>
+            {ALARM_TXT.PROCESSED_BY}{' '}
           </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+            <Text
+              style={{
+                fontSize: 14,
+                color: CMSColors.Success,
+                fontWeight: 'bold',
+              }}>
+              {selectedAlarm.cmsUser}
+            </Text>
+          </View>
         </View>
       );
   };
@@ -349,7 +365,6 @@ class AlarmDetailView extends Component {
   renderImage = ({item}) => {
     const {selectedAlarm} = this.props.alarmStore;
     if (selectedAlarm == null) return;
-    const alertStatus = this.renderAlertStatus();
     let violationGroup = null;
     __DEV__ && console.log('GOND renderImage: ', item);
 
@@ -397,7 +412,7 @@ class AlarmDetailView extends Component {
           />
           {violationGroup}
         </View>
-        {alertStatus}
+        {/* {alertStatus} */}
       </View>
     );
   };
@@ -518,23 +533,33 @@ class AlarmDetailView extends Component {
     let contentHeight = isIncreaseTemp
       ? 22 * (selectedAlarm.extra.length + 2)
       : CONTENT_INFO_HEIGHT;
+    contentHeight +=
+      selectedAlarm.status == 1 && selectedAlarm.cmsUser ? STATUS_HEIGHT : 0;
     let padding = variable.contentPadding;
 
     // console.log('GOND renderTemperatureInfo extradata: ', selectedAlarm.extra)
-    let cmsUserInfo = selectedAlarm.cmsUser ? (
-      <View
-        style={{flexDirection: 'row', alignItems: 'center', marginBottom: 2}}>
-        <Text style={{width: 40, textAlign: 'center'}}>-</Text>
-        <View style={{justifyContent: 'center'}}>
-          <IconCustom
-            name="user-shape"
-            size={12}
-            color={CMSColors.SecondaryText}
-          />
-        </View>
-        <Text style={styles.name_text}>{selectedAlarm.cmsUser}</Text>
-      </View>
-    ) : null;
+    // let cmsUserInfo = selectedAlarm.cmsUser ? (
+    //   <View
+    //     style={{
+    //       flexDirection: 'row',
+    //       alignItems: 'center',
+    //       marginBottom: 2,
+    //       borderColor: 'red',
+    //       borderWidth: 1,
+    //       borderColor: 'red',
+    //       borderWidth: 1,
+    //     }}>
+    //     <Text style={{width: 40, textAlign: 'center'}}>-</Text>
+    //     <View style={{justifyContent: 'center'}}>
+    //       <IconCustom
+    //         name="user-shape"
+    //         size={12}
+    //         color={CMSColors.SecondaryText}
+    //       />
+    //     </View>
+    //     <Text style={styles.name_text}>{selectedAlarm.cmsUser}</Text>
+    //   </View>
+    // ) : null;
 
     return (
       <View style={[styles.infoContainer, {height: contentHeight}]}>
@@ -543,15 +568,14 @@ class AlarmDetailView extends Component {
             <Text numberOfLines={2} style={styles.textInfo}>
               {AlertNames[selectedAlarm.kAlertType]}
             </Text>
+            {this.renderAlertStatus()}
             <FlatList
               data={selectedAlarm.extra}
               renderItem={this.renderTemperatureItem}
               keyExtractor={(item, index) => index.toString()}
               initialNumToRender={selectedAlarm.extra.length}
             />
-            {isIncreaseTemp ? cmsUserInfo : null}
           </View>
-          {isIncreaseTemp ? null : cmsUserInfo}
         </View>
         {this.renderVideoButtons()}
       </View>
@@ -568,23 +592,11 @@ class AlarmDetailView extends Component {
     let strTime = DateTime.fromISO(selectedAlarm.timezone, {
       zone: 'utc',
     }).toFormat(DateFormat.AlertDetail_Date);
-
-    let cmsUserInfo = selectedAlarm.cmsUser ? (
-      <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <Text style={{width: 40, textAlign: 'center'}}>-</Text>
-        <View style={{justifyContent: 'center'}}>
-          <IconCustom
-            name="user-shape"
-            size={12}
-            color={CMSColors.SecondaryText}
-          />
-        </View>
-        <Text style={styles.date_text}>{selectedAlarm.cmsUser}</Text>
-      </View>
-    ) : null;
-
+    let contentHeight = CONTENT_INFO_HEIGHT;
+    contentHeight +=
+      selectedAlarm.status == 1 && selectedAlarm.cmsUser ? STATUS_HEIGHT : 0;
     return (
-      <View style={[styles.infoContainer, {height: CONTENT_INFO_HEIGHT}]}>
+      <View style={[styles.infoContainer, {height: contentHeight}]}>
         <View style={styles.leftInfoContainer}>
           {/* {this.renderActionButton(BUTTON_TYPE.SEARCH)} */}
           {/* <View style={[ styles.textInfoContainer, Platform.OS == 'ios' ? {paddingRight: btn_size + 2 * padding} : {paddingLeft: btn_size + 2* padding} ]} > */}
@@ -596,6 +608,7 @@ class AlarmDetailView extends Component {
             <Text numberOfLines={2} style={styles.textInfo}>
               {this.renderInfoDescription()}
             </Text>
+            {this.renderAlertStatus()}
             <View style={styles.timeInfoContainer}>
               <View style={{justifyContent: 'center'}}>
                 <IconCustom
@@ -605,7 +618,6 @@ class AlarmDetailView extends Component {
                 />
               </View>
               <Text style={styles.date_text}>{strTime}</Text>
-              {cmsUserInfo}
             </View>
           </View>
         </View>
@@ -782,6 +794,7 @@ const styles = StyleSheet.create({
     backgroundColor: CMSColors.DividerColor24,
     height: CONTENT_INFO_HEIGHT,
     flex: 1,
+    paddingTop: 3,
   },
   textInfoContainer: {
     justifyContent: 'center',
@@ -852,15 +865,16 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingLeft: variable.inputPaddingLeft,
-    backgroundColor: CMSColors.Success,
-    width: 74,
-    height: 22,
-    borderTopRightRadius: 6,
-    borderBottomRightRadius: 6,
-    marginTop: 24,
+    // justifyContent: 'flex-start',
+    // alignItems: 'center',
+    // paddingLeft: variable.inputPaddingLeft,
+    // backgroundColor: CMSColors.Success,
+    // width: 74,
+    // height: 22,
+    // borderTopRightRadius: 6,
+    // borderBottomRightRadius: 6,
+    // marginTop: 24,
+    marginVertical: 5,
   },
 });
 

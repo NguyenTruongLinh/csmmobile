@@ -125,7 +125,7 @@ export const STREAM_STATUS = {
 
 export const ALARM = {
   EVENT_TIME: 'Event time',
-  PROCESS: 'Process',
+  PROCESSED_BY: 'Processed by',
   NONEMPLOYEE: 'Non-employee',
 };
 
