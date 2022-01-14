@@ -121,7 +121,9 @@ class AlarmDetailView extends Component {
 
     const {rating, note, activeIndex} = this.state;
     const canSave =
-      note != selectedAlarm.note || rating.rateId != selectedAlarm.rate;
+      selectedAlarm.status != 1 ||
+      note != selectedAlarm.note ||
+      rating.rateId != selectedAlarm.rate;
     const currentSnapshot = selectedAlarm.snapshot[activeIndex] ?? {
       channelName: 'Channel ' + (selectedAlarm.channelNo + 1),
     };
