@@ -243,7 +243,6 @@ class TransactionDetailView extends Component {
   renderVideoPlayer = () => {
     const {selectedTransaction} = this.props.exceptionStore;
     const {videoWidth, videoHeight} = this.state;
-
     return (
       <View style={{height: videoHeight, width: '100%'}}>
         <VideoPlayer
@@ -255,7 +254,11 @@ class TransactionDetailView extends Component {
           }
           videoWidth={videoWidth}
           videoHeight={videoHeight}
-          poster={selectedTransaction.snapshot}
+          poster={
+            selectedTransaction.snapshot.uri
+              ? selectedTransaction.snapshot.uri
+              : selectedTransaction.snapshot
+          }
           resizeMode={'stretch'}
           // controlsTimeout={3}
           disableControlsAutoHide
