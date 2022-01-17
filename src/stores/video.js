@@ -2487,9 +2487,9 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            self.directStreams.forEach(s => s.reset());
+            self.directStreams && self.directStreams.forEach(s => s.reset());
             self.directStreams = [];
-            self.directConnection.reset();
+            self.directConnection && self.directConnection.reset();
             break;
           case CLOUD_TYPE.HLS:
             // self.hlsStreams.forEach(s => {
