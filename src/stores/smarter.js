@@ -289,15 +289,16 @@ const TransactionItemModel = types.model({
   descriptionName: types.string,
 });
 
-const parseTransactionItem = item =>
-  TransactionItemModel.create({
+const parseTransactionItem = item => {
+  return TransactionItemModel.create({
     id: item.Id,
     itemLine: item.ItemLine,
-    quantity: item.Qty,
+    quantity: Number.isInteger(item.Qty) ? item.Qty : Math.ceil(item.Qty),
     total: item.Total,
     itemCodeName: item.ItemCodeName ?? '',
     descriptionName: item.DescriptionName ?? '',
   });
+};
 
 const TransactionModel = types
   .model({
