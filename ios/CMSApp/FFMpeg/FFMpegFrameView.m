@@ -295,7 +295,9 @@ const uint32_t numLayers = 24;
         mainDisplayVideo.fullscreenView = 0;
     }
     else
+    {
       mainDisplayVideo.fullscreenView = -1;
+    }
   }
 }
 
@@ -689,7 +691,18 @@ const uint32_t numLayers = 24;
     
     __block uint64_t channelMask = 0x00;
     uint64_t mainStreamMask = 0;
+    
+    // CMS fix out of bound crash
+    if (self.mainDisplayVideo.fullscreenView < 0 || self.mainDisplayVideo.fullscreenView >= [self.mainDisplayVideo getDisplayView].count) {
+      NSLog(@"GOND: get display View out of bound: %d", self.mainDisplayVideo.fullscreenView);
+      return;
+    }
     ImcViewDisplay* view = [[self.mainDisplayVideo getDisplayView] objectAtIndex:self.mainDisplayVideo.fullscreenView];
+    if (view.screenIndex < 0 || view.screenIndex >= [self.mainDisplayVideo getDisplayScreens].count)
+    {
+      NSLog(@"GOND: get display screen out of bound: %d", self.mainDisplayVideo.fullscreenView);
+      return;
+    }
     ImcScreenDisplay* screen = [[self.mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
     
     [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
