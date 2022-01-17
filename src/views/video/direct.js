@@ -80,20 +80,12 @@ class DirectVideoView extends React.Component {
         this.onNativeMessage
       );
     }
-    const {serverInfo, index, singlePlayer, videoStore} = this.props;
-    // const renderLimit = videoStore.gridLayout * (videoStore.gridLayout + 1);
+    const {serverInfo} = this.props;
     // __DEV__ &&
     //   console.log('DirectStreamingView renderLimit: ', renderLimit, index);
 
-    // if (singlePlayer || index < renderLimit) {
-    //   this.isViewable = true;
     if (this.ffmpegPlayer && serverInfo) {
-      if (
-        serverInfo.serverIP &&
-        serverInfo.port
-        // serverInfo.server.serverIP &&
-        // serverInfo.server.port // &&
-      ) {
+      if (serverInfo.serverIP && serverInfo.port) {
         // this.props.serverInfo.setStreamStatus({
         //   isLoading: true,
         //   connectionStatus: STREAM_STATUS.LOGING_IN,
@@ -123,10 +115,6 @@ class DirectVideoView extends React.Component {
       __DEV__ &&
         console.log('GOND serverInfo not valid reference: ', {...serverInfo});
     }
-    // } else {
-    //   __DEV__ &&
-    //     console.log('DirectStreamingView video not start yet: ', index);
-    // }
 
     // reactions:
     this.initReactions();
@@ -472,7 +460,7 @@ class DirectVideoView extends React.Component {
       // searchPlayTime,
       isLive,
       singlePlayer,
-      index,
+      // index,
     } = this.props;
     // __DEV__ &&
     //   console.log(
@@ -544,8 +532,8 @@ class DirectVideoView extends React.Component {
         }
         if (
           this.lastLogin.userName &&
-          this.lastLogin.password &&
-          (index == 0 || singlePlayer)
+          this.lastLogin.password // &&
+          // (index == 0 || singlePlayer)
         )
           Snackbar.show({
             text: LoginTxt.errorLoginIncorrect,
@@ -572,7 +560,8 @@ class DirectVideoView extends React.Component {
         //   }, 100);
         // }
         setTimeout(() => {
-          if (this.state.showLoginSuccessFlag && (index == 0 || singlePlayer))
+          if (this.state.showLoginSuccessFlag)
+            // && (index == 0 || singlePlayer))
             Snackbar.show({
               text: LoginTxt.loginSuccess,
               duration: Snackbar.LENGTH_LONG,
@@ -853,7 +842,7 @@ class DirectVideoView extends React.Component {
   };
 
   setNative = (params, immediate = false) => {
-    const {index, singlePlayer, serverInfo} = this.props;
+    // const {index, singlePlayer, serverInfo} = this.props;
 
     if (!this._isMounted) return;
     if (!this.ffmpegPlayer) {
