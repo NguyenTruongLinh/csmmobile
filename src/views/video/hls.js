@@ -17,7 +17,11 @@ import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
-import {NATIVE_MESSAGE, STREAM_TIMEOUT} from '../../consts/video';
+import {
+  BUFFER_TIMEOUT,
+  RECONNECT_TIMEOUT,
+  STREAM_TIMEOUT,
+} from '../../consts/video';
 import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../../localization/texts';
@@ -54,6 +58,9 @@ class HLSStreamingView extends React.Component {
     this.reactions = [];
     this.shouldResume = false;
     this.lastSearchTime = null;
+    this.videoBufferTimeout = null;
+    this.videoReconnectTimeout = null;
+    // this.waitingForReconnect = false;
   }
 
   componentDidMount() {
@@ -70,6 +77,9 @@ class HLSStreamingView extends React.Component {
     //   clearTimeout(this.checkStreamTO);
     // }
     this.reactions.forEach(unsubscribe => unsubscribe());
+    this.clearBufferTimeout();
+    this.clearReconnectTimeout();
+    // this.stop();
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
@@ -230,12 +240,31 @@ class HLSStreamingView extends React.Component {
         connectionStatus: STREAM_STATUS.BUFFERING,
         isLoading: true,
       });
+      if (!this.videoBufferTimeout) {
+        this.videoBufferTimeout = setTimeout(
+          this.onBufferTimeout,
+          BUFFER_TIMEOUT
+        );
+      }
     } else {
       streamData.setStreamStatus({
         connectionStatus: STREAM_STATUS.DONE,
         isLoading: false,
       });
+      this.clearBufferTimeout();
     }
+  };
+
+  clearBufferTimeout = () => {
+    if (this.videoBufferTimeout) {
+      clearTimeout(this.videoBufferTimeout);
+      this.videoBufferTimeout = null;
+    }
+  };
+
+  onBufferTimeout = () => {
+    this.reconnect();
+    this.clearBufferTimeout();
   };
 
   onError = error => {
@@ -249,17 +278,12 @@ class HLSStreamingView extends React.Component {
     // TODO: new search time
     if (!isLive && this.frameTime > 0)
       this.lastSearchTime = this.computeTime(this.frameTime);
+
     streamData.reconnect(isLive, hdMode);
   };
 
   onProgress = data => {
     const {isLive, videoStore, streamData, singlePlayer} = this.props;
-    // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
-    if (!singlePlayer) return;
-
-    const {hlsTimestamps} = videoStore;
-    const {timeBeginPlaying} = this.state;
-
     if (
       streamData.isLoading ||
       streamData.connectionStatus != STREAM_STATUS.DONE
@@ -268,7 +292,15 @@ class HLSStreamingView extends React.Component {
         isLoading: false,
         connectionStatus: STREAM_STATUS.DONE,
       });
+      this.clearBufferTimeout();
+      this.clearReconnectTimeout();
     }
+
+    // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
+    if (!singlePlayer) return;
+
+    const {hlsTimestamps} = videoStore;
+    const {timeBeginPlaying} = this.state;
 
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
@@ -390,8 +422,29 @@ class HLSStreamingView extends React.Component {
     __DEV__ && console.log('GOND HLS onLoad: ', event);
   };
 
+  clearReconnectTimeout = () => {
+    if (this.videoReconnectTimeout) {
+      clearTimeout(this.videoReconnectTimeout);
+      this.videoReconnectTimeout = null;
+    }
+  };
+
+  reconnect = () => {
+    const {streamData, isLive, hdMode} = this.props;
+
+    if (!this.videoReconnectTimeout) {
+      streamData.reconnect(isLive, hdMode);
+      this.videoReconnectTimeout = setTimeout(
+        () => (this.videoReconnectTimeout = null),
+        RECONNECT_TIMEOUT
+      );
+    }
+  };
+
   stop = () => {
     this.props.videoStore.stopHLSStream();
+    this.clearBufferTimeout();
+    this.clearReconnectTimeout();
   };
 
   pause = willPause => {
@@ -466,9 +519,7 @@ class HLSStreamingView extends React.Component {
                   style={[{width: width, height: height}]}
                   hls={true}
                   resizeMode={'stretch'}
-                  //source={{uri:this.state.url,type:'application/x-mpegURL'}}
                   source={{uri: streamUrl + urlParams, type: 'm3u8'}}
-                  // paused={this.state.paused}
                   paused={singlePlayer ? videoStore.paused || paused : false}
                   ref={ref => {
                     this.player = ref;

@@ -114,13 +114,10 @@ const parseDirectServer = (server /*, channelNo, isLive*/) => {
     userName: server.UName,
     password: util.AES_decrypt(server.PWD, apiService.configToken.apiKey),
     kDVR: server.KDVR,
-    // channels: '',
     channelList: [],
     searchMode: false,
-    // byChannel: true,
     date: '',
     hd: false,
-    // interval: DAY_INTERVAL,
   });
 };
 
@@ -128,7 +125,6 @@ const DirectStreamModel = types
   .model({
     server: types.reference(DirectServerModel),
     channel: types.reference(ChannelModel),
-    // playing: types.boolean,
     isLoading: types.optional(types.boolean, false),
     connectionStatus: types.optional(types.string, ''),
     error: types.maybeNull(types.string),
@@ -286,12 +282,9 @@ export const VideoModel = types
     directStreams: types.array(DirectStreamModel),
     selectedChannel: types.maybeNull(types.number),
 
-    // openStreamLock: types.boolean,
     gridLayout: types.optional(types.number, 2),
     channelFilter: types.string,
     isLoading: types.boolean,
-    // error: types.string,
-    // needResetConnection: types.boolean,
     message: types.string,
     nvrUser: types.maybeNull(types.string),
     nvrPassword: types.maybeNull(types.string),
@@ -303,19 +296,13 @@ export const VideoModel = types
     paused: types.optional(types.boolean, false),
     noVideo: types.optional(types.boolean, false),
     showAuthenModal: types.boolean,
-    // isSingleMode: types.boolean,
     // frameTime: types.number,
     // frameTimeString: types.string,
     searchDate: types.maybeNull(types.frozen()), // luxon DateTime
     searchPlayTime: types.maybeNull(types.string),
-    // displayDateTime: types.maybeNull(types.string),
-    // timezone: types.maybeNull(TimezoneModel),
     dvrTimezone: types.maybeNull(TimezoneModel),
     timezoneOffset: types.maybeNull(types.number), // offset value
     timezoneName: types.maybeNull(types.string), // IANA string
-    // timeline: types.array(TimelineModel),
-    // hlsTimestamps: types.array(types.number),
-    // timelinePos: types.maybeNull(types.number),
     // TODO: timestamp should use BigNumber?
     searchBegin: types.maybeNull(types.number),
     searchEnd: types.maybeNull(types.number),
