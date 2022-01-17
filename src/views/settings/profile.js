@@ -127,7 +127,9 @@ class ProfileView extends React.Component {
     } else if (field == 'email') {
       this.setState({email: value});
     }
-    this.refreshSaveButton();
+    setTimeout(() => {
+      this.refreshSaveButton();
+    }, 200);
   }
 
   refreshSaveButton() {
