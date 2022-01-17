@@ -185,7 +185,18 @@ class DirectVideoView extends React.Component {
           hdMode => {
             // singlePlayer &&
             // this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps({hd: hdMode});
-            this.setNative({hd: hdMode});
+            if (this.props.isLive) this.setNative({hd: hdMode});
+            else {
+              this.pause();
+              setTimeout(
+                () =>
+                  this.playAt(
+                    this.lastFrameTime.toSeconds() -
+                      this.lastFrameTime.startOf('day').toSeconds()
+                  ),
+                200
+              );
+            }
           }
         ),
         reaction(
@@ -926,12 +937,12 @@ class DirectVideoView extends React.Component {
    */
   playAt = value => {
     // const localValue = value - this.props.videoStore.directTimeDiff;
-    const {isLive} = this.props;
+    const {isLive, videoStore} = this.props;
     if (isLive) return;
     __DEV__ && console.log('GOND direct playAt: ', value);
     if (this.ffmpegPlayer) {
       this.ffmpegPlayer.setNativeProps({
-        seekpos: {pos: value, hd: this.props.videoStore.hdMode},
+        seekpos: {pos: value, hd: videoStore.hdMode},
       });
       this.lastTimestamp = 0;
       // setTimeout(() => this.ffmpegPlayer && this.pause(false), 200);
