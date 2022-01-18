@@ -84,7 +84,7 @@ class SitesView extends Component {
     this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
       if (this.blurFlag) {
         this.blurFlag = false;
-        this.getData(true);
+        // this.getData(true);
       }
     });
 
@@ -188,6 +188,7 @@ class SitesView extends Component {
   onDismissSiteAlerts = item => {
     if (!this.state.isHealthRoute) return;
     const {healthStore} = this.props;
+    __DEV__ && console.log(` selectSite 5 item = `, JSON.stringify(item));
     healthStore.selectSite(item.id);
     this.onRowOpen();
     healthStore.showDismissModal(true);
@@ -198,10 +199,12 @@ class SitesView extends Component {
     const {isHealthRoute} = this.state;
 
     if (isHealthRoute) {
+      __DEV__ && console.log(` selectSite 6 item = `, JSON.stringify(item));
       sitesStore.selectSite(item.id);
       healthStore.selectSite(item.id);
       navigation.push(ROUTERS.HEALTH_DETAIL);
     } else {
+      __DEV__ && console.log(` selectSite  7 item = `, JSON.stringify(item));
       sitesStore.selectSite(item.key);
       if (item.dvrs.length == 1) {
         if (sitesStore.selectedDVR) return; // prevent double click
@@ -216,8 +219,9 @@ class SitesView extends Component {
   gotoVideo = (isLive, data) => {
     const {sitesStore, healthStore, navigation} = this.props;
     __DEV__ && console.log('GOND Health gotoVideo ... ', data);
+    __DEV__ && console.log(` selectSite 8 data = `, JSON.stringify(data));
     sitesStore.selectSite(data.id);
-    healthStore.setVideoMode(isLive);
+    // healthStore.setVideoMode(isLive);
     navigation.push(ROUTERS.HEALTH_CHANNELS);
   };
 
@@ -360,7 +364,13 @@ class SitesView extends Component {
       ? healthStore.filteredSites
       : sitesStore.filteredSites;
     const noData = !this.state.isLoadingRegardlessStep && siteData == 0;
-
+    __DEV__ &&
+      console.log(
+        ` healthStore.selectedSite = `,
+        JSON.stringify(healthStore.selectedSite),
+        `| sitesStore.selectedSite = `,
+        JSON.stringify(sitesStore.selectedSite)
+      );
     return (
       <View style={styles.screenContainer}>
         {/* <View style={commonStyles.flatSearchBarContainer}>
@@ -401,6 +411,7 @@ class SitesView extends Component {
         </View>
         <AlertDismissModal
           callback={() => {
+            __DEV__ && console.log(` selectSite 9 `);
             healthStore.selectSite(null);
           }}
         />
