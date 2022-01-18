@@ -279,6 +279,7 @@ export const SitesMapModel = types
       self.regionFilter = value;
     },
     selectSite(item) {
+      __DEV__ && console.log(`selectSite item = `, item);
       self.selectedSite = item;
     },
     setSiteFilter(value) {
@@ -439,7 +440,19 @@ export const SitesMapModel = types
           //   }
           // });
           if (Array.isArray(resRegions)) {
+            resRegions.sort((a, b) =>
+              utils.compareStrings(
+                a.RegionName.toLowerCase(),
+                b.RegionName.toLowerCase()
+              )
+            );
             self.sitesList = resRegions.reduce((result, reg) => {
+              reg.SitesList.sort((a, b) =>
+                utils.compareStrings(
+                  a.SiteName.toLowerCase(),
+                  b.SiteName.toLowerCase()
+                )
+              );
               reg.SitesList.forEach(s => result.push(parseSite(s)));
               return result;
             }, []);
