@@ -120,10 +120,26 @@ class PasswordExpired extends Component {
   onFocus = event => {};
 
   onTypingNewPassword = text => {
-    const newPasswordError =
-      text.length > 0 && text.length < 10
-        ? 'Password must contain at least 10 characters'
-        : null;
+    let newPasswordError = null;
+    if (text.length > 0) {
+      if (text.length < 10)
+        newPasswordError = 'Password must contain at least 10 characters';
+      else {
+        const hasNumber = /[0-9]+/;
+        const hasUpperChar = /[A-Z]+/;
+        const hasLowerChar = /[a-z]+/;
+        const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (
+          !hasNumber.test(text) ||
+          !hasUpperChar.test(text) ||
+          !hasLowerChar.test(text) ||
+          !hasSpecialChar.test(text)
+        ) {
+          newPasswordError =
+            'Password must contain at least (A-Z,a-z,0-9,ex:@ any).';
+        }
+      }
+    }
     const confirmPasswordError =
       // !newPasswordError &&
       text.length > 0 &&
