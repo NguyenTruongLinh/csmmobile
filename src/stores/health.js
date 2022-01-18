@@ -311,7 +311,6 @@ export const HealthModel = types
               if (site) {
                 if (self.selectedSite && self.selectedSite.id == siteData.Id) {
                   applySnapshot(self.selectedSite, {
-                    id: siteData.Id,
                     name: siteData.Name,
                     total: siteData.Total,
                     sdate: siteData.sdate ?? '',
