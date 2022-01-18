@@ -124,7 +124,8 @@ const onAlertEvent = async props => {
       shouldRefresh = true;
       break;
     }
-    case NOTIFY_ACTION.DISMISS_BLOCK: {
+    case NOTIFY_ACTION.DIMISS_BLOCK: {
+      __DEV__ && console.log(`DIMISS_BLOCK alert = `, alert);
       // __DEV__ && console.log('GOND onAlertEvent 4e');
       // {"Total":3,"User":{"UserID":1,"FName":"Demo1","LName":"Aaa","Status":false,"Email":null}}
       let {Total, User} = alert;
@@ -134,9 +135,7 @@ const onAlertEvent = async props => {
           (User.FName + ' ' + User.LName).trim() +
           ' dismissed ' +
           Total.toString() +
-          (Total > 1)
-            ? ' alerts.'
-            : ' alert',
+          (Total > 1 ? ' alerts.' : ' alert'),
       };
       shouldRefresh = true;
       break;

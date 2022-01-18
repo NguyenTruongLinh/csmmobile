@@ -53,7 +53,7 @@ const onExceptionEvent = props => {
     case NOTIFY_ACTION.DELETE:
     case NOTIFY_ACTION.REFRESH:
     case NOTIFY_ACTION.DISMISS:
-    case NOTIFY_ACTION.DISMISS_BLOCK:
+    case NOTIFY_ACTION.DIMISS_BLOCK:
     case NOTIFY_ACTION.NVR_STATUS:
       return;
   }
