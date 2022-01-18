@@ -66,6 +66,7 @@ class DirectVideoView extends React.Component {
     this.isPlaying = false;
     this.pendingCommand = null;
     // this.isViewable = false;
+    this.noPermission = false;
   }
 
   componentDidMount() {
@@ -214,7 +215,11 @@ class DirectVideoView extends React.Component {
               isLoading: true,
               connectionStatus: STREAM_STATUS.CONNECTING,
             });
-            this.setNativePlayback(true);
+            if (this.noPermission) {
+              this.stop();
+              setTimeout(() => this.setNativePlayback(true), 200);
+              this.noPermission = false;
+            } else this.setNativePlayback(true);
             // }
           }
         ),
@@ -741,6 +746,7 @@ class DirectVideoView extends React.Component {
           duration: Snackbar.LENGTH_LONG,
           backgroundColor: cmscolors.Success,
         });
+        this.noPermission = true;
         break;
       case NATIVE_MESSAGE.RECORDING_DATE:
         if (!singlePlayer || !value || !Array.isArray(value)) {
@@ -803,6 +809,11 @@ class DirectVideoView extends React.Component {
                     'GOND Direct on play search at time: ',
                     secondsValue
                   );
+                // if (this.noPermission) {
+                //   this.stop();
+                //   setTimeout(() => this.setNativePlayback(), 200);
+                //   this.noPermission = false;
+                // } else
                 this.playAt(secondsValue);
               }
             }, 100);
@@ -850,6 +861,7 @@ class DirectVideoView extends React.Component {
     } else if (params.stop != undefined || params.disconnect != undefined) {
       this.isPlaying = false;
     }
+    __DEV__ && console.log('GOND setPlayStatus: ', this.isPlaying);
   };
 
   setNative = (params, immediate = false) => {

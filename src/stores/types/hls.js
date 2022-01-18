@@ -19,7 +19,7 @@ import {
   STREAM_TIMEOUT,
   VSCCommandString,
 } from '../../consts/video';
-import {STREAM_STATUS} from '../localization/texts';
+import {STREAM_STATUS} from '../../localization/texts';
 
 const HLSURLModel = types
   .model({
@@ -86,6 +86,7 @@ export default HLSStreamModel = types
     isLive: types.optional(types.boolean, false),
     isHD: types.optional(types.boolean, false),
     isDead: types.optional(types.boolean, false),
+    isWaitingReconnect: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     streamTimeout: null,
@@ -342,8 +343,19 @@ export default HLSStreamModel = types
       return true;
     }),
     reconnect() {
-      if (self.isDead || self.connectionStatus == STREAM_STATUS.TIMEOUT)
+      if (
+        self.isDead ||
+        self.isWaitingReconnect ||
+        self.connectionStatus == STREAM_STATUS.TIMEOUT ||
+        self.connectionStatus == STREAM_STATUS.NOVIDEO
+      )
         return Promise.resolve(false);
+
+      // wait time before another reconnect:
+      self.isWaitingReconnect = true;
+      setTimeout(() => (self.isWaitingReconnect = false), 3000);
+      // end wait time
+
       self.setUrl(null);
       self.setStreamStatus({
         isLoading: true,

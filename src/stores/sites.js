@@ -59,7 +59,9 @@ const SiteModel = types
 
 const parseSite = _site => {
   let dvrs = Array.isArray(_site.Childs)
-    ? _site.Childs.map(item => parseDVR(item))
+    ? _site.Childs.map(item => parseDVR(item)).sort((dvr1, dvr2) =>
+        utils.compareStrings(dvr1.name, dvr2.name)
+      )
     : [];
   return SiteModel.create({
     key: _site.SiteKey,
@@ -73,7 +75,9 @@ const parseSite = _site => {
 
 const parseSiteWithDVRs = _site => {
   let dvrs = Array.isArray(_site.Childs)
-    ? _site.Childs.map(item => parseDVR(item))
+    ? _site.Childs.map(item => parseDVR(item)).sort((dvr1, dvr2) =>
+        utils.compareStrings(dvr1.name, dvr2.name)
+      )
     : [];
   return SiteModel.create({
     key: _site.Key,
@@ -218,7 +222,7 @@ export const SitesMapModel = types
     edit(_editedSite) {
       let site = self.sitesList.find(item => item.key == _editedSite.Key);
       site.parse(_editedSite);
-      self.sitesList.sort(item => item.name);
+      self.sitesList.sort((s1, s2) => utils.compareStrings(s1.name, s2.name));
     },
     delete(_deletedSite) {
       let removedIdx = self.sitesList.findIndex(
@@ -247,7 +251,7 @@ export const SitesMapModel = types
         dvrs,
       });
       self.sitesList.push(site);
-      self.sitesList.sort(item => item.name);
+      self.sitesList.sort((s1, s2) => utils.compareStrings(s1.name, s2.name));
     },
     selectRegion: flow(function* selectRegion(item) {
       self.selectedRegion = item.key;
@@ -322,7 +326,9 @@ export const SitesMapModel = types
           SiteRoute.getAllRegions
         );
         __DEV__ && console.log('GOND get all regions: ', res);
-        self.regionsList = res.map(reg => parseRegion(reg));
+        self.regionsList = res
+          .map(reg => parseRegion(reg))
+          .sort((reg1, reg2) => utils.compareStrings(reg1.name, reg2.name));
       } catch (err) {
         __DEV__ && console.log('GOND Could not get regions data!', err);
         // self.isLoading = false;
@@ -344,7 +350,9 @@ export const SitesMapModel = types
             SiteRoute.getAllWithDVR
           );
           __DEV__ && console.log('GOND get all sites: ', res);
-          self.sitesList = self.parseSitesList(res, true);
+          self.sitesList = self
+            .parseSitesList(res, true)
+            .sort((s1, s2) => utils.compareStrings(s1.name, s2.name));
         }
       } catch (err) {
         __DEV__ && console.log('GOND Could not get sites data!', err);
@@ -440,22 +448,12 @@ export const SitesMapModel = types
           //   }
           // });
           if (Array.isArray(resRegions)) {
-            resRegions.sort((a, b) =>
-              utils.compareStrings(
-                a.RegionName.toLowerCase(),
-                b.RegionName.toLowerCase()
-              )
-            );
-            self.sitesList = resRegions.reduce((result, reg) => {
-              reg.SitesList.sort((a, b) =>
-                utils.compareStrings(
-                  a.SiteName.toLowerCase(),
-                  b.SiteName.toLowerCase()
-                )
-              );
-              reg.SitesList.forEach(s => result.push(parseSite(s)));
-              return result;
-            }, []);
+            self.sitesList = resRegions
+              .reduce((result, reg) => {
+                reg.SitesList.forEach(s => result.push(parseSite(s)));
+                return result;
+              }, [])
+              .sort((s1, s2) => utils.compareStrings(s1.name, s2.name));
 
             self.regionsList = resRegions
               .map(reg => {
@@ -463,7 +461,8 @@ export const SitesMapModel = types
                 reg.SitesList.forEach(s => newRegion.pushSite(s.SiteKey));
                 return newRegion;
               })
-              .filter(r => r.sites && r.sites.length > 0);
+              .filter(r => r.sites && r.sites.length > 0)
+              .sort((reg1, reg2) => utils.compareStrings(reg1.name, reg2.name));
           } else {
             __DEV__ &&
               console.log(

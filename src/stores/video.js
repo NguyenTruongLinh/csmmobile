@@ -1130,6 +1130,7 @@ export const VideoModel = types
       },
       setNoVideo(value) {
         self.noVideo = value;
+        self.timeline = [];
         // self.displayDateTime = self.searchDate.toFormat(
         //   NVRPlayerConfig.FrameFormat
         // );
