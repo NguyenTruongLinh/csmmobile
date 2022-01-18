@@ -192,8 +192,10 @@ class DirectVideoView extends React.Component {
               setTimeout(
                 () =>
                   this.playAt(
-                    this.lastFrameTime.toSeconds() -
-                      this.lastFrameTime.startOf('day').toSeconds()
+                    this.lastFrameTime
+                      ? this.lastFrameTime.toSeconds() -
+                          this.lastFrameTime.startOf('day').toSeconds()
+                      : 0
                   ),
                 200
               );
