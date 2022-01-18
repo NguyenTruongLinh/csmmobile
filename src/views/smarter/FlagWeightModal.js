@@ -85,7 +85,9 @@ class FlagWeightModal extends Component {
           commonStyles.modalContainer,
           {
             marginTop:
-              marginTop < this.minMarginTop ? this.minMarginTop : marginTop,
+              (marginTop < this.minMarginTop ? this.minMarginTop : marginTop) /
+              1.1,
+            backgroundColor: 'white',
           },
         ]}>
         <View style={[commonStyles.modalHeader, {height: HeaderHeight}]}>

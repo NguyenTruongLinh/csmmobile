@@ -450,8 +450,8 @@ const TransactionModel = types
     }),
   }));
 
-const _parseTransactionData = (_data, exceptionTypesConfig) =>
-  TransactionModel.create({
+const _parseTransactionData = (_data, exceptionTypesConfig) => {
+  return TransactionModel.create({
     tranId: _data.TranId,
     tranNo: _data.TranNo,
     pacId: _data.PacId,
@@ -511,7 +511,7 @@ const _parseTransactionData = (_data, exceptionTypesConfig) =>
       ? _data.Details.map(item => parseTransactionItem(item))
       : [],
   });
-
+};
 export const POSModel = types
   .model({
     showChartView: types.boolean,
@@ -828,7 +828,8 @@ export const POSModel = types
             page,
           }
         );
-        __DEV__ && console.log('GOND getEmployeeTransactions = ', res);
+        __DEV__ &&
+          console.log('GOND getEmployeeTransactions = ', JSON.stringify(res));
 
         if (
           !res ||
@@ -903,7 +904,9 @@ export const POSModel = types
             ? self.notifiedTransaction
             : self.transactionsList.find(t => t.tranId == _transId);
         if (_trans) {
-          const snapShot = getSnapshot(_parseTransactionData(res));
+          const snapShot = getSnapshot(
+            _parseTransactionData(res, self.exceptionTypesConfig)
+          );
           __DEV__ &&
             console.log('GOND getTransaction IF snapShot = ', snapShot);
           applySnapshot(_trans, snapShot);
