@@ -308,7 +308,9 @@ class ChannelsListView extends React.Component {
             />
           </View>
           <View style={styles.channelName}>
-            <Text style={{}}>{item.name}</Text>
+            <Text numberOfLines={2} style={{}}>
+              {item.name}
+            </Text>
           </View>
         </View>
       </CMSRipple>
