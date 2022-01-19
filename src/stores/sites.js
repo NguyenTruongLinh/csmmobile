@@ -60,7 +60,7 @@ const SiteModel = types
 const parseSite = _site => {
   let dvrs = Array.isArray(_site.Childs)
     ? _site.Childs.map(item => parseDVR(item)).sort((dvr1, dvr2) =>
-        utils.compareStrings(dvr1.name, dvr2.name)
+        utils.compareStrings(dvr1.name, dvr2.name, false)
       )
     : [];
   return SiteModel.create({
@@ -76,7 +76,7 @@ const parseSite = _site => {
 const parseSiteWithDVRs = _site => {
   let dvrs = Array.isArray(_site.Childs)
     ? _site.Childs.map(item => parseDVR(item)).sort((dvr1, dvr2) =>
-        utils.compareStrings(dvr1.name, dvr2.name)
+        utils.compareStrings(dvr1.name, dvr2.name, false)
       )
     : [];
   return SiteModel.create({
@@ -177,10 +177,7 @@ export const SitesMapModel = types
           site.name.toLowerCase().includes(self.siteFilter.toLowerCase())
         )
         .sort((siteA, siteB) =>
-          utils.compareStrings(
-            siteA.name.toLowerCase(),
-            siteB.name.toLowerCase()
-          )
+          utils.compareStrings(siteA.name, siteB.name, false)
         );
     },
     get filteredDVRs() {
@@ -216,13 +213,15 @@ export const SitesMapModel = types
           console.log('GOND Load sites list failed, data is not an array');
       }
       return res.sort((siteA, siteB) =>
-        utils.compareStrings(siteA.name.toLowerCase(), siteB.name.toLowerCase())
+        utils.compareStrings(siteA.name, siteB.name, false)
       );
     },
     edit(_editedSite) {
       let site = self.sitesList.find(item => item.key == _editedSite.Key);
       site.parse(_editedSite);
-      self.sitesList.sort((s1, s2) => utils.compareStrings(s1.name, s2.name));
+      self.sitesList.sort((s1, s2) =>
+        utils.compareStrings(s1.name, s2.name, false)
+      );
     },
     delete(_deletedSite) {
       let removedIdx = self.sitesList.findIndex(
@@ -251,7 +250,9 @@ export const SitesMapModel = types
         dvrs,
       });
       self.sitesList.push(site);
-      self.sitesList.sort((s1, s2) => utils.compareStrings(s1.name, s2.name));
+      self.sitesList.sort((s1, s2) =>
+        utils.compareStrings(s1.name, s2.name, false)
+      );
     },
     selectRegion: flow(function* selectRegion(item) {
       self.selectedRegion = item.key;
@@ -328,7 +329,9 @@ export const SitesMapModel = types
         __DEV__ && console.log('GOND get all regions: ', res);
         self.regionsList = res
           .map(reg => parseRegion(reg))
-          .sort((reg1, reg2) => utils.compareStrings(reg1.name, reg2.name));
+          .sort((reg1, reg2) =>
+            utils.compareStrings(reg1.name, reg2.name, false)
+          );
       } catch (err) {
         __DEV__ && console.log('GOND Could not get regions data!', err);
         // self.isLoading = false;
@@ -352,7 +355,7 @@ export const SitesMapModel = types
           __DEV__ && console.log('GOND get all sites: ', res);
           self.sitesList = self
             .parseSitesList(res, true)
-            .sort((s1, s2) => utils.compareStrings(s1.name, s2.name));
+            .sort((s1, s2) => utils.compareStrings(s1.name, s2.name, false));
         }
       } catch (err) {
         __DEV__ && console.log('GOND Could not get sites data!', err);
@@ -450,10 +453,13 @@ export const SitesMapModel = types
           if (Array.isArray(resRegions)) {
             self.sitesList = resRegions
               .reduce((result, reg) => {
+                reg.SitesList.sort((a, b) =>
+                  utils.compareStrings(a.SiteName, b.SiteName, false)
+                );
                 reg.SitesList.forEach(s => result.push(parseSite(s)));
                 return result;
               }, [])
-              .sort((s1, s2) => utils.compareStrings(s1.name, s2.name));
+              .sort((s1, s2) => utils.compareStrings(s1.name, s2.name, false));
 
             self.regionsList = resRegions
               .map(reg => {
@@ -462,7 +468,9 @@ export const SitesMapModel = types
                 return newRegion;
               })
               .filter(r => r.sites && r.sites.length > 0)
-              .sort((reg1, reg2) => utils.compareStrings(reg1.name, reg2.name));
+              .sort((reg1, reg2) =>
+                utils.compareStrings(reg1.name, reg2.name, false)
+              );
           } else {
             __DEV__ &&
               console.log(

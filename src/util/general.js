@@ -607,7 +607,11 @@ exports.compareArrays = (a, b) => {
   return JSON.stringify(a) == JSON.stringify(b);
 };
 
-exports.compareStrings = (a, b) => {
+exports.compareStrings = (a, b, caseSensitive) => {
+  if (caseSensitive === false) {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+  }
   return a > b ? 1 : a < b ? -1 : 0;
 };
 
