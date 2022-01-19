@@ -3,10 +3,11 @@ import {flow, types, getSnapshot, applySnapshot} from 'mobx-state-tree';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
-import {KinesisVideo} from '@aws-sdk/client-kinesis-video';
+import {KinesisVideo, APIName} from '@aws-sdk/client-kinesis-video';
 import {
   FragmentSelectorType,
   HLSDiscontinuityMode,
+  ContainerFormat,
   HLSPlaybackMode,
   KinesisVideoArchivedMedia,
 } from '@aws-sdk/client-kinesis-video-archived-media';
@@ -235,6 +236,9 @@ export default HLSStreamModel = types
       needReset != undefined && (self.needReset = needReset);
       error != undefined && (self.error = error);
     },
+    setReconnectStatus(value) {
+      self.isWaitingReconnect = value;
+    },
     // setTimelines(timeline, timestamp) {
     //   self.timeline = timeline;
     //   self.timestamps = timestamp;
@@ -254,22 +258,24 @@ export default HLSStreamModel = types
       };
       const kinesisVideo = new KinesisVideo(configs);
 
+      /*
       __DEV__ && console.log('GOND HLS: Get stream ARN ... ');
-      // let streamARN = '';
-      // try {
-      //   const response = yield kinesisVideo.describeStream({
-      //     StreamName: self.streamName,
-      //   });
+      let streamARN = '';
+      try {
+        const response = yield kinesisVideo.describeStream({
+          StreamName: self.streamName,
+        });
 
-      //   __DEV__ && console.log('GOND Get stream ARN: ', response);
-      //   streamARN = response.StreamInfo.StreamARN;
-      //   // new Endpoint(
-      //   //   response.DataEndpoint
-      //   // );
-      // } catch (err) {
-      //   __DEV__ && console.log('GOND HLS Get stream ARN failed: ', err);
-      //   return false;
-      // }
+        __DEV__ && console.log('GOND Get stream ARN: ', response);
+        streamARN = response.StreamInfo.StreamARN;
+        // new Endpoint(
+        //   response.DataEndpoint
+        // );
+      } catch (err) {
+        __DEV__ && console.log('GOND HLS Get stream ARN failed: ', err);
+        return false;
+      }
+      */
 
       // Step 2: Get a data endpoint for the stream
       __DEV__ && console.log('GOND HLS: Fetching data endpoint ... ');
@@ -277,7 +283,7 @@ export default HLSStreamModel = types
         const response = yield kinesisVideo.getDataEndpoint({
           StreamName: self.streamName,
           // StreamARN: streamARN,
-          APIName: 'GET_HLS_STREAMING_SESSION_URL',
+          APIName: APIName.GET_HLS_STREAMING_SESSION_URL,
         });
 
         __DEV__ && console.log('GOND Data endpoint: ', response);
@@ -301,17 +307,10 @@ export default HLSStreamModel = types
             : HLSPlaybackMode.LIVE_REPLAY,*/,
             HLSFragmentSelector: {
               FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
-              // TimestampRange: isLive
-              //   ? undefined
-              //   : {
-              //       StartTimestamp: new Date($('#startTimestamp').val()),
-              //       EndTimestamp: new Date($('#endTimestamp').val()),
-              //     },
             },
-            // ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
-            // DiscontinuityMode: HLSDiscontinuityMode.ALWAYS,  // temp removed
-            // DisplayFragmentTimestamp: $('#displayFragmentTimestamp').val(),
-            // MaxMediaPlaylistFragmentResults: parseInt($('#maxResults').val()),
+            ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
+            DiscontinuityMode: HLSDiscontinuityMode.ON_DISCONTINUITY, // temp removed
+            MaxMediaPlaylistFragmentResults: 7,
             Expires: HLS_MAX_EXPIRE_TIME,
           }
         );
@@ -352,8 +351,12 @@ export default HLSStreamModel = types
         return Promise.resolve(false);
 
       // wait time before another reconnect:
-      self.isWaitingReconnect = true;
-      setTimeout(() => (self.isWaitingReconnect = false), 3000);
+      if (__DEV__) {
+        console.log('GOND HLS::Reconnect ---------');
+        // console.trace();
+      }
+      self.setReconnectStatus(true);
+      setTimeout(() => self.setReconnectStatus(false), 3000);
       // end wait time
 
       self.setUrl(null);
