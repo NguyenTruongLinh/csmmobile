@@ -684,7 +684,11 @@ class LiveChannelsView extends React.Component {
           keyExtractor={(item, index) =>
             'ch_' + (item && item.channelNo ? item.channelNo : 'none' + index)
           }
-          refreshing={videoStore.isLoading || this.state.internalLoading}
+          refreshing={
+            videoStore.isLoading ||
+            this.state.internalLoading ||
+            videoStore.waitForTimezone
+          }
           scrollEnabled={false}
         />
       </GestureRecognizer>
@@ -710,6 +714,7 @@ class LiveChannelsView extends React.Component {
         <NVRAuthenModal onSubmit={this.onAuthenSubmit} />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           {videoStore.isLoading ||
+          videoStore.waitForTimezone ||
           !videoStore.isCloud ||
           videoStore.videoData.length > 0
             ? this.renderStaticVideoList()

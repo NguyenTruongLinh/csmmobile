@@ -866,6 +866,14 @@ export const UserStoreModel = types
       }
     },
     registerToken: flow(function* () {
+      if (!self.fcm.token || self.fcm.token.length == 0) {
+        __DEV__ &&
+          console.log(
+            'GOND registerToken failed, fcm token empty ',
+            self.fcm.token
+          );
+        return false;
+      }
       const data = {
         fcm_token: self.fcm.token,
         deviceid: appStore.deviceInfo.deviceId,

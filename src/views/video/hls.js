@@ -240,13 +240,13 @@ class HLSStreamingView extends React.Component {
         connectionStatus: STREAM_STATUS.BUFFERING,
         isLoading: true,
       });
-      // It cause reconnecting all the time
-      // if (!this.videoBufferTimeout) {
-      //   this.videoBufferTimeout = setTimeout(
-      //     this.onBufferTimeout,
-      //     BUFFER_TIMEOUT
-      //   );
-      // }
+      // It could cause reconnecting forever
+      if (!this.videoBufferTimeout) {
+        this.videoBufferTimeout = setTimeout(
+          this.onBufferTimeout,
+          BUFFER_TIMEOUT
+        );
+      }
     } else {
       streamData.setStreamStatus({
         connectionStatus: STREAM_STATUS.DONE,
@@ -264,8 +264,8 @@ class HLSStreamingView extends React.Component {
   };
 
   onBufferTimeout = () => {
-    this.reconnect();
     this.clearBufferTimeout();
+    this.reconnect();
   };
 
   onError = error => {

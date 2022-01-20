@@ -197,14 +197,14 @@ class App extends React.Component {
     this.onTokenMessage(Id, Value);
   };
 
-  onTokenMessage = (msgid, value) => {
-    let {user} = this.props;
+  onTokenMessage = async (msgid, value) => {
+    let {user, userStore} = this.props;
     switch (msgid) {
       case 1: //updated app state
         // if(user != undefined || user != null || user.isAuth != false)
         // console.log('@GOND, onAppState event 1, value = ', value)
         if (user && user.isAuth)
-          registoken(
+          await userStore.registerToken(
             user.Api,
             this.props.config.deviceid,
             this.state.FCMToken,
@@ -216,7 +216,7 @@ class App extends React.Component {
       case 2: //updated APNS
         this.setState({APNSToken: value});
         // console.log('@GOND, onAppState event 2')
-        registoken(
+        await userStore.registerToken(
           user.Api,
           this.props.config.deviceid,
           this.state.FCMToken,
@@ -322,28 +322,32 @@ class App extends React.Component {
     */
   };
 
-  _handleAppStateChange = nextAppState => {
-    __DEV__ &&
-      console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
-    if (nextAppState === 'active' && this.appState) {
-      if (this.appState.match(/inactive|background/)) {
-        console.log('App has come to the foreground!');
+  _handleAppStateChange = async nextAppState => {
+    if (this.appState) {
+      __DEV__ &&
+        console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
+      if (nextAppState === 'active') {
+        if (this.appState.match(/inactive|background/)) {
+          console.log('App has come to the foreground!');
+        } else {
+          console.log('App launch');
+          // if (this.props.user.Api)
+          //   this.props.GetCloudType(this.props.user.Api, this.props.user.Api._ApiToken.devId);
+          // else
+          //   console.log('%c Warning! Cannot get cloud config user API not defined!', 'color: red; font-style: bold')
+        }
       } else {
-        console.log('App launch');
-        // if (this.props.user.Api)
-        //   this.props.GetCloudType(this.props.user.Api, this.props.user.Api._ApiToken.devId);
-        // else
-        //   console.log('%c Warning! Cannot get cloud config user API not defined!', 'color: red; font-style: bold')
+        //if (nextAppState == 'background') {
+        // dongpt: update kill state before app closed
+        if (Platform.OS == 'ios') {
+          __DEV__ &&
+            console.log(
+              'GOND _handleAppStateChange iOS to background ',
+              nextAppState
+            );
+          // await this.onTokenMessage(1, 1);
+        }
       }
-    } else {
-      let {user, app} = this.props;
-      // setActivites(user, {
-      //   LogID: app.nextLogId,
-      //   ClientName: APP_INFO.Name,
-      //   Version: APP_INFO.Version,
-      //   ClientTime: new Date(),
-      // });
-      console.log(nextAppState);
     }
     this.appState = nextAppState;
   };
@@ -357,14 +361,14 @@ class App extends React.Component {
   };
 
   onChangeToken = async token => {
-    const user = this.props.user;
+    const {user, userStore} = this.props;
     if (!user) return;
 
     // console.log("GOND Token: " + token);
     let d_info = DeviceInfo.getModel();
     // user.Api.UpdateDeviceId(this.props.config.deviceid);
     this.setState({FCMToken: token, DeviceInfor: d_info});
-    await registoken(
+    await userStore.registerToken(
       user.Api,
       this.props.config.deviceid,
       token,
@@ -414,35 +418,6 @@ class App extends React.Component {
   //   }
   //   return undefined;
   // };
-
-  /*
-  render() {
-    // let Bottombar = this.renderBottomBar();
-    // dongpt: this StatusBar use for handling bunny ear screen in android platform, considering render only for android
-    // let StatusBar = this.renderStatusBar();
-
-    return (
-      <>
-        <View style={[styles.container]}>
-          {_PushController}
-          {StatusBar}
-
-          <CMSModal
-            ref="cmsmodal"
-            title="Search conditions"
-            type="filter"
-            eventSubmit={param => this.inforSearch(param)}
-            _modal={el => {
-              this.modal = el;
-            }}
-            eventClose={this.closeModal}
-          />
-          {Bottombar}
-        </View>
-      </>
-    );
-  }
-  */
 
   setNavigator = ref => {
     __DEV__ && console.log('GOND set top navigator: ', ref);

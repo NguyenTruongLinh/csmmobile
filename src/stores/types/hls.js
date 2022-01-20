@@ -298,22 +298,20 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
-            PlaybackMode:
-              HLSPlaybackMode.LIVE /*isLive
+            PlaybackMode: HLSPlaybackMode.LIVE /*isLive
             ? HLSPlaybackMode.LIVE
             : HLSPlaybackMode.LIVE_REPLAY,*/,
             HLSFragmentSelector: {
               FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
             },
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
-            DiscontinuityMode: HLSDiscontinuityMode.ON_DISCONTINUITY, // temp removed
+            DiscontinuityMode: HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: 7,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ && console.log('GOND Get Streaming Session URL: ', response);
         self.setUrl(response.HLSStreamingSessionURL, cmd);
@@ -329,6 +327,7 @@ export default HLSStreamModel = types
           connectionStatus: STREAM_STATUS.ERROR,
           error: err.message,
         });
+        self.setReconnectStatus(false);
         // setTimeout(() => self.reconnect(), 200);
         // return false;
         if (!self.isDead) return self.reconnect();
@@ -372,7 +371,7 @@ export default HLSStreamModel = types
       self.streamTimeout = setTimeout(() => {
         __DEV__ && console.log(`GOND onstream timeout: `, self.channelName);
 
-        if (self.isLoading && !self.isURLAcquired) {
+        if (self.isLoading && !self.isURLAcquired && !self.isDead) {
           __DEV__ &&
             console.log(
               `GOND === it timeout:  ${self.targetUrl.sid}, ch = `,
