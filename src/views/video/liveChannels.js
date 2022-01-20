@@ -647,7 +647,7 @@ class LiveChannelsView extends React.Component {
 
   renderStaticVideoList = () => {
     const {videoStore} = this.props;
-    // __DEV__ && console.log('GOND LIVE videoData: ', videoStore.videoData);
+    // __DEV__ && console.log('GOND LIVE videoData: ', videoStore.currentDisplayVideoData);
 
     return (
       <GestureRecognizer
@@ -680,7 +680,7 @@ class LiveChannelsView extends React.Component {
           ref={r => (this.videoListRef = r)}
           renderItem={this.renderVideoPlayer}
           numColumns={videoStore.gridLayout}
-          data={videoStore.videoData}
+          data={videoStore.currentDisplayVideoData}
           keyExtractor={(item, index) =>
             'ch_' + (item && item.channelNo ? item.channelNo : 'none' + index)
           }

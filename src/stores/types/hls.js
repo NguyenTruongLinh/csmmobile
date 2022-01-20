@@ -298,10 +298,11 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
-            PlaybackMode: HLSPlaybackMode.LIVE /*isLive
+            PlaybackMode:
+              HLSPlaybackMode.LIVE /*isLive
             ? HLSPlaybackMode.LIVE
             : HLSPlaybackMode.LIVE_REPLAY,*/,
             HLSFragmentSelector: {
@@ -311,12 +312,17 @@ export default HLSStreamModel = types
             DiscontinuityMode: HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: 7,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
-        __DEV__ && console.log('GOND Get Streaming Session URL: ', response);
+        __DEV__ &&
+          console.log(
+            'GOND Get Streaming Session URL successfully: ',
+            response
+          );
         self.setUrl(response.HLSStreamingSessionURL, cmd);
         // Is it needed?
-        if (self.streamTimeout) clearTimeout(self.streamTimeout);
+        self.clearStreamTimeout();
         __DEV__ &&
           console.log('GOND Get Streaming Session URL done: ', self.targetUrl);
       } catch (err) {
@@ -346,16 +352,30 @@ export default HLSStreamModel = types
         self.isWaitingReconnect ||
         self.connectionStatus == STREAM_STATUS.TIMEOUT ||
         self.connectionStatus == STREAM_STATUS.NOVIDEO
-      )
+      ) {
+        console.log(
+          'GOND HLS::Not Reconnect: ',
+          self.isDead,
+          self.isWaitingReconnect,
+          self.connectionStatus
+        );
         return Promise.resolve(false);
-
+      }
       // wait time before another reconnect:
       if (__DEV__) {
         console.log('GOND HLS::Reconnect ---------');
         // console.trace();
       }
       self.setReconnectStatus(true);
-      setTimeout(() => self.setReconnectStatus(false), 3000);
+      setTimeout(() => {
+        self.setReconnectStatus(false);
+        if (
+          self.connectionStatus == STREAM_STATUS.ERROR ||
+          self.connectionStatus == STREAM_STATUS.RECONNECTING
+        ) {
+          self.reconnect();
+        }
+      }, 7000);
       // end wait time
 
       self.setUrl(null);
@@ -363,11 +383,11 @@ export default HLSStreamModel = types
         isLoading: true,
         connectionStatus: STREAM_STATUS.RECONNECTING,
       });
-      self.scheduleCheckTimeout();
+      // self.scheduleCheckTimeout();
       return self.getHLSStreamUrl(null);
     },
     scheduleCheckTimeout(time) {
-      if (self.streamTimeout) clearTimeout(self.streamTimeout);
+      self.clearStreamTimeout();
       self.streamTimeout = setTimeout(() => {
         __DEV__ && console.log(`GOND onstream timeout: `, self.channelName);
 
@@ -384,8 +404,11 @@ export default HLSStreamModel = types
         }
       }, time ?? STREAM_TIMEOUT);
     },
+    clearStreamTimeout() {
+      self.streamTimeout && clearTimeout(self.streamTimeout);
+    },
     release() {
       self.isDead = true;
-      self.streamTimeout && clearTimeout(self.streamTimeout);
+      self.clearStreamTimeout();
     },
   }));

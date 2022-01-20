@@ -574,7 +574,29 @@ export const VideoModel = types
       );
     },
     get videoData() {
-      let videoDataList = [];
+      switch (self.cloudType) {
+        case CLOUD_TYPE.DEFAULT:
+        case CLOUD_TYPE.DIRECTION:
+          return self.directData;
+        case CLOUD_TYPE.HLS:
+          return self.hlsData;
+          break;
+        case CLOUD_TYPE.RTC:
+          return self.rtcConnection
+            ? self.rtcConnection.viewers.filter(
+                v =>
+                  v.channel.isActive &&
+                  v.channelName
+                    .toLowerCase()
+                    .includes(self.channelFilter.toLowerCase())
+              )
+            : [];
+          break;
+      }
+    },
+    get currentDisplayVideoData() {
+      let videoDataList = self.videoData;
+      /*
       switch (self.cloudType) {
         case CLOUD_TYPE.DEFAULT:
         case CLOUD_TYPE.DIRECTION:
@@ -604,18 +626,21 @@ export const VideoModel = types
               )
             : [];
           break;
-      }
+      }*/
       __DEV__ &&
         console.log(
           'GOND videoDataList: ',
           self.gridItemsPerPage,
-          self.currentGridPage
+          self.currentGridPage,
+          videoDataList
         );
       videoDataList = videoDataList.filter(
         (_, index) =>
           index < self.gridItemsPerPage * (self.currentGridPage + 1) &&
           index >= self.gridItemsPerPage * self.currentGridPage
       );
+
+      __DEV__ && console.log('GOND videoDataList 2: ', videoDataList);
 
       while (videoDataList.length % self.gridLayout != 0)
         videoDataList.push({});
@@ -708,9 +733,16 @@ export const VideoModel = types
         }
       },
       changeGridPage(isNext) {
-        const totalPage = Math.floor(
-          self.directStreams.length / self.gridLayout
+        const totalPage = Math.ceil(
+          (1.0 * self.videoData.length) / self.gridItemsPerPage
         );
+        __DEV__ &&
+          console.log(
+            'GOND changeGridPage totalPage',
+            totalPage,
+            self.videoData.length,
+            self.gridItemsPerPage
+          );
         let changed = false;
         if (isNext && self.currentGridPage < totalPage - 1) {
           self.currentGridPage++;
@@ -720,15 +752,6 @@ export const VideoModel = types
           changed = true;
         }
         if (changed) {
-          // self.directConnection && self.directConnection.setChannels(
-          //   self.directData
-          //     .map(s => s.channelNo)
-          //     .filter(
-          //       (_, index) =>
-          //         index < self.gridItemsPerPage * (self.currentGridPage + 1) &&
-          //         index >= self.gridItemsPerPage * self.currentGridPage
-          //     )
-          // );
           self.updateCurrentDirectChannel();
         }
 
