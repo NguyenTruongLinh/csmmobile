@@ -133,14 +133,14 @@ class NotificationController extends React.Component {
     messaging().onTokenRefresh(newToken => {
       __DEV__ && console.log('GOND FCM Token has been refreshed: ', newToken);
       if (newToken) {
-        userStore.saveToken(fcmToken);
+        userStore.saveToken(newToken);
       }
     });
 
     // This listener triggered when notification has been received in foreground
     this.unsubscribeForegroundListioner = messaging().onMessage(
       notification => {
-        __DEV__ && console.log('GOND Received notification: ', notification);
+        // __DEV__ && console.log('GOND Received notification: ', notification);
         NotificationController.onNotificationReceived({
           ...this.props,
           message: notification,
@@ -264,8 +264,8 @@ class NotificationController extends React.Component {
     const {data, messageId} = message;
     // const {videoStore, alarmStore, appStore} = this.props;
 
-    __DEV__ &&
-      console.log(`onNotificationReceived message = `, JSON.stringify(message));
+    // __DEV__ &&
+    //   console.log(`onNotificationReceived message = `, JSON.stringify(message));
 
     const naviService = appStore ? appStore.naviService : null;
 
@@ -391,7 +391,7 @@ class NotificationController extends React.Component {
   ) => {
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
-      __DEV__ && console.log('GOND show local notify, content: ', content);
+      // __DEV__ && console.log('GOND show local notify, content: ', content);
       if (Platform.OS === 'ios' && content && typeof content === 'string') {
         content = content.replace(/null/g, '""'); // content.split('null').join('');
       }
