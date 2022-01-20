@@ -336,7 +336,7 @@ class NotificationController extends React.Component {
         break;
       case NOTIFY_TYPE.ALERT:
         // __DEV__ && console.log('GOND onAlert Notification: ', props);
-        notif = await onAlertEvent({...props, action, content});
+        notif = await onAlertEvent({...props, naviService, action, content});
         // __DEV__ && console.log('GOND onAlert notif: ', notif);
         break;
       case NOTIFY_TYPE.ALARM:

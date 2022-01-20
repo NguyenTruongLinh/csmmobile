@@ -73,6 +73,13 @@ const SiteAlertTypeModel = types
     get canDismiss() {
       return !NonDismissableAlerts.includes(self.alertId);
     },
+  }))
+  .actions(self => ({
+    computeTotalFromAlerts(count) {
+      __DEV__ &&
+        console.log(`computeTotalFromAlerts dismissAlert count = `, count);
+      if (count >= 0) self.total = count;
+    },
   }));
 
 // const DVRModel = types.model({
@@ -458,6 +465,16 @@ export const HealthModel = types
             size: self.selectedSite.dvrs.length,
           }
         );
+
+        let parent = self.selectedSiteAlertTypes.find(
+          item => item.alertId == self.selectedAlertType.alertId //target.alertId
+        );
+        __DEV__ &&
+          console.log(`getAlertsByType parent = `, JSON.stringify(parent));
+
+        if (parent)
+          parent.computeTotalFromAlerts(!res.Data ? 0 : res.Data.length);
+
         __DEV__ &&
           console.log('GOND get alert type data: ', JSON.stringify(res));
         if (!res.Data || res.Data.length == 0) {
@@ -811,6 +828,15 @@ export const HealthModel = types
     updateSite(_site) {
       self.siteHealthList.map(healthSite => healthSite.notifyUpdate(_site));
     },
+    notifyRefeshFromNotif: flow(function* (naviService, alert) {
+      if (self.selectedSite && self.selectedSite.siteName == alert.SiteName) {
+        if (naviService.getCurrentRouteName() == ROUTERS.HEALTH_DETAIL) {
+          self.getHealthDetail();
+        } else if (naviService.getCurrentRouteName() == ROUTERS.HEALTH_ALERTS) {
+          self.getAlertsByType();
+        }
+      }
+    }),
     cleanUp() {
       applySnapshot(self, storeDefault);
     },

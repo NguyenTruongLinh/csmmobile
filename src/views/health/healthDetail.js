@@ -230,6 +230,7 @@ class HealthDetailView extends Component {
   // };
 
   renderItem = ({item}) => {
+    if (item.total <= 0) return null;
     const rowId = item.alertId ?? 0;
     const alertIcon = getIconAlertType(item.alertId);
 
