@@ -240,11 +240,11 @@
 //  }
   [self stopTimer];
   
-//  if(keepAliveTimer)
-//  {
-//    [keepAliveTimer invalidate];
-//    keepAliveTimer = nil;
-//  }
+  if(keepAliveTimer)
+  {
+    [keepAliveTimer invalidate];
+    keepAliveTimer = nil;
+  }
 }
 
 - (void)closeStreams
@@ -961,9 +961,8 @@
             [self stopTimer];
             
             keepAliveCounter = 0;
-            // dongpt: CMS removed
-            // keepAliveTimer = [NSTimer scheduledTimerWithTimeInterval:KEEP_ALIVE_CHECKING_INTERVAL target:self selector:@selector(onKeepAlive:) userInfo:nil repeats:YES];
-            // [[NSRunLoop currentRunLoop] addTimer:keepAliveTimer forMode:NSDefaultRunLoopMode];
+            keepAliveTimer = [NSTimer scheduledTimerWithTimeInterval:KEEP_ALIVE_CHECKING_INTERVAL target:self selector:@selector(onKeepAlive:) userInfo:nil repeats:YES];
+             [[NSRunLoop currentRunLoop] addTimer:keepAliveTimer forMode:NSDefaultRunLoopMode];
             
           }
           else
