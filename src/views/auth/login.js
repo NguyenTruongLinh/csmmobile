@@ -9,6 +9,7 @@ import {
   Alert,
   Dimensions,
   Platform,
+  Keyboard,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
@@ -36,7 +37,7 @@ import {Login as LoginTxt} from '../../localization/texts';
 // const validators = validatejs.validators;
 // <!-- END CONSTS -->
 // ----------------------------------------------------
-const {width} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 class LoginView extends Component {
   constructor(props) {
@@ -53,6 +54,7 @@ class LoginView extends Component {
         username: '',
         password: '',
       },
+      isInputFocus: false,
     };
     this._refs = {
       domain: null,
@@ -67,6 +69,32 @@ class LoginView extends Component {
     __DEV__ && console.log('LoginView componentDidMount');
     this.props.appStore.setLoading(false);
     // this.setState({domain: this.props.userStore.loginInfo ?? ''});
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      this._keyboardDidShow.bind(this)
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      this._keyboardDidHide.bind(this)
+    );
+  }
+
+  _keyboardDidShow(e) {
+    __DEV__ &&
+      console.log(
+        ` e.endCoordinates.height = `,
+        e.endCoordinates.height,
+        ' | height = ',
+        height
+      );
+    if (e.endCoordinates.height / height > 280 / 676)
+      setTimeout(() => {
+        this.setState({isInputFocus: true});
+      }, 100);
+  }
+
+  _keyboardDidHide() {
+    this.setState({isInputFocus: false});
   }
 
   componentWillUnmount() {
@@ -316,6 +344,14 @@ class LoginView extends Component {
             />
           </View>
           <View style={styles.space} />
+          <View
+            style={[
+              styles.space,
+              {
+                display: this.state.isInputFocus ? 'flex' : 'none',
+              },
+            ]}
+          />
           <View style={styles.buttonsContainer}>
             <Button
               style={styles.buttonLogin}
