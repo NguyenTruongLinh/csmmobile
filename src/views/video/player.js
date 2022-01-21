@@ -142,8 +142,8 @@ class VideoPlayerView extends Component {
     __DEV__ &&
       console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
     const {videoStore, isLive} = this.props;
-    if (nextAppState === 'active' && this.appState) {
-      if (this.appState.match(/inactive|background/)) {
+    if (nextAppState === 'active') {
+      if (this.appState && this.appState.match(/inactive|background/)) {
         // todo: check is already paused to not resume video
         // this.playerRef.pause(false);
         // videoStore.pause(false);

@@ -164,38 +164,38 @@ class LiveChannelsView extends React.Component {
     //   this.pauseAll(true);
     // }
     const {videoStore, isLive} = this.props;
-    if (nextAppState === 'active' && this.appState) {
-      switch (videoStore.cloudType) {
-        case CLOUD_TYPE.DEFAULT:
-        case CLOUD_TYPE.DIRECTION:
-          this.playerRefs.forEach(p => p && p.reconnect());
-          break;
-        case CLOUD_TYPE.HLS:
-        case CLOUD_TYPE.RTC:
-          if (videoStore.selectedChannel ?? false) {
-            videoStore.resumeVideoStreamFromBackground(false);
-          } else {
+    if (nextAppState === 'active') {
+      if (this.appState && this.appState.match(/inactive|background/)) {
+        switch (videoStore.cloudType) {
+          case CLOUD_TYPE.DEFAULT:
+          case CLOUD_TYPE.DIRECTION:
+            this.playerRefs.forEach(p => p && p.reconnect());
+            break;
+          case CLOUD_TYPE.HLS:
+          case CLOUD_TYPE.RTC:
+            if (videoStore.selectedChannel ?? false) {
+              videoStore.resumeVideoStreamFromBackground(false);
+            } else {
+              __DEV__ &&
+                console.log(
+                  'GOND _handleAppStateChange resume playing failed: HLS no selected channel: ',
+                  videoStore.selectedChannel
+                );
+            }
+            break;
+          // case CLOUD_TYPE.RTC:
+          //   break;
+          default:
             __DEV__ &&
               console.log(
-                'GOND _handleAppStateChange resume playing failed: HLS no selected channel: ',
-                videoStore.selectedChannel
+                'GOND _handleAppStateChange resume playing failed: cloudType is not valid: ',
+                videoStore.cloudType
               );
-          }
-          break;
-        // case CLOUD_TYPE.RTC:
-        //   break;
-        default:
-          __DEV__ &&
-            console.log(
-              'GOND _handleAppStateChange resume playing failed: cloudType is not valid: ',
-              videoStore.cloudType
-            );
-          break;
+            break;
+        }
       }
     } else {
-      if (this.appState.match(/inactive|background/)) {
-        this.playerRefs.forEach(p => p && p.stop());
-      }
+      this.playerRefs.forEach(p => p && p.stop());
     }
     this.appState = nextAppState;
   };
