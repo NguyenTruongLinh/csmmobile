@@ -87,10 +87,10 @@ class DirectVideoView extends React.Component {
 
     if (this.ffmpegPlayer && serverInfo) {
       if (serverInfo.serverIP && serverInfo.port) {
-        // this.props.serverInfo.setStreamStatus({
-        //   isLoading: true,
-        //   connectionStatus: STREAM_STATUS.LOGING_IN,
-        // });
+        this.props.serverInfo.setStreamStatus({
+          isLoading: true,
+          // connectionStatus: STREAM_STATUS.LOGING_IN,
+        });
         Snackbar.show({
           text: STREAM_STATUS.LOGING_IN,
           duration: Snackbar.LENGTH_LONG,
@@ -102,10 +102,10 @@ class DirectVideoView extends React.Component {
           console.log('GOND Direct connection wrong server config: ', {
             ...serverInfo,
           });
-        // serverInfo.setStreamStatus({
-        //   isLoading: false,
-        //   connectionStatus: STREAM_STATUS.ERROR,
-        // });
+        serverInfo.setStreamStatus({
+          isLoading: false,
+          // connectionStatus: STREAM_STATUS.ERROR,
+        });
         Snackbar.show({
           text: STREAM_STATUS.ERROR,
           duration: Snackbar.LENGTH_LONG,
@@ -140,10 +140,10 @@ class DirectVideoView extends React.Component {
   refreshVideo = () => {
     this.setNative({refresh: true}, true);
 
-    // this.props.serverInfo.setStreamStatus({
-    //   isLoading: true,
-    //   connectionStatus: STREAM_STATUS.CONNECTING,
-    // });
+    this.props.serverInfo.setStreamStatus({
+      isLoading: true,
+      // connectionStatus: STREAM_STATUS.CONNECTING,
+    });
     Snackbar.show({
       text: STREAM_STATUS.CONNECTING,
       duration: Snackbar.LENGTH_LONG,
@@ -173,10 +173,15 @@ class DirectVideoView extends React.Component {
             if (/*newChannelNo == null ||*/ previousValue == null) return;
             // this.setNative({refresh: true}, true);
 
-            // this.props.serverInfo.setStreamStatus({
-            //   isLoading: true,
-            //   connectionStatus: STREAM_STATUS.CONNECTING,
-            // });
+            this.props.serverInfo.setStreamStatus({
+              isLoading: true,
+              // connectionStatus: STREAM_STATUS.CONNECTING,
+            });
+            Snackbar.show({
+              text: STREAM_STATUS.CONNECTING,
+              duration: Snackbar.LENGTH_LONG,
+              backgroundColor: cmscolors.Success,
+            });
             // setTimeout(() => this.setNativePlayback(), 1000);
             this.refreshVideo();
           }
@@ -215,7 +220,12 @@ class DirectVideoView extends React.Component {
               );*/
             this.props.serverInfo.setStreamStatus({
               isLoading: true,
-              connectionStatus: STREAM_STATUS.CONNECTING,
+              // connectionStatus: STREAM_STATUS.CONNECTING,
+            });
+            Snackbar.show({
+              text: STREAM_STATUS.CONNECTING,
+              duration: Snackbar.LENGTH_LONG,
+              backgroundColor: cmscolors.Success,
             });
             if (this.noPermission) {
               this.stop();
@@ -240,7 +250,12 @@ class DirectVideoView extends React.Component {
                 console.log('GOND direct searchDate changed: ', searchDate);
               this.props.serverInfo.setStreamStatus({
                 isLoading: true,
-                connectionStatus: STREAM_STATUS.CONNECTING,
+                // connectionStatus: STREAM_STATUS.CONNECTING,
+              });
+              Snackbar.show({
+                text: STREAM_STATUS.CONNECTING,
+                duration: Snackbar.LENGTH_LONG,
+                backgroundColor: cmscolors.Success,
               });
               this.setNativePlayback(true);
             }
@@ -264,7 +279,12 @@ class DirectVideoView extends React.Component {
             ) {
               serverInfo.setStreamStatus({
                 isLoading: false,
-                connectionStatus: STREAM_STATUS.NOVIDEO,
+                // connectionStatus: STREAM_STATUS.NOVIDEO,
+              });
+              Snackbar.show({
+                text: STREAM_STATUS.NOVIDEO,
+                duration: Snackbar.LENGTH_LONG,
+                backgroundColor: cmscolors.Success,
               });
             }
           }
@@ -372,7 +392,12 @@ class DirectVideoView extends React.Component {
       );
     this.props.serverInfo.setStreamStatus({
       isLoading: true,
-      connectionStatus: STREAM_STATUS.CONNECTING,
+      // connectionStatus: STREAM_STATUS.CONNECTING,
+    });
+    Snackbar.show({
+      text: STREAM_STATUS.CONNECTING,
+      duration: Snackbar.LENGTH_LONG,
+      backgroundColor: cmscolors.Success,
     });
     this.setNativePlayback(
       false,
@@ -386,7 +411,12 @@ class DirectVideoView extends React.Component {
 
     this.props.serverInfo.setStreamStatus({
       isLoading: true,
-      connectionStatus: STREAM_STATUS.RECONNECTING,
+      // connectionStatus: STREAM_STATUS.RECONNECTING,
+    });
+    Snackbar.show({
+      text: STREAM_STATUS.RECONNECTING,
+      duration: Snackbar.LENGTH_LONG,
+      backgroundColor: cmscolors.Success,
     });
     this.setNativePlayback(true, {}, true);
   };
@@ -410,7 +440,13 @@ class DirectVideoView extends React.Component {
       return;
     }
 
-    const {searchDateString} = videoStore;
+    const {searchDateString, searchDate} = videoStore;
+    __DEV__ &&
+      console.log(
+        'GOND direct searchDateString  ',
+        searchDateString,
+        searchDate
+      );
     const playbackInfo = {
       ...serverInfo.playData,
       searchMode: !isLive,
@@ -503,7 +539,7 @@ class DirectVideoView extends React.Component {
         // this.setState({message: 'Connecting...'});
         serverInfo.setStreamStatus({
           isLoading: true,
-          connectionStatus: STREAM_STATUS.CONNECTING,
+          // connectionStatus: STREAM_STATUS.CONNECTING,
         });
         Snackbar.show({
           text: STREAM_STATUS.CONNECTING,
@@ -516,7 +552,7 @@ class DirectVideoView extends React.Component {
         // this.setState({message: 'Connected'});
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.CONNECTED,
+          // connectionStatus: STREAM_STATUS.CONNECTED,
         });
         Snackbar.show({
           text: STREAM_STATUS.CONNECTED,
@@ -537,10 +573,10 @@ class DirectVideoView extends React.Component {
         ) {
           this.setNativePlayback();
         } else {
-          // serverInfo.setStreamStatus({
-          //   isLoading: false,
-          //   connectionStatus: STREAM_STATUS.LOGIN_FAILED,
-          // });
+          serverInfo.setStreamStatus({
+            isLoading: false,
+            // connectionStatus: STREAM_STATUS.LOGIN_FAILED,
+          });
           Snackbar.show({
             text: STREAM_STATUS.LOGIN_FAILED,
             duration: Snackbar.LENGTH_LONG,
@@ -601,7 +637,7 @@ class DirectVideoView extends React.Component {
         // });
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.SERVER_REJECT,
+          // connectionStatus: STREAM_STATUS.SERVER_REJECT,
         });
         Snackbar.show({
           text: STREAM_STATUS.SERVER_REJECT,
@@ -614,7 +650,7 @@ class DirectVideoView extends React.Component {
         __DEV__ && console.log('GOND onDirectVideoMessage: Wrong server ID');
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.WRONG_SERVER,
+          // connectionStatus: STREAM_STATUS.WRONG_SERVER,
         });
         Snackbar.show({
           text: STREAM_STATUS.WRONG_SERVER,
@@ -627,7 +663,7 @@ class DirectVideoView extends React.Component {
         __DEV__ && console.log('GOND onDirectVideoMessage: Video port error');
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.PORT_ERROR,
+          // connectionStatus: STREAM_STATUS.PORT_ERROR,
         });
         Snackbar.show({
           text: STREAM_STATUS.PORT_ERROR,
@@ -642,7 +678,7 @@ class DirectVideoView extends React.Component {
         // });
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.ERROR,
+          // connectionStatus: STREAM_STATUS.ERROR,
         });
         Snackbar.show({
           text: STREAM_STATUS.ERROR,
@@ -665,7 +701,7 @@ class DirectVideoView extends React.Component {
           this.stop();
           serverInfo.setStreamStatus({
             isLoading: false,
-            connectionStatus: STREAM_STATUS.NOVIDEO,
+            // connectionStatus: STREAM_STATUS.NOVIDEO,
           });
           Snackbar.show({
             text: VIDEO_TXT.NO_VIDEO,
@@ -721,7 +757,7 @@ class DirectVideoView extends React.Component {
       case NATIVE_MESSAGE.SERVER_CHANGED_PORTS:
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.CHANGED,
+          // connectionStatus: STREAM_STATUS.CHANGED,
         });
         break;
       case NATIVE_MESSAGE.SERVER_RECORDING_ONLY:
@@ -729,7 +765,7 @@ class DirectVideoView extends React.Component {
       case NATIVE_MESSAGE.SERVER_CHANNEL_DISABLE:
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.DISABLED,
+          // connectionStatus: STREAM_STATUS.DISABLED,
         });
         Snackbar.show({
           text: STREAM_STATUS.DISABLED,
@@ -741,7 +777,7 @@ class DirectVideoView extends React.Component {
         __DEV__ && console.log('GOND Direct video: PERMISSION_CHANNEL_DISABLE');
         serverInfo.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.NO_PERMISSION,
+          // connectionStatus: STREAM_STATUS.NO_PERMISSION,
         });
         Snackbar.show({
           text: STREAM_STATUS.NO_PERMISSION,

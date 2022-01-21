@@ -1019,8 +1019,8 @@ export const VideoModel = types
         __DEV__ && console.log('GOND setTimezone ', value);
         if (typeof value === 'number') {
           self.timezoneOffset = value / (60 * 60 * 1000);
+          // TODO: update searchDate
         }
-        // TODO
       },
       setTimeline(value) {
         // if (TimelineModel.is(value)) {
@@ -1074,26 +1074,64 @@ export const VideoModel = types
       onAuthenCancel() {
         self.displayAuthen(false);
       },
-      switchLiveSearch(isLive) {
+      switchLiveSearch(nextIsLive) {
         // console.trace();
         const lastValue = self.isLive;
-        self.isLive = isLive === undefined ? !self.isLive : isLive;
 
         if (self.noVideo) {
           self.setNoVideo(false);
         }
-        if (!self.isLive && !self.searchDate) {
-          self.searchDate = DateTime.now()
-            .setZone(self.timezone)
-            .startOf('day');
-          __DEV__ &&
-            console.log(
-              'GOND @@@ switchlivesearch zone:',
-              self.timezone,
-              '\n - searchDate: ',
-              self.searchDate.toFormat(NVRPlayerConfig.LiveFrameFormat)
+        if (!nextIsLive) {
+          // dongpt: handle different timezone when switching from Live to Search mode
+          if (
+            lastValue === true &&
+            self.frameTimeString &&
+            self.frameTimeString.length > 0
+          ) {
+            const currentSearchDate = self.searchDate ?? DateTime.now();
+            const lastFrameDate = DateTime.fromFormat(
+              self.frameTimeString,
+              NVRPlayerConfig.FrameFormat
             );
+            if (
+              lastFrameDate.toFormat(
+                NVRPlayerConfig.QueryStringUTCDateFormat
+              ) !=
+              currentSearchDate.toFormat(
+                NVRPlayerConfig.QueryStringUTCDateFormat
+              )
+            ) {
+              self.searchDate = lastFrameDate.startOf('day');
+            }
+          }
+          // dongpt: end
+
+          if (
+            !self.searchDate // ||
+            // (self.searchDate.toSeconds() ==
+            //   DateTime.now()
+            //     .setZone(self.timezone)
+            //     .startOf('day')
+            //     .toSeconds() &&
+            //   self.searchDate.zone.name != self.timezone)
+          ) {
+            // if (self.frameTimeString && self.frameTimeString.length > 0) {
+
+            // } else {
+            self.searchDate = DateTime.now()
+              .setZone(self.timezone)
+              .startOf('day');
+            // }
+            __DEV__ &&
+              console.log(
+                'GOND @@@ switchlivesearch zone:',
+                self.timezone,
+                '\n - searchDate: ',
+                self.searchDate.toFormat(NVRPlayerConfig.RequestTimeFormat)
+              );
+          }
         }
+        self.isLive = nextIsLive === undefined ? !self.isLive : nextIsLive;
 
         if (self.cloudType == CLOUD_TYPE.HLS && self.isLive != lastValue) {
           __DEV__ && console.log('GOND @@@ switchlivesearch HLS');
