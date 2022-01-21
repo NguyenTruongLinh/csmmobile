@@ -81,6 +81,8 @@ export default class TimeRuler extends PureComponent {
     this.isAutoScrolling = true;
     this.isManualScrolling = false;
     this._isMounted = true;
+    this.lastX = 0;
+    this.draggedX = 0;
   }
 
   checkWithWatermarkAndAudio = (code, checkingType) => {
@@ -183,8 +185,27 @@ export default class TimeRuler extends PureComponent {
   };
 
   scrollTo = (x, y) => {
-    if (this.isAutoScrolling && !this.isManualScrolling)
-      this.sc.scrollTo({x: x, y: y, animated: false});
+    if (this.isAutoScrolling && !this.isManualScrolling && this.scrollRef) {
+      if (this.draggedX > 0) {
+        if (
+          x >= this.draggedX &&
+          Math.abs(x - this.draggedX) < Math.abs(this.lastX - this.draggedX)
+        ) {
+          this.draggedX = 0;
+        } else {
+          __DEV__ &&
+            console.log(
+              'GOND onTimeRuler autoScroll -> still at old position, not update!',
+              x,
+              this.lastX,
+              this.draggedX
+            );
+          return;
+        }
+      }
+      this.scrollRef.scrollTo({x: x, y: y, animated: false});
+      this.lastX = x;
+    }
   };
 
   componentDidMount() {
@@ -514,6 +535,7 @@ export default class TimeRuler extends PureComponent {
     let seconds = Math.floor((decimalminutes - minutes) * 60);
     __DEV__ &&
       console.log('GOND === TimeRuler _onSrollEnd: ', this.props.searchDate);
+    this.draggedX = event.nativeEvent.contentOffset.x;
     if (this.props.onScrollEnd) {
       this.props.onScrollEnd(event, {
         hour: hour,
@@ -526,7 +548,7 @@ export default class TimeRuler extends PureComponent {
       // Delaying auto scroll to prevent glitch
       setTimeout(() => {
         if (this._isMounted) this.isAutoScrolling = true;
-      }, 1000);
+      }, 2000);
 
       // this.PressOut = true;
       return;
@@ -631,7 +653,7 @@ export default class TimeRuler extends PureComponent {
           }}>
           <ScrollView
             ref={sc => {
-              this.sc = sc;
+              this.scrollRef = sc;
             }}
             horizontal={true}
             style={{

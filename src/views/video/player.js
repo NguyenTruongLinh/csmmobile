@@ -365,7 +365,8 @@ class VideoPlayerView extends Component {
           // if (videoStore.noVideo) {
           //   videoStore.setNoVideo(false);
           // }
-          this.playerRef.playAt(value.timestamp);
+          this.playerRef.pause();
+          setTimeout(() => this.playerRef.playAt(value.timestamp), 200);
         }
         this.timelineScrollTimeout = null;
       }, 500);
@@ -766,7 +767,7 @@ class VideoPlayerView extends Component {
           <TimeRuler
             ref={r => (this.ruler = r)}
             searchDate={videoStore.searchDateInSeconds()} // if direct ('UTC', {keepLocalTime: true})
-            height="80%"
+            height="100%"
             markerPosition="absolute"
             timeData={videoStore.timeline}
             currentTime={videoStore.frameTime}
