@@ -9,7 +9,7 @@ import ROUTERS from '../consts/routes';
 
 import {generateNotifId, getRandomId} from '../util/general';
 
-const getAlertName = (notifObj, alertSettings, site) => {
+const getAlertName = (notifObj, alertSettings) => {
   if (!notifObj) return null;
   if (typeof notifObj == 'string') return String(notifObj);
 
@@ -28,7 +28,7 @@ const getAlertName = (notifObj, alertSettings, site) => {
   }
   // __DEV__ && console.log('GOND getAlertName, site: ', site);
 
-  return site ? `${site.name}: ${alertName}` : alertName;
+  return alertName;
 };
 
 const onAlertEvent = async props => {
@@ -111,20 +111,20 @@ const onAlertEvent = async props => {
       shouldRefresh = true;
       break;
     }
-    case NOTIFY_ACTION.DISMISS: {
+    case NOTIFY_ACTION.DIMISS: {
       // __DEV__ && console.log('GOND onAlertEvent 4d');
       //{"AlertType":5,"Detail":{"User":{"UserID":1,"FName":"Demo","LName":"demo","Status":false,"Email":null},"KChannel":[165,166,167,168],"AlertType":0,
       //"KAlert":417030},"Sites":6553,"Kdvr":3,"Kchannel":0,"KAlert":417030,"Description":""}
       const {User} = alert.Detail;
       const site = null;
-      if (alert.Sites && sitesStore)
-        site = await sitesStore.getSiteByKey(
-          Array.isArray(alert.Sites) ? alert.Sites[0] : alert.Sites
-        );
+      // if (alert.Sites && sitesStore)
+      //   site = await sitesStore.getSiteByKey(
+      //     Array.isArray(alert.Sites) ? alert.Sites[0] : alert.Sites
+      //   );
       let alertName = getAlertName(
         alert,
-        userStore ? userStore.settings.alertTypes : null,
-        site
+        userStore ? userStore.settings.alertTypes : null
+        // site
       );
       noti = {
         isContent: false,
