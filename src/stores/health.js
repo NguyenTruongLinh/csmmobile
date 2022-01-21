@@ -316,22 +316,7 @@ export const HealthModel = types
               //     site.dvrs
               //   );
               if (site) {
-                if (self.selectedSite && self.selectedSite.id == siteData.Id) {
-                  applySnapshot(self.selectedSite, {
-                    name: siteData.Name,
-                    total: siteData.Total,
-                    sdate: siteData.sdate ?? '',
-                    edate: siteData.edate ?? '',
-                    isDismissAll: siteData.isDismissAll,
-                    siteName: site.name,
-                    // dvrs: site.dvrs.map(dvr => dvr),
-                    dvrs: site.dvrs.map(dvr =>
-                      DVRModel.create({kDVR: dvr.kDVR, name: dvr.name})
-                    ),
-                  });
-                  return self.selectedSite;
-                }
-                return SiteHealthModel.create({
+                const snapShot = {
                   id: siteData.Id,
                   name: siteData.Name,
                   total: siteData.Total,
@@ -339,11 +324,14 @@ export const HealthModel = types
                   edate: siteData.edate ?? '',
                   isDismissAll: siteData.isDismissAll,
                   siteName: site.name,
-                  // dvrs: site.dvrs.map(dvr => dvr),
                   dvrs: site.dvrs.map(dvr =>
                     DVRModel.create({kDVR: dvr.kDVR, name: dvr.name})
                   ),
-                });
+                };
+                if (self.selectedSite && self.selectedSite.id == siteData.Id) {
+                  applySnapshot(self.selectedSite, snapShot);
+                  return self.selectedSite;
+                } else return SiteHealthModel.create(snapShot);
               }
               return null;
             })

@@ -35,16 +35,16 @@ const onAlertEvent = async props => {
   const {naviService, healthStore, userStore, sitesStore, action, content} =
     props;
   // __DEV__ && console.log('GOND onAlertEvent 1');
-  const currentRoute = naviService.getCurrentRouteName();
-  __DEV__ &&
-    console.log(
-      `onAlertEvent HealthDetailView action = `,
-      action,
-      `| content = `,
-      JSON.stringify(content),
-      ' | currentRoute = ',
-      currentRoute
-    );
+  // const currentRoute = naviService.getCurrentRouteName();
+  // __DEV__ &&
+  //   console.log(
+  //     `onAlertEvent HealthDetailView action = `,
+  //     action,
+  //     `| content = `,
+  //     JSON.stringify(content),
+  //     ' | currentRoute = ',
+  //     currentRoute
+  //   );
   let alert = content;
   if (typeof content != 'object') {
     try {
