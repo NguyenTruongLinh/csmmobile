@@ -221,7 +221,7 @@ class SitesView extends Component {
     __DEV__ && console.log('GOND Health gotoVideo ... ', data);
     __DEV__ && console.log(` selectSite 8 data = `, JSON.stringify(data));
     sitesStore.selectSite(data.id);
-    // healthStore.setVideoMode(isLive);
+    healthStore.setVideoMode(isLive);
     navigation.push(ROUTERS.HEALTH_CHANNELS);
   };
 
