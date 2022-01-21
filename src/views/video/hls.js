@@ -162,6 +162,7 @@ class HLSStreamingView extends React.Component {
           newChannel => {
             __DEV__ &&
               console.log('HLSStreamingView channel changed: ', newChannel);
+            this.stop();
             this.lastSearchTime = null;
             // if (this.props.singlePlayer) {
             //   if (videoStore.paused) videoStore.pause(false);
@@ -268,7 +269,7 @@ class HLSStreamingView extends React.Component {
     this.reconnect();
   };
 
-  onError = error => {
+  onError = ({error}) => {
     if (!this._isMounted) return;
     __DEV__ && console.log('GOND HLS onError: ', error);
     const {streamData, isLive, hdMode} = this.props;
@@ -280,7 +281,14 @@ class HLSStreamingView extends React.Component {
     if (!isLive && this.frameTime > 0)
       this.lastSearchTime = this.computeTime(this.frameTime);
 
-    streamData.reconnect(isLive, hdMode);
+    if (error.errorString == 'Unrecognized media format') {
+      // streamData.setStreamStatus({
+      //   connectionStatus: STREAM_STATUS.SOURCE_ERROR,
+      // });
+      __DEV__ && console.log('GOND HLS SOURCE_ERROR ');
+    } else {
+      streamData.reconnect(isLive, hdMode);
+    }
   };
 
   onProgress = data => {
@@ -298,7 +306,11 @@ class HLSStreamingView extends React.Component {
     }
 
     // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
-    if (!singlePlayer) return;
+    if (!singlePlayer) {
+      // __DEV__ && console.log('GOND HLS progress: AAAAAA 1');
+      return;
+    }
+    __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
 
     const {hlsTimestamps} = videoStore;
     const {timeBeginPlaying} = this.state;
@@ -381,8 +393,10 @@ class HLSStreamingView extends React.Component {
       !streamData.channel ||
       videoStore.selectedChannel != streamData.channelNo ||
       !this.frameTime
-    )
+    ) {
+      __DEV__ && console.log('GOND HLS progress: AAAAAA 2');
       return;
+    }
 
     // if (!isLive) {
     //   __DEV__ &&

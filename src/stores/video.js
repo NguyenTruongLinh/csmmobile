@@ -1081,7 +1081,7 @@ export const VideoModel = types
         if (self.noVideo) {
           self.setNoVideo(false);
         }
-        if (!nextIsLive) {
+        if (!nextIsLive && self.cloudType == CLOUD_TYPE.DIRECTION) {
           // dongpt: handle different timezone when switching from Live to Search mode
           if (
             lastValue === true &&
@@ -1865,6 +1865,24 @@ export const VideoModel = types
       //     }
       //   }, STREAM_TIMEOUT);
       // },
+      resumeVideoStreamFromBackground(isSingleMode) {
+        if (isSingleMode) {
+          if (!videoStore.isLive) {
+            self.searchPlayTime = DateTime.fromFormat(
+              self.displayDateTime,
+              NVRPlayerConfig.FrameFormat
+            ).toFormat(NVRPlayerConfig.RequestTimeFormat);
+          }
+
+          self.getVideoInfos(self.selectedChannel);
+          self.selectedStream.setStreamStatus({
+            isLoading: true,
+            connectionStatus: STREAM_STATUS.CONNECTING,
+          });
+        } else {
+          self.getVideoInfos();
+        }
+      },
       /**
        *
        * @param time (DateTime)

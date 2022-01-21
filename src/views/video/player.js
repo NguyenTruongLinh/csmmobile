@@ -141,16 +141,48 @@ class VideoPlayerView extends Component {
   handleAppStateChange = nextAppState => {
     __DEV__ &&
       console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
-    const {videoStore} = this.props;
+    const {videoStore, isLive} = this.props;
     if (nextAppState === 'active' && this.appState) {
       if (this.appState.match(/inactive|background/)) {
         // todo: check is already paused to not resume video
         // this.playerRef.pause(false);
-        videoStore.pause(false);
+        // videoStore.pause(false);
+        switch (videoStore.cloudType) {
+          case CLOUD_TYPE.DEFAULT:
+          case CLOUD_TYPE.DIRECTION:
+            this.playerRef.reconnect();
+            break;
+          case CLOUD_TYPE.HLS:
+          case CLOUD_TYPE.RTC:
+            if (videoStore.selectedChannel ?? false) {
+              // self.getHLSInfos({
+              //   channelNo: videoStore.selectedChannel,
+              //   timeline: !videoStore.isLive,
+              // });
+              videoStore.resumeVideoStreamFromBackground(true);
+            } else {
+              __DEV__ &&
+                console.log(
+                  'GOND _handleAppStateChange resume playing failed: HLS no selected channel: ',
+                  videoStore.selectedChannel
+                );
+            }
+            break;
+          // case CLOUD_TYPE.RTC:
+          //   break;
+          default:
+            __DEV__ &&
+              console.log(
+                'GOND _handleAppStateChange resume playing failed: cloudType is not valid: ',
+                videoStore.cloudType
+              );
+            break;
+        }
       }
     } else {
       // this.playerRef.pause(true);
-      videoStore.pause(true);
+      // videoStore.pause(true);
+      this.playerRef.stop();
     }
     this.appState = nextAppState;
   };
@@ -319,6 +351,7 @@ class VideoPlayerView extends Component {
     // if (videoStore.noVideo) {
     //   videoStore.setNoVideo(false);
     // }
+    this.playerRef.pause();
     this.playerRef.playAt(secondsValue);
   };
 

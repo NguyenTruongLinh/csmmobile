@@ -111,6 +111,7 @@ export const STREAM_STATUS = {
   LOGING_IN: 'Loging in...',
   LOGIN_FAILED: 'Login failed',
   BUFFERING: 'Buffering...',
+  SOURCE_ERROR: 'Video source error.',
   ERROR: 'Network Error.',
   SERVER_REJECT: 'Server reject accepted',
   TIMEOUT: 'Time out.',

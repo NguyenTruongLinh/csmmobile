@@ -83,6 +83,7 @@ export default class TimeRuler extends PureComponent {
     this._isMounted = true;
     this.lastX = 0;
     this.draggedX = 0;
+    this.lastScrollOffsetX = -1;
   }
 
   checkWithWatermarkAndAudio = (code, checkingType) => {
@@ -186,6 +187,8 @@ export default class TimeRuler extends PureComponent {
 
   scrollTo = (x, y) => {
     if (this.isAutoScrolling && !this.isManualScrolling && this.scrollRef) {
+      // __DEV__ && console.log('GOND === TimeRuler AAAAAAAAAAAAAAAAAAAAA');
+      if (this.lastScrollOffsetX >= 0) this.lastScrollOffsetX = -1;
       if (this.draggedX > 0) {
         if (
           x >= this.draggedX &&
@@ -522,6 +525,19 @@ export default class TimeRuler extends PureComponent {
   };
 
   _onSrollEnd = event => {
+    __DEV__ &&
+      console.log(
+        'GOND === TimeRuler _onSrollEnd: ',
+        event.nativeEvent.contentOffset.x,
+        this.lastScrollOffsetX
+      );
+    // if (this.lastScrollOffsetX >= 0) {
+    if (event.nativeEvent.contentOffset.x == this.lastScrollOffsetX) {
+      return;
+    } else {
+      this.lastScrollOffsetX = event.nativeEvent.contentOffset.x;
+    }
+    // }
     // let { hourBuildRuler, hourSpecial } = this.props
     let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
     let hour = Math.floor(decimalhour);
@@ -533,8 +549,7 @@ export default class TimeRuler extends PureComponent {
     let decimalminutes = (decimalhour - hour) * 60;
     let minutes = Math.floor(decimalminutes);
     let seconds = Math.floor((decimalminutes - minutes) * 60);
-    __DEV__ &&
-      console.log('GOND === TimeRuler _onSrollEnd: ', this.props.searchDate);
+
     this.draggedX = event.nativeEvent.contentOffset.x;
     if (this.props.onScrollEnd) {
       this.props.onScrollEnd(event, {
@@ -556,6 +571,7 @@ export default class TimeRuler extends PureComponent {
   };
 
   _onPressIn = event => {
+    __DEV__ && console.log('GOND === TimeRuler _onPressIn');
     if (this.props.onBeginSrcoll) {
       this.props.onBeginSrcoll();
     }
@@ -564,6 +580,7 @@ export default class TimeRuler extends PureComponent {
   };
 
   _onPressOut = event => {
+    __DEV__ && console.log('GOND === TimeRuler _onPressOut');
     this.isAutoScrolling = true;
     this.PressOut = true;
   };
@@ -573,15 +590,17 @@ export default class TimeRuler extends PureComponent {
   };
 
   _onScrollBeginDrag = event => {
+    __DEV__ && console.log('GOND === TimeRuler _onScrollBeginDrag');
     this.isManualScrolling = true;
     this.props.onPauseVideoScrolling();
     this.props.setShowHideTimeOnTimeRule(true);
   };
 
   _onScroll = event => {
+    __DEV__ && console.log('GOND === TimeRuler _onScroll');
     let {hourBuildRuler, hourSpecial} = this.props;
     if (this.isManualScrolling == true) {
-      this.isAutoScrolling = true;
+      // this.isAutoScrolling = true;
       let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
       let hour = Math.floor(decimalhour);
       let decimalminutes = (decimalhour - hour) * 60;
@@ -618,6 +637,7 @@ export default class TimeRuler extends PureComponent {
   };
 
   _onScrollEndDrag = event => {
+    __DEV__ && console.log('GOND === TimeRuler _onScrollEndDrag');
     this.isManualScrolling = false;
     this.props.setShowHideTimeOnTimeRule(false);
     this._onSrollEnd(event);

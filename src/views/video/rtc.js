@@ -180,7 +180,9 @@ class RTCStreamingView extends Component {
   }
   */
 
-  stop = () => {};
+  stop = () => {
+    this.pause();
+  };
 
   pause = value => {
     if (value === true || value === undefined)

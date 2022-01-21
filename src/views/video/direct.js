@@ -173,10 +173,10 @@ class DirectVideoView extends React.Component {
             if (/*newChannelNo == null ||*/ previousValue == null) return;
             // this.setNative({refresh: true}, true);
 
-            this.props.serverInfo.setStreamStatus({
-              isLoading: true,
-              // connectionStatus: STREAM_STATUS.CONNECTING,
-            });
+            // this.props.serverInfo.setStreamStatus({
+            //   isLoading: true,
+            //   // connectionStatus: STREAM_STATUS.CONNECTING,
+            // });
             Snackbar.show({
               text: STREAM_STATUS.CONNECTING,
               duration: Snackbar.LENGTH_LONG,
@@ -405,11 +405,12 @@ class DirectVideoView extends React.Component {
     );
   };
 
-  reconnect = () => {
+  reconnect = (shouldStop = true) => {
     // this.setNative({disconnect: true}, true);
-    this.stop();
+    const {serverInfo, videoStore, isLive, hdMode} = this.props;
+    if (shouldStop) this.stop();
 
-    this.props.serverInfo.setStreamStatus({
+    serverInfo.setStreamStatus({
       isLoading: true,
       // connectionStatus: STREAM_STATUS.RECONNECTING,
     });
@@ -418,6 +419,15 @@ class DirectVideoView extends React.Component {
       duration: Snackbar.LENGTH_LONG,
       backgroundColor: cmscolors.Success,
     });
+    if (!isLive) {
+      this.shouldSetTime = true;
+      videoStore.setPlayTimeForSearch(
+        DateTime.fromFormat(
+          videoStore.displayDateTime,
+          NVRPlayerConfig.FrameFormat
+        ).toFormat(NVRPlayerConfig.RequestTimeFormat)
+      );
+    }
     this.setNativePlayback(true, {}, true);
   };
 
