@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
 
   disableCaption: {
     //color: 'rgba(0, 0, 0, 0.26)'
-    color: '#9C9C9C',
+    color: '#BDBDBD',
   },
   primaryCaption: {
     color: 'rgb(242,242,242)',

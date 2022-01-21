@@ -132,7 +132,7 @@ class WelcomeView extends Component {
           />
           <View style={styles.smaller_space} />
           <Button
-            enable={true}
+            enable={false}
             type={'flat'}
             caption={WelcomeTxt.skip}
             onPress={this.onGoPro}
