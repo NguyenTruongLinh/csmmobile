@@ -33,9 +33,15 @@ import {
   Settings as SettingsTxt,
   ALARM as ALARM_TXT,
 } from '../../localization/texts';
-import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
+import {
+  DateFormat,
+  AlertTypes,
+  AlertNames,
+  AlertType_Support,
+} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
 import {reaction} from 'mobx';
+import {getSnapshot} from 'mobx-state-tree';
 
 const ID_Canned_Message = 5;
 const CONTENT_INFO_HEIGHT = 92;
@@ -84,6 +90,10 @@ class AlarmDetailView extends Component {
       alarmStore.selectedAlarm,
       true
     );
+    // const snapShots = getSnapshot(alarmStore.selectedAlarm.snapshot);
+    // __DEV__ && console.log(` snapShots = `, snapShots);
+    // if (!snapShots || snapShots.length == 0 || snapShots[0].fileName == null)
+    //   alarmStore.getAlarms({aty: AlertType_Support});
   }
 
   componentWillUnmount() {
@@ -465,9 +475,10 @@ class AlarmDetailView extends Component {
             DateFormat.AlertDetail_Date
           );
     const iconSize = 16;
-    return this.state.alertType ===
-      AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY ? (
-      <View style={(styles.timeInfoContainer, {flexDirection: 'row'})}>
+    // return this.state.alertType ===
+    //   AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY ? (
+    return (
+      <View style={[styles.timeInfoContainer, {flexDirection: 'row'}]}>
         {/* <View style={styles.timeInfoContainer}> */}
         <View style={{justifyContent: 'center'}}>
           <IconCustom
@@ -486,42 +497,43 @@ class AlarmDetailView extends Component {
             color={CMSColors.SecondaryText}
           />
         </View>
-        <Text style={styles.temp_text}>
+        <Text style={[styles.temp_text, {color: CMSColors.Danger}]}>
           {item.value /* + String.fromCharCode(176) + 'C'*/}
         </Text>
       </View>
-    ) : (
-      <View style={[styles.timeInfoContainer, {flexDirection: 'column'}]}>
-        <View style={[{flexDirection: 'row'}]}>
-          <View style={{justifyContent: 'center'}}>
-            <IconCustom
-              name="ic-temperature-32px"
-              size={iconSize}
-              color={CMSColors.SecondaryText}
-            />
-          </View>
-          <Text
-            style={[
-              styles.temp_text,
-              this.state.alertType === AlertTypes.TEMPERATURE_OUT_OF_RANGE
-                ? {color: CMSColors.Danger}
-                : {},
-            ]}>
-            {item.value /* + String.fromCharCode(176) + 'C'*/}
-          </Text>
-        </View>
-        <View style={styles.timeInfoContainer}>
-          <View style={{justifyContent: 'center'}}>
-            <IconCustom
-              name="clock-with-white-face"
-              size={iconSize}
-              color={CMSColors.SecondaryText}
-            />
-          </View>
-          <Text style={styles.temp_text}>{strTime}</Text>
-        </View>
-      </View>
     );
+    // ) : (
+    //   <View style={[styles.timeInfoContainer, {flexDirection: 'column'}]}>
+    //     <View style={[{flexDirection: 'row'}]}>
+    //       <View style={{justifyContent: 'center'}}>
+    //         <IconCustom
+    //           name="ic-temperature-32px"
+    //           size={iconSize}
+    //           color={CMSColors.SecondaryText}
+    //         />
+    //       </View>
+    //       <Text
+    //         style={[
+    //           styles.temp_text,
+    //           this.state.alertType === AlertTypes.TEMPERATURE_OUT_OF_RANGE
+    //             ? {color: CMSColors.Danger}
+    //             : {},
+    //         ]}>
+    //         {item.value /* + String.fromCharCode(176) + 'C'*/}
+    //       </Text>
+    //     </View>
+    //     <View style={styles.timeInfoContainer}>
+    //       <View style={{justifyContent: 'center'}}>
+    //         <IconCustom
+    //           name="clock-with-white-face"
+    //           size={iconSize}
+    //           color={CMSColors.SecondaryText}
+    //         />
+    //       </View>
+    //       <Text style={styles.temp_text}>{strTime}</Text>
+    //     </View>
+    //   </View>
+    // );
   };
 
   renderTemperatureInfo = () => {
@@ -560,24 +572,32 @@ class AlarmDetailView extends Component {
     //     <Text style={styles.name_text}>{selectedAlarm.cmsUser}</Text>
     //   </View>
     // ) : null;
-
+    // height: contentHeight
     return (
-      <View style={[styles.infoContainer, {height: contentHeight}]}>
-        <View style={styles.leftInfoContainer}>
-          <View style={[styles.textInfoContainer, {paddingLeft: padding}]}>
-            <Text numberOfLines={2} style={styles.textInfo}>
-              {AlertNames[selectedAlarm.kAlertType]}
-            </Text>
-            {this.renderAlertStatus()}
-            <FlatList
-              data={selectedAlarm.extra}
-              renderItem={this.renderTemperatureItem}
-              keyExtractor={(item, index) => index.toString()}
-              initialNumToRender={selectedAlarm.extra.length}
-            />
+      <View style={{backgroundColor: CMSColors.DividerColor24_HEX}}>
+        <View
+          style={[
+            styles.infoContainer,
+            {borderBottomColor: 'lightgray', borderBottomWidth: 1},
+          ]}>
+          <View style={styles.leftInfoContainer}>
+            <View style={[styles.textInfoContainer, {paddingLeft: padding}]}>
+              <Text numberOfLines={2} style={styles.textInfo}>
+                {AlertNames[selectedAlarm.kAlertType]}
+              </Text>
+              {this.renderAlertStatus()}
+            </View>
           </View>
+          {this.renderVideoButtons()}
         </View>
-        {this.renderVideoButtons()}
+        {selectedAlarm.extra.length > 0 && <View style={{height: 3}}></View>}
+        <FlatList
+          data={selectedAlarm.extra}
+          renderItem={this.renderTemperatureItem}
+          keyExtractor={(item, index) => index.toString()}
+          initialNumToRender={selectedAlarm.extra.length}
+        />
+        {selectedAlarm.extra.length > 0 && <View style={{height: 3}}></View>}
       </View>
     );
   };
@@ -595,8 +615,9 @@ class AlarmDetailView extends Component {
     let contentHeight = CONTENT_INFO_HEIGHT;
     contentHeight +=
       selectedAlarm.status == 1 && selectedAlarm.cmsUser ? STATUS_HEIGHT : 0;
+    // height: contentHeight
     return (
-      <View style={[styles.infoContainer, {height: contentHeight}]}>
+      <View style={[styles.infoContainer, {backgroundColor: '#EEEEEE'}]}>
         <View style={styles.leftInfoContainer}>
           {/* {this.renderActionButton(BUTTON_TYPE.SEARCH)} */}
           {/* <View style={[ styles.textInfoContainer, Platform.OS == 'ios' ? {paddingRight: btn_size + 2 * padding} : {paddingLeft: btn_size + 2* padding} ]} > */}
@@ -724,7 +745,11 @@ class AlarmDetailView extends Component {
       <View style={styles.container} onLayout={this.onLayout}>
         <KeyboardAwareScrollView>
           <View
-            style={{flex: 1, height: imgSize.height, flexDirection: 'column'}}>
+            style={{
+              flex: 1,
+              height: imgSize.height,
+              flexDirection: 'column',
+            }}>
             <FlatList
               pagingEnabled={true}
               style={{flex: 1}}
@@ -772,7 +797,10 @@ class AlarmDetailView extends Component {
             {/* {this.renderActionButton(BUTTON_TYPE.LIVE, 50)}
             {this.renderActionButton(BUTTON_TYPE.SEARCH)} */}
           </View>
-          <View style={{flex: 1}}>
+          <View
+            style={{
+              flex: 1,
+            }}>
             {this.renderInfo()}
             {this.renderRating()}
             {this.renderNoteInput()}
@@ -788,13 +816,14 @@ const styles = StyleSheet.create({
     flex: 1,
     // paddingLeft: variable.inputPaddingLeft
     // , paddingRight: variable.inputPaddingLeft
+    backgroundColor: 'white',
   },
   infoContainer: {
     flexDirection: 'row',
-    backgroundColor: CMSColors.DividerColor24,
-    height: CONTENT_INFO_HEIGHT,
+    // backgroundColor: CMSColors.DividerColor24,
+    // height: CONTENT_INFO_HEIGHT,
     flex: 1,
-    paddingTop: 3,
+    paddingVertical: 10,
   },
   textInfoContainer: {
     justifyContent: 'center',
@@ -802,8 +831,9 @@ const styles = StyleSheet.create({
   },
   textInfo: {
     fontSize: 16,
-    color: CMSColors.PrimaryColor,
+    color: CMSColors.PrimaryText,
     justifyContent: 'center',
+    fontWeight: 'bold',
   },
   Indicator: {
     flexDirection: 'row',
@@ -829,6 +859,9 @@ const styles = StyleSheet.create({
   timeInfoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    // backgroundColor: 'red',
+    paddingVertical: 2,
   },
   date_text: {
     color: CMSColors.PrimaryText,
@@ -843,8 +876,7 @@ const styles = StyleSheet.create({
   },
   temp_text: {
     color: CMSColors.PrimaryText,
-    fontSize: 16,
-    paddingLeft: variable.inputPaddingLeft + 4,
+    fontSize: 15,
   },
   inputNote: {
     color: CMSColors.DarkText,
@@ -874,7 +906,7 @@ const styles = StyleSheet.create({
     // borderTopRightRadius: 6,
     // borderBottomRightRadius: 6,
     // marginTop: 24,
-    marginVertical: 5,
+    marginTop: 5,
   },
 });
 
