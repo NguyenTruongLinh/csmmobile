@@ -140,10 +140,10 @@ class DirectVideoView extends React.Component {
   refreshVideo = () => {
     this.setNative({refresh: true}, true);
 
-    this.props.serverInfo.setStreamStatus({
-      isLoading: true,
-      // connectionStatus: STREAM_STATUS.CONNECTING,
-    });
+    // this.props.serverInfo.setStreamStatus({
+    //   isLoading: true,
+    //   connectionStatus: STREAM_STATUS.CONNECTING,
+    // });
     Snackbar.show({
       text: STREAM_STATUS.CONNECTING,
       duration: Snackbar.LENGTH_LONG,

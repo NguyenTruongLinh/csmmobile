@@ -545,7 +545,7 @@ export const VideoModel = types
         //   );
         return result;
       } else {
-        // __DEV__ && console.log('GOND searchPlayTimeLuxon 4: ', result);
+        // __DEV__ && console.log('GOND searchPlayTimeLuxon 5: ', self.searchDate);
         return (
           self.searchDate ??
           DateTime.now().setZone(self.timezone).startOf('day')
@@ -1649,7 +1649,9 @@ export const VideoModel = types
       }),
       getTimeline: flow(function* (channelNo, sid) {
         if (!self.searchDate) {
-          self.searchDate = DateTime.now().setZone(self.timezone);
+          self.searchDate = DateTime.now()
+            .setZone(self.timezone)
+            .startOf('day');
         }
         return yield self.sendVSCCommand(VSCCommand.TIMELINE, channelNo, {
           requestDate: self.searchDate.toFormat(
@@ -2468,7 +2470,7 @@ export const VideoModel = types
         } else {
           self.searchDate = self.timezoneName
             ? DateTime.now().setZone(self.searchTime).startOf('day')
-            : DateTime.now();
+            : DateTime.now().startOf('day');
         }
         yield self.getDisplayingChannels();
 
@@ -2510,7 +2512,7 @@ export const VideoModel = types
             .setZone(self.timezone)
             .startOf('day');
         } else {
-          self.searchDate = DateTime.now();
+          self.searchDate = DateTime.now().startOf('day');
         }
 
         yield self.getDisplayingChannels();

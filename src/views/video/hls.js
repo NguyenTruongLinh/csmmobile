@@ -207,6 +207,25 @@ class HLSStreamingView extends React.Component {
     // }, 100);
   };
 
+  onPlaybackStalled = event => {
+    const {videoStore, singlePlayer} = this.props;
+    __DEV__ && console.log('GOND onPlaybackStalled: ', event);
+
+    if (!this.state.paused && !videoStore.paused) {
+      videoStore.pause(true);
+      setTimeout(() => {
+        if (this._isMounted) {
+          videoStore.pause(false);
+        }
+      }, 500);
+    }
+  };
+
+  onPlaybackResume = event => {
+    // const {videoStore, singlePlayer} = this.props;
+    __DEV__ && console.log('GOND onPlaybackResume: ', event);
+  };
+
   onReady = event => {
     const {streamData, videoStore, singlePlayer} = this.props;
     __DEV__ &&
@@ -220,16 +239,16 @@ class HLSStreamingView extends React.Component {
     if (singlePlayer && this.shouldResume) {
       this.shouldResume = false;
 
-      setTimeout(() => {
-        if (this._isMounted) {
-          videoStore.pause(true);
-          setTimeout(() => {
-            if (this._isMounted) {
-              videoStore.pause(false);
-            }
-          }, 1000);
-        }
-      }, 1000);
+      // setTimeout(() => {
+      //   if (this._isMounted) {
+      //     videoStore.pause(true);
+      //     setTimeout(() => {
+      //       if (this._isMounted) {
+      //         videoStore.pause(false);
+      //       }
+      //     }, 1000);
+      //   }
+      // }, 1000);
     }
   };
 
@@ -543,6 +562,8 @@ class HLSStreamingView extends React.Component {
                   onReadyForDisplay={this.onReady}
                   onBuffer={this.onBuffer}
                   onError={this.onError}
+                  onPlaybackStalled={this.onPlaybackStalled}
+                  onPlaybackResume={this.onPlaybackResume}
                   onProgress={this.onProgress}
                   onLoad={this.onLoad}
                   onTimedMetadata={event => {
@@ -563,12 +584,6 @@ class HLSStreamingView extends React.Component {
                   playWhenInactive={true}
                   useTextureView={false}
                   disableFocus={true}
-                  onPlaybackStalled={() =>
-                    __DEV__ && console.log('GOND HLS onPlaybackStalled')
-                  }
-                  onPlaybackResume={() =>
-                    __DEV__ && console.log('GOND HLS onPlaybackResume')
-                  }
                 />
               ) : null
             }
