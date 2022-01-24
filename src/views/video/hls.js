@@ -211,14 +211,14 @@ class HLSStreamingView extends React.Component {
     const {videoStore, singlePlayer} = this.props;
     __DEV__ && console.log('GOND onPlaybackStalled: ', event);
 
-    if (!this.state.paused && !videoStore.paused) {
-      videoStore.pause(true);
-      setTimeout(() => {
-        if (this._isMounted) {
-          videoStore.pause(false);
-        }
-      }, 500);
-    }
+    // if (!this.state.paused && !videoStore.paused) {
+    //   videoStore.pause(true);
+    //   setTimeout(() => {
+    //     if (this._isMounted) {
+    //       videoStore.pause(false);
+    //     }
+    //   }, 500);
+    // }
   };
 
   onPlaybackResume = event => {
@@ -578,7 +578,7 @@ class HLSStreamingView extends React.Component {
                   selectedAudioTrack={{type: 'disabled'}}
                   selectedTextTrack={{type: 'disabled'}}
                   rate={1.0}
-                  automaticallyWaitsToMinimizeStalling={false}
+                  automaticallyWaitsToMinimizeStalling={true}
                   preferredForwardBufferDuration={2}
                   playInBackground={true}
                   playWhenInactive={true}
