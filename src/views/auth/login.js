@@ -87,7 +87,7 @@ class LoginView extends Component {
         ' | height = ',
         height
       );
-    if (e.endCoordinates.height / height > 280 / 676)
+    if (e.endCoordinates.height / height > 240 / 676)
       setTimeout(() => {
         this.setState({isInputFocus: true});
       }, 100);
