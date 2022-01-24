@@ -1074,7 +1074,7 @@ export const VideoModel = types
       onAuthenCancel() {
         self.displayAuthen(false);
       },
-      switchLiveSearch(nextIsLive) {
+      switchLiveSearch(nextIsLive, startStream = false) {
         // console.trace();
         const lastValue = self.isLive;
 
@@ -1133,7 +1133,11 @@ export const VideoModel = types
         }
         self.isLive = nextIsLive === undefined ? !self.isLive : nextIsLive;
 
-        if (self.cloudType == CLOUD_TYPE.HLS && self.isLive != lastValue) {
+        if (
+          self.cloudType == CLOUD_TYPE.HLS &&
+          self.isLive != lastValue &&
+          startStream
+        ) {
           __DEV__ && console.log('GOND @@@ switchlivesearch HLS');
           if (self.selectedStream) {
             self.selectedStream.setLive(self.isLive);

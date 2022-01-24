@@ -282,7 +282,7 @@ class VideoPlayerView extends Component {
 
   onSwitchLiveSearch = () => {
     const {videoStore} = this.props;
-    videoStore.switchLiveSearch();
+    videoStore.switchLiveSearch(undefined, true);
     this.updateHeader();
     // if (this.playerRef) this.playerRef.pause(true);
     videoStore.pause(true);
@@ -351,7 +351,7 @@ class VideoPlayerView extends Component {
     // if (videoStore.noVideo) {
     //   videoStore.setNoVideo(false);
     // }
-    this.playerRef.pause();
+    // this.playerRef.pause();
     this.playerRef.playAt(secondsValue);
   };
 
