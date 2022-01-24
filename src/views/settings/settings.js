@@ -266,15 +266,19 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   avatar: {
+    width: 60,
+    height: 60,
     borderWidth: 2,
     borderColor: '#3c7ba4',
     marginRight: 5,
     borderRadius: 30,
   },
   image: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    top: 1,
+    left: 1,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
   },
   userInfo: {
     justifyContent: 'center',

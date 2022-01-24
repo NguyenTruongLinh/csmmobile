@@ -267,15 +267,19 @@ const styles = StyleSheet.create({
     height: 120,
   },
   avatar: {
+    width: 100,
+    height: 100,
     borderWidth: 2,
     borderColor: '#3c7ba4',
     marginRight: 5,
     borderRadius: 50,
   },
   image: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    top: 1,
+    left: 1,
+    width: 94,
+    height: 94,
+    borderRadius: 47,
   },
   control: {
     marginLeft: 24,
