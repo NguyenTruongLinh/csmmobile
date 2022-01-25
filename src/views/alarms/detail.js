@@ -90,6 +90,7 @@ class AlarmDetailView extends Component {
       alarmStore.selectedAlarm,
       true
     );
+    videoStore.enterVideoView(true);
     // const snapShots = getSnapshot(alarmStore.selectedAlarm.snapshot);
     // __DEV__ && console.log(` snapShots = `, snapShots);
     // if (!snapShots || snapShots.length == 0 || snapShots[0].fileName == null)
@@ -109,6 +110,7 @@ class AlarmDetailView extends Component {
     // if (this.shouldReloadOnExit) {
     //   alarmStore.getAlarms();
     // }
+    videoStore.enterVideoView(false);
   }
 
   initReactions = () => {

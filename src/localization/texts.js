@@ -100,6 +100,7 @@ export const VIDEO = {
   SELECT_CHANNEL_1: 'Please press ',
   SELECT_CHANNEL_2: ' to select channels',
   NO_PERMISSION: "You don't have VSC permission",
+  NO_VIDEO_COME: 'No incoming video',
 };
 
 export const STREAM_STATUS = {

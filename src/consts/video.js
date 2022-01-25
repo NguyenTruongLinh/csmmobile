@@ -199,6 +199,7 @@ export const RECONNECT_TIMEOUT = 10000;
 export const NATURAL_RATIO = 16 / 9;
 export const HLS_MIN_EXPIRE_TIME = 300;
 export const HLS_MAX_EXPIRE_TIME = 43200;
+export const HLS_DATA_REQUEST_TIMEOUT = 20000;
 export const VIDEO_INACTIVE_TIMEOUT = 5000;
 
 export const CONTROLLER_TIMEOUT = 3000; // 3 seconds

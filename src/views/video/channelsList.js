@@ -62,6 +62,7 @@ class ChannelsListView extends React.Component {
     sitesStore.onNVRsViewExit();
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     this.onFilter('');
+    videoStore.enterVideoView(false);
   }
 
   componentDidMount() {
@@ -94,6 +95,7 @@ class ChannelsListView extends React.Component {
       sitesStore.selectDVR(); // select default
       videoStore.selectDVR(sitesStore.selectedSiteDefaultDVR);
     }
+    videoStore.enterVideoView(true);
 
     this.dvrSelectorRef && this.dvrSelectorRef.onSelect(sitesStore.selectedDVR);
     this.setHeader(false);
@@ -103,8 +105,13 @@ class ChannelsListView extends React.Component {
 
   setHeader = enableSettingButton => {
     if (!this._isMounted) return;
-    const {navigation, videoStore, healthStore, sitesStore, userStore} =
-      this.props;
+    const {
+      navigation,
+      videoStore,
+      healthStore,
+      sitesStore,
+      userStore,
+    } = this.props;
     const {isListView} = this.state;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() =>

@@ -63,6 +63,7 @@ class OAMDetailView extends Component {
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     this.unsubscribleBlurEvent && this.unsubscribleBlurEvent();
     this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
+    videoStore.enterVideoView(false);
   }
 
   componentDidMount() {
@@ -80,6 +81,7 @@ class OAMDetailView extends Component {
       StatusBar.setHidden(false);
     });
     this.initReactions();
+    videoStore.enterVideoView(true);
   }
 
   initReactions = () => {

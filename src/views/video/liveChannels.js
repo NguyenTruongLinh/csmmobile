@@ -86,6 +86,7 @@ class LiveChannelsView extends React.Component {
     videoStore.setChannelFilter('');
     sitesStore.deselectDVR();
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
+    videoStore.enterVideoView(false);
     // this.stopAll();
     // videoStore.setStreamReadyCallback(null);
   }
@@ -113,6 +114,7 @@ class LiveChannelsView extends React.Component {
     }
     videoStore.selectDVR(sitesStore.selectedDVR);
     videoStore.switchLiveSearch(true);
+    videoStore.enterVideoView(true);
 
     // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
     // videoStore.setStreamReadyCallback(this.onStreamReady);
