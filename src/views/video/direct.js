@@ -262,13 +262,13 @@ class DirectVideoView extends React.Component {
             // }
           }
         ),
-        reaction(
-          () => videoStore.paused,
-          (paused, prevPaused) => {
-            // singlePlayer &&
-            this.pause(paused);
-          }
-        ),
+        // reaction(
+        //   () => videoStore.paused,
+        //   (paused, prevPaused) => {
+        //     // singlePlayer &&
+        //     this.pause(paused);
+        //   }
+        // ),
         reaction(
           () => videoStore.noVideo,
           noVideo => {
@@ -958,6 +958,7 @@ class DirectVideoView extends React.Component {
     if (this._isMounted /*&& this.ffmpegPlayer*/ && serverInfo /*.server*/) {
       if (value === true || value == undefined) {
         this.setNative({pause: true});
+        videoStore.pause(true);
       } else {
         // this.setNative({
         //   startplayback: {
@@ -987,6 +988,7 @@ class DirectVideoView extends React.Component {
             },
           });
         }
+        videoStore.pause(false);
       }
     }
   };

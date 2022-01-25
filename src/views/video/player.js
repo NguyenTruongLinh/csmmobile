@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
+import BackgroundTimer from 'react-native-background-timer';
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
 import {CalendarList} from 'react-native-calendars';
@@ -39,6 +40,7 @@ import {
   HOURS_ON_SCREEN,
   CONTROLLER_TIMEOUT,
   VIDEO_MESSAGE,
+  VIDEO_INACTIVE_TIMEOUT,
 } from '../../consts/video';
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
@@ -76,6 +78,7 @@ class VideoPlayerView extends Component {
     this.timeOnTimeline = null;
     // this.isNoDataSearch = false;
     this.eventSubscribers = [];
+    this.resumeFromInterupt = false;
   }
 
   componentDidMount() {
@@ -138,6 +141,12 @@ class VideoPlayerView extends Component {
   }
 
   //#region Event handlers
+  clearAppStateTimeout = () => {
+    __DEV__ && console.log('GOND: clearAppStateTimeout ') && console.trace();
+    BackgroundTimer.stopBackgroundTimer();
+    this.resumeFromInterupt = false;
+  };
+
   handleAppStateChange = nextAppState => {
     __DEV__ &&
       console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
@@ -146,43 +155,54 @@ class VideoPlayerView extends Component {
       if (this.appState && this.appState.match(/inactive|background/)) {
         // todo: check is already paused to not resume video
         // this.playerRef.pause(false);
-        // videoStore.pause(false);
-        switch (videoStore.cloudType) {
-          case CLOUD_TYPE.DEFAULT:
-          case CLOUD_TYPE.DIRECTION:
-            this.playerRef.reconnect();
-            break;
-          case CLOUD_TYPE.HLS:
-          case CLOUD_TYPE.RTC:
-            if (videoStore.selectedChannel ?? false) {
-              // self.getHLSInfos({
-              //   channelNo: videoStore.selectedChannel,
-              //   timeline: !videoStore.isLive,
-              // });
-              videoStore.resumeVideoStreamFromBackground(true);
-            } else {
+        if (this.resumeFromInterupt) {
+          __DEV__ && console.log('GOND: Video resume from interupt');
+          switch (videoStore.cloudType) {
+            case CLOUD_TYPE.DEFAULT:
+            case CLOUD_TYPE.DIRECTION:
+              this.playerRef.reconnect();
+              break;
+            case CLOUD_TYPE.HLS:
+            case CLOUD_TYPE.RTC:
+              if (videoStore.selectedChannel != null) {
+                // self.getHLSInfos({
+                //   channelNo: videoStore.selectedChannel,
+                //   timeline: !videoStore.isLive,
+                // });
+                videoStore.resumeVideoStreamFromBackground(true);
+              } else {
+                __DEV__ &&
+                  console.log(
+                    'GOND _handleAppStateChange resume playing failed: HLS no selected channel: ',
+                    videoStore.selectedChannel
+                  );
+              }
+              break;
+            // case CLOUD_TYPE.RTC:
+            //   break;
+            default:
               __DEV__ &&
                 console.log(
-                  'GOND _handleAppStateChange resume playing failed: HLS no selected channel: ',
-                  videoStore.selectedChannel
+                  'GOND _handleAppStateChange resume playing failed: cloudType is not valid: ',
+                  videoStore.cloudType
                 );
-            }
-            break;
-          // case CLOUD_TYPE.RTC:
-          //   break;
-          default:
-            __DEV__ &&
-              console.log(
-                'GOND _handleAppStateChange resume playing failed: cloudType is not valid: ',
-                videoStore.cloudType
-              );
-            break;
+              break;
+          }
+          this.clearAppStateTimeout();
         }
       }
     } else {
       // this.playerRef.pause(true);
-      // videoStore.pause(true);
-      this.playerRef.stop();
+      __DEV__ && console.log('GOND: Video setting stop timeout from interupt');
+      BackgroundTimer.runBackgroundTimer(() => {
+        __DEV__ && console.log('GOND: Video check to stop ', this.appState);
+        if (this.appState != 'active') {
+          __DEV__ && console.log('GOND: Video stop from interupt');
+          this.playerRef.stop();
+          BackgroundTimer.stopBackgroundTimer();
+          this.resumeFromInterupt = true;
+        }
+      }, VIDEO_INACTIVE_TIMEOUT);
     }
     this.appState = nextAppState;
   };
@@ -210,8 +230,7 @@ class VideoPlayerView extends Component {
       datesList.indexOf(selectedDate) < 0
     ) {
       __DEV__ && console.log('GOND: checkDataOnSearchDate NOVIDEO');
-      this.playerRef.pause();
-      // videoStore.pause(true);
+      this.playerRef && this.playerRef.pause();
       videoStore.selectedStream &&
         videoStore.selectedStream.setStreamStatus({
           isLoading: false,
@@ -284,8 +303,7 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     videoStore.switchLiveSearch(undefined, true);
     this.updateHeader();
-    // if (this.playerRef) this.playerRef.pause(true);
-    videoStore.pause(true);
+    this.playerRef && this.playerRef.pause(true);
     // set in store
     // if (videoStore.noVideo) {
     //   videoStore.setNoVideo(false);
@@ -351,8 +369,11 @@ class VideoPlayerView extends Component {
     // if (videoStore.noVideo) {
     //   videoStore.setNoVideo(false);
     // }
-    // this.playerRef.pause();
-    this.playerRef.playAt(secondsValue);
+    this.playerRef && this.playerRef.pause();
+    setTimeout(
+      () => this.playerRef && this.playerRef.playAt(secondsValue),
+      200
+    );
   };
 
   onSwitchChannel = channelNo => {
@@ -361,8 +382,14 @@ class VideoPlayerView extends Component {
     if (videoStore.selectedChannel && channelNo == videoStore.selectedChannel)
       return;
 
-    if (videoStore.paused) videoStore.pause(false);
+    videoStore.setPlayTimeForSearch(
+      DateTime.fromFormat(
+        videoStore.frameTimeString,
+        NVRPlayerConfig.FrameFormat
+      ).toFormat(NVRPlayerConfig.RequestTimeFormat)
+    );
     videoStore.selectChannel(channelNo);
+    if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
   };
 
   onChannelSnapshotLoaded = (param, image) => {};
@@ -380,7 +407,7 @@ class VideoPlayerView extends Component {
         this.controllerTimeout = setTimeout(() => {
           __DEV__ && console.log('GOND onShowControlButtons hidden');
           if (this._isMounted) this.setState({showController: false});
-        }, CONTROLLER_TIMEOUT);
+        }, CONTROLLER_TIMEOUT * 10);
       });
     }
   };
@@ -687,8 +714,7 @@ class VideoPlayerView extends Component {
               onPress={() => {
                 // const willPause = paused;
                 // this.setState({pause: willPause});
-                // this.playerRef.pause();
-                videoStore.pause();
+                this.playerRef && this.playerRef.pause();
               }}
             />
           ) : null}
@@ -811,7 +837,9 @@ class VideoPlayerView extends Component {
               this.timeOnTimeline && this.timeOnTimeline.setValue(time);
             }}
             // onPauseVideoScrolling={() => this.setState({pause: true})}
-            onPauseVideoScrolling={() => videoStore.pause(true)}
+            onPauseVideoScrolling={() =>
+              this.playerRef && this.playerRef.pause(true)
+            }
             setShowHideTimeOnTimeRule={value => {
               this.timeOnTimeline && this.timeOnTimeline.setShowHide(value);
             }}

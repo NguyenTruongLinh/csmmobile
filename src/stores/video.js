@@ -315,7 +315,7 @@ export const VideoModel = types
   })
   .volatile(self => ({
     frameTime: 0,
-    frameTimeString: null,
+    frameTimeString: null, // NVRPlayerConfig.FrameFormat
 
     recordingDates: {},
     timeline: [],
@@ -799,7 +799,26 @@ export const VideoModel = types
           s => s.channelNo == foundChannel.channelNo
         );
         __DEV__ && console.log('GOND foundStream: ', foundStream);
-        if (!foundStream) {
+        if (foundStream) {
+          switch (self.cloudType) {
+            case CLOUD_TYPE.DEFAULT:
+            case CLOUD_TYPE.DIRECTION:
+              break;
+            case CLOUD_TYPE.HLS:
+              // create stream first for showing in player
+              if (
+                foundStream.isLive != self.isLive ||
+                foundStream.isHD != self.hdMode
+              ) {
+                foundStream.setLive(self.isLive);
+                foundStream.setHD(self.hdMode);
+                self.getHLSInfos({channelNo: value, timeline: !self.isLive});
+              }
+              break;
+            case CLOUD_TYPE.RTC:
+              break;
+          }
+        } else {
           __DEV__ &&
             console.log('GOND stream not found, add new one ... ', foundStream);
           switch (self.cloudType) {
@@ -823,6 +842,8 @@ export const VideoModel = types
               });
               self.hlsStreams.push(newStream);
               self.getHLSInfos({channelNo: value, timeline: !self.isLive});
+              newStream.setLive(self.isLive);
+              newStream.setHD(self.hdMode);
               break;
             case CLOUD_TYPE.RTC:
               if (self.rtcConnection && self.rtcConnection.isValid) {
@@ -1666,7 +1687,20 @@ export const VideoModel = types
           sid,
         });
       }),
-      stopHLSStream: flow(function* (channelNo, sid) {
+      stopHLSStream: flow(function* (channelNo, sid, forceStop = false) {
+        // do not stop multi division live channels
+        const targetStream = self.hlsStreams.find(
+          s => s.channelNo == channelNo
+        );
+        if (
+          !forceStop &&
+          !self.isAlertPlay &&
+          self.activeChannelNos.includes(channelNo) &&
+          targetStream &&
+          targetStream.liveUrl &&
+          targetStream.liveUrl.sid == sid
+        )
+          return Promise.resolve();
         return yield self.sendVSCCommand(VSCCommand.STOP, channelNo, {sid});
       }),
       getHLSInfos: flow(function* (params) {
@@ -2027,6 +2061,7 @@ export const VideoModel = types
                   connectionStatus: STREAM_STATUS.NOVIDEO,
                   error: info.description,
                 });
+              snackbarUtil.onError(info.description ?? VIDEO_TXT.NO_VIDEO_COME);
               return;
             }
           }
@@ -2252,7 +2287,7 @@ export const VideoModel = types
                 '-- GOND timeInterval is empty, jtimeData =',
                 jtimeData
               );
-            // this.pause();
+
             self.selectedStream.setStreamStatus({
               isLoading: false,
               connectionStatus: STREAM_STATUS.NOVIDEO,
@@ -2541,13 +2576,13 @@ export const VideoModel = types
         self.hlsStreams.forEach(s => {
           s.release();
           util.isValidHttpUrl(s.liveUrl.url) &&
-            self.stopHLSStream(s.channelNo, s.liveUrl.sid);
+            self.stopHLSStream(s.channelNo, s.liveUrl.sid, true);
           util.isValidHttpUrl(s.liveHDUrl.url) &&
-            self.stopHLSStream(s.channelNo, s.liveHDUrl.sid);
+            self.stopHLSStream(s.channelNo, s.liveHDUrl.sid, true);
           util.isValidHttpUrl(s.searchUrl.url) &&
-            self.stopHLSStream(s.channelNo, s.searchUrl.sid);
+            self.stopHLSStream(s.channelNo, s.searchUrl.sid, true);
           util.isValidHttpUrl(s.searchHDUrl.url) &&
-            self.stopHLSStream(s.channelNo, s.searchHDUrl.sid);
+            self.stopHLSStream(s.channelNo, s.searchHDUrl.sid, true);
         });
         self.hlsStreams = [];
       },

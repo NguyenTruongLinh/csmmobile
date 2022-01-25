@@ -45,6 +45,7 @@
     "react-native": "0.64.2",
     "react-native-24h-timepicker": "github:phungthanhdong/react-native-24h-timepicker#master",
     "react-native-animated-pagination-dots": "^0.1.72",
+    "react-native-background-timer": "^2.4.1",
     "react-native-calendars": "^1.1266.0",
     "react-native-charts-wrapper": "^0.5.7",
     "react-native-collapsible": "^1.6.0",

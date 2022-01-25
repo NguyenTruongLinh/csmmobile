@@ -50,7 +50,7 @@ class HLSStreamingView extends React.Component {
       //   : null,
       urlParams: '',
       timeBeginPlaying: DateTime.now().setZone(videoStore.timezone),
-      // paused: false,
+      internalLoading: false,
     };
     this._isMounted = false;
     this.frameTime = 0;
@@ -117,12 +117,13 @@ class HLSStreamingView extends React.Component {
                 timeBeginPlaying: this.props.isLive
                   ? DateTime.now().setZone(videoStore.timezone)
                   : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
+                internalLoading: false,
               });
               // reset these value everytimes streamUrl changed
               this.frameTime = 0;
               this.tsIndex = -1;
               if (videoStore.paused) {
-                videoStore.pause(false);
+                this.pause(false);
               }
               if (!this.props.isLive && singlePlayer) {
                 __DEV__ && console.log('HLSStreamingView should resume');
@@ -132,6 +133,17 @@ class HLSStreamingView extends React.Component {
               // TODO: handle invalid url
             }
           }
+        }
+      ),
+      reaction(
+        () => this.props.streamData.error,
+        (newError, previousError) => {
+          if (
+            this.state.internalLoading &&
+            newError != previousError &&
+            newError.length > 0
+          )
+            this.setState({internalLoading: false});
         }
       ),
     ];
@@ -162,11 +174,10 @@ class HLSStreamingView extends React.Component {
           newChannel => {
             __DEV__ &&
               console.log('HLSStreamingView channel changed: ', newChannel);
+            this.pause(true);
             this.stop();
+            this.setState({internalLoading: true});
             this.lastSearchTime = null;
-            // if (this.props.singlePlayer) {
-            //   if (videoStore.paused) videoStore.pause(false);
-            // }
           }
         ),
         reaction(
@@ -211,11 +222,11 @@ class HLSStreamingView extends React.Component {
     const {videoStore, singlePlayer} = this.props;
     __DEV__ && console.log('GOND onPlaybackStalled: ', event);
 
-    // if (!this.state.paused && !videoStore.paused) {
-    //   videoStore.pause(true);
+    // if (!videoStore.paused) {
+    //   this.pause(true);
     //   setTimeout(() => {
     //     if (this._isMounted) {
-    //       videoStore.pause(false);
+    //       this.pause(false);
     //     }
     //   }, 500);
     // }
@@ -292,6 +303,7 @@ class HLSStreamingView extends React.Component {
     if (!this._isMounted) return;
     __DEV__ && console.log('GOND HLS onError: ', error);
     const {streamData, isLive, hdMode} = this.props;
+    if (this.state.internalLoading) this.setState({internalLoading: false});
     // this.setState({
     //   message: 'Reconnecting',
     // });
@@ -329,7 +341,7 @@ class HLSStreamingView extends React.Component {
       // __DEV__ && console.log('GOND HLS progress: AAAAAA 1');
       return;
     }
-    __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
+    // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
 
     const {hlsTimestamps} = videoStore;
     const {timeBeginPlaying} = this.state;
@@ -444,12 +456,14 @@ class HLSStreamingView extends React.Component {
     //       NVRPlayerConfig.RequestTimeFormat
     //     )
     //   );
-    videoStore.setDisplayDateTime(
-      DateTime.fromSeconds(this.frameTime, {
-        zone: videoStore.timezone,
-      }).toFormat(NVRPlayerConfig.FrameFormat)
-    );
-    videoStore.setFrameTime(this.frameTime);
+    if (!videoStore.paused) {
+      videoStore.setDisplayDateTime(
+        DateTime.fromSeconds(this.frameTime, {
+          zone: videoStore.timezone,
+        }).toFormat(NVRPlayerConfig.FrameFormat)
+      );
+      videoStore.setFrameTime(this.frameTime);
+    }
   };
 
   onLoad = event => {
@@ -476,13 +490,17 @@ class HLSStreamingView extends React.Component {
   };
 
   stop = () => {
-    this.props.videoStore.stopHLSStream();
+    const {streamData, videoStore} = this.props;
+    streamData &&
+      streamData.targetUrl &&
+      videoStore.stopHLSStream(streamData.channelNo, streamData.targetUrl.sid);
     this.clearBufferTimeout();
     this.clearReconnectTimeout();
   };
 
   pause = willPause => {
-    this.setState({paused: willPause == undefined ? true : willPause});
+    // this.setState({paused: willPause == undefined ? true : willPause});
+    this.props.videoStore.pause(willPause == undefined ? true : willPause);
   };
 
   playAt = value => {
@@ -508,7 +526,7 @@ class HLSStreamingView extends React.Component {
     } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
-    const {streamUrl, urlParams, paused} = this.state;
+    const {streamUrl, urlParams, internalLoading} = this.state;
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
@@ -536,7 +554,7 @@ class HLSStreamingView extends React.Component {
             <View style={styles.textContainer}>
               <Text style={styles.textMessage}>{connectionStatus}</Text>
             </View>
-            {isLoading && (
+            {(isLoading || internalLoading) && (
               <ActivityIndicator
                 style={styles.loadingIndicator}
                 size="large"
@@ -546,15 +564,14 @@ class HLSStreamingView extends React.Component {
           </View>
           <View style={styles.playerView}>
             {
-              /*!isLoading &&*/ streamUrl &&
-              streamUrl.length > 0 &&
-              !noVideo ? (
+              /*!isLoading &&*/
+              streamUrl && streamUrl.length > 0 && !noVideo ? (
                 <Video
                   style={[{width: width, height: height}]}
                   hls={true}
                   resizeMode={'stretch'}
                   source={{uri: streamUrl + urlParams, type: 'm3u8'}}
-                  paused={singlePlayer ? videoStore.paused || paused : false}
+                  paused={singlePlayer ? videoStore.paused : false}
                   ref={ref => {
                     this.player = ref;
                   }}

@@ -10,6 +10,7 @@ import {
   AppState,
   // BackHandler,
 } from 'react-native';
+import BackgroundTimer from 'react-native-background-timer';
 import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
 // import {BottomModal, ModalContent} from 'react-native-modals';
@@ -32,7 +33,11 @@ import LoadingOverlay from '../../components/common/loadingOverlay';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
-import {CLOUD_TYPE, LAYOUT_DATA} from '../../consts/video';
+import {
+  CLOUD_TYPE,
+  LAYOUT_DATA,
+  VIDEO_INACTIVE_TIMEOUT,
+} from '../../consts/video';
 import ROUTERS from '../../consts/routes';
 import {MODULE_PERMISSIONS} from '../../consts/misc';
 import variables from '../../styles/variables';
@@ -64,6 +69,7 @@ class LiveChannelsView extends React.Component {
     this.playerRefs = [];
     this.firstFocus = true;
     this.directViewList = [];
+    this.resumeFromInterupt = false;
     // this.viewableList = [];
     // this.showAllTimeout = null;
     // this.didFilter = false;
@@ -153,6 +159,12 @@ class LiveChannelsView extends React.Component {
   }
   */
 
+  clearAppStateTimeout = () => {
+    __DEV__ && console.log('GOND: clearAppStateTimeout ') && console.trace();
+    BackgroundTimer.stopBackgroundTimer();
+    this.resumeFromInterupt = false;
+  };
+
   handleAppStateChange = nextAppState => {
     __DEV__ &&
       console.log('GOND handleAppStateChange nextAppState: ', nextAppState);
@@ -166,36 +178,40 @@ class LiveChannelsView extends React.Component {
     const {videoStore, isLive} = this.props;
     if (nextAppState === 'active') {
       if (this.appState && this.appState.match(/inactive|background/)) {
-        switch (videoStore.cloudType) {
-          case CLOUD_TYPE.DEFAULT:
-          case CLOUD_TYPE.DIRECTION:
-            this.playerRefs.forEach(p => p && p.reconnect());
-            break;
-          case CLOUD_TYPE.HLS:
-          case CLOUD_TYPE.RTC:
-            if (videoStore.selectedChannel ?? false) {
+        if (this.resumeFromInterupt) {
+          switch (videoStore.cloudType) {
+            case CLOUD_TYPE.DEFAULT:
+            case CLOUD_TYPE.DIRECTION:
+              this.playerRefs.forEach(p => p && p.reconnect());
+              break;
+            case CLOUD_TYPE.HLS:
+            case CLOUD_TYPE.RTC:
               videoStore.resumeVideoStreamFromBackground(false);
-            } else {
+              break;
+            // case CLOUD_TYPE.RTC:
+            //   break;
+            default:
               __DEV__ &&
                 console.log(
-                  'GOND _handleAppStateChange resume playing failed: HLS no selected channel: ',
-                  videoStore.selectedChannel
+                  'GOND _handleAppStateChange resume playing failed: cloudType is not valid: ',
+                  videoStore.cloudType
                 );
-            }
-            break;
-          // case CLOUD_TYPE.RTC:
-          //   break;
-          default:
-            __DEV__ &&
-              console.log(
-                'GOND _handleAppStateChange resume playing failed: cloudType is not valid: ',
-                videoStore.cloudType
-              );
-            break;
+              break;
+          }
         }
+        this.clearAppStateTimeout();
       }
     } else {
-      this.playerRefs.forEach(p => p && p.stop());
+      __DEV__ && console.log('GOND: Video setting stop timeout from interupt');
+      BackgroundTimer.runBackgroundTimer(() => {
+        __DEV__ && console.log('GOND: Video check to stop ', this.appState);
+        if (this.appState != 'active') {
+          __DEV__ && console.log('GOND: Video stop from interupt');
+          this.playerRefs.forEach(p => p && p.stop());
+          BackgroundTimer.stopBackgroundTimer();
+          this.resumeFromInterupt = true;
+        }
+      }, VIDEO_INACTIVE_TIMEOUT);
     }
     this.appState = nextAppState;
   };
