@@ -473,7 +473,7 @@ const _parseTransactionData = (_data, exceptionTypesConfig) => {
     terminalName: _data.TerminalName,
     tranDate: _data.TranDate,
     dvrDate: _data.DvrDate,
-    dvrStartDate: _data.DvrStartDate,
+    dvrStartDate: _data.DVRDate_Start,
     // year: types.number,
     // quarter: types.number,
     // month: types.number,
@@ -924,6 +924,7 @@ export const POSModel = types
         return;
       }
       self.isLoading = false;
+      __DEV__ && console.log('GOND getTransaction detail = ', resultTrans);
       return resultTrans;
     }),
     // #endregion Get data
