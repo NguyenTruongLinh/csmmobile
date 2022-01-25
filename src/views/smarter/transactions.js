@@ -225,8 +225,8 @@ class ExceptionsView extends Component {
 
   renderItemGridView = ({item}) => {
     const {width} = Dimensions.get('window');
-    const itemPadding = 10;
-    const itemWidth = width / ALERTS_GRID_LAYOUT - 2 * itemPadding;
+    // const itemPadding = 10;
+    const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
 
     return (
       <CMSRipple
@@ -234,11 +234,16 @@ class ExceptionsView extends Component {
           this.gotoTransactionDetail(item);
         }}
         underlayColor={CMSColors.Underlay}
-        style={[styles.gridItemContainer, {padding: itemPadding}]}>
+        style={[
+          styles.gridItemContainer,
+          {
+            width: itemWidth,
+          },
+        ]}>
         <View
           style={{
             width: itemWidth,
-            height: Math.floor((itemWidth * 9) / 16),
+            height: Math.floor((itemWidth * 3) / 4),
             backgroundColor: CMSColors.DividerColor24_HEX,
           }}>
           <CMSImage
@@ -246,7 +251,7 @@ class ExceptionsView extends Component {
             src={item.image ? item.image : undefined}
             styleImage={[
               styles.alertThumbGrid,
-              {width: itemWidth, height: Math.floor((itemWidth * 9) / 16)},
+              {width: itemWidth, height: Math.floor((itemWidth * 3) / 4)},
             ]}
             styles={styles.gridSnapshot}
             twoStepsLoading={true}
@@ -307,6 +312,7 @@ class ExceptionsView extends Component {
           onRefresh={this.getData}
           refreshing={exceptionStore.isLoading}
           onEndReached={this.onLoadMore}
+          style={{padding: isListView ? 0 : 5}}
         />
       </View>
     );
@@ -418,12 +424,25 @@ const styles = StyleSheet.create({
     // borderWidth: 1,
   },
   gridItemContainer: {
-    flex: 1,
+    // flex: 1,
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: CMSColors.White,
     borderColor: CMSColors.BorderColorListRow,
+    borderRadius: 2,
+    backgroundColor: CMSColors.White,
+    flexDirection: 'column',
+    ...Platform.select({
+      ios: {
+        shadowRadius: 2,
+        shadowColor: CMSColors.BoxShadow,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+    margin: 5,
   },
   gridSnapshot: {flex: 8},
   gridInfoContainer: {flexDirection: 'row', paddingHorizontal: 5},
