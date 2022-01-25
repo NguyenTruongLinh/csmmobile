@@ -486,6 +486,9 @@ class DirectVideoView extends React.Component {
           // this.ffmpegPlayer.setNativeProps({
           //   startplayback: playbackInfo,
           // });
+          if (videoStore.paused) {
+            videoStore.pause(false);
+          }
           this.setNative({startplayback: playbackInfo});
         }
       }, 500);
@@ -493,6 +496,9 @@ class DirectVideoView extends React.Component {
       // this.ffmpegPlayer.setNativeProps({
       //   startplayback: playbackInfo,
       // });
+      if (videoStore.paused) {
+        videoStore.pause(false);
+      }
       this.setNative({startplayback: playbackInfo});
     }
   };

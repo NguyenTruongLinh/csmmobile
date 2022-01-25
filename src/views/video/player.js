@@ -407,7 +407,7 @@ class VideoPlayerView extends Component {
         this.controllerTimeout = setTimeout(() => {
           __DEV__ && console.log('GOND onShowControlButtons hidden');
           if (this._isMounted) this.setState({showController: false});
-        }, CONTROLLER_TIMEOUT * 10);
+        }, CONTROLLER_TIMEOUT);
       });
     }
   };
