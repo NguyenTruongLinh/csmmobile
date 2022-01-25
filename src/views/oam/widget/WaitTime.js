@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 40,
     fontWeight: 'bold',
-    paddingRight: 28,
+    paddingRight: 20,
     textAlign: 'right',
     textAlignVertical: 'center',
   },

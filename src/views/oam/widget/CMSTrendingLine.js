@@ -138,7 +138,7 @@ class CMSTrendingLine extends React.Component {
 const styles = StyleSheet.create({
   chart: {
     backgroundColor: '#00000033',
-    marginRight: 16,
+    marginRight: 20,
   },
 });
 
