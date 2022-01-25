@@ -67,7 +67,7 @@ class OAMDetailView extends Component {
   }
 
   componentDidMount() {
-    const {navigation, oamStore} = this.props;
+    const {navigation, oamStore, videoStore} = this.props;
     __DEV__ && console.log('RTCStreamingView componentDidMount');
 
     navigation.setOptions({

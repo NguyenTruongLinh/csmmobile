@@ -59,7 +59,7 @@ class TransactionDetailView extends Component {
     this.props.videoStore.releaseStreams();
     this.props.exceptionStore.onExitTransactionDetail();
 
-    videoStore.enterVideoView(false);
+    this.props.videoStore.enterVideoView(false);
     // Just for sure
     if (!this.props.appStore.showTabbar)
       this.props.appStore.hideBottomTabs(false);
@@ -87,7 +87,7 @@ class TransactionDetailView extends Component {
       }
     });
 
-    videoStore.enterVideoView(true);
+    this.props.videoStore.enterVideoView(true);
   }
 
   initReactions = () => {

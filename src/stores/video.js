@@ -21,8 +21,7 @@ import {
   VSCCommandString,
   LAYOUT_DATA,
   DEFAULT_REGION,
-  HLS_MAX_EXPIRE_TIME,
-  STREAM_TIMEOUT,
+  HLS_DATA_REQUEST_TIMEOUT,
   BEGIN_OF_DAY_STRING,
   END_OF_DAY_STRING,
 } from '../consts/video';
@@ -312,6 +311,7 @@ export const VideoModel = types
     isAlertPlay: types.optional(types.boolean, false),
     isPreloadStream: types.optional(types.boolean, false),
     currentGridPage: types.optional(types.number, 0),
+    isInVideoView: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     frameTime: 0,
@@ -323,6 +323,9 @@ export const VideoModel = types
     // selectedHLSStream: null,
     directTimeDiff: 0,
     waitForTimezone: false,
+    checkTimezoneTimeout: null,
+    waitForTimeline: false,
+    checkTimelineTimeout: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -1660,11 +1663,11 @@ export const VideoModel = types
       }),
       getDVRTimezone: flow(function* (channelNo) {
         self.waitForTimezone = true;
-        setTimeout(() => {
-          if (self.waitForTimezone) {
+        self.checkTimezoneTimeout = setTimeout(() => {
+          if (self.isInVideoView && self.waitForTimezone) {
             self.getDVRTimezone(channelNo);
           }
-        }, 60000); // 1 min wait time
+        }, HLS_DATA_REQUEST_TIMEOUT); // 1 min wait time
         return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo);
       }),
       getDaylist: flow(function* (channelNo, sid) {
@@ -1678,6 +1681,16 @@ export const VideoModel = types
             .setZone(self.timezone)
             .startOf('day');
         }
+        self.waitForTimeline = true;
+        self.checkTimelineTimeout = setTimeout(() => {
+          if (
+            self.isInVideoView &&
+            self.waitForTimeline &&
+            self.selectedChannel == channelNo
+          ) {
+            self.getTimeline(channelNo, sid);
+          }
+        }, HLS_DATA_REQUEST_TIMEOUT); // 1 min wait time
         return yield self.sendVSCCommand(VSCCommand.TIMELINE, channelNo, {
           requestDate: self.searchDate.toFormat(
             NVRPlayerConfig.HLSRequestDateFormat
@@ -2055,12 +2068,12 @@ export const VideoModel = types
               const target = self.hlsStreams.find(
                 s => s.targetUrl.sid == info.sid
               );
-              target &&
-                target.setStreamStatus({
-                  isLoading: false,
-                  connectionStatus: STREAM_STATUS.NOVIDEO,
-                  error: info.description,
-                });
+              target && target.reconnect();
+              // target.setStreamStatus({
+              //   isLoading: false,
+              //   connectionStatus: STREAM_STATUS.NOVIDEO,
+              //   error: info.description,
+              // });
               snackbarUtil.onError(info.description ?? VIDEO_TXT.NO_VIDEO_COME);
               return;
             }
@@ -2235,6 +2248,7 @@ export const VideoModel = types
         return result;
       },
       buildTimelineData: flow(function* (data) {
+        self.waitForTimeline = false;
         if (!self.selectedStream) return;
         let jTimeStamp = data;
         if (jTimeStamp && jTimeStamp.BigData) {
@@ -2629,6 +2643,10 @@ export const VideoModel = types
 
         self.timezoneName = null;
         self.searchDate = null;
+      },
+      // enter/leave video view
+      enterVideoView(isEnter) {
+        self.isInVideoView = isEnter;
       },
       cleanUp() {
         applySnapshot(self, storeDefault);
