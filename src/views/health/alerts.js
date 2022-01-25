@@ -302,6 +302,9 @@ class AlertsView extends Component {
   };
 
   renderContentAlertWithSnapshot = alert => {
+    const {width} = Dimensions.get('window');
+    const itemPadding = 10;
+    const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
     const {isListView} = this.state;
     // __DEV__ && console.log('GOND renderContentAlertWithSnapshot: ', alert);
 
@@ -309,8 +312,8 @@ class AlertsView extends Component {
       ? {flex: 2}
       : {
           backgroundColor: CMSColors.transparent,
-          paddingLeft: 5,
-          paddingBottom: 5,
+          padding: 5,
+          width: itemWidth,
         };
     const numberOfLines = isListView ? 0 : 1;
 
@@ -389,8 +392,8 @@ class AlertsView extends Component {
   renderAlertItemGridView = item => {
     const {healthStore} = this.props;
     const {width} = Dimensions.get('window');
-    const itemPadding = 10;
-    const itemWidth = width / ALERTS_GRID_LAYOUT - 2 * itemPadding;
+    // const itemPadding = 10;
+    const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
 
     return (
       <CMSRipple
@@ -398,7 +401,22 @@ class AlertsView extends Component {
           this.gotoAlertDetail(item);
         }}
         underlayColor={CMSColors.Underlay}
-        style={{flex: 1}}>
+        style={{
+          borderRadius: 2,
+          backgroundColor: CMSColors.White,
+          flexDirection: 'column',
+          ...Platform.select({
+            ios: {
+              shadowRadius: 2,
+              shadowColor: CMSColors.BoxShadow,
+            },
+            android: {
+              elevation: 2,
+            },
+          }),
+          margin: 5,
+          width: width / ALERTS_GRID_LAYOUT - 15,
+        }}>
         <View
           style={{
             flex: 1,
@@ -407,23 +425,29 @@ class AlertsView extends Component {
             alignItems: 'center',
             backgroundColor: CMSColors.White,
             borderColor: CMSColors.BorderColorListRow,
-            padding: itemPadding,
+            // padding: itemPadding,
           }}>
-          <CMSImage
-            id={'grid_' + DateTime.now().toMillis()}
-            src={item.image ? item.image : undefined}
-            styleImage={[
-              styles.alertThumbGrid,
-              {width: itemWidth, height: Math.floor((itemWidth * 9) / 16)},
-            ]}
-            styles={{flex: 8}}
-            dataCompleteHandler={(param, image) => {
-              if (image) {
-                item.saveImage(image);
-              }
-            }}
-            domain={healthStore.getAlertSnapShot(item)} // {this.getSnapShot(item)}
-          />
+          <View
+            style={{width: itemWidth, height: Math.floor((itemWidth * 3) / 4)}}>
+            <CMSImage
+              id={'grid_' + DateTime.now().toMillis()}
+              src={item.image ? item.image : undefined}
+              styleImage={[
+                styles.alertThumbGrid,
+                {
+                  width: itemWidth,
+                  height: Math.floor((itemWidth * 3) / 4),
+                },
+              ]}
+              styles={{flex: 8}}
+              dataCompleteHandler={(param, image) => {
+                if (image) {
+                  item.saveImage(image);
+                }
+              }}
+              domain={healthStore.getAlertSnapShot(item)} // {this.getSnapShot(item)}
+            />
+          </View>
           {this.renderContentAlertWithSnapshot(item)}
         </View>
       </CMSRipple>
@@ -487,6 +511,7 @@ class AlertsView extends Component {
             numColumns={isListView ? 1 : ALERTS_GRID_LAYOUT}
             onRefresh={this.getData}
             refreshing={healthStore.isLoading}
+            style={{padding: isListView ? 0 : 5}}
           />
         )}
         {/* <CMSTextInputModal
@@ -516,6 +541,22 @@ class AlertsView extends Component {
 }
 
 const styles = StyleSheet.create({
+  item: {
+    flex: 1,
+    borderRadius: 2,
+    backgroundColor: CMSColors.White,
+    flexDirection: 'column',
+    ...Platform.select({
+      ios: {
+        shadowRadius: 2,
+        shadowColor: CMSColors.BoxShadow,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+    margin: 6,
+  },
   thumbSub: {
     flexDirection: 'row',
     alignItems: 'center',
