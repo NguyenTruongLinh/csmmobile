@@ -123,6 +123,7 @@ export const STREAM_STATUS = {
   CHANGED: 'Server info changed.',
   WRONG_SERVER: 'Wrong server id.',
   PORT_ERROR: 'Video port error.',
+  CONNECTION_ERROR: 'Connection Failed.',
 };
 
 export const ALARM = {

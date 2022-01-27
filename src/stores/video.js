@@ -2171,14 +2171,14 @@ export const VideoModel = types
             // }
           }
           const result = yield target.startConnection(info, cmd);
-          if (target.isLoading) {
-            target.setStreamStatus({
-              isLoading: false,
-              connectionStatus: result
-                ? STREAM_STATUS.DONE
-                : STREAM_STATUS.ERROR,
-            });
-          }
+          // if (target.isLoading) {
+          //   target.setStreamStatus({
+          //     isLoading: false,
+          //     connectionStatus: result
+          //       ? STREAM_STATUS.DONE
+          //       : STREAM_STATUS.ERROR,
+          //   });
+          // }
 
           // if (
           //   self.selectedHLSStream &&
@@ -2339,11 +2339,7 @@ export const VideoModel = types
           }
           // return timeInterval;
         } catch (ex) {
-          console.log(
-            '%c [GOND] RTC.dataChannel.onerror: ',
-            'color: red; font-style: italic',
-            ex
-          );
+          console.log('GOND buildTimelineData failed: ', ex);
           // snackbarUtil.showMessage(VIDEO_MESSAGE.MSG_STREAM_ERROR, CMSColors.Danger);
           self.selectedStream.setStreamStatus({
             connectionStatus: STREAM_STATUS.ERROR,

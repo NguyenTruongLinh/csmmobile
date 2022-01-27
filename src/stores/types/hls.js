@@ -94,7 +94,7 @@ export default HLSStreamModel = types
     isLive: types.optional(types.boolean, false),
     isHD: types.optional(types.boolean, false),
     isDead: types.optional(types.boolean, false),
-    isWaitingReconnect: types.optional(types.boolean, false),
+    // isWaitingReconnect: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     streamTimeout: null,
@@ -247,15 +247,16 @@ export default HLSStreamModel = types
           isLoading,
           needReset,
         });
+      // if (connectionStatus == STREAM_STATUS.ERROR && __DEV__) console.trace();
       connectionStatus != undefined &&
         (self.connectionStatus = connectionStatus);
       isLoading != undefined && (self.isLoading = isLoading);
       needReset != undefined && (self.needReset = needReset);
       error != undefined && (self.error = error);
     },
-    setReconnectStatus(value) {
-      self.isWaitingReconnect = value;
-    },
+    // setReconnectStatus(value) {
+    //   self.isWaitingReconnect = value;
+    // },
     // setTimelines(timeline, timestamp) {
     //   self.timeline = timeline;
     //   self.timestamps = timestamp;
@@ -350,10 +351,10 @@ export default HLSStreamModel = types
           console.log('GOND HLS Get Streaming Session URL failed: ', err);
         self.setStreamStatus({
           isLoading: false,
-          connectionStatus: STREAM_STATUS.ERROR,
+          connectionStatus: STREAM_STATUS.RECONNECTING,
           error: err.message,
         });
-        self.setReconnectStatus(false);
+        // self.setReconnectStatus(false);
         // setTimeout(() => self.reconnect(), 200);
         // return false;
         if (!self.isDead) return self.reconnect(info);
@@ -369,16 +370,17 @@ export default HLSStreamModel = types
     reconnect(info) {
       if (
         self.isDead ||
-        self.isWaitingReconnect ||
+        // self.isWaitingReconnect ||
         self.connectionStatus == STREAM_STATUS.TIMEOUT ||
         self.connectionStatus == STREAM_STATUS.NOVIDEO
       ) {
-        console.log(
-          'GOND HLS::Not Reconnect: ',
-          self.isDead,
-          self.isWaitingReconnect,
-          self.connectionStatus
-        );
+        __DEV__ &&
+          console.log(
+            'GOND HLS::Not Reconnect: ',
+            self.isDead,
+            // self.isWaitingReconnect,
+            self.connectionStatus
+          );
         return Promise.resolve(false);
       }
 
@@ -388,29 +390,30 @@ export default HLSStreamModel = types
           (info.access_key && info.access_key != self.accessKey) ||
           (info.secret_key && info.secret_key != self.secretKey))
       ) {
-        console.log(
-          'GOND HLS:: AWS connection changed, not reconnect: ',
-          info,
-          self.streamName,
-          self.accessKey
-        );
-        return Promise.resolve(false);
+        __DEV__ &&
+          console.log(
+            'GOND HLS:: AWS connection changed, not reconnect: ',
+            info,
+            self.streamName,
+            self.accessKey
+          );
+        return Promise.resolve(true);
       }
       // wait time before another reconnect:
       if (__DEV__) {
         console.log('GOND HLS::Reconnect ---------');
         // console.trace();
       }
-      self.setReconnectStatus(true);
-      setTimeout(() => {
-        self.setReconnectStatus(false);
-        if (
-          self.connectionStatus == STREAM_STATUS.ERROR ||
-          self.connectionStatus == STREAM_STATUS.RECONNECTING
-        ) {
-          self.reconnect();
-        }
-      }, 7000);
+      // self.setReconnectStatus(true);
+      // setTimeout(() => {
+      //   self.setReconnectStatus(false);
+      //   if (
+      //     self.connectionStatus == STREAM_STATUS.ERROR ||
+      //     self.connectionStatus == STREAM_STATUS.RECONNECTING
+      //   ) {
+      //     self.reconnect();
+      //   }
+      // }, 7000);
       // end wait time
 
       self.setUrl(null);
@@ -419,7 +422,16 @@ export default HLSStreamModel = types
         connectionStatus: STREAM_STATUS.RECONNECTING,
       });
       // self.scheduleCheckTimeout();
-      return self.getHLSStreamUrl(null);
+      if (self.retryRemaining > 0) {
+        self.retryRemaining--;
+        return self.getHLSStreamUrl(null);
+      } else {
+        self.setStreamStatus({
+          connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+          isLoading: false,
+        });
+        return Promise.resolve(false);
+      }
     },
     scheduleCheckTimeout(time) {
       self.clearStreamTimeout();
