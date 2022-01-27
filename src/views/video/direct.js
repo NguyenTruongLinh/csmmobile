@@ -242,9 +242,10 @@ class DirectVideoView extends React.Component {
             // this.stop();
             if (
               searchDate &&
-              prevSearchDate &&
-              searchDate.toFormat(CALENDAR_DATE_FORMAT) !=
-                prevSearchDate.toFormat(CALENDAR_DATE_FORMAT)
+              (!prevSearchDate ||
+                (prevSearchDate &&
+                  searchDate.toFormat(CALENDAR_DATE_FORMAT) !=
+                    prevSearchDate.toFormat(CALENDAR_DATE_FORMAT)))
             ) {
               __DEV__ &&
                 console.log('GOND direct searchDate changed: ', searchDate);
@@ -1092,14 +1093,8 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      serverInfo,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
+      this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&

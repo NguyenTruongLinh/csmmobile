@@ -892,7 +892,7 @@ export const VideoModel = types
         // __DEV__ && console.log('GOND setDisplayDateTime: ', value);
       },
       setSearchDate(value, format) {
-        __DEV__ && console.log('GOND setSearchDate ', value);
+        __DEV__ && console.log('GOND setSearchDate ', value, format);
         if (typeof value == 'string') {
           if (self.noVideo) {
             self.setNoVideo(false);
@@ -900,7 +900,8 @@ export const VideoModel = types
           try {
             self.searchDate = DateTime.fromFormat(
               value,
-              format ?? NVRPlayerConfig.RequestTimeFormat
+              format ?? NVRPlayerConfig.RequestTimeFormat,
+              {zone: self.timezone}
             );
           } catch (err) {
             __DEV__ && console.log('*** GOND setSearchDate failed: ', err);
@@ -908,32 +909,32 @@ export const VideoModel = types
           if (self.noVideo) {
             self.setNoVideo(false);
           }
-          if (self.timezoneName) {
-            self.searchDate.setZone(self.timezoneName);
-          } else if (self.timezoneOffset) {
-            self.searchDate.setZone(
-              `UTC${
-                self.timezoneOffset > 0
-                  ? '+' + self.timezoneOffset
-                  : self.timezoneOffset < 0
-                  ? self.timezoneOffset
-                  : ''
-              }`
-            );
-          }
+          // if (self.timezoneName) {
+          //   self.searchDate = self.searchDate.setZone(self.timezoneName);
+          // } else if (self.timezoneOffset) {
+          //   self.searchDate.setZone(
+          //     `UTC${
+          //       self.timezoneOffset > 0
+          //         ? '+' + self.timezoneOffset
+          //         : self.timezoneOffset < 0
+          //         ? self.timezoneOffset
+          //         : ''
+          //     }`
+          //   );
+          // }
           // else : 'local'
           self.setDisplayDateTime(
             self.searchDate.toFormat(NVRPlayerConfig.FrameFormat)
           );
 
-          if (self.cloudType == CLOUD_TYPE.HLS) {
+          if (self.cloudType == CLOUD_TYPE.HLS && self.selectedStream) {
             // self.onHLSSingleStreamChanged(true);
             self.stopHLSStream(
               self.selectedChannel,
               self.selectedStream.targetUrl.sid
             ); // no need to yield/await
-            self.selectedStream &&
-              self.selectedStream.setUrls({search: null, searchHD: null});
+
+            self.selectedStream.resetUrls(false, true);
             self.getHLSInfos({channelNo: self.selectedChannel, timeline: true});
           }
         } else {
@@ -1018,11 +1019,15 @@ export const VideoModel = types
         //   console.log(`GOND HLS get timezone: `, tzName, self.timezone);
 
         // correct search date after timezone acquired
-        const startOfSearchDay = self.searchDate
-          ? self.searchDate.setZone(self.timezoneName).startOf('day')
-          : DateTime.now().setZone(self.timezoneName).startOf('day');
-        if (self.searchDate != startOfSearchDay) {
-          self.searchDate = startOfSearchDay;
+        if (self.searchDate) {
+          if (self.searchDate.zone.name != self.timezone)
+            self.searchDate = self.searchDate
+              .setZone(self.timezone)
+              .startOf('day');
+        } else {
+          self.searchDate = DateTime.now()
+            .setZone(self.timezone)
+            .startOf('day');
         }
 
         // Request data after timezone acquired
@@ -1676,11 +1681,23 @@ export const VideoModel = types
         });
       }),
       getTimeline: flow(function* (channelNo, sid) {
-        if (!self.searchDate) {
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND getTimeline searchDate before: ',
+        //     self.searchDate,
+        //     self.searchDate.setZone(self.timezone)
+        //   );
+        if (self.searchDate) {
+          self.searchDate = self.searchDate
+            .setZone(self.timezone)
+            .startOf('day');
+        } else if (self.searchDate.zone.name != self.timezone) {
           self.searchDate = DateTime.now()
             .setZone(self.timezone)
             .startOf('day');
         }
+        // __DEV__ &&
+        //   console.log('GOND getTimeline searchDate after: ', self.searchDate);
         self.waitForTimeline = true;
         self.checkTimelineTimeout = setTimeout(() => {
           if (
@@ -2153,7 +2170,7 @@ export const VideoModel = types
             return;
             // }
           }
-          const result = yield target.getHLSStreamUrl(info, cmd);
+          const result = yield target.startConnection(info, cmd);
           if (target.isLoading) {
             target.setStreamStatus({
               isLoading: false,

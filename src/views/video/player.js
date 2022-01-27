@@ -714,7 +714,7 @@ class VideoPlayerView extends Component {
               onPress={() => {
                 // const willPause = paused;
                 // this.setState({pause: willPause});
-                this.playerRef && this.playerRef.pause();
+                this.playerRef && this.playerRef.pause(!paused);
               }}
             />
           ) : null}
