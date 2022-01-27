@@ -22,6 +22,8 @@ import {
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
 
+const MAX_RETRY = 15;
+
 const HLSURLModel = types
   .model({
     url: types.maybeNull(types.string),
@@ -31,6 +33,10 @@ const HLSURLModel = types
     set({url, sid}) {
       url != undefined && (self.url = url);
       sid != undefined && (self.sid = sid);
+    },
+    reset() {
+      self.url = null;
+      self.sid = util.getRandomId();
     },
   }));
 
@@ -82,6 +88,7 @@ export default HLSStreamModel = types
     connectionStatus: types.optional(types.string, ''),
     error: types.maybeNull(types.string),
     needReset: types.optional(types.boolean, false),
+    retryRemaining: types.optional(types.number, MAX_RETRY),
 
     // sync values from videoStore
     isLive: types.optional(types.boolean, false),
@@ -216,6 +223,16 @@ export default HLSStreamModel = types
       search != undefined && self.search.set({url: search});
       searchHD != undefined && self.searchHD.set({url: searchHD});
     },
+    resetUrls(live, search) {
+      if (live) {
+        self.liveUrl.reset();
+        self.liveHDUrl.reset();
+      }
+      if (search) {
+        self.searchUrl.reset();
+        self.searchHDUrl.reset();
+      }
+    },
     setAWSInfo(data) {
       self.streamName = data.hls_stream;
       self.accessKey = data.access_key;
@@ -243,6 +260,10 @@ export default HLSStreamModel = types
     //   self.timeline = timeline;
     //   self.timestamps = timestamp;
     // },
+    startConnection: flow(function* (info, cmd) {
+      self.retryRemaining = MAX_RETRY;
+      self.getHLSStreamUrl(info, cmd);
+    }),
     getHLSStreamUrl: flow(function* (info, cmd) {
       if (info) self.setAWSInfo(info);
 
@@ -298,11 +319,10 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
-            PlaybackMode:
-              HLSPlaybackMode.LIVE /*isLive
+            PlaybackMode: HLSPlaybackMode.LIVE /*isLive
             ? HLSPlaybackMode.LIVE
             : HLSPlaybackMode.LIVE_REPLAY,*/,
             HLSFragmentSelector: {
@@ -312,8 +332,7 @@ export default HLSStreamModel = types
             DiscontinuityMode: HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: 7,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ &&
           console.log(
@@ -321,6 +340,7 @@ export default HLSStreamModel = types
             response
           );
         self.setUrl(response.HLSStreamingSessionURL, cmd);
+        self.retryRemaining = MAX_RETRY;
         // Is it needed?
         self.clearStreamTimeout();
         __DEV__ &&
@@ -336,7 +356,7 @@ export default HLSStreamModel = types
         self.setReconnectStatus(false);
         // setTimeout(() => self.reconnect(), 200);
         // return false;
-        if (!self.isDead) return self.reconnect();
+        if (!self.isDead) return self.reconnect(info);
       }
 
       self.setStreamStatus({
@@ -346,7 +366,7 @@ export default HLSStreamModel = types
       });
       return true;
     }),
-    reconnect() {
+    reconnect(info) {
       if (
         self.isDead ||
         self.isWaitingReconnect ||
@@ -358,6 +378,21 @@ export default HLSStreamModel = types
           self.isDead,
           self.isWaitingReconnect,
           self.connectionStatus
+        );
+        return Promise.resolve(false);
+      }
+
+      if (
+        info &&
+        ((info.hls_stream && info.hls_stream != self.streamName) ||
+          (info.access_key && info.access_key != self.accessKey) ||
+          (info.secret_key && info.secret_key != self.secretKey))
+      ) {
+        console.log(
+          'GOND HLS:: AWS connection changed, not reconnect: ',
+          info,
+          self.streamName,
+          self.accessKey
         );
         return Promise.resolve(false);
       }
