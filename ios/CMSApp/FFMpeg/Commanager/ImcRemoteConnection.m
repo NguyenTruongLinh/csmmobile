@@ -20,7 +20,7 @@
 #import "AppDelegate.h"
 
 #define KEEP_ALIVE_CHECKING_INTERVAL 5 // 15 seconds
-#define MAX_KEEP_ALIVE_COUNTING 10
+#define MAX_KEEP_ALIVE_COUNTING 3
 
 @implementation ImcRemoteConnection
 
@@ -68,6 +68,7 @@
 - (void)dealloc
 {
   NSLog(@"---------- remote connection dealloc");
+//  [self closeStreams];
   videoConnection = nil;
   receivedBuffer = nil;
   currentData = nil;
@@ -161,8 +162,8 @@
 }
 
 - (void)startTimer {
-  dispatch_queue_t queue = dispatch_queue_create("com.i3international.cms.logintimer", 0);
-  self->loginTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+//  dispatch_queue_t queue = dispatch_queue_create("com.i3international.cms.logintimer", DISPATCH_QUEUE_CONCURRENT);
+  self->loginTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0));
   dispatch_source_set_timer(self->loginTimer, dispatch_walltime(NULL, 0), 10.0 * NSEC_PER_SEC, 0.1 * NSEC_PER_SEC);
   dispatch_source_set_event_handler(self->loginTimer, ^{
       // call whatever you want here
@@ -182,7 +183,7 @@
 - (void)onLoginTimeout
 {
   NSLog(@"******** onLoginTimeout: %ld ******", (long)keepAliveCounter);
-  if( keepAliveCounter > MAX_KEEP_ALIVE_COUNTING )
+  if( keepAliveCounter >= MAX_KEEP_ALIVE_COUNTING )
   {
     keepAliveCounter = 0;
     
@@ -249,20 +250,6 @@
 
 - (void)closeStreams
 {
-//  NSLog(@"GOND cccccccccc ImcRemoteConnection close stream cccccccccc");
-//  [connectionLock lock];
-//  [sentDataStream close];
-//  [receivedDataStream close];
-//  [sentDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
-//  [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
-//  NSLog(@"GOND cccccccccc ImcRemoteConnection close stream cccccccccc");
-//  [sentDataStream setDelegate:nil];
-//  [receivedDataStream setDelegate:nil];
-////  CFRelease((CFWriteStreamRef)sentDataStream);
-////  CFRelease((CFReadStreamRef)receivedDataStream);
-//  sentDataStream = nil;
-//  receivedDataStream = nil;
-  
   if( sentDataStream != nil)
   {
     [sentDataStream setDelegate:nil];
@@ -283,17 +270,6 @@
 //      [receivedDataStream removeFromRunLoop:streamingRL forMode:NSDefaultRunLoopMode];
     receivedDataStream = nil;
   }
-//  [connectionLock unlock];
-  
-//  [self destroyTimers];
-  
-//  isRLRunning = NO;
-//  if(streamingRL)
-//  {
-//    NSLog(@"STOP RUN LOOP.......");
-////    CFRunLoopStop([streamingRL getCFRunLoop]);
-//    streamingRL = nil;
-//  }
 }
 
 
@@ -1130,7 +1106,7 @@
 {
   isConnected = FALSE;
 //   if( getLoginStatus )
-  if( sentDataStream != nil)
+  if( sentDataStream != nil && serverInfo.connected == TRUE)
   {
     NSData* packet = [ImcMobileCommand constructSimpleMsgPacket:MOBILE_MSG_DISCONNECT];
     [sentDataStream write:[packet bytes] maxLength:packet.length];

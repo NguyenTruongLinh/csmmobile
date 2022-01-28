@@ -563,10 +563,9 @@ class DirectVideoView extends React.Component {
           duration: Snackbar.LENGTH_LONG,
           backgroundColor: cmscolors.Success,
         });
-        this.break;
+        break;
       case NATIVE_MESSAGE.CONNECTED:
-        __DEV__ && console.log('GOND onDirectVideoMessage: Connected');
-        // this.setState({message: 'Connected'});
+        __DEV__ && console.log('GOND onDirectVideoMessage: Connected', value);
         serverInfo.setStreamStatus({
           isLoading: false,
           // connectionStatus: STREAM_STATUS.CONNECTED,
