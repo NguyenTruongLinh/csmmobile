@@ -512,6 +512,7 @@ class HLSStreamingView extends React.Component {
     // videoStore.setPlayTimeForSearch(
     //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
     // );
+    this.pause(true);
     videoStore.onHLSTimeChanged(time);
   };
 

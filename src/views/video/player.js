@@ -425,8 +425,9 @@ class VideoPlayerView extends Component {
           // if (videoStore.noVideo) {
           //   videoStore.setNoVideo(false);
           // }
-          this.playerRef.pause();
-          setTimeout(() => this.playerRef.playAt(value.timestamp), 200);
+          // this.playerRef.pause();
+          // setTimeout(() => this.playerRef.playAt(value.timestamp), 200);
+          this.playerRef.playAt(value.timestamp);
         }
         this.timelineScrollTimeout = null;
       }, 500);
