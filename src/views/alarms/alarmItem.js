@@ -223,13 +223,8 @@ class AlarmItem extends React.Component {
   // };
 
   renderDescription = () => {
-    let {
-      description,
-      kAlertTypeVA,
-      kAlertType,
-      status,
-      customDescription,
-    } = this.props.data;
+    let {description, kAlertTypeVA, kAlertType, status, customDescription} =
+      this.props.data;
     // let descriptCustomVA = '';
     // let areaName = '';
     // // console.log('GOND renderDescription kAlertType = ', kAlertType)
@@ -357,6 +352,7 @@ class AlarmItem extends React.Component {
   }
 
   render() {
+    const {data} = this.props;
     let icon = this.renderIcon();
     let description = this.renderDescription();
     let site = this.renderSite();
@@ -390,6 +386,7 @@ class AlarmItem extends React.Component {
             }}>
             <View style={{flex: 0.6}}>{site}</View>
             <View style={{flex: 0.4}}>{nvrname}</View>
+            {/* <Text>{data.index}</Text> */}
           </View>
         </View>
       </View>

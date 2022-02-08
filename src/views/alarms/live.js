@@ -27,6 +27,7 @@ import {Comps as CompTxt} from '../../localization/texts';
 import {AlertType_Support, WIDGET_COUNTS} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
 import {No_Data, No_Image} from '../../consts/images';
+import {PAGE_LENGTH} from '../../stores/alarm';
 
 class AlarmsLiveView extends Component {
   constructor(props) {
@@ -102,10 +103,19 @@ class AlarmsLiveView extends Component {
   //   this.setState({width: width, height: height});
   // }
 
-  renderAlarmItem = ({item}) => {
+  renderAlarmItem = ({item, index}) => {
+    const {alarmStore} = this.props;
     return (
       <CMSRipple onPress={() => this.onSelectAlarm(item)}>
         <AlarmItem data={item} />
+        {index == alarmStore.liveCurrentPage * PAGE_LENGTH - 1 &&
+          index != alarmStore.liveRawAlarms.length - 1 && (
+            <ActivityIndicator
+              color={CMSColors.SpinnerColor}></ActivityIndicator>
+          )}
+        {/* <Text>
+          {index}-{alarmStore.liveRawAlarms.length}
+        </Text> */}
       </CMSRipple>
     );
   };
@@ -125,6 +135,17 @@ class AlarmsLiveView extends Component {
         <Text style={styles.noDataTxt}>There is no data.</Text>
       </View>
     );
+  };
+
+  onLoadMore = pullDistance => {
+    const {alarmStore} = this.props;
+
+    // TODO:
+    // if (!alarmStore.isLoading) {
+    //   this.currentPage++;
+    //   alarmStore.alarmStore.getAlarms(this.buildSearchParam(), true);
+    // }
+    alarmStore.loadMore();
   };
 
   render() {
@@ -159,6 +180,7 @@ class AlarmsLiveView extends Component {
             onRefresh={this.refreshLiveData}
             refreshing={alarmStore.isLoading}
             ListEmptyComponent={noData && this.renderNoData()}
+            onEndReached={this.onLoadMore}
           />
         </View>
       </View>

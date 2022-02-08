@@ -9,6 +9,7 @@ import {AlertTypes, AlertType_Support, AlertNames} from '../consts/misc';
 import {ACConfig, Alert, AlertType, CommonActions} from '../consts/apiRoutes';
 
 const ID_Canned_Message = 5;
+export const PAGE_LENGTH = 20;
 
 const AlarmRate = types.model({
   rateId: types.identifierNumber,
@@ -127,6 +128,7 @@ const AlarmData = types
     channelNo: types.number,
     alertType: types.string,
     chanMask: types.maybeNull(types.frozen(BigNumber)),
+    index: types.number,
   })
   .volatile(self => ({
     thumb: null,
@@ -310,7 +312,7 @@ const AlarmData = types
     },
   }));
 
-export const parseAlarmData = item =>
+export const parseAlarmData = (item, index) =>
   AlarmData.create({
     // id: util.getRandomId(),
     kAlertEvent: item.KAlertEvent,
@@ -385,7 +387,34 @@ export const parseAlarmData = item =>
     channelNo: parseInt(item.Channel),
     alertType: item.AlertType,
     chanMask: item.ChanMask ? BigNumber(item.ChanMask) : null,
+    index: index,
   });
+
+const makeItemSnapshot = item => {
+  if (!item.SnapShot || item.SnapShot.length <= 0) {
+    let channelsList = [];
+    let {ImageTime, ChanMask, Channel} = item;
+    item.SnapShot = [];
+    if (ChanMask != 0) {
+      let str = BigNumber(ChanMask).toString(2);
+      let len = str.length;
+      let index = -1;
+      for (let i = len - 1; i >= 0; i--) {
+        if (str[i] === '1') {
+          index = len - 1 - i;
+          channelsList.push(index);
+        }
+      }
+    } else channelsList.push(Channel);
+
+    item.SnapShot = channelsList.map(ch => ({
+      Channel: ch,
+      Time: ImageTime,
+      FileName: '',
+      ChannelName: null,
+    }));
+  }
+};
 
 const AlarmTime = types.model({
   stime: types.string,
@@ -404,6 +433,8 @@ export const AlarmModel = types
     isLoading: types.boolean,
     rateConfig: types.array(AlarmRate),
     vaConfig: types.array(AlarmTypeVA),
+    liveRawAlarms: types.frozen(),
+    searchRawAlarms: types.frozen(),
     liveAlarms: types.array(AlarmData),
     searchAlarms: types.array(AlarmData),
     filterText: types.string,
@@ -412,6 +443,8 @@ export const AlarmModel = types
     selectedAlarm: types.maybeNull(types.reference(AlarmData)),
     notifiedAlarm: types.maybeNull(AlarmData),
     isSearch: types.optional(types.boolean, false),
+    liveCurrentPage: types.maybeNull(types.number),
+    searchCurrentPage: types.maybeNull(types.number),
   })
   .volatile(self => ({
     lastParams: {aty: AlertType_Support},
@@ -512,8 +545,12 @@ export const AlarmModel = types
       self.isLoading = true;
       if (self.isSearch) {
         self.searchAlarms = [];
+        self.searchRawAlarms = [];
+        self.searchCurrentPage = 0;
       } else {
         self.liveAlarms = [];
+        self.liveRawAlarms = [];
+        self.liveCurrentPage = 0;
       }
       try {
         const res = yield apiService.get(
@@ -532,39 +569,23 @@ export const AlarmModel = types
         if (res.error) {
           __DEV__ && console.log('GOND get getAlarms failed: ', res.error);
         } else {
-          const data = res.map(item => {
-            if (!item.SnapShot || item.SnapShot.length <= 0) {
-              let channelsList = [];
-              let {ImageTime, ChanMask, Channel} = item;
-              item.SnapShot = [];
-              if (ChanMask != 0) {
-                let str = BigNumber(ChanMask).toString(2);
-                let len = str.length;
-                let index = -1;
-                for (let i = len - 1; i >= 0; i--) {
-                  if (str[i] === '1') {
-                    index = len - 1 - i;
-                    channelsList.push(index);
-                  }
-                }
-              } else channelsList.push(Channel);
-
-              item.SnapShot = channelsList.map(ch => ({
-                Channel: ch,
-                Time: ImageTime,
-                FileName: '',
-                ChannelName: null,
-              }));
-            }
-
-            const alarm = parseAlarmData(item);
-
+          if (self.isSearch) {
+            self.searchRawAlarms = res;
+          } else {
+            self.liveRawAlarms = res;
+          }
+          let pageRawData = res.slice(0, PAGE_LENGTH);
+          const pageData = pageRawData.map((item, index) => {
+            makeItemSnapshot(item);
+            const alarm = parseAlarmData(item, index);
             return alarm;
           });
           if (self.isSearch) {
-            self.searchAlarms = data;
+            self.searchAlarms.push(...pageData);
+            self.searchCurrentPage = 1;
           } else {
-            self.liveAlarms = data;
+            self.liveAlarms.push(...pageData);
+            self.liveCurrentPage = 1;
           }
         }
       } catch (err) {
@@ -572,6 +593,32 @@ export const AlarmModel = types
       }
       self.isLoading = false;
     }),
+    loadMore() {
+      if (
+        (self.isSearch ? self.searchCurrentPage : self.liveCurrentPage) *
+          PAGE_LENGTH <
+        (self.isSearch ? self.searchRawAlarms : self.liveRawAlarms).length
+      ) {
+        let currentPage = self.isSearch
+          ? self.searchCurrentPage
+          : self.liveCurrentPage;
+        let rawPageData = (
+          self.isSearch ? self.searchRawAlarms : self.liveRawAlarms
+        ).slice(currentPage * PAGE_LENGTH, (currentPage + 1) * PAGE_LENGTH);
+        const pageData = rawPageData.map((item, index) => {
+          makeItemSnapshot(item);
+          const alarm = parseAlarmData(item, currentPage * PAGE_LENGTH + index);
+          return alarm;
+        });
+        if (self.isSearch) {
+          self.searchAlarms.push(...pageData);
+          self.searchCurrentPage++;
+        } else {
+          self.liveAlarms.push(...pageData);
+          self.liveCurrentPage++;
+        }
+      }
+    },
     getLiveData: flow(function* (params) {
       self.isLoading = true;
       const [resConfig, resVAAlert, resAlarms] = yield Promise.all([

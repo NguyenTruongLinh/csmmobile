@@ -37,6 +37,8 @@ import {
 import ROUTERS from '../../consts/routes';
 import variables from '../../styles/variables';
 import {No_Data} from '../../consts/images';
+import {ActivityIndicator} from 'react-native-paper';
+import {PAGE_LENGTH} from '../../stores/alarm';
 
 const header_height = 50;
 const footer_height = 50;
@@ -318,10 +320,11 @@ class AlarmsSearchView extends Component {
     const {alarmStore} = this.props;
 
     // TODO:
-    if (!alarmStore.isLoading) {
-      this.currentPage++;
-      alarmStore.alarmStore.getAlarms(this.buildSearchParam(), true);
-    }
+    // if (!alarmStore.isLoading) {
+    //   this.currentPage++;
+    //   alarmStore.alarmStore.getAlarms(this.buildSearchParam(), true);
+    // }
+    alarmStore.loadMore();
   };
 
   // onSiteSelected = sites => {
@@ -452,10 +455,17 @@ class AlarmsSearchView extends Component {
     );
   };
 
-  renderAlarmItem = ({item}) => {
+  renderAlarmItem = ({item, index}) => {
+    const {alarmStore} = this.props;
     return (
       <CMSRipple onPress={() => this.onSelectAlarm(item)}>
         <AlarmItem data={item} />
+        {index == alarmStore.searchCurrentPage * PAGE_LENGTH - 1 &&
+          index != alarmStore.searchRawAlarms.length - 1 && (
+            <ActivityIndicator
+              color={CMSColors.SpinnerColor}></ActivityIndicator>
+          )}
+        {/* <Text style={{height: 0}}>{index}</Text> */}
       </CMSRipple>
     );
   };
@@ -531,7 +541,7 @@ class AlarmsSearchView extends Component {
             onRefresh={this.refreshData}
             refreshing={alarmStore.isLoading}
             ListEmptyComponent={noData && this.renderNoData()}
-            // onEndReached={this.onLoadMore}
+            onEndReached={this.onLoadMore}
           />
         </View>
         {actionButton}
