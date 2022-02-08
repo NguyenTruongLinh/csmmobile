@@ -151,7 +151,7 @@ class DirectChannelView extends React.Component {
         }}>
         <ImageBackground
           source={noVideo ? NVR_Play_NoVideo_Image : serverInfo.videoImage}
-          // source={NVR_Play_NoVideo_Image}
+          // source={noVideo ? NVR_Play_NoVideo_Image : nextFrame}
           style={{
             width: width,
             height: height,

@@ -1092,8 +1092,14 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      serverInfo,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
@@ -1132,7 +1138,7 @@ class DirectVideoView extends React.Component {
           {noVideo ? null : (
             <View
               style={[styles.playerView, {zIndexn: noVideo ? -1 : undefined}]}>
-              {Platform.OS === 'ios' ? (
+              {/* {Platform.OS === 'ios' ? (
                 <FFMpegFrameViewIOS
                   width={this.state.width} // {this.state.width}
                   height={this.state.height} // {this.state.height}
@@ -1149,14 +1155,35 @@ class DirectVideoView extends React.Component {
                   onFFMPegFrameChange={this.onNativeMessage}
                   singlePlayer={true}
                 />
-              )}
+              )} */}
+              {Platform.select({
+                ios: (
+                  <FFMpegFrameViewIOS
+                    width={this.state.width} // {this.state.width}
+                    height={this.state.height} // {this.state.height}
+                    ref={this.onReceivePlayerRef}
+                    onFFMPegFrameChange={this.onNativeMessage}
+                    singlePlayer={true}
+                  />
+                ),
+                android: (
+                  <FFMpegFrameView
+                    iterationCount={1}
+                    width={width}
+                    height={height}
+                    ref={this.onReceivePlayerRef}
+                    onFFMPegFrameChange={this.onNativeMessage}
+                    singlePlayer={true}
+                  />
+                ),
+              })}
             </View>
           )}
         </ImageBackground>
       </View>
     ) : (
       <View style={{width: 0, height: 0}}>
-        {Platform.OS === 'ios' ? (
+        {/* {Platform.OS === 'ios' ? (
           <FFMpegFrameViewIOS
             width={width} // {this.state.width}
             height={height} // {this.state.height}
@@ -1171,7 +1198,26 @@ class DirectVideoView extends React.Component {
             ref={this.onReceivePlayerRef}
             onFFMPegFrameChange={this.onNativeMessage}
           />
-        )}
+        )} */}
+        {Platform.select({
+          ios: (
+            <FFMpegFrameViewIOS
+              width={width} // {this.state.width}
+              height={height} // {this.state.height}
+              ref={this.onReceivePlayerRef}
+              onFFMPegFrameChange={this.onNativeMessage}
+            />
+          ),
+          android: (
+            <FFMpegFrameView
+              iterationCount={1}
+              width={width}
+              height={height}
+              ref={this.onReceivePlayerRef}
+              onFFMPegFrameChange={this.onNativeMessage}
+            />
+          ),
+        })}
       </View>
     );
   }
