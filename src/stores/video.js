@@ -1956,10 +1956,11 @@ export const VideoModel = types
           self.getVideoInfos();
         }
       },
-      onHLSError() {
-        self.resumeVideoStreamFromBackground(
-          self.selectedChannel ? true : false
-        );
+      onHLSError(channelNo, isLive) {
+        // self.resumeVideoStreamFromBackground(
+        //   self.selectedChannel ? true : false
+        // );
+        self.getHLSInfos({channelNo, daylist: !isLive, timeline: !isLive});
       },
       /**
        *

@@ -317,9 +317,9 @@ class HLSStreamingView extends React.Component {
       //   connectionStatus: STREAM_STATUS.SOURCE_ERROR,
       // });
       __DEV__ && console.log('GOND HLS SOURCE_ERROR ');
-    } else {
-      streamData.reconnect(isLive, hdMode);
-    }
+    } // else {
+    streamData.reconnect(isLive, hdMode);
+    // }
   };
 
   onProgress = data => {

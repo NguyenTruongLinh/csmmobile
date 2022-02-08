@@ -326,12 +326,10 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
-            PlaybackMode: HLSPlaybackMode.LIVE /*isLive
-            ? HLSPlaybackMode.LIVE
-            : HLSPlaybackMode.LIVE_REPLAY,*/,
+            PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
               FragmentSelectorType: FragmentSelectorType.SERVER_TIMESTAMP,
             },
@@ -339,7 +337,8 @@ export default HLSStreamModel = types
             DiscontinuityMode: HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: 7,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(
@@ -436,7 +435,7 @@ export default HLSStreamModel = types
           connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
           isLoading: false,
         });
-        self.onStreamError();
+        self.onStreamError(self.channelNo, self.isLive);
         return Promise.resolve(false);
       }
     },
