@@ -98,6 +98,8 @@ export default HLSStreamModel = types
   })
   .volatile(self => ({
     streamTimeout: null,
+    onStreamError: () =>
+      console.log('GOND HLS onStreamError is not defined yet!'),
     // timeline: null,
     // timestamps: null,
   }))
@@ -162,6 +164,10 @@ export default HLSStreamModel = types
     },
     setChannel(value) {
       self.channel = value;
+    },
+    setOnErrorCallback(fn) {
+      if (!fn || typeof fn != 'function') return;
+      self.onStreamError = fn;
     },
     setUrl(url, mode) {
       // const {live, liveHD, search, searchHD} = value;
@@ -327,7 +333,7 @@ export default HLSStreamModel = types
             ? HLSPlaybackMode.LIVE
             : HLSPlaybackMode.LIVE_REPLAY,*/,
             HLSFragmentSelector: {
-              FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
+              FragmentSelectorType: FragmentSelectorType.SERVER_TIMESTAMP,
             },
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
             DiscontinuityMode: HLSDiscontinuityMode.ALWAYS, // temp removed
@@ -430,6 +436,7 @@ export default HLSStreamModel = types
           connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
           isLoading: false,
         });
+        self.onStreamError();
         return Promise.resolve(false);
       }
     },

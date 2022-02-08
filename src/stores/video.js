@@ -843,6 +843,7 @@ export const VideoModel = types
                 isHD: self.hdMode,
                 isLive: self.isLive,
               });
+              newStream.setOnErrorCallback(self.onHLSError);
               self.hlsStreams.push(newStream);
               self.getHLSInfos({channelNo: value, timeline: !self.isLive});
               newStream.setLive(self.isLive);
@@ -1784,6 +1785,7 @@ export const VideoModel = types
               isHD: self.hdMode,
               isLive: self.isLive,
             });
+            targetStream.setOnErrorCallback(self.onHLSError);
             // if (self.isLive)
             // targetStream.targetUrl.set({sid: util.getRandomId()});
 
@@ -1863,6 +1865,7 @@ export const VideoModel = types
               isHD: self.hdMode,
               isLive: self.isLive,
             });
+            newConnection.setOnErrorCallback(self.onHLSError);
             newConnection.scheduleCheckTimeout();
             // if (self.isLive)
             // newConnection.targetUrl.set({sid: util.getRandomId()});
@@ -1937,7 +1940,7 @@ export const VideoModel = types
       // },
       resumeVideoStreamFromBackground(isSingleMode) {
         if (isSingleMode) {
-          if (!videoStore.isLive) {
+          if (!self.isLive) {
             self.searchPlayTime = DateTime.fromFormat(
               self.displayDateTime,
               NVRPlayerConfig.FrameFormat
@@ -1952,6 +1955,11 @@ export const VideoModel = types
         } else {
           self.getVideoInfos();
         }
+      },
+      onHLSError() {
+        self.resumeVideoStreamFromBackground(
+          self.selectedChannel ? true : false
+        );
       },
       /**
        *
