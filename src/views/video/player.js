@@ -370,10 +370,10 @@ class VideoPlayerView extends Component {
     //   videoStore.setNoVideo(false);
     // }
     this.playerRef && this.playerRef.pause();
-    setTimeout(
-      () => this.playerRef && this.playerRef.playAt(secondsValue),
-      200
-    );
+    setTimeout(() => {
+      this.playerRef && this.playerRef.playAt(secondsValue);
+    }, 200);
+    this.timePickerRef && this.timePickerRef.close();
   };
 
   onSwitchChannel = channelNo => {
