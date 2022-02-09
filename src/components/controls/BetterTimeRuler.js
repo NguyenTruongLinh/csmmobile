@@ -644,15 +644,22 @@ export default class TimeRuler extends PureComponent {
   };
 
   render() {
-    let {is24hour, hourBuildRuler, hourSpecial, rulerDST} = this.props;
+    const {
+      is24hour,
+      hourBuildRuler,
+      hourSpecial,
+      rulerDST,
+      timeData,
+    } = this.props;
     // console.log('GOND TimeRuler hourBuildRuler: ', hourBuildRuler);
     let _data =
       hourBuildRuler != default24H
         ? this.renderDST(is24hour, hourBuildRuler, hourSpecial, rulerDST)
         : this._renderHours(is24hour);
     // __DEV__ &&
-    //   this.props.timeData &&
+    //   timeData &&
     //   console.log('GOND TimeRuler built ruler data: ', _data);
+    const isEnable = timeData && timeData.length > 0;
     return (
       <View
         style={{
@@ -679,8 +686,11 @@ export default class TimeRuler extends PureComponent {
             style={{
               flex: 1,
               flexDirection: 'row',
-              backgroundColor: CMSColors.PrimaryText,
+              backgroundColor: isEnable
+                ? CMSColors.PrimaryText
+                : CMSColors.DisableItemColor,
             }}
+            scrollEnabled={isEnable}
             showsHorizontalScrollIndicator={false}
             onScrollBeginDrag={this._onScrollBeginDrag}
             onScroll={this._onScroll}

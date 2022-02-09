@@ -30,8 +30,15 @@ export default class HomeWidget extends React.Component {
   // }
 
   render() {
-    const {icon, iconSize, title, titleStyle, alertCount, onPress, isDisable} =
-      this.props;
+    const {
+      icon,
+      iconSize,
+      title,
+      titleStyle,
+      alertCount,
+      onPress,
+      isDisable,
+    } = this.props;
 
     return (
       <TouchableOpacity
@@ -76,7 +83,7 @@ export default class HomeWidget extends React.Component {
                 width: iconSize ?? '65%',
                 height: iconSize ?? '65%',
               },
-              isDisable ? {tintColor: CMSColors.disableItemColor} : {},
+              isDisable ? {tintColor: CMSColors.DisableItemColor} : {},
             ]}
             resizeMode="contain"
           />
@@ -84,7 +91,7 @@ export default class HomeWidget extends React.Component {
             style={[
               {marginTop: 25},
               titleStyle,
-              isDisable ? {color: CMSColors.disableItemColor} : {},
+              isDisable ? {color: CMSColors.DisableItemColor} : {},
             ]}>
             {title}
           </Text>

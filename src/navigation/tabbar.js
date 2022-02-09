@@ -88,7 +88,7 @@ class CMSTabbar extends React.Component {
                 size={30}
                 color={
                   isDisable
-                    ? CMSColors.disableItemColor
+                    ? CMSColors.DisableItemColor
                     : isSelected
                     ? CMSColors.PrimaryActive
                     : CMSColors.SecondaryText
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     color: CMSColors.PrimaryActive,
   },
   textDisabled: {
-    color: CMSColors.disableItemColor,
+    color: CMSColors.DisableItemColor,
   },
   highlightContainer: {
     alignItems: 'center',

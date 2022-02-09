@@ -21,7 +21,7 @@ module.exports = {
   AccentColor: '#FFD454',
   PrimaryText: '#212121',
   SecondaryText: '#757575',
-  disableItemColor: '#D8D8D8',
+  DisableItemColor: '#D8D8D8',
   DividerColor: '#BDBDBD',
   DividerColor16: 'rgba(189,189,189,0.16)',
   DividerColor24: 'rgba(189, 189, 189, 0.24)', //'#BDBDBD',
