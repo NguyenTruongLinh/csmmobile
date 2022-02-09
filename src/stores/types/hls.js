@@ -246,14 +246,16 @@ export default HLSStreamModel = types
       // self.sessionToken = data.session_token ?? null;
     },
     setStreamStatus({connectionStatus, error, isLoading, needReset}) {
-      __DEV__ &&
+      if (__DEV__) {
         console.log('GOND HLS: Set stream status: ', {
           connectionStatus,
           error,
           isLoading,
           needReset,
         });
-      // if (connectionStatus == STREAM_STATUS.ERROR && __DEV__) console.trace();
+        // console.trace();
+      }
+
       connectionStatus != undefined &&
         (self.connectionStatus = connectionStatus);
       isLoading != undefined && (self.isLoading = isLoading);

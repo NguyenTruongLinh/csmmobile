@@ -778,9 +778,7 @@ export const VideoModel = types
         __DEV__ &&
           console.log('GOND selected Channel: ', getSnapshot(foundChannel));
 
-        if (self.noVideo) {
-          self.setNoVideo(false);
-        }
+        self.setNoVideo(false);
 
         if (self.cloudType == CLOUD_TYPE.HLS && !self.isAlertPlay) {
           // reset previous channel status: Grzzz
@@ -895,9 +893,7 @@ export const VideoModel = types
       setSearchDate(value, format) {
         __DEV__ && console.log('GOND setSearchDate ', value, format);
         if (typeof value == 'string') {
-          if (self.noVideo) {
-            self.setNoVideo(false);
-          }
+          self.setNoVideo(false);
           try {
             self.searchDate = DateTime.fromFormat(
               value,
@@ -906,9 +902,6 @@ export const VideoModel = types
             );
           } catch (err) {
             __DEV__ && console.log('*** GOND setSearchDate failed: ', err);
-          }
-          if (self.noVideo) {
-            self.setNoVideo(false);
           }
           // if (self.timezoneName) {
           //   self.searchDate = self.searchDate.setZone(self.timezoneName);
@@ -1108,9 +1101,7 @@ export const VideoModel = types
         // console.trace();
         const lastValue = self.isLive;
 
-        if (self.noVideo) {
-          self.setNoVideo(false);
-        }
+        self.setNoVideo(false);
         if (!nextIsLive && self.cloudType == CLOUD_TYPE.DIRECTION) {
           // dongpt: handle different timezone when switching from Live to Search mode
           if (
@@ -1187,9 +1178,7 @@ export const VideoModel = types
         self.hdMode = util.isNullOrUndef(value) ? !self.hdMode : value;
         __DEV__ && console.log('GOND on switch HD: ', self.hdMode);
 
-        if (self.noVideo) {
-          self.setNoVideo(false);
-        }
+        self.setNoVideo(false);
         if (self.cloudType == CLOUD_TYPE.HLS) {
           if (self.selectedStream) {
             self.selectedStream.setHD(self.hdMode);
@@ -1223,12 +1212,24 @@ export const VideoModel = types
       pause(willPause) {
         self.paused = willPause == undefined ? !self.paused : willPause;
       },
-      setNoVideo(value) {
+      setNoVideo(value, resetTimeline = true) {
+        if (value === self.noVideo) return;
+        if (__DEV__) {
+          console.log('GOND ======= Set Novideo = ', value);
+          console.trace();
+        }
         self.noVideo = value;
-        self.timeline = [];
-        // self.displayDateTime = self.searchDate.toFormat(
-        //   NVRPlayerConfig.FrameFormat
-        // );
+        if (value === true) {
+          self.selectedStream &&
+            self.selectedStream.setStreamStatus({
+              isLoading: false,
+              connectionStatus: STREAM_STATUS.NOVIDEO,
+            });
+          if (resetTimeline) self.timeline = [];
+          // self.displayDateTime = self.searchDate.toFormat(
+          //   NVRPlayerConfig.FrameFormat
+          // );
+        }
       },
       setPlayTimeForSearch(value) {
         self.searchPlayTime = value;
@@ -1689,10 +1690,11 @@ export const VideoModel = types
         //     self.searchDate.setZone(self.timezone)
         //   );
         if (self.searchDate) {
-          self.searchDate = self.searchDate
-            .setZone(self.timezone)
-            .startOf('day');
-        } else if (self.searchDate.zone.name != self.timezone) {
+          if (self.searchDate.zone.name != self.timezone)
+            self.searchDate = self.searchDate
+              .setZone(self.timezone)
+              .startOf('day');
+        } else {
           self.searchDate = DateTime.now()
             .setZone(self.timezone)
             .startOf('day');
@@ -2166,7 +2168,7 @@ export const VideoModel = types
               );
             return s.getUrl(cmd).sid == info.sid;
           });
-          if (!target) {
+          if (!target || (!target.isLive && self.noVideo === true)) {
             // if (
             //   self.selectedHLSStream &&
             //   self.selectedHLSStream.targetUrl.sid == info.sid
@@ -2175,7 +2177,9 @@ export const VideoModel = types
             //   isTargetSelected = true;
             // } else {
             __DEV__ &&
-              console.log(`GOND on HLS response target stream not found!`);
+              console.log(
+                `GOND on HLS response target stream not found or noVideo!`
+              );
             return;
             // }
           }
@@ -2297,18 +2301,20 @@ export const VideoModel = types
             } catch (err) {
               console.log('GOND get HLS data Timeline failed: ', err);
             }
-          } else {
-            self.selectedStream.setStreamStatus({
-              isLoading: false,
-              connectionStatus: STREAM_STATUS.NOVIDEO,
-            });
-            return;
           }
+        } else {
+          self.setNoVideo(true);
+          self.selectedStream.setStreamStatus({
+            isLoading: false,
+            connectionStatus: STREAM_STATUS.NOVIDEO,
+          });
+          return;
         }
 
         if (!jTimeStamp || jTimeStamp.length == 0) {
           __DEV__ &&
             console.log('GOND get HLS data Timeline no data: ', jTimeStamp);
+          self.setNoVideo(true);
           self.selectedStream.setStreamStatus({
             isLoading: false,
             connectionStatus: STREAM_STATUS.NOVIDEO,
@@ -2328,6 +2334,7 @@ export const VideoModel = types
                 jtimeData
               );
 
+            self.setNoVideo(true);
             self.selectedStream.setStreamStatus({
               isLoading: false,
               connectionStatus: STREAM_STATUS.NOVIDEO,
@@ -2351,7 +2358,7 @@ export const VideoModel = types
           console.log('GOND buildTimelineData failed: ', ex);
           // snackbarUtil.showMessage(VIDEO_MESSAGE.MSG_STREAM_ERROR, CMSColors.Danger);
           self.selectedStream.setStreamStatus({
-            connectionStatus: STREAM_STATUS.ERROR,
+            connectionStatus: STREAM_STATUS.SOURCE_ERROR,
           });
           // return;
         }

@@ -61,6 +61,7 @@ class HLSStreamingView extends React.Component {
     this.videoBufferTimeout = null;
     this.videoReconnectTimeout = null;
     // this.waitingForReconnect = false;
+    this.checkTimelineInterval = null;
   }
 
   componentDidMount() {
@@ -79,6 +80,7 @@ class HLSStreamingView extends React.Component {
     this.reactions.forEach(unsubscribe => unsubscribe());
     this.clearBufferTimeout();
     this.clearReconnectTimeout();
+    this.clearCheckTimelineInterval();
     // this.stop();
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
@@ -102,7 +104,14 @@ class HLSStreamingView extends React.Component {
               console.log('HLSStreamingView streamUrl not set: ', this.props);
             return;
           }
-          __DEV__ && console.log('HLSStreamingView newUrl: ', newUrl);
+          __DEV__ &&
+            console.log(
+              'HLSStreamingView newUrl: ',
+              newUrl,
+              singlePlayer,
+              videoStore.noVideo,
+              this.props.noVideo
+            );
           if (!this.props.noVideo && newUrl != this.state.streamUrl) {
             if (util.isValidHttpUrl(newUrl)) {
               __DEV__ &&
@@ -132,6 +141,12 @@ class HLSStreamingView extends React.Component {
             } else {
               // TODO: handle invalid url
             }
+          } else {
+            __DEV__ &&
+              console.log(
+                'HLSStreamingView not assign streamUrl: ',
+                this.props.noVideo
+              );
           }
         }
       ),
@@ -194,6 +209,14 @@ class HLSStreamingView extends React.Component {
             // __DEV__ &&
             //   console.log('HLSStreamingView switch mode isHD: ', isHD);
             this.lastSearchTime = this.computeTime(this.frameTime);
+          }
+        ),
+        reaction(
+          () => videoStore.noVideo,
+          isNoVideo => {
+            if (isNoVideo == true) {
+              this.stop();
+            }
           }
         ),
       ];
@@ -267,10 +290,10 @@ class HLSStreamingView extends React.Component {
     __DEV__ && console.log('GOND HLS onBuffer: ', event);
     const {streamData} = this.props;
     if (event.isBuffering) {
-      streamData.setStreamStatus({
-        connectionStatus: STREAM_STATUS.BUFFERING,
-        isLoading: true,
-      });
+      // streamData.setStreamStatus({
+      //   connectionStatus: STREAM_STATUS.BUFFERING,
+      //   isLoading: true,
+      // });
       // It could cause reconnecting forever
       if (!this.videoBufferTimeout) {
         this.videoBufferTimeout = setTimeout(
@@ -279,10 +302,10 @@ class HLSStreamingView extends React.Component {
         );
       }
     } else {
-      streamData.setStreamStatus({
-        connectionStatus: STREAM_STATUS.DONE,
-        isLoading: false,
-      });
+      // streamData.setStreamStatus({
+      //   connectionStatus: STREAM_STATUS.DONE,
+      //   isLoading: false,
+      // });
       this.clearBufferTimeout();
     }
   };
@@ -320,6 +343,22 @@ class HLSStreamingView extends React.Component {
     } // else {
     streamData.reconnect(isLive, hdMode);
     // }
+  };
+
+  clearCheckTimelineInterval = () => {
+    if (this.checkTimelineInterval) {
+      clearInterval(this.checkTimelineInterval);
+      this.checkTimelineInterval = null;
+    }
+  };
+
+  onCheckTimelineInterval = (channelNo, sid) => {
+    const {videoStore} = this.props;
+    if (videoStore.hlsTimestamps.length == 0) {
+      videoStore.getTimeline(channelNo, sid);
+    } else {
+      this.clearCheckTimelineInterval();
+    }
   };
 
   onProgress = data => {
@@ -363,6 +402,25 @@ class HLSStreamingView extends React.Component {
               'GOND HLS::SEARCH WRONG TIMESTAMP: hlsTimestamps = ',
               hlsTimestamps
             );
+          // Check timeline exist
+          if (
+            hlsTimestamps.length == 0 &&
+            !this.checkTimelineInterval &&
+            !videoStore.noVideo
+          ) {
+            videoStore.getTimeline(
+              streamData.channelNo,
+              streamData.targetUrl.sid
+            );
+            this.checkTimelineInterval = setInterval(
+              () =>
+                this.onCheckTimelineInterval(
+                  streamData.channelNo,
+                  streamData.targetUrl.sid
+                ),
+              10000
+            );
+          }
         } else {
           this.frameTime = hlsTimestamps[this.tsIndex];
           // __DEV__ && console.log('GOND HLS onProgress 1:', this.frameTime);
@@ -425,7 +483,6 @@ class HLSStreamingView extends React.Component {
       videoStore.selectedChannel != streamData.channelNo ||
       !this.frameTime
     ) {
-      __DEV__ && console.log('GOND HLS progress: AAAAAA 2');
       return;
     }
 
@@ -491,6 +548,7 @@ class HLSStreamingView extends React.Component {
 
   stop = () => {
     const {streamData, videoStore} = this.props;
+    this.setState({streamUrl: null});
     streamData &&
       streamData.targetUrl &&
       videoStore.stopHLSStream(streamData.channelNo, streamData.targetUrl.sid);

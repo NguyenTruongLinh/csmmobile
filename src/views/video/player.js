@@ -123,15 +123,17 @@ class VideoPlayerView extends Component {
     // if (videoStore.isSingleMode) {
     //   videoStore.releaseStreams();
     // }
+    videoStore.selectedStream &&
+      videoStore.selectedStream.setStreamStatus({
+        connectionStatus: STREAM_STATUS.DONE,
+      });
+    videoStore.setNoVideo(false);
     if (videoStore.isFullscreen) {
       this.onFullscreenPress();
     }
+
     if (!videoStore.isPreloadStream) {
       videoStore.onExitSinglePlayer(route.name);
-      videoStore.selectedStream &&
-        videoStore.selectedStream.setStreamStatus({
-          connectionStatus: STREAM_STATUS.DONE,
-        });
     }
 
     // dongpt: TODO handle Orientation
@@ -224,18 +226,18 @@ class VideoPlayerView extends Component {
         ', result = ',
         datesList.indexOf(selectedDate)
       );
-    // let selectedDate = USE_TIMESTAMP ? this.state.sdate.format('CALENDAR_DATE_FORMAT') : dayjs(this.searchDate * 1000).format('CALENDAR_DATE_FORMAT'); // .utcOffset(0)
+
     if (
       (!datesList && datesList.length <= 0) ||
       datesList.indexOf(selectedDate) < 0
     ) {
       __DEV__ && console.log('GOND: checkDataOnSearchDate NOVIDEO');
-      this.playerRef && this.playerRef.pause();
-      videoStore.selectedStream &&
-        videoStore.selectedStream.setStreamStatus({
-          isLoading: false,
-          connectionStatus: STREAM_STATUS.NOVIDEO,
-        });
+      // this.playerRef && this.playerRef.stop();
+      // videoStore.selectedStream &&
+      //   videoStore.selectedStream.setStreamStatus({
+      //     isLoading: false,
+      //     connectionStatus: STREAM_STATUS.NOVIDEO,
+      //   });
       videoStore.setNoVideo(true);
       // snackbar.onMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
 
@@ -301,13 +303,10 @@ class VideoPlayerView extends Component {
 
   onSwitchLiveSearch = () => {
     const {videoStore} = this.props;
+    // videoStore.setNoVideo(false);
     videoStore.switchLiveSearch(undefined, true);
     this.updateHeader();
     this.playerRef && this.playerRef.pause(true);
-    // set in store
-    // if (videoStore.noVideo) {
-    //   videoStore.setNoVideo(false);
-    // }
     setTimeout(() => {
       this.channelsScrollView &&
         this.channelsScrollView.scrollToIndex({
@@ -329,10 +328,6 @@ class VideoPlayerView extends Component {
         ', recording dates: ',
         Object.keys(videoStore.recordingDates)
       );
-    // set in store
-    // if (videoStore.noVideo) {
-    //   videoStore.setNoVideo(false);
-    // }
 
     videoStore.setDisplayDateTime(
       DateTime.fromFormat(value.dateString, CALENDAR_DATE_FORMAT).toFormat(
@@ -340,11 +335,10 @@ class VideoPlayerView extends Component {
       )
     );
     if (this.checkDataOnSearchDate(value.dateString)) {
-      videoStore.setNoVideo(true);
+      // videoStore.setNoVideo(false);
       this.setState({showCalendar: false});
       videoStore.setSearchDate(value.dateString, CALENDAR_DATE_FORMAT);
     } else {
-      // this.playerRef.pause();
       this.setState({showCalendar: false});
     }
   };
@@ -369,10 +363,14 @@ class VideoPlayerView extends Component {
     // if (videoStore.noVideo) {
     //   videoStore.setNoVideo(false);
     // }
-    this.playerRef && this.playerRef.pause();
-    setTimeout(() => {
-      this.playerRef && this.playerRef.playAt(secondsValue);
-    }, 200);
+    // this.playerRef && this.playerRef.pause();
+    // setTimeout(() => {
+    //   this.playerRef && this.playerRef.playAt(secondsValue);
+    // }, 200);
+    this.onTimelineScrollEnd(
+      {},
+      {hours, minutes, seconds, timestamp: secondsValue}
+    );
     this.timePickerRef && this.timePickerRef.close();
   };
 
@@ -388,6 +386,7 @@ class VideoPlayerView extends Component {
         NVRPlayerConfig.FrameFormat
       ).toFormat(NVRPlayerConfig.RequestTimeFormat)
     );
+    // videoStore.setNoVideo(false);
     videoStore.selectChannel(channelNo);
     if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
   };
@@ -413,27 +412,50 @@ class VideoPlayerView extends Component {
   };
 
   onTimelineScrollEnd = (event, value) => {
-    __DEV__ && console.log('GOND onTimeline sliding end: ', value);
+    const {videoStore} = this.props;
+    const {searchDate, timeline, timezone} = videoStore;
+    // if (this.timelineScrollTimeout) {
+    //   clearTimeout(this.timelineScrollTimeout);
+    // }
+    // this.timelineScrollTimeout = setTimeout(() => {
+    const destinationTime = searchDate
+      ? searchDate.plus({seconds: value.timestamp}).toSeconds()
+      : DateTime.now()
+          .setZone(timezone)
+          .startOf('day')
+          .plus({seconds: value.timestamp})
+          .toSeconds();
+    __DEV__ &&
+      console.log(
+        'GOND onTimeline sliding end: ',
+        value,
+        destinationTime,
+        timeline[timeline.length - 1],
+        destinationTime >= timeline[timeline.length - 1].end
+      );
+
+    if (
+      timeline.length > 0 &&
+      destinationTime >= timeline[timeline.length - 1].end
+    ) {
+      // this.playerRef && this.playerRef.stop();
+      __DEV__ && console.log('GOND onTimeline sliding end: AAAAAAAA');
+
+      // setTimeout(() => {
+      videoStore.setNoVideo(true, false);
+      snackbar.onMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
+      // }, 200);
+      return;
+    }
     if (this.playerRef) {
       // this.playerRef.pause();
-      if (this.timelineScrollTimeout) {
-        clearTimeout(this.timelineScrollTimeout);
-      }
-      this.timelineScrollTimeout = setTimeout(() => {
-        if (this.playerRef) {
-          // Should call?
-          // if (videoStore.noVideo) {
-          //   videoStore.setNoVideo(false);
-          // }
-          // this.playerRef.pause();
-          // setTimeout(() => this.playerRef.playAt(value.timestamp), 200);
-          this.playerRef.playAt(value.timestamp);
-        }
-        this.timelineScrollTimeout = null;
-      }, 500);
+      // setTimeout(() => this.playerRef.playAt(value.timestamp), 200);
+      this.playerRef.playAt(value.timestamp);
     } else {
       __DEV__ && console.log('GOND playAt failed playerRef not available!');
     }
+    // this.timelineScrollTimeout = null;
+    // }, 500);
   };
 
   onAuthenSubmit = (username, password) => {
@@ -833,6 +855,12 @@ class VideoPlayerView extends Component {
             currentTime={videoStore.frameTime}
             onBeginSrcoll={() => {
               this.timelineAutoScroll = false;
+              if (
+                videoStore.timeline.length > 0 &&
+                videoStore.noVideo === true
+              ) {
+                videoStore.setNoVideo(false);
+              }
             }}
             onScrollBeginDrag={time => {
               this.timeOnTimeline && this.timeOnTimeline.setValue(time);
