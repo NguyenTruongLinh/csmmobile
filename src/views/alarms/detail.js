@@ -832,7 +832,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   textInfo: {
-    fontSize: 16,
+    fontSize: 15,
     color: CMSColors.PrimaryText,
     justifyContent: 'center',
     fontWeight: 'bold',
