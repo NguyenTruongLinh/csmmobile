@@ -130,6 +130,10 @@ class DirectVideoView extends React.Component {
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }
+    this.props.serverInfo.setStreamStatus({
+      isLoading: false,
+      connectionStatus: STREAM_STATUS.DONE,
+    });
 
     // this.setNative({disconnect: true}, true);
     this.stop(true);
@@ -280,13 +284,13 @@ class DirectVideoView extends React.Component {
             ) {
               serverInfo.setStreamStatus({
                 isLoading: false,
-                // connectionStatus: STREAM_STATUS.NOVIDEO,
+                connectionStatus: STREAM_STATUS.NOVIDEO,
               });
-              Snackbar.show({
-                text: STREAM_STATUS.NOVIDEO,
-                duration: Snackbar.LENGTH_LONG,
-                backgroundColor: cmscolors.Success,
-              });
+              // Snackbar.show({
+              //   text: STREAM_STATUS.NOVIDEO,
+              //   duration: Snackbar.LENGTH_LONG,
+              //   backgroundColor: cmscolors.Success,
+              // });
             }
           }
         ),

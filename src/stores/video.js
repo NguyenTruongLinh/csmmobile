@@ -1220,6 +1220,7 @@ export const VideoModel = types
         }
         self.noVideo = value;
         if (value === true) {
+          snackbarUtil.onMessage(STREAM_STATUS.NOVIDEO);
           self.selectedStream &&
             self.selectedStream.setStreamStatus({
               isLoading: false,

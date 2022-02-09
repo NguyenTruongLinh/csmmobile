@@ -443,7 +443,7 @@ class VideoPlayerView extends Component {
 
       // setTimeout(() => {
       videoStore.setNoVideo(true, false);
-      snackbar.onMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
+      // snackbar.onMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
       // }, 200);
       return;
     }
