@@ -442,6 +442,7 @@ const TransactionModel = types
             title: COMMON_TXT.CMS_APP,
             message: SMARTER_TXT.SHARE_MESSAGE,
             subject: SMARTER_TXT.SHARE_SUBJECT,
+            // type: 'video/mp4',
           });
         }
       } catch (err) {

@@ -491,6 +491,12 @@ class Api {
     }
 
     const fileName = url.split('/').pop();
+    __DEV__ &&
+      console.log(
+        'GOND downloading file fileName endsWith MP4 = ',
+        fileName.toLowerCase().endsWith('.mp4')
+      );
+    if (!fileName.toLowerCase().endsWith('.mp4')) fileName += '.mp4';
     __DEV__ && console.log('GOND downloading file: ', fileName, ', url: ', url);
 
     let res = await RNFetchBlob.config({
