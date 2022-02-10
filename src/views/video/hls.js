@@ -216,6 +216,12 @@ class HLSStreamingView extends React.Component {
           isNoVideo => {
             if (isNoVideo == true) {
               this.stop();
+              this.props.streamData.setStreamStatus({
+                connectionStatus: STREAM_STATUS.NOVIDEO,
+                isLoading: false,
+              });
+              if (this.state.internalLoading)
+                this.setState({internalLoading: false});
             }
           }
         ),
