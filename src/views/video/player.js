@@ -380,12 +380,14 @@ class VideoPlayerView extends Component {
     if (videoStore.selectedChannel && channelNo == videoStore.selectedChannel)
       return;
 
-    videoStore.setPlayTimeForSearch(
-      DateTime.fromFormat(
-        videoStore.frameTimeString,
-        NVRPlayerConfig.FrameFormat
-      ).toFormat(NVRPlayerConfig.RequestTimeFormat)
-    );
+    if (videoStore.frameTimeString) {
+      videoStore.setPlayTimeForSearch(
+        DateTime.fromFormat(
+          videoStore.frameTimeString,
+          NVRPlayerConfig.FrameFormat
+        ).toFormat(NVRPlayerConfig.RequestTimeFormat)
+      );
+    }
     // videoStore.setNoVideo(false);
     videoStore.selectChannel(channelNo);
     if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
