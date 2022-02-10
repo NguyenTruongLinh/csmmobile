@@ -268,6 +268,7 @@ class TransactionDetailView extends Component {
           muted
           autoplay
           fullScreenHandler={this.onViewVideo}
+          showDuration={true}
           // style={{
           //   width: '100%',
           //   height: videoHeight,
