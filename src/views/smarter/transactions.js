@@ -184,7 +184,7 @@ class ExceptionsView extends Component {
         onPress={() => this.gotoTransactionDetail(item)}>
         <View style={styles.transContainer}>
           <CMSImage
-            id={'list_' + DateTime.now().toMillis()}
+            id={'list_' + item.tranId} //DateTime.now().toMillis()}
             src={!item.isCloud ? item.snapshot : undefined}
             srcUrl={item.isCloud ? item.snapshot : undefined}
             domain={this.props.exceptionStore.getTransactionSnapShot(item)} // {this.getSnapShot(item)}
@@ -247,7 +247,7 @@ class ExceptionsView extends Component {
             backgroundColor: CMSColors.DividerColor24_HEX,
           }}>
           <CMSImage
-            id={'grid_' + DateTime.now().toMillis()}
+            id={'grid_' + item.tranId} //DateTime.now().toMillis()}
             src={item.image ? item.image : undefined}
             styleImage={[
               styles.alertThumbGrid,
@@ -309,8 +309,11 @@ class ExceptionsView extends Component {
           keyExtractor={item => (isListView ? 'list_' : 'grid_') + item.id}
           data={exceptionStore.filteredTransactions}
           numColumns={isListView ? 1 : ALERTS_GRID_LAYOUT}
-          onRefresh={this.getData}
-          refreshing={exceptionStore.isLoading}
+          onRefresh={() => this.getData()}
+          refreshing={
+            exceptionStore.isLoading &&
+            exceptionStore.filteredTransactions.length == 0
+          }
           onEndReached={this.onLoadMore}
           style={{padding: isListView ? 0 : 5}}
         />

@@ -371,7 +371,7 @@ class AlertsView extends Component {
           underlayColor={CMSColors.Underlay}>
           <View style={styles.alertThumbView}>
             <CMSImage
-              id={'list_' + DateTime.now().toMillis()}
+              id={'list_' + item.id} //DateTime.now().toMillis()}
               src={item.image}
               domain={healthStore.getAlertSnapShot(item)} // {this.getSnapShot(item)}
               dataCompleteHandler={(param, image) => {
@@ -430,7 +430,7 @@ class AlertsView extends Component {
           <View
             style={{width: itemWidth, height: Math.floor((itemWidth * 3) / 4)}}>
             <CMSImage
-              id={'grid_' + DateTime.now().toMillis()}
+              id={'grid_' + item.id} //DateTime.now().toMillis()}
               src={item.image ? item.image : undefined}
               styleImage={[
                 styles.alertThumbGrid,

@@ -845,19 +845,13 @@ export const POSModel = types
         }
 
         // parse data:
-        if (page > 1) {
-          res.Data.forEach(trans => {
-            const newTrans = _parseTransactionData(
-              trans,
-              self.exceptionTypesConfig
-            );
-            self.transactionsList.push(newTrans);
-          });
-        } else {
-          self.transactionsList = res.Data.map(trans =>
-            _parseTransactionData(trans, self.exceptionTypesConfig)
+        res.Data.forEach(trans => {
+          const newTrans = _parseTransactionData(
+            trans,
+            self.exceptionTypesConfig
           );
-        }
+          self.transactionsList.push(newTrans);
+        });
       } catch (error) {
         __DEV__ && console.log('GOND getEmployeeTransactions error = ', error);
       }
