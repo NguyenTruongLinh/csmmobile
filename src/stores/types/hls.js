@@ -22,7 +22,7 @@ import {
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
 
-const MAX_RETRY = 15;
+const MAX_RETRY = 5;
 
 const HLSURLModel = types
   .model({
@@ -328,8 +328,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -339,8 +339,7 @@ export default HLSStreamModel = types
             DiscontinuityMode: HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: 7,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ &&
           console.log(

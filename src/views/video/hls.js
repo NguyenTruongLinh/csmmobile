@@ -44,7 +44,7 @@ class HLSStreamingView extends React.Component {
     this.state = {
       // message: '',
       // videoLoading: true,
-      streamUrl: streamData.streamUrl,
+      streamUrl: streamData.streamUrl ?? '',
       // streamUrl: props.streamUrl.targetUrl
       //   ? props.streamData.targetUrl.url
       //   : null,
@@ -335,14 +335,19 @@ class HLSStreamingView extends React.Component {
     if (!isLive && this.frameTime > 0)
       this.lastSearchTime = this.computeTime(this.frameTime);
 
+    if (error.domain == 'CoreMediaErrorDomain') {
+      return;
+    }
     if (error.errorString == 'Unrecognized media format') {
       // streamData.setStreamStatus({
       //   connectionStatus: STREAM_STATUS.SOURCE_ERROR,
       // });
       __DEV__ && console.log('GOND HLS SOURCE_ERROR ');
     } // else {
-    streamData.reconnect(isLive, hdMode);
+    // streamData.reconnect(isLive, hdMode);
     // }
+
+    this.reconnect();
   };
 
   clearCheckTimelineInterval = () => {
@@ -371,9 +376,9 @@ class HLSStreamingView extends React.Component {
         isLoading: false,
         connectionStatus: STREAM_STATUS.DONE,
       });
-      this.clearBufferTimeout();
-      this.clearReconnectTimeout();
     }
+    this.clearBufferTimeout();
+    this.clearReconnectTimeout();
 
     // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
     if (!singlePlayer) {
@@ -548,7 +553,7 @@ class HLSStreamingView extends React.Component {
 
   stop = () => {
     const {streamData, videoStore} = this.props;
-    this.setState({streamUrl: null});
+    this.setState({streamUrl: ''});
     streamData &&
       streamData.targetUrl &&
       videoStore.stopHLSStream(streamData.channelNo, streamData.targetUrl.sid);
@@ -624,7 +629,7 @@ class HLSStreamingView extends React.Component {
           <View style={styles.playerView}>
             {
               /*!isLoading &&*/
-              streamUrl && streamUrl.length > 0 && !noVideo ? (
+              streamUrl ? (
                 <Video
                   style={[{width: width, height: height}]}
                   hls={true}
@@ -660,6 +665,12 @@ class HLSStreamingView extends React.Component {
                   playWhenInactive={true}
                   useTextureView={false}
                   disableFocus={true}
+                  bufferConfig={{
+                    minBufferMs: 3000,
+                    maxBufferMs: 15000,
+                    bufferForPlaybackMs: 2000,
+                    bufferForPlaybackAfterRebufferMs: 3000,
+                  }}
                 />
               ) : null
             }

@@ -194,12 +194,12 @@ export const IS_FORCE_TURN = true;
 export const IS_OPEN_DATA_CHANNEL = true;
 export const USE_TRICKLE_ICE = true;
 export const STREAM_TIMEOUT = 60000;
-export const BUFFER_TIMEOUT = 15000;
+export const BUFFER_TIMEOUT = 10000;
 export const RECONNECT_TIMEOUT = 10000;
 export const NATURAL_RATIO = 16 / 9;
 export const HLS_MIN_EXPIRE_TIME = 300;
 export const HLS_MAX_EXPIRE_TIME = 43200;
-export const HLS_DATA_REQUEST_TIMEOUT = 20000;
+export const HLS_DATA_REQUEST_TIMEOUT = 10000;
 export const VIDEO_INACTIVE_TIMEOUT = 5000;
 
 export const CONTROLLER_TIMEOUT = 3000; // 3 seconds
