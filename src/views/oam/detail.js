@@ -32,6 +32,7 @@ const IconCustom = CMSStyleSheet.IconCustom;
 
 import AcknowledgePopup from './widget/AcknowledgePopup';
 import ROUTERS from '../../consts/routes';
+import Ripple from 'react-native-material-ripple';
 
 const pvmColors = CMSColors.pvm;
 const BORDER_ALPHA = '28';
@@ -101,12 +102,20 @@ class OAMDetailView extends Component {
 
   renderFullScreenButton(foreColor) {
     return (
-      <CMSTouchableIcon
-        iconCustom="switch-to-full-screen-button"
-        onPress={this.onFullScreenPress}
-        size={18}
-        color={foreColor}
-      />
+      <Ripple
+        style={{
+          width: 40,
+          height: 40,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        onPress={this.onFullScreenPress}>
+        <CMSTouchableIcon
+          iconCustom="switch-to-full-screen-button"
+          size={18}
+          color={foreColor}
+        />
+      </Ripple>
     );
   }
 
@@ -268,9 +277,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 20,
+    paddingRight: 6,
     justifyContent: 'flex-end',
-    paddingVertical: 5,
+    // paddingVertical: 5,
     minHeight: 45,
   },
   occupancyView: {
