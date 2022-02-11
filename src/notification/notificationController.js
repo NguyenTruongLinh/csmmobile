@@ -224,7 +224,7 @@ class NotificationController extends React.Component {
     idNumber = isNaN(idNumber) ? undefined : idNumber;
     // if (idNumber) PushNotification.cancelLocalNotification(idNumber);
     const notificationRequest = {
-      id: idNumber,
+      // id: idNumber,
       vibration: 500,
       title: title,
       message: /*Platform.OS == 'android' ? encodeURI(body) :*/ body,
