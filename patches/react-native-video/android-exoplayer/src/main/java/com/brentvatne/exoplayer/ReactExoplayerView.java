@@ -174,6 +174,14 @@ class ReactExoplayerView extends FrameLayout implements
                             && player.getPlayWhenReady()
                             ) {
                         long pos = player.getCurrentPosition();
+
+                        Timeline currentTimeline = player.getCurrentTimeline();
+                        Timeline.Period period = new Timeline.Period();
+                        if (!currentTimeline.isEmpty()) {
+                            pos -= currentTimeline.getPeriod(player.getCurrentPeriodIndex(), period)
+                                    .getPositionInWindowMs();
+                        }
+                        
                         long bufferedDuration = player.getBufferedPercentage() * player.getDuration() / 100;
                         eventEmitter.progressChanged(pos, bufferedDuration, player.getDuration(), getPositionInFirstPeriodMsForCurrentWindow(pos));
                         msg = obtainMessage(SHOW_PROGRESS);
@@ -799,7 +807,6 @@ class ReactExoplayerView extends FrameLayout implements
             int width = videoFormat != null ? videoFormat.width : 0;
             int height = videoFormat != null ? videoFormat.height : 0;
             String trackId = videoFormat != null ? videoFormat.id : "-1";
-			// dongpt: fix not auto playing
             setPlayWhenReady(true);
             eventEmitter.load(player.getDuration(), player.getCurrentPosition(), width, height,
                     getAudioTrackInfo(), getTextTrackInfo(), getVideoTrackInfo(), trackId);
