@@ -22,7 +22,7 @@ import {
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
 
-const MAX_RETRY = 5;
+const MAX_RETRY = 3;
 
 const HLSURLModel = types
   .model({
@@ -432,13 +432,19 @@ export default HLSStreamModel = types
         self.retryRemaining--;
         return self.getHLSStreamUrl(null);
       } else {
-        self.setStreamStatus({
-          connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
-          isLoading: false,
-        });
-        self.onStreamError(self.channelNo, self.isLive);
+        // self.setStreamStatus({
+        //   connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+        //   isLoading: false,
+        // });
+        // self.onStreamError(self.channelNo, self.isLive);
+        self.reInitStream();
         return Promise.resolve(false);
       }
+    },
+    reInitStream() {
+      __DEV__ && console.log(`GOND reinit HLS stream: `, self.channelName);
+      self.targetUrl.reset();
+      self.onStreamError(self.channelNo, self.isLive);
     },
     scheduleCheckTimeout(time) {
       self.clearStreamTimeout();

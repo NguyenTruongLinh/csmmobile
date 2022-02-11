@@ -2207,10 +2207,10 @@ export const VideoModel = types
       }),
       buildDaylistData: flow(function* (data) {
         let daysData = data;
-        if (!daysData || daysData.length == 0 || daysData.bigData == true) {
+        if (!daysData || daysData.length == 0 || daysData.BigData) {
           if (self.cloudType == CLOUD_TYPE.HLS) {
             try {
-              daysData = yield apiService.get(
+              const res = yield apiService.get(
                 VSC.controller,
                 1,
                 VSC.getHLSData,
@@ -2219,6 +2219,8 @@ export const VideoModel = types
                   cmd: VSCCommandString.DAYLIST,
                 }
               );
+              daysData =
+                typeof res.Data === 'string' ? JSON.parse(res.Data) : res.Data;
             } catch (err) {
               console.log('GOND get HLS data Daylist failed: ', err);
             }

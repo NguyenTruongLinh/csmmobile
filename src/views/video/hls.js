@@ -344,6 +344,9 @@ class HLSStreamingView extends React.Component {
     if (error.domain == 'CoreMediaErrorDomain') {
       return;
     }
+    if (error.domain == 'NSURLErrorDomain') {
+      streamData.reInitStream();
+    }
     if (error.errorString == 'Unrecognized media format') {
       // streamData.setStreamStatus({
       //   connectionStatus: STREAM_STATUS.SOURCE_ERROR,
@@ -391,7 +394,7 @@ class HLSStreamingView extends React.Component {
       // __DEV__ && console.log('GOND HLS progress: AAAAAA 1');
       return;
     }
-    // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
+    __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
 
     const {hlsTimestamps} = videoStore;
     const {timeBeginPlaying} = this.state;
@@ -400,6 +403,8 @@ class HLSStreamingView extends React.Component {
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
       // __DEV__ && console.log('GOND HLS onProgress: 1');
       this.frameTime = timeBeginPlaying.toSeconds();
+      this.lastVideoTime = Math.floor(this.frameTime);
+
       __DEV__ &&
         console.log(
           'GOND HLS onProgress: this.frameTime = ',
@@ -437,6 +442,7 @@ class HLSStreamingView extends React.Component {
         } else {
           // __DEV__ && console.log('GOND HLS onProgress: 2');
           this.frameTime = hlsTimestamps[this.tsIndex];
+          this.lastVideoTime = Math.floor(this.frameTime);
           this.setState({
             timeBeginPlaying: DateTime.fromSeconds(this.frameTime, {
               zone: videoStore.timezone,
@@ -454,6 +460,7 @@ class HLSStreamingView extends React.Component {
         }
       } else if (this.tsIndex < hlsTimestamps.length) {
         // __DEV__ && console.log('GOND HLS onProgress: 3');
+        /*
         if (Platform.OS == 'ios') {
           this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
           let idx = this.tsIndex;
@@ -491,10 +498,26 @@ class HLSStreamingView extends React.Component {
           }
           this.frameTime = hlsTimestamps[this.tsIndex];
         } else {
-          // __DEV__ && console.log('GOND HLS onProgress: 5');
-          this.tsIndex++;
+          */
+        // __DEV__ && console.log('GOND HLS onProgress: 5');
+        if (!this.lastVideoTime) {
+          this.lastVideoTime = this.frameTime;
+        }
+        const timeDiff = Math.floor(data.currentTime - this.lastVideoTime);
+        if (timeDiff > 0) {
+          if (timeDiff >= 3 && __DEV__) {
+            console.log(
+              'GOND HLS Warning, timeDiff too big: ',
+              timeDiff,
+              data,
+              this.lastVideoTime
+            );
+          }
+          this.tsIndex += timeDiff;
+          this.lastVideoTime = data.currentTime;
           this.frameTime = hlsTimestamps[this.tsIndex];
         }
+        // }
       }
     }
 
@@ -680,8 +703,9 @@ class HLSStreamingView extends React.Component {
                     minBufferMs: 3000,
                     maxBufferMs: 15000,
                     bufferForPlaybackMs: 2000,
-                    bufferForPlaybackAfterRebufferMs: 3000,
+                    bufferForPlaybackAfterRebufferMs: 2500,
                   }}
+                  maxBitRate={singlePlayer ? 0 : 524288} // 1048576
                 />
               ) : null
             }
