@@ -436,7 +436,7 @@ class DirectVideoView extends React.Component {
     this.setNativePlayback(true, {}, true);
   };
 
-  setNativePlayback = (delay = false, paramsObject = {}, immediate = false) => {
+  setNativePlayback = (delay = false, paramsObject = {}) => {
     const {serverInfo, videoStore, isLive, hdMode} = this.props;
     // console.log('GOND direct setNativePlayback: ', serverInfo);
     if (
@@ -922,7 +922,7 @@ class DirectVideoView extends React.Component {
     __DEV__ && console.log('GOND setPlayStatus: ', this.isPlaying);
   };
 
-  setNative = (params, immediate = false) => {
+  setNative = params => {
     // const {index, singlePlayer, serverInfo} = this.props;
 
     if (!this._isMounted) return;

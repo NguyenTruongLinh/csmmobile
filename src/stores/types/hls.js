@@ -328,8 +328,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -339,7 +339,8 @@ export default HLSStreamModel = types
             DiscontinuityMode: HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: 7,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(
@@ -457,10 +458,11 @@ export default HLSStreamModel = types
               `GOND === it timeout:  ${self.targetUrl.sid}, ch = `,
               self.channelName
             );
-          self.setStreamStatus({
-            connectionStatus: STREAM_STATUS.TIMEOUT,
-            isLoading: false,
-          });
+          // self.setStreamStatus({
+          //   connectionStatus: STREAM_STATUS.TIMEOUT,
+          //   isLoading: false,
+          // });
+          self.reInitStream();
         }
       }, time ?? STREAM_TIMEOUT);
     },

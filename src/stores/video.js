@@ -2179,7 +2179,9 @@ export const VideoModel = types
             // } else {
             __DEV__ &&
               console.log(
-                `GOND on HLS response target stream not found or noVideo!`
+                `GOND on HLS response target stream not found or noVideo!`,
+                self.noVideo,
+                target
               );
             return;
             // }
@@ -2305,13 +2307,6 @@ export const VideoModel = types
               console.log('GOND get HLS data Timeline failed: ', err);
             }
           }
-        } else {
-          self.setNoVideo(true);
-          self.selectedStream.setStreamStatus({
-            isLoading: false,
-            connectionStatus: STREAM_STATUS.NOVIDEO,
-          });
-          return;
         }
 
         if (!jTimeStamp || jTimeStamp.length == 0) {

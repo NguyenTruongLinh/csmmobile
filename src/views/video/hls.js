@@ -62,6 +62,7 @@ class HLSStreamingView extends React.Component {
     this.videoReconnectTimeout = null;
     // this.waitingForReconnect = false;
     this.checkTimelineInterval = null;
+    this.lastVideoTime = 0;
   }
 
   componentDidMount() {
@@ -403,7 +404,7 @@ class HLSStreamingView extends React.Component {
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
       // __DEV__ && console.log('GOND HLS onProgress: 1');
       this.frameTime = timeBeginPlaying.toSeconds();
-      this.lastVideoTime = Math.floor(this.frameTime);
+      this.lastVideoTime = 0;
 
       __DEV__ &&
         console.log(
@@ -442,7 +443,6 @@ class HLSStreamingView extends React.Component {
         } else {
           // __DEV__ && console.log('GOND HLS onProgress: 2');
           this.frameTime = hlsTimestamps[this.tsIndex];
-          this.lastVideoTime = Math.floor(this.frameTime);
           this.setState({
             timeBeginPlaying: DateTime.fromSeconds(this.frameTime, {
               zone: videoStore.timezone,
@@ -499,11 +499,11 @@ class HLSStreamingView extends React.Component {
           this.frameTime = hlsTimestamps[this.tsIndex];
         } else {
           */
-        // __DEV__ && console.log('GOND HLS onProgress: 5');
-        if (!this.lastVideoTime) {
-          this.lastVideoTime = this.frameTime;
-        }
+        // __DEV__ && console.log('GOND HLS onProgress 5');
+
         const timeDiff = Math.floor(data.currentTime - this.lastVideoTime);
+        // __DEV__ &&
+        //   console.log('GOND HLS onProgress 6:', timeDiff, this.lastVideoTime);
         if (timeDiff > 0) {
           if (timeDiff >= 3 && __DEV__) {
             console.log(
@@ -514,7 +514,7 @@ class HLSStreamingView extends React.Component {
             );
           }
           this.tsIndex += timeDiff;
-          this.lastVideoTime = data.currentTime;
+          this.lastVideoTime = Math.floor(data.currentTime);
           this.frameTime = hlsTimestamps[this.tsIndex];
         }
         // }
@@ -620,8 +620,14 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, internalLoading} = this.state;
