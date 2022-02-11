@@ -34,6 +34,9 @@ const SiteHealthModel = types
     siteName: types.string,
     // dvrs: types.array(types.number),
     dvrs: types.array(DVRModel),
+
+    //
+    computedTotalFromChildren: types.maybeNull(types.number),
   })
   .views(self => ({
     get lowerCaseName() {
@@ -59,6 +62,23 @@ const SiteHealthModel = types
         self.dvrs = dvrs;
       }
     },
+    computeTotalFromSubChidlren(subOriginal, subUpdated) {
+      __DEV__ &&
+        console.log(
+          `computeTotalFromChidlren subOriginal = `,
+          subOriginal,
+          'subUpdated = ',
+          subUpdated,
+          'self.total = ',
+          self.total
+        );
+      const newTotal = self.total - subOriginal + subUpdated;
+      if (newTotal >= 0) self.computedTotalFromChildren = newTotal;
+    },
+    computeTotalFromChidlren(newTotal) {
+      __DEV__ && console.log(`computeTotalFromChidlren newTotal = `, newTotal);
+      if (newTotal >= 0) self.computedTotalFromChildren = newTotal;
+    },
   }));
 
 const SiteAlertTypeModel = types
@@ -68,6 +88,7 @@ const SiteAlertTypeModel = types
     total: types.number,
     sdate: types.string,
     edate: types.string,
+    computedTotalFromChildren: types.maybeNull(types.number),
   })
   .views(self => ({
     get canDismiss() {
@@ -75,10 +96,9 @@ const SiteAlertTypeModel = types
     },
   }))
   .actions(self => ({
-    computeTotalFromAlerts(count) {
-      __DEV__ &&
-        console.log(`computeTotalFromAlerts dismissAlert count = `, count);
-      if (count >= 0) self.total = count;
+    computeTotalFromChidlren(count) {
+      __DEV__ && console.log(`computeTotalFromChidlren count = `, count);
+      if (count >= 0) self.computedTotalFromChildren = count;
     },
   }));
 
@@ -405,6 +425,18 @@ export const HealthModel = types
             // canDismiss: NonDismissableAlerts.includes(alert.Id),
           });
         });
+        const computedTotalFromChidlren = self.selectedSiteAlertTypes.reduce(
+          (acc, type) => {
+            __DEV__ &&
+              console.log(
+                ` computeTotalFromChidlren reduce type.total = `,
+                type.total
+              );
+            return type.total + acc;
+          },
+          0
+        );
+        self.selectedSite.computeTotalFromChidlren(computedTotalFromChidlren);
       } catch (error) {
         __DEV__ && console.log('GOND get health detail data failed: ', error);
         snackbarUtil.handleRequestFailed();
@@ -454,14 +486,13 @@ export const HealthModel = types
           }
         );
 
-        let parent = self.selectedSiteAlertTypes.find(
-          item => item.alertId == self.selectedAlertType.alertId //target.alertId
-        );
-        __DEV__ &&
-          console.log(`getAlertsByType parent = `, JSON.stringify(parent));
+        const newTotal = !res.Data ? 0 : res.Data.length;
+        self.selectedAlertType.computeTotalFromChidlren(newTotal);
 
-        if (parent)
-          parent.computeTotalFromAlerts(!res.Data ? 0 : res.Data.length);
+        self.selectedSite.computeTotalFromSubChidlren(
+          self.selectedAlertType.total,
+          newTotal
+        );
 
         __DEV__ &&
           console.log('GOND get alert type data: ', JSON.stringify(res));

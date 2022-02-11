@@ -333,7 +333,11 @@ class SitesView extends Component {
           </View>
           {isHealthRoute && (
             <View style={styles.alertsCountContainer}>
-              <Text style={styles.alertsCount}>{item.total}</Text>
+              <Text style={styles.alertsCount}>
+                {item.computedTotalFromChildren != null
+                  ? item.computedTotalFromChildren
+                  : item.total}
+              </Text>
             </View>
           )}
         </CMSRipple>

@@ -230,7 +230,12 @@ class HealthDetailView extends Component {
   // };
 
   renderItem = ({item}) => {
-    if (item.total <= 0) return null;
+    if (
+      (item.computedTotalFromChildren != null &&
+        item.computedTotalFromChildren <= 0) ||
+      (!item.computedTotalFromChildren && item.total <= 0)
+    )
+      return null;
     const rowId = item.alertId ?? 0;
     const alertIcon = getIconAlertType(item.alertId);
 
@@ -277,16 +282,18 @@ class HealthDetailView extends Component {
               {item.name}
             </Text>
           </View>
-          {item.total > 0 && (
-            <View style={styles.frontRowInfoContainer}>
-              <Text style={styles.frontRowText}>{item.total}</Text>
-              <IconCustom
-                name="keyboard-right-arrow-button"
-                color={CMSColors.IconButton}
-                size={variables.fix_fontSire}
-              />
-            </View>
-          )}
+          <View style={styles.frontRowInfoContainer}>
+            <Text style={styles.frontRowText}>
+              {item.computedTotalFromChildren != null
+                ? item.computedTotalFromChildren
+                : item.total}
+            </Text>
+            <IconCustom
+              name="keyboard-right-arrow-button"
+              color={CMSColors.IconButton}
+              size={variables.fix_fontSire}
+            />
+          </View>
         </CMSRipple>
       </SwipeRow>
     );
