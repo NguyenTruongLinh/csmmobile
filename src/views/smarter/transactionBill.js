@@ -127,6 +127,8 @@ class TransactionBillView extends Component {
   render() {
     const {transaction, style, isLoading} = this.props;
     const {paymentData} = this.state;
+    let sortedDetail = transaction.detail.slice(0, transaction.detail.length);
+    sortedDetail.sort((a, b) => a.itemLine - b.itemLine);
     return (
       <ScrollView style={[styles.viewContainer, style]}>
         {this.renderHeaderInfo(SMARTER_TXT.ORDER_TIME, transaction.orderTime)}
@@ -139,7 +141,7 @@ class TransactionBillView extends Component {
           />
         ) : ( */}
         <View key="item_list" style={{marginVertical: 14}}>
-          {transaction.detail.map(this.renderDetailItem)}
+          {sortedDetail.map(this.renderDetailItem)}
         </View>
         {/* )} */}
         <View key="payment_tax" style={{}}>
