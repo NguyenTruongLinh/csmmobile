@@ -481,27 +481,29 @@ class AlarmDetailView extends Component {
     //   AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY ? (
     return (
       <View style={[styles.timeInfoContainer, {flexDirection: 'row'}]}>
-        {/* <View style={styles.timeInfoContainer}> */}
-        <View style={{justifyContent: 'center'}}>
-          <IconCustom
-            name="clock-with-white-face"
-            size={iconSize}
-            color={CMSColors.SecondaryText}
-          />
+        <View style={{flexDirection: 'row'}}>
+          <View style={{justifyContent: 'center'}}>
+            <IconCustom
+              name="clock-with-white-face"
+              size={iconSize}
+              color={CMSColors.SecondaryText}
+            />
+          </View>
+          <Text style={styles.temp_text}>{strTime}</Text>
         </View>
-        <Text style={styles.temp_text}>{strTime}</Text>
-        {/* </View> */}
-        <View style={{padding: variable.contentPadding}} />
-        <View style={{justifyContent: 'center'}}>
-          <IconCustom
-            name="ic-temperature-32px"
-            size={iconSize}
-            color={CMSColors.SecondaryText}
-          />
+
+        <View style={{flexDirection: 'row'}}>
+          <View style={{justifyContent: 'center'}}>
+            <IconCustom
+              name="ic-temperature-32px"
+              size={iconSize}
+              color={CMSColors.SecondaryText}
+            />
+          </View>
+          <Text style={[styles.temp_text, {color: CMSColors.Danger}]}>
+            {item.value /* + String.fromCharCode(176) + 'C'*/}
+          </Text>
         </View>
-        <Text style={[styles.temp_text, {color: CMSColors.Danger}]}>
-          {item.value /* + String.fromCharCode(176) + 'C'*/}
-        </Text>
       </View>
     );
     // ) : (
@@ -879,6 +881,7 @@ const styles = StyleSheet.create({
   temp_text: {
     color: CMSColors.PrimaryText,
     fontSize: 15,
+    marginLeft: 10,
   },
   inputNote: {
     color: CMSColors.DarkText,
