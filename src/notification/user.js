@@ -69,7 +69,7 @@ function onUserEvent(notifExtraData, appStore, userStore, action, content) {
     case NOTIFY_ACTION.EDIT:
     case NOTIFY_ACTION.REFRESH:
       noti = {
-        body: user + ' has updated.',
+        body: user + "'s profile has changed.",
       };
       refresh = true;
       break;
@@ -88,14 +88,14 @@ function onUserEvent(notifExtraData, appStore, userStore, action, content) {
     case NOTIFY_ACTION.PWD_CHANGE:
       logout = true;
       noti = {
-        body: user + "'s" + ' login info has changed.',
+        body: user + "'s login info has changed.",
       };
       break;
 
     default:
       isContent = true;
       noti = {
-        body: user + "'s profile" + ' has changed.',
+        body: user + "'s profile has changed.",
       };
       break;
   }
@@ -132,7 +132,7 @@ async function onUserEventAsync(
     case NOTIFY_ACTION.EDIT:
     case NOTIFY_ACTION.REFRESH:
       noti = {
-        body: user + ' has updated.',
+        body: user + "'s profile has changed.",
       };
       refresh = true;
       break;
