@@ -202,7 +202,14 @@ class OAMDetailView extends Component {
       !isNaN(untilCapacity) && untilCapacity >= 0
         ? untilCapacity.toString()
         : 'Full';
-
+    let textLen1 = (occupancyTitle || 'OCCUPANCY').length / 1.5;
+    textLen1 = Math.min(textLen1, 9);
+    let textLen2 = (capacityTitle || 'UNTIL CAPACITY').length / 2;
+    textLen2 = Math.min(textLen2, 14);
+    const numLen1 = ('' + occupancy).length + 3;
+    const numLen2 = untilCapacityText.length + 3;
+    const flex1 = textLen1 > numLen1 ? textLen1 : numLen1;
+    const flex2 = textLen2 > numLen2 ? textLen2 : numLen2;
     return (
       <View
         style={{
@@ -221,22 +228,28 @@ class OAMDetailView extends Component {
         </View>
 
         <View
-          style={[styles.occupancyView, isLandscape ? {minHeight: 100} : {}]}>
+          style={[
+            styles.occupancyView,
+            isLandscape ? {minHeight: 100} : {},
+            {borderBottomColor: foreColor + BORDER_ALPHA, borderBottomWidth: 2},
+          ]}>
           <CounterView
-            style={{flex: 1}}
+            flex={flex1}
             title={occupancyTitle || 'OCCUPANCY'}
             count={occupancy}
             color={foreColor}
             borderAlpha={BORDER_ALPHA}
             icon="wc-2"
+            paddingLeft={flex1 > 6 ? 10 : 0}
           />
           <CounterView
-            style={{flex: 1}}
+            flex={flex2}
             title={capacityTitle || 'UNTIL CAPACITY'}
             count={untilCapacityText}
             color={foreColor}
             borderAlpha={BORDER_ALPHA}
             icon="family"
+            paddingRight={flex2 > 7 ? 10 : 0}
           />
         </View>
         <WaitTime
