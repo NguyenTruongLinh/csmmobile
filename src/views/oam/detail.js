@@ -76,7 +76,11 @@ class OAMDetailView extends Component {
       headerTitle: oamStore.title,
     });
     this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
-      StatusBar.setHidden(!this.isHeaderShown);
+      if (Platform.OS == 'android') StatusBar.setHidden(!this.isHeaderShown);
+      else
+        setTimeout(() => {
+          StatusBar.setHidden(!this.isHeaderShown);
+        }, 1000);
     });
     this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
       StatusBar.setHidden(false);
