@@ -364,7 +364,7 @@ class LoginView extends Component {
                 // !this.props.appStore.isLoading
               }
             />
-            <Button
+            {/* <Button
               style={styles.buttonPassword}
               caption="FORGOT PASSWORD?"
               type="flat"
@@ -373,7 +373,8 @@ class LoginView extends Component {
                 Linking.openURL(APP_INFO.ContactUrl);
               }}
               enable={true}
-            />
+            /> */}
+            <View style={{height: 50}}></View>
           </View>
         </View>
         <View style={styles.space_footer} />
@@ -448,6 +449,7 @@ const styles = StyleSheet.create({
   },
   buttonPassword: {
     width: '100%',
+    // height: 40,
   },
   content: {
     maxWidth: variable.deviceWidth,
