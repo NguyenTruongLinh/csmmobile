@@ -28,6 +28,11 @@ const HideTabbarScreens = [ROUTERS.VIDEO_PLAYER, ROUTERS.HEALTH_VIDEO];
 class CMSTabbar extends React.Component {
   constructor(props) {
     super(props);
+    const {height} = Dimensions.get('window');
+
+    this.state = {
+      height: height / 10,
+    };
   }
 
   onTabPress = (isDisable, navigation, routeName, userStore) => {
@@ -40,11 +45,20 @@ class CMSTabbar extends React.Component {
     }
   };
 
+  updateSize = () => {
+    const {height} = Dimensions.get('window');
+
+    this.setState({
+      height: height / 10,
+    });
+  };
+
   render() {
     const {navigation, state, appStore, userStore} = this.props;
     const currentIndex = state.index;
+    const {height} = this.state;
     // const currentRoute = state.routes[state.index];
-    const {width, height} = Dimensions.get('window');
+    // const {width, height} = Dimensions.get('window');
     // const tabWidth = width / TabLabels.length;
 
     // __DEV__ &&
@@ -66,7 +80,7 @@ class CMSTabbar extends React.Component {
     )
       return null;
     return (
-      <View style={[styles.container, {height: height / 10}]}>
+      <View style={[styles.container, {height}]}>
         {state.routes.map((route, index) => {
           const isSelected = index === currentIndex;
           const isDisable = userStore.disableTabIndexes.includes(index);

@@ -136,7 +136,7 @@ class VideoPlayerView extends Component {
       });
     videoStore.setNoVideo(false);
     if (videoStore.isFullscreen) {
-      this.onFullscreenPress();
+      this.onFullscreenPress(false);
     }
 
     if (!videoStore.isPreloadStream) {

@@ -538,6 +538,7 @@ class DirectVideoView extends React.Component {
       // index,
     } = this.props;
     // __DEV__ &&
+    //   msgid != NATIVE_MESSAGE.FRAME_DATA &&
     //   console.log(
     //     'GOND onDirectVideoMessage: ',
     //     msgid,
