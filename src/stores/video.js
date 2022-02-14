@@ -821,7 +821,11 @@ export const VideoModel = types
           }
         } else {
           __DEV__ &&
-            console.log('GOND stream not found, add new one ... ', foundStream);
+            console.log(
+              'GOND stream not found, add new one ... ',
+              foundStream,
+              DateTime.now().setZone('').isValid
+            );
           switch (self.cloudType) {
             case CLOUD_TYPE.DEFAULT:
             case CLOUD_TYPE.DIRECTION:
@@ -843,7 +847,14 @@ export const VideoModel = types
               });
               newStream.setOnErrorCallback(self.onHLSError);
               self.hlsStreams.push(newStream);
-              self.getHLSInfos({channelNo: value, timeline: !self.isLive});
+              if (
+                self.timezoneName &&
+                DateTime.now().setZone(self.timezoneName).isValid
+              ) {
+                self.getHLSInfos({channelNo: value, timeline: !self.isLive});
+              } // else if (!self.waitForTimezone) {
+              //   self.getVideoInfos(value);
+              // }
               newStream.setLive(self.isLive);
               newStream.setHD(self.hdMode);
               break;
@@ -2307,6 +2318,8 @@ export const VideoModel = types
               console.log('GOND get HLS data Timeline failed: ', err);
             }
           }
+        } else {
+          __DEV__ && console.log('GOND HLS Timeline from notif: ', data);
         }
 
         if (!jTimeStamp || jTimeStamp.length == 0) {
