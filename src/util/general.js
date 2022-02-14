@@ -2,6 +2,7 @@ import base64 from 'base64-js';
 import AES from 'crypto-js/aes';
 import CryptoJS from 'crypto-js';
 import {Dimensions, PixelRatio, Platform} from 'react-native';
+import Orientation from 'react-native-orientation-locker';
 import {DateTime} from 'luxon';
 import uuid from 'react-native-uuid';
 
@@ -652,4 +653,19 @@ exports.getCurrentRouteName = state => {
 
 exports.getTopRouteName = state => {
   if (state) return state.routes[state.index].name;
+};
+
+exports.HashedToNumberString = value => {
+  if (!value || typeof value != 'string') return;
+
+  return value.split('').reduce((res, char) => res + ch.charCodeAt(0), '');
+};
+
+exports.getAutoRotateState = async () => {
+  if (Platform.OS === 'android') {
+    return new Promise(resolve =>
+      Orientation.getAutoRotateState(state => resolve(state))
+    );
+  }
+  return Promise.resolve(true);
 };

@@ -34,7 +34,7 @@ import {IconCustom} from '../../components/CMSStyleSheet';
 import {StatusBar} from 'react-native';
 
 import snackbar from '../../util/snackbar';
-import {normalize, isNullOrUndef} from '../../util/general';
+import {normalize, isNullOrUndef, getAutoRotateState} from '../../util/general';
 import {
   CLOUD_TYPE,
   HOURS_ON_SCREEN,
@@ -42,7 +42,11 @@ import {
   VIDEO_MESSAGE,
   VIDEO_INACTIVE_TIMEOUT,
 } from '../../consts/video';
-import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../../consts/misc';
+import {
+  NVRPlayerConfig,
+  CALENDAR_DATE_FORMAT,
+  OrientationType,
+} from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
 import {STREAM_STATUS, VIDEO as VIDEO_TXT} from '../../localization/texts';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
@@ -79,6 +83,7 @@ class VideoPlayerView extends Component {
     // this.isNoDataSearch = false;
     this.eventSubscribers = [];
     this.resumeFromInterupt = false;
+    this.lastOrientation = OrientationType.LANDSCAPE;
   }
 
   componentDidMount() {
@@ -96,6 +101,8 @@ class VideoPlayerView extends Component {
         this.eventSubscribers
       );
     this.updateHeader();
+    Orientation.addDeviceOrientationListener(this.onOrientationChange);
+    Orientation.unlockAllOrientations();
   }
 
   updateHeader = () => {
@@ -137,6 +144,7 @@ class VideoPlayerView extends Component {
     }
 
     // dongpt: TODO handle Orientation
+    Orientation.removeDeviceOrientationListener(this.onOrientationChange);
     Orientation.lockToPortrait();
     // this.unsubSearchTimeReaction();
     StatusBar.setHidden(false);
@@ -207,6 +215,56 @@ class VideoPlayerView extends Component {
       }, VIDEO_INACTIVE_TIMEOUT);
     }
     this.appState = nextAppState;
+  };
+
+  onOrientationChange = async orientation => {
+    const {videoStore} = this.props;
+
+    /*
+    const locked = await getAutoRotateState();
+    __DEV__ && console.log('GOND onOrientationChange, canRotate = ', locked);
+    if (locked) {
+      switch (orientation) {
+        case OrientationType.PORTRAIT:
+          Orientation.lockToPortrait();
+          break;
+        case OrientationType.LANDSCAPE_LEFT:
+          Orientation.lockToLandscapeLeft();
+          break;
+        case OrientationType.LANDSCAPE_RIGHT:
+          Orientation.lockToLandscapeRight();
+          break;
+        case OrientationType.LANDSCAPE:
+          Orientation.lockToLandscape();
+          break;
+        case OrientationType.PORTRAIT_UPSIDE_DOWN:
+          Orientation.lockToPortraitUpsideDown();
+          break;
+      }
+      return;
+    }
+    */
+
+    if (
+      [
+        OrientationType.LANDSCAPE,
+        OrientationType.LANDSCAPE_LEFT,
+        OrientationType.LANDSCAPE_RIGHT,
+      ].includes(orientation) &&
+      !videoStore.isFullscreen
+    ) {
+      this.onFullscreenPress(true);
+      // this.lastOrientation = orientation;
+    } else if (
+      [OrientationType.PORTRAIT, OrientationType.PORTRAIT_UPSIDE_DOWN].includes(
+        orientation
+      ) &&
+      videoStore.isFullscreen
+    ) {
+      this.onFullscreenPress(false);
+      // this.lastOrientation = OrientationType.PORTRAIT;
+    }
+    this.lastOrientation = orientation;
   };
 
   checkDataOnSearchDate = selectedDate => {
@@ -289,15 +347,15 @@ class VideoPlayerView extends Component {
     this.setState({sWidth: width, sHeight: height});
   };
 
-  onFullscreenPress = () => {
+  onFullscreenPress = isFullscreen => {
     const {videoStore} = this.props;
-    videoStore.switchFullscreen();
+    videoStore.switchFullscreen(isFullscreen);
     this.updateHeader();
-    if (videoStore.isFullscreen) {
-      Orientation.lockToLandscape();
-    } else {
-      Orientation.lockToPortrait();
-    }
+    // if (videoStore.isFullscreen) {
+    //   Orientation.lockToLandscape();
+    // } else {
+    //   Orientation.lockToPortrait();
+    // }
     StatusBar.setHidden(videoStore.isFullscreen);
   };
 
@@ -831,7 +889,7 @@ class VideoPlayerView extends Component {
               size={IconSize}
               color={CMSColors.White}
               // style={styles.buttonStyle}
-              onPress={this.onFullscreenPress}
+              onPress={() => this.onFullscreenPress()}
             />
           </View>
         )}
@@ -956,13 +1014,14 @@ class VideoPlayerView extends Component {
       selectedChannelIndex,
       selectedStream,
       selectedChannel,
+      isFullscreen,
       isLive,
     } = this.props.videoStore;
-    // console.log('GOND renderChannelsList: ', displayChannels);
+    // console.log('GOND renderChannelsList: ', isFullscreen);
     const itemWidth = this.state.sWidth / NUM_CHANNELS_ON_SCREEN;
     // const channelsList = isLive ? activeChannels : allChannels;
 
-    return (
+    return isFullscreen ? null : (
       <View style={styles.channelsListContainer}>
         <FlatList
           ref={r => (this.channelsScrollView = r)}
@@ -1007,7 +1066,7 @@ class VideoPlayerView extends Component {
     const fullscreenFooter = this.renderFullscreenFooter();
     const datetimeBox = isFullscreen ? null : this.renderDatetime();
     const videoPlayer = this.renderVideo();
-    const channelsList = isFullscreen ? null : this.renderChannelsList();
+    const channelsList = this.renderChannelsList();
     const buttons = isFullscreen ? null : this.renderFeatureButtons();
     const timeline = isFullscreen ? null : this.renderTimeline();
     const controlButtons = this.renderControlButtons();

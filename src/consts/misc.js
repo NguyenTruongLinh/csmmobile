@@ -590,3 +590,11 @@ export const NVRPlayerConfig = {
 };
 
 export const DataPageSize = 30;
+
+export const OrientationType = {
+  PORTRAIT: 'PORTRAIT',
+  LANDSCAPE: 'LANDSCAPE',
+  LANDSCAPE_LEFT: 'LANDSCAPE-LEFT',
+  LANDSCAPE_RIGHT: 'LANDSCAPE-RIGHT',
+  PORTRAIT_UPSIDE_DOWN: 'PORTRAIT-UPSIDEDOWN',
+};
