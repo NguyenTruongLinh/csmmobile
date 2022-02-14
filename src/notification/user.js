@@ -1,6 +1,7 @@
 import PushNotification from 'react-native-push-notification';
-import {NOTIFY_ACTION} from '../consts/misc';
+import {LocalDBName, NOTIFY_ACTION} from '../consts/misc';
 import ROUTERS from '../consts/routes';
+import dbService from '../services/localdb';
 
 import ProfileView from '../views/settings/profile';
 import notificationController from './notificationController';
@@ -33,17 +34,28 @@ function getDisplayName(userStore) {
   if (firstName && !lastName) return firstName;
   if (!firstName && lastName) return lastName;
 }
+
+async function getDisplayNameAsync() {
+  const savedData = await dbService.getFirstData(LocalDBName.user);
+  // __DEV__ && console.log('getDisplayName', `savedData=`, savedData);
+  return (
+    savedData.firstName +
+    (savedData.lastName && savedData.firstName ? ' ' : '') +
+    savedData.lastName
+  ).trim();
+}
+
 class CustomVariables {
   static userEventFlag = false;
 }
 
 function onUserEvent(notifExtraData, appStore, userStore, action, content) {
   let noti = null;
-  let user = getDisplayName(userStore);
   let title = 'CMS User.';
   let isContent = false;
   let logout = false;
   let refresh = false;
+  let user = getDisplayName(userStore);
   __DEV__ &&
     console.log('onUserEvent', `userStore.user=${userStore && userStore.user}`);
   __DEV__ && console.log('onUserEvent', `content=${JSON.stringify(content)}`);
@@ -52,6 +64,7 @@ function onUserEvent(notifExtraData, appStore, userStore, action, content) {
       'onUserEvent',
       `notifExtraData=${JSON.stringify(notifExtraData)}`
     );
+
   switch (action) {
     case NOTIFY_ACTION.EDIT:
     case NOTIFY_ACTION.REFRESH:
@@ -100,6 +113,61 @@ function onUserEvent(notifExtraData, appStore, userStore, action, content) {
   return noti;
 }
 
+async function onUserEventAsync(
+  notifExtraData,
+  appStore,
+  userStore,
+  action,
+  content
+) {
+  let noti = null;
+  let title = 'CMS User.';
+  let isContent = false;
+  let logout = false;
+  let refresh = false;
+  __DEV__ && console.log(`getDisplayName onUserEventAsync = `);
+  let user = await getDisplayNameAsync();
+
+  switch (action) {
+    case NOTIFY_ACTION.EDIT:
+    case NOTIFY_ACTION.REFRESH:
+      noti = {
+        body: user + ' has updated.',
+      };
+      refresh = true;
+      break;
+    case NOTIFY_ACTION.DELETE:
+      noti = {
+        body: user + ' has deleted.',
+      };
+      logout = true;
+      break;
+    case NOTIFY_ACTION.LOG_OUT:
+      logout = true;
+      noti = {
+        body: user + ' has expired.',
+      };
+      break;
+    case NOTIFY_ACTION.PWD_CHANGE:
+      logout = true;
+      noti = {
+        body: user + "'s login info has changed.",
+      };
+      break;
+
+    default:
+      isContent = true;
+      noti = {
+        body: user + "'s profile has changed.",
+      };
+      break;
+  }
+  noti.title = title;
+  noti.isContent = isContent;
+  noti.id = 'user_notify';
+  return noti;
+}
+
 function onOpenUserEvent(appStore, userStore, naviService, action, content) {
   __DEV__ && console.log(`onOpenUserEvent action = `, action);
   if (action == NOTIFY_ACTION.USER_PERMISSION_REFRESH) {
@@ -117,6 +185,7 @@ function onOpenUserEvent(appStore, userStore, naviService, action, content) {
 
 module.exports = {
   onUserEvent,
+  onUserEventAsync,
   onOpenUserEvent,
   CustomVariables,
 };

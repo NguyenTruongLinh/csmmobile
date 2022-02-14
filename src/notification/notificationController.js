@@ -10,7 +10,7 @@ import {DateTime} from 'luxon';
 import {onVideoNotifEvent} from './video';
 import {onAlarmEvent, onOpenAlarmEvent} from './alarm';
 import {onPVMEvent, onOpenPVMEvent} from './pvm';
-import {onUserEvent, onOpenUserEvent} from './user';
+import {onUserEvent, onUserEventAsync, onOpenUserEvent} from './user';
 import {onSiteEvent} from './site';
 import {
   onAlertEvent,
@@ -310,13 +310,34 @@ class NotificationController extends React.Component {
           id: data.msg_id,
           data: {type, action, content},
         };
-        notif = onUserEvent(
-          notifExtraData,
-          appStore,
-          userStore,
-          action,
-          content
-        );
+        if (userStore)
+          notif = onUserEvent(
+            notifExtraData,
+            appStore,
+            userStore,
+            action,
+            content
+          );
+        else {
+          let notifPromise = onUserEventAsync(
+            notifExtraData,
+            appStore,
+            userStore,
+            action,
+            content
+          );
+          notifPromise.then(notif =>
+            NotificationController.onNotifReady(
+              notif,
+              messageId,
+              data,
+              type,
+              action,
+              content,
+              userStore
+            )
+          );
+        }
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
         __DEV__ && console.log('GOND ALERT_TYPE content = : ', content);
