@@ -47,6 +47,7 @@ class SitesView extends Component {
       isLoadingRegardlessStep: true,
       listHeight: 0,
       isHealthRoute: route.name == ROUTERS.HEALTH_SITES,
+      refreshOnResume: false,
     };
 
     this.rowRefs = {};
@@ -84,12 +85,13 @@ class SitesView extends Component {
     this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
       if (this.blurFlag) {
         this.blurFlag = false;
-        // this.getData(true);
+        this.setState({refreshOnResume: true});
       }
     });
 
     this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
       this.blurFlag = true;
+      this.setState({refreshOnResume: false});
     });
 
     await this.getData();
@@ -411,6 +413,7 @@ class SitesView extends Component {
             onRefresh={this.getData}
             refreshing={this.state.isLoadingRegardlessStep}
             ListEmptyComponent={noData && this.renderNoData()}
+            extraData={this.state.refreshOnResume}
           />
         </View>
         <AlertDismissModal

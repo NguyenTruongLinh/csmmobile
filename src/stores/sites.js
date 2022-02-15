@@ -306,6 +306,7 @@ export const SitesMapModel = types
     onSitesViewExit() {
       self.siteFilter = '';
       self.selectedRegion = null;
+      self.selectedSite = null;
     },
     onNVRsViewExit() {
       self.dvrFilter = '';
