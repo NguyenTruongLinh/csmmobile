@@ -64,6 +64,7 @@ class HLSStreamingView extends React.Component {
     this.checkTimelineInterval = null;
     this.lastVideoTime = 0;
     this.retryCount = 0;
+    this.firstBuffer = true;
   }
 
   componentDidMount() {
@@ -134,6 +135,7 @@ class HLSStreamingView extends React.Component {
               this.frameTime = 0;
               this.tsIndex = -1;
               this.retryCount = 0;
+              this.firstBuffer = true;
               // if (videoStore.paused) {
               //   this.pause(false);
               // }
@@ -299,10 +301,13 @@ class HLSStreamingView extends React.Component {
     __DEV__ && console.log('GOND HLS onBuffer: ', event);
     const {streamData} = this.props;
     if (event.isBuffering) {
-      // streamData.setStreamStatus({
-      //   connectionStatus: STREAM_STATUS.BUFFERING,
-      //   isLoading: true,
-      // });
+      if (this.firstBuffer) {
+        streamData.setStreamStatus({
+          connectionStatus: STREAM_STATUS.BUFFERING,
+          isLoading: true,
+        });
+        this.firstBuffer = false;
+      }
       // It could cause reconnecting forever
       if (!this.videoBufferTimeout) {
         this.videoBufferTimeout = setTimeout(
@@ -333,7 +338,12 @@ class HLSStreamingView extends React.Component {
 
   onError = ({error}) => {
     if (!this._isMounted) return;
-    __DEV__ && console.log('GOND HLS onError: ', error);
+    __DEV__ &&
+      console.log(
+        'GOND HLS onError ',
+        this.props.streamData.channelName,
+        error
+      );
     const {streamData, isLive, hdMode} = this.props;
     if (this.state.internalLoading) this.setState({internalLoading: false});
     // this.setState({
@@ -594,7 +604,7 @@ class HLSStreamingView extends React.Component {
     if (util.isValidHttpUrl(streamData.streamUrl)) {
       this.retryCount++;
       this.setState({
-        urlParams: '?retry=' + this.retryCount,
+        urlParams: '&v=' + this.retryCount,
       });
     }
   };
@@ -643,9 +653,9 @@ class HLSStreamingView extends React.Component {
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
-        videoStore.paused
+        videoStore.paused,
         // ', status: ',
-        // connectionStatus
+        // streamUrl + urlParams
       );
 
     return (
@@ -715,12 +725,12 @@ class HLSStreamingView extends React.Component {
                   useTextureView={false}
                   disableFocus={true}
                   bufferConfig={{
-                    minBufferMs: 3000,
+                    minBufferMs: 5000,
                     maxBufferMs: 15000,
-                    bufferForPlaybackMs: 2000,
-                    bufferForPlaybackAfterRebufferMs: 2500,
+                    bufferForPlaybackMs: 3000,
+                    bufferForPlaybackAfterRebufferMs: 3000,
                   }}
-                  maxBitRate={singlePlayer ? 0 : 524288} // 1048576
+                  maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
                 />
               ) : null
             }
