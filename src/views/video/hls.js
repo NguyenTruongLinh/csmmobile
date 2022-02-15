@@ -137,7 +137,7 @@ class HLSStreamingView extends React.Component {
               // if (videoStore.paused) {
               //   this.pause(false);
               // }
-              if (!this.props.isLive && singlePlayer && !videoStore.paused) {
+              if (!singlePlayer || this.props.isLive || !videoStore.paused) {
                 __DEV__ && console.log('HLSStreamingView should resume');
                 this.shouldResume = true;
               }
@@ -594,7 +594,7 @@ class HLSStreamingView extends React.Component {
     if (util.isValidHttpUrl(streamData.streamUrl)) {
       this.retryCount++;
       this.setState({
-        streamUrl: streamData.streamUrl + '?retry=' + this.retryCount,
+        urlParams: '?retry=' + this.retryCount,
       });
     }
   };
