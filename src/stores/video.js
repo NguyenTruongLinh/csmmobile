@@ -2322,7 +2322,7 @@ export const VideoModel = types
           __DEV__ && console.log('GOND HLS Timeline from notif: ', data);
         }
 
-        if (!jTimeStamp || jTimeStamp.length == 0) {
+        if (!jTimeStamp || jTimeStamp.length == 0 || !jTimeStamp[0]) {
           __DEV__ &&
             console.log('GOND get HLS data Timeline no data: ', jTimeStamp);
           self.setNoVideo(true);
@@ -2544,25 +2544,31 @@ export const VideoModel = types
         self.isPreloadStream = isPreload;
         self.kDVR = alertData.kDVR;
         self.isLive = isLive;
-        // self.isSingleMode = true;
-        if (alertData.searchTime) {
-          const dtObj = DateTime.fromISO(alertData.searchTime, {
+        let searchTime = alertData.searchTime ?? alertData.timezone;
+        if (searchTime) {
+          const dtObj = DateTime.fromISO(searchTime, {
             zone: 'utc',
             setZone: true,
           });
+          // __DEV__ && console.log('GOND onAlertPlay searchTime: ', dtObj);
           if (dtObj.isValid)
             self.searchPlayTime = dtObj.toFormat(
               NVRPlayerConfig.RequestTimeFormat
             );
-          else self.searchPlayTime = alertData.searchTime;
+          else self.searchPlayTime = searchTime;
+          // __DEV__ && console.log('GOND onAlertPlay 2: ', self.searchPlayTime);
 
           // }
-          self.searchDate = DateTime.fromISO(alertData.searchTime, {
+          self.searchDate = DateTime.fromISO(searchTime, {
             zone: 'utc',
-          }).startOf('day');
+          })
+            .setZone(self.timezone, {keepLocalTime: true})
+            .startOf('day');
+          // __DEV__ && console.log('GOND onAlertPlay 3: ', self.searchDate);
         } else {
+          // __DEV__ && console.log('GOND onAlertPlay 4: ', self.timezoneName);
           self.searchDate = self.timezoneName
-            ? DateTime.now().setZone(self.searchTime).startOf('day')
+            ? DateTime.now().setZone(self.timezoneName).startOf('day')
             : DateTime.now().startOf('day');
         }
         yield self.getDisplayingChannels();

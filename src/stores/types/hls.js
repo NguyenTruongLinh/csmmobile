@@ -271,7 +271,7 @@ export default HLSStreamModel = types
     // },
     startConnection: flow(function* (info, cmd) {
       self.retryRemaining = MAX_RETRY;
-      self.getHLSStreamUrl(info, cmd);
+      return self.getHLSStreamUrl(info, cmd);
     }),
     getHLSStreamUrl: flow(function* (info, cmd) {
       if (info) self.setAWSInfo(info);
@@ -388,7 +388,7 @@ export default HLSStreamModel = types
             // self.isWaitingReconnect,
             self.connectionStatus
           );
-        return Promise.resolve(false);
+        return false;
       }
 
       if (
@@ -404,7 +404,7 @@ export default HLSStreamModel = types
             self.streamName,
             self.accessKey
           );
-        return Promise.resolve(true);
+        return true;
       }
       // wait time before another reconnect:
       if (__DEV__) {
@@ -431,7 +431,8 @@ export default HLSStreamModel = types
       // self.scheduleCheckTimeout();
       if (self.retryRemaining > 0) {
         self.retryRemaining--;
-        return self.getHLSStreamUrl(null);
+        self.getHLSStreamUrl(null);
+        return true;
       } else {
         // self.setStreamStatus({
         //   connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
@@ -439,7 +440,7 @@ export default HLSStreamModel = types
         // });
         // self.onStreamError(self.channelNo, self.isLive);
         self.reInitStream();
-        return Promise.resolve(false);
+        return false;
       }
     },
     reInitStream() {

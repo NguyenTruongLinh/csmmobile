@@ -63,6 +63,7 @@ class HLSStreamingView extends React.Component {
     // this.waitingForReconnect = false;
     this.checkTimelineInterval = null;
     this.lastVideoTime = 0;
+    this.retryCount = 0;
   }
 
   componentDidMount() {
@@ -132,10 +133,11 @@ class HLSStreamingView extends React.Component {
               // reset these value everytimes streamUrl changed
               this.frameTime = 0;
               this.tsIndex = -1;
-              if (videoStore.paused) {
-                this.pause(false);
-              }
-              if (!this.props.isLive && singlePlayer) {
+              this.retryCount = 0;
+              // if (videoStore.paused) {
+              //   this.pause(false);
+              // }
+              if (!this.props.isLive && singlePlayer && !videoStore.paused) {
                 __DEV__ && console.log('HLSStreamingView should resume');
                 this.shouldResume = true;
               }
@@ -582,18 +584,23 @@ class HLSStreamingView extends React.Component {
   reconnect = () => {
     const {streamData, isLive, hdMode} = this.props;
 
-    if (!this.videoReconnectTimeout) {
-      streamData.reconnect(isLive, hdMode);
-      this.videoReconnectTimeout = setTimeout(
-        () => (this.videoReconnectTimeout = null),
-        RECONNECT_TIMEOUT
-      );
-    }
+    // if (!this.videoReconnectTimeout) {
+    //   streamData.reconnect(isLive, hdMode);
+    //   this.videoReconnectTimeout = setTimeout(
+    //     () => (this.videoReconnectTimeout = null),
+    //     RECONNECT_TIMEOUT
+    //   );
+    // }
+    this.retryCount++;
+    this.setState({
+      streamUrl: streamData.streamUrl + '?retry=' + this.retryCount,
+    });
   };
 
   stop = () => {
     const {streamData, videoStore} = this.props;
     this.setState({streamUrl: ''});
+    this.retryCount = 0;
     streamData &&
       streamData.targetUrl &&
       videoStore.stopHLSStream(streamData.channelNo, streamData.targetUrl.sid);

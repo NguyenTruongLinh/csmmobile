@@ -67,6 +67,7 @@ class DirectVideoView extends React.Component {
     this.pendingCommand = null;
     // this.isViewable = false;
     this.noPermission = false;
+    this.savedPos = null;
   }
 
   componentDidMount() {
@@ -984,8 +985,12 @@ class DirectVideoView extends React.Component {
         // });
 
         __DEV__ &&
-          console.log('GOND unpause this.lastFrameTime = ', this.lastFrameTime);
-        if (this.lastFrameTime && !isLive) {
+          console.log('GOND unpause this.lastFrameTime: ', this.lastFrameTime);
+        videoStore.pause(false);
+        if (this.savedPos && !isLive) {
+          this.playAt(this.savedPos);
+          this.savedPos = null;
+        } else if (this.lastFrameTime && !isLive) {
           this.playAt(
             this.lastFrameTime.toSeconds() -
               this.lastFrameTime.startOf('day').toSeconds()
@@ -999,7 +1004,6 @@ class DirectVideoView extends React.Component {
             },
           });
         }
-        videoStore.pause(false);
       }
     }
   };
@@ -1013,14 +1017,19 @@ class DirectVideoView extends React.Component {
     const {isLive, videoStore} = this.props;
     if (isLive) return;
     __DEV__ && console.log('GOND direct playAt: ', value);
-    if (this.ffmpegPlayer) {
-      this.ffmpegPlayer.setNativeProps({
-        seekpos: {pos: value, hd: videoStore.hdMode},
-      });
-      this.lastTimestamp = 0;
-      // setTimeout(() => this.ffmpegPlayer && this.pause(false), 200);
+    if (videoStore.paused) {
+      this.savedPos = value;
     } else {
-      __DEV__ && console.log('GOND direct playAt ffmpegPlayer not available!');
+      if (this.ffmpegPlayer) {
+        this.ffmpegPlayer.setNativeProps({
+          seekpos: {pos: value, hd: videoStore.hdMode},
+        });
+        this.lastTimestamp = 0;
+        // setTimeout(() => this.ffmpegPlayer && this.pause(false), 200);
+      } else {
+        __DEV__ &&
+          console.log('GOND direct playAt ffmpegPlayer not available!');
+      }
     }
   };
 
