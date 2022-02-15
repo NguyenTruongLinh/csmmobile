@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
   alertThumbGrid: {
     width: 150,
     height: 145,
-    resizeMode: 'contain',
+    resizeMode: 'cover',
   },
   backRowRipple: {
     flex: 1,
