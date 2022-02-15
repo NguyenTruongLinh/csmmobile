@@ -355,7 +355,8 @@ class HLSStreamingView extends React.Component {
       this.lastSearchTime = this.computeTime(this.frameTime);
 
     if (error.domain == 'CoreMediaErrorDomain') {
-      return;
+      __DEV__ && console.log('GOND HLS CoreMediaErrorDomain');
+      // return;
     }
     if (error.domain == 'NSURLErrorDomain') {
       streamData.reInitStream();
@@ -653,7 +654,7 @@ class HLSStreamingView extends React.Component {
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
-        videoStore.paused,
+        videoStore.paused
         // ', status: ',
         // streamUrl + urlParams
       );
