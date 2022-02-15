@@ -490,7 +490,7 @@ class Api {
       return;
     }
 
-    const fileName = url.split('/').pop();
+    let fileName = url.split('/').pop();
     __DEV__ &&
       console.log(
         'GOND downloading file fileName endsWith MP4 = ',
