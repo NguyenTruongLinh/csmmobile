@@ -591,10 +591,12 @@ class HLSStreamingView extends React.Component {
     //     RECONNECT_TIMEOUT
     //   );
     // }
-    this.retryCount++;
-    this.setState({
-      streamUrl: streamData.streamUrl + '?retry=' + this.retryCount,
-    });
+    if (util.isValidHttpUrl(streamData.streamUrl)) {
+      this.retryCount++;
+      this.setState({
+        streamUrl: streamData.streamUrl + '?retry=' + this.retryCount,
+      });
+    }
   };
 
   stop = () => {
