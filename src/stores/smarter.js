@@ -272,11 +272,11 @@ const PaymentTaxModel = types.model({
 
 const parsePaymentTaxData = _data =>
   PaymentTaxModel.create({
-    id: _data.Id,
-    name: _data.Name,
+    id: _data.Id ?? 0,
+    name: _data.Name ?? '',
     amount: _data.Ammount ?? 0,
-    isHighlightName: _data.IsHighlightName,
-    isHighlightValue: _data.IsHighlightValue,
+    isHighlightName: _data.IsHighlightName ?? false,
+    isHighlightValue: _data.IsHighlightValue ?? false,
     color: _data.Color,
   });
 

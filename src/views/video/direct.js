@@ -175,7 +175,7 @@ class DirectVideoView extends React.Component {
                 'GOND direct selectedChannel reaction 1: ',
                 newChannelNo
               );
-            if (/*newChannelNo == null ||*/ previousValue == null) return;
+            if (newChannelNo == null || previousValue == null) return;
             // this.setNative({refresh: true}, true);
 
             // this.props.serverInfo.setStreamStatus({
