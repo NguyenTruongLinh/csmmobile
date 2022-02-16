@@ -671,6 +671,10 @@ class RTCStreamingView extends Component {
     // }, 100);
   };
 
+  onChangeSearchDate = () => {};
+
+  onBeginDraggingTimeline = () => {};
+
   render() {
     const {
       remoteStream,

@@ -101,6 +101,7 @@ export const VIDEO = {
   SELECT_CHANNEL_2: ' to select channels',
   NO_PERMISSION: "You don't have VSC permission",
   NO_VIDEO_COME: 'No incoming video',
+  CANNOT_CONNECT: 'Cannot connect to NVR',
 };
 
 export const STREAM_STATUS = {

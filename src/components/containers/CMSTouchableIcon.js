@@ -172,7 +172,8 @@ class CMSTouchableIcon extends React.Component {
         disabled={disabled ? disabled : false}
         rippleCentered={true}
         rippleOpacity={numOpacity}
-        onPress={this.onPress}>
+        onPress={this.onPress}
+        style={{width: styles.width, height: styles.height}}>
         {content}
       </Ripple>
     );

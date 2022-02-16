@@ -1056,6 +1056,22 @@ export const VideoModel = types
           // TODO: update searchDate
         }
       },
+      checkTimeOnTimeline(value) {
+        __DEV__ && console.log('GOND checkTimeOnTimeline 0 ', self.timeline);
+        for (let i = 0; i < self.timeline.length; i++) {
+          if (value <= self.timeline[i].end) {
+            __DEV__ &&
+              console.log(
+                'GOND checkTimeOnTimeline ',
+                value,
+                self.timeline[i].end,
+                value - self.timeline[i].end
+              );
+            return true;
+          }
+        }
+        return false;
+      },
       setTimeline(value) {
         // if (TimelineModel.is(value)) {
         //   self.timeline = TimelineModel.create(getSnapshot(value));
@@ -1079,6 +1095,7 @@ export const VideoModel = types
             type: numberValue(item.type),
           })
         );
+        // .sort((x, y) => x.begin - y.begin);
         // __DEV__ && console.log('GOND after settimeline ', self.timeline);
       },
       setHoursOfDay(value) {
@@ -1113,9 +1130,10 @@ export const VideoModel = types
         const lastValue = self.isLive;
 
         self.setNoVideo(false);
-        if (!nextIsLive && self.cloudType == CLOUD_TYPE.DIRECTION) {
+        if (!nextIsLive) {
           // dongpt: handle different timezone when switching from Live to Search mode
           if (
+            self.cloudType == CLOUD_TYPE.DIRECTION &&
             lastValue === true &&
             self.frameTimeString &&
             self.frameTimeString.length > 0
@@ -1162,6 +1180,10 @@ export const VideoModel = types
                 self.searchDate.toFormat(NVRPlayerConfig.RequestTimeFormat)
               );
           }
+
+          self.setDisplayDateTime(
+            self.searchDate.toFormat(NVRPlayerConfig.FrameFormat)
+          );
         }
         self.isLive = nextIsLive === undefined ? !self.isLive : nextIsLive;
 
@@ -1682,12 +1704,32 @@ export const VideoModel = types
       }),
       getDVRTimezone: flow(function* (channelNo) {
         self.waitForTimezone = true;
-        self.checkTimezoneTimeout = setTimeout(() => {
-          if (self.isInVideoView && self.waitForTimezone) {
-            self.getDVRTimezone(channelNo);
+        let sid = util.getRandomId();
+        self.checkTimezoneTimeout = setTimeout(
+          // () => self.getDVRTimezoneDirectly(sid),
+          () => snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT),
+          HLS_DATA_REQUEST_TIMEOUT * 3
+        ); // 30 secs wait time
+        return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
+      }),
+      getDVRTimezoneDirectly: flow(function* (sid) {
+        if (self.isInVideoView && self.waitForTimezone) {
+          try {
+            const res = yield apiService.get(
+              VSC.controller,
+              1,
+              VSC.getHLSData,
+              {
+                id: sid,
+                cmd: VSCCommandString.TIMEZONE,
+              }
+            );
+            __DEV__ && console.log(`GOND get Timezone dirrectly:`, res);
+            // TODO
+          } catch (err) {
+            console.log('GOND get HLS data Timezone failed: ', err);
           }
-        }, HLS_DATA_REQUEST_TIMEOUT); // 1 min wait time
-        return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo);
+        }
       }),
       getDaylist: flow(function* (channelNo, sid) {
         return yield self.sendVSCCommand(VSCCommand.DAYLIST, channelNo, {
@@ -2101,22 +2143,26 @@ export const VideoModel = types
       // }),
       onHLSInfoResponse(info, cmd) {
         __DEV__ && console.log(`GOND on HLS response ${cmd}: `, info);
-        if (cmd != VSCCommandString.TIMEZONE) {
-          if (!self.hlsStreams || self.hlsStreams.length == 0) return;
-          if (info.status == 'FAIL') {
-            if (self.selectedStream) {
-              const target = self.hlsStreams.find(
-                s => s.targetUrl.sid == info.sid
-              );
-              target && target.reconnect();
-              // target.setStreamStatus({
-              //   isLoading: false,
-              //   connectionStatus: STREAM_STATUS.NOVIDEO,
-              //   error: info.description,
-              // });
-              snackbarUtil.onError(info.description ?? VIDEO_TXT.NO_VIDEO_COME);
-              return;
+        if (info.status == 'FAIL') {
+          if (cmd == VSCCommandString.TIMEZONE) {
+            if (self.hlsStreams.length == 0) {
+              snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
+              self.waitForTimezone = false;
             }
+          } else {
+            if (!self.hlsStreams || self.hlsStreams.length == 0) return;
+            // if (self.selectedStream) {
+            const target = self.hlsStreams.find(
+              s => s.targetUrl.sid == info.sid
+            );
+            target && target.reInitStream();
+            // target.setStreamStatus({
+            //   isLoading: false,
+            //   connectionStatus: STREAM_STATUS.NOVIDEO,
+            //   error: info.description,
+            // });
+            return;
+            // }
           }
         }
 
@@ -2232,6 +2278,18 @@ export const VideoModel = types
                   cmd: VSCCommandString.DAYLIST,
                 }
               );
+              if (!res) {
+                const lastId = self.selectedStream.targetUrl.sid;
+                setTimeout(() => {
+                  if (
+                    !self.isLive &&
+                    self.isInVideoView &&
+                    self.selectedStream.targetUrl.sid == lastId
+                  ) {
+                    self.buildDaylistData(data);
+                  }
+                }, 1000);
+              }
               daysData =
                 typeof res.Data === 'string' ? JSON.parse(res.Data) : res.Data;
             } catch (err) {
@@ -2518,8 +2576,9 @@ export const VideoModel = types
       // onLoginSuccess() {
       //   streamReadyCallback && streamReadyCallback();
       // },
-      onReceiveStreamInfo: flow(function* onReceiveStreamInfo(streamInfo, cmd) {
-        if (!streamInfo) return;
+      onReceiveStreamInfo: flow(function* (streamInfo, cmd) {
+        if (!streamInfo || !self.isInVideoView) return;
+
         __DEV__ && console.log('GOND onReceiveStreamInfo: ', streamInfo);
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:

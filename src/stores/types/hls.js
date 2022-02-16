@@ -355,7 +355,10 @@ export default HLSStreamModel = types
           console.log('GOND Get Streaming Session URL done: ', self.targetUrl);
       } catch (err) {
         __DEV__ &&
-          console.log('GOND HLS Get Streaming Session URL failed: ', err);
+          console.log(
+            'GOND HLS Get Streaming Session URL failed: ',
+            JSON.stringify(err)
+          );
         self.setStreamStatus({
           isLoading: false,
           connectionStatus: STREAM_STATUS.RECONNECTING,
@@ -445,8 +448,16 @@ export default HLSStreamModel = types
     },
     reInitStream() {
       __DEV__ && console.log(`GOND reinit HLS stream: `, self.channelName);
-      self.targetUrl.reset();
-      self.onStreamError(self.channelNo, self.isLive);
+      if (self.retryRemaining > 0) {
+        self.targetUrl.reset();
+        self.onStreamError(self.channelNo, self.isLive);
+        self.retryRemaining--;
+      } else {
+        self.setStreamStatus({
+          connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+          isLoading: false,
+        });
+      }
     },
     scheduleCheckTimeout(time) {
       self.clearStreamTimeout();

@@ -624,12 +624,24 @@ class LiveChannelsView extends React.Component {
   };
 
   renderInfoText = () => {
-    const {userStore} = this.props;
+    const {userStore, navigation} = this.props;
 
     return userStore.hasPermission(MODULE_PERMISSIONS.VSC) ? (
       <View style={styles.infoTextContainer}>
         <Text>{VIDEO_TXT.SELECT_CHANNEL_1}</Text>
-        <IconCustom name="add-cam" size={22} color={CMSColors.ColorText} />
+        <CMSTouchableIcon
+          size={22}
+          onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
+          color={CMSColors.ColorText}
+          styles={{
+            flex: 1,
+            width: 40,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          iconCustom="add-cam"
+        />
         <Text>{VIDEO_TXT.SELECT_CHANNEL_2}</Text>
       </View>
     ) : (

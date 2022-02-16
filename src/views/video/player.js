@@ -399,6 +399,8 @@ class VideoPlayerView extends Component {
     } else {
       this.setState({showCalendar: false});
     }
+
+    this.playerRef && this.playerRef.onChangeSearchDate(value);
   };
 
   onSetSearchTime = (hours, minutes, seconds) => {
@@ -463,10 +465,13 @@ class VideoPlayerView extends Component {
       this.setState({showController: true}, () => {
         __DEV__ && console.log('GOND onShowControlButtons already showed');
         if (this.controllerTimeout) clearTimeout(this.controllerTimeout);
-        this.controllerTimeout = setTimeout(() => {
-          __DEV__ && console.log('GOND onShowControlButtons hidden');
-          if (this._isMounted) this.setState({showController: false});
-        }, CONTROLLER_TIMEOUT);
+        this.controllerTimeout = setTimeout(
+          () => {
+            __DEV__ && console.log('GOND onShowControlButtons hidden');
+            if (this._isMounted) this.setState({showController: false});
+          },
+          __DEV__ ? 10000 : CONTROLLER_TIMEOUT
+        );
       });
     }
   };
@@ -489,14 +494,15 @@ class VideoPlayerView extends Component {
       console.log(
         'GOND onTimeline sliding end: ',
         value,
+        searchDate ?? DateTime.now().setZone(timezone).startOf('day'),
         destinationTime,
         timeline[timeline.length - 1],
         destinationTime >= timeline[timeline.length - 1].end
       );
 
     if (
-      timeline.length > 0 &&
-      destinationTime >= timeline[timeline.length - 1].end
+      // timeline.length > 0 &&
+      !videoStore.checkTimeOnTimeline(destinationTime)
     ) {
       // this.playerRef && this.playerRef.stop();
       __DEV__ && console.log('GOND onTimeline sliding end: AAAAAAAA');
@@ -749,9 +755,9 @@ class VideoPlayerView extends Component {
   };
 
   renderControlButtons = () => {
-    if (!this.state.showController) {
-      return null;
-    }
+    // if (!this.state.showController) {
+    //   return null;
+    // }
 
     const {videoStore} = this.props;
     const {
@@ -762,13 +768,13 @@ class VideoPlayerView extends Component {
       noVideo,
       selectedStream,
     } = videoStore;
-    const {sHeight} = this.state;
+    const {sHeight, showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
 
     return (
       <View style={styles.controlsContainer}>
         <View style={styles.controlButtonContainer}>
-          {selectedChannelIndex > 0 ? (
+          {showController && selectedChannelIndex > 0 ? (
             <IconCustom
               name="keyboard-left-arrow-button"
               size={IconSize}
@@ -789,7 +795,8 @@ class VideoPlayerView extends Component {
           this.playerRef &&
           !noVideo &&
           selectedStream &&
-          !selectedStream.isLoading ? (
+          !selectedStream.isLoading &&
+          (showController || paused) ? (
             <IconCustom
               name={paused ? 'play' : 'pause'}
               size={IconSize + 4}
@@ -803,7 +810,8 @@ class VideoPlayerView extends Component {
           ) : null}
         </View>
         <View style={styles.controlButtonContainer}>
-          {selectedChannelIndex < displayChannels.length - 1 ? (
+          {showController &&
+          selectedChannelIndex < displayChannels.length - 1 ? (
             <IconCustom
               name="keyboard-right-arrow-button"
               size={IconSize}
@@ -927,7 +935,8 @@ class VideoPlayerView extends Component {
             }}
             // onPauseVideoScrolling={() => this.setState({pause: true})}
             onPauseVideoScrolling={() =>
-              this.playerRef && this.playerRef.pause(true)
+              // this.playerRef && this.playerRef.pause(true)
+              this.playerRef && this.playerRef.onBeginDraggingTimeline()
             }
             setShowHideTimeOnTimeRule={value => {
               this.timeOnTimeline && this.timeOnTimeline.setShowHide(value);

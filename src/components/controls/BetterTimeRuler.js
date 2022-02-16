@@ -592,7 +592,7 @@ export default class TimeRuler extends PureComponent {
   _onScrollBeginDrag = event => {
     __DEV__ && console.log('GOND === TimeRuler _onScrollBeginDrag');
     this.isManualScrolling = true;
-    this.props.onPauseVideoScrolling();
+    this.props.onPauseVideoScrolling && this.props.onPauseVideoScrolling();
     this.props.setShowHideTimeOnTimeRule(true);
   };
 

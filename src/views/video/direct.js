@@ -233,10 +233,10 @@ class DirectVideoView extends React.Component {
               backgroundColor: cmscolors.Success,
             });
             if (this.noPermission) {
-              this.stop();
-              setTimeout(() => this.setNativePlayback(true), 200);
               this.noPermission = false;
-            } else this.setNativePlayback(true);
+            } //else this.setNativePlayback();
+            this.stop();
+            setTimeout(() => this.setNativePlayback(), 500);
             // }
           }
         ),
@@ -915,6 +915,14 @@ class DirectVideoView extends React.Component {
     }
   };
 
+  onChangeSearchDate = () => {};
+
+  onBeginDraggingTimeline = () => {
+    if (!this.props.videoStore.paused) {
+      this.setNative({pause: true});
+    }
+  };
+
   setPlayStatus = params => {
     if (params.startplayback) {
       this.isPlaying = true;
@@ -966,6 +974,10 @@ class DirectVideoView extends React.Component {
 
   pause = value => {
     const {serverInfo, isLive, videoStore, hdMode} = this.props;
+    // if (__DEV__) {
+    //   console.log('GOND Direct pause: ', value ?? true);
+    //   console.trace();
+    // }
 
     if (this._isMounted /*&& this.ffmpegPlayer*/ && serverInfo /*.server*/) {
       if (value === true || value == undefined) {
