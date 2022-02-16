@@ -536,7 +536,8 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND get getVAConfigs error: ', err);
       }
     }),
-    getAlarms: flow(function* (params, isSearch) {
+    getAlarms: flow(function* (params, isSearch, debug = 'fromList') {
+      __DEV__ && console.log(`getAlarms debug = `, debug);
       if (params) self.lastParams = params;
       self.isSearch = isSearch ?? self.isSearch;
 
@@ -657,16 +658,40 @@ export const AlarmModel = types
       self.isLoading = false;
     }),
     // #region on notification events
-    onAlarmNotification(data) {
+    onAlarmNotification: flow(function* (data) {
       try {
-        __DEV__ && console.log(` onAlarmNotification = `, JSON.stringify(data));
         self.notifiedAlarm = parseAlarmData(data);
-        return self.selectAlarm(self.notifiedAlarm, true);
+        self.selectAlarm(self.notifiedAlarm, true);
+        if (Array.isArray(data.SnapShot) && data.SnapShot.length == 0) {
+          yield self.getAlarms(self.lastParams, false, 'fromNotification');
+          const matched = self.liveRawAlarms.find(
+            alarm => alarm.KAlertEvent === data.KAlertEvent
+          );
+          // const matched = self.liveRawAlarms.find(alarm => {
+          //   __DEV__ &&
+          //     console.log(`getAlarms find alarm = `, JSON.stringify(alarm));
+          //   return (
+          //     Array.isArray(alarm.SnapShot) &&
+          //     alarm.SnapShot.length > 0 &&
+          //     alarm.SnapShot.find(snapShot => '' + snapShot.FileName.length > 0)
+          //   );
+          // });
+          if (matched) {
+            __DEV__ &&
+              console.log(
+                `getAlarms matched.KAlertEvent = `,
+                matched.KAlertEvent
+              );
+            self.notifiedAlarm = parseAlarmData(matched);
+          }
+          self.selectAlarm(self.notifiedAlarm, true);
+          self.selectedAlarm.loadSnapshotImages();
+        }
       } catch (ex) {
         __DEV__ &&
           console.log('GOND parse notification alarm data failed: ', ex);
       }
-    },
+    }),
     // #endregion on notification events
     onExitAlarmDetail() {
       if (self.notifiedAlarm == null) self.selectedAlarm = null;
