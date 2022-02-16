@@ -386,7 +386,6 @@ class AlarmItem extends React.Component {
             }}>
             <View style={{flex: 0.6}}>{site}</View>
             <View style={{flex: 0.4}}>{nvrname}</View>
-            {/* <Text>{data.index}</Text> */}
           </View>
         </View>
       </View>
