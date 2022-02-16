@@ -128,7 +128,6 @@ const AlarmData = types
     channelNo: types.number,
     alertType: types.string,
     chanMask: types.maybeNull(types.frozen(BigNumber)),
-    index: types.number,
   })
   .volatile(self => ({
     thumb: null,
@@ -312,7 +311,7 @@ const AlarmData = types
     },
   }));
 
-export const parseAlarmData = (item, index) =>
+export const parseAlarmData = item =>
   AlarmData.create({
     // id: util.getRandomId(),
     kAlertEvent: item.KAlertEvent,
@@ -387,7 +386,6 @@ export const parseAlarmData = (item, index) =>
     channelNo: parseInt(item.Channel),
     alertType: item.AlertType,
     chanMask: item.ChanMask ? BigNumber(item.ChanMask) : null,
-    index: index,
   });
 
 const makeItemSnapshot = item => {
@@ -577,7 +575,7 @@ export const AlarmModel = types
           let pageRawData = res.slice(0, PAGE_LENGTH);
           const pageData = pageRawData.map((item, index) => {
             makeItemSnapshot(item);
-            const alarm = parseAlarmData(item, index);
+            const alarm = parseAlarmData(item);
             return alarm;
           });
           if (self.isSearch) {
@@ -607,7 +605,7 @@ export const AlarmModel = types
         ).slice(currentPage * PAGE_LENGTH, (currentPage + 1) * PAGE_LENGTH);
         const pageData = rawPageData.map((item, index) => {
           makeItemSnapshot(item);
-          const alarm = parseAlarmData(item, currentPage * PAGE_LENGTH + index);
+          const alarm = parseAlarmData(item);
           return alarm;
         });
         if (self.isSearch) {
@@ -661,6 +659,7 @@ export const AlarmModel = types
     // #region on notification events
     onAlarmNotification(data) {
       try {
+        __DEV__ && console.log(` onAlarmNotification = `, JSON.stringify(data));
         self.notifiedAlarm = parseAlarmData(data);
         return self.selectAlarm(self.notifiedAlarm, true);
       } catch (ex) {
