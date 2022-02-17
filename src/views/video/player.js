@@ -767,6 +767,7 @@ class VideoPlayerView extends Component {
       paused,
       noVideo,
       selectedStream,
+      timeline,
     } = videoStore;
     const {sHeight, showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
@@ -796,7 +797,7 @@ class VideoPlayerView extends Component {
           !noVideo &&
           selectedStream &&
           !selectedStream.isLoading &&
-          (showController || paused) ? (
+          (showController || (paused && timeline && timeline.length > 0)) ? (
             <IconCustom
               name={paused ? 'play' : 'pause'}
               size={IconSize + 4}

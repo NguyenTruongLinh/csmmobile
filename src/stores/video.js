@@ -779,6 +779,9 @@ export const VideoModel = types
           console.log('GOND selected Channel: ', getSnapshot(foundChannel));
 
         self.setNoVideo(false);
+        if (self.timeline && self.timeline.length > 0) {
+          self.timeline = [];
+        }
 
         if (self.cloudType == CLOUD_TYPE.HLS && !self.isAlertPlay) {
           // reset previous channel status: Grzzz
@@ -905,6 +908,9 @@ export const VideoModel = types
         __DEV__ && console.log('GOND setSearchDate ', value, format);
         if (typeof value == 'string') {
           self.setNoVideo(false);
+          if (self.timeline && self.timeline.length > 0) {
+            self.timeline = [];
+          }
           try {
             self.searchDate = DateTime.fromFormat(
               value,
@@ -970,7 +976,7 @@ export const VideoModel = types
           console.log('&&& GOND recordingDates = ', self.recordingDates);
       },
       buildTimezoneData(data) {
-        self.waitForTimezone = false;
+        self.stopWaitTimezone();
         // __DEV__ && console.log('GOND buildTimezoneData');
 
         if (self.dvrTimezone && self.timezoneName) {
@@ -1128,6 +1134,9 @@ export const VideoModel = types
       switchLiveSearch(nextIsLive, startStream = false) {
         // console.trace();
         const lastValue = self.isLive;
+        if (self.timeline && self.timeline.length > 0) {
+          self.timeline = [];
+        }
 
         self.setNoVideo(false);
         if (!nextIsLive) {
@@ -1702,12 +1711,22 @@ export const VideoModel = types
         }
         return true;
       }),
+      stopWaitTimezone() {
+        self.waitForTimezone = false;
+        if (self.checkTimezoneTimeout) {
+          clearTimeout(self.checkTimezoneTimeout);
+          self.checkTimezoneTimeout = null;
+        }
+      },
       getDVRTimezone: flow(function* (channelNo) {
         self.waitForTimezone = true;
         let sid = util.getRandomId();
         self.checkTimezoneTimeout = setTimeout(
           // () => self.getDVRTimezoneDirectly(sid),
-          () => snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT),
+          () => {
+            snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
+            self.stopWaitTimezone();
+          },
           HLS_DATA_REQUEST_TIMEOUT * 3
         ); // 30 secs wait time
         return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
@@ -2147,7 +2166,7 @@ export const VideoModel = types
           if (cmd == VSCCommandString.TIMEZONE) {
             if (self.hlsStreams.length == 0) {
               snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
-              self.waitForTimezone = false;
+              self.stopWaitTimezone();
             }
           } else {
             if (!self.hlsStreams || self.hlsStreams.length == 0) return;
@@ -2183,10 +2202,6 @@ export const VideoModel = types
             __DEV__ && console.log(`GOND on HLS response TZ 1`);
             if (typeof info == 'object' && info.Bias && info.StandardName) {
               __DEV__ && console.log(`GOND on HLS response TZ 2`);
-              if (self.checkTimezoneTimeout) {
-                clearTimeout(self.checkTimezoneTimeout);
-                self.checkTimezoneTimeout = null;
-              }
               self.buildTimezoneData(info);
             }
             break;
@@ -2698,14 +2713,14 @@ export const VideoModel = types
       releaseHLSStreams() {
         self.hlsStreams.forEach(s => {
           s.release();
-          util.isValidHttpUrl(s.liveUrl.url) &&
-            self.stopHLSStream(s.channelNo, s.liveUrl.sid, true);
-          util.isValidHttpUrl(s.liveHDUrl.url) &&
-            self.stopHLSStream(s.channelNo, s.liveHDUrl.sid, true);
-          util.isValidHttpUrl(s.searchUrl.url) &&
-            self.stopHLSStream(s.channelNo, s.searchUrl.sid, true);
-          util.isValidHttpUrl(s.searchHDUrl.url) &&
-            self.stopHLSStream(s.channelNo, s.searchHDUrl.sid, true);
+          // util.isValidHttpUrl(s.liveUrl.url) &&
+          //   self.stopHLSStream(s.channelNo, s.liveUrl.sid, true);
+          // util.isValidHttpUrl(s.liveHDUrl.url) &&
+          //   self.stopHLSStream(s.channelNo, s.liveHDUrl.sid, true);
+          // util.isValidHttpUrl(s.searchUrl.url) &&
+          //   self.stopHLSStream(s.channelNo, s.searchUrl.sid, true);
+          // util.isValidHttpUrl(s.searchHDUrl.url) &&
+          //   self.stopHLSStream(s.channelNo, s.searchHDUrl.sid, true);
         });
         self.hlsStreams = [];
       },
@@ -2723,18 +2738,6 @@ export const VideoModel = types
             self.directConnection && self.directConnection.reset();
             break;
           case CLOUD_TYPE.HLS:
-            // self.hlsStreams.forEach(s => {
-            //   s.release();
-            //   util.isValidHttpUrl(s.liveUrl.url) &&
-            //     self.stopHLSStream(s.channelNo, s.liveUrl.sid);
-            //   util.isValidHttpUrl(s.liveHDUrl.url) &&
-            //     self.stopHLSStream(s.channelNo, s.liveHDUrl.sid);
-            //   util.isValidHttpUrl(s.searchUrl.url) &&
-            //     self.stopHLSStream(s.channelNo, s.searchUrl.sid);
-            //   util.isValidHttpUrl(s.searchHDUrl.url) &&
-            //     self.stopHLSStream(s.channelNo, s.searchHDUrl.sid);
-            // });
-            // self.hlsStreams = [];
             self.releaseHLSStreams();
             break;
           case CLOUD_TYPE.RTC:

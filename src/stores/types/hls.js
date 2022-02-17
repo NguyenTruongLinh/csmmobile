@@ -13,6 +13,9 @@ import {
 } from '@aws-sdk/client-kinesis-video-archived-media';
 import ChannelModel from './channel';
 
+import apiService from '../../services/api';
+import {VSC} from '../../consts/apiRoutes';
+
 import util from '../util/general';
 import {
   DEFAULT_REGION,
@@ -23,6 +26,7 @@ import {
 import {STREAM_STATUS} from '../../localization/texts';
 
 const MAX_RETRY = 3;
+const KEEP_ALIVE_TIMEOUT = 60000;
 
 const HLSURLModel = types
   .model({
@@ -102,6 +106,7 @@ export default HLSStreamModel = types
       console.log('GOND HLS onStreamError is not defined yet!'),
     // timeline: null,
     // timestamps: null,
+    keepAliveInterval: null,
   }))
   .views(self => ({
     get channelNo() {
@@ -156,6 +161,15 @@ export default HLSStreamModel = types
     },
   }))
   .actions(self => ({
+    afterCreate() {
+      setInterval(() => self.updateStreamsStatus(true), KEEP_ALIVE_TIMEOUT);
+    },
+    beforeDestroy() {
+      if (self.keepAliveInterval) {
+        clearInterval(self.keepAliveInterval);
+        self.keepAliveInterval = null;
+      }
+    },
     setLive(isLive) {
       self.isLive = isLive;
     },
@@ -328,8 +342,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -337,9 +351,10 @@ export default HLSStreamModel = types
             },
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
             DiscontinuityMode: HLSDiscontinuityMode.ON_DISCONTINUITY, // temp removed
-            MaxMediaPlaylistFragmentResults: 7,
+            MaxMediaPlaylistFragmentResults: 1000,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(
@@ -462,6 +477,20 @@ export default HLSStreamModel = types
         });
       }
     },
+    updateStreamsStatus(isKeepAlive) {
+      util.isValidHttpUrl(self.liveUrl.url) &&
+        self.updateStream(self.liveUrl.sid, !isKeepAlive);
+      util.isValidHttpUrl(self.liveHDUrl.url) &&
+        self.updateStream(self.liveHDUrl.sid, !isKeepAlive);
+      util.isValidHttpUrl(self.searchUrl.url) &&
+        self.updateStream(self.searchUrl.sid, !isKeepAlive);
+      util.isValidHttpUrl(self.searchHDUrl.url) &&
+        self.updateStream(self.searchHDUrl.sid, !isKeepAlive);
+    },
+    updateStream(sid, isStopped) {
+      __DEV__ && console.log(`GOND on updateStream stopped: `, isStopped, sid);
+      apiService.post(VSC.controller, sid, VSC.updateStream, isStopped);
+    },
     scheduleCheckTimeout(time) {
       self.clearStreamTimeout();
       self.streamTimeout = setTimeout(() => {
@@ -487,5 +516,6 @@ export default HLSStreamModel = types
     release() {
       self.isDead = true;
       self.clearStreamTimeout();
+      self.updateStreamsStatus(false);
     },
   }));

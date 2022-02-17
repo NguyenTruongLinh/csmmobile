@@ -724,7 +724,7 @@ class LiveChannelsView extends React.Component {
           flex: 1,
           backgroundColor: CMSColors.Transparent,
         }}>
-        {this.state.internalLoading && (
+        {this.state.internalLoading || videoStore.waitForTimezone ? (
           <LoadingOverlay
             height={48}
             // backgroundColor={CMSColors.Transparent}
@@ -738,7 +738,7 @@ class LiveChannelsView extends React.Component {
               backgroundColor: CMSColors.Transparent,
             }}
           />
-        )}
+        ) : null}
         <FlatList
           key={'grid_' + videoStore.gridLayout}
           ref={r => (this.videoListRef = r)}
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
   videoListContainer: {flex: 1, flexDirection: 'column'},
   videoRow: {
     flex: 1,
-    borderColor: 'black',
+    borderColor: CMSColors.DarkTheme,
     borderWidth: 1,
   },
   layoutModalContainer: {
