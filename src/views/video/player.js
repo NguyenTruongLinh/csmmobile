@@ -220,30 +220,33 @@ class VideoPlayerView extends Component {
   onOrientationChange = async orientation => {
     const {videoStore} = this.props;
 
-    /*
-    const locked = await getAutoRotateState();
-    __DEV__ && console.log('GOND onOrientationChange, canRotate = ', locked);
-    if (locked) {
-      switch (orientation) {
-        case OrientationType.PORTRAIT:
-          Orientation.lockToPortrait();
-          break;
-        case OrientationType.LANDSCAPE_LEFT:
-          Orientation.lockToLandscapeLeft();
-          break;
-        case OrientationType.LANDSCAPE_RIGHT:
-          Orientation.lockToLandscapeRight();
-          break;
-        case OrientationType.LANDSCAPE:
-          Orientation.lockToLandscape();
-          break;
-        case OrientationType.PORTRAIT_UPSIDE_DOWN:
-          Orientation.lockToPortraitUpsideDown();
-          break;
-      }
-      return;
+    // const locked = await getAutoRotateState();
+    // __DEV__ && console.log('GOND onOrientationChange, canRotate = ', locked);
+    // if (locked) {
+    let isFullscreen = false;
+    switch (orientation) {
+      case OrientationType.PORTRAIT:
+        Orientation.lockToPortrait();
+        break;
+      case OrientationType.LANDSCAPE_LEFT:
+        Orientation.lockToLandscapeLeft();
+        isFullscreen = true;
+        break;
+      case OrientationType.LANDSCAPE_RIGHT:
+        Orientation.lockToLandscapeRight();
+        isFullscreen = true;
+        break;
+      case OrientationType.LANDSCAPE:
+        Orientation.lockToLandscape();
+        isFullscreen = true;
+        break;
+      case OrientationType.PORTRAIT_UPSIDE_DOWN:
+        Orientation.lockToPortraitUpsideDown();
+        break;
     }
-    */
+    this.onFullscreenPress(isFullscreen);
+    return;
+    // }
 
     if (
       [
@@ -347,15 +350,21 @@ class VideoPlayerView extends Component {
     this.setState({sWidth: width, sHeight: height});
   };
 
-  onFullscreenPress = isFullscreen => {
+  onFullscreenPress = (isFullscreen, manually) => {
     const {videoStore} = this.props;
     videoStore.switchFullscreen(isFullscreen);
     this.updateHeader();
-    // if (videoStore.isFullscreen) {
-    //   Orientation.lockToLandscape();
-    // } else {
-    //   Orientation.lockToPortrait();
-    // }
+    if (manually) {
+      if (videoStore.isFullscreen) {
+        Orientation.lockToLandscape();
+      } else {
+        Orientation.lockToPortrait();
+      }
+      // setTimeout(
+      //   () => this._isMounted && Orientation.unlockAllOrientations(),
+      //   500
+      // );
+    }
     StatusBar.setHidden(videoStore.isFullscreen);
   };
 
@@ -899,7 +908,7 @@ class VideoPlayerView extends Component {
               size={IconSize}
               color={CMSColors.White}
               // style={styles.buttonStyle}
-              onPress={() => this.onFullscreenPress()}
+              onPress={() => this.onFullscreenPress(undefined, true)}
             />
           </View>
         )}
