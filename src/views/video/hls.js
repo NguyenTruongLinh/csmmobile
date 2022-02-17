@@ -765,8 +765,8 @@ class HLSStreamingView extends React.Component {
                   bufferConfig={{
                     minBufferMs: 5000,
                     maxBufferMs: 15000,
-                    bufferForPlaybackMs: 3000,
-                    bufferForPlaybackAfterRebufferMs: 3000,
+                    bufferForPlaybackMs: 2500,
+                    bufferForPlaybackAfterRebufferMs: 2500,
                   }}
                   maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
                 />
