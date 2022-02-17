@@ -144,6 +144,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3000010
         versionName "3.0.0"
+        multiDexEnabled true
     }
     splits {
         abi {
@@ -166,6 +167,8 @@ android {
             // keyPassword 'i3dvr'
             storeFile file('../keystores/com.i3international.cmsapp.jks')
             storePassword 'i3@1211'
+            v1SigningEnabled true
+            v2SigningEnabled true
         }
     }
     buildTypes {
@@ -190,8 +193,10 @@ android {
             def versionCodes = ["armeabi-v7a": 1, "x86": 2, "arm64-v8a": 3, "x86_64": 4]
             def abi = output.getFilter(OutputFile.ABI)
             if (abi != null) {  // null for the universal-debug, universal-release variants
+                // output.versionCodeOverride =
+                //         defaultConfig.versionCode * 1000 + versionCodes.get(abi)
                 output.versionCodeOverride =
-                        defaultConfig.versionCode * 1000 + versionCodes.get(abi)
+                        versionCodes.get(abi) * 1048576 + defaultConfig.versionCode
             }
 
         }
