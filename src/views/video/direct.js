@@ -68,6 +68,7 @@ class DirectVideoView extends React.Component {
     // this.isViewable = false;
     this.noPermission = false;
     this.savedPos = null;
+    this.didSubmitLogin = false;
   }
 
   componentDidMount() {
@@ -405,6 +406,7 @@ class DirectVideoView extends React.Component {
       duration: Snackbar.LENGTH_LONG,
       backgroundColor: cmscolors.Success,
     });
+    this.didSubmitLogin = true;
     this.setNativePlayback(
       false,
       userName && password ? {userName, password} : undefined
@@ -599,11 +601,14 @@ class DirectVideoView extends React.Component {
             isLoading: false,
             // connectionStatus: STREAM_STATUS.LOGIN_FAILED,
           });
-          Snackbar.show({
-            text: STREAM_STATUS.LOGIN_FAILED,
-            duration: Snackbar.LENGTH_LONG,
-            backgroundColor: cmscolors.Danger,
-          });
+          if (this.didSubmitLogin) {
+            Snackbar.show({
+              text: STREAM_STATUS.LOGIN_FAILED,
+              duration: Snackbar.LENGTH_LONG,
+              backgroundColor: cmscolors.Danger,
+            });
+            this.didSubmitLogin = false;
+          }
           this.props.videoStore.resetNVRAuthentication();
         }
         if (
@@ -619,6 +624,7 @@ class DirectVideoView extends React.Component {
         break;
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
         __DEV__ && console.log('GOND onDirectVideoMessage: login success');
+        if (this.didSubmitLogin) this.didSubmitLogin = false;
         videoStore.onLoginSuccess();
         // this.props.videoStore.onLoginSuccess();
         // if (!videoStore.isLive && searchPlayTime) {
@@ -1118,14 +1124,8 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      serverInfo,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
+      this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
