@@ -1033,7 +1033,7 @@ export const VideoModel = types
         if (self.searchDate) {
           if (self.searchDate.zone.name != self.timezone)
             self.searchDate = self.searchDate
-              .setZone(self.timezone)
+              .setZone(self.timezone, {keepLocalTime: true})
               .startOf('day');
         } else {
           self.searchDate = DateTime.now()
