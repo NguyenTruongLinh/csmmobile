@@ -149,9 +149,9 @@ class HLSStreamingView extends React.Component {
               this.retryCount = 0;
               this.refreshCount = 0;
               this.firstBuffer = true;
-              // if (videoStore.paused) {
-              //   this.pause(false);
-              // }
+              if (videoStore.paused && this.props.isLive) {
+                this.pause(false);
+              }
               if (!singlePlayer || this.props.isLive || !videoStore.paused) {
                 __DEV__ && console.log('HLSStreamingView should resume');
                 this.shouldResume = true;

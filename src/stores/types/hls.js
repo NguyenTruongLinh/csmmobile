@@ -162,10 +162,15 @@ export default HLSStreamModel = types
   }))
   .actions(self => ({
     afterCreate() {
-      setInterval(() => self.updateStreamsStatus(true), KEEP_ALIVE_TIMEOUT);
+      self.keepAliveInterval = setInterval(
+        () => self.updateStreamsStatus(true),
+        KEEP_ALIVE_TIMEOUT
+      );
     },
     beforeDestroy() {
+      // __DEV__ && console.log('GOND HLS: beforeDestroy ', self.channelName);
       if (self.keepAliveInterval) {
+        // __DEV__ && console.log('GOND HLS: beforeDestroy ... stop interval');
         clearInterval(self.keepAliveInterval);
         self.keepAliveInterval = null;
       }

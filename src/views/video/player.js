@@ -367,6 +367,7 @@ class VideoPlayerView extends Component {
     this.playerRef && this.playerRef.pause(true);
     setTimeout(() => {
       this.channelsScrollView &&
+        videoStore.selectedChannelIndex >= 0 &&
         this.channelsScrollView.scrollToIndex({
           animated: true,
           index: videoStore.selectedChannelIndex,
