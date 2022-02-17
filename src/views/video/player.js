@@ -550,6 +550,14 @@ class VideoPlayerView extends Component {
   onPrevious = () => {
     this.props.videoStore.previousChannel();
   };
+
+  onDraggingTimeRuler = time => {
+    const {videoStore} = this.props;
+
+    this.timeOnTimeline && this.timeOnTimeline.setValue(time);
+    const dateString = videoStore.frameTimeString.split(' - ')[0];
+    videoStore.setDisplayDateTime(dateString + ' - ' + time);
+  };
   //#endregion Event handlers
 
   /**
@@ -941,9 +949,7 @@ class VideoPlayerView extends Component {
                 videoStore.setNoVideo(false);
               }
             }}
-            onScrollBeginDrag={time => {
-              this.timeOnTimeline && this.timeOnTimeline.setValue(time);
-            }}
+            onScrollBeginDrag={this.onDraggingTimeRuler}
             // onPauseVideoScrolling={() => this.setState({pause: true})}
             onPauseVideoScrolling={() =>
               // this.playerRef && this.playerRef.pause(true)
@@ -952,7 +958,6 @@ class VideoPlayerView extends Component {
             setShowHideTimeOnTimeRule={value => {
               this.timeOnTimeline && this.timeOnTimeline.setShowHide(value);
             }}
-            onScroll={() => {}}
             onScrollEnd={this.onTimelineScrollEnd}
           />
         </View>
