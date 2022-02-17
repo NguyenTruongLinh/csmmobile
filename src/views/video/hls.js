@@ -120,13 +120,13 @@ class HLSStreamingView extends React.Component {
             );
           if (!this.props.noVideo && newUrl != this.state.streamUrl) {
             if (util.isValidHttpUrl(newUrl)) {
-              __DEV__ &&
-                console.log(
-                  'HLSStreamingView newURL time: ',
-                  videoStore.searchPlayTimeLuxon,
-                  ', isLive: ',
-                  this.props.isLive
-                );
+              // __DEV__ &&
+              //   console.log(
+              //     'HLSStreamingView newURL time: ',
+              //     videoStore.searchPlayTimeLuxon,
+              //     ', isLive: ',
+              //     this.props.isLive
+              //   );
               this.setState(
                 {
                   streamUrl: newUrl,
@@ -622,7 +622,10 @@ class HLSStreamingView extends React.Component {
 
   reconnect = () => {
     const {streamData, isLive, hdMode} = this.props;
-
+    // if (__DEV__) {
+    //   console.log('GOND ------- HLS reconnect: ');
+    //   console.trace();
+    // }
     // if (!this.videoReconnectTimeout) {
     //   streamData.reconnect(isLive, hdMode);
     //   this.videoReconnectTimeout = setTimeout(
@@ -630,12 +633,17 @@ class HLSStreamingView extends React.Component {
     //     RECONNECT_TIMEOUT
     //   );
     // }
+
     if (util.isValidHttpUrl(streamData.streamUrl)) {
       if (this.retryCount < MAX_RETRY) {
         this.retryCount++;
         this.refreshCount++;
         this.setState({
           urlParams: '&v=' + this.refreshCount,
+        });
+        streamData.setStreamStatus({
+          connectionStatus: STREAM_STATUS.RECONNECTING,
+          isLoading: true,
         });
       } else {
         this.stop();
@@ -644,11 +652,14 @@ class HLSStreamingView extends React.Component {
           isLoading: false,
         });
       }
+    } else {
+      streamData.reInitStream();
     }
   };
 
   stop = () => {
     const {streamData, videoStore} = this.props;
+    if (__DEV__) console.log('GOND HLS onStop |');
     this.setState({streamUrl: ''});
     this.retryCount = 0;
     this.refreshCount = 0;
@@ -691,9 +702,9 @@ class HLSStreamingView extends React.Component {
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
-        videoStore.paused
+        videoStore.paused,
         // ', status: ',
-        // streamUrl + urlParams
+        streamUrl + urlParams
       );
 
     return (

@@ -328,19 +328,18 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
-              FragmentSelectorType: FragmentSelectorType.SERVER_TIMESTAMP,
+              FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
             },
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
-            DiscontinuityMode: HLSDiscontinuityMode.ALWAYS, // temp removed
+            DiscontinuityMode: HLSDiscontinuityMode.ON_DISCONTINUITY, // temp removed
             MaxMediaPlaylistFragmentResults: 7,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ &&
           console.log(
@@ -452,6 +451,10 @@ export default HLSStreamModel = types
         self.targetUrl.reset();
         self.onStreamError(self.channelNo, self.isLive);
         self.retryRemaining--;
+        self.setStreamStatus({
+          connectionStatus: STREAM_STATUS.CONNECTING,
+          isLoading: true,
+        });
       } else {
         self.setStreamStatus({
           connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
