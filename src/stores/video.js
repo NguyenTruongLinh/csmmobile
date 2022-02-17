@@ -2183,6 +2183,10 @@ export const VideoModel = types
             __DEV__ && console.log(`GOND on HLS response TZ 1`);
             if (typeof info == 'object' && info.Bias && info.StandardName) {
               __DEV__ && console.log(`GOND on HLS response TZ 2`);
+              if (self.checkTimezoneTimeout) {
+                clearTimeout(self.checkTimezoneTimeout);
+                self.checkTimezoneTimeout = null;
+              }
               self.buildTimezoneData(info);
             }
             break;
