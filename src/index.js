@@ -14,7 +14,6 @@ import sitesStore from './stores/sites';
 import healthStore from './stores/health';
 import App from './app';
 import NotificationController from './notification/notificationController';
-import {NotAuthorizedException} from '@aws-sdk/client-kinesis-video';
 import {Platform} from 'react-native';
 
 const Main = () => {

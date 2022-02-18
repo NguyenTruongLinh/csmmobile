@@ -385,18 +385,6 @@ class NotificationController extends React.Component {
         break;
       case NOTIFY_TYPE.PVM:
         __DEV__ && console.log('HAI onPVM Notification: content ', content);
-        __DEV__ &&
-          console.log(
-            'HAI onPVM Notification: content.DVRUser =  ',
-            content.DVRUser
-          );
-        __DEV__ &&
-          console.log(
-            'HAI onPVM Notification: content.DVRName =  ',
-            content.DVRName
-          );
-        // if (!content.DVRUser) content.DVRUser = 'null';
-        // if (!content.DVRName) content.DVRName = 'null';
         notif = onPVMEvent(oamStore, action, content, cmd);
         break;
     }
@@ -421,8 +409,6 @@ class NotificationController extends React.Component {
       type,
       action,
       content,
-      // testContent,
-      // type == NOTIFY_TYPE.PVM ? testContent : content,
       userStore
     );
   };
