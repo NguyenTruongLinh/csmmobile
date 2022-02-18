@@ -307,7 +307,7 @@ export const VideoModel = types
     searchEnd: types.maybeNull(types.number),
     staticHoursOfDay: types.maybeNull(types.number),
     forceDstHour: types.maybeNull(types.number),
-
+    isHealthPlay: types.optional(types.boolean, false),
     isAlertPlay: types.optional(types.boolean, false),
     isPreloadStream: types.optional(types.boolean, false),
     currentGridPage: types.optional(types.number, 0),
@@ -446,6 +446,25 @@ export const VideoModel = types
       )
         return self.filteredChannels;
       return self.filteredActiveChannels;
+    },
+    get filteredDisplayChannelTexts() {
+      if (
+        !self.isLive ||
+        self.cloudType == CLOUD_TYPE.DIRECTION ||
+        self.cloudType == CLOUD_TYPE.DEFAULT
+      )
+        return (
+          'self.filteredChannels self.isLive = ' +
+          self.isLive +
+          ' | self.cloudType = ' +
+          self.cloudType
+        );
+      return (
+        'self.filteredActiveChannels self.isLive = ' +
+        self.isLive +
+        ' | self.cloudType = ' +
+        self.cloudType
+      );
     },
     get timezone() {
       if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
@@ -1191,7 +1210,7 @@ export const VideoModel = types
           );
         }
         self.isLive = nextIsLive === undefined ? !self.isLive : nextIsLive;
-
+        __DEV__ && console.log('1 self.isLive = ', self.isLive);
         if (
           self.cloudType == CLOUD_TYPE.HLS &&
           self.isLive != lastValue &&
@@ -1296,9 +1315,12 @@ export const VideoModel = types
         self.updateCurrentDirectChannel();
 
         __DEV__ && console.log('GOND onExitSinglePlayer: ', currentRoute);
-        if (currentRoute != ROUTERS.HEALTH_VIDEO) {
+        if (!self.isHealthPlay) {
+          //currentRoute != ROUTERS.HEALTH_VIDEO
           self.isLive = true;
+          __DEV__ && console.log('2 self.isLive = ', self.isLive);
         }
+        self.isHealthPlay = false;
       },
       updateDirectFrame(channel, frameData) {
         const target = self.directStreams.find(s => s.videoSource == channel);
@@ -2619,6 +2641,7 @@ export const VideoModel = types
         self.isPreloadStream = isPreload;
         self.kDVR = alertData.kDVR;
         self.isLive = isLive;
+        __DEV__ && console.log('3 self.isLive = ', self.isLive);
         let searchTime = alertData.searchTime ?? alertData.timezone;
         if (searchTime) {
           const dtObj = DateTime.fromISO(searchTime, {
@@ -2680,6 +2703,8 @@ export const VideoModel = types
         __DEV__ && console.log('GOND onHealthPlay: ', data);
         self.kDVR = data.kDVR;
         self.isLive = isLive;
+        self.isHealthPlay = true;
+        __DEV__ && console.log('4 self.isLive = ', self.isLive);
         // self.isSingleMode = true;
         if (self.timezoneName) {
           self.searchDate = DateTime.now()
