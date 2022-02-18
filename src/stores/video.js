@@ -321,7 +321,6 @@ export const VideoModel = types
     timeline: [],
     hlsTimestamps: [],
     // selectedHLSStream: null,
-    directTimeDiff: 0,
     waitForTimezone: false,
     checkTimezoneTimeout: null,
     waitForTimeline: false,
@@ -896,9 +895,6 @@ export const VideoModel = types
             self.frameTime = value;
           }
         }
-      },
-      setDirectTimeDiff(value) {
-        self.directTimeDiff = value;
       },
       setDisplayDateTime(value) {
         self.frameTimeString = value;

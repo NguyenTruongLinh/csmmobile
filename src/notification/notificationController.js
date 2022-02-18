@@ -74,6 +74,8 @@ class NotificationController extends React.Component {
     }
 
     // this.testItv && clearInterval(this.testItv);
+    PushNotificationIOS.removeEventListener('register');
+    PushNotificationIOS.removeEventListener('registrationError');
   }
 
   checkPermission = async () => {
@@ -129,6 +131,14 @@ class NotificationController extends React.Component {
 
   createNotificationListeners = async () => {
     const {appStore, alarmStore, videoStore, userStore, oamStore} = this.props;
+
+    PushNotificationIOS.addEventListener('register', newAPNSToken =>
+      userStore.saveToken(undefined, newAPNSToken)
+    );
+
+    PushNotificationIOS.addEventListener('registrationError', error =>
+      console.log('GOND *** IOS Failed to register for notification: ', error)
+    );
 
     messaging().onTokenRefresh(newToken => {
       __DEV__ && console.log('GOND FCM Token has been refreshed: ', newToken);

@@ -225,8 +225,16 @@ const FCMModel = types
   })
   .actions(self => ({
     saveToken(fcmToken, apnsToken) {
-      self.token = fcmToken;
-      self.apnsToken = apnsToken;
+      let saved = false;
+      if (fcmToken && fcmToken != self.token) {
+        self.token = fcmToken;
+        saved = true;
+      }
+      if (apnsToken && apnsToken != self.apnsToken) {
+        self.apnsToken = apnsToken;
+        saved = true;
+      }
+      return saved;
     },
   }));
 
@@ -619,8 +627,7 @@ export const UserStoreModel = types
           ) {
             self.moduleUpdatedFlag = false;
             const prevDisableTabIndexes = self.getDisableTabIndexes();
-            const prevDisableHomeWidgetIndexes =
-              self.getDisableHomeWidgetIndexes();
+            const prevDisableHomeWidgetIndexes = self.getDisableHomeWidgetIndexes();
             self.modules = res.map(item => parseModule(item));
             self.moduleUpdatedFlag =
               JSON.stringify(prevDisableTabIndexes) !=
@@ -857,13 +864,15 @@ export const UserStoreModel = types
       if (!self.fcm) {
         self.fcm = FCMModel.create({token: '', apnsToken: '', serverId: ''});
       }
-      if (self.fcm.token != fcmToken) {
-        __DEV__ && console.log('GOND save token: ', fcmToken);
-        self.fcm.token = fcmToken;
+      // if (self.fcm.token != fcmToken) {
+      //   __DEV__ && console.log('GOND save token: ', fcmToken);
+      //   self.fcm.token = fcmToken;
 
-        apnsToken && (self.fcm.apnsToken = apnsToken);
-        if (self.isLoggedIn) self.registerToken();
-      }
+      //   apnsToken && (self.fcm.apnsToken = apnsToken);
+      //   if (self.isLoggedIn) self.registerToken();
+      // }
+      if (self.isLoggedIn && self.fcm.saveToken(fcmToken, apnsToken))
+        self.registerToken();
     },
     registerToken: flow(function* () {
       if (!self.fcm.token || self.fcm.token.length == 0) {
@@ -899,7 +908,12 @@ export const UserStoreModel = types
           __DEV__ && console.log('GOND registerToken failed: ', res);
           return false;
         }
-        console.log('GOND register FCM token res: ', res);
+        console.log(
+          'GOND register FCM token res: ',
+          res,
+          self.fcm.token,
+          self.fcm.apnsToken
+        );
         self.fcm.serverId = res.Value;
         return true;
       } catch (ex) {
