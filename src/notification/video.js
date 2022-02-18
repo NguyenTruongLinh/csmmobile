@@ -3,7 +3,7 @@ import {NOTIFY_ACTION} from '../consts/misc';
 
 export function onVideoNotifEvent({videoStore, action, content, cmd}) {
   if (!videoStore) return;
-  __DEV__ && console.log('GOND onVideoNotifEvent ', action, content);
+  __DEV__ && console.log('GOND onVideoNotifEvent ', action, content, cmd);
   switch (action) {
     case NOTIFY_ACTION.STREAM_CREATED:
       videoStore && videoStore.onReceiveStreamInfo(content, cmd);

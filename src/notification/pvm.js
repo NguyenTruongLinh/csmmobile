@@ -51,10 +51,10 @@ function onPVMEvent(oamStore, action, contentObj, cmd) {
       // dispatch(receiveStatusUpdate(contentObj));//TODO
       return null;
     case NOTIFY_ACTION.WARNING:
-      console.log(
-        'GOND1 OnPVMEvent: WARNING state changed, contentObj: ',
-        contentObj
-      );
+      // console.log(
+      //   'GOND1 OnPVMEvent: WARNING state changed, contentObj: ',
+      //   contentObj
+      // );
 
       notif.title = title;
       notif.isContent = true;
