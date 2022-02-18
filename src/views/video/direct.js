@@ -235,9 +235,10 @@ class DirectVideoView extends React.Component {
             });
             if (this.noPermission) {
               this.noPermission = false;
+              this.stop();
+              setTimeout(() => this.setNativePlayback(), 500);
             } //else this.setNativePlayback();
-            this.stop();
-            setTimeout(() => this.setNativePlayback(), 500);
+
             // }
           }
         ),
@@ -1031,7 +1032,6 @@ class DirectVideoView extends React.Component {
    * @param {number} value : number of seconds from beginning of day
    */
   playAt = value => {
-    // const localValue = value - this.props.videoStore.directTimeDiff;
     const {isLive, videoStore} = this.props;
     if (isLive) return;
     __DEV__ && console.log('GOND direct playAt: ', value);

@@ -21,6 +21,9 @@ import {
   DEFAULT_REGION,
   HLS_MAX_EXPIRE_TIME,
   STREAM_TIMEOUT,
+  HLS_DATA_REQUEST_TIMEOUT,
+  HLS_GET_DATA_DIRECTLY_TIMEOUT,
+  HLS_MAX_RETRY,
   VSCCommandString,
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
@@ -32,15 +35,39 @@ const HLSURLModel = types
   .model({
     url: types.maybeNull(types.string),
     sid: types.optional(types.string, () => util.getRandomId()),
+    isFailed: types.optional(types.boolean, false),
   })
+  .volatile(self => ({
+    getUrlRetries: 0,
+    checkStreamTimeout: null,
+  }))
   .actions(self => ({
-    set({url, sid}) {
+    set({url, sid, streamTimeout, failed}) {
       url != undefined && (self.url = url);
       sid != undefined && (self.sid = sid);
+      streamTimeout != undefined && (self.checkStreamTimeout = streamTimeout);
+      failed != undefined && (self.isFailed = failed);
     },
     reset() {
       self.url = null;
       self.sid = util.getRandomId();
+      self.getUrlRetries = 0;
+      self.clearStreamTimeout();
+      self.isFailed = false;
+    },
+    increaseRetry() {
+      if (self.getUrlRetries >= HLS_MAX_RETRY) return false;
+      self.getUrlRetries++;
+      return true;
+    },
+    resetRetries() {
+      self.getUrlRetries = 0;
+    },
+    clearStreamTimeout() {
+      if (self.checkStreamTimeout) {
+        clearTimeout(self.checkStreamTimeout);
+        self.checkStreamTimeout = null;
+      }
     },
   }));
 
@@ -101,7 +128,6 @@ export default HLSStreamModel = types
     // isWaitingReconnect: types.optional(types.boolean, false),
   })
   .volatile(self => ({
-    streamTimeout: null,
     onStreamError: () =>
       console.log('GOND HLS onStreamError is not defined yet!'),
     // timeline: null,
@@ -158,6 +184,9 @@ export default HLSStreamModel = types
         : self.isHD
         ? self.searchHDUrl.url
         : self.searchUrl.url;
+    },
+    get urlsList() {
+      return [self.liveUrl, self.liveHDUrl, self.searchUrl, self.searchHDUrl];
     },
   }))
   .actions(self => ({
@@ -237,6 +266,9 @@ export default HLSStreamModel = types
           return self.searchHDUrl;
       }
     },
+    getUrlById(sid) {
+      return self.urlsList.find(item => item.sid == sid);
+    },
     setUrls(object) {
       if (typeof object != 'object' && Object.keys(object).length == 0) return;
       const {live, liveHD, search, searchHD} = object;
@@ -259,9 +291,9 @@ export default HLSStreamModel = types
       }
     },
     setAWSInfo(data) {
-      self.streamName = data.hls_stream;
-      self.accessKey = data.access_key;
-      self.secretKey = data.secret_key;
+      self.streamName = data.hls_stream ?? data.StreamName;
+      self.accessKey = data.access_key ?? data.AcccessKey;
+      self.secretKey = data.secret_key ?? data.SecrectKey;
       // self.sessionToken = data.session_token ?? null;
     },
     setStreamStatus({connectionStatus, error, isLoading, needReset}) {
@@ -288,11 +320,54 @@ export default HLSStreamModel = types
     //   self.timeline = timeline;
     //   self.timestamps = timestamp;
     // },
+    startWaitingForStream(sid) {
+      const currentUrl = self.getUrlById(sid);
+      if (!currentUrl) return;
+      currentUrl.resetRetries();
+      currentUrl.set({
+        streamTimeout: setTimeout(
+          () => self.getStreamDirectly(sid),
+          HLS_DATA_REQUEST_TIMEOUT
+        ),
+      });
+    },
+    getStreamDirectly: flow(function* (sid) {
+      const currentUrl = self.getUrlById(sid);
+      if (!currentUrl) return;
+
+      const res = yield apiService.get(VSC.controller, sid);
+      __DEV__ && console.log(`GOND HLS getStreamDirectly: `, res);
+      if (res && res.StreamName) {
+        self.startConnection({...res, sid});
+      } else {
+        currentUrl.set({
+          streamTimeout: setTimeout(() => {
+            if (currentUrl.increaseRetry()) self.getStreamDirectly(sid);
+            else {
+              currentUrl.set({failed: true});
+            }
+          }, HLS_GET_DATA_DIRECTLY_TIMEOUT),
+        });
+      }
+    }),
     startConnection: flow(function* (info, cmd) {
       self.retryRemaining = MAX_RETRY;
       return self.getHLSStreamUrl(info, cmd);
     }),
     getHLSStreamUrl: flow(function* (info, cmd) {
+      const currentUrl = self.getUrlById(info.sid);
+      if (!currentUrl) {
+        __DEV__ &&
+          console.log(
+            'GOND getHLSStreamUrl currentURL not found: ',
+            info,
+            self.urlsList
+          );
+        return;
+      }
+      currentUrl.resetRetries();
+      currentUrl.clearStreamTimeout();
+
       if (info) self.setAWSInfo(info);
 
       // Step 1: Configure SDK Clients
@@ -366,18 +441,17 @@ export default HLSStreamModel = types
             'GOND Get Streaming Session URL successfully: ',
             response
           );
-        self.setUrl(response.HLSStreamingSessionURL, cmd);
+        // self.setUrl(response.HLSStreamingSessionURL, cmd);
+        currentUrl.set({url: response.HLSStreamingSessionURL});
+
         self.retryRemaining = MAX_RETRY;
         // Is it needed?
-        self.clearStreamTimeout();
+        // self.clearStreamTimeout();
         __DEV__ &&
           console.log('GOND Get Streaming Session URL done: ', self.targetUrl);
       } catch (err) {
         __DEV__ &&
-          console.log(
-            'GOND HLS Get Streaming Session URL failed: ',
-            JSON.stringify(err)
-          );
+          console.log('GOND HLS Get Streaming Session URL failed: ', err);
         self.setStreamStatus({
           isLoading: false,
           connectionStatus: STREAM_STATUS.RECONNECTING,
@@ -453,7 +527,7 @@ export default HLSStreamModel = types
       // self.scheduleCheckTimeout();
       if (self.retryRemaining > 0) {
         self.retryRemaining--;
-        self.getHLSStreamUrl(null);
+        self.getHLSStreamUrl(info);
         return true;
       } else {
         // self.setStreamStatus({
@@ -496,31 +570,31 @@ export default HLSStreamModel = types
       __DEV__ && console.log(`GOND on updateStream stopped: `, isStopped, sid);
       apiService.post(VSC.controller, sid, VSC.updateStream, isStopped);
     },
-    scheduleCheckTimeout(time) {
-      self.clearStreamTimeout();
-      self.streamTimeout = setTimeout(() => {
-        __DEV__ && console.log(`GOND onstream timeout: `, self.channelName);
+    // scheduleCheckTimeout(time) {
+    //   self.clearStreamTimeout();
+    //   self.streamTimeout = setTimeout(() => {
+    //     __DEV__ && console.log(`GOND onstream timeout: `, self.channelName);
 
-        if (self.isLoading && !self.isURLAcquired && !self.isDead) {
-          __DEV__ &&
-            console.log(
-              `GOND === it timeout:  ${self.targetUrl.sid}, ch = `,
-              self.channelName
-            );
-          // self.setStreamStatus({
-          //   connectionStatus: STREAM_STATUS.TIMEOUT,
-          //   isLoading: false,
-          // });
-          self.reInitStream();
-        }
-      }, time ?? STREAM_TIMEOUT);
-    },
-    clearStreamTimeout() {
-      self.streamTimeout && clearTimeout(self.streamTimeout);
-    },
+    //     if (self.isLoading && !self.isURLAcquired && !self.isDead) {
+    //       __DEV__ &&
+    //         console.log(
+    //           `GOND === it timeout:  ${self.targetUrl.sid}, ch = `,
+    //           self.channelName
+    //         );
+    //       // self.setStreamStatus({
+    //       //   connectionStatus: STREAM_STATUS.TIMEOUT,
+    //       //   isLoading: false,
+    //       // });
+    //       self.reInitStream();
+    //     }
+    //   }, time ?? STREAM_TIMEOUT);
+    // },
+    // clearStreamTimeout() {
+    //   self.streamTimeout && clearTimeout(self.streamTimeout);
+    // },
     release() {
       self.isDead = true;
-      self.clearStreamTimeout();
+      // self.clearStreamTimeout();
       self.updateStreamsStatus(false);
     },
   }));

@@ -22,8 +22,10 @@ import {
   LAYOUT_DATA,
   DEFAULT_REGION,
   HLS_DATA_REQUEST_TIMEOUT,
+  HLS_MAX_RETRY,
   BEGIN_OF_DAY_STRING,
   END_OF_DAY_STRING,
+  HLS_GET_DATA_DIRECTLY_TIMEOUT,
 } from '../consts/video';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../consts/misc';
@@ -323,8 +325,12 @@ export const VideoModel = types
     // selectedHLSStream: null,
     waitForTimezone: false,
     checkTimezoneTimeout: null,
+    timezoneRetries: 0,
+    timelineRetries: 0,
+    daylistRetries: 0,
     waitForTimeline: false,
     checkTimelineTimeout: null,
+    checkDaylistTimeout: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -1309,6 +1315,19 @@ export const VideoModel = types
         self.timeline = [];
         self.timezoneOffset = 0;
         self.noVideo = false;
+        if (self.checkTimelineTimeout) {
+          clearTimeout(self.checkTimelineTimeout);
+          self.checkTimelineTimeout = null;
+        }
+        if (self.checkTimezoneTimeout) {
+          clearTimeout(self.checkTimezoneTimeout);
+          self.checkTimezoneTimeout = null;
+        }
+        if (self.checkDaylistTimeout) {
+          clearTimeout(self.checkDaylistTimeout);
+          self.checkDaylistTimeout = null;
+        }
+
         //
         // self.selectedHLSStream = null;
         self.isAlertPlay = false;
@@ -1739,13 +1758,14 @@ export const VideoModel = types
       getDVRTimezone: flow(function* (channelNo) {
         self.waitForTimezone = true;
         let sid = util.getRandomId();
+        self.timezoneRetries = 0;
         self.checkTimezoneTimeout = setTimeout(
-          // () => self.getDVRTimezoneDirectly(sid),
-          () => {
-            snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
-            self.stopWaitTimezone();
-          },
-          HLS_DATA_REQUEST_TIMEOUT * 3
+          () => self.getDVRTimezoneDirectly(sid),
+          // () => {
+          //   snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
+          //   self.stopWaitTimezone();
+          // },
+          HLS_DATA_REQUEST_TIMEOUT //* 3
         ); // 30 secs wait time
         snackbarUtil.onMessage(STREAM_STATUS.CONNECTING);
         return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
@@ -1755,24 +1775,60 @@ export const VideoModel = types
           try {
             const res = yield apiService.get(
               VSC.controller,
+              // sid,
               1,
               VSC.getHLSData,
               {
                 id: sid,
                 cmd: VSCCommandString.TIMEZONE,
+                kdvr: self.kDVR,
               }
             );
-            __DEV__ && console.log(`GOND get Timezone dirrectly:`, res);
-            // TODO
+            __DEV__ && console.log(`GOND get Timezone dirrectly:`, sid, res);
+            if (res && res.Data && res.Data.includes('Bias')) {
+              self.stopWaitTimezone();
+              try {
+                let tzData = JSON.parse(res.Data);
+                self.buildTimezoneData(tzData);
+              } catch (ex) {
+                console.log('GOND Parse timezone failed: ', ex, res.Data);
+              }
+            } else if (self.timezoneRetries < HLS_MAX_RETRY) {
+              self.timezoneRetries++;
+              self.checkTimezoneTimeout = setTimeout(
+                () => self.getDVRTimezoneDirectly(sid),
+                HLS_DATA_REQUEST_TIMEOUT / 2
+              );
+            } else {
+              snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
+              self.stopWaitTimezone();
+            }
           } catch (err) {
             console.log('GOND get HLS data Timezone failed: ', err);
           }
         }
       }),
       getDaylist: flow(function* (channelNo, sid) {
+        // __DEV__ &&
+        //   console.log('GOND getTimeline searchDate after: ', self.searchDate);
+        self.checkDaylistTimeout = setTimeout(
+          () => self.getDaylistDirectly(channelNo, sid),
+          HLS_DATA_REQUEST_TIMEOUT
+        ); // 1 min wait time
+
         return yield self.sendVSCCommand(VSCCommand.DAYLIST, channelNo, {
           sid,
         });
+      }),
+      getDaylistDirectly: flow(function* (channelNo, sid) {
+        if (
+          self.isInVideoView &&
+          self.selectedChannel == channelNo &&
+          self.selectedStream.targetUrl.sid == sid
+        ) {
+          const isSuccess = yield self.buildDaylistData({BigData: 1});
+          __DEV__ && console.log('GOND Get Daylist diredctly: ', isSuccess);
+        }
       }),
       getTimeline: flow(function* (channelNo, sid) {
         // __DEV__ &&
@@ -1794,15 +1850,10 @@ export const VideoModel = types
         // __DEV__ &&
         //   console.log('GOND getTimeline searchDate after: ', self.searchDate);
         self.waitForTimeline = true;
-        self.checkTimelineTimeout = setTimeout(() => {
-          if (
-            self.isInVideoView &&
-            self.waitForTimeline &&
-            self.selectedChannel == channelNo
-          ) {
-            self.getTimeline(channelNo, sid);
-          }
-        }, HLS_DATA_REQUEST_TIMEOUT); // 1 min wait time
+        self.checkTimelineTimeout = setTimeout(
+          () => self.getTimelineDirectly(channelNo, sid),
+          HLS_DATA_REQUEST_TIMEOUT
+        ); // 1 min wait time
         return yield self.sendVSCCommand(VSCCommand.TIMELINE, channelNo, {
           requestDate: self.searchDate.toFormat(
             NVRPlayerConfig.HLSRequestDateFormat
@@ -1811,6 +1862,29 @@ export const VideoModel = types
           end: END_OF_DAY_STRING,
           sid,
         });
+      }),
+      getTimelineDirectly: flow(function* (channelNo, sid) {
+        if (
+          self.isInVideoView &&
+          self.selectedChannel == channelNo &&
+          self.selectedStream.targetUrl.sid == sid
+        ) {
+          // self.getTimeline(channelNo, sid);
+          const isSuccess = yield self.buildTimelineData({BigData: 1}); // get timeline directly
+          __DEV__ && console.log('GOND Get Timeline diredctly: ', isSuccess);
+          if (!isSuccess && self.timelineRetries < HLS_MAX_RETRY) {
+            self.timelineRetries++;
+            setTimeout(
+              () => self.getTimelineDirectly(channelNo, sid),
+              HLS_GET_DATA_DIRECTLY_TIMEOUT
+            );
+          } else {
+            self.waitForTimeline = false;
+            __DEV__ &&
+              console.log('GOND Get Timeline failed , max retries reached!');
+            snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
+          }
+        }
       }),
       stopHLSStream: flow(function* (channelNo, sid, forceStop = false) {
         // do not stop multi division live channels
@@ -1893,6 +1967,7 @@ export const VideoModel = types
               connectionStatus: STREAM_STATUS.CONNECTING,
             });
           }
+          targetStream.startWaitingForStream(targetStream.targetUrl.sid);
           let timeParams = {};
           if (!self.isLive) {
             __DEV__ &&
@@ -1924,7 +1999,7 @@ export const VideoModel = types
               );
           }
           // listIdToCheck.push(targetStream.targetUrl.sid);
-          targetStream.scheduleCheckTimeout();
+          // targetStream.scheduleCheckTimeout();
 
           requestParams = [
             {
@@ -1960,9 +2035,10 @@ export const VideoModel = types
               isLive: self.isLive,
             });
             newConnection.setOnErrorCallback(self.onHLSError);
-            newConnection.scheduleCheckTimeout();
+            // newConnection.scheduleCheckTimeout();
             // if (self.isLive)
             // newConnection.targetUrl.set({sid: util.getRandomId()});
+            newConnection.startWaitingForStream(newConnection.targetUrl.sid);
 
             return newConnection;
           });
@@ -2077,6 +2153,9 @@ export const VideoModel = types
           connectionStatus: STREAM_STATUS.CONNECTING,
           isLoading: true,
         });
+        self.selectedStream.startWaitingForStream(
+          self.selectedStream.targetUrl.sid
+        );
 
         let requestParams = [
           {
@@ -2316,6 +2395,8 @@ export const VideoModel = types
                   cmd: VSCCommandString.DAYLIST,
                 }
               );
+              __DEV__ &&
+                console.log('GOND get HLS data Daylist directly: ', res);
               if (!res) {
                 const lastId = self.selectedStream.targetUrl.sid;
                 setTimeout(() => {
@@ -2409,9 +2490,12 @@ export const VideoModel = types
               if (res && res.Data) {
                 jTimeStamp =
                   typeof res.Data == 'string' ? JSON.parse(res.Data) : res.Data;
+              } else {
+                return false;
               }
             } catch (err) {
               console.log('GOND get HLS data Timeline failed: ', err);
+              return false;
             }
           }
         } else {
@@ -2426,7 +2510,7 @@ export const VideoModel = types
             isLoading: false,
             connectionStatus: STREAM_STATUS.NOVIDEO,
           });
-          return;
+          return true;
         }
 
         let jtimeData = jTimeStamp[0].di[self.selectedStream.channelNo];

@@ -815,7 +815,9 @@ class VideoPlayerView extends Component {
           !noVideo &&
           selectedStream &&
           !selectedStream.isLoading &&
-          (showController || (paused && timeline && timeline.length > 0)) ? (
+          timeline &&
+          timeline.length > 0 &&
+          (showController || paused) ? (
             <IconCustom
               name={paused ? 'play' : 'pause'}
               size={IconSize + 4}
