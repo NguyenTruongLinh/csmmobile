@@ -24,6 +24,8 @@ import {NOTIFY_TYPE} from '../consts/misc';
 const CHANNEL_ID = 'CMS_Channel';
 
 class NotificationController extends React.Component {
+  // static notification = 'N/A';
+
   constructor(props) {
     super(props);
 
@@ -382,7 +384,19 @@ class NotificationController extends React.Component {
         onVideoNotifEvent({videoStore, action, content, cmd});
         break;
       case NOTIFY_TYPE.PVM:
-        // __DEV__ && console.log('HAI onPVM Notification: ', data);
+        __DEV__ && console.log('HAI onPVM Notification: content ', content);
+        __DEV__ &&
+          console.log(
+            'HAI onPVM Notification: content.DVRUser =  ',
+            content.DVRUser
+          );
+        __DEV__ &&
+          console.log(
+            'HAI onPVM Notification: content.DVRName =  ',
+            content.DVRName
+          );
+        // if (!content.DVRUser) content.DVRUser = 'null';
+        // if (!content.DVRName) content.DVRName = 'null';
         notif = onPVMEvent(oamStore, action, content, cmd);
         break;
     }
@@ -407,6 +421,8 @@ class NotificationController extends React.Component {
       type,
       action,
       content,
+      // testContent,
+      // type == NOTIFY_TYPE.PVM ? testContent : content,
       userStore
     );
   };
@@ -423,14 +439,15 @@ class NotificationController extends React.Component {
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
       // __DEV__ && console.log('GOND show local notify, content: ', content);
-      if (Platform.OS === 'ios' && content && typeof content === 'string') {
+      if (Platform.OS === 'ios' && content) {
+        if (typeof content !== 'string') content = JSON.stringify(content);
         content = content.replace(/null/g, '""'); // content.split('null').join('');
       }
       NotificationController.displayLocalNotification({
         ...notif,
         messageId,
         id: data.msg_id,
-        data: {type, action, content},
+        data: {type, action, content}, //content
       });
       userStore && userStore.getWidgetCounts();
     }

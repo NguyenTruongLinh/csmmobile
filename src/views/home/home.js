@@ -18,6 +18,7 @@ import {
 } from '../../consts/images';
 import ROUTERS from '../../consts/routes';
 import CMSColors from '../../styles/cmscolors';
+import notificationController from '../../notification/notificationController';
 
 class HomeView extends Component {
   constructor(props) {
@@ -148,6 +149,7 @@ class HomeView extends Component {
           <View style={styles.rightWidget}></View>
         </View>
         <View style={styles.footer} />
+        {/* <Text>{notificationController.notification}</Text> */}
       </View>
     );
   }

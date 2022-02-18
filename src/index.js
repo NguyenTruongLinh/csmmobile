@@ -14,6 +14,8 @@ import sitesStore from './stores/sites';
 import healthStore from './stores/health';
 import App from './app';
 import NotificationController from './notification/notificationController';
+import {NotAuthorizedException} from '@aws-sdk/client-kinesis-video';
+import {Platform} from 'react-native';
 
 const Main = () => {
   // console.log('GOND userStore: ', userStore);
@@ -42,13 +44,45 @@ const Main = () => {
               sitesStore,
               healthStore,
               message: notification,
+              debug: 'onNotification',
             });
           }
         }, 500);
       }
     },
   });
-
+  if (Platform.OS === 'ios') {
+    let naviCheckIntervalInitialForIOS = null;
+    PushNotification.popInitialNotification(notification => {
+      console.log('Initial Notification', notification);
+      // NotificationController.notification = JSON.stringify(notification);
+      // const {userInteraction} = notification;
+      // if (userInteraction) {
+      // }
+      // __DEV__ &&
+      //   console.log('GOND PN onNotification interation: ', appStore.naviService);
+      naviCheckIntervalInitialForIOS = setInterval(() => {
+        if (
+          appStore.naviService.isReadyForPushShowing &&
+          naviCheckIntervalInitialForIOS
+        ) {
+          clearInterval(naviCheckIntervalInitialForIOS);
+          naviCheckIntervalInitialForIOS = null;
+          NotificationController.onNotificationOpened({
+            appStore,
+            alarmStore,
+            userStore,
+            exceptionStore,
+            oamStore,
+            sitesStore,
+            healthStore,
+            message: notification,
+            debug: 'popInitialNotification',
+          });
+        }
+      }, 500);
+    });
+  }
   return (
     <Provider
       appStore={appStore}
