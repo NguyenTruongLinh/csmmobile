@@ -1725,6 +1725,7 @@ export const VideoModel = types
           },
           HLS_DATA_REQUEST_TIMEOUT * 3
         ); // 30 secs wait time
+        snackbarUtil.onMessage(STREAM_STATUS.CONNECTING);
         return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
       }),
       getDVRTimezoneDirectly: flow(function* (sid) {
