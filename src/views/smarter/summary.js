@@ -58,7 +58,7 @@ class DashboardView extends React.Component {
       showChart: true, // Only 2 modes: show chart or show data
       showSortModal: false,
       showFilterModal: false,
-      activeGroup: null,
+      selectedSiteKey: null,
       loadingDetail: false,
     };
 
@@ -137,18 +137,8 @@ class DashboardView extends React.Component {
     __DEV__ && console.log('GOND on chart click event: ', event);
     if (!event) return;
     const {nativeEvent} = event;
-    if (!nativeEvent) return;
-    // const selectedItem = nativeEvent.x;
-    // if (!selectedItem) return;
-
-    __DEV__ && console.log('GOND on chart click selected item: ', nativeEvent);
-    let index = nativeEvent.data
-      ? this.props.exceptionStore.filteredGroupsData.findIndex(
-          data => data.siteKey == nativeEvent.data.key
-        )
-      : null;
-    if (index < 0) index = null;
-    this.onSelectGroup([index]);
+    if (!nativeEvent || !nativeEvent.data || !nativeEvent.data.key) return;
+    this.onSelectSite(nativeEvent.data.key);
     this.setState({showChart: false});
   };
 
@@ -160,39 +150,19 @@ class DashboardView extends React.Component {
     navigation.push(ROUTERS.TRANSACTIONS);
   };
 
-  onSelectGroup = async updatedSections => {
-    if (updatedSections.length === 0) {
-      this.setState({activeGroup: null});
+  onSelectSite = async siteKey => {
+    if (siteKey == this.state.selectedSiteKey) {
+      this.setState({selectedSiteKey: null});
       return;
     }
-
+    __DEV__ && console.log(`onSelectSite siteKey = `, siteKey);
     const {exceptionStore} = this.props;
-    __DEV__ && console.log('GOND on section changed: ', updatedSections);
-
-    let selectedSection = updatedSections.find(
-      idx => idx != this.state.activeGroup
-    );
-    __DEV__ &&
-      console.log('GOND on section changed selectedSection: ', selectedSection);
-    if (
-      isNullOrUndef(selectedSection) ||
-      selectedSection >= exceptionStore.filteredGroupsData.length
-    ) {
+    this.setState({selectedSiteKey: siteKey, loadingDetail: true}, async () => {
       __DEV__ &&
-        console.log(
-          'GOND Error selected section out of bound: ',
-          selectedSection
-        );
-      return;
-    }
-    const groupData = exceptionStore.filteredGroupsData[selectedSection];
-    this.setState(
-      {activeGroup: selectedSection, loadingDetail: true},
-      async () => {
-        await exceptionStore.getGroupDetailData(groupData.siteKey);
-        this._isMounted && this.setState({loadingDetail: false});
-      }
-    );
+        console.log(`onSelectSite getGroupDetailData siteKey = `, siteKey);
+      await exceptionStore.getGroupDetailData(siteKey);
+      this._isMounted && this.setState({loadingDetail: false});
+    });
   };
 
   onSubmitFilter = ({dateFrom, dateTo, selectedSites}) => {
@@ -272,52 +242,62 @@ class DashboardView extends React.Component {
     );
   };
 
-  renderGroupHeader = (data, index, isActive) => {
-    if (!data) return;
+  renderSite = ({item}) => {
+    //(data, index, isActive) => {
+    __DEV__ && console.log(`renderSite item = `, JSON.stringify(item));
+    if (!item) return;
     const {exceptionStore} = this.props;
 
     return (
-      <CMSRipple
-        delayTime={0}
-        rippleOpacity={0.87}
-        onPress={() => {
-          // console.log('11111111111111111111111');
-          // this.onSelectGroup(data, index);
-          if (index == this.state.activeGroup) {
-            this.setState({activeGroup: undefined});
-          }
-        }}>
-        <View
-          style={[
-            {
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: 5,
-              height: 48,
-              backgroundColor: CMSColors.White,
-              // borderBottomWidth: 0.5,
-              // borderColor: CMSColors.BorderColorListRow,
-            },
-            // isActive == true
-            //   ? {
-            //       borderBottomWidth: 0,
-            //     }
-            //   : {},
-          ]}>
-          <View style={styles.siteIconContainer}>
-            <IconCustom name="sites" size={24} color={CMSColors.PrimaryText} />
+      <View>
+        <CMSRipple
+          delayTime={0}
+          rippleOpacity={0.87}
+          onPress={() => {
+            // console.log('11111111111111111111111');
+            this.onSelectSite(item.siteKey);
+            // if (index == this.state.selectedSiteKey) {
+            //   this.setState({selectedSiteKey: undefined});
+            // }
+          }}>
+          <View
+            style={[
+              {
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 5,
+                height: 48,
+                backgroundColor: CMSColors.White,
+                // borderBottomWidth: 0.5,
+                // borderColor: CMSColors.BorderColorListRow,
+              },
+              // isActive == true
+              //   ? {
+              //       borderBottomWidth: 0,
+              //     }
+              //   : {},
+            ]}>
+            <View style={styles.siteIconContainer}>
+              <IconCustom
+                name="sites"
+                size={24}
+                color={CMSColors.PrimaryText}
+              />
+            </View>
+            <View style={styles.siteNameContainer}>
+              <Text style={styles.siteNameText}>{item.siteName}</Text>
+            </View>
+            <View style={styles.siteRiskContainer}>
+              <Text style={styles.siteRiskText}>
+                {formatNumber(item.riskFactor)}
+              </Text>
+            </View>
           </View>
-          <View style={styles.siteNameContainer}>
-            <Text style={styles.siteNameText}>{data.siteName}</Text>
-          </View>
-          <View style={styles.siteRiskContainer}>
-            <Text style={styles.siteRiskText}>
-              {formatNumber(data.riskFactor)}
-            </Text>
-          </View>
-        </View>
-      </CMSRipple>
+        </CMSRipple>
+        {item.siteKey == this.state.selectedSiteKey &&
+          this.renderSiteDetail(item)}
+      </View>
     );
   };
 
@@ -353,12 +333,7 @@ class DashboardView extends React.Component {
     );
   };
 
-  renderGroupContent = (data, index, isActive) => {
-    if (
-      /*data.employees.length == 0 ||*/ !isActive ||
-      index != this.state.activeGroup
-    )
-      return;
+  renderSiteDetail = (data, index, isActive) => {
     const {exceptionStore} = this.props;
     const {loadingDetail} = this.state;
 
@@ -408,40 +383,9 @@ class DashboardView extends React.Component {
     );
   };
 
-  // renderDataItem = data => {
-  //   const {exceptionStore} = this.props;
-  //   const {item} = data;
-
-  //   return (
-  //     <Accordion
-  //       activeSections={[0]}
-  //       style={{}}
-  //       sections={[
-  //         item,
-  //         // {
-  //         //   title: {
-  //         //     // rowID: parseInt(rowID),
-  //         //     siteKey: item.siteKey,
-  //         //     name: item.siteName,
-  //         //     riskFactor: item.riskFactor,
-  //         //     totalTran: item.totalTran,
-  //         //     totalAmount: item.totalAmount,
-  //         //     percentToSale: item.percentToSale,
-  //         //   },
-
-  //         //   content: item.employees,
-  //         // },
-  //       ]}
-  //       renderHeader={this.renderGroupHeader}
-  //       renderContent={this.renderGroupContent}
-  //       onChange={() => {}}
-  //       touchableComponent={props => <CMSRipple {...props} />}
-  //     />
-  //   );
-  // };
-
   renderDataView() {
     const {exceptionStore, sitesStore} = this.props;
+    const isLoading = exceptionStore.isLoading || sitesStore.isLoading;
     return (
       <View style={{flex: 1}}>
         <View style={commonStyles.flatSearchBarContainer}>
@@ -458,17 +402,11 @@ class DashboardView extends React.Component {
         {exceptionStore.filteredGroupsData.length == 0 ? (
           <NoDataView isLoading={false} style={{flex: 1}}></NoDataView>
         ) : (
-          <Accordion
-            activeSections={[this.state.activeGroup]}
-            style={{}}
-            sections={exceptionStore.filteredGroupsData}
-            renderHeader={this.renderGroupHeader}
-            renderContent={this.renderGroupContent}
-            renderAsFlatList={true}
-            onChange={this.onSelectGroup}
-            touchableComponent={props => (
-              <CMSRipple {...props} rippleOpacity={0.87} delayTime={0} />
-            )}
+          <FlatList
+            data={exceptionStore.filteredGroupsData}
+            renderItem={this.renderSite}
+            refreshing={isLoading}
+            keyExtractor={(item, index) => 'site_' + index}
           />
         )}
         {exceptionStore.filteredGroupsData &&
