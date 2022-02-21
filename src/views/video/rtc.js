@@ -675,6 +675,10 @@ class RTCStreamingView extends Component {
 
   onBeginDraggingTimeline = () => {};
 
+  onSwitchLiveSearch = isLive => {};
+
+  onChangeChannel = channelNo => {};
+
   render() {
     const {
       remoteStream,

@@ -236,7 +236,7 @@ class HLSStreamingView extends React.Component {
           isNoVideo => {
             if (isNoVideo == true) {
               this.stop();
-              this.props.streamData.setStreamStatus({
+              this.setStreamStatus({
                 connectionStatus: STREAM_STATUS.NOVIDEO,
                 isLoading: false,
               });
@@ -246,6 +246,16 @@ class HLSStreamingView extends React.Component {
           }
         ),
       ];
+    }
+  };
+
+  setStreamStatus = statusObject => {
+    const {streamData, singlePlayer} = this.props;
+
+    if (singlePlayer) {
+      streamData.setStreamStatus(statusObject);
+    } else {
+      streamData.setLiveStatus(statusObject);
     }
   };
 
@@ -269,10 +279,19 @@ class HLSStreamingView extends React.Component {
 
   onChangeSearchDate = () => {
     this.lastSearchTime = null;
+    this.refresh();
     this.pause(true);
   };
 
   onBeginDraggingTimeline = () => {};
+
+  onSwitchLiveSearch = isLive => {
+    this.refresh();
+  };
+
+  onChangeChannel = channelNo => {
+    this.refresh();
+  };
 
   onPlaybackStalled = event => {
     const {videoStore, singlePlayer} = this.props;
@@ -324,7 +343,7 @@ class HLSStreamingView extends React.Component {
     const {streamData} = this.props;
     if (event.isBuffering) {
       if (this.firstBuffer) {
-        streamData.setStreamStatus({
+        this.setStreamStatus({
           connectionStatus: STREAM_STATUS.BUFFERING,
           isLoading: true,
         });
@@ -339,7 +358,7 @@ class HLSStreamingView extends React.Component {
       }
     } else {
       if (streamData.connectionStatus == STREAM_STATUS.BUFFERING)
-        streamData.setStreamStatus({
+        this.setStreamStatus({
           connectionStatus: STREAM_STATUS.DONE,
           isLoading: false,
         });
@@ -385,7 +404,7 @@ class HLSStreamingView extends React.Component {
       streamData.reInitStream();
     }
     if (error.errorString == 'Unrecognized media format') {
-      // streamData.setStreamStatus({
+      // this.setStreamStatus({
       //   connectionStatus: STREAM_STATUS.SOURCE_ERROR,
       // });
       __DEV__ && console.log('GOND HLS SOURCE_ERROR ');
@@ -418,7 +437,7 @@ class HLSStreamingView extends React.Component {
       streamData.isLoading ||
       streamData.connectionStatus != STREAM_STATUS.DONE
     ) {
-      streamData.setStreamStatus({
+      this.setStreamStatus({
         isLoading: false,
         connectionStatus: STREAM_STATUS.DONE,
       });
@@ -641,13 +660,13 @@ class HLSStreamingView extends React.Component {
         this.setState({
           urlParams: '&v=' + this.refreshCount,
         });
-        streamData.setStreamStatus({
+        this.setStreamStatus({
           connectionStatus: STREAM_STATUS.RECONNECTING,
           isLoading: true,
         });
       } else {
         this.stop();
-        streamData.setStreamStatus({
+        this.setStreamStatus({
           connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
           isLoading: false,
         });
@@ -670,6 +689,10 @@ class HLSStreamingView extends React.Component {
     this.clearReconnectTimeout();
   };
 
+  refresh = () => {
+    this.setState({streamUrl: ''});
+  };
+
   pause = willPause => {
     this.props.videoStore.pause(willPause == undefined ? true : willPause);
   };
@@ -683,6 +706,7 @@ class HLSStreamingView extends React.Component {
     // videoStore.setPlayTimeForSearch(
     //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
     // );
+    this.refresh();
     this.pause(true);
     videoStore.onHLSTimeChanged(time);
   };
@@ -699,12 +723,14 @@ class HLSStreamingView extends React.Component {
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, internalLoading} = this.state;
+    const playbackUrl =
+      streamUrl && streamUrl.length > 0 ? streamUrl + urlParams : null;
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
         videoStore.paused,
         // ', status: ',
-        streamUrl + urlParams
+        playbackUrl
       );
 
     return (
@@ -737,51 +763,51 @@ class HLSStreamingView extends React.Component {
           <View style={styles.playerView}>
             {
               /*!isLoading &&*/
-              streamUrl ? (
-                <Video
-                  style={[{width: width, height: height}]}
-                  hls={true}
-                  resizeMode={'stretch'}
-                  source={{uri: streamUrl + urlParams, type: 'm3u8'}}
-                  paused={singlePlayer ? videoStore.paused : false}
-                  ref={ref => {
-                    this.player = ref;
-                  }}
-                  progressUpdateInterval={1000} // 1 seconds per onProgress called
-                  onReadyForDisplay={this.onReady}
-                  onBuffer={this.onBuffer}
-                  onError={this.onError}
-                  onPlaybackStalled={this.onPlaybackStalled}
-                  onPlaybackResume={this.onPlaybackResume}
-                  onProgress={this.onProgress}
-                  onLoad={this.onLoad}
-                  onTimedMetadata={event => {
-                    __DEV__ && console.log('GOND HLS onTimedMetadata', event);
-                  }}
-                  onPlaybackRateChange={data => {
-                    // __DEV__ &&
-                    //   console.log('GOND HLS onPlaybackRateChange: ', data);
-                  }}
-                  muted={true}
-                  volume={0}
-                  selectedAudioTrack={{type: 'disabled'}}
-                  selectedTextTrack={{type: 'disabled'}}
-                  rate={1.0}
-                  automaticallyWaitsToMinimizeStalling={true}
-                  preferredForwardBufferDuration={2}
-                  playInBackground={true}
-                  playWhenInactive={true}
-                  useTextureView={false}
-                  disableFocus={true}
-                  bufferConfig={{
-                    minBufferMs: 5000,
-                    maxBufferMs: 15000,
-                    bufferForPlaybackMs: 2500,
-                    bufferForPlaybackAfterRebufferMs: 2500,
-                  }}
-                  maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
-                />
-              ) : null
+              // playbackUrl ? (
+              <Video
+                style={[{width: width, height: height}]}
+                hls={true}
+                resizeMode={'stretch'}
+                source={{uri: playbackUrl ?? '', type: 'm3u8'}}
+                paused={singlePlayer ? videoStore.paused : false}
+                ref={ref => {
+                  this.player = ref;
+                }}
+                progressUpdateInterval={1000} // 1 seconds per onProgress called
+                onReadyForDisplay={this.onReady}
+                onBuffer={this.onBuffer}
+                onError={this.onError}
+                onPlaybackStalled={this.onPlaybackStalled}
+                onPlaybackResume={this.onPlaybackResume}
+                onProgress={this.onProgress}
+                onLoad={this.onLoad}
+                onTimedMetadata={event => {
+                  __DEV__ && console.log('GOND HLS onTimedMetadata', event);
+                }}
+                onPlaybackRateChange={data => {
+                  // __DEV__ &&
+                  //   console.log('GOND HLS onPlaybackRateChange: ', data);
+                }}
+                muted={true}
+                volume={0}
+                selectedAudioTrack={{type: 'disabled'}}
+                selectedTextTrack={{type: 'disabled'}}
+                rate={1.0}
+                automaticallyWaitsToMinimizeStalling={true}
+                preferredForwardBufferDuration={2}
+                playInBackground={true}
+                playWhenInactive={true}
+                useTextureView={false}
+                disableFocus={true}
+                bufferConfig={{
+                  minBufferMs: 5000,
+                  maxBufferMs: 15000,
+                  bufferForPlaybackMs: 2500,
+                  bufferForPlaybackAfterRebufferMs: 2500,
+                }}
+                maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
+              />
+              // ) : null
             }
           </View>
         </ImageBackground>

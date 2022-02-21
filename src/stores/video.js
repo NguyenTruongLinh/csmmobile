@@ -1874,7 +1874,7 @@ export const VideoModel = types
           __DEV__ && console.log('GOND Get Timeline diredctly: ', isSuccess);
           if (!isSuccess && self.timelineRetries < HLS_MAX_RETRY) {
             self.timelineRetries++;
-            setTimeout(
+            self.checkTimelineTimeout = setTimeout(
               () => self.getTimelineDirectly(channelNo, sid),
               HLS_GET_DATA_DIRECTLY_TIMEOUT
             );
@@ -2291,9 +2291,17 @@ export const VideoModel = types
             self.onReceiveHLSStream(info, cmd);
             break;
           case VSCCommandString.TIMELINE:
+            if (self.checkTimelineTimeout) {
+              clearTimeout(self.checkTimelineTimeout);
+              self.checkTimelineTimeout = null;
+            }
             self.buildTimelineData(info);
             break;
           case VSCCommandString.DAYLIST:
+            if (self.checkDaylistTimeout) {
+              clearTimeout(self.checkDaylistTimeout);
+              self.checkDaylistTimeout = null;
+            }
             self.buildDaylistData(info);
             break;
           case VSCCommandString.TIMEZONE:

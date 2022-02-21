@@ -237,7 +237,11 @@ class DirectVideoView extends React.Component {
               this.noPermission = false;
               this.stop();
               setTimeout(() => this.setNativePlayback(), 500);
-            } //else this.setNativePlayback();
+            } else {
+              // this.refreshVideo();
+              this.setNative({pause: true});
+              setTimeout(() => this.setNativePlayback(), 500);
+            }
 
             // }
           }
@@ -925,10 +929,14 @@ class DirectVideoView extends React.Component {
   onChangeSearchDate = () => {};
 
   onBeginDraggingTimeline = () => {
-    if (!this.props.videoStore.paused) {
-      this.setNative({pause: true});
-    }
+    // if (!this.props.videoStore.paused) {
+    //   this.setNative({pause: true});
+    // }
   };
+
+  onSwitchLiveSearch = isLive => {};
+
+  onChangeChannel = channelNo => {};
 
   setPlayStatus = params => {
     if (params.startplayback) {
@@ -1124,8 +1132,14 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      serverInfo,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&

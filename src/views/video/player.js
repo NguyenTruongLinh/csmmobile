@@ -222,7 +222,6 @@ class VideoPlayerView extends Component {
 
     // const locked = await getAutoRotateState();
     // __DEV__ && console.log('GOND onOrientationChange, canRotate = ', locked);
-    // if (locked) {
     let isFullscreen = false;
     switch (orientation) {
       case OrientationType.PORTRAIT:
@@ -243,31 +242,11 @@ class VideoPlayerView extends Component {
       case OrientationType.PORTRAIT_UPSIDE_DOWN:
         Orientation.lockToPortraitUpsideDown();
         break;
+      default:
+        return;
     }
     this.onFullscreenPress(isFullscreen);
     return;
-    // }
-
-    if (
-      [
-        OrientationType.LANDSCAPE,
-        OrientationType.LANDSCAPE_LEFT,
-        OrientationType.LANDSCAPE_RIGHT,
-      ].includes(orientation) &&
-      !videoStore.isFullscreen
-    ) {
-      this.onFullscreenPress(true);
-      // this.lastOrientation = orientation;
-    } else if (
-      [OrientationType.PORTRAIT, OrientationType.PORTRAIT_UPSIDE_DOWN].includes(
-        orientation
-      ) &&
-      videoStore.isFullscreen
-    ) {
-      this.onFullscreenPress(false);
-      // this.lastOrientation = OrientationType.PORTRAIT;
-    }
-    this.lastOrientation = orientation;
   };
 
   checkDataOnSearchDate = selectedDate => {

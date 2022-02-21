@@ -36,6 +36,11 @@ const HLSURLModel = types
     url: types.maybeNull(types.string),
     sid: types.optional(types.string, () => util.getRandomId()),
     isFailed: types.optional(types.boolean, false),
+
+    isLoading: types.optional(types.boolean, false),
+    connectionStatus: types.optional(types.string, ''),
+    error: types.maybeNull(types.string),
+    needReset: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     getUrlRetries: 0,
@@ -68,6 +73,13 @@ const HLSURLModel = types
         clearTimeout(self.checkStreamTimeout);
         self.checkStreamTimeout = null;
       }
+    },
+    setStreamStatus({connectionStatus, error, isLoading, needReset}) {
+      connectionStatus != undefined &&
+        (self.connectionStatus = connectionStatus);
+      isLoading != undefined && (self.isLoading = isLoading);
+      needReset != undefined && (self.needReset = needReset);
+      error != undefined && (self.error = error);
     },
   }));
 
@@ -115,10 +127,10 @@ export default HLSStreamModel = types
     secretKey: types.optional(types.string, ''),
     streamName: types.optional(types.string, ''),
     // sessionToken: types.maybeNull(types.string),
-    isLoading: types.optional(types.boolean, false),
-    connectionStatus: types.optional(types.string, ''),
-    error: types.maybeNull(types.string),
-    needReset: types.optional(types.boolean, false),
+    // isLoading: types.optional(types.boolean, false),
+    // connectionStatus: types.optional(types.string, ''),
+    // error: types.maybeNull(types.string),
+    // needReset: types.optional(types.boolean, false),
     retryRemaining: types.optional(types.number, MAX_RETRY),
 
     // sync values from videoStore
@@ -187,6 +199,18 @@ export default HLSStreamModel = types
     },
     get urlsList() {
       return [self.liveUrl, self.liveHDUrl, self.searchUrl, self.searchHDUrl];
+    },
+    get isLoading() {
+      return self.targetUrl.isLoading;
+    },
+    get connectionStatus() {
+      return self.targetUrl.connectionStatus;
+    },
+    get error() {
+      return self.targetUrl.error;
+    },
+    get needReset() {
+      return self.targetUrl.needReset;
     },
   }))
   .actions(self => ({
@@ -296,22 +320,22 @@ export default HLSStreamModel = types
       self.secretKey = data.secret_key ?? data.SecrectKey;
       // self.sessionToken = data.session_token ?? null;
     },
-    setStreamStatus({connectionStatus, error, isLoading, needReset}) {
+    setLiveStatus(statusObject) {
+      self.liveUrl.setStreamStatus(statusObject);
+    },
+    // setStreamStatus({connectionStatus, error, isLoading, needReset}) {
+    setStreamStatus(statusObject) {
       if (__DEV__) {
-        console.log('GOND HLS: Set stream status: ', {
-          connectionStatus,
-          error,
-          isLoading,
-          needReset,
-        });
-        // console.trace();
+        console.log('GOND HLS: Set stream status: ', statusObject);
+        console.trace();
       }
 
-      connectionStatus != undefined &&
-        (self.connectionStatus = connectionStatus);
-      isLoading != undefined && (self.isLoading = isLoading);
-      needReset != undefined && (self.needReset = needReset);
-      error != undefined && (self.error = error);
+      self.targetUrl.setStreamStatus(statusObject);
+      // connectionStatus != undefined &&
+      //   (self.connectionStatus = connectionStatus);
+      // isLoading != undefined && (self.isLoading = isLoading);
+      // needReset != undefined && (self.needReset = needReset);
+      // error != undefined && (self.error = error);
     },
     // setReconnectStatus(value) {
     //   self.isWaitingReconnect = value;
