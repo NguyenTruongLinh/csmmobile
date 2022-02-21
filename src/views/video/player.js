@@ -352,7 +352,8 @@ class VideoPlayerView extends Component {
     // videoStore.setNoVideo(false);
     videoStore.switchLiveSearch(undefined, true);
     this.updateHeader();
-    this.playerRef && this.playerRef.pause(true);
+    // this.playerRef && this.playerRef.pause(true);
+    this.playerRef && this.playerRef.onSwitchLiveSearch(videoStore.isLive);
     setTimeout(() => {
       this.channelsScrollView &&
         videoStore.selectedChannelIndex >= 0 &&
@@ -439,7 +440,8 @@ class VideoPlayerView extends Component {
     }
     // videoStore.setNoVideo(false);
     videoStore.selectChannel(channelNo);
-    if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
+    // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
+    this.playerRef && this.playerRef.onChangeChannel(channelNo);
   };
 
   onChannelSnapshotLoaded = (param, image) => {};

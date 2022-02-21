@@ -75,6 +75,10 @@ class HLSStreamingView extends React.Component {
       console.log('HLSStreamingView componentDidMount', this.props.streamData);
     this._isMounted = true;
     this.initReactions();
+    this.setStreamStatus({
+      connectionStatus: STREAM_STATUS.CONNECTING,
+      isLoading: true,
+    });
   }
 
   componentWillUnmount() {
@@ -281,16 +285,30 @@ class HLSStreamingView extends React.Component {
     this.lastSearchTime = null;
     this.refresh();
     this.pause(true);
+    this.setStreamStatus({
+      connectionStatus: STREAM_STATUS.CONNECTING,
+      isLoading: true,
+    });
   };
 
   onBeginDraggingTimeline = () => {};
 
   onSwitchLiveSearch = isLive => {
     this.refresh();
+    this.pause(true);
+    this.setStreamStatus({
+      connectionStatus: STREAM_STATUS.CONNECTING,
+      isLoading: true,
+    });
   };
 
   onChangeChannel = channelNo => {
     this.refresh();
+    this.pause(true);
+    this.setStreamStatus({
+      connectionStatus: STREAM_STATUS.CONNECTING,
+      isLoading: true,
+    });
   };
 
   onPlaybackStalled = event => {
