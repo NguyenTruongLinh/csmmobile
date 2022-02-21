@@ -353,7 +353,7 @@ class HLSStreamingView extends React.Component {
       if (!this.videoBufferTimeout) {
         this.videoBufferTimeout = setTimeout(
           this.onBufferTimeout,
-          BUFFER_TIMEOUT
+          __DEV__ ? 60000 : BUFFER_TIMEOUT
         );
       }
     } else {
@@ -459,7 +459,7 @@ class HLSStreamingView extends React.Component {
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
       // __DEV__ && console.log('GOND HLS onProgress: 1');
-      this.frameTime = timeBeginPlaying.toSeconds();
+      // this.frameTime = timeBeginPlaying.toSeconds();
       this.lastVideoTime = 0;
 
       __DEV__ &&
@@ -510,6 +510,13 @@ class HLSStreamingView extends React.Component {
           });
           // __DEV__ && console.log('GOND HLS onProgress 1:', this.frameTime);
         }
+      } else {
+        this.setState({
+          timeBeginPlaying: DateTime.now()
+            .setZone(videoStore.timezone)
+            .minus({seconds: data.currentTime}),
+        });
+        this.frameTime = timeBeginPlaying.toSeconds();
       }
     } else {
       if (isLive) {

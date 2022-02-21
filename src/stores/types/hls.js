@@ -315,9 +315,9 @@ export default HLSStreamModel = types
       }
     },
     setAWSInfo(data) {
-      self.streamName = data.hls_stream ?? data.StreamName;
-      self.accessKey = data.access_key ?? data.AcccessKey;
-      self.secretKey = data.secret_key ?? data.SecrectKey;
+      self.streamName = data.hls_stream ?? data.StreamName ?? '';
+      self.accessKey = data.access_key ?? data.AcccessKey ?? '';
+      self.secretKey = data.secret_key ?? data.SecrectKey ?? '';
       // self.sessionToken = data.session_token ?? null;
     },
     setLiveStatus(statusObject) {
@@ -327,7 +327,7 @@ export default HLSStreamModel = types
     setStreamStatus(statusObject) {
       if (__DEV__) {
         console.log('GOND HLS: Set stream status: ', statusObject);
-        console.trace();
+        // console.trace();
       }
 
       self.targetUrl.setStreamStatus(statusObject);
@@ -361,7 +361,7 @@ export default HLSStreamModel = types
 
       const res = yield apiService.get(VSC.controller, sid);
       __DEV__ && console.log(`GOND HLS getStreamDirectly: `, res);
-      if (res && res.StreamName) {
+      if (res && (res.StreamName || res.AcccessKey)) {
         self.startConnection({...res, sid});
       } else {
         currentUrl.set({
