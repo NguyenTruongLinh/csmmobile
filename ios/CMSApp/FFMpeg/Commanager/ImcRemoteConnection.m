@@ -173,11 +173,16 @@
 }
 
 - (void)stopTimer {
-  if (loginTimer)
-  {
-    dispatch_cancel(loginTimer);
-    loginTimer = nil;
-  }
+//  dispatch_async(dispatch_get_main_queue(), ^{
+    if (self->loginTimer)
+    {
+      NSLog(@"******** onStopTimer: ******"  );
+      dispatch_source_set_event_handler(self->loginTimer, ^{});
+      dispatch_cancel(self->loginTimer);
+//      dispatch_resume(self->loginTimer);
+      self->loginTimer = nil;
+    }
+//  });
 }
 
 - (void)onLoginTimeout

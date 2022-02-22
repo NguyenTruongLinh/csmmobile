@@ -252,11 +252,10 @@ class DirectVideoView extends React.Component {
             // if (singlePlayer) {
             // this.stop();
             if (
-              searchDate &&
-              (!prevSearchDate ||
-                (prevSearchDate &&
-                  searchDate.toFormat(CALENDAR_DATE_FORMAT) !=
-                    prevSearchDate.toFormat(CALENDAR_DATE_FORMAT)))
+              searchDate && //!prevSearchDate ||
+              prevSearchDate &&
+              searchDate.toFormat(CALENDAR_DATE_FORMAT) !=
+                prevSearchDate.toFormat(CALENDAR_DATE_FORMAT)
             ) {
               __DEV__ &&
                 console.log('GOND direct searchDate changed: ', searchDate);
@@ -489,6 +488,7 @@ class DirectVideoView extends React.Component {
         '=== sv: ',
         serverInfo
       );
+    // __DEV__ && console.trace();
     if (delay) {
       this.pause();
       setTimeout(() => {
@@ -926,17 +926,29 @@ class DirectVideoView extends React.Component {
     }
   };
 
-  onChangeSearchDate = () => {};
-
-  onBeginDraggingTimeline = () => {
-    // if (!this.props.videoStore.paused) {
-    //   this.setNative({pause: true});
-    // }
+  onChangeSearchDate = () => {
+    if (!this.props.videoStore.paused) {
+      this.setNative({pause: true});
+    }
   };
 
-  onSwitchLiveSearch = isLive => {};
+  onBeginDraggingTimeline = () => {
+    if (!this.props.videoStore.paused) {
+      this.setNative({pause: true});
+    }
+  };
 
-  onChangeChannel = channelNo => {};
+  onSwitchLiveSearch = isLive => {
+    if (!this.props.videoStore.paused) {
+      this.setNative({pause: true});
+    }
+  };
+
+  onChangeChannel = channelNo => {
+    if (!this.props.videoStore.paused) {
+      this.setNative({pause: true});
+    }
+  };
 
   setPlayStatus = params => {
     if (params.startplayback) {
@@ -1046,16 +1058,20 @@ class DirectVideoView extends React.Component {
     if (videoStore.paused) {
       this.savedPos = value;
     } else {
-      if (this.ffmpegPlayer) {
-        this.ffmpegPlayer.setNativeProps({
-          seekpos: {pos: value, hd: videoStore.hdMode},
-        });
-        this.lastTimestamp = 0;
-        // setTimeout(() => this.ffmpegPlayer && this.pause(false), 200);
-      } else {
-        __DEV__ &&
-          console.log('GOND direct playAt ffmpegPlayer not available!');
-      }
+      // if (this.ffmpegPlayer) {
+      //   this.ffmpegPlayer.setNativeProps({
+      //     seekpos: {pos: value, hd: videoStore.hdMode},
+      //   });
+      //   this.lastTimestamp = 0;
+      //   // setTimeout(() => this.ffmpegPlayer && this.pause(false), 200);
+      // } else {
+      //   __DEV__ &&
+      //     console.log('GOND direct playAt ffmpegPlayer not available!');
+      // }
+      this.setNative({
+        seekpos: {pos: value, hd: videoStore.hdMode},
+      });
+      this.lastTimestamp = 0;
     }
   };
 
