@@ -380,13 +380,17 @@ export default HLSStreamModel = types
     }),
     getHLSStreamUrl: flow(function* (info, cmd) {
       const currentUrl = self.getUrlById(info.sid);
-      if (!currentUrl) {
+      if (!currentUrl || (!info.StreamName && !info.hls_stream)) {
         __DEV__ &&
           console.log(
             'GOND getHLSStreamUrl currentURL not found: ',
             info,
             self.urlsList
           );
+        self.setStreamStatus({
+          connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+          isLoading: false,
+        });
         return;
       }
       currentUrl.resetRetries();

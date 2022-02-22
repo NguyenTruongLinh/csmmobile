@@ -291,7 +291,9 @@ class HLSStreamingView extends React.Component {
     });
   };
 
-  onBeginDraggingTimeline = () => {};
+  onBeginDraggingTimeline = () => {
+    this.pause(true);
+  };
 
   onSwitchLiveSearch = isLive => {
     this.refresh();
@@ -375,12 +377,12 @@ class HLSStreamingView extends React.Component {
         );
       }
     } else {
-      if (streamData.connectionStatus == STREAM_STATUS.BUFFERING)
-        this.setStreamStatus({
-          connectionStatus: STREAM_STATUS.DONE,
-          isLoading: false,
-        });
-      this.clearBufferTimeout();
+      // if (streamData.connectionStatus == STREAM_STATUS.BUFFERING)
+      //   this.setStreamStatus({
+      //     connectionStatus: STREAM_STATUS.DONE,
+      //     isLoading: false,
+      //   });
+      // this.clearBufferTimeout();
     }
   };
 
@@ -462,7 +464,7 @@ class HLSStreamingView extends React.Component {
     }
     this.clearBufferTimeout();
     this.clearReconnectTimeout();
-    this.retryCount = 0;
+    this.retryCount != 0 && (this.retryCount = 0);
 
     // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
     if (!singlePlayer) {
@@ -477,7 +479,7 @@ class HLSStreamingView extends React.Component {
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
       // __DEV__ && console.log('GOND HLS onProgress: 1');
-      // this.frameTime = timeBeginPlaying.toSeconds();
+      this.frameTime = timeBeginPlaying.toSeconds();
       this.lastVideoTime = 0;
 
       __DEV__ &&
@@ -825,7 +827,7 @@ class HLSStreamingView extends React.Component {
                 useTextureView={false}
                 disableFocus={true}
                 bufferConfig={{
-                  minBufferMs: 5000,
+                  minBufferMs: 3500,
                   maxBufferMs: 15000,
                   bufferForPlaybackMs: 2500,
                   bufferForPlaybackAfterRebufferMs: 2500,

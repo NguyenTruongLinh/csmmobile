@@ -607,7 +607,6 @@ export const VideoModel = types
           return self.directData;
         case CLOUD_TYPE.HLS:
           return self.hlsData;
-          break;
         case CLOUD_TYPE.RTC:
           return self.rtcConnection
             ? self.rtcConnection.viewers.filter(
@@ -618,11 +617,15 @@ export const VideoModel = types
                     .includes(self.channelFilter.toLowerCase())
               )
             : [];
-          break;
       }
     },
     get currentDisplayVideoData() {
       let videoDataList = self.videoData;
+      __DEV__ && console.log('GOND videoDataList ', videoDataList);
+      if (videoDataList.length == 0) {
+        __DEV__ && console.log('GOND videoDataList is empty <>');
+        return [];
+      }
       /*
       switch (self.cloudType) {
         case CLOUD_TYPE.DEFAULT:
@@ -1483,7 +1486,7 @@ export const VideoModel = types
       // #region get channels
       refreshChannelsList(newList) {
         if (self.allChannels.length == newList.length) {
-          const fnSort = (a, b) => a.channelNo < b.channelNo;
+          const fnSort = (a, b) => a.channelNo - b.channelNo;
           const arrayAllChannels = [...self.allChannels].sort(fnSort);
           const arrCompareChannels = [...newList].sort(fnSort);
           let isDiff = false;
@@ -1512,6 +1515,8 @@ export const VideoModel = types
             return;
           }
         }
+        // __DEV__ &&
+        //   console.log('GOND - getDVRChannels: channels list changed', newList);
         self.allChannels = newList; //.map(ch => ch);
       },
       getDvrChannels: flow(function* (isGetAll = false) {
@@ -2646,15 +2651,34 @@ export const VideoModel = types
       // #endregion WebRTC streaming
       // #region Get and receive videoinfos
       getVideoInfos: flow(function* (channelNo) {
-        // __DEV__ && console.log('GOND getVideoInfos');
+        // __DEV__ && console.log('GOND getVideoInfos ', self.allChannels);
         let getInfoPromise = null;
         if (!self.allChannels || self.allChannels.length <= 0) {
           let res = yield self.getDisplayingChannels();
-          if (!res || self.allChannels.length == 0) {
+          if (!res) {
             __DEV__ &&
               console.log('GOND getVideoInfos get channels info failed');
-            return false;
+            return Promise.resolve(false);
           }
+
+          if (self.allChannels.length == 0) {
+            switch (self.cloudType) {
+              case CLOUD_TYPE.DEFAULT:
+              case CLOUD_TYPE.DIRECTION:
+                self.directStreams = [];
+                break;
+              case CLOUD_TYPE.HLS:
+                self.hlsStreams = [];
+                break;
+              case CLOUD_TYPE.RTC:
+                self.rtcConnection.viewers = [];
+                break;
+              default:
+                break;
+            }
+            return Promise.resolve(true);
+          }
+
           if (
             !util.isNullOrUndef(channelNo) &&
             self.allChannels.findIndex(ch => ch.channelNo == channelNo) < 0
@@ -2664,9 +2688,28 @@ export const VideoModel = types
                 `GOND getVideoInfos channel ${channelNo} not existed or has been removed!`
               );
             self.message = `Channel ${channelNo} not existed or has been removed!`;
-            return false;
+            return Promise.resolve(false);
           }
         }
+
+        if (
+          !channelNo &&
+          self.activeChannels.length == 0 &&
+          (self.cloudType == CLOUD_TYPE.HLS || self.cloudType == CLOUD_TYPE.RTC)
+        ) {
+          switch (self.cloudType) {
+            case CLOUD_TYPE.HLS:
+              self.hlsStreams = [];
+              break;
+            case CLOUD_TYPE.RTC:
+              self.rtcConnection.viewers = [];
+              break;
+            default:
+              break;
+          }
+          return Promise.resolve(true);
+        }
+
         __DEV__ && console.log('GOND getVideoInfos 2');
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
@@ -2695,13 +2738,8 @@ export const VideoModel = types
               );
             break;
         }
-        // const [resInfo, resTimezone] = yield Promise.all([
-        //   getInfoPromise,
-        //   self.getDVRTimezone(channelNo),
-        // ]);
 
-        // return resInfo && resTimezone;
-        return yield getInfoPromise;
+        return getInfoPromise;
       }),
       // onLoginSuccess() {
       //   streamReadyCallback && streamReadyCallback();
