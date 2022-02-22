@@ -255,6 +255,7 @@ class HLSStreamingView extends React.Component {
 
   setStreamStatus = statusObject => {
     const {streamData, singlePlayer} = this.props;
+    if (!this._isMounted) return;
 
     if (singlePlayer) {
       streamData.setStreamStatus(statusObject);
@@ -285,10 +286,14 @@ class HLSStreamingView extends React.Component {
     this.lastSearchTime = null;
     this.refresh();
     this.pause(true);
-    this.setStreamStatus({
-      connectionStatus: STREAM_STATUS.CONNECTING,
-      isLoading: true,
-    });
+    setTimeout(
+      () =>
+        this.setStreamStatus({
+          connectionStatus: STREAM_STATUS.CONNECTING,
+          isLoading: true,
+        }),
+      200
+    );
   };
 
   onBeginDraggingTimeline = () => {
@@ -298,19 +303,28 @@ class HLSStreamingView extends React.Component {
   onSwitchLiveSearch = isLive => {
     this.refresh();
     this.pause(true);
-    this.setStreamStatus({
-      connectionStatus: STREAM_STATUS.CONNECTING,
-      isLoading: true,
-    });
+    setTimeout(
+      () =>
+        this.setStreamStatus({
+          connectionStatus: STREAM_STATUS.CONNECTING,
+          isLoading: true,
+        }),
+      200
+    );
   };
 
   onChangeChannel = channelNo => {
     this.refresh();
     this.pause(true);
-    this.setStreamStatus({
-      connectionStatus: STREAM_STATUS.CONNECTING,
-      isLoading: true,
-    });
+
+    setTimeout(
+      () =>
+        this.setStreamStatus({
+          connectionStatus: STREAM_STATUS.CONNECTING,
+          isLoading: true,
+        }),
+      200
+    );
   };
 
   onPlaybackStalled = event => {
@@ -706,6 +720,7 @@ class HLSStreamingView extends React.Component {
   stop = () => {
     const {streamData, videoStore} = this.props;
     if (__DEV__) console.log('GOND HLS onStop |');
+    // __DEV__ && console.log('GOND HLS streamUrl 2');
     this.setState({streamUrl: ''});
     this.retryCount = 0;
     this.refreshCount = 0;

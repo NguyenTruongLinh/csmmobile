@@ -350,10 +350,10 @@ class VideoPlayerView extends Component {
   onSwitchLiveSearch = () => {
     const {videoStore} = this.props;
     // videoStore.setNoVideo(false);
+    this.playerRef && this.playerRef.onSwitchLiveSearch(videoStore.isLive);
     videoStore.switchLiveSearch(undefined, true);
     this.updateHeader();
     // this.playerRef && this.playerRef.pause(true);
-    this.playerRef && this.playerRef.onSwitchLiveSearch(videoStore.isLive);
     setTimeout(() => {
       this.channelsScrollView &&
         videoStore.selectedChannelIndex >= 0 &&
@@ -377,6 +377,7 @@ class VideoPlayerView extends Component {
         Object.keys(videoStore.recordingDates)
       );
 
+    this.playerRef && this.playerRef.onChangeSearchDate(value);
     videoStore.setDisplayDateTime(
       DateTime.fromFormat(value.dateString, CALENDAR_DATE_FORMAT).toFormat(
         NVRPlayerConfig.FrameFormat
@@ -389,8 +390,6 @@ class VideoPlayerView extends Component {
     } else {
       this.setState({showCalendar: false});
     }
-
-    this.playerRef && this.playerRef.onChangeSearchDate(value);
   };
 
   onSetSearchTime = (hours, minutes, seconds) => {
@@ -430,6 +429,7 @@ class VideoPlayerView extends Component {
     if (videoStore.selectedChannel && channelNo == videoStore.selectedChannel)
       return;
 
+    this.playerRef && this.playerRef.onChangeChannel(channelNo);
     if (videoStore.frameTimeString) {
       videoStore.setPlayTimeForSearch(
         DateTime.fromFormat(
@@ -441,7 +441,6 @@ class VideoPlayerView extends Component {
     // videoStore.setNoVideo(false);
     videoStore.selectChannel(channelNo);
     // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
-    this.playerRef && this.playerRef.onChangeChannel(channelNo);
   };
 
   onChannelSnapshotLoaded = (param, image) => {};
