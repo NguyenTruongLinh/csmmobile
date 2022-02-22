@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Dimensions,
   BackHandler,
+  StatusBar,
 } from 'react-native';
 import PropTypes from 'prop-types';
 
@@ -28,24 +29,29 @@ import commonStyles from '../../styles/commons.style';
 import {SMARTER as SMARTER_TXT} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
 
+import Orientation from 'react-native-orientation-locker';
+
 const ViewModes = {
   normal: 0,
   fullscreenBill: 1,
   fullscreenVideo: 2,
 };
-
+const {width, height} = Dimensions.get('window');
+const fullscreenVideoW = height;
+const fullscreenVideoH = width;
+const videoW = width;
+const videoH = (width * 9) / 16;
 class TransactionDetailView extends Component {
   constructor(props) {
     super(props);
-    const {width} = Dimensions.get('window');
 
     this.state = {
       showFlagModal: false,
       // fullscreenVideo: false,
       // fullscreenBill: false,
       viewMode: ViewModes.normal,
-      videoWidth: width,
-      videoHeight: (1.1 * (width * 9)) / 16,
+      // videoWidth: width,
+      // videoHeight: (1.1 * (width * 9)) / 16,
     };
 
     this.reactions = [];
@@ -104,6 +110,7 @@ class TransactionDetailView extends Component {
   setHeader = () => {
     const {exceptionStore, navigation} = this.props;
     const {viewMode} = this.state;
+
     const fullscreenMode =
       viewMode == ViewModes.fullscreenVideo ||
       viewMode == ViewModes.fullscreenBill;
@@ -119,30 +126,34 @@ class TransactionDetailView extends Component {
             (exceptionStore.selectedTransaction
               ? ' #' + exceptionStore.selectedTransaction.tranNo
               : ''),
-      headerRight: fullscreenMode
-        ? () => (
-            <View style={commonStyles.headerContainer}>
-              <CMSTouchableIcon
-                size={20}
-                onPress={() => this.onExitFullscren()}
-                color={
-                  viewMode == ViewModes.fullscreenVideo
-                    ? CMSColors.White
-                    : CMSColors.ColorText
-                }
-                styles={commonStyles.headerIcon}
-                iconCustom="clear-button"
-              />
-            </View>
-          )
-        : null,
+      // headerRight: fullscreenMode
+      //   ? () => (
+      //       <View style={commonStyles.headerContainer}>
+      //         <CMSTouchableIcon
+      //           size={20}
+      //           onPress={() => this.onExitFullscren()}
+      //           color={
+      //             viewMode == ViewModes.fullscreenVideo
+      //               ? CMSColors.White
+      //               : CMSColors.ColorText
+      //           }
+      //           styles={commonStyles.headerIcon}
+      //           iconCustom="clear-button"
+      //         />
+      //       </View>
+      //     )
+      //   : null,
       headerStyle: {
         backgroundColor:
           viewMode == ViewModes.fullscreenVideo
             ? CMSColors.DarkTheme
             : CMSColors.White,
       },
+      headerShown: viewMode != ViewModes.fullscreenVideo,
     });
+    if (fullscreenMode) Orientation.lockToLandscape();
+    else Orientation.lockToPortrait();
+    StatusBar.setHidden(fullscreenMode);
   };
 
   getData = () => {
@@ -157,7 +168,7 @@ class TransactionDetailView extends Component {
 
   onLayout = event => {
     const {width} = event.nativeEvent.layout;
-    this.setState({videoWidth: width, videoHeight: (width * 9) / 16});
+    // this.setState({videoWidth: width, videoHeight: (width * 9) / 16});
   };
 
   onViewBill = () => {
@@ -166,7 +177,6 @@ class TransactionDetailView extends Component {
 
   onViewVideo = () => {
     __DEV__ && console.log('GOND transaction detail onVideoFullscreen ');
-
     this.setState(
       {
         viewMode:
@@ -245,9 +255,17 @@ class TransactionDetailView extends Component {
 
   renderVideoPlayer = () => {
     const {selectedTransaction} = this.props.exceptionStore;
-    const {videoWidth, videoHeight} = this.state;
+    // const {videoWidth, videoHeight} = this.state;
+    const width =
+      this.state.viewMode == ViewModes.fullscreenVideo
+        ? fullscreenVideoW
+        : videoW;
+    const height =
+      this.state.viewMode == ViewModes.fullscreenVideo
+        ? fullscreenVideoH
+        : videoH;
     return (
-      <View style={{height: videoHeight, width: '100%'}}>
+      <View style={{height: height, width: width}}>
         <VideoPlayer
           // controls={true}
           video={
@@ -255,8 +273,8 @@ class TransactionDetailView extends Component {
               ? {uri: selectedTransaction.media}
               : undefined
           }
-          videoWidth={videoWidth}
-          videoHeight={videoHeight}
+          videoWidth={width}
+          videoHeight={height}
           poster={
             selectedTransaction.snapshot.uri
               ? selectedTransaction.snapshot.uri
@@ -286,7 +304,7 @@ class TransactionDetailView extends Component {
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: CMSColors.DarkTheme,
+          backgroundColor: 'green', //CMSColors.DarkTheme,
         }}>
         {this.renderVideoPlayer()}
       </View>
@@ -349,7 +367,8 @@ class TransactionDetailView extends Component {
     if (!selectedTransaction) return <View />;
 
     let content = null;
-    const actionButton = this.renderActionButton();
+    const actionButton =
+      viewMode != ViewModes.fullscreenVideo && this.renderActionButton();
 
     switch (viewMode) {
       case ViewModes.normal:
