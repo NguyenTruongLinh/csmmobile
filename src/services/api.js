@@ -6,6 +6,7 @@ import CryptoJS from 'crypto-js';
 import {HttpModel} from '../actions/types';
 import JSONbig from 'json-bigint';
 import AES from 'crypto-js/aes';
+import {DateTime} from 'luxon';
 
 import {stringtoBase64, isValidHttpUrl} from '../util/general';
 import snackbarUtil from '../util/snackbar';
@@ -490,14 +491,8 @@ class Api {
       return;
     }
 
-    let fileName = url.split('/').pop();
-    __DEV__ &&
-      console.log(
-        'GOND downloading file fileName endsWith MP4 = ',
-        fileName.toLowerCase().endsWith('.mp4')
-      );
-    if (!fileName.toLowerCase().endsWith('.mp4')) fileName += '.mp4';
-    __DEV__ && console.log('GOND downloading file: ', fileName, ', url: ', url);
+    let fileName =
+      'exception-video-' + DateTime.now().toMillis().toString() + '.mp4';
 
     let res = await RNFetchBlob.config({
       path: path + '/' + fileName,
