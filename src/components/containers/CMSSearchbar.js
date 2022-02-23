@@ -40,6 +40,7 @@ class CMSSearchbar extends React.Component {
     };
 
     this._isMounted = false;
+    this.inputRef = null;
   }
 
   componentDidMount() {
@@ -54,27 +55,7 @@ class CMSSearchbar extends React.Component {
     return (
       <CMSTouchableIcon
         size={24}
-        onPress={() => {
-          this.setState({showSearchbar: !this.state.showSearchbar}, () => {
-            this.props.animation &&
-              Animated.parallel([
-                Animated.timing(this.state.searchbarPosition, {
-                  toValue: this.state.showSearchbar ? 0 : -SEARCHBAR_HEIGHT, // : 0,
-                  duration: 500,
-                  useNativeDriver: false,
-                }),
-                Animated.timing(this.state.searchViewHeight, {
-                  toValue: this.state.showSearchbar ? SEARCHBAR_HEIGHT : 0,
-                  duration: 500,
-                  useNativeDriver: false,
-                }),
-              ]).start();
-
-            if (callback && typeof callback == 'function') {
-              callback();
-            }
-          });
-        }}
+        onPress={() => this.onShowSearchbar(callback)}
         color={
           this.state.showSearchbar
             ? CMSColors.PrimaryActive
@@ -84,6 +65,32 @@ class CMSSearchbar extends React.Component {
         iconCustom="searching-magnifying-glass"
       />
     );
+  };
+
+  onShowSearchbar = callback => {
+    this.setState({showSearchbar: !this.state.showSearchbar}, () => {
+      if (this.state.showSearchbar && this.inputRef) {
+        this.inputRef.focus();
+      }
+
+      this.props.animation &&
+        Animated.parallel([
+          Animated.timing(this.state.searchbarPosition, {
+            toValue: this.state.showSearchbar ? 0 : -SEARCHBAR_HEIGHT, // : 0,
+            duration: 500,
+            useNativeDriver: false,
+          }),
+          Animated.timing(this.state.searchViewHeight, {
+            toValue: this.state.showSearchbar ? SEARCHBAR_HEIGHT : 0,
+            duration: 500,
+            useNativeDriver: false,
+          }),
+        ]).start();
+
+      if (callback && typeof callback == 'function') {
+        callback();
+      }
+    });
   };
 
   onChangeText = value => {
@@ -124,6 +131,7 @@ class CMSSearchbar extends React.Component {
           animation ? {height: searchViewHeight, top: searchbarPosition} : {},
         ]}>
         <InputTextIcon
+          ref={r => (this.inputRef = r)}
           label=""
           value={applyOnEnter ? internalText : value}
           onChangeText={this.onChangeText}
