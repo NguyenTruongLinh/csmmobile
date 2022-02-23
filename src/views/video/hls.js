@@ -374,7 +374,7 @@ class HLSStreamingView extends React.Component {
 
   onBuffer = event => {
     __DEV__ && console.log('GOND HLS onBuffer: ', event);
-    const {streamData} = this.props;
+    const {streamData, isLive} = this.props;
     if (event.isBuffering) {
       if (this.firstBuffer) {
         this.setStreamStatus({
@@ -390,13 +390,13 @@ class HLSStreamingView extends React.Component {
           __DEV__ ? 60000 : BUFFER_TIMEOUT
         );
       }
-    } else {
-      // if (streamData.connectionStatus == STREAM_STATUS.BUFFERING)
-      //   this.setStreamStatus({
-      //     connectionStatus: STREAM_STATUS.DONE,
-      //     isLoading: false,
-      //   });
-      // this.clearBufferTimeout();
+    } else if (!isLive) {
+      if (streamData.connectionStatus == STREAM_STATUS.BUFFERING)
+        this.setStreamStatus({
+          connectionStatus: STREAM_STATUS.DONE,
+          isLoading: false,
+        });
+      this.clearBufferTimeout();
     }
   };
 
@@ -456,14 +456,14 @@ class HLSStreamingView extends React.Component {
     }
   };
 
-  onCheckTimelineInterval = (channelNo, sid) => {
-    const {videoStore} = this.props;
-    if (videoStore.hlsTimestamps.length == 0) {
-      videoStore.getTimeline(channelNo, sid);
-    } else {
-      this.clearCheckTimelineInterval();
-    }
-  };
+  // onCheckTimelineInterval = (channelNo, sid) => {
+  //   const {videoStore} = this.props;
+  //   if (videoStore.hlsTimestamps.length == 0) {
+  //     videoStore.getTimeline(channelNo, sid);
+  //   } else {
+  //     this.clearCheckTimelineInterval();
+  //   }
+  // };
 
   onProgress = data => {
     const {isLive, videoStore, streamData, singlePlayer} = this.props;
@@ -516,24 +516,24 @@ class HLSStreamingView extends React.Component {
                 : []
             );
           // Check timeline exist
-          if (
-            hlsTimestamps.length == 0 &&
-            !this.checkTimelineInterval &&
-            !videoStore.noVideo
-          ) {
-            videoStore.getTimeline(
-              streamData.channelNo,
-              streamData.targetUrl.sid
-            );
-            this.checkTimelineInterval = setInterval(
-              () =>
-                this.onCheckTimelineInterval(
-                  streamData.channelNo,
-                  streamData.targetUrl.sid
-                ),
-              10000
-            );
-          }
+          // if (
+          //   hlsTimestamps.length == 0 &&
+          //   !this.checkTimelineInterval &&
+          //   !videoStore.noVideo
+          // ) {
+          //   videoStore.getTimeline(
+          //     streamData.channelNo,
+          //     streamData.targetUrl.sid
+          //   );
+          //   this.checkTimelineInterval = setInterval(
+          //     () =>
+          //       this.onCheckTimelineInterval(
+          //         streamData.channelNo,
+          //         streamData.targetUrl.sid
+          //       ),
+          //     10000
+          //   );
+          // }
         } else {
           // __DEV__ && console.log('GOND HLS onProgress: 2');
           this.frameTime = hlsTimestamps[this.tsIndex];

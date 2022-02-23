@@ -1852,8 +1852,13 @@ export const VideoModel = types
             .setZone(self.timezone)
             .startOf('day');
         }
-        // __DEV__ &&
-        //   console.log('GOND getTimeline searchDate after: ', self.searchDate);
+        if (__DEV__) {
+          console.log(
+            'GOND --------- getTimeline searchDate after: ',
+            self.searchDate
+          );
+          // console.trace();
+        }
         self.waitForTimeline = true;
         self.checkTimelineTimeout = setTimeout(
           () => self.getTimelineDirectly(channelNo, sid),
@@ -1876,8 +1881,10 @@ export const VideoModel = types
         ) {
           // self.getTimeline(channelNo, sid);
           const isSuccess = yield self.buildTimelineData({BigData: 1}); // get timeline directly
-          __DEV__ && console.log('GOND Get Timeline diredctly: ', isSuccess);
-          if (!isSuccess && self.timelineRetries < HLS_MAX_RETRY) {
+          __DEV__ && console.log('GOND Get Timeline directly: ', isSuccess);
+          if (isSuccess) {
+            self.timelineRetries = 0;
+          } else if (self.timelineRetries < HLS_MAX_RETRY) {
             self.timelineRetries++;
             self.checkTimelineTimeout = setTimeout(
               () => self.getTimelineDirectly(channelNo, sid),
@@ -2485,7 +2492,14 @@ export const VideoModel = types
       },
       buildTimelineData: flow(function* (data) {
         self.waitForTimeline = false;
-        if (!self.selectedStream) return;
+        if (!self.selectedStream) {
+          __DEV__ &&
+            console.log(
+              'GOND HLS buildTimelineData no stream',
+              self.selectedStream
+            );
+          return false;
+        }
         let jTimeStamp = data;
         if (jTimeStamp && jTimeStamp.BigData) {
           if (self.cloudType == CLOUD_TYPE.HLS) {
@@ -2504,6 +2518,8 @@ export const VideoModel = types
                 jTimeStamp =
                   typeof res.Data == 'string' ? JSON.parse(res.Data) : res.Data;
               } else {
+                __DEV__ &&
+                  console.log('GOND get HLS data Timeline no data', res.Data);
                 return false;
               }
             } catch (err) {
@@ -2543,7 +2559,7 @@ export const VideoModel = types
               isLoading: false,
               connectionStatus: STREAM_STATUS.NOVIDEO,
             });
-            return;
+            return true;
           }
 
           __DEV__ && console.log('-- GOND searchDate', self.searchDate);
@@ -2564,8 +2580,9 @@ export const VideoModel = types
           self.selectedStream.setStreamStatus({
             connectionStatus: STREAM_STATUS.SOURCE_ERROR,
           });
-          // return;
+          return false;
         }
+        return true;
       }),
       // #endregion HLS streaming
       // #region WebRTC streaming
