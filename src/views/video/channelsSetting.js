@@ -28,12 +28,14 @@ import {
 } from '../../localization/texts';
 
 const ITEMS_PER_ROW = 2;
-const ITEM_HEIGHT = 190;
+const {width, height} = Dimensions.get('window');
+const IMAGE_HEIGHT = ((width - 40) * 3) / 8;
+const MIN_ITEM_HEIGHT = 190;
+const ITEM_HEIGHT = Math.max(MIN_ITEM_HEIGHT, (IMAGE_HEIGHT * 11) / 8);
 
 class ChannelsSettingView extends Component {
   constructor(props) {
     super(props);
-    const {width, height} = Dimensions.get('window');
 
     this.state = {
       width,
