@@ -11,6 +11,7 @@ import {
   AppState,
   Text,
   SafeAreaView,
+  LogBox,
 } from 'react-native';
 import {observer, inject} from 'mobx-react';
 import Orientation from 'react-native-orientation-locker';
@@ -74,6 +75,7 @@ class App extends React.Component {
 
   async componentDidMount() {
     __DEV__ && console.log('GOND APP did mount');
+    LogBox.ignoreLogs(['Trying to load empty source.']);
     this.appStateEvtListener = AppState.addEventListener(
       'change',
       this._handleAppStateChange

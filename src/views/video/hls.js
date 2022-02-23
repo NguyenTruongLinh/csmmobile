@@ -27,7 +27,8 @@ import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../../localization/texts';
 
 const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
-const MAX_RETRY = 10;
+const MAX_RETRY = 7;
+const MAX_REINIT = 3;
 // const Time_Ruler_Height = normalize(variables.isPhoneX ? 75 : 65);
 // const content_padding = normalize(6);
 
@@ -50,6 +51,7 @@ class HLSStreamingView extends React.Component {
       //   ? props.streamData.targetUrl.url
       //   : null,
       urlParams: '',
+      // videoKey: 0,
       pausedUrl: '',
       timeBeginPlaying: DateTime.now().setZone(videoStore.timezone),
       internalLoading: false,
@@ -66,8 +68,10 @@ class HLSStreamingView extends React.Component {
     this.checkTimelineInterval = null;
     this.lastVideoTime = 0;
     this.retryCount = 0;
+    this.reInitCount = 0;
     this.refreshCount = 0;
     this.firstBuffer = true;
+    this.lastError = '';
   }
 
   componentDidMount() {
@@ -152,6 +156,7 @@ class HLSStreamingView extends React.Component {
               this.tsIndex = -1;
               this.retryCount = 0;
               this.refreshCount = 0;
+              this.reInitCount = 0;
               this.firstBuffer = true;
               if (videoStore.paused && this.props.isLive) {
                 this.pause(false);
@@ -284,6 +289,7 @@ class HLSStreamingView extends React.Component {
 
   onChangeSearchDate = () => {
     this.lastSearchTime = null;
+    this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
     setTimeout(
@@ -298,9 +304,11 @@ class HLSStreamingView extends React.Component {
 
   onBeginDraggingTimeline = () => {
     this.pause(true);
+    this.clearBufferTimeout();
   };
 
   onSwitchLiveSearch = isLive => {
+    this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
     setTimeout(
@@ -314,6 +322,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onChangeChannel = channelNo => {
+    this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
 
@@ -387,7 +396,7 @@ class HLSStreamingView extends React.Component {
       if (!this.videoBufferTimeout) {
         this.videoBufferTimeout = setTimeout(
           this.onBufferTimeout,
-          __DEV__ ? 60000 : BUFFER_TIMEOUT
+          __DEV__ ? 20000 : BUFFER_TIMEOUT
         );
       }
     } else if (!isLive) {
@@ -435,13 +444,16 @@ class HLSStreamingView extends React.Component {
       // return;
     }
     if (error.domain == 'NSURLErrorDomain') {
-      streamData.reInitStream();
+      this.tryReInitStream();
+      return;
     }
     if (error.errorString == 'Unrecognized media format') {
       // this.setStreamStatus({
       //   connectionStatus: STREAM_STATUS.SOURCE_ERROR,
       // });
       __DEV__ && console.log('GOND HLS SOURCE_ERROR ');
+      // this.tryReInitStream();
+      // return;
     } // else {
     // streamData.reconnect(isLive, hdMode);
     // }
@@ -479,6 +491,7 @@ class HLSStreamingView extends React.Component {
     this.clearBufferTimeout();
     this.clearReconnectTimeout();
     this.retryCount != 0 && (this.retryCount = 0);
+    this.reInitCount != 0 && (this.reInitCount = 0);
 
     // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
     if (!singlePlayer) {
@@ -706,14 +719,25 @@ class HLSStreamingView extends React.Component {
           isLoading: true,
         });
       } else {
-        this.stop();
-        this.setStreamStatus({
-          connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
-          isLoading: false,
-        });
+        this.tryReInitStream();
       }
     } else {
+      this.tryReInitStream();
+    }
+  };
+
+  tryReInitStream = () => {
+    const {streamData} = this.props;
+
+    if (this.reInitCount < MAX_REINIT) {
+      this.reInitCount++;
       streamData.reInitStream();
+    } else {
+      // this.stop();
+      this.setStreamStatus({
+        connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+        isLoading: false,
+      });
     }
   };
 
@@ -724,6 +748,7 @@ class HLSStreamingView extends React.Component {
     this.setState({streamUrl: ''});
     this.retryCount = 0;
     this.refreshCount = 0;
+    this.reInitCount = 0;
     streamData &&
       streamData.targetUrl &&
       videoStore.stopHLSStream(streamData.channelNo, streamData.targetUrl.sid);
@@ -807,6 +832,7 @@ class HLSStreamingView extends React.Component {
               /*!isLoading &&*/
               // playbackUrl ? (
               <Video
+                key={streamData.channelName + urlParams}
                 style={[{width: width, height: height}]}
                 hls={true}
                 resizeMode={'stretch'}

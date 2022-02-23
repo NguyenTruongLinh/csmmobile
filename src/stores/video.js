@@ -2142,7 +2142,7 @@ export const VideoModel = types
         // self.resumeVideoStreamFromBackground(
         //   self.selectedChannel ? true : false
         // );
-        self.getHLSInfos({channelNo, daylist: !isLive, timeline: !isLive});
+        self.getHLSInfos({channelNo /*, daylist: !isLive, timeline: !isLive*/});
       },
       /**
        *

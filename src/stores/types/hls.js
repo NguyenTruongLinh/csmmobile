@@ -387,11 +387,11 @@ export default HLSStreamModel = types
             info,
             self.urlsList
           );
-        self.setStreamStatus({
-          connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
-          isLoading: false,
-        });
-        return;
+        // self.setStreamStatus({
+        //   connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+        //   isLoading: false,
+        // });
+        return false;
       }
       currentUrl.resetRetries();
       currentUrl.clearStreamTimeout();
