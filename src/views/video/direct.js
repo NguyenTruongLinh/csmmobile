@@ -192,27 +192,27 @@ class DirectVideoView extends React.Component {
             this.refreshVideo();
           }
         ),
-        reaction(
-          () => videoStore.hdMode,
-          hdMode => {
-            // singlePlayer &&
-            // this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps({hd: hdMode});
-            if (this.props.isLive) this.setNative({hd: hdMode});
-            else {
-              this.pause();
-              setTimeout(
-                () =>
-                  this.playAt(
-                    this.lastFrameTime
-                      ? this.lastFrameTime.toSeconds() -
-                          this.lastFrameTime.startOf('day').toSeconds()
-                      : 0
-                  ),
-                200
-              );
-            }
-          }
-        ),
+        // reaction(
+        //   () => videoStore.hdMode,
+        //   hdMode => {
+        //     // singlePlayer &&
+        //     // this.ffmpegPlayer && this.ffmpegPlayer.setNativeProps({hd: hdMode});
+        //     if (this.props.isLive) this.setNative({hd: hdMode});
+        //     else {
+        //       this.pause();
+        //       setTimeout(
+        //         () =>
+        //           this.playAt(
+        //             this.lastFrameTime
+        //               ? this.lastFrameTime.toSeconds() -
+        //                   this.lastFrameTime.startOf('day').toSeconds()
+        //               : 0
+        //           ),
+        //         200
+        //       );
+        //     }
+        //   }
+        // ),
         reaction(
           // () => videoStore.isLive,
           () => this.props.isLive,
@@ -947,6 +947,23 @@ class DirectVideoView extends React.Component {
   onChangeChannel = channelNo => {
     if (!this.props.videoStore.paused) {
       this.setNative({pause: true});
+    }
+  };
+
+  onHDMode = isHD => {
+    if (this.props.isLive) this.setNative({hd: isHD});
+    else {
+      this.pause();
+      setTimeout(
+        () =>
+          this.playAt(
+            this.lastFrameTime
+              ? this.lastFrameTime.toSeconds() -
+                  this.lastFrameTime.startOf('day').toSeconds()
+              : 0
+          ),
+        200
+      );
     }
   };
 

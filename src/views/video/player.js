@@ -364,6 +364,11 @@ class VideoPlayerView extends Component {
     }, 200);
   };
 
+  onHDMode = () => {
+    this.props.videoStore.switchHD();
+    this.playerRef && this.playerRef.onHDMode(this.props.videoStore.hdMode);
+  };
+
   handleChannelsScroll = event => {};
 
   onSelectDate = value => {
@@ -878,7 +883,7 @@ class VideoPlayerView extends Component {
               }
               size={IconSize}
               // style={styles.buttonStyle}
-              onPress={() => videoStore.switchHD()}
+              onPress={this.onHDMode}
               disabled={
                 !videoStore.selectedStream ||
                 // videoStore.selectedStream.isLoading ||

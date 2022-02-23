@@ -121,10 +121,10 @@ class RTCStreamingView extends Component {
           }
         }
       ),
-      reaction(
-        () => videoStore.hdMode,
-        () => this._isMounted && singlePlayer && this.startPlayback()
-      ),
+      // reaction(
+      //   () => videoStore.hdMode,
+      //   () => this._isMounted && singlePlayer && this.startPlayback()
+      // ),
       reaction(
         () => videoStore.searchDate,
         () => {
@@ -255,7 +255,7 @@ class RTCStreamingView extends Component {
   startPlayback = (showMessage = false) => {
     const {viewer} = this.props;
     __DEV__ && console.log('GOND RTC viewer start playback', viewer);
-    if (!viewer || Object.keys(viewer).length == 0) {
+    if (!viewer || Object.keys(viewer).length == 0 || !this._isMounted) {
       __DEV__ &&
         console.log('GOND RTC viewer not available, cannot start playback');
       return;
@@ -678,6 +678,10 @@ class RTCStreamingView extends Component {
   onSwitchLiveSearch = isLive => {};
 
   onChangeChannel = channelNo => {};
+
+  onHDMode = isHD => {
+    this.startPlayback();
+  };
 
   render() {
     const {

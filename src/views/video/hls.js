@@ -27,8 +27,8 @@ import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../../localization/texts';
 
 const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
-const MAX_RETRY = 7;
-const MAX_REINIT = 3;
+const MAX_RETRY = 5;
+const MAX_REINIT = 5;
 // const Time_Ruler_Height = normalize(variables.isPhoneX ? 75 : 65);
 // const content_padding = normalize(6);
 
@@ -64,6 +64,7 @@ class HLSStreamingView extends React.Component {
     this.lastSearchTime = null;
     this.videoBufferTimeout = null;
     this.videoReconnectTimeout = null;
+    this.reInitTimeout = null;
     // this.waitingForReconnect = false;
     this.checkTimelineInterval = null;
     this.lastVideoTime = 0;
@@ -95,6 +96,13 @@ class HLSStreamingView extends React.Component {
     this.clearBufferTimeout();
     this.clearReconnectTimeout();
     this.clearCheckTimelineInterval();
+    const {streamData} = this.props;
+    if (streamData.isLoading) {
+      streamData.setStreamStatus({
+        isLoading: false,
+        connectionStatus: STREAM_STATUS.DONE,
+      });
+    }
     // this.stop();
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
@@ -113,7 +121,10 @@ class HLSStreamingView extends React.Component {
       reaction(
         () => this.props.streamData.streamUrl,
         newUrl => {
-          if (this.props.isLive != this.props.streamData.isLive) {
+          if (
+            this.props.isLive != this.props.streamData.isLive ||
+            this.props.hdMode != this.props.streamData.isHD
+          ) {
             __DEV__ &&
               console.log('HLSStreamingView streamUrl not set: ', this.props);
             return;
@@ -182,6 +193,7 @@ class HLSStreamingView extends React.Component {
         (newError, previousError) => {
           if (
             this.state.internalLoading &&
+            newError &&
             newError != previousError &&
             newError.length > 0
           )
@@ -232,14 +244,14 @@ class HLSStreamingView extends React.Component {
             this.lastSearchTime = null;
           }
         ),
-        reaction(
-          () => videoStore.hdMode,
-          isHD => {
-            // __DEV__ &&
-            //   console.log('HLSStreamingView switch mode isHD: ', isHD);
-            this.lastSearchTime = this.computeTime(this.frameTime);
-          }
-        ),
+        // reaction(
+        //   () => videoStore.hdMode,
+        //   isHD => {
+        //     // __DEV__ &&
+        //     //   console.log('HLSStreamingView switch mode isHD: ', isHD);
+        //     this.lastSearchTime = this.computeTime(this.frameTime);
+        //   }
+        // ),
         reaction(
           () => videoStore.noVideo,
           isNoVideo => {
@@ -334,6 +346,10 @@ class HLSStreamingView extends React.Component {
         }),
       200
     );
+  };
+
+  onHDMode = isHD => {
+    this.lastSearchTime = this.computeTime(this.frameTime);
   };
 
   onPlaybackStalled = event => {
@@ -730,8 +746,13 @@ class HLSStreamingView extends React.Component {
     const {streamData} = this.props;
 
     if (this.reInitCount < MAX_REINIT) {
-      this.reInitCount++;
-      streamData.reInitStream();
+      if (!this.reInitTimeout) {
+        this.reInitCount++;
+        this.reInitTimeout = setTimeout(() => {
+          this._isMounted && streamData.reInitStream();
+          this.reInitTimeout = null;
+        }, 1500);
+      }
     } else {
       // this.stop();
       this.setStreamStatus({

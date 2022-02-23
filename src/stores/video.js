@@ -809,6 +809,7 @@ export const VideoModel = types
         if (self.timeline && self.timeline.length > 0) {
           self.timeline = [];
         }
+        if (self.hdMode) self.hdMode = false;
 
         if (self.cloudType == CLOUD_TYPE.HLS && !self.isAlertPlay) {
           // reset previous channel status: Grzzz
