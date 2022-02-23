@@ -479,6 +479,11 @@ class AlarmDetailView extends Component {
     const iconSize = 16;
     // return this.state.alertType ===
     //   AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY ? (
+    const {selectedAlarm} = this.props.alarmStore;
+    const color =
+      selectedAlarm.kAlertType === AlertTypes.TEMPERATURE_OUT_OF_RANGE
+        ? CMSColors.Danger
+        : CMSColors.PrimaryText;
     return (
       <View style={[styles.timeInfoContainer, {flexDirection: 'row'}]}>
         <View style={{flexDirection: 'row'}}>
@@ -500,7 +505,7 @@ class AlarmDetailView extends Component {
               color={CMSColors.SecondaryText}
             />
           </View>
-          <Text style={[styles.temp_text, {color: CMSColors.Danger}]}>
+          <Text style={[styles.temp_text, {color: color}]}>
             {item.value /* + String.fromCharCode(176) + 'C'*/}
           </Text>
         </View>
