@@ -118,76 +118,76 @@ class HLSStreamingView extends React.Component {
     // streamData could be changed
     const {/*streamData,*/ videoStore, singlePlayer} = this.props;
     this.reactions = [
-      reaction(
-        () => this.props.streamData.streamUrl,
-        newUrl => {
-          if (
-            this.props.isLive != this.props.streamData.isLive ||
-            this.props.hdMode != this.props.streamData.isHD
-          ) {
-            __DEV__ &&
-              console.log('HLSStreamingView streamUrl not set: ', this.props);
-            return;
-          }
-          __DEV__ &&
-            console.log(
-              'HLSStreamingView newUrl: ',
-              newUrl,
-              singlePlayer,
-              videoStore.noVideo,
-              this.props.noVideo
-            );
-          if (!this.props.noVideo && newUrl != this.state.streamUrl) {
-            if (util.isValidHttpUrl(newUrl)) {
-              // __DEV__ &&
-              //   console.log(
-              //     'HLSStreamingView newURL time: ',
-              //     videoStore.searchPlayTimeLuxon,
-              //     ', isLive: ',
-              //     this.props.isLive
-              //   );
-              this.setState(
-                {
-                  streamUrl: newUrl,
-                  timeBeginPlaying: this.props.isLive
-                    ? DateTime.now().setZone(videoStore.timezone)
-                    : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
-                  internalLoading: false,
-                } // ,
-                // () => {
-                //   if (this._isMounted && videoStore.paused) {
-                //     this.pause(false);
-                //     setTimeout(() => this._isMounted && this.pause(true), 100);
-                //   }
-                // }
-              );
-              // reset these value everytimes streamUrl changed
-              this.frameTime = 0;
-              this.lastVideoTime = 0;
-              this.tsIndex = -1;
-              this.retryCount = 0;
-              this.refreshCount = 0;
-              this.reInitCount = 0;
-              this.firstBuffer = true;
-              if (videoStore.paused && this.props.isLive) {
-                this.pause(false);
-              }
-              if (!singlePlayer || this.props.isLive || !videoStore.paused) {
-                __DEV__ && console.log('HLSStreamingView should resume');
-                this.shouldResume = true;
-              }
-            } else {
-              // TODO: handle invalid url
-            }
-          } else {
-            __DEV__ &&
-              console.log(
-                'HLSStreamingView not assign streamUrl: ',
-                this.props.noVideo
-              );
-          }
-        }
-      ),
+      // reaction(
+      //   () => this.props.streamData.streamUrl,
+      //   newUrl => {
+      //     if (
+      //       this.props.isLive != this.props.streamData.isLive ||
+      //       this.props.hdMode != this.props.streamData.isHD
+      //     ) {
+      //       __DEV__ &&
+      //         console.log('HLSStreamingView streamUrl not set: ', this.props);
+      //       return;
+      //     }
+      //     __DEV__ &&
+      //       console.log(
+      //         'HLSStreamingView newUrl: ',
+      //         newUrl,
+      //         singlePlayer,
+      //         videoStore.noVideo,
+      //         this.props.noVideo
+      //       );
+      //     if (!this.props.noVideo && newUrl != this.state.streamUrl) {
+      //       if (util.isValidHttpUrl(newUrl)) {
+      //         // __DEV__ &&
+      //         //   console.log(
+      //         //     'HLSStreamingView newURL time: ',
+      //         //     videoStore.searchPlayTimeLuxon,
+      //         //     ', isLive: ',
+      //         //     this.props.isLive
+      //         //   );
+      //         this.setState(
+      //           {
+      //             streamUrl: newUrl,
+      //             timeBeginPlaying: this.props.isLive
+      //               ? DateTime.now().setZone(videoStore.timezone)
+      //               : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
+      //             internalLoading: false,
+      //           } // ,
+      //           // () => {
+      //           //   if (this._isMounted && videoStore.paused) {
+      //           //     this.pause(false);
+      //           //     setTimeout(() => this._isMounted && this.pause(true), 100);
+      //           //   }
+      //           // }
+      //         );
+      //         // reset these value everytimes streamUrl changed
+      //         this.frameTime = 0;
+      //         this.lastVideoTime = 0;
+      //         this.tsIndex = -1;
+      //         this.retryCount = 0;
+      //         this.refreshCount = 0;
+      //         this.reInitCount = 0;
+      //         this.firstBuffer = true;
+      //         if (videoStore.paused && this.props.isLive) {
+      //           this.pause(false);
+      //         }
+      //         if (!singlePlayer || this.props.isLive || !videoStore.paused) {
+      //           __DEV__ && console.log('HLSStreamingView should resume');
+      //           this.shouldResume = true;
+      //         }
+      //       } else {
+      //         // TODO: handle invalid url
+      //       }
+      //     } else {
+      //       __DEV__ &&
+      //         console.log(
+      //           'HLSStreamingView not assign streamUrl: ',
+      //           this.props.noVideo
+      //         );
+      //     }
+      //   }
+      // ),
       reaction(
         () => this.props.streamData.error,
         (newError, previousError) => {
@@ -205,6 +205,79 @@ class HLSStreamingView extends React.Component {
     if (singlePlayer) {
       this.reactions = [
         ...this.reactions,
+        reaction(
+          () => this.props.streamData.streamUrl,
+          newUrl => {
+            if (
+              this.props.isLive != this.props.streamData.isLive ||
+              this.props.hdMode != this.props.streamData.isHD
+            ) {
+              __DEV__ &&
+                console.log('HLSStreamingView streamUrl not set: ', this.props);
+              return;
+            }
+            __DEV__ &&
+              console.log(
+                'HLSStreamingView newUrl: ',
+                newUrl,
+                singlePlayer,
+                videoStore.noVideo,
+                this.props.noVideo
+              );
+            if (!this.props.noVideo && newUrl != this.state.streamUrl) {
+              if (util.isValidHttpUrl(newUrl)) {
+                // __DEV__ &&
+                //   console.log(
+                //     'HLSStreamingView newURL time: ',
+                //     videoStore.searchPlayTimeLuxon,
+                //     ', isLive: ',
+                //     this.props.isLive
+                //   );
+                this.setState(
+                  {
+                    streamUrl: newUrl,
+                    timeBeginPlaying: this.props.isLive
+                      ? DateTime.now().setZone(videoStore.timezone)
+                      : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
+                    internalLoading: false,
+                  } // ,
+                  // () => {
+                  //   if (this._isMounted && videoStore.paused) {
+                  //     this.pause(false);
+                  //     setTimeout(() => this._isMounted && this.pause(true), 100);
+                  //   }
+                  // }
+                );
+                // reset these value everytimes streamUrl changed
+                this.frameTime = 0;
+                this.lastVideoTime = 0;
+                this.tsIndex = -1;
+                this.retryCount = 0;
+                this.refreshCount = 0;
+                this.reInitCount = 0;
+                this.firstBuffer = true;
+                if (videoStore.paused && this.props.isLive) {
+                  this.pause(false);
+                }
+                if (
+                  /*!singlePlayer || */ this.props.isLive ||
+                  !videoStore.paused
+                ) {
+                  __DEV__ && console.log('HLSStreamingView should resume');
+                  this.shouldResume = true;
+                }
+              } else {
+                // TODO: handle invalid url
+              }
+            } else {
+              __DEV__ &&
+                console.log(
+                  'HLSStreamingView not assign streamUrl: ',
+                  this.props.noVideo
+                );
+            }
+          }
+        ),
         reaction(
           () => videoStore.timezone,
           newTimezone => {
@@ -263,6 +336,52 @@ class HLSStreamingView extends React.Component {
               });
               if (this.state.internalLoading)
                 this.setState({internalLoading: false});
+            }
+          }
+        ),
+      ];
+    } else {
+      this.reactions = [
+        ...this.reactions,
+        reaction(
+          () => this.props.streamData.liveUrl.url,
+          newUrl => {
+            // __DEV__ &&
+            //   console.log(
+            //     'HLSStreamingView newUrl: ',
+            //     newUrl,
+            //   );
+            if (newUrl != this.state.streamUrl) {
+              if (util.isValidHttpUrl(newUrl)) {
+                this.setState({
+                  streamUrl: newUrl,
+                  timeBeginPlaying: this.props.isLive
+                    ? DateTime.now().setZone(videoStore.timezone)
+                    : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
+                  internalLoading: false,
+                });
+                // reset these value everytimes streamUrl changed
+                // this.frameTime = 0;
+                // this.lastVideoTime = 0;
+                // this.tsIndex = -1;
+                this.retryCount = 0;
+                this.refreshCount = 0;
+                this.reInitCount = 0;
+                this.firstBuffer = true;
+                if (videoStore.paused) {
+                  this.pause(false);
+                }
+                // __DEV__ && console.log('HLSStreamingView should resume');
+                this.shouldResume = true;
+              } else {
+                // TODO: handle invalid url
+              }
+            } else {
+              __DEV__ &&
+                console.log(
+                  'HLSStreamingView not assign streamUrl: ',
+                  this.props.noVideo
+                );
             }
           }
         ),
