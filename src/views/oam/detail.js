@@ -225,9 +225,9 @@ class OAMDetailView extends Component {
         {/* <Text>{JSON.stringify(oamStore.data)}</Text> */}
         {/* <Text>{JSON.stringify(historycals)}</Text>
           <Text>{JSON.stringify(foreCasts)}</Text> */}
-        <Text>
+        {/* <Text>
           {flex1}-{flex2}
-        </Text>
+        </Text> */}
         <View
           style={[styles.header, {backgroundColor: foreColor + BORDER_ALPHA}]}>
           {this.renderAcknowledgeButton(foreColor, backColor)}
