@@ -41,6 +41,8 @@ import org.json.JSONObject;
 import java.lang.reflect.Array;
 import java.io.ByteArrayOutputStream;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 import i3.mobile.base.Constant;
 import i3.mobile.base.MobileSystemInfo;
@@ -66,6 +68,7 @@ public class FFMpegFrameView extends View {
     Bitmap preDrawBitmap = null;
     Bitmap src;
     boolean valid_first_frame = false;
+    HashMap<Integer, Long> lastFrameTimeByChannel = new HashMap<Integer, Long>();
     static MobileSystemInfo mobileSystemInfo = null;
     public static MobileSystemInfo getMobileSystemInfo(){
                 return  mobileSystemInfo;
@@ -245,7 +248,7 @@ public class FFMpegFrameView extends View {
         switch (msgId)
         {
             case Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER:
-                UpdateFrame( (Bitmap) data, channel );
+                UpdateFrame( (Bitmap)data, channel );
                 break;
             default:
                 OnEvent(msgId, data, channel);
@@ -314,6 +317,10 @@ public class FFMpegFrameView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
+        if (!this.singlePlayer)
+        {
+            return;
+        }
         //canvas.drawColor(Color.TRANSPARENT);
         super.onDraw(canvas);
         // CMSMobile not draw here
@@ -485,23 +492,61 @@ public class FFMpegFrameView extends View {
     public  void  UpdateFrame(Bitmap bmp, int channel)
     {
         // TODO: single channel
-        if (this.singlePlayer == true) {
+        if (this.singlePlayer == true)
+        {
             DrawBitmap = bmp;
             this.invalidate(img_rect);
             // this.invalidate();
-        } else if (bmp != null) {
+        } 
+        else if(bmp != null)
+        {
+            Long currentMs = System.currentTimeMillis();
+            Long lastMs = lastFrameTimeByChannel.get(channel);
+            if (lastMs == null)
+            {
+                lastFrameTimeByChannel.put((Integer)channel, currentMs);
+            }
+            else
+            {
+                Long dt = currentMs - lastMs;
+                // Log.d("GOND", "UpdateFrame, timeDiff " + dt + ", channel " + channel);
+                if (dt < 0 || dt > 200)
+                {
+                    lastFrameTimeByChannel.put((Integer)channel, currentMs);
+                }
+                else
+                {
+                    Log.e("GOND", "UpdateFrame skip frame, channel " + channel);
+                    bmp.recycle();
+                    return;
+                }
+            }
+
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             Bitmap bitmap = bmp;
             // Log.e("GOND", "UpdateFrame w = " + _width + ", h = " + _height);
-            if (_width > 0 && _height > 0) {
+            if (_width > 0 && _height > 0)
+            {
                 // Log.e("GOND", "UpdateFrame scaled bitmap");
                 bitmap = Bitmap.createScaledBitmap(bmp, (int)_width, (int)_height, false);
             }
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream .toByteArray();
+            boolean compressResult = bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            if (!compressResult)
+            {
+                bitmap.recycle();
+                bmp.recycle();
+                return;
+            }
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            // Log.e("GOND", "UpdateFrame scaled bitmap 1: " + byteArray.length);
 
             String buffer = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            // Log.e("GOND", "UpdateFrame scaled bitmap 2: " + buffer.length());
+            bitmap.recycle();
+            bmp.recycle();
+            bitmap = null;
             OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_JS_FRAME_DATA, buffer, channel);
+            byteArray = null;
         }
     }
 
