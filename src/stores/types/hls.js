@@ -145,6 +145,7 @@ export default HLSStreamModel = types
     // timeline: null,
     // timestamps: null,
     keepAliveInterval: null,
+    reInitTimeout: null,
   }))
   .views(self => ({
     get channelNo() {
@@ -226,6 +227,10 @@ export default HLSStreamModel = types
         // __DEV__ && console.log('GOND HLS: beforeDestroy ... stop interval');
         clearInterval(self.keepAliveInterval);
         self.keepAliveInterval = null;
+      }
+      if (self.reInitTimeout) {
+        clearTimeout(self.reInitTimeout);
+        self.reInitTimeout = null;
       }
     },
     setLive(isLive) {
@@ -563,20 +568,28 @@ export default HLSStreamModel = types
         //   isLoading: false,
         // });
         // self.onStreamError(self.channelNo, self.isLive);
-        self.reInitStream();
+        self.handleError();
         return false;
       }
     },
     reInitStream() {
+      self.targetUrl.reset();
+      self.onStreamError(self.channelNo, self.isLive);
+      self.retryRemaining--;
+      self.reInitTimeout = null;
+      self.setStreamStatus({
+        connectionStatus: STREAM_STATUS.CONNECTING,
+        isLoading: true,
+      });
+    },
+    handleError() {
       __DEV__ && console.log(`GOND reinit HLS stream: `, self.channelName);
       if (self.retryRemaining > 0) {
-        self.targetUrl.reset();
-        self.onStreamError(self.channelNo, self.isLive);
-        self.retryRemaining--;
-        self.setStreamStatus({
-          connectionStatus: STREAM_STATUS.CONNECTING,
-          isLoading: true,
-        });
+        if (!self.reInitTimeout) {
+          self.reInitTimeout = setTimeout(() => {
+            self.reInitStream();
+          }, 1000);
+        }
       } else {
         self.setStreamStatus({
           connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
@@ -613,7 +626,7 @@ export default HLSStreamModel = types
     //       //   connectionStatus: STREAM_STATUS.TIMEOUT,
     //       //   isLoading: false,
     //       // });
-    //       self.reInitStream();
+    //       self.handleError();
     //     }
     //   }, time ?? STREAM_TIMEOUT);
     // },

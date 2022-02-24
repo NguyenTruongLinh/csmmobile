@@ -228,10 +228,10 @@ class HLSStreamingView extends React.Component {
           (newChannel, lastChannel) => {
             __DEV__ &&
               console.log('HLSStreamingView channel changed: ', newChannel);
-            if ((lastChannel = null)) {
-              this.pause(true);
-              this.stop();
-            }
+            // if ((lastChannel == null)) {
+            this.pause(true);
+            // this.stop();
+            // }
             this.setState({internalLoading: true});
             this.lastSearchTime = null;
           }
@@ -446,7 +446,7 @@ class HLSStreamingView extends React.Component {
       this.lastSearchTime = this.computeTime(this.frameTime);
 
     if (error.domain == 'NSURLErrorDomain') {
-      this.tryReInitStream();
+      this.handleStreamError();
       return;
     }
     /*
@@ -459,7 +459,7 @@ class HLSStreamingView extends React.Component {
       //   connectionStatus: STREAM_STATUS.SOURCE_ERROR,
       // });
       __DEV__ && console.log('GOND HLS SOURCE_ERROR ');
-      // this.tryReInitStream();
+      // this.handleStreamError();
       // return;
     } // else {
     // streamData.reconnect(isLive, hdMode);
@@ -732,21 +732,21 @@ class HLSStreamingView extends React.Component {
           isLoading: true,
         });
       } else {
-        this.tryReInitStream();
+        this.handleStreamError();
       }
     } else {
-      this.tryReInitStream();
+      this.handleStreamError();
     }
   };
 
-  tryReInitStream = () => {
+  handleStreamError = () => {
     const {streamData} = this.props;
 
     if (this.reInitCount < MAX_REINIT) {
       if (!this.reInitTimeout) {
         this.reInitCount++;
         this.reInitTimeout = setTimeout(() => {
-          this._isMounted && streamData.reInitStream();
+          this._isMounted && streamData.handleError();
           this.reInitTimeout = null;
         }, 1500);
       }
