@@ -207,9 +207,9 @@ class OAMDetailView extends Component {
         ? untilCapacity.toString()
         : 'Full';
     let textLen1 = (occupancyTitle || 'OCCUPANCY').length / 1.5;
-    textLen1 = Math.min(textLen1, 9);
-    let textLen2 = (capacityTitle || 'UNTIL CAPACITY').length / 2;
-    textLen2 = Math.min(textLen2, 14);
+    textLen1 = Math.min(textLen1, 6);
+    let textLen2 = (capacityTitle || 'UNTIL CAPACITY').length / 1.5;
+    textLen2 = Math.min(textLen2, 7.5);
     const numLen1 = ('' + occupancy).length + 3;
     const numLen2 = untilCapacityText.length + 3;
     const flex1 = textLen1 > numLen1 ? textLen1 : numLen1;
@@ -230,7 +230,6 @@ class OAMDetailView extends Component {
           {this.renderAcknowledgeButton(foreColor, backColor)}
           {this.renderFullScreenButton(foreColor)}
         </View>
-
         <View
           style={[
             styles.occupancyView,
@@ -244,8 +243,9 @@ class OAMDetailView extends Component {
             color={foreColor}
             borderAlpha={BORDER_ALPHA}
             icon="wc-2"
-            paddingLeft={flex1 > 6 ? 10 : 0}
+            // paddingLeft={flex1 > 6 ? 10 : 0}
           />
+          <View style={{width: 5}}></View>
           <CounterView
             flex={flex2}
             title={capacityTitle || 'UNTIL CAPACITY'}
@@ -253,7 +253,7 @@ class OAMDetailView extends Component {
             color={foreColor}
             borderAlpha={BORDER_ALPHA}
             icon="family"
-            paddingRight={flex2 > 7 ? 10 : 0}
+            // paddingRight={flex2 > 8 ? 10 : 0}
           />
         </View>
         <WaitTime
