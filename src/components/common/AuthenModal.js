@@ -7,6 +7,8 @@ import {normalize} from '../util/general';
 import Ripple from 'react-native-material-ripple';
 import {IconCustom} from '../CMSStyleSheet';
 
+import {inject, observer} from 'mobx-react';
+import {reaction} from 'mobx';
 //import Icon from 'react-native-vector-icons/FontAwesome';
 //import { createIconSetFromFontello } from 'react-native-vector-icons';
 //import fontelloConfig from './common/fontello/config.json';
@@ -32,6 +34,26 @@ class AuthenModal extends Component {
 
     this._refs = {};
   }
+
+  componentDidMount() {
+    this.initReactions();
+  }
+
+  initReactions = () => {
+    const {videoStore} = this.props;
+    this.reactions = [
+      reaction(
+        () => videoStore.showAuthenModal,
+        showAuthenModal => {
+          if (showAuthenModal) {
+            this._refs.password.clear();
+            this._refs.username.clear();
+            this._refs.username.focus();
+          }
+        }
+      ),
+    ];
+  };
 
   checkData = ({username, password}) => {
     if (username && password && username.length > 0 && password.length > 0)
@@ -252,4 +274,5 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
-module.exports = AuthenModal;
+
+export default inject('videoStore')(observer(AuthenModal));
