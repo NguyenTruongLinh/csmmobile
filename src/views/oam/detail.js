@@ -225,6 +225,9 @@ class OAMDetailView extends Component {
         {/* <Text>{JSON.stringify(oamStore.data)}</Text> */}
         {/* <Text>{JSON.stringify(historycals)}</Text>
           <Text>{JSON.stringify(foreCasts)}</Text> */}
+        <Text>
+          {flex1}-{flex2}
+        </Text>
         <View
           style={[styles.header, {backgroundColor: foreColor + BORDER_ALPHA}]}>
           {this.renderAcknowledgeButton(foreColor, backColor)}
@@ -243,7 +246,7 @@ class OAMDetailView extends Component {
             color={foreColor}
             borderAlpha={BORDER_ALPHA}
             icon="wc-2"
-            // paddingLeft={flex1 > 6 ? 10 : 0}
+            paddingLeft={flex1 > 6 ? 10 : 0}
           />
           <View style={{width: 5}}></View>
           <CounterView
@@ -253,7 +256,7 @@ class OAMDetailView extends Component {
             color={foreColor}
             borderAlpha={BORDER_ALPHA}
             icon="family"
-            // paddingRight={flex2 > 8 ? 10 : 0}
+            paddingRight={flex2 > 7.5 ? 10 : 0}
           />
         </View>
         <WaitTime
