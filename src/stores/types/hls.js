@@ -41,17 +41,19 @@ const HLSURLModel = types
     connectionStatus: types.optional(types.string, ''),
     error: types.maybeNull(types.string),
     needReset: types.optional(types.boolean, false),
+    isReady: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     getUrlRetries: 0,
     checkStreamTimeout: null,
   }))
   .actions(self => ({
-    set({url, sid, streamTimeout, failed}) {
+    set({url, sid, streamTimeout, failed, ready}) {
       url != undefined && (self.url = url);
       sid != undefined && (self.sid = sid);
       streamTimeout != undefined && (self.checkStreamTimeout = streamTimeout);
       failed != undefined && (self.isFailed = failed);
+      ready != undefined && (self.isReady = ready);
     },
     reset() {
       self.url = null;
@@ -213,6 +215,9 @@ export default HLSStreamModel = types
     get needReset() {
       return self.targetUrl.needReset;
     },
+    get isReady() {
+      return self.targetUrl.isReady;
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -341,6 +346,9 @@ export default HLSStreamModel = types
       // isLoading != undefined && (self.isLoading = isLoading);
       // needReset != undefined && (self.needReset = needReset);
       // error != undefined && (self.error = error);
+    },
+    setStreamReady(isReady) {
+      self.targetUrl.set({ready: isReady});
     },
     // setReconnectStatus(value) {
     //   self.isWaitingReconnect = value;
@@ -582,7 +590,7 @@ export default HLSStreamModel = types
         isLoading: true,
       });
     },
-    handleError() {
+    handleError(info) {
       __DEV__ && console.log(`GOND reinit HLS stream: `, self.channelName);
       if (self.retryRemaining > 0) {
         if (!self.reInitTimeout) {

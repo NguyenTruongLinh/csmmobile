@@ -2280,12 +2280,25 @@ export const VideoModel = types
               self.stopWaitTimezone();
             }
           } else {
-            if (!self.hlsStreams || self.hlsStreams.length == 0) return;
+            if (!self.hlsStreams || self.hlsStreams.length == 0) {
+              __DEV__ &&
+                console.log(
+                  `GOND onHLSInfoResponse handle error stream list empty`
+                );
+              return;
+            }
             // if (self.selectedStream) {
             const target = self.hlsStreams.find(
               s => s.targetUrl.sid == info.sid
             );
-            target && target.reInitStream();
+            if (target) {
+              target.handleError(info);
+            } else {
+              __DEV__ &&
+                console.log(
+                  `GOND onHLSInfoResponse handle error stream not found`
+                );
+            }
             // target.setStreamStatus({
             //   isLoading: false,
             //   connectionStatus: STREAM_STATUS.NOVIDEO,

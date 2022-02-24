@@ -350,7 +350,7 @@ class VideoPlayerView extends Component {
   onSwitchLiveSearch = () => {
     const {videoStore} = this.props;
     // videoStore.setNoVideo(false);
-    this.playerRef && this.playerRef.onSwitchLiveSearch(videoStore.isLive);
+    this.playerRef && this.playerRef.onSwitchLiveSearch(!videoStore.isLive);
     videoStore.switchLiveSearch(undefined, true);
     this.updateHeader();
     // this.playerRef && this.playerRef.pause(true);
@@ -799,9 +799,10 @@ class VideoPlayerView extends Component {
           this.playerRef &&
           !noVideo &&
           selectedStream &&
-          !selectedStream.isLoading &&
-          timeline &&
-          timeline.length > 0 &&
+          // !selectedStream.isLoading &&
+          selectedStream.isReady &&
+          // timeline &&
+          // timeline.length > 0 &&
           (showController || paused) ? (
             <IconCustom
               name={paused ? 'play' : 'pause'}

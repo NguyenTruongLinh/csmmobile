@@ -423,6 +423,7 @@ class HLSStreamingView extends React.Component {
     this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
+    this.props.streamData.setStreamReady(false);
     setTimeout(
       () =>
         this.setStreamStatus({
@@ -436,12 +437,14 @@ class HLSStreamingView extends React.Component {
   onBeginDraggingTimeline = () => {
     this.pause(true);
     this.clearBufferTimeout();
+    this.props.streamData.setStreamReady(false);
   };
 
   onSwitchLiveSearch = isLive => {
     this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
+    this.props.streamData.setStreamReady(false);
     setTimeout(
       () =>
         this.setStreamStatus({
@@ -456,7 +459,7 @@ class HLSStreamingView extends React.Component {
     this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
-
+    this.props.streamData.setStreamReady(false);
     setTimeout(
       () =>
         this.setStreamStatus({
@@ -503,6 +506,7 @@ class HLSStreamingView extends React.Component {
     if (singlePlayer && this.shouldResume) {
       this.shouldResume = false;
     }
+    streamData.setStreamReady(true);
   };
 
   onBuffer = event => {
@@ -902,7 +906,7 @@ class HLSStreamingView extends React.Component {
   };
 
   playAt = value => {
-    const {videoStore} = this.props;
+    const {videoStore, streamData} = this.props;
     const time = videoStore.searchDate.plus({seconds: value});
     __DEV__ && console.log('GOND HLS playAt: ', value, ' - ', time);
     this.lastSearchTime = this.computeTime(time.toSeconds());
@@ -912,6 +916,7 @@ class HLSStreamingView extends React.Component {
     // );
     this.refresh();
     this.pause(true);
+    streamData.setStreamReady(false);
     videoStore.onHLSTimeChanged(time);
   };
 
