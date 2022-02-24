@@ -554,6 +554,7 @@ class DashboardView extends React.Component {
           </Text>
         </View>
         <View style={styles.chartContainer}>{this.renderChart()}</View>
+        <View style={styles.manuallyClipText}></View>
       </View>
     );
   };
@@ -774,6 +775,13 @@ const styles = StyleSheet.create({
     flex: 4,
     marginLeft: -35,
     marginTop: 0,
+  },
+  manuallyClipText: {
+    position: 'absolute',
+    backgroundColor: CMSColors.White,
+    width: '100%',
+    height: Platform.OS == 'android' ? 14 : 10,
+    bottom: 0,
   },
   topInfoContainer: {
     flex: 1,
