@@ -255,7 +255,7 @@ export const SitesMapModel = types
       );
     },
     selectRegion: flow(function* selectRegion(item) {
-      self.selectedRegion = item.key;
+      self.selectedRegion = item ? item.key : null;
       /*
       self.startLoad();
       try {

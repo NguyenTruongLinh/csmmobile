@@ -64,6 +64,13 @@ class RegionsView extends Component {
     ];
   };
 
+  onAllSitesPress = () => {
+    const {sitesStore, navigation} = this.props;
+    sitesStore.selectRegion(null);
+    sitesStore.selectSite(null);
+    navigation.navigate(ROUTERS.VIDEO_SITES);
+  };
+
   setHeader = () => {
     const {sitesStore, navigation} = this.props;
     const searchButton = this.searchbarRef
@@ -75,7 +82,7 @@ class RegionsView extends Component {
         <View style={commonStyles.headerContainer}>
           <CMSTouchableIcon
             size={22}
-            onPress={() => navigation.navigate(ROUTERS.VIDEO_SITES)}
+            onPress={this.onAllSitesPress}
             color={CMSColors.IconButton}
             styles={commonStyles.headerIcon}
             iconCustom="sites"
