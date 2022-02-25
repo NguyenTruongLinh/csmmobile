@@ -85,6 +85,7 @@ module.exports = {
   HeaderBorder: Very_Light_Gray,
   ModalFooter: Matte_Black,
   FooterBorder: Very_Light_Gray,
+  ModalTransparent: '#11111199',
 
   //FILTER
   BGHeaderSites: 'rgba(199,211,221,0.54)',

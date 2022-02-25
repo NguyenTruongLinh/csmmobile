@@ -1017,7 +1017,7 @@ const styles = StyleSheet.create({
   },
   modalcontainer: {
     flex: 1,
-    backgroundColor: CMSColors.borderColor,
+    backgroundColor: CMSColors.ModalTransparent,
     //justifyContent: 'center'
     //alignItems: 'center,
     flexDirection: 'column',
