@@ -515,7 +515,11 @@ export default HLSStreamModel = types
       } catch (err) {
         __DEV__ &&
           console.log('GOND HLS Get Streaming Session URL failed: ', err);
-        self.setStreamStatus({
+          if(err.toString().indexOf("ResourceNotFoundException")>=0){
+            self.retryRemaining = 1;
+          }
+          console.log('Duck HLS Get Streaming Session URL failed self.retryRemaining: ', self.retryRemaining);
+          self.setStreamStatus({
           isLoading: false,
           connectionStatus: STREAM_STATUS.RECONNECTING,
           error: err.message,
@@ -616,6 +620,7 @@ export default HLSStreamModel = types
     },
     handleError(info) {
       __DEV__ && console.log(`GOND reinit HLS stream: `, self.channelName);
+      __DEV__ && console.log(`Duck reinit HLS stream: `, info);
       if (self.retryRemaining > 0) {
         if (!self.reInitTimeout) {
           self.reInitTimeout = setTimeout(() => {

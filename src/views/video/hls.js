@@ -857,9 +857,9 @@ class HLSStreamingView extends React.Component {
       if (this.retryCount < MAX_RETRY) {
         this.retryCount++;
         this.refreshCount++;
-        this.setState({
-          urlParams: '&v=' + this.refreshCount,
-        });
+        // this.setState({
+        //   urlParams: '&v=' + this.refreshCount,
+        // });
         this.setStreamStatus({
           connectionStatus: STREAM_STATUS.RECONNECTING,
           isLoading: true,
