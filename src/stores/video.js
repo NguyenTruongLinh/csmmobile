@@ -946,6 +946,7 @@ export const VideoModel = types
             );
           } catch (err) {
             __DEV__ && console.log('*** GOND setSearchDate failed: ', err);
+            return;
           }
           // if (self.timezoneName) {
           //   self.searchDate = self.searchDate.setZone(self.timezoneName);
@@ -1057,16 +1058,17 @@ export const VideoModel = types
         //   console.log(`GOND HLS get timezone: `, tzName, self.timezone);
 
         // correct search date after timezone acquired
-        if (self.searchDate) {
-          if (self.searchDate.zone.name != self.timezone)
-            self.searchDate = self.searchDate
-              .setZone(self.timezone, {keepLocalTime: true})
-              .startOf('day');
-        } else {
-          self.searchDate = DateTime.now()
-            .setZone(self.timezone)
-            .startOf('day');
-        }
+        self.getSafeSearchDate();
+        // if (self.searchDate) {
+        //   if (self.searchDate.zone.name != self.timezone)
+        //     self.searchDate = self.searchDate
+        //       .setZone(self.timezone, {keepLocalTime: true})
+        //       .startOf('day');
+        // } else {
+        //   self.searchDate = DateTime.now()
+        //     .setZone(self.timezone)
+        //     .startOf('day');
+        // }
 
         // Request data after timezone acquired
         if (self.cloudType == CLOUD_TYPE.HLS) {
@@ -1192,33 +1194,33 @@ export const VideoModel = types
           }
           // dongpt: end
 
-          if (
-            !self.searchDate // ||
-            // (self.searchDate.toSeconds() ==
-            //   DateTime.now()
-            //     .setZone(self.timezone)
-            //     .startOf('day')
-            //     .toSeconds() &&
-            //   self.searchDate.zone.name != self.timezone)
-          ) {
-            // if (self.frameTimeString && self.frameTimeString.length > 0) {
+          // if (
+          //   !self.searchDate // ||
+          //   // (self.searchDate.toSeconds() ==
+          //   //   DateTime.now()
+          //   //     .setZone(self.timezone)
+          //   //     .startOf('day')
+          //   //     .toSeconds() &&
+          //   //   self.searchDate.zone.name != self.timezone)
+          // ) {
+          //   // if (self.frameTimeString && self.frameTimeString.length > 0) {
 
-            // } else {
-            self.searchDate = DateTime.now()
-              .setZone(self.timezone)
-              .startOf('day');
-            // }
-            __DEV__ &&
-              console.log(
-                'GOND @@@ switchlivesearch zone:',
-                self.timezone,
-                '\n - searchDate: ',
-                self.searchDate.toFormat(NVRPlayerConfig.RequestTimeFormat)
-              );
-          }
+          //   // } else {
+          //   self.searchDate = DateTime.now()
+          //     .setZone(self.timezone)
+          //     .startOf('day');
+          //   // }
+          //   __DEV__ &&
+          //     console.log(
+          //       'GOND @@@ switchlivesearch zone:',
+          //       self.timezone,
+          //       '\n - searchDate: ',
+          //       self.searchDate.toFormat(NVRPlayerConfig.RequestTimeFormat)
+          //     );
+          // }
 
           self.setDisplayDateTime(
-            self.searchDate.toFormat(NVRPlayerConfig.FrameFormat)
+            self.getSafeSearchDate().toFormat(NVRPlayerConfig.FrameFormat)
           );
         }
         self.isLive = nextIsLive === undefined ? !self.isLive : nextIsLive;
@@ -1838,6 +1840,20 @@ export const VideoModel = types
           __DEV__ && console.log('GOND Get Daylist diredctly: ', isSuccess);
         }
       }),
+      getSafeSearchDate() {
+        if (self.searchDate) {
+          if (self.searchDate.zone.name != self.timezone)
+            self.searchDate = self.searchDate
+              .setZone(self.timezone, {keepLocalTime: true})
+              .startOf('day');
+        } else {
+          self.searchDate = DateTime.now()
+            .setZone(self.timezone)
+            .startOf('day');
+        }
+
+        return self.searchDate;
+      },
       getTimeline: flow(function* (channelNo, sid) {
         // __DEV__ &&
         //   console.log(
@@ -1845,20 +1861,11 @@ export const VideoModel = types
         //     self.searchDate,
         //     self.searchDate.setZone(self.timezone)
         //   );
-        if (self.searchDate) {
-          if (self.searchDate.zone.name != self.timezone)
-            self.searchDate = self.searchDate
-              .setZone(self.timezone)
-              .startOf('day');
-        } else {
-          self.searchDate = DateTime.now()
-            .setZone(self.timezone)
-            .startOf('day');
-        }
+
         if (__DEV__) {
           console.log(
             'GOND --------- getTimeline searchDate after: ',
-            self.searchDate
+            self.getSafeSearchDate()
           );
           // console.trace();
         }
@@ -1868,9 +1875,9 @@ export const VideoModel = types
           HLS_DATA_REQUEST_TIMEOUT
         ); // 1 min wait time
         return yield self.sendVSCCommand(VSCCommand.TIMELINE, channelNo, {
-          requestDate: self.searchDate.toFormat(
-            NVRPlayerConfig.HLSRequestDateFormat
-          ),
+          requestDate: self
+            .getSafeSearchDate()
+            .toFormat(NVRPlayerConfig.HLSRequestDateFormat),
           begin: BEGIN_OF_DAY_STRING,
           end: END_OF_DAY_STRING,
           sid,
@@ -1995,9 +2002,9 @@ export const VideoModel = types
               (yield self.getTimeline(channelNo, targetStream.targetUrl.sid));
 
             timeParams = {
-              RequestDate: self.searchDate.toFormat(
-                NVRPlayerConfig.HLSRequestDateFormat
-              ),
+              RequestDate: self
+                .getSafeSearchDate()
+                .toFormat(NVRPlayerConfig.HLSRequestDateFormat),
               BeginTime: self.searchPlayTime
                 ? self.searchPlayTimeLuxon.toFormat(
                     NVRPlayerConfig.HLSRequestTimeFormat
@@ -2007,9 +2014,9 @@ export const VideoModel = types
             };
             __DEV__ &&
               console.log(
-                `GOND getHLSInfos date = ${self.searchDate.toFormat(
-                  NVRPlayerConfig.HLSRequestDateFormat
-                )}`,
+                `GOND getHLSInfos date = ${self
+                  .getSafeSearchDate()
+                  .toFormat(NVRPlayerConfig.HLSRequestDateFormat)}`,
                 self.searchDate
               );
           }
@@ -2180,9 +2187,9 @@ export const VideoModel = types
             ChannelNo: self.selectedChannel + 1,
             RequestMode: self.hdMode ? VSCCommand.SEARCHHD : VSCCommand.SEARCH,
             isMobile: true,
-            RequestDate: self.searchDate.toFormat(
-              NVRPlayerConfig.HLSRequestDateFormat
-            ),
+            RequestDate: self
+              .getSafeSearchDate()
+              .toFormat(NVRPlayerConfig.HLSRequestDateFormat),
             BeginTime: time.toFormat(NVRPlayerConfig.HLSRequestTimeFormat),
             EndTime: END_OF_DAY_STRING,
           },
@@ -2221,7 +2228,7 @@ export const VideoModel = types
         // };
         // __DEV__ &&
         //   console.log(
-        //     `GOND onHLSTimeChanged date = ${self.searchDate.toFormat(
+        //     `GOND onHLSTimeChanged date = ${self.getSafeSearchDate().toFormat(
         //       NVRPlayerConfig.HLSRequestDateFormat
         //     )}`,
         //     self.searchDate
