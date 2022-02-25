@@ -105,13 +105,8 @@ class ChannelsListView extends React.Component {
 
   setHeader = enableSettingButton => {
     if (!this._isMounted) return;
-    const {
-      navigation,
-      videoStore,
-      healthStore,
-      sitesStore,
-      userStore,
-    } = this.props;
+    const {navigation, videoStore, healthStore, sitesStore, userStore} =
+      this.props;
     const {isListView} = this.state;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() =>
@@ -348,7 +343,10 @@ class ChannelsListView extends React.Component {
     this.playerRefs = [];
     const renderItem = isListView ? this.renderItemList : this.renderItemGrid;
     const dvrsCount = sitesStore.selectedSiteDVRs.length;
-
+    const data =
+      isListView || videoStore.filteredDisplayChannels.length % 2 == 0
+        ? videoStore.filteredDisplayChannels
+        : [...videoStore.filteredDisplayChannels, {}];
     return (
       <View style={styles.screenContainer}>
         <CMSSearchbar
@@ -393,7 +391,7 @@ class ChannelsListView extends React.Component {
             <FlatList
               ref={r => (this.videoListRef = r)}
               renderItem={renderItem}
-              data={videoStore.filteredDisplayChannels} // {this.state.liveData}
+              data={data} // {this.state.liveData}
               keyExtractor={item => item.key}
               columnWrapperStyle={
                 isListView ? undefined : {justifyContent: 'space-between'}
@@ -450,7 +448,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dropdownIcon: {marginRight: 14},
-  gridNoItem: {flex: 1, width: '48%', height: ITEM_HEIGHT},
+  gridNoItem: {
+    flex: 1,
+    width: '48%',
+    height: ITEM_HEIGHT,
+    marginRight: 0,
+    marginLeft: 7,
+  },
   gridItemRipple: {
     flex: 1,
     flexDirection: 'column',
