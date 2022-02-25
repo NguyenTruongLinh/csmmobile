@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
+import {isAlive} from 'mobx-state-tree';
 import Video from 'react-native-video';
 import {DateTime} from 'luxon';
 
@@ -104,7 +105,7 @@ class HLSStreamingView extends React.Component {
     this.clearReconnectTimeout();
     this.clearCheckTimelineInterval();
     const {streamData} = this.props;
-    if (streamData.isLoading) {
+    if (isAlive(streamData) && streamData.isLoading) {
       streamData.setStreamStatus({
         isLoading: false,
         connectionStatus: STREAM_STATUS.DONE,
@@ -884,6 +885,8 @@ class HLSStreamingView extends React.Component {
       }
     } else {
       // this.stop();
+      __DEV__ &&
+        console.log(`GOND CONNECTION_ERROR view handleStreamError max retry: `);
       this.setStreamStatus({
         connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
         isLoading: false,
@@ -916,7 +919,10 @@ class HLSStreamingView extends React.Component {
 
   playAt = value => {
     const {videoStore, streamData} = this.props;
-    const time = videoStore.searchDate.plus({seconds: value});
+    const searchDate = videoStore.searchDate
+      ? videoStore.searchDate
+      : videoStore.getSafeSearchDate();
+    const time = searchDate.plus({seconds: value});
     __DEV__ && console.log('GOND HLS playAt: ', value, ' - ', time);
     this.lastSearchTime = this.computeTime(time.toSeconds());
 
@@ -930,14 +936,8 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      streamData,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, internalLoading} = this.state;

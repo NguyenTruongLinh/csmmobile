@@ -195,16 +195,17 @@ class RTCStreamingView extends Component {
   };
 
   playAt = value => {
+    const searchDate = this.props.videoStore.getSafeSearchDate();
     if (this._isMounted && value) {
       __DEV__ &&
         console.log(
           'GOND RTC playAt: ',
           value,
-          this.props.videoStore.searchDate.plus({seconds: value})
+          searchDate.plus({seconds: value})
         );
       this.setState(
         {
-          startTs: this.props.videoStore.searchDate.toSeconds() + value,
+          startTs: searchDate.toSeconds() + value,
         },
         () => this.startPlayback()
       );
@@ -290,6 +291,7 @@ class RTCStreamingView extends Component {
       main_sub: this.props.hdMode ? 1 : 0,
       channel_id: viewer.channelNo,
     };
+    const searchDate = videoStore.getSafeSearchDate();
 
     if (cmd == RTC_COMMANDS.SEARCH) {
       // __DEV__ &&
@@ -308,7 +310,7 @@ class RTCStreamingView extends Component {
       requestObj = {
         ...requestObj,
         begin_time: videoStore.searchDateString,
-        end_time: videoStore.searchDate
+        end_time: searchDate
           .endOf('day')
           .toFormat(NVRPlayerConfig.RequestTimeFormat),
       };
@@ -376,13 +378,8 @@ class RTCStreamingView extends Component {
     const msgObj =
       typeof msg.data == 'string' ? JSON.parse(msg.data) : msg.data;
     const {msg_type, data} = msgObj;
-    const {
-      videoStore,
-      viewer,
-      searchTime,
-      searchPlayTime,
-      noVideo,
-    } = this.props;
+    const {videoStore, viewer, searchTime, searchPlayTime, noVideo} =
+      this.props;
 
     if ((data.error_code && data.error_code != '0') || data.status == 'FAIL') {
       viewer.setStreamStatus({
@@ -684,13 +681,8 @@ class RTCStreamingView extends Component {
   };
 
   render() {
-    const {
-      remoteStream,
-      channelName,
-      isLoading,
-      connectionStatus,
-      error,
-    } = this.props.viewer;
+    const {remoteStream, channelName, isLoading, connectionStatus, error} =
+      this.props.viewer;
     const {width, height, videoStore} = this.props;
     // const {error} = this.state;
     const noVideo =

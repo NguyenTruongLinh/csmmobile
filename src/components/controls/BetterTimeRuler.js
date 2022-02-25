@@ -41,7 +41,6 @@ export default class TimeRuler extends PureComponent {
     // this.arrayof24HTime = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
     // this.arrayof12HTime = ['12:00 AM', '01:00 AM', '02:00 AM', '03:00 AM', '04:00 AM', '05:00 AM', '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM', '11:00 PM'];
     this.color = ['pink', 'orange', 'blue', 'green', '00ff00'];
-    // this.searchDate = this.props.searchDate;
     const {width, height} = Dimensions.get('window');
 
     this.Enum_RecordType = {
@@ -100,10 +99,7 @@ export default class TimeRuler extends PureComponent {
     // this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
     this._isMounted = false;
 
-    if (this.scrollEndTimeout) {
-      clearTimeout(this.scrollEndTimeout);
-      this.scrollEndTimeout = null;
-    }
+    this.clearScrollEndTimeout();
   }
 
   componentDidUpdate(prevProps) {
@@ -127,6 +123,13 @@ export default class TimeRuler extends PureComponent {
       this.scrollTo(sec * secWidth, 0);
     }
   }
+
+  clearScrollEndTimeout = () => {
+    if (this.scrollEndTimeout) {
+      clearTimeout(this.scrollEndTimeout);
+      this.scrollEndTimeout = null;
+    }
+  };
 
   checkWithWatermarkAndAudio = (code, checkingType) => {
     return (
@@ -334,10 +337,7 @@ export default class TimeRuler extends PureComponent {
       );
     // this.isScrollEnd = true;
 
-    if (this.scrollEndTimeout) {
-      clearTimeout(this.scrollEndTimeout);
-      this.scrollEndTimeout = null;
-    }
+    this.clearScrollEndTimeout();
     let {x} = event.nativeEvent.contentOffset;
     this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 200);
     /*
@@ -406,6 +406,7 @@ export default class TimeRuler extends PureComponent {
 
   onScroll = event => {
     __DEV__ && console.log('GOND === TimeRuler onScroll');
+    this.clearScrollEndTimeout();
     let {hourBuildRuler, hourSpecial} = this.props;
     if (this.isManualScrolling == true) {
       // this.isAutoScrolling = true;
@@ -704,13 +705,8 @@ export default class TimeRuler extends PureComponent {
   };
 
   render() {
-    const {
-      is24hour,
-      hourBuildRuler,
-      hourSpecial,
-      rulerDST,
-      timeData,
-    } = this.props;
+    const {is24hour, hourBuildRuler, hourSpecial, rulerDST, timeData} =
+      this.props;
     // console.log('GOND TimeRuler hourBuildRuler: ', hourBuildRuler);
     let _data =
       hourBuildRuler != default24H

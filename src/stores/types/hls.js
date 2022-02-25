@@ -1,4 +1,10 @@
-import {flow, types, getSnapshot, applySnapshot} from 'mobx-state-tree';
+import {
+  flow,
+  types,
+  getSnapshot,
+  applySnapshot,
+  isAlive,
+} from 'mobx-state-tree';
 
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
@@ -48,6 +54,9 @@ const HLSURLModel = types
     checkStreamTimeout: null,
   }))
   .actions(self => ({
+    beforeDestroy() {
+      self.clearStreamTimeout();
+    },
     set({url, sid, streamTimeout, failed, ready}) {
       url != undefined && (self.url = url);
       sid != undefined && (self.sid = sid);
@@ -138,7 +147,7 @@ export default HLSStreamModel = types
     // sync values from videoStore
     isLive: types.optional(types.boolean, false),
     isHD: types.optional(types.boolean, false),
-    isDead: types.optional(types.boolean, false),
+    // isDead: types.optional(types.boolean, false),
     // isWaitingReconnect: types.optional(types.boolean, false),
   })
   .volatile(self => ({
@@ -257,6 +266,7 @@ export default HLSStreamModel = types
         console.log(
           `GOND setUrl: ${url}, live: ${self.isLive}, hd: ${self.isHD}`
         );
+      if (!isAlive(self)) return;
       // const tartget = self.getTargetUrl(isLive, isHD);
       switch (mode) {
         case undefined:
@@ -287,6 +297,7 @@ export default HLSStreamModel = types
       // self.streamUrl = value;
     },
     getUrl(mode) {
+      if (!isAlive(self)) return;
       switch (mode) {
         case undefined:
           return self.targetUrl;
@@ -301,10 +312,16 @@ export default HLSStreamModel = types
       }
     },
     getUrlById(sid) {
-      return self.urlsList.find(item => item.sid == sid);
+      return !isAlive(self)
+        ? null
+        : self.urlsList.find(item => item.sid == sid);
     },
     setUrls(object) {
-      if (typeof object != 'object' && Object.keys(object).length == 0) return;
+      if (
+        !isAlive(self) ||
+        (typeof object != 'object' && Object.keys(object).length == 0)
+      )
+        return;
       const {live, liveHD, search, searchHD} = object;
       // self.streamUrl.set(object);
       // self.streamUrl = {...getSnapshot(self.streamUrl), ...object};
@@ -331,10 +348,12 @@ export default HLSStreamModel = types
       // self.sessionToken = data.session_token ?? null;
     },
     setLiveStatus(statusObject) {
+      if (!isAlive(self)) return;
       self.liveUrl.setStreamStatus(statusObject);
     },
     // setStreamStatus({connectionStatus, error, isLoading, needReset}) {
     setStreamStatus(statusObject) {
+      if (!isAlive(self)) return;
       if (__DEV__) {
         console.log('GOND HLS: Set stream status: ', statusObject);
         // console.trace();
@@ -348,7 +367,7 @@ export default HLSStreamModel = types
       // error != undefined && (self.error = error);
     },
     setStreamReady(isReady) {
-      self.targetUrl.set({ready: isReady});
+      isAlive(self) && self.targetUrl.set({ready: isReady});
     },
     // setReconnectStatus(value) {
     //   self.isWaitingReconnect = value;
@@ -359,7 +378,7 @@ export default HLSStreamModel = types
     // },
     startWaitingForStream(sid) {
       const currentUrl = self.getUrlById(sid);
-      if (!currentUrl) return;
+      if (!currentUrl || !isAlive(self)) return;
       currentUrl.resetRetries();
       currentUrl.set({
         streamTimeout: setTimeout(
@@ -369,11 +388,13 @@ export default HLSStreamModel = types
       });
     },
     getStreamDirectly: flow(function* (sid) {
+      if (!isAlive(self)) return;
       const currentUrl = self.getUrlById(sid);
       if (!currentUrl) return;
 
       const res = yield apiService.get(VSC.controller, sid);
       __DEV__ && console.log(`GOND HLS getStreamDirectly: `, res);
+      if (!isAlive(self)) return;
       if (res && (res.StreamName || res.AcccessKey)) {
         self.startConnection({...res, sid});
       } else {
@@ -388,6 +409,7 @@ export default HLSStreamModel = types
       }
     }),
     startConnection: flow(function* (info, cmd) {
+      if (!isAlive(self)) return;
       self.retryRemaining = MAX_RETRY;
       return self.getHLSStreamUrl(info, cmd);
     }),
@@ -482,6 +504,7 @@ export default HLSStreamModel = types
             response
           );
         // self.setUrl(response.HLSStreamingSessionURL, cmd);
+        if (!isAlive(self)) return;
         currentUrl.set({url: response.HLSStreamingSessionURL});
 
         self.retryRemaining = MAX_RETRY;
@@ -500,7 +523,7 @@ export default HLSStreamModel = types
         // self.setReconnectStatus(false);
         // setTimeout(() => self.reconnect(), 200);
         // return false;
-        if (!self.isDead) return self.reconnect(info);
+        if (isAlive(self)) return self.reconnect(info);
       }
 
       if (!self.isLive && self.connectionStatus == STREAM_STATUS.NOVIDEO) {
@@ -514,7 +537,7 @@ export default HLSStreamModel = types
     }),
     reconnect(info) {
       if (
-        self.isDead ||
+        !isAlive(self) ||
         // self.isWaitingReconnect ||
         self.connectionStatus == STREAM_STATUS.TIMEOUT ||
         self.connectionStatus == STREAM_STATUS.NOVIDEO
@@ -522,7 +545,7 @@ export default HLSStreamModel = types
         __DEV__ &&
           console.log(
             'GOND HLS::Not Reconnect: ',
-            self.isDead,
+            // self.isDead,
             // self.isWaitingReconnect,
             self.connectionStatus
           );
@@ -600,6 +623,7 @@ export default HLSStreamModel = types
           }, 1000);
         }
       } else {
+        __DEV__ && console.log(`GOND CONNECTION_ERROR handleError max retry: `);
         self.setStreamStatus({
           connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
           isLoading: false,
@@ -643,7 +667,7 @@ export default HLSStreamModel = types
     //   self.streamTimeout && clearTimeout(self.streamTimeout);
     // },
     release() {
-      self.isDead = true;
+      // self.isDead = true;
       // self.clearStreamTimeout();
       self.updateStreamsStatus(false);
     },

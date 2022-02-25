@@ -473,23 +473,28 @@ class VideoPlayerView extends Component {
 
   onTimelineScrollEnd = value => {
     const {videoStore} = this.props;
-    const {searchDate, timeline, timezone} = videoStore;
+    const {timeline, timezone} = videoStore;
+    const searchDate = videoStore.getSafeSearchDate();
     // if (this.timelineScrollTimeout) {
     //   clearTimeout(this.timelineScrollTimeout);
     // }
     // this.timelineScrollTimeout = setTimeout(() => {
+    // const destinationTime = searchDate
+    //   ? searchDate.plus({seconds: value.timestamp}).toSeconds()
+    //   : DateTime.now()
+    //       .setZone(timezone)
+    //       .startOf('day')
+    //       .plus({seconds: value.timestamp})
+    //       .toSeconds();
+
     const destinationTime = searchDate
-      ? searchDate.plus({seconds: value.timestamp}).toSeconds()
-      : DateTime.now()
-          .setZone(timezone)
-          .startOf('day')
-          .plus({seconds: value.timestamp})
-          .toSeconds();
+      .plus({seconds: value.timestamp})
+      .toSeconds();
     __DEV__ &&
       console.log(
         'GOND onTimeline sliding end: ',
         value,
-        searchDate ?? DateTime.now().setZone(timezone).startOf('day'),
+        searchDate,
         destinationTime,
         timeline[timeline.length - 1],
         destinationTime >= timeline[timeline.length - 1].end
@@ -625,7 +630,8 @@ class VideoPlayerView extends Component {
       hdMode: videoStore.hdMode,
       isLive: videoStore.isLive,
       noVideo: videoStore.isLive ? false : videoStore.noVideo, // this.isNoDataSearch,
-      searchDate: videoStore.searchDate,
+      // searchDate: videoStore.searchDate,
+      searchDate: videoStore.getSafeSearchDate(),
       // searchPlayTime: videoStore.searchPlayTime,
       paused: videoStore.paused,
       singlePlayer: true,
