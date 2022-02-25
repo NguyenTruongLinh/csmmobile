@@ -1988,6 +1988,14 @@ export const VideoModel = types
               isLoading: true,
               connectionStatus: STREAM_STATUS.CONNECTING,
             });
+
+            if (
+              targetStream.targetUrl &&
+              util.isValidHttpUrl(targetStream.targetUrl.url)
+            ) {
+              targetStream.updateStream(targetStream.targetUrl.sid, true);
+              targetStream.targetUrl.reset();
+            }
           }
           targetStream.startWaitingForStream(targetStream.targetUrl.sid);
           let timeParams = {};
