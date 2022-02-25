@@ -787,6 +787,7 @@ export const VideoModel = types
 
         return changed;
       },
+      /*
       setStreamReadyCallback(fn) {
         if (fn && typeof fn !== 'function') {
           console.log('GOND set streamReadyCallback is not a function!');
@@ -795,6 +796,7 @@ export const VideoModel = types
         // __DEV__ && console.log('GOND streamReadyCallback ...');
         streamReadyCallback = fn;
       },
+      */
       selectChannel(value, key = 'channelNo') {
         const foundChannel = self.allChannels.find(ch => ch[key] == value);
         if (!foundChannel) {

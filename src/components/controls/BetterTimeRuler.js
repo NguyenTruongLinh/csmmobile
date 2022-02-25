@@ -41,7 +41,6 @@ export default class TimeRuler extends PureComponent {
     // this.arrayof24HTime = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
     // this.arrayof12HTime = ['12:00 AM', '01:00 AM', '02:00 AM', '03:00 AM', '04:00 AM', '05:00 AM', '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM', '11:00 PM'];
     this.color = ['pink', 'orange', 'blue', 'green', '00ff00'];
-    this.PressOut = true;
     // this.searchDate = this.props.searchDate;
     const {width, height} = Dimensions.get('window');
 
@@ -74,16 +73,59 @@ export default class TimeRuler extends PureComponent {
       numofMin: this.props.numofMin,
       dwidth: width / this.props.numofHours, //*this.props.numofHours*/)
       secondValue: this.props.numofHours * this.props.numofMin,
-      onScroll: this.props.onScroll,
       labelhour: '',
     };
 
     this.isAutoScrolling = true;
     this.isManualScrolling = false;
-    this._isMounted = true;
+    this._isMounted = false;
     this.lastX = 0;
     this.draggedX = 0;
     this.lastScrollOffsetX = -1;
+    // this.isTouchEnd = true;
+    // this.isScrollEnd = true;
+    this.scrollEndTimeout = null;
+  }
+
+  componentDidMount() {
+    this.dimensionsChangeEvtSub = Dimensions.addEventListener(
+      'change',
+      this.onDimensionChange
+    );
+    this._isMounted = true;
+  }
+
+  componentWillUnmount() {
+    Dimensions.removeEventListener('change', this.onDimensionChange);
+    // this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
+    this._isMounted = false;
+
+    if (this.scrollEndTimeout) {
+      clearTimeout(this.scrollEndTimeout);
+      this.scrollEndTimeout = null;
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const {currentTime, searchDate} = this.props;
+    const lastTime = prevProps.currentTime;
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND Timeline prev frameTime: ',
+    //     lastTime,
+    //     ', this.isManualScrolling',
+    //     this.isManualScrolling
+    //   );
+    if (currentTime != lastTime && !this.isManualScrolling) {
+      let sec = currentTime - searchDate;
+      let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
+
+      // TODO: handle DST
+      // ---
+
+      // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
+      this.scrollTo(sec * secWidth, 0);
+    }
   }
 
   checkWithWatermarkAndAudio = (code, checkingType) => {
@@ -211,43 +253,11 @@ export default class TimeRuler extends PureComponent {
     }
   };
 
-  componentDidMount() {
-    this.dimensionsChangeEvtSub = Dimensions.addEventListener(
-      'change',
-      this._onDimensionChange
-    );
-    this._isMounted = true;
-  }
+  formatTime = value => {
+    return parseInt(value) > 9 ? value : '0' + value;
+  };
 
-  componentWillUnmount() {
-    Dimensions.removeEventListener('change', this._onDimensionChange);
-    // this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
-    this._isMounted = false;
-  }
-
-  componentDidUpdate(prevProps) {
-    const {currentTime, searchDate} = this.props;
-    const lastTime = prevProps.currentTime;
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND Timeline prev frameTime: ',
-    //     lastTime,
-    //     ', this.isManualScrolling',
-    //     this.isManualScrolling
-    //   );
-    if (currentTime != lastTime && !this.isManualScrolling) {
-      let sec = currentTime - searchDate;
-      let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
-
-      // TODO: handle DST
-      // ---
-
-      // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
-      this.scrollTo(sec * secWidth, 0);
-    }
-  }
-
-  _onDimensionChange = event => {
+  onDimensionChange = event => {
     // let d = Dimensions.get('screen').width;
     // this.setState({
     //   dwidth: d / this.props.numofHours,
@@ -265,14 +275,183 @@ export default class TimeRuler extends PureComponent {
     });
   };
 
-  _roundOddToEven = value => {
-    if (value == 0) return 2;
-    if (value % 2 == 0) return value;
+  // _roundOddToEven = value => {
+  //   if (value == 0) return 2;
+  //   if (value % 2 == 0) return value;
 
-    let rs = value + 1;
-    return rs;
+  //   let rs = value + 1;
+  //   return rs;
+  // };
+
+  onSendTimeData = xAxis => {
+    this.scrollEndTimeout = null;
+    // if (this.isTouchEnd && this.isScrollEnd) {
+    if (xAxis == this.lastScrollOffsetX) {
+      return;
+    } else {
+      this.lastScrollOffsetX = xAxis;
+    }
+    __DEV__ && console.log('GOND === TimeRuler onSendTimeData');
+    // }
+    // let { hourBuildRuler, hourSpecial } = this.props
+    let decimalhour = xAxis / this.state.dwidth;
+    let hour = Math.floor(decimalhour);
+    // if (hourBuildRuler == startDST && hour >= hourSpecial) {
+    //   hour++;
+    // } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
+    //   hour--;
+    // }
+    let decimalminutes = (decimalhour - hour) * 60;
+    let minutes = Math.floor(decimalminutes);
+    let seconds = Math.floor((decimalminutes - minutes) * 60);
+
+    this.draggedX = xAxis;
+    if (this.props.onScrollEnd) {
+      this.props.onScrollEnd({
+        hour: hour,
+        minutes: minutes,
+        seconds: seconds,
+        timestamp:
+          /*this.props.searchDate +*/ hour * 3600 + minutes * 60 + seconds,
+      });
+
+      // Delaying auto scroll to prevent glitch
+      setTimeout(() => {
+        if (this._isMounted) this.isAutoScrolling = true;
+      }, 2000);
+
+      return;
+    }
+    // }
   };
-  _renderTimeHeaderFooter = isheader => {
+
+  onScrollEnd = event => {
+    __DEV__ &&
+      console.log(
+        'GOND === TimeRuler onScrollEnd: ',
+        event.nativeEvent.contentOffset.x,
+        this.lastScrollOffsetX
+      );
+    // this.isScrollEnd = true;
+
+    if (this.scrollEndTimeout) {
+      clearTimeout(this.scrollEndTimeout);
+      this.scrollEndTimeout = null;
+    }
+    let {x} = event.nativeEvent.contentOffset;
+    this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 200);
+    /*
+    // if (this.lastScrollOffsetX >= 0) {
+    if (event.nativeEvent.contentOffset.x == this.lastScrollOffsetX) {
+      return;
+    } else {
+      this.lastScrollOffsetX = event.nativeEvent.contentOffset.x;
+    }
+    // }
+    // let { hourBuildRuler, hourSpecial } = this.props
+    let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
+    let hour = Math.floor(decimalhour);
+    // if (hourBuildRuler == startDST && hour >= hourSpecial) {
+    //   hour++;
+    // } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
+    //   hour--;
+    // }
+    let decimalminutes = (decimalhour - hour) * 60;
+    let minutes = Math.floor(decimalminutes);
+    let seconds = Math.floor((decimalminutes - minutes) * 60);
+
+    this.draggedX = event.nativeEvent.contentOffset.x;
+    if (this.props.onScrollEnd) {
+      this.props.onScrollEnd(event, {
+        hour: hour,
+        minutes: minutes,
+        seconds: seconds,
+        timestamp:
+          hour * 3600 + minutes * 60 + seconds,
+      });
+
+      // Delaying auto scroll to prevent glitch
+      setTimeout(() => {
+        if (this._isMounted) this.isAutoScrolling = true;
+      }, 2000);
+
+      // this.isTouchEnd = true;
+      return;
+    }
+    */
+  };
+
+  onPressIn = event => {
+    __DEV__ && console.log('GOND === TimeRuler onPressIn');
+    if (this.props.onBeginSrcoll) {
+      this.props.onBeginSrcoll();
+    }
+    this.isAutoScrolling = false;
+    // this.isTouchEnd = false;
+    // this.isScrollEnd = false;
+  };
+
+  // onPressOut = event => {
+  //   __DEV__ && console.log('GOND === TimeRuler onPressOut');
+  //   this.isAutoScrolling = true;
+  //   this.isTouchEnd = true;
+  // };
+
+  onScrollBeginDrag = event => {
+    __DEV__ && console.log('GOND === TimeRuler onScrollBeginDrag');
+    this.isManualScrolling = true;
+    this.props.onPauseVideoScrolling && this.props.onPauseVideoScrolling();
+    this.props.setShowHideTimeOnTimeRule(true);
+  };
+
+  onScroll = event => {
+    __DEV__ && console.log('GOND === TimeRuler onScroll');
+    let {hourBuildRuler, hourSpecial} = this.props;
+    if (this.isManualScrolling == true) {
+      // this.isAutoScrolling = true;
+      let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
+      let hour = Math.floor(decimalhour);
+      let decimalminutes = (decimalhour - hour) * 60;
+      let minutes = Math.floor(decimalminutes);
+      let seconds = Math.floor((decimalminutes - minutes) * 60);
+
+      // if (this.props.hourBuildRuler != default24H && this.props.hourBuildRuler == endDST) {
+      //   if (hour >= (this.props.hourSpecial + 1)) {
+      //     hour--;
+      //   }
+      // }
+
+      // if (this.props.hourBuildRuler != default24H && this.props.hourBuildRuler == startDST) {
+      //   if (hour >= (this.props.hourSpecial)) {
+      //     hour++;
+      //   }
+      // }
+      if (hourBuildRuler == startDST && hour >= hourSpecial) {
+        hour++;
+      } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
+        hour--;
+      }
+
+      //this.props.onScrollBeginDrag({hour:hour,minutes:minutes,seconds:seconds, timestamp: (hour*3600+minutes*60+seconds) });
+      this.props.onScrollBeginDrag(
+        this.formatTime(hour) +
+          ':' +
+          this.formatTime(minutes) +
+          ':' +
+          this.formatTime(seconds)
+      );
+      //console.log(decimalhour);
+    }
+  };
+
+  onScrollEndDrag = event => {
+    __DEV__ && console.log('GOND === TimeRuler onScrollEndDrag');
+    this.isManualScrolling = false;
+    this.props.setShowHideTimeOnTimeRule(false);
+    this.onScrollEnd(event);
+  };
+
+  renderTimeHeaderFooter = isheader => {
     let arrayHours = this.props.is24hour
       ? arrayof24HTime.slice(0)
       : arrayof12HTime.slice(0);
@@ -295,11 +474,11 @@ export default class TimeRuler extends PureComponent {
     if (Array.isArray(rulerDST) && rulerDST.length > 0) {
       let arrayofViews = rulerDST;
       if (this.props.markerPosition == 'absolute')
-        arrayofViews = this._renderTimeHeaderFooter(true)
+        arrayofViews = this.renderTimeHeaderFooter(true)
           .concat(arrayofViews)
-          .concat(this._renderTimeHeaderFooter(false));
+          .concat(this.renderTimeHeaderFooter(false));
       else
-        arrayofViews = arrayofViews.concat(this._renderTimeHeaderFooter(true));
+        arrayofViews = arrayofViews.concat(this.renderTimeHeaderFooter(true));
 
       return arrayofViews;
     }
@@ -352,11 +531,11 @@ export default class TimeRuler extends PureComponent {
     }
     // END self built rulerDST
     if (this.props.markerPosition == 'absolute') {
-      arrayofViews = this._renderTimeHeaderFooter(true)
+      arrayofViews = this.renderTimeHeaderFooter(true)
         .concat(arrayofViews)
-        .concat(this._renderTimeHeaderFooter(false));
+        .concat(this.renderTimeHeaderFooter(false));
     } else {
-      arrayofViews = arrayofViews.concat(this._renderTimeHeaderFooter(true));
+      arrayofViews = arrayofViews.concat(this.renderTimeHeaderFooter(true));
     }
 
     return arrayofViews;
@@ -409,17 +588,17 @@ export default class TimeRuler extends PureComponent {
       arrayofViews.push(objectValue);
     }
     if (this.props.markerPosition == 'absolute') {
-      arrayofViews = this._renderTimeHeaderFooter(true)
+      arrayofViews = this.renderTimeHeaderFooter(true)
         .concat(arrayofViews)
-        .concat(this._renderTimeHeaderFooter(false));
+        .concat(this.renderTimeHeaderFooter(false));
     } else {
-      arrayofViews = arrayofViews.concat(this._renderTimeHeaderFooter(true));
+      arrayofViews = arrayofViews.concat(this.renderTimeHeaderFooter(true));
     }
 
     return arrayofViews;
   };
 
-  _renderminutes = item => {
+  renderMinutes = item => {
     if (item.visible == false) return <View />;
     let arrayofViews = [];
     let numOfSecs = this.props.numofMin;
@@ -441,7 +620,7 @@ export default class TimeRuler extends PureComponent {
           let b2 = t.begin,
             e2 = t.end;
           // console.log(
-          //   'GOND _renderminutes: \n- b1 = ',
+          //   'GOND renderMinutes: \n- b1 = ',
           //   dayjs(b1).format('DD/MM/YY HH:mm:ss'),
           //   ', e1 = ',
           //   dayjs(e1).format('DD/MM/YY HH:mm:ss'),
@@ -524,125 +703,6 @@ export default class TimeRuler extends PureComponent {
     return arrayofViews;
   };
 
-  _onSrollEnd = event => {
-    __DEV__ &&
-      console.log(
-        'GOND === TimeRuler _onSrollEnd: ',
-        event.nativeEvent.contentOffset.x,
-        this.lastScrollOffsetX
-      );
-    // if (this.lastScrollOffsetX >= 0) {
-    if (event.nativeEvent.contentOffset.x == this.lastScrollOffsetX) {
-      return;
-    } else {
-      this.lastScrollOffsetX = event.nativeEvent.contentOffset.x;
-    }
-    // }
-    // let { hourBuildRuler, hourSpecial } = this.props
-    let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
-    let hour = Math.floor(decimalhour);
-    // if (hourBuildRuler == startDST && hour >= hourSpecial) {
-    //   hour++;
-    // } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
-    //   hour--;
-    // }
-    let decimalminutes = (decimalhour - hour) * 60;
-    let minutes = Math.floor(decimalminutes);
-    let seconds = Math.floor((decimalminutes - minutes) * 60);
-
-    this.draggedX = event.nativeEvent.contentOffset.x;
-    if (this.props.onScrollEnd) {
-      this.props.onScrollEnd(event, {
-        hour: hour,
-        minutes: minutes,
-        seconds: seconds,
-        timestamp:
-          /*this.props.searchDate +*/ hour * 3600 + minutes * 60 + seconds,
-      });
-
-      // Delaying auto scroll to prevent glitch
-      setTimeout(() => {
-        if (this._isMounted) this.isAutoScrolling = true;
-      }, 2000);
-
-      // this.PressOut = true;
-      return;
-    }
-  };
-
-  _onPressIn = event => {
-    __DEV__ && console.log('GOND === TimeRuler _onPressIn');
-    if (this.props.onBeginSrcoll) {
-      this.props.onBeginSrcoll();
-    }
-    this.isAutoScrolling = false;
-    this.PressOut = false;
-  };
-
-  _onPressOut = event => {
-    __DEV__ && console.log('GOND === TimeRuler _onPressOut');
-    this.isAutoScrolling = true;
-    this.PressOut = true;
-  };
-
-  formatTime = value => {
-    return parseInt(value) > 9 ? value : '0' + value;
-  };
-
-  _onScrollBeginDrag = event => {
-    __DEV__ && console.log('GOND === TimeRuler _onScrollBeginDrag');
-    this.isManualScrolling = true;
-    this.props.onPauseVideoScrolling && this.props.onPauseVideoScrolling();
-    this.props.setShowHideTimeOnTimeRule(true);
-  };
-
-  _onScroll = event => {
-    __DEV__ && console.log('GOND === TimeRuler _onScroll');
-    let {hourBuildRuler, hourSpecial} = this.props;
-    if (this.isManualScrolling == true) {
-      // this.isAutoScrolling = true;
-      let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
-      let hour = Math.floor(decimalhour);
-      let decimalminutes = (decimalhour - hour) * 60;
-      let minutes = Math.floor(decimalminutes);
-      let seconds = Math.floor((decimalminutes - minutes) * 60);
-
-      // if (this.props.hourBuildRuler != default24H && this.props.hourBuildRuler == endDST) {
-      //   if (hour >= (this.props.hourSpecial + 1)) {
-      //     hour--;
-      //   }
-      // }
-
-      // if (this.props.hourBuildRuler != default24H && this.props.hourBuildRuler == startDST) {
-      //   if (hour >= (this.props.hourSpecial)) {
-      //     hour++;
-      //   }
-      // }
-      if (hourBuildRuler == startDST && hour >= hourSpecial) {
-        hour++;
-      } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
-        hour--;
-      }
-
-      //this.props.onScrollBeginDrag({hour:hour,minutes:minutes,seconds:seconds, timestamp: (hour*3600+minutes*60+seconds) });
-      this.props.onScrollBeginDrag(
-        this.formatTime(hour) +
-          ':' +
-          this.formatTime(minutes) +
-          ':' +
-          this.formatTime(seconds)
-      );
-      //console.log(decimalhour);
-    }
-  };
-
-  _onScrollEndDrag = event => {
-    __DEV__ && console.log('GOND === TimeRuler _onScrollEndDrag');
-    this.isManualScrolling = false;
-    this.props.setShowHideTimeOnTimeRule(false);
-    this._onSrollEnd(event);
-  };
-
   render() {
     const {
       is24hour,
@@ -692,11 +752,13 @@ export default class TimeRuler extends PureComponent {
             }}
             scrollEnabled={isEnable}
             showsHorizontalScrollIndicator={false}
-            onScrollBeginDrag={this._onScrollBeginDrag}
-            onScroll={this._onScroll}
-            onScrollEndDrag={this._onScrollEndDrag}
-            onMomentumScrollBegin={this._onPressIn}
-            onMomentumScrollEnd={this._onSrollEnd}
+            onScrollBeginDrag={this.onScrollBeginDrag}
+            onScroll={this.onScroll}
+            onScrollEndDrag={this.onScrollEndDrag}
+            // onMomentumScrollBegin={this.onPressIn}
+            onMomentumScrollEnd={this.onScrollEnd}
+            onTouchStart={this.onPressIn}
+            onTouchEnd={this.onPressOut}
             bounces={false}
             scrollEventThrottle={16}>
             {_data.map((item, index) => {
@@ -722,7 +784,7 @@ export default class TimeRuler extends PureComponent {
                         : CMSColors.InactiveText,
                       borderLeftColor: 'gray',
                     }}>
-                    {this._renderminutes(item)}
+                    {this.renderMinutes(item)}
                   </View>
                   <View
                     style={{

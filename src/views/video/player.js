@@ -471,7 +471,7 @@ class VideoPlayerView extends Component {
     }
   };
 
-  onTimelineScrollEnd = (event, value) => {
+  onTimelineScrollEnd = value => {
     const {videoStore} = this.props;
     const {searchDate, timeline, timezone} = videoStore;
     // if (this.timelineScrollTimeout) {
@@ -799,7 +799,7 @@ class VideoPlayerView extends Component {
           this.playerRef &&
           !noVideo &&
           selectedStream &&
-          // !selectedStream.isLoading &&
+          !selectedStream.isLoading &&
           selectedStream.isReady &&
           // timeline &&
           // timeline.length > 0 &&

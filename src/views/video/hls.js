@@ -220,11 +220,10 @@ class HLSStreamingView extends React.Component {
               console.log(
                 'HLSStreamingView newUrl: ',
                 newUrl,
-                singlePlayer,
                 videoStore.noVideo,
                 this.props.noVideo
               );
-            if (!this.props.noVideo && newUrl != this.state.streamUrl) {
+            if (!videoStore.noVideo && newUrl != this.state.streamUrl) {
               if (util.isValidHttpUrl(newUrl)) {
                 // __DEV__ &&
                 //   console.log(
@@ -507,6 +506,12 @@ class HLSStreamingView extends React.Component {
       this.shouldResume = false;
     }
     streamData.setStreamReady(true);
+    // if (streamData.connectionStatus != STREAM_STATUS.DONE) {
+    //   streamData.setStreamStatus({
+    //     isLoading: false,
+    //     connectionStatus: STREAM_STATUS.DONE,
+    //   });
+    // }
   };
 
   onBuffer = event => {
