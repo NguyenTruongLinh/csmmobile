@@ -421,10 +421,12 @@ class VideoPlayerView extends Component {
     // setTimeout(() => {
     //   this.playerRef && this.playerRef.playAt(secondsValue);
     // }, 200);
-    this.onTimelineScrollEnd(
-      {},
-      {hours, minutes, seconds, timestamp: secondsValue}
-    );
+    this.onTimelineScrollEnd({
+      hour: parseInt(hours),
+      minutes: parseInt(minutes),
+      seconds: parseInt(seconds),
+      timestamp: secondsValue,
+    });
     this.timePickerRef && this.timePickerRef.close();
   };
 
