@@ -2183,9 +2183,18 @@ export const VideoModel = types
           connectionStatus: STREAM_STATUS.CONNECTING,
           isLoading: true,
         });
+        self.selectedStream.updateStream(
+          self.selectedStream.targetUrl.sid,
+          true
+        );
+        self.selectedStream.targetUrl.reset();
         self.selectedStream.startWaitingForStream(
           self.selectedStream.targetUrl.sid
         );
+        // self.getTimeline(
+        //   self.selectedChannel + 1,
+        //   self.selectedStream.targetUrl.sid
+        // );
 
         let requestParams = [
           {

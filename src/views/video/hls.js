@@ -52,7 +52,7 @@ class HLSStreamingView extends React.Component {
       //   ? props.streamData.targetUrl.url
       //   : null,
       urlParams: '',
-      // videoKey: 0,
+      refreshCount: 0,
       pausedUrl: '',
       timeBeginPlaying: DateTime.now().setZone(videoStore.timezone),
       internalLoading: false,
@@ -71,7 +71,6 @@ class HLSStreamingView extends React.Component {
     this.lastVideoTime = 0;
     this.retryCount = 0;
     this.reInitCount = 0;
-    this.refreshCount = 0;
     this.firstBuffer = true;
     this.errorList = [];
   }
@@ -161,6 +160,7 @@ class HLSStreamingView extends React.Component {
       //               ? DateTime.now().setZone(videoStore.timezone)
       //               : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
       //             internalLoading: false,
+      //             refreshCount: 0,
       //           } // ,
       //           // () => {
       //           //   if (this._isMounted && videoStore.paused) {
@@ -174,7 +174,6 @@ class HLSStreamingView extends React.Component {
       //         this.lastVideoTime = 0;
       //         this.tsIndex = -1;
       //         this.retryCount = 0;
-      //         this.refreshCount = 0;
       //         this.reInitCount = 0;
       //         this.firstBuffer = true;
       //         if (videoStore.paused && this.props.isLive) {
@@ -247,6 +246,7 @@ class HLSStreamingView extends React.Component {
                       ? DateTime.now().setZone(videoStore.timezone)
                       : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
                     internalLoading: false,
+                    refreshCount: 0,
                   } // ,
                   // () => {
                   //   if (this._isMounted && videoStore.paused) {
@@ -260,7 +260,6 @@ class HLSStreamingView extends React.Component {
                 this.lastVideoTime = 0;
                 this.tsIndex = -1;
                 this.retryCount = 0;
-                this.refreshCount = 0;
                 this.reInitCount = 0;
                 this.firstBuffer = true;
                 if (videoStore.paused && this.props.isLive) {
@@ -363,13 +362,13 @@ class HLSStreamingView extends React.Component {
                     ? DateTime.now().setZone(videoStore.timezone)
                     : this.lastSearchTime ?? videoStore.searchPlayTimeLuxon,
                   internalLoading: false,
+                  refreshCount: 0,
                 });
                 // reset these value everytimes streamUrl changed
                 // this.frameTime = 0;
                 // this.lastVideoTime = 0;
                 // this.tsIndex = -1;
                 this.retryCount = 0;
-                this.refreshCount = 0;
                 this.reInitCount = 0;
                 this.firstBuffer = true;
                 if (videoStore.paused) {
@@ -856,10 +855,9 @@ class HLSStreamingView extends React.Component {
     if (util.isValidHttpUrl(streamData.streamUrl)) {
       if (this.retryCount < MAX_RETRY) {
         this.retryCount++;
-        this.refreshCount++;
-        // this.setState({
-        //   urlParams: '&v=' + this.refreshCount,
-        // });
+        this.setState({
+          refreshCount: this.state.refreshCount + 1,
+        });
         this.setStreamStatus({
           connectionStatus: STREAM_STATUS.RECONNECTING,
           isLoading: true,
@@ -904,7 +902,7 @@ class HLSStreamingView extends React.Component {
     // __DEV__ && console.log('GOND HLS streamUrl 2');
     this.setState({streamUrl: ''});
     this.retryCount = 0;
-    this.refreshCount = 0;
+    this.setState({refreshCount: 0});
     this.reInitCount = 0;
     streamData &&
       streamData.targetUrl &&
@@ -944,9 +942,9 @@ class HLSStreamingView extends React.Component {
       this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
-    const {streamUrl, urlParams, internalLoading} = this.state;
+    const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
     const playbackUrl =
-      streamUrl && streamUrl.length > 0 ? streamUrl + urlParams : null;
+      streamUrl && streamUrl.length > 0 ? streamUrl /*+ urlParams*/ : null;
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
@@ -987,7 +985,9 @@ class HLSStreamingView extends React.Component {
               /*!isLoading &&*/
               // playbackUrl ? (
               <Video
-                // key={streamData.channelName + urlParams}
+                key={`${streamData.channelName}${
+                  singlePlayer ? '_single' : ''
+                }_${refreshCount}`}
                 style={[{width: width, height: height}]}
                 hls={true}
                 resizeMode={'stretch'}

@@ -471,6 +471,10 @@ class VideoPlayerView extends Component {
     }
   };
 
+  formatTimeValue = value => {
+    return value < 10 ? '0' + value : '' + value;
+  };
+
   onTimelineScrollEnd = value => {
     const {videoStore} = this.props;
     const {timeline, timezone} = videoStore;
@@ -500,6 +504,14 @@ class VideoPlayerView extends Component {
         destinationTime >= timeline[timeline.length - 1].end
       );
 
+    const dateString = videoStore.frameTimeString.split(' - ')[0];
+    const timeString =
+      this.formatTimeValue(value.hour) +
+      ':' +
+      this.formatTimeValue(value.minutes) +
+      ':' +
+      this.formatTimeValue(value.seconds);
+    videoStore.setDisplayDateTime(dateString + ' - ' + timeString);
     if (
       // timeline.length > 0 &&
       !videoStore.checkTimeOnTimeline(destinationTime)

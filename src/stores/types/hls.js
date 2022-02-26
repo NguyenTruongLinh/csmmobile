@@ -490,10 +490,14 @@ export default HLSStreamModel = types
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
-              FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
+              FragmentSelectorType: self.isLive
+                ? FragmentSelectorType.PRODUCER_TIMESTAMP
+                : FragmentSelectorType.SERVER_TIMESTAMP,
             },
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
-            DiscontinuityMode: HLSDiscontinuityMode.ON_DISCONTINUITY, // temp removed
+            DiscontinuityMode: self.isLive
+              ? HLSDiscontinuityMode.ON_DISCONTINUITY
+              : HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: 1000,
             Expires: HLS_MAX_EXPIRE_TIME,
           });
@@ -515,11 +519,14 @@ export default HLSStreamModel = types
       } catch (err) {
         __DEV__ &&
           console.log('GOND HLS Get Streaming Session URL failed: ', err);
-          if(err.toString().indexOf("ResourceNotFoundException")>=0){
-            self.retryRemaining = 1;
-          }
-          console.log('Duck HLS Get Streaming Session URL failed self.retryRemaining: ', self.retryRemaining);
-          self.setStreamStatus({
+        if (err.toString().includes('ResourceNotFoundException')) {
+          self.retryRemaining++;
+        }
+        console.log(
+          'Duck HLS Get Streaming Session URL failed self.retryRemaining: ',
+          self.retryRemaining
+        );
+        self.setStreamStatus({
           isLoading: false,
           connectionStatus: STREAM_STATUS.RECONNECTING,
           error: err.message,
