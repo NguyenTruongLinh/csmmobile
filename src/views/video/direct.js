@@ -70,7 +70,7 @@ class DirectVideoView extends React.Component {
     this.savedPos = null;
     this.didSubmitLogin = false;
     this.newSeekPos = 0;
-    this.oldTimestamp = 0;
+    this.oldPos = 0;
   }
 
   componentDidMount() {
@@ -889,7 +889,7 @@ class DirectVideoView extends React.Component {
                 // } else
                 this.playAt(secondsValue);
                 this.newSeekPos = 0;
-                this.oldTimestamp = 0;
+                this.oldPos = 0;
               }
             }, 100);
             this.shouldSetTime = false;
@@ -966,7 +966,7 @@ class DirectVideoView extends React.Component {
             : 0
         );
         this.newSeekPos = 0;
-        this.oldTimestamp = 0;
+        this.oldPos = 0;
       }, 200);
     }
   };
@@ -1050,7 +1050,7 @@ class DirectVideoView extends React.Component {
         if (this.savedPos && !isLive) {
           this.playAt(this.savedPos);
           this.newSeekPos = 0;
-          this.oldTimestamp = 0;
+          this.oldPos = 0;
           this.savedPos = null;
         } else if (this.lastFrameTime && !isLive) {
           this.playAt(
@@ -1058,7 +1058,7 @@ class DirectVideoView extends React.Component {
               this.lastFrameTime.startOf('day').toSeconds()
           );
           this.newSeekPos = 0;
-          this.oldTimestamp = 0;
+          this.oldPos = 0;
         } else {
           this.setNative({
             startplayback: {
@@ -1096,11 +1096,7 @@ class DirectVideoView extends React.Component {
       this.setNative({
         seekpos: {pos: value, hd: videoStore.hdMode},
       });
-      this.newSeekPos = videoStore
-        .getSafeSearchDate()
-        .plus({seconds: value})
-        .toSeconds();
-      this.oldTimestamp = this.lastTimestamp;
+      this.newSeekPos = value;
       this.lastTimestamp = 0;
     }
   };
@@ -1121,27 +1117,6 @@ class DirectVideoView extends React.Component {
       __DEV__ && console.log('GOND onFrameTime dragging timeline not update!');
       return;
     }
-    if (this.newSeekPos > 0 && this.oldTimestamp > 0) {
-      __DEV__ &&
-        console.log(
-          'GOND check to skip old frame: ',
-          this.newSeekPos,
-          timestamp,
-          this.oldTimestamp
-        );
-      if (
-        timestamp < this.newSeekPos ||
-        (timestamp > this.oldTimestamp &&
-          Math.abs(timestamp - this.newSeekPos) >
-            Math.abs(timestamp - this.oldTimestamp))
-      ) {
-        __DEV__ && console.log('GOND skip this old frame');
-        return;
-      } else {
-        this.newSeekPos = 0;
-        this.oldTimestamp = 0;
-      }
-    }
 
     this.lastTimestamp = timestamp;
 
@@ -1150,9 +1125,29 @@ class DirectVideoView extends React.Component {
         Platform.OS == 'android'
           ? NVRPlayerConfig.ResponseTimeFormat
           : NVRPlayerConfig.RequestTimeFormat;
-      const timeString = DateTime.fromFormat(value, timeFormat).toFormat(
-        NVRPlayerConfig.FrameFormat
-      );
+      const timeObj = DateTime.fromFormat(value, timeFormat);
+      const pos = timeObj.toSeconds() - timeObj.startOf('day').toSeconds();
+      if (this.newSeekPos > 0 && this.oldPos > 0) {
+        __DEV__ &&
+          console.log(
+            'GOND check to skip old frame: ',
+            this.newSeekPos,
+            pos,
+            this.oldPos
+          );
+        if (
+          pos < this.newSeekPos ||
+          (pos > this.oldPos &&
+            Math.abs(pos - this.newSeekPos) > Math.abs(pos - this.oldPos))
+        ) {
+          __DEV__ && console.log('GOND skip this old frame');
+          return;
+        } else {
+          this.newSeekPos = 0;
+        }
+      }
+      this.oldPos = pos;
+      const timeString = timeObj.toFormat(NVRPlayerConfig.FrameFormat);
 
       videoStore.setDisplayDateTime(timeString);
 
