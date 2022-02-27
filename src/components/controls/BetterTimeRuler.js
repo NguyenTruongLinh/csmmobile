@@ -30,7 +30,7 @@ export default class TimeRuler extends PureComponent {
     timeData: [], //[{value:0,status:0},{value:1,status:0}],
     searchDate: null,
     fontSize: 8,
-    scrollTo: this.scrollTo,
+    // scrollTo: this.scrollTo,
     // startAt: 0,
     hourBuildRuler: default24H,
     hourSpecial: '',
@@ -84,6 +84,7 @@ export default class TimeRuler extends PureComponent {
     // this.isTouchEnd = true;
     // this.isScrollEnd = true;
     this.scrollEndTimeout = null;
+    this.lastDataTime = 0;
   }
 
   componentDidMount() {
@@ -123,6 +124,14 @@ export default class TimeRuler extends PureComponent {
       this.scrollTo(sec * secWidth, 0);
     }
   }
+
+  moveToPosition = sec => {
+    let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
+
+    // TODO: handle DST
+    // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
+    this.scrollTo(sec * secWidth, 0);
+  };
 
   clearScrollEndTimeout = () => {
     if (this.scrollEndTimeout) {
@@ -289,7 +298,7 @@ export default class TimeRuler extends PureComponent {
   onSendTimeData = xAxis => {
     this.scrollEndTimeout = null;
     // if (this.isTouchEnd && this.isScrollEnd) {
-    if (xAxis == this.lastScrollOffsetX) {
+    if (!this._isMounted || xAxis == this.lastScrollOffsetX) {
       return;
     } else {
       this.lastScrollOffsetX = xAxis;
@@ -339,7 +348,7 @@ export default class TimeRuler extends PureComponent {
 
     this.clearScrollEndTimeout();
     let {x} = event.nativeEvent.contentOffset;
-    this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 200);
+    this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 500);
     /*
     // if (this.lastScrollOffsetX >= 0) {
     if (event.nativeEvent.contentOffset.x == this.lastScrollOffsetX) {
@@ -512,7 +521,7 @@ export default class TimeRuler extends PureComponent {
       for (let j = 0; j < this.props.numofMin; j++) {
         // let start = j * minValue;
         // let end = start + (minValue - 1);
-        let _objectValue = {};
+        let minObject = {};
         let long_start = searchDate + i * 3600 + j * minValue * 60;
         let long_end = long_start + minValue * 60 - 1;
         // __DEV__ &&
@@ -522,10 +531,10 @@ export default class TimeRuler extends PureComponent {
         //     ', long_end = ',
         //     long_end
         //   );
-        _objectValue.begin = long_start;
-        _objectValue.end = long_end;
-        _objectValue.id = -1;
-        minArray.push(_objectValue);
+        minObject.begin = long_start;
+        minObject.end = long_end;
+        minObject.id = -1;
+        minArray.push(minObject);
       }
       objectValue.minData = minArray;
       arrayofViews.push(objectValue);
@@ -570,7 +579,7 @@ export default class TimeRuler extends PureComponent {
       for (let j = 0; j < this.props.numofMin; j++) {
         // let start = j * minValue;
         // let end = start + (minValue - 1);
-        let _objectValue = {};
+        let minObject = {};
         let long_start = searchDate + i * 3600 + j * minValue * 60;
         let long_end = long_start + minValue * 60 - 1;
         // __DEV__ &&
@@ -580,10 +589,10 @@ export default class TimeRuler extends PureComponent {
         //     ', long_end = ',
         //     long_end
         //   );
-        _objectValue.begin = long_start;
-        _objectValue.end = long_end;
-        _objectValue.id = -1;
-        minArray.push(_objectValue);
+        minObject.begin = long_start;
+        minObject.end = long_end;
+        minObject.id = -1;
+        minArray.push(minObject);
       }
       objectValue.minData = minArray;
       arrayofViews.push(objectValue);

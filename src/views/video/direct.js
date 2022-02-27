@@ -69,6 +69,8 @@ class DirectVideoView extends React.Component {
     this.noPermission = false;
     this.savedPos = null;
     this.didSubmitLogin = false;
+    this.newSeekPos = 0;
+    this.oldTimestamp = 0;
   }
 
   componentDidMount() {
@@ -1088,6 +1090,11 @@ class DirectVideoView extends React.Component {
       this.setNative({
         seekpos: {pos: value, hd: videoStore.hdMode},
       });
+      this.newSeekPos = videoStore
+        .getSafeSearchDate()
+        .plus({seconds: value})
+        .toSeconds();
+      this.oldTimestamp = this.lastTimestamp;
       this.lastTimestamp = 0;
     }
   };
@@ -1104,6 +1111,28 @@ class DirectVideoView extends React.Component {
         );
       return;
     }
+    if (this.newSeekPos > 0) {
+      __DEV__ &&
+        console.log(
+          'GOND check to skip old frame: ',
+          this.newSeekPos,
+          timestamp,
+          this.oldTimestamp
+        );
+      if (
+        timestamp < this.newSeekPos ||
+        (timestamp > this.oldTimestamp &&
+          Math.abs(timestamp - this.newSeekPos) >
+            Math.abs(timestamp - this.oldTimestamp))
+      ) {
+        __DEV__ && console.log('GOND skip this old frame');
+        return;
+      } else {
+        this.newSeekPos = 0;
+        this.oldTimestamp = 0;
+      }
+    }
+
     this.lastTimestamp = timestamp;
 
     if (value) {
@@ -1165,14 +1194,8 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      serverInfo,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
+      this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&

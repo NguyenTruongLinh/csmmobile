@@ -101,6 +101,12 @@ class VideoPlayerView extends Component {
         this.eventSubscribers
       );
     this.updateHeader();
+    Orientation.getDeviceOrientation(orientation => {
+      if (orientation != OrientationType.PORTRAIT) {
+        this.onOrientationChange(orientation);
+      }
+    });
+
     Orientation.addDeviceOrientationListener(this.onOrientationChange);
     Orientation.unlockAllOrientations();
   }
@@ -421,6 +427,8 @@ class VideoPlayerView extends Component {
     // setTimeout(() => {
     //   this.playerRef && this.playerRef.playAt(secondsValue);
     // }, 200);
+    this.ruler.moveToPosition(secondsValue);
+
     this.onTimelineScrollEnd({
       hour: parseInt(hours),
       minutes: parseInt(minutes),

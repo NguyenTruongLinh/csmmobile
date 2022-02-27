@@ -1092,15 +1092,28 @@ export const VideoModel = types
         }
       },
       checkTimeOnTimeline(value) {
-        __DEV__ && console.log('GOND checkTimeOnTimeline 0 ', self.timeline);
+        __DEV__ &&
+          console.log('GOND checkTimeOnTimeline ', value, self.timeline);
+        let timeToCheck = value;
+        if (
+          self.cloudType == CLOUD_TYPE.DEFAULT ||
+          self.cloudType == CLOUD_TYPE.DIRECTION
+        ) {
+          timeToCheck = DateTime.fromSeconds(timeToCheck, {zone: self.timezone})
+            .setZone('utc', {keepLocalTime: true})
+            .toSeconds();
+          __DEV__ &&
+            console.log('GOND checkTimeOnTimeline direct', timeToCheck);
+        }
+
         for (let i = 0; i < self.timeline.length; i++) {
-          if (value <= self.timeline[i].end) {
+          if (timeToCheck <= self.timeline[i].end) {
             __DEV__ &&
               console.log(
                 'GOND checkTimeOnTimeline ',
-                value,
+                timeToCheck,
                 self.timeline[i].end,
-                value - self.timeline[i].end
+                timeToCheck - self.timeline[i].end
               );
             return true;
           }
