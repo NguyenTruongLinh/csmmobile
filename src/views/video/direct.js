@@ -888,6 +888,8 @@ class DirectVideoView extends React.Component {
                 //   this.noPermission = false;
                 // } else
                 this.playAt(secondsValue);
+                this.newSeekPos = 0;
+                this.oldTimestamp = 0;
               }
             }, 100);
             this.shouldSetTime = false;
@@ -956,16 +958,16 @@ class DirectVideoView extends React.Component {
     if (this.props.isLive) this.setNative({hd: isHD});
     else {
       this.pause();
-      setTimeout(
-        () =>
-          this.playAt(
-            this.lastFrameTime
-              ? this.lastFrameTime.toSeconds() -
-                  this.lastFrameTime.startOf('day').toSeconds()
-              : 0
-          ),
-        200
-      );
+      setTimeout(() => {
+        this.playAt(
+          this.lastFrameTime
+            ? this.lastFrameTime.toSeconds() -
+                this.lastFrameTime.startOf('day').toSeconds()
+            : 0
+        );
+        this.newSeekPos = 0;
+        this.oldTimestamp = 0;
+      }, 200);
     }
   };
 
@@ -1047,12 +1049,16 @@ class DirectVideoView extends React.Component {
         videoStore.pause(false);
         if (this.savedPos && !isLive) {
           this.playAt(this.savedPos);
+          this.newSeekPos = 0;
+          this.oldTimestamp = 0;
           this.savedPos = null;
         } else if (this.lastFrameTime && !isLive) {
           this.playAt(
             this.lastFrameTime.toSeconds() -
               this.lastFrameTime.startOf('day').toSeconds()
           );
+          this.newSeekPos = 0;
+          this.oldTimestamp = 0;
         } else {
           this.setNative({
             startplayback: {
@@ -1111,7 +1117,11 @@ class DirectVideoView extends React.Component {
         );
       return;
     }
-    if (this.newSeekPos > 0) {
+    if (videoStore.isDraggingTimeline) {
+      __DEV__ && console.log('GOND onFrameTime dragging timeline not update!');
+      return;
+    }
+    if (this.newSeekPos > 0 && this.oldTimestamp > 0) {
       __DEV__ &&
         console.log(
           'GOND check to skip old frame: ',

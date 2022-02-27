@@ -314,6 +314,7 @@ export const VideoModel = types
     isPreloadStream: types.optional(types.boolean, false),
     currentGridPage: types.optional(types.number, 0),
     isInVideoView: types.optional(types.boolean, false),
+    isDraggingTimeline: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     frameTime: 0,
@@ -915,7 +916,7 @@ export const VideoModel = types
           ).toSeconds();
         } else if (typeof value == 'number') {
           if (fromZone) {
-            const dt = DateTime.fromSeconds(value, fromZone);
+            const dt = DateTime.fromSeconds(value, {zone: fromZone});
             __DEV__ &&
               console.log(
                 'GOND setFrameTime ',
@@ -1145,6 +1146,9 @@ export const VideoModel = types
         );
         // .sort((x, y) => x.begin - y.begin);
         // __DEV__ && console.log('GOND after settimeline ', self.timeline);
+      },
+      setTimelineDraggingStatus(value) {
+        self.isDraggingTimeline = value;
       },
       setHoursOfDay(value) {
         self.staticHoursOfDay = value;

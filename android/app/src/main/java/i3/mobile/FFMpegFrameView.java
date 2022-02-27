@@ -495,7 +495,8 @@ public class FFMpegFrameView extends View {
         if (this.singlePlayer == true)
         {
             DrawBitmap = bmp;
-            this.invalidate(img_rect);
+            if (img_rect != null)
+                this.invalidate(img_rect);
             // this.invalidate();
         } 
         else if(bmp != null)
@@ -642,7 +643,11 @@ public class FFMpegFrameView extends View {
     public  void  PauseVideo(){
         if( video_thread == null || socket_handler== null )
             return;
-        socket_handler.PauseVideo();
+        try {
+            socket_handler.PauseVideo();
+        } catch (Exception e) {
+            Log.e("GOND", "Pause video failed! " + e.getMessage());
+        }
     }
 
     public void setFirstRun(boolean firstrun){

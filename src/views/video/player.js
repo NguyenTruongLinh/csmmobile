@@ -418,15 +418,6 @@ class VideoPlayerView extends Component {
         ' = ',
         secondsValue
       );
-
-    // Should call?
-    // if (videoStore.noVideo) {
-    //   videoStore.setNoVideo(false);
-    // }
-    // this.playerRef && this.playerRef.pause();
-    // setTimeout(() => {
-    //   this.playerRef && this.playerRef.playAt(secondsValue);
-    // }, 200);
     this.ruler.moveToPosition(secondsValue);
 
     this.onTimelineScrollEnd({
@@ -485,6 +476,15 @@ class VideoPlayerView extends Component {
     return value < 10 ? '0' + value : '' + value;
   };
 
+  onTimelineScrollBegin = () => {
+    const {videoStore} = this.props;
+    this.timelineAutoScroll = false;
+    if (videoStore.timeline.length > 0 && videoStore.noVideo === true) {
+      videoStore.setNoVideo(false);
+    }
+    videoStore.setTimelineDraggingStatus(true);
+  };
+
   onTimelineScrollEnd = value => {
     const {videoStore} = this.props;
     const {timeline, timezone} = videoStore;
@@ -522,6 +522,7 @@ class VideoPlayerView extends Component {
       ':' +
       this.formatTimeValue(value.seconds);
     videoStore.setDisplayDateTime(dateString + ' - ' + timeString);
+    videoStore.setTimelineDraggingStatus(false);
     if (
       // timeline.length > 0 &&
       !videoStore.checkTimeOnTimeline(destinationTime)
@@ -536,8 +537,6 @@ class VideoPlayerView extends Component {
       return;
     }
     if (this.playerRef) {
-      // this.playerRef.pause();
-      // setTimeout(() => this.playerRef.playAt(value.timestamp), 200);
       this.playerRef.playAt(value.timestamp);
     } else {
       __DEV__ && console.log('GOND playAt failed playerRef not available!');
@@ -956,15 +955,7 @@ class VideoPlayerView extends Component {
             markerPosition="absolute"
             timeData={videoStore.timeline}
             currentTime={videoStore.frameTime}
-            onBeginSrcoll={() => {
-              this.timelineAutoScroll = false;
-              if (
-                videoStore.timeline.length > 0 &&
-                videoStore.noVideo === true
-              ) {
-                videoStore.setNoVideo(false);
-              }
-            }}
+            onBeginSrcoll={this.onTimelineScrollBegin}
             onScrollBeginDrag={this.onDraggingTimeRuler}
             // onPauseVideoScrolling={() => this.setState({pause: true})}
             onPauseVideoScrolling={() =>
