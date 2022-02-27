@@ -376,15 +376,23 @@ export default HLSStreamModel = types
     //   self.timeline = timeline;
     //   self.timestamps = timestamp;
     // },
+    stopWaitingForStream(sid) {
+      const currentUrl = self.getUrlById(sid);
+      if (!currentUrl || !isAlive(self)) return;
+      currentUrl.clearStreamTimeout();
+    },
     startWaitingForStream(sid) {
       const currentUrl = self.getUrlById(sid);
       if (!currentUrl || !isAlive(self)) return;
+      currentUrl.clearStreamTimeout();
       currentUrl.resetRetries();
       currentUrl.set({
-        streamTimeout: setTimeout(
-          () => self.getStreamDirectly(sid),
-          HLS_DATA_REQUEST_TIMEOUT
-        ),
+        streamTimeout: setTimeout(() => {
+          if (isAlive(currentUrl)) {
+            currentUrl.clearStreamTimeout();
+            self.getStreamDirectly(sid);
+          }
+        }, HLS_DATA_REQUEST_TIMEOUT),
       });
     },
     getStreamDirectly: flow(function* (sid) {

@@ -2575,6 +2575,9 @@ export const VideoModel = types
           __DEV__ &&
             console.log('GOND get HLS data Timeline no data: ', jTimeStamp);
           self.setNoVideo(true);
+          self.selectedStream.stopWaitingForStream(
+            self.selectedStream.targetUrl.sid
+          );
           self.selectedStream.setStreamStatus({
             isLoading: false,
             connectionStatus: STREAM_STATUS.NOVIDEO,
@@ -2595,6 +2598,9 @@ export const VideoModel = types
               );
 
             self.setNoVideo(true);
+            self.selectedStream.stopWaitingForStream(
+              self.selectedStream.targetUrl.sid
+            );
             self.selectedStream.setStreamStatus({
               isLoading: false,
               connectionStatus: STREAM_STATUS.NOVIDEO,
