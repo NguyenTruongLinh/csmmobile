@@ -425,8 +425,10 @@ class DashboardView extends React.Component {
     const {exceptionStore} = this.props;
     __DEV__ &&
       console.log('GOND renderChart chartValues: ', exceptionStore.chartData);
+    const backgroundY =
+      exceptionStore.chartData[exceptionStore.chartData.length - 1].value;
     const backgroundDataSet = exceptionStore.chartData.map(data => ({
-      y: exceptionStore.chartData[exceptionStore.chartData.length - 1].value,
+      y: backgroundY,
       key: data.key,
     }));
     const labelDataSet = exceptionStore.chartData.map(data => ({
@@ -509,21 +511,23 @@ class DashboardView extends React.Component {
           // centerAxisLabels: true,
         }}
         yAxis={{
-          inverted: true,
           left: {
-            drawLabels: false,
-            // drawGridLines: false,
-            // drawAxisLine: false,
+            textColor: processColor('white'),
+            axisMinimum: 0,
+            axisMaximum: backgroundY,
+            labelCount: 5, // 0 5 10 15 20 25 30
+            labelCountForce: true,
+            granularity: 1,
+            granularityEnabled: true,
           },
           right: {
-            // axisMinimum: 0,
-            // labelCount: 5,
-            // labelCountForce: true,
-            // granularity: 1,
-            // granularityEnabled: true,
-            drawLabels: false,
-            drawGridLines: false,
-            // drawAxisLine: false,
+            textColor: processColor('white'),
+            axisMinimum: 0,
+            axisMaximum: backgroundY,
+            labelCount: 5, // 0 5 10 15 20 25 30
+            labelCountForce: true,
+            granularity: 1,
+            granularityEnabled: true,
           },
         }}
         legend={{enabled: false}}
@@ -779,7 +783,7 @@ const styles = StyleSheet.create({
   chartHeaderRiskValue: {fontSize: 35, textAlign: 'center', fontWeight: 'bold'},
   chartContainer: {
     flex: 4,
-    marginLeft: -35,
+    // marginLeft: -35,
     marginTop: 0,
   },
   manuallyClipText: {
