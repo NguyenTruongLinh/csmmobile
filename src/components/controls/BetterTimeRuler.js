@@ -93,6 +93,13 @@ export default class TimeRuler extends PureComponent {
       this.onDimensionChange
     );
     this._isMounted = true;
+
+    const {currentTime, searchDate} = this.props;
+    if (currentTime && currentTime > searchDate) {
+      let sec = currentTime - searchDate;
+      let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
+      this.scrollTo(sec * secWidth, 0);
+    }
   }
 
   componentWillUnmount() {

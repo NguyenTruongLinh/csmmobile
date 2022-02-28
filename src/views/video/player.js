@@ -739,13 +739,17 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     const {sHeight, showController} = this.state;
 
-    return videoStore.isFullscreen && showController ? (
+    return videoStore.isFullscreen ? (
       <View
         style={[
           styles.footerContainerFullscreen,
-          {
-            top: sHeight * 0.8,
-          },
+          showController
+            ? {
+                top: sHeight * 0.8,
+              }
+            : {
+                top: -sHeight,
+              },
         ]}>
         <View style={{flex: 75, alignContent: 'flex-start'}}>
           {this.renderTimeline()}
