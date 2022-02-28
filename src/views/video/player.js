@@ -454,22 +454,23 @@ class VideoPlayerView extends Component {
   onTakeVideoSnapshot = () => {};
 
   onShowControlButtons = () => {
-    __DEV__ && console.log('GOND onShowControlButtons');
-    if (__DEV__ && this.props.videoStore.isFullscreen) {
-      this.setState({showController: !this.state.showController});
-    } else {
-      this.setState({showController: true}, () => {
-        __DEV__ && console.log('GOND onShowControlButtons already showed');
-        if (this.controllerTimeout) clearTimeout(this.controllerTimeout);
-        this.controllerTimeout = setTimeout(
-          () => {
-            __DEV__ && console.log('GOND onShowControlButtons hidden');
-            if (this._isMounted) this.setState({showController: false});
-          },
-          __DEV__ ? 10000 : CONTROLLER_TIMEOUT
-        );
-      });
-    }
+    // __DEV__ && console.log('GOND onShowControlButtons');
+    // if (__DEV__ && this.props.videoStore.isFullscreen) {
+    //   this.setState({showController: !this.state.showController});
+    // } else {
+    this.setState({showController: true}, () => {
+      // __DEV__ && console.log('GOND onShowControlButtons already showed');
+      if (this.controllerTimeout) clearTimeout(this.controllerTimeout);
+      this.controllerTimeout = setTimeout(
+        () => {
+          // __DEV__ && console.log('GOND onShowControlButtons hidden');
+          if (this._isMounted) this.setState({showController: false});
+          this.controllerTimeout = null;
+        },
+        __DEV__ ? 5000 : CONTROLLER_TIMEOUT
+      );
+    });
+    // }
   };
 
   formatTimeValue = value => {
@@ -483,6 +484,10 @@ class VideoPlayerView extends Component {
       videoStore.setNoVideo(false);
     }
     videoStore.setTimelineDraggingStatus(true);
+    if (this.controllerTimeout) {
+      clearTimeout(this.controllerTimeout);
+      this.controllerTimeout = null;
+    }
   };
 
   onTimelineScrollEnd = value => {
@@ -523,6 +528,15 @@ class VideoPlayerView extends Component {
       this.formatTimeValue(value.seconds);
     videoStore.setDisplayDateTime(dateString + ' - ' + timeString);
     videoStore.setTimelineDraggingStatus(false);
+
+    if (videoStore.isFullscreen) {
+      this.controllerTimeout = setTimeout(() => {
+        __DEV__ && console.log('GOND onShowControlButtons hidden');
+        if (this._isMounted) this.setState({showController: false});
+        this.controllerTimeout = null;
+      }, CONTROLLER_TIMEOUT);
+    }
+
     if (
       // timeline.length > 0 &&
       !videoStore.checkTimeOnTimeline(destinationTime)
