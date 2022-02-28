@@ -49,6 +49,8 @@ import {
 } from '../../localization/texts';
 import commonStyles from '../../styles/commons.style';
 
+const {width, height} = Dimensions.get('window');
+const MAX_TEXT_LENGTH = 32;
 class DashboardView extends React.Component {
   constructor(props) {
     super(props);
@@ -475,9 +477,13 @@ class DashboardView extends React.Component {
                 valueTextSize: 14,
                 valueTextColor: processColor('black'),
                 visible: true,
-                valueFormatter: exceptionStore.chartData.map(
-                  x => x.name + ' - ' + formatNumber(x.value)
-                ),
+                valueFormatter: exceptionStore.chartData.map(x => {
+                  let ellipsized =
+                    width < 480 && x.name.length > MAX_TEXT_LENGTH
+                      ? x.name.substring(0, MAX_TEXT_LENGTH) + '...'
+                      : x.name;
+                  return ellipsized + ' - ' + formatNumber(x.value);
+                }),
               },
             },
           ],
