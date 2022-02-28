@@ -34,6 +34,7 @@
   NSMutableData* currentData;
   ImcVideoReceiverConnection* videoConnection;
   NSLock* connectionLock;
+  NSLock* timerLock;
   NSLock* dataLock;
   BOOL isConnected;
   NSInteger serverVersion;

@@ -48,6 +48,7 @@
     deviceSetting           = [[ImcServerSetting alloc] init];
     deviceCameraList        = [[ImcCameraList alloc] init];
     connectionLock          = [[NSLock alloc] init];
+    timerLock               = [[NSLock alloc] init];
     isConnected            = FALSE;
     serverVersion           = VERSION_CURRENT;
     keepAliveCounter                   = 0;
@@ -174,14 +175,15 @@
 
 - (void)stopTimer {
 //  dispatch_async(dispatch_get_main_queue(), ^{
+  [timerLock lock];
     if (self->loginTimer)
     {
       NSLog(@"******** onStopTimer: ******"  );
-      dispatch_source_set_event_handler(self->loginTimer, ^{});
-      dispatch_cancel(self->loginTimer);
-//      dispatch_resume(self->loginTimer);
+//      dispatch_source_set_event_handler(self->loginTimer, ^{});
+      dispatch_source_cancel(self->loginTimer);
       self->loginTimer = nil;
     }
+  [timerLock unlock];
 //  });
 }
 
