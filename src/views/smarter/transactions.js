@@ -161,8 +161,10 @@ class ExceptionsView extends Component {
 
   renderExceptionFlags = trans => {
     if (!trans || trans.exceptionTypes.length === 0) return;
-
-    return trans.exceptionTypes.map((flag, index) => (
+    let reversed = trans.exceptionTypes
+      .slice(0, trans.exceptionTypes.length)
+      .reverse();
+    return reversed.map((flag, index) => (
       <View
         key={'flag_' + index}
         style={[
