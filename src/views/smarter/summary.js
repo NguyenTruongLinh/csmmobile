@@ -426,7 +426,9 @@ class DashboardView extends React.Component {
     __DEV__ &&
       console.log('GOND renderChart chartValues: ', exceptionStore.chartData);
     const backgroundY =
-      exceptionStore.chartData[exceptionStore.chartData.length - 1].value;
+      exceptionStore.chartData.length > 0
+        ? exceptionStore.chartData[exceptionStore.chartData.length - 1].value
+        : 0;
     const backgroundDataSet = exceptionStore.chartData.map(data => ({
       y: backgroundY,
       key: data.key,
