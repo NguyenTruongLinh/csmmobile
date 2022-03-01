@@ -1911,6 +1911,7 @@ export const VideoModel = types
           __DEV__ && console.log('GOND Get Timeline directly: ', isSuccess);
           if (isSuccess) {
             self.timelineRetries = 0;
+            self.waitForTimeline = false;
           } else if (self.timelineRetries < HLS_MAX_RETRY) {
             self.timelineRetries++;
             self.checkTimelineTimeout = setTimeout(

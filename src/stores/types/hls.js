@@ -34,7 +34,7 @@ import {
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
 
-const MAX_RETRY = 3;
+const MAX_RETRY = 5;
 const KEEP_ALIVE_TIMEOUT = 60000;
 
 const HLSURLModel = types
@@ -423,18 +423,37 @@ export default HLSStreamModel = types
     }),
     getHLSStreamUrl: flow(function* (info, cmd) {
       const currentUrl = self.getUrlById(info.sid);
-      if (!currentUrl || (!info.StreamName && !info.hls_stream)) {
+      if (!currentUrl) {
         __DEV__ &&
           console.log(
             'GOND getHLSStreamUrl currentURL not found: ',
             info,
             self.urlsList
           );
+        console.trace();
         // self.setStreamStatus({
         //   connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
         //   isLoading: false,
         // });
         return false;
+      }
+      if (!info.StreamName && !info.hls_stream) {
+        currentUrl.clearStreamTimeout();
+        currentUrl.set({
+          streamTimeout: setTimeout(() => {
+            if (!isAlive(currentUrl) || currentUrl.sid != info.sid) return;
+            if (currentUrl.increaseRetry()) self.getStreamDirectly(info.sid);
+            else {
+              currentUrl.set({failed: true});
+              self.setStreamStatus({
+                connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+                isLoading: false,
+              });
+            }
+          }, HLS_GET_DATA_DIRECTLY_TIMEOUT),
+        });
+
+        return;
       }
       currentUrl.resetRetries();
       currentUrl.clearStreamTimeout();
