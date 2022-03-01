@@ -31,7 +31,7 @@
 
 ## Start debugging
 
-- iOS (need MACOS and XCode >= 12): `npm run ios`
+- iOS (need MACOS and XCode >= 12): use XCode
 - Android (need Android Studio and SDK installed): `npm run android`
 
 ## Build release package:
