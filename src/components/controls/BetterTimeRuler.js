@@ -253,7 +253,8 @@ export default class TimeRuler extends PureComponent {
       if (this.draggedX > 0) {
         if (
           x >= this.draggedX &&
-          Math.abs(x - this.draggedX) < Math.abs(this.lastX - this.draggedX)
+          (x < this.lastX ||
+            Math.abs(x - this.draggedX) < Math.abs(this.lastX - this.draggedX))
         ) {
           this.draggedX = 0;
         } else {
