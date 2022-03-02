@@ -367,6 +367,10 @@ export default HLSStreamModel = types
       // error != undefined && (self.error = error);
     },
     setStreamReady(isReady) {
+      if (__DEV__) {
+        console.log('GOND HLS: Set stream ready: ', isReady);
+        // console.trace();
+      }
       isAlive(self) && self.targetUrl.set({ready: isReady});
     },
     // setReconnectStatus(value) {
@@ -525,7 +529,7 @@ export default HLSStreamModel = types
             DiscontinuityMode: self.isLive
               ? HLSDiscontinuityMode.ON_DISCONTINUITY
               : HLSDiscontinuityMode.ALWAYS, // temp removed
-            MaxMediaPlaylistFragmentResults: 1000,
+            MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 5000,
             Expires: HLS_MAX_EXPIRE_TIME,
           });
 
@@ -642,9 +646,9 @@ export default HLSStreamModel = types
         return false;
       }
     },
-    reInitStream() {
+    reInitStream(resumeTime) {
       self.targetUrl.reset();
-      self.onStreamError(self.channelNo, self.isLive);
+      self.onStreamError(self.channelNo, self.isLive, resumeTime);
       self.retryRemaining--;
       self.reInitTimeout = null;
       self.setStreamStatus({
@@ -652,13 +656,13 @@ export default HLSStreamModel = types
         isLoading: true,
       });
     },
-    handleError(info) {
-      __DEV__ && console.log(`GOND reinit HLS stream: `, self.channelName);
-      __DEV__ && console.log(`Duck reinit HLS stream: `, info);
+    handleError(resumeTime) {
+      __DEV__ &&
+        console.log(`GOND reinit HLS stream: `, self.channelName, resumeTime);
       if (self.retryRemaining > 0) {
         if (!self.reInitTimeout) {
           self.reInitTimeout = setTimeout(() => {
-            self.reInitStream();
+            self.reInitStream(resumeTime);
           }, 1000);
         }
       } else {

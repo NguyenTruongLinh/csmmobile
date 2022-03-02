@@ -578,6 +578,7 @@ export const CALENDAR_DATE_FORMAT = 'yyyy-MM-dd';
 export const NVRPlayerConfig = {
   HLSRequestDateFormat: 'MMddyyyy',
   HLSRequestTimeFormat: 'HH:mm:ss',
+  HLSRequestDateTimeFormat: 'MMddyyyyHHmmss',
   RequestDateFormat: 'yyyy/MM/dd',
   RequestTimeFormat: 'yyyy/MM/dd HH:mm:ss',
   ResponseTimeFormat: 'yyyy/MM/dd HH:mm:ss.SSS',

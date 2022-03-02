@@ -73,6 +73,7 @@ class HLSStreamingView extends React.Component {
     this.reInitCount = 0;
     this.firstBuffer = true;
     this.errorList = [];
+    this.errorTimeout = null;
   }
 
   componentDidMount() {
@@ -440,10 +441,11 @@ class HLSStreamingView extends React.Component {
   onBeginDraggingTimeline = () => {
     this.pause(true);
     this.clearBufferTimeout();
-    this.props.streamData.setStreamReady(false);
+    // this.props.streamData.setStreamReady(false);
   };
 
   onSwitchLiveSearch = isLive => {
+    this.lastSearchTime = null;
     this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
@@ -529,6 +531,7 @@ class HLSStreamingView extends React.Component {
         });
         this.firstBuffer = false;
       }
+      this.clearErrorTimeout(); // should be here?
       // It could cause reconnecting forever
       if (!this.videoBufferTimeout) {
         this.videoBufferTimeout = setTimeout(
@@ -573,11 +576,12 @@ class HLSStreamingView extends React.Component {
     //   message: 'Reconnecting',
     // });
     // this.frameTime = 0;
-    // TODO: new search time
     if (!isLive && this.frameTime > 0)
       this.lastSearchTime = this.computeTime(this.frameTime);
 
     if (error.domain == 'NSURLErrorDomain') {
+      // TODO: new search time
+
       this.handleStreamError();
       return;
     }
@@ -598,17 +602,31 @@ class HLSStreamingView extends React.Component {
     // }
     */
 
-    this.errorList.push(error.errorString);
-    if (this.errorList.length >= 10) {
-      this.errorList = [];
+    // this.errorList.push(error.errorString);
+    // if (this.errorList.length >= 10) {
+    //   this.errorList = [];
+    //   this.clearErrorTimeout();
+    //   // TODO: new search time
+
+    //   this.reconnect();
+    // } else {
+    this.errorTimeout = setTimeout(() => {
       this.reconnect();
-    }
+    }, 5000);
+    // }
   };
 
   clearCheckTimelineInterval = () => {
     if (this.checkTimelineInterval) {
       clearInterval(this.checkTimelineInterval);
       this.checkTimelineInterval = null;
+    }
+  };
+
+  clearErrorTimeout = () => {
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+      this.errorTimeout = null;
     }
   };
 
@@ -634,6 +652,7 @@ class HLSStreamingView extends React.Component {
     }
     this.clearBufferTimeout();
     this.clearReconnectTimeout();
+    this.clearErrorTimeout();
     this.retryCount != 0 && (this.retryCount = 0);
     this.reInitCount != 0 && (this.reInitCount = 0);
     this.errorList.length > 0 && (this.errorList = []);
@@ -881,7 +900,7 @@ class HLSStreamingView extends React.Component {
       if (!this.reInitTimeout) {
         this.reInitCount++;
         this.reInitTimeout = setTimeout(() => {
-          this._isMounted && streamData.handleError();
+          this._isMounted && streamData.handleError(this.lastSearchTime);
           this.reInitTimeout = null;
         }, 1500);
       }
@@ -911,8 +930,27 @@ class HLSStreamingView extends React.Component {
     this.clearReconnectTimeout();
   };
 
-  refresh = () => {
-    this.setState({streamUrl: ''});
+  refresh = isSaveUrl => {
+    if (isSaveUrl) {
+      const currentUrl = this.state.streamUrl;
+      const {streamData} = this.props;
+      streamData.setStreamStatus({
+        connectionStatus: STREAM_STATUS.CONNECTING,
+        isLoading: true,
+      });
+      this.setState({streamUrl: ''}, () => {
+        setTimeout(() => {
+          this._isMounted &&
+            this.state.streamUrl.length == 0 &&
+            this.setState({streamUrl: currentUrl});
+          isAlive(streamData) &&
+            streamData.setStreamStatus({
+              connectionStatus: STREAM_STATUS.DONE,
+              isLoading: false,
+            });
+        }, 2000);
+      });
+    } else this.setState({streamUrl: ''});
   };
 
   pause = willPause => {
@@ -925,14 +963,22 @@ class HLSStreamingView extends React.Component {
     const time = searchDate.plus({seconds: value});
     __DEV__ && console.log('GOND HLS playAt: ', value, ' - ', time, searchDate);
     this.lastSearchTime = this.computeTime(time.toSeconds());
-
+    this.frameTime = 0;
+    this.lastVideoTime = 0;
+    this.tsIndex = -1;
+    this.setState({
+      timeBeginPlaying: this.props.isLive
+        ? DateTime.now().setZone(videoStore.timezone)
+        : this.lastSearchTime,
+      refreshCount: 0,
+    });
     // videoStore.setPlayTimeForSearch(
     //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
     // );
-    this.refresh();
     this.pause(true);
-    streamData.setStreamReady(false);
+    // streamData.setStreamReady(false);
     videoStore.onHLSTimeChanged(time);
+    // this.refresh(true);
   };
 
   render() {

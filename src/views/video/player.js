@@ -357,6 +357,7 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onSwitchLiveSearch(!videoStore.isLive);
+    this.ruler && this.ruler.moveToPosition(0);
     videoStore.switchLiveSearch(undefined, true);
     this.updateHeader();
     // this.playerRef && this.playerRef.pause(true);

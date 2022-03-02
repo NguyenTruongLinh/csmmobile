@@ -1943,7 +1943,8 @@ export const VideoModel = types
         return yield self.sendVSCCommand(VSCCommand.STOP, channelNo, {sid});
       }),
       getHLSInfos: flow(function* (params) {
-        const {channelNo, timezone, daylist, timeline} = params ?? {};
+        const {channelNo, timezone, daylist, timeline, searchTime} =
+          params ?? {};
         self.isLoading = true;
         __DEV__ && console.log('GOND getHLSInfos channel: ', channelNo);
         if (!self.activeChannels || self.activeChannels.length <= 0) {
@@ -2031,11 +2032,13 @@ export const VideoModel = types
               RequestDate: self
                 .getSafeSearchDate()
                 .toFormat(NVRPlayerConfig.HLSRequestDateFormat),
-              BeginTime: self.searchPlayTime
-                ? self.searchPlayTimeLuxon.toFormat(
-                    NVRPlayerConfig.HLSRequestTimeFormat
-                  )
-                : BEGIN_OF_DAY_STRING,
+              BeginTime:
+                searchTime ??
+                (self.searchPlayTime
+                  ? self.searchPlayTimeLuxon.toFormat(
+                      NVRPlayerConfig.HLSRequestTimeFormat
+                    )
+                  : BEGIN_OF_DAY_STRING),
               EndTime: END_OF_DAY_STRING,
             };
             __DEV__ &&
@@ -2174,11 +2177,20 @@ export const VideoModel = types
           self.getVideoInfos();
         }
       },
-      onHLSError(channelNo, isLive) {
+      onHLSError(channelNo, isLive, resumeTime) {
         // self.resumeVideoStreamFromBackground(
         //   self.selectedChannel ? true : false
         // );
-        self.getHLSInfos({channelNo /*, daylist: !isLive, timeline: !isLive*/});
+        // self.getHLSInfos({channelNo /*, daylist: !isLive, timeline: !isLive*/});
+        const searchTime =
+          !isLive && resumeTime && DateTime.isDateTime(resumeTime)
+            ? resumeTime.toFormat(NVRPlayerConfig.HLSRequestTimeFormat)
+            : undefined;
+
+        self.getHLSInfos({
+          channelNo,
+          searchTime,
+        });
       },
       /**
        *
@@ -2197,7 +2209,7 @@ export const VideoModel = types
           );
           return;
         }
-        self.selectedStream.setStreamStatus({
+        /*self.selectedStream.setStreamStatus({
           connectionStatus: STREAM_STATUS.CONNECTING,
           isLoading: true,
         });
@@ -2208,36 +2220,30 @@ export const VideoModel = types
         self.selectedStream.targetUrl.reset();
         self.selectedStream.startWaitingForStream(
           self.selectedStream.targetUrl.sid
-        );
-        // self.getTimeline(
-        //   self.selectedChannel + 1,
-        //   self.selectedStream.targetUrl.sid
-        // );
+        );*/
 
-        let requestParams = [
-          {
-            ID: apiService.configToken.devId,
-            sid: self.selectedStream.targetUrl.sid,
-            KDVR: self.kDVR,
-            ChannelNo: self.selectedChannel + 1,
-            RequestMode: self.hdMode ? VSCCommand.SEARCHHD : VSCCommand.SEARCH,
-            isMobile: true,
-            RequestDate: self
-              .getSafeSearchDate()
-              .toFormat(NVRPlayerConfig.HLSRequestDateFormat),
-            BeginTime: time.toFormat(NVRPlayerConfig.HLSRequestTimeFormat),
-            EndTime: END_OF_DAY_STRING,
-          },
-        ];
+        let requestParams = {
+          ID: apiService.configToken.devId,
+          sid: self.selectedStream.targetUrl.sid,
+          KDVR: self.kDVR,
+          ChannelNo: self.selectedChannel + 1,
+          RequestMode: self.hdMode ? VSCCommand.SEARCHHD : VSCCommand.SEARCH,
+          isMobile: true,
+          RequestDate: self
+            .getSafeSearchDate()
+            .toFormat(NVRPlayerConfig.HLSRequestDateTimeFormat),
+          BeginTime: time.toFormat(NVRPlayerConfig.HLSRequestTimeFormat),
+          EndTime: END_OF_DAY_STRING,
+        };
 
         try {
           let res = yield apiService.post(
             VSC.controller,
             1,
-            VSC.getMultiURL,
+            VSC.requestVSCURL,
             requestParams
           );
-          __DEV__ && console.log(`GOND get multi HLS URL: `, res);
+          __DEV__ && console.log(`GOND onHLSTimeChanged: `, res);
         } catch (error) {
           console.log(`Could not get HLS video info: ${error}`);
           snackbarUtil.handleRequestFailed(error);
