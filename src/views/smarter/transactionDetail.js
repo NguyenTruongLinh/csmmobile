@@ -111,14 +111,12 @@ class TransactionDetailView extends Component {
     const {exceptionStore, navigation} = this.props;
     const {viewMode} = this.state;
 
-    const fullscreenMode =
-      viewMode == ViewModes.fullscreenVideo ||
-      viewMode == ViewModes.fullscreenBill;
-
     navigation.setOptions({
-      headerLeft: fullscreenMode
-        ? null
-        : () => <BackButton navigator={navigation} />,
+      headerLeft:
+        viewMode == ViewModes.fullscreenVideo ||
+        viewMode == ViewModes.fullscreenBill
+          ? null
+          : () => <BackButton navigator={navigation} />,
       headerTitle:
         viewMode == ViewModes.fullscreenVideo
           ? null
@@ -126,23 +124,24 @@ class TransactionDetailView extends Component {
             (exceptionStore.selectedTransaction
               ? ' #' + exceptionStore.selectedTransaction.tranNo
               : ''),
-      // headerRight: fullscreenMode
-      //   ? () => (
-      //       <View style={commonStyles.headerContainer}>
-      //         <CMSTouchableIcon
-      //           size={20}
-      //           onPress={() => this.onExitFullscren()}
-      //           color={
-      //             viewMode == ViewModes.fullscreenVideo
-      //               ? CMSColors.White
-      //               : CMSColors.ColorText
-      //           }
-      //           styles={commonStyles.headerIcon}
-      //           iconCustom="clear-button"
-      //         />
-      //       </View>
-      //     )
-      //   : null,
+      headerRight:
+        viewMode == ViewModes.fullscreenBill
+          ? () => (
+              <View style={commonStyles.headerContainer}>
+                <CMSTouchableIcon
+                  size={20}
+                  onPress={() => this.onExitFullscren()}
+                  color={
+                    viewMode == ViewModes.fullscreenVideo
+                      ? CMSColors.White
+                      : CMSColors.ColorText
+                  }
+                  styles={commonStyles.headerIcon}
+                  iconCustom="clear-button"
+                />
+              </View>
+            )
+          : null,
       headerStyle: {
         backgroundColor:
           viewMode == ViewModes.fullscreenVideo
@@ -151,9 +150,9 @@ class TransactionDetailView extends Component {
       },
       headerShown: viewMode != ViewModes.fullscreenVideo,
     });
-    if (fullscreenMode) Orientation.lockToLandscape();
+    if (viewMode == ViewModes.fullscreenVideo) Orientation.lockToLandscape();
     else Orientation.lockToPortrait();
-    StatusBar.setHidden(fullscreenMode);
+    StatusBar.setHidden(viewMode == ViewModes.fullscreenVideo);
   };
 
   getData = () => {
