@@ -1922,7 +1922,7 @@ export const VideoModel = types
             self.waitForTimeline = false;
             __DEV__ &&
               console.log('GOND Get Timeline failed , max retries reached!');
-            snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
+            // snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
           }
         }
       }),

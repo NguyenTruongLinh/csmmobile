@@ -957,7 +957,7 @@ class HLSStreamingView extends React.Component {
     this.props.videoStore.pause(willPause == undefined ? true : willPause);
   };
 
-  playAt = value => {
+  playAt = async value => {
     const {videoStore, streamData} = this.props;
     const searchDate = videoStore.getSafeSearchDate();
     const time = searchDate.plus({seconds: value});
@@ -975,9 +975,10 @@ class HLSStreamingView extends React.Component {
     // videoStore.setPlayTimeForSearch(
     //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
     // );
-    this.pause(true);
+    // this.pause(true);
     // streamData.setStreamReady(false);
-    videoStore.onHLSTimeChanged(time);
+    await videoStore.onHLSTimeChanged(time);
+    this.pause(true);
     // this.refresh(true);
   };
 
