@@ -215,7 +215,7 @@ class HLSStreamingView extends React.Component {
         ...this.reactions,
         reaction(
           () => this.props.streamData.streamUrl,
-          newUrl => {
+          async newUrl => {
             if (
               this.props.isLive != this.props.streamData.isLive ||
               this.props.hdMode != this.props.streamData.isHD
@@ -240,6 +240,11 @@ class HLSStreamingView extends React.Component {
                 //     ', isLive: ',
                 //     this.props.isLive
                 //   );
+                if (!this.props.isLive && this.lastSearchTime) {
+                  await this.props.videoStore.onHLSTimeChanged(
+                    this.lastSearchTime
+                  );
+                }
                 this.setState(
                   {
                     streamUrl: newUrl,
@@ -579,7 +584,10 @@ class HLSStreamingView extends React.Component {
     if (!isLive && this.frameTime > 0)
       this.lastSearchTime = this.computeTime(this.frameTime);
 
-    if (error.domain == 'NSURLErrorDomain') {
+    if (
+      error.domain == 'NSURLErrorDomain' ||
+      error.errorString == 'Unrecognized media format'
+    ) {
       // TODO: new search time
 
       this.handleStreamError();
@@ -669,7 +677,7 @@ class HLSStreamingView extends React.Component {
 
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
-      // __DEV__ && console.log('GOND HLS onProgress: 1');
+      __DEV__ && console.log('GOND HLS onProgress: 1');
       this.frameTime = timeBeginPlaying.toSeconds();
       this.lastVideoTime = 0;
 
@@ -719,7 +727,7 @@ class HLSStreamingView extends React.Component {
           //   );
           // }
         } else {
-          // __DEV__ && console.log('GOND HLS onProgress: 2');
+          __DEV__ && console.log('GOND HLS onProgress: 2');
           this.frameTime = hlsTimestamps[this.tsIndex];
           this.setState({
             timeBeginPlaying: DateTime.fromSeconds(this.frameTime, {
@@ -737,7 +745,7 @@ class HLSStreamingView extends React.Component {
         //   this.frameTime += 1;
         // }
       } else if (this.tsIndex < hlsTimestamps.length) {
-        // __DEV__ && console.log('GOND HLS onProgress: 3');
+        __DEV__ && console.log('GOND HLS onProgress: 3');
         /*
         if (Platform.OS == 'ios') {
           this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
@@ -780,12 +788,12 @@ class HLSStreamingView extends React.Component {
         // __DEV__ && console.log('GOND HLS onProgress 5');
 
         const timeDiff = Math.floor(data.currentTime - this.lastVideoTime);
-        // __DEV__ &&
-        //   console.log('GOND HLS onProgress 6:', timeDiff, this.lastVideoTime);
+        __DEV__ &&
+          console.log('GOND HLS onProgress 6:', timeDiff, this.lastVideoTime);
         if (timeDiff > 0) {
           if (timeDiff >= 3 && __DEV__) {
             console.log(
-              'GOND HLS Warning, timeDiff too big: ',
+              'GOND HLS onProgress Warning, timeDiff too big: ',
               timeDiff,
               data,
               this.lastVideoTime
@@ -860,7 +868,7 @@ class HLSStreamingView extends React.Component {
   reconnect = () => {
     const {streamData, isLive, hdMode} = this.props;
     if (__DEV__) {
-      console.log('GOND ------- HLS reconnect: ');
+      console.log('GOND ------- HLS reconnect: ', this.retryCount);
       // console.trace();
     }
     // if (!this.videoReconnectTimeout) {
@@ -896,23 +904,26 @@ class HLSStreamingView extends React.Component {
   handleStreamError = () => {
     const {streamData} = this.props;
 
-    if (this.reInitCount < MAX_REINIT) {
-      if (!this.reInitTimeout) {
-        this.reInitCount++;
-        this.reInitTimeout = setTimeout(() => {
-          this._isMounted && streamData.handleError(this.lastSearchTime);
-          this.reInitTimeout = null;
-        }, 1500);
-      }
-    } else {
-      // this.stop();
-      __DEV__ &&
-        console.log(`GOND CONNECTION_ERROR view handleStreamError max retry: `);
-      this.setStreamStatus({
-        connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
-        isLoading: false,
-      });
-    }
+    this.lastVideoTime = 0;
+    streamData.handleError();
+    // if (this.reInitCount < MAX_REINIT) {
+    //   if (!this.reInitTimeout) {
+    //     this.reInitCount++;
+    //     this.lastVideoTime = 0;
+    //     this.reInitTimeout = setTimeout(() => {
+    //       this._isMounted && streamData.handleError(this.lastSearchTime);
+    //       this.reInitTimeout = null;
+    //     }, 1500);
+    //   }
+    // } else {
+    //   // this.stop();
+    //   __DEV__ &&
+    //     console.log(`GOND CONNECTION_ERROR view handleStreamError max retry: `);
+    //   this.setStreamStatus({
+    //     connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+    //     isLoading: false,
+    //   });
+    // }
   };
 
   stop = () => {

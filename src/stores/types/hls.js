@@ -552,11 +552,9 @@ export default HLSStreamModel = types
           console.log('GOND HLS Get Streaming Session URL failed: ', err);
         if (err.toString().includes('ResourceNotFoundException')) {
           self.retryRemaining++;
+          self.handleError();
+          return;
         }
-        console.log(
-          'Duck HLS Get Streaming Session URL failed self.retryRemaining: ',
-          self.retryRemaining
-        );
         self.setStreamStatus({
           isLoading: false,
           connectionStatus: STREAM_STATUS.RECONNECTING,
