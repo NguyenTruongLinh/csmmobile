@@ -143,6 +143,7 @@ export default HLSStreamModel = types
     // error: types.maybeNull(types.string),
     // needReset: types.optional(types.boolean, false),
     retryRemaining: types.optional(types.number, MAX_RETRY),
+    reInitRemaining: types.optional(types.number, MAX_RETRY),
 
     // sync values from videoStore
     isLive: types.optional(types.boolean, false),
@@ -242,13 +243,18 @@ export default HLSStreamModel = types
         clearInterval(self.keepAliveInterval);
         self.keepAliveInterval = null;
       }
+      self.clearStreamInitTimeout();
+    },
+    clearStreamInitTimeout() {
       if (self.reInitTimeout) {
         clearTimeout(self.reInitTimeout);
         self.reInitTimeout = null;
       }
     },
     setLive(isLive) {
-      self.isLive = isLive;
+      if (self.isLive != isLive) {
+        self.isLive = isLive;
+      }
     },
     setHD(isHD) {
       self.isHD = isHD;
@@ -543,6 +549,7 @@ export default HLSStreamModel = types
         currentUrl.set({url: response.HLSStreamingSessionURL});
 
         self.retryRemaining = MAX_RETRY;
+        self.reInitRemaining = MAX_RETRY;
         // Is it needed?
         // self.clearStreamTimeout();
         __DEV__ &&
@@ -552,8 +559,6 @@ export default HLSStreamModel = types
           console.log('GOND HLS Get Streaming Session URL failed: ', err);
         if (err.toString().includes('ResourceNotFoundException')) {
           self.retryRemaining++;
-          self.handleError();
-          return;
         }
         self.setStreamStatus({
           isLoading: false,
@@ -647,7 +652,7 @@ export default HLSStreamModel = types
     reInitStream(resumeTime) {
       self.targetUrl.reset();
       self.onStreamError(self.channelNo, self.isLive, resumeTime);
-      self.retryRemaining--;
+      self.reInitRemaining--;
       self.reInitTimeout = null;
       self.setStreamStatus({
         connectionStatus: STREAM_STATUS.CONNECTING,
@@ -657,10 +662,13 @@ export default HLSStreamModel = types
     handleError(resumeTime) {
       __DEV__ &&
         console.log(`GOND reinit HLS stream: `, self.channelName, resumeTime);
-      if (self.retryRemaining > 0) {
+      if (self.reInitRemaining > 0) {
         if (!self.reInitTimeout) {
           self.reInitTimeout = setTimeout(() => {
-            self.reInitStream(resumeTime);
+            if (isAlive(self)) {
+              self.reInitStream(resumeTime);
+              self.clearStreamInitTimeout();
+            }
           }, 1000);
         }
       } else {

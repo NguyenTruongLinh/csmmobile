@@ -72,8 +72,9 @@ class HLSStreamingView extends React.Component {
     this.retryCount = 0;
     this.reInitCount = 0;
     this.firstBuffer = true;
-    this.errorList = [];
+    // this.errorList = [];
     this.errorTimeout = null;
+    this.forceResume = false;
   }
 
   componentDidMount() {
@@ -268,8 +269,12 @@ class HLSStreamingView extends React.Component {
                 this.retryCount = 0;
                 this.reInitCount = 0;
                 this.firstBuffer = true;
-                if (videoStore.paused && this.props.isLive) {
+                if (
+                  videoStore.paused &&
+                  (this.props.isLive || this.forceResume)
+                ) {
                   this.pause(false);
+                  this.forceResume = false;
                 }
                 if (this.props.isLive || !videoStore.paused) {
                   __DEV__ && console.log('HLSStreamingView should resume');
@@ -305,27 +310,27 @@ class HLSStreamingView extends React.Component {
             }
           }
         ),
-        reaction(
-          () => videoStore.selectedChannel,
-          (newChannel, lastChannel) => {
-            __DEV__ &&
-              console.log('HLSStreamingView channel changed: ', newChannel);
-            // if ((lastChannel == null)) {
-            this.pause(true);
-            // this.stop();
-            // }
-            this.setState({internalLoading: true});
-            this.lastSearchTime = null;
-          }
-        ),
-        reaction(
-          () => videoStore.isLive,
-          isLive => {
-            // __DEV__ &&
-            //   console.log('HLSStreamingView switch mode isLive: ', isLive);
-            this.lastSearchTime = null;
-          }
-        ),
+        // reaction(
+        //   () => videoStore.selectedChannel,
+        //   (newChannel, lastChannel) => {
+        //     __DEV__ &&
+        //       console.log('HLSStreamingView channel changed: ', newChannel);
+        //     // if ((lastChannel == null)) {
+        //     this.pause(true);
+        //     // this.stop();
+        //     // }
+        //     this.setState({internalLoading: true});
+        //     this.lastSearchTime = null;
+        //   }
+        // ),
+        // reaction(
+        //   () => videoStore.isLive,
+        //   isLive => {
+        //     // __DEV__ &&
+        //     //   console.log('HLSStreamingView switch mode isLive: ', isLive);
+        //     this.lastSearchTime = null;
+        //   }
+        // ),
         // reaction(
         //   () => videoStore.hdMode,
         //   isHD => {
@@ -452,6 +457,7 @@ class HLSStreamingView extends React.Component {
   onSwitchLiveSearch = isLive => {
     this.lastSearchTime = null;
     this.clearBufferTimeout();
+    this.clearErrorTimeout();
     this.refresh();
     this.pause(true);
     this.props.streamData.setStreamReady(false);
@@ -467,6 +473,7 @@ class HLSStreamingView extends React.Component {
 
   onChangeChannel = channelNo => {
     this.clearBufferTimeout();
+    this.clearErrorTimeout();
     this.refresh();
     this.pause(true);
     this.props.streamData.setStreamReady(false);
@@ -481,6 +488,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onHDMode = isHD => {
+    this.pause(true);
     this.lastSearchTime = this.computeTime(this.frameTime);
   };
 
@@ -581,15 +589,12 @@ class HLSStreamingView extends React.Component {
     //   message: 'Reconnecting',
     // });
     // this.frameTime = 0;
-    if (!isLive && this.frameTime > 0)
-      this.lastSearchTime = this.computeTime(this.frameTime);
 
     if (
       error.domain == 'NSURLErrorDomain' ||
       error.errorString == 'Unrecognized media format'
     ) {
       // TODO: new search time
-
       this.handleStreamError();
       return;
     }
@@ -663,7 +668,7 @@ class HLSStreamingView extends React.Component {
     this.clearErrorTimeout();
     this.retryCount != 0 && (this.retryCount = 0);
     this.reInitCount != 0 && (this.reInitCount = 0);
-    this.errorList.length > 0 && (this.errorList = []);
+    // this.errorList.length > 0 && (this.errorList = []);
 
     // __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
     if (!singlePlayer) {
@@ -902,9 +907,15 @@ class HLSStreamingView extends React.Component {
   };
 
   handleStreamError = () => {
-    const {streamData} = this.props;
+    const {streamData, isLive, videoStore} = this.props;
 
     this.lastVideoTime = 0;
+    if (!videoStore.paused) {
+      this.forceResume = true;
+      this.pause(true);
+    }
+    if (!isLive && this.frameTime > 0)
+      this.lastSearchTime = this.computeTime(this.frameTime);
     streamData.handleError();
     // if (this.reInitCount < MAX_REINIT) {
     //   if (!this.reInitTimeout) {
