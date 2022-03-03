@@ -819,6 +819,7 @@ export const VideoModel = types
           if (self.selectedStream) {
             self.selectedStream.setLive(true);
             self.selectedStream.setHD(false);
+            self.selectedStream.select(false);
           }
         }
 
@@ -841,6 +842,7 @@ export const VideoModel = types
               break;
             case CLOUD_TYPE.HLS:
               // create stream first for showing in player
+              foundStream.select(true);
               if (
                 foundStream.isLive != self.isLive ||
                 foundStream.isHD != self.hdMode
@@ -878,6 +880,7 @@ export const VideoModel = types
                 connectionStatus: STREAM_STATUS.CONNECTING,
                 isHD: self.hdMode,
                 isLive: self.isLive,
+                isSelected: true,
               });
               newStream.setOnErrorCallback(self.onHLSError);
               self.hlsStreams.push(newStream);
@@ -1325,6 +1328,14 @@ export const VideoModel = types
       },
       onExitSinglePlayer(currentRoute) {
         // self.isSingleMode = false;
+        if (self.cloudType == CLOUD_TYPE.HLS) {
+          if (self.selectedStream) {
+            self.selectedStream.setLive(true);
+            self.selectedStream.setHD(false);
+            self.selectedStream.select(false);
+          }
+        }
+
         self.selectedChannel = null;
         self.searchBegin = null;
         self.searchEnd = null;

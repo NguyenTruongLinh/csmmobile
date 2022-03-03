@@ -80,6 +80,10 @@ const HLSURLModel = types
       return true;
     },
     resetRetries() {
+      if (__DEV__) {
+        console.log('GOND reset GetUrlDirectly retries: ---');
+        console.trace();
+      }
       self.getUrlRetries = 0;
     },
     clearStreamTimeout() {
@@ -151,7 +155,7 @@ export default HLSStreamModel = types
     // sync values from videoStore
     isLive: types.optional(types.boolean, false),
     isHD: types.optional(types.boolean, false),
-    // isDead: types.optional(types.boolean, false),
+    isSelected: types.optional(types.boolean, false),
     // isWaitingReconnect: types.optional(types.boolean, false),
   })
   .volatile(self => ({
@@ -275,6 +279,9 @@ export default HLSStreamModel = types
     },
     setHD(isHD) {
       self.isHD = isHD;
+    },
+    select(isSelected) {
+      self.isSelected = isSelected;
     },
     setChannel(value) {
       self.channel = value;
@@ -428,7 +435,12 @@ export default HLSStreamModel = types
       if (!currentUrl) return;
 
       const res = yield apiService.get(VSC.controller, sid);
-      __DEV__ && console.log(`GOND HLS getStreamDirectly: `, res);
+      __DEV__ &&
+        console.log(
+          `GOND HLS getStreamDirectly: `,
+          currentUrl.getUrlRetries,
+          res
+        );
       if (!isAlive(self)) return;
       if (res && (res.StreamName || res.AcccessKey)) {
         self.startConnection({...res, sid});
@@ -702,18 +714,20 @@ export default HLSStreamModel = types
           connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
           isLoading: false,
         });
-        snackbarUtil.onMessage(
-          STREAM_STATUS.CONNECTION_ERROR,
-          CMSColors.Danger,
-          {
-            title: COMMON.RETRY,
-            color: CMSColors.White,
-            onPress: () => {
-              self.resetRetries();
-              self.handleError();
-            },
-          }
-        );
+        if (self.isSelected) {
+          snackbarUtil.onMessage(
+            STREAM_STATUS.CONNECTION_ERROR,
+            CMSColors.Danger,
+            {
+              title: COMMON.RETRY,
+              color: CMSColors.White,
+              onPress: () => {
+                self.resetRetries();
+                self.handleError();
+              },
+            }
+          );
+        }
       }
     },
     updateStreamsStatus(isKeepAlive) {
