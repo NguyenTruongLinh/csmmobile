@@ -171,4 +171,5 @@ export const COMMON = {
   NO_DATA: 'There is no data',
   FROM: 'From',
   TO: 'To',
+  RETRY: 'RETRY',
 };

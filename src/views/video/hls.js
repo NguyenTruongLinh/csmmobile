@@ -913,6 +913,10 @@ class HLSStreamingView extends React.Component {
     if (!videoStore.paused) {
       this.forceResume = true;
       this.pause(true);
+      streamData.setStreamStatus({
+        connectionStatus: STREAM_STATUS.CONNECTING,
+        isLoading: true,
+      });
     }
     if (!isLive && this.frameTime > 0)
       this.lastSearchTime = this.computeTime(this.frameTime);

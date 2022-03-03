@@ -22,7 +22,8 @@ import ChannelModel from './channel';
 import apiService from '../../services/api';
 import {VSC} from '../../consts/apiRoutes';
 
-import util from '../util/general';
+import util from '../../util/general';
+import snackbarUtil from '../../util/snackbar';
 import {
   DEFAULT_REGION,
   HLS_MAX_EXPIRE_TIME,
@@ -32,7 +33,8 @@ import {
   HLS_MAX_RETRY,
   VSCCommandString,
 } from '../../consts/video';
-import {STREAM_STATUS} from '../../localization/texts';
+import {STREAM_STATUS, COMMON} from '../../localization/texts';
+import CMSColors from '../../styles/cmscolors';
 
 const MAX_RETRY = 5;
 const KEEP_ALIVE_TIMEOUT = 60000;
@@ -248,6 +250,12 @@ export default HLSStreamModel = types
       self.clearStreamInitTimeout();
       self.clearStreamReconnectTimeout();
     },
+    resetRetries() {
+      self.clearStreamReconnectTimeout();
+      self.clearStreamInitTimeout();
+      self.retryRemaining = MAX_RETRY;
+      self.reInitRemaining = MAX_RETRY;
+    },
     clearStreamInitTimeout() {
       if (self.reInitTimeout) {
         clearTimeout(self.reInitTimeout);
@@ -429,7 +437,7 @@ export default HLSStreamModel = types
           streamTimeout: setTimeout(() => {
             if (currentUrl.increaseRetry()) self.getStreamDirectly(sid);
             else {
-              currentUrl.set({failed: true});
+              self.handleError();
             }
           }, HLS_GET_DATA_DIRECTLY_TIMEOUT),
         });
@@ -463,14 +471,15 @@ export default HLSStreamModel = types
         currentUrl.set({
           streamTimeout: setTimeout(() => {
             if (!isAlive(currentUrl) || currentUrl.sid != info.sid) return;
-            if (currentUrl.increaseRetry()) self.getStreamDirectly(info.sid);
-            else {
-              currentUrl.set({failed: true});
-              self.setStreamStatus({
-                connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
-                isLoading: false,
-              });
-            }
+            // if (currentUrl.increaseRetry()) self.getStreamDirectly(info.sid);
+            // else {
+            //   currentUrl.set({failed: true});
+            //   self.setStreamStatus({
+            //     connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+            //     isLoading: false,
+            //   });
+            // }
+            self.getStreamDirectly(info.sid);
           }, HLS_GET_DATA_DIRECTLY_TIMEOUT),
         });
 
@@ -693,6 +702,18 @@ export default HLSStreamModel = types
           connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
           isLoading: false,
         });
+        snackbarUtil.onMessage(
+          STREAM_STATUS.CONNECTION_ERROR,
+          CMSColors.Danger,
+          {
+            title: COMMON.RETRY,
+            color: CMSColors.White,
+            onPress: () => {
+              self.resetRetries();
+              self.handleError();
+            },
+          }
+        );
       }
     },
     updateStreamsStatus(isKeepAlive) {
