@@ -36,6 +36,7 @@ import {STREAM_STATUS} from '../../localization/texts';
 
 const MAX_RETRY = 5;
 const KEEP_ALIVE_TIMEOUT = 60000;
+const REST_TIME = 2000;
 
 const HLSURLModel = types
   .model({
@@ -158,6 +159,7 @@ export default HLSStreamModel = types
     // timestamps: null,
     keepAliveInterval: null,
     reInitTimeout: null,
+    reconnectTimeout: null,
   }))
   .views(self => ({
     get channelNo() {
@@ -244,11 +246,18 @@ export default HLSStreamModel = types
         self.keepAliveInterval = null;
       }
       self.clearStreamInitTimeout();
+      self.clearStreamReconnectTimeout();
     },
     clearStreamInitTimeout() {
       if (self.reInitTimeout) {
         clearTimeout(self.reInitTimeout);
         self.reInitTimeout = null;
+      }
+    },
+    clearStreamReconnectTimeout() {
+      if (self.reconnectTimeout) {
+        clearTimeout(self.reconnectTimeout);
+        self.reconnectTimeout = null;
       }
     },
     setLive(isLive) {
@@ -429,6 +438,8 @@ export default HLSStreamModel = types
     startConnection: flow(function* (info, cmd) {
       if (!isAlive(self)) return;
       self.retryRemaining = MAX_RETRY;
+      self.clearStreamReconnectTimeout();
+      self.clearStreamInitTimeout();
       return self.getHLSStreamUrl(info, cmd);
     }),
     getHLSStreamUrl: flow(function* (info, cmd) {
@@ -568,7 +579,12 @@ export default HLSStreamModel = types
         // self.setReconnectStatus(false);
         // setTimeout(() => self.reconnect(), 200);
         // return false;
-        if (isAlive(self)) return self.reconnect(info);
+        self.reconnectTimeout = setTimeout(() => {
+          if (isAlive(self)) {
+            self.reconnect(info);
+            self.clearStreamReconnectTimeout();
+          }
+        }, REST_TIME);
       }
 
       if (!self.isLive && self.connectionStatus == STREAM_STATUS.NOVIDEO) {
@@ -669,7 +685,7 @@ export default HLSStreamModel = types
               self.reInitStream(resumeTime);
               self.clearStreamInitTimeout();
             }
-          }, 1000);
+          }, REST_TIME);
         }
       } else {
         __DEV__ && console.log(`GOND CONNECTION_ERROR handleError max retry: `);

@@ -356,7 +356,7 @@ export default class TimeRuler extends PureComponent {
 
     this.clearScrollEndTimeout();
     let {x} = event.nativeEvent.contentOffset;
-    this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 500);
+    this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 2000);
     /*
     // if (this.lastScrollOffsetX >= 0) {
     if (event.nativeEvent.contentOffset.x == this.lastScrollOffsetX) {
