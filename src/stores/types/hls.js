@@ -70,6 +70,10 @@ const HLSURLModel = types
     reset() {
       self.url = null;
       self.sid = util.getRandomId();
+      if (__DEV__) {
+        console.log('GOND reset: ---');
+        console.trace();
+      }
       self.getUrlRetries = 0;
       self.clearStreamTimeout();
       self.isFailed = false;
@@ -77,6 +81,7 @@ const HLSURLModel = types
     increaseRetry() {
       if (self.getUrlRetries >= HLS_MAX_RETRY) return false;
       self.getUrlRetries++;
+      // console.log('GOND increaseRetry ', self.getUrlRetries);
       return true;
     },
     resetRetries() {
@@ -483,15 +488,10 @@ export default HLSStreamModel = types
         currentUrl.set({
           streamTimeout: setTimeout(() => {
             if (!isAlive(currentUrl) || currentUrl.sid != info.sid) return;
-            // if (currentUrl.increaseRetry()) self.getStreamDirectly(info.sid);
-            // else {
-            //   currentUrl.set({failed: true});
-            //   self.setStreamStatus({
-            //     connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
-            //     isLoading: false,
-            //   });
-            // }
-            self.getStreamDirectly(info.sid);
+            if (currentUrl.increaseRetry()) self.getStreamDirectly(info.sid);
+            else {
+              self.handleError();
+            }
           }, HLS_GET_DATA_DIRECTLY_TIMEOUT),
         });
 
@@ -719,8 +719,8 @@ export default HLSStreamModel = types
             STREAM_STATUS.CONNECTION_ERROR,
             CMSColors.Danger,
             {
-              title: COMMON.RETRY,
-              color: CMSColors.White,
+              text: COMMON.RETRY,
+              textColor: CMSColors.Green,
               onPress: () => {
                 self.resetRetries();
                 self.handleError();

@@ -399,6 +399,29 @@ class HLSStreamingView extends React.Component {
             }
           }
         ),
+        reaction(
+          () => videoStore.selectedChannel,
+          (newChannel, previousValue) => {
+            __DEV__ &&
+              console.log('HLSStreamingView channel changed: ', newChannel);
+            const {channelNo, liveUrl} = this.props.streamData;
+            if (
+              previousValue == null &&
+              newChannel != null &&
+              newChannel != channelNo
+            ) {
+              this.setState({streamUrl: ''});
+            } else if (
+              previousValue != null &&
+              newChannel == null &&
+              previousValue != channelNo
+            ) {
+              this.firstBuffer = true;
+              this.shouldResume = true;
+              this.setState({streamUrl: liveUrl.url});
+            }
+          }
+        ),
       ];
     }
   };
@@ -434,6 +457,7 @@ class HLSStreamingView extends React.Component {
 
   onChangeSearchDate = () => {
     this.lastSearchTime = null;
+    this.frameTime = 0;
     this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
@@ -456,6 +480,7 @@ class HLSStreamingView extends React.Component {
 
   onSwitchLiveSearch = isLive => {
     this.lastSearchTime = null;
+    this.frameTime = 0;
     this.clearBufferTimeout();
     this.clearErrorTimeout();
     this.refresh();
@@ -488,7 +513,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onHDMode = isHD => {
-    this.pause(true);
+    // this.pause(true);
     this.lastSearchTime = this.computeTime(this.frameTime);
   };
 
@@ -807,6 +832,8 @@ class HLSStreamingView extends React.Component {
           this.tsIndex += timeDiff;
           this.lastVideoTime = Math.floor(data.currentTime);
           this.frameTime = hlsTimestamps[this.tsIndex];
+        } else if (timeDiff < 0) {
+          this.lastVideoTime = Math.floor(data.currentTime);
         }
         // }
       }
@@ -910,14 +937,14 @@ class HLSStreamingView extends React.Component {
     const {streamData, isLive, videoStore} = this.props;
 
     this.lastVideoTime = 0;
-    if (!videoStore.paused) {
-      this.forceResume = true;
-      this.pause(true);
-      streamData.setStreamStatus({
-        connectionStatus: STREAM_STATUS.CONNECTING,
-        isLoading: true,
-      });
-    }
+    // if (!videoStore.paused) {
+    //   this.forceResume = true;
+    //   this.pause(true);
+    //   streamData.setStreamStatus({
+    //     connectionStatus: STREAM_STATUS.CONNECTING,
+    //     isLoading: true,
+    //   });
+    // }
     if (!isLive && this.frameTime > 0)
       this.lastSearchTime = this.computeTime(this.frameTime);
     streamData.handleError();
