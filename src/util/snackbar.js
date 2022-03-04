@@ -39,6 +39,10 @@ exports.onSuccess = message => {
   showMessage(message ?? ActionMessages.SUCCESS, false);
 };
 
+exports.dismiss = () => {
+  Snackbar.dismiss();
+};
+
 const onMessage = (msg, backcolor, actions) => {
   if (!actions) {
     Snackbar.show({

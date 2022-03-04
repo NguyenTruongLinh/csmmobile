@@ -15,6 +15,7 @@ import Video from 'react-native-video';
 import {DateTime} from 'luxon';
 
 import util from '../../util/general';
+import snackbar from '../../util/snackbar';
 import CMSColors from '../../styles/cmscolors';
 import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
@@ -112,6 +113,7 @@ class HLSStreamingView extends React.Component {
         connectionStatus: STREAM_STATUS.DONE,
       });
     }
+    snackbar.dismiss();
     // this.stop();
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
@@ -461,6 +463,7 @@ class HLSStreamingView extends React.Component {
     this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
+    snackbar.dismiss();
     this.props.streamData.setStreamReady(false);
     setTimeout(
       () =>
@@ -485,6 +488,7 @@ class HLSStreamingView extends React.Component {
     this.clearErrorTimeout();
     this.refresh();
     this.pause(true);
+    snackbar.dismiss();
     this.props.streamData.setStreamReady(false);
     setTimeout(
       () =>
@@ -501,6 +505,7 @@ class HLSStreamingView extends React.Component {
     this.clearErrorTimeout();
     this.refresh();
     this.pause(true);
+    snackbar.dismiss();
     this.props.streamData.setStreamReady(false);
     setTimeout(
       () =>
@@ -515,6 +520,7 @@ class HLSStreamingView extends React.Component {
   onHDMode = isHD => {
     // this.pause(true);
     this.lastSearchTime = this.computeTime(this.frameTime);
+    snackbar.dismiss();
   };
 
   onPlaybackStalled = event => {
