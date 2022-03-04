@@ -1043,14 +1043,12 @@ class HLSStreamingView extends React.Component {
     const searchDate = videoStore.getSafeSearchDate();
     const time = searchDate.plus({seconds: value});
     __DEV__ && console.log('GOND HLS playAt: ', value, ' - ', time, searchDate);
-    this.lastSearchTime = this.computeTime(time.toSeconds());
+    this.lastSearchTime = time;
     this.frameTime = 0;
     this.lastVideoTime = 0;
     this.tsIndex = -1;
     this.setState({
-      timeBeginPlaying: this.props.isLive
-        ? DateTime.now().setZone(videoStore.timezone)
-        : this.lastSearchTime,
+      timeBeginPlaying: this.lastSearchTime,
       refreshCount: 0,
     });
     // videoStore.setPlayTimeForSearch(

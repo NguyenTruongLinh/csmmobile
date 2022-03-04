@@ -419,8 +419,8 @@ class VideoPlayerView extends Component {
         ' = ',
         secondsValue
       );
-    this.ruler.moveToPosition(secondsValue);
-
+    this.ruler && this.ruler.moveToPosition(secondsValue);
+    this.playerRef && this.playerRef.onBeginDraggingTimeline();
     this.onTimelineScrollEnd({
       hour: parseInt(hours),
       minutes: parseInt(minutes),
