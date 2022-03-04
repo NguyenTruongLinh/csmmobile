@@ -94,12 +94,12 @@ export default class TimeRuler extends PureComponent {
     );
     this._isMounted = true;
 
-    const {currentTime, searchDate} = this.props;
-    if (currentTime && currentTime > searchDate) {
-      let sec = currentTime - searchDate;
-      let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
-      this.scrollTo(sec * secWidth, 0);
-    }
+    // const {currentTime, searchDate} = this.props;
+    // if (currentTime && currentTime > searchDate) {
+    //   let sec = currentTime - searchDate;
+    //   let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
+    //   this.scrollTo(sec * secWidth, 0);
+    // }
   }
 
   componentWillUnmount() {
@@ -136,8 +136,13 @@ export default class TimeRuler extends PureComponent {
     let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
 
     // TODO: handle DST
-    // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
-    this.scrollTo(sec * secWidth, 0);
+    console.log('GOND moveToPosition, sec: ', sec, ', secW = ', secWidth);
+    this.isAutoScrolling = false;
+    this.scrollRef &&
+      this.scrollRef.scrollTo({x: sec * secWidth, y: 0, animated: false});
+    setTimeout(() => {
+      this.isAutoScrolling = true;
+    }, 2000);
   };
 
   clearScrollEndTimeout = () => {

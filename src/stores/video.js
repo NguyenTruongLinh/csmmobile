@@ -2255,58 +2255,13 @@ export const VideoModel = types
             requestParams
           );
           __DEV__ && console.log(`GOND onHLSTimeChanged: `, res);
+          yield util.sleep(2000);
+          return true;
         } catch (error) {
           console.log(`Could not get HLS video info: ${error}`);
           snackbarUtil.handleRequestFailed(error);
           return false;
         }
-
-        // if (dateChanged) {
-        //   // yield self.getTimeline(channelNo, self.selectedStream.targetUrl.sid);
-        //   params = {...params, timeline: true};
-        // }
-        // self.getHLSInfos(params);
-
-        // const timeParams = {
-        //   RequestDate: self.searchDate.toFormat(
-        //     NVRPlayerConfig.HLSRequestDateFormat
-        //   ),
-        //   BeginTime: self.searchPlayTime
-        //     ? self.searchPlayTimeLuxon.toFormat(
-        //         NVRPlayerConfig.HLSRequestTimeFormat
-        //       )
-        //     : BEGIN_OF_DAY_STRING,
-        //   EndTime: END_OF_DAY_STRING,
-        // };
-        // __DEV__ &&
-        //   console.log(
-        //     `GOND onHLSTimeChanged date = ${self.getSafeSearchDate().toFormat(
-        //       NVRPlayerConfig.HLSRequestDateFormat
-        //     )}`,
-        //     self.searchDate
-        //   );
-        // // listIdToCheck.push(self.selectedStream.id);
-
-        // try {
-        //   let res = yield apiService.post(VSC.controller, 1, VSC.getMultiURL, [
-        //     {
-        //       ID: apiService.configToken.devId,
-        //       sid: self.selectedStream.targetUrl.sid,
-        //       KDVR: self.kDVR,
-        //       ChannelNo: self.selectedStream.channel.channelNo + 1,
-        //       RequestMode: self.hdMode
-        //         ? VSCCommand.SEARCHHD
-        //         : VSCCommand.SEARCH,
-        //       isMobile: true,
-        //       ...timeParams,
-        //     },
-        //   ]);
-        //   __DEV__ && console.log(`GOND get multi HLS URL: `, res);
-        // } catch (error) {
-        //   console.log(`Could not get HLS video info: ${error}`);
-        //   snackbarUtil.handleRequestFailed(error);
-        //   return false;
-        // }
       }),
       // onHLSSingleStreamChanged: flow(function* (stopCurrent) {
       //   if (self.cloudType != CLOUD_TYPE.HLS) return;

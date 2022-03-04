@@ -72,7 +72,7 @@ const HLSURLModel = types
       self.sid = util.getRandomId();
       if (__DEV__) {
         console.log('GOND reset: ---');
-        console.trace();
+        // console.trace();
       }
       self.getUrlRetries = 0;
       self.clearStreamTimeout();
@@ -87,7 +87,7 @@ const HLSURLModel = types
     resetRetries() {
       if (__DEV__) {
         console.log('GOND reset GetUrlDirectly retries: ---');
-        console.trace();
+        // console.trace();
       }
       self.getUrlRetries = 0;
     },
@@ -490,7 +490,8 @@ export default HLSStreamModel = types
             if (!isAlive(currentUrl) || currentUrl.sid != info.sid) return;
             if (currentUrl.increaseRetry()) self.getStreamDirectly(info.sid);
             else {
-              self.handleError();
+              // self.handleError();
+              self.giveUp();
             }
           }, HLS_GET_DATA_DIRECTLY_TIMEOUT),
         });
@@ -696,6 +697,27 @@ export default HLSStreamModel = types
         isLoading: true,
       });
     },
+    giveUp() {
+      __DEV__ && console.log(`GOND CONNECTION_ERROR handleError max retry: `);
+      self.setStreamStatus({
+        connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+        isLoading: false,
+      });
+      if (self.isSelected) {
+        snackbarUtil.onMessage(
+          STREAM_STATUS.CONNECTION_ERROR,
+          CMSColors.Danger,
+          {
+            text: COMMON.RETRY,
+            textColor: CMSColors.White,
+            onPress: () => {
+              self.resetRetries();
+              self.handleError();
+            },
+          }
+        );
+      }
+    },
     handleError(resumeTime) {
       __DEV__ &&
         console.log(`GOND reinit HLS stream: `, self.channelName, resumeTime);
@@ -709,25 +731,7 @@ export default HLSStreamModel = types
           }, REST_TIME);
         }
       } else {
-        __DEV__ && console.log(`GOND CONNECTION_ERROR handleError max retry: `);
-        self.setStreamStatus({
-          connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
-          isLoading: false,
-        });
-        if (self.isSelected) {
-          snackbarUtil.onMessage(
-            STREAM_STATUS.CONNECTION_ERROR,
-            CMSColors.Danger,
-            {
-              text: COMMON.RETRY,
-              textColor: CMSColors.White,
-              onPress: () => {
-                self.resetRetries();
-                self.handleError();
-              },
-            }
-          );
-        }
+        self.giveUp();
       }
     },
     updateStreamsStatus(isKeepAlive) {

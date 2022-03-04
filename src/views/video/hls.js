@@ -62,13 +62,16 @@ class HLSStreamingView extends React.Component {
     this.frameTime = 0;
     this.tsIndex = -1;
     this.reactions = [];
+
     this.shouldResume = false;
     this.lastSearchTime = null;
     this.videoBufferTimeout = null;
+
     this.videoReconnectTimeout = null;
     this.reInitTimeout = null;
     // this.waitingForReconnect = false;
     this.checkTimelineInterval = null;
+
     this.lastVideoTime = 0;
     this.retryCount = 0;
     this.reInitCount = 0;
@@ -76,6 +79,8 @@ class HLSStreamingView extends React.Component {
     // this.errorList = [];
     this.errorTimeout = null;
     this.forceResume = false;
+
+    this.waitingForNewUrl = false;
   }
 
   componentDidMount() {
@@ -271,6 +276,7 @@ class HLSStreamingView extends React.Component {
                 this.retryCount = 0;
                 this.reInitCount = 0;
                 this.firstBuffer = true;
+                this.waitingForNewUrl = false;
                 if (
                   videoStore.paused &&
                   (this.props.isLive || this.forceResume)
@@ -384,6 +390,7 @@ class HLSStreamingView extends React.Component {
                 this.retryCount = 0;
                 this.reInitCount = 0;
                 this.firstBuffer = true;
+                this.waitingForNewUrl = false;
                 if (videoStore.paused) {
                   this.pause(false);
                 }
@@ -905,6 +912,9 @@ class HLSStreamingView extends React.Component {
 
   reconnect = () => {
     const {streamData, isLive, hdMode} = this.props;
+    if (this.waitingForNewUrl) {
+      return;
+    }
     if (__DEV__) {
       console.log('GOND ------- HLS reconnect: ', this.retryCount);
       // console.trace();
@@ -941,8 +951,12 @@ class HLSStreamingView extends React.Component {
 
   handleStreamError = () => {
     const {streamData, isLive, videoStore} = this.props;
+    if (this.waitingForNewUrl) {
+      return;
+    }
 
     this.lastVideoTime = 0;
+    this.waitingForNewUrl = true;
     // if (!videoStore.paused) {
     //   this.forceResume = true;
     //   this.pause(true);
