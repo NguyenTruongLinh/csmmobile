@@ -720,7 +720,7 @@ export default HLSStreamModel = types
             CMSColors.Danger,
             {
               text: COMMON.RETRY,
-              textColor: CMSColors.Green,
+              textColor: CMSColors.White,
               onPress: () => {
                 self.resetRetries();
                 self.handleError();

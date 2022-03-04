@@ -48,17 +48,13 @@ const onMessage = (msg, backcolor, actions) => {
       // onTimeOut: this.onSnackbarTimeout,
     });
   } else {
-    let {title, color, onPress} = actions;
+    // let {title, color, onPress} = actions;
     Snackbar.show({
       text: msg,
       duration: Snackbar.LENGTH_INDEFINITE,
       backgroundColor: backcolor ?? CMSColors.Success,
       // onTimeOut: this.onSnackbarTimeout,
-      action: {
-        title: title,
-        color: color,
-        onPress: onPress,
-      },
+      action: actions,
     });
   }
 };
