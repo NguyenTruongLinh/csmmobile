@@ -737,7 +737,7 @@ class HLSStreamingView extends React.Component {
             .minus({seconds: data.currentTime}),
         });
         // this.frameTime = timeBeginPlaying.toSeconds();
-      } else {
+      } else if (hlsTimestamps.length > 0) {
         this.tsIndex = hlsTimestamps.findIndex(t => t >= this.frameTime);
         __DEV__ && console.log('GOND HLS onProgress: ', this.tsIndex);
         if (this.tsIndex < 0) {
@@ -750,6 +750,14 @@ class HLSStreamingView extends React.Component {
                   }`
                 : []
             );
+          this.frameTime = 0;
+          this.setState({
+            timeBeginPlaying: DateTime.fromSeconds(hlsTimestamps[0], {
+              zone: videoStore.timezone,
+            }),
+          });
+          return;
+
           // Check timeline exist
           // if (
           //   hlsTimestamps.length == 0 &&
@@ -1136,8 +1144,8 @@ class HLSStreamingView extends React.Component {
                 selectedAudioTrack={{type: 'disabled'}}
                 selectedTextTrack={{type: 'disabled'}}
                 rate={1.0}
-                automaticallyWaitsToMinimizeStalling={true}
-                preferredForwardBufferDuration={2}
+                automaticallyWaitsToMinimizeStalling={false}
+                preferredForwardBufferDuration={5}
                 playInBackground={true}
                 playWhenInactive={true}
                 useTextureView={false}
