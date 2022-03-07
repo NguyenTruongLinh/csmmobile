@@ -361,7 +361,7 @@ export default class TimeRuler extends PureComponent {
 
     this.clearScrollEndTimeout();
     let {x} = event.nativeEvent.contentOffset;
-    this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 2000);
+    this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 500);
     /*
     // if (this.lastScrollOffsetX >= 0) {
     if (event.nativeEvent.contentOffset.x == this.lastScrollOffsetX) {
@@ -727,8 +727,13 @@ export default class TimeRuler extends PureComponent {
   };
 
   render() {
-    const {is24hour, hourBuildRuler, hourSpecial, rulerDST, timeData} =
-      this.props;
+    const {
+      is24hour,
+      hourBuildRuler,
+      hourSpecial,
+      rulerDST,
+      timeData,
+    } = this.props;
     // console.log('GOND TimeRuler hourBuildRuler: ', hourBuildRuler);
     let _data =
       hourBuildRuler != default24H

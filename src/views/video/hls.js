@@ -408,6 +408,8 @@ class HLSStreamingView extends React.Component {
             }
           }
         ),
+        // stop live streams when enter single video mode
+        /*
         reaction(
           () => videoStore.selectedChannel,
           (newChannel, previousValue) => {
@@ -431,6 +433,7 @@ class HLSStreamingView extends React.Component {
             }
           }
         ),
+        */
       ];
     }
   };
@@ -1015,6 +1018,7 @@ class HLSStreamingView extends React.Component {
     if (isSaveUrl) {
       const currentUrl = this.state.streamUrl;
       const {streamData} = this.props;
+      __DEV__ && console.trace(`GOND HLS refresh ---`);
       streamData.setStreamStatus({
         connectionStatus: STREAM_STATUS.CONNECTING,
         isLoading: true,
@@ -1036,6 +1040,7 @@ class HLSStreamingView extends React.Component {
 
   pause = willPause => {
     this.props.videoStore.pause(willPause == undefined ? true : willPause);
+    // __DEV__ && console.trace('GOND HLS PAUSED ---');
   };
 
   playAt = async value => {
@@ -1054,16 +1059,21 @@ class HLSStreamingView extends React.Component {
     // videoStore.setPlayTimeForSearch(
     //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
     // );
-    // this.pause(true);
+    this.pause(true);
     // streamData.setStreamReady(false);
     await videoStore.onHLSTimeChanged(time);
-    this.pause(true);
     // this.refresh(true);
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
