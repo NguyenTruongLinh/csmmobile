@@ -420,7 +420,7 @@ export default HLSStreamModel = types
     //   self.timestamps = timestamp;
     // },
     stopWaitingForStream(sid) {
-      const currentUrl = self.getUrlById(sid);
+      const currentUrl = sid ? self.getUrlById(sid) : self.targetUrl;
       if (!currentUrl || !isAlive(self)) return;
       currentUrl.clearStreamTimeout();
     },
@@ -567,8 +567,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -582,8 +582,7 @@ export default HLSStreamModel = types
               : HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 5000,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ &&
           console.log(
@@ -735,6 +734,7 @@ export default HLSStreamModel = types
     handleError(resumeTime) {
       __DEV__ &&
         console.log(`GOND reinit HLS stream: `, self.channelName, resumeTime);
+      self.stopWaitingForStream();
       if (self.reInitRemaining > 0) {
         if (!self.reInitTimeout) {
           self.reInitTimeout = setTimeout(() => {

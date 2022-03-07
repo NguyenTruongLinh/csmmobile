@@ -406,6 +406,7 @@ class VideoPlayerView extends Component {
 
   onSetSearchTime = (hours, minutes, seconds) => {
     if (!this.playerRef) return;
+    const {videoStore} = this.props;
     const secondsValue =
       parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
     __DEV__ &&
@@ -421,6 +422,10 @@ class VideoPlayerView extends Component {
       );
     this.ruler && this.ruler.moveToPosition(secondsValue);
     this.playerRef && this.playerRef.onBeginDraggingTimeline();
+
+    if (videoStore.timeline.length > 0 && videoStore.noVideo == true) {
+      videoStore.setNoVideo(false);
+    }
     this.onTimelineScrollEnd({
       hour: parseInt(hours),
       minutes: parseInt(minutes),
@@ -481,7 +486,7 @@ class VideoPlayerView extends Component {
   onTimelineScrollBegin = () => {
     const {videoStore} = this.props;
     this.timelineAutoScroll = false;
-    if (videoStore.timeline.length > 0 && videoStore.noVideo === true) {
+    if (videoStore.timeline.length > 0 && videoStore.noVideo == true) {
       videoStore.setNoVideo(false);
     }
     videoStore.setTimelineDraggingStatus(true);
@@ -550,7 +555,9 @@ class VideoPlayerView extends Component {
       // snackbar.onMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
       // }, 200);
       return;
-    }
+    } // else if (videoStore.noVideo) {
+    //   videoStore.setNoVideo(false, false);
+    // }
     if (this.playerRef) {
       this.playerRef.playAt(value.timestamp);
     } else {

@@ -358,6 +358,14 @@ class HLSStreamingView extends React.Component {
               });
               if (this.state.internalLoading)
                 this.setState({internalLoading: false});
+            } else {
+              this.setStreamStatus({
+                connectionStatus: STREAM_STATUS.DONE,
+                // isLoading: false,
+              });
+              if (util.isValidHttpUrl(this.props.streamData.streamUrl)) {
+                this.setState({streamUrl: this.props.streamData.streamUrl});
+              }
             }
           }
         ),
@@ -1071,14 +1079,8 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      streamData,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;

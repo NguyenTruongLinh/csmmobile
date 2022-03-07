@@ -2308,7 +2308,7 @@ export const VideoModel = types
               s => s.targetUrl.sid == info.sid
             );
             if (target) {
-              target.handleError(info);
+              target.handleError();
             } else {
               __DEV__ &&
                 console.log(
