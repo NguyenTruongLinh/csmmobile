@@ -567,8 +567,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -582,7 +582,8 @@ export default HLSStreamModel = types
               : HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 5000,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(
@@ -712,23 +713,41 @@ export default HLSStreamModel = types
     },
     giveUp() {
       __DEV__ && console.log(`GOND CONNECTION_ERROR handleError max retry: `);
-      self.setStreamStatus({
-        connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
-        isLoading: false,
-      });
+      // self.setStreamStatus({
+      //   connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+      //   isLoading: false,
+      // });
+      // if (self.isSelected) {
+      //   snackbarUtil.onMessage(
+      //     STREAM_STATUS.CONNECTION_ERROR,
+      //     CMSColors.Danger,
+      //     {
+      //       text: COMMON.RETRY,
+      //       textColor: CMSColors.White,
+      //       onPress: () => {
+      //         self.resetRetries();
+      //         self.handleError();
+      //       },
+      //     }
+      //   );
+      // }
       if (self.isSelected) {
-        snackbarUtil.onMessage(
-          STREAM_STATUS.CONNECTION_ERROR,
-          CMSColors.Danger,
-          {
-            text: COMMON.RETRY,
-            textColor: CMSColors.White,
-            onPress: () => {
-              self.resetRetries();
-              self.handleError();
-            },
+        self.setStreamStatus({
+          connectionStatus: STREAM_STATUS.RECONNECTING,
+          isLoading: true,
+        });
+        const lastId = self.targetUrl.sid;
+        setTimeout(() => {
+          if (isAlive(self) && self.targetUrl.sid == lastId) {
+            self.resetRetries();
+            self.handleError();
           }
-        );
+        }, HLS_GET_DATA_DIRECTLY_TIMEOUT);
+      } else {
+        self.setStreamStatus({
+          connectionStatus: STREAM_STATUS.CONNECTION_ERROR,
+          isLoading: false,
+        });
       }
     },
     handleError(resumeTime) {
