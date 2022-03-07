@@ -407,6 +407,10 @@ export default HLSStreamModel = types
         // console.trace();
       }
       isAlive(self) && self.targetUrl.set({ready: isReady});
+      if (__DEV__) {
+        console.log('GOND --- set HLS Ready --- ', isReady);
+        // console.trace();
+      }
     },
     // setReconnectStatus(value) {
     //   self.isWaitingReconnect = value;
@@ -483,6 +487,14 @@ export default HLSStreamModel = types
         // });
         return false;
       }
+      if (
+        util.isValidHttpUrl(currentUrl.url) &&
+        (info.StreamName == self.streamName ||
+          info.hls_stream == self.streamName)
+      ) {
+        __DEV__ && console.log('GOND getHLSStreamUrl URL already acquired');
+        return true;
+      }
       if (!info.StreamName && !info.hls_stream) {
         currentUrl.clearStreamTimeout();
         currentUrl.set({
@@ -555,8 +567,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -570,7 +582,8 @@ export default HLSStreamModel = types
               : HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 5000,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(
@@ -688,6 +701,7 @@ export default HLSStreamModel = types
       }
     },
     reInitStream(resumeTime) {
+      __DEV__ && console.trace(`GOND HLS reInitStream ---`);
       self.targetUrl.reset();
       self.onStreamError(self.channelNo, self.isLive, resumeTime);
       self.reInitRemaining--;
