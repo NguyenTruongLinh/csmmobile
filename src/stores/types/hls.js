@@ -36,7 +36,7 @@ import {
 import {STREAM_STATUS, COMMON} from '../../localization/texts';
 import CMSColors from '../../styles/cmscolors';
 
-const MAX_RETRY = 5;
+const MAX_RETRY = 7;
 const KEEP_ALIVE_TIMEOUT = 60000;
 const REST_TIME = 2000;
 

@@ -845,17 +845,22 @@ class HLSStreamingView extends React.Component {
         __DEV__ &&
           console.log('GOND HLS onProgress 6:', timeDiff, this.lastVideoTime);
         if (timeDiff > 0) {
-          if (timeDiff >= 3 && __DEV__) {
+          if (timeDiff >= 3) {
             console.log(
               'GOND HLS onProgress Warning, timeDiff too big: ',
               timeDiff,
               data,
               this.lastVideoTime
             );
+            if (this.lastVideoTime == 0) {
+              this.lastVideoTime = Math.floor(data.currentTime);
+              this.frameTime = hlsTimestamps[this.tsIndex];
+            }
+          } else {
+            this.tsIndex += timeDiff;
+            this.lastVideoTime = Math.floor(data.currentTime);
+            this.frameTime = hlsTimestamps[this.tsIndex];
           }
-          this.tsIndex += timeDiff;
-          this.lastVideoTime = Math.floor(data.currentTime);
-          this.frameTime = hlsTimestamps[this.tsIndex];
         } else if (timeDiff < 0) {
           this.lastVideoTime = Math.floor(data.currentTime);
         }

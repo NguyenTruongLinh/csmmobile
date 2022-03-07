@@ -2358,31 +2358,9 @@ export const VideoModel = types
           default:
         }
       },
-      onReceiveHLSStream: flow(function* onReceiveHLSStream(info, cmd) {
+      onReceiveHLSStream: flow(function* (info, cmd) {
         if (self.cloudType == CLOUD_TYPE.HLS && info.hls_stream) {
           let target = null;
-          // if (cmd == VSCCommandString.LIVE || cmd == VSCCommandString.LIVEHD) {
-          // if (
-          //   self.selectedHLSStream &&
-          //   self.selectedHLSStream.targetUrl.sid == info.sid
-          // ) {
-          //   target = self.selectedHLSStream;
-          // } else {
-          // target = self.hlsStreams.find(s => s.targetUrl.sid == info.sid);
-          // }
-          // } else {
-          //   target = self.selectedStream;
-          //   __DEV__ &&
-          //     console.log(
-          //       'GOND === onReceiveHLSStream SEARCH current sid = ',
-          //       target.targetUrl.sid,
-          //       ', incoming sid = ',
-          //       info.sid
-          //     );
-          //   // dongpt: search mode get sid from i3mediaserver, SURPRISE?!?
-          //   target.targetUrl.set({sid: info.sid});
-          // }
-          // let isTargetSelected = false;
           target = self.hlsStreams.find(s => {
             __DEV__ &&
               console.log(
@@ -2394,13 +2372,6 @@ export const VideoModel = types
             return s.getUrl(cmd).sid == info.sid;
           });
           if (!target || (!target.isLive && self.noVideo === true)) {
-            // if (
-            //   self.selectedHLSStream &&
-            //   self.selectedHLSStream.targetUrl.sid == info.sid
-            // ) {
-            //   target = self.selectedHLSStream;
-            //   isTargetSelected = true;
-            // } else {
             __DEV__ &&
               console.log(
                 `GOND on HLS response target stream not found or noVideo!`,
@@ -2411,25 +2382,7 @@ export const VideoModel = types
             // }
           }
           const result = yield target.startConnection(info, cmd);
-          // if (target.isLoading) {
-          //   target.setStreamStatus({
-          //     isLoading: false,
-          //     connectionStatus: result
-          //       ? STREAM_STATUS.DONE
-          //       : STREAM_STATUS.ERROR,
-          //   });
-          // }
-
-          // if (
-          //   self.selectedHLSStream &&
-          //   self.selectedHLSStream.targetUrl.sid == info.sid &&
-          //   !isTargetSelected
-          // ) {
-          //   // Clone requested
-          //   self.selectedHLSStream = HLSStreamModel.create(target);
-          // }
         }
-        // streamReadyCallback && streamReadyCallback();
       }),
       buildDaylistData: flow(function* (data) {
         let daysData = data;
