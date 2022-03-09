@@ -154,11 +154,6 @@ class DirectVideoView extends React.Component {
     //   isLoading: true,
     //   connectionStatus: STREAM_STATUS.CONNECTING,
     // });
-    Snackbar.show({
-      text: STREAM_STATUS.CONNECTING,
-      duration: Snackbar.LENGTH_LONG,
-      backgroundColor: cmscolors.Success,
-    });
     setTimeout(() => this.setNativePlayback(), 500);
   };
 
@@ -187,13 +182,7 @@ class DirectVideoView extends React.Component {
               isLoading: true,
               // connectionStatus: STREAM_STATUS.CONNECTING,
             });
-            Snackbar.show({
-              text: STREAM_STATUS.CONNECTING,
-              duration: Snackbar.LENGTH_LONG,
-              backgroundColor: cmscolors.Success,
-            });
-            // setTimeout(() => this.setNativePlayback(), 1000);
-            this.refreshVideo();
+                        this.refreshVideo();
           }
         ),
         // reaction(
@@ -232,6 +221,7 @@ class DirectVideoView extends React.Component {
               isLoading: true,
               // connectionStatus: STREAM_STATUS.CONNECTING,
             });
+            __DEV__ && console.log('GOND Connecting 3');
             Snackbar.show({
               text: STREAM_STATUS.CONNECTING,
               duration: Snackbar.LENGTH_LONG,
@@ -267,6 +257,7 @@ class DirectVideoView extends React.Component {
                 isLoading: true,
                 // connectionStatus: STREAM_STATUS.CONNECTING,
               });
+              __DEV__ && console.log('GOND Connecting 4');
               Snackbar.show({
                 text: STREAM_STATUS.CONNECTING,
                 duration: Snackbar.LENGTH_LONG,
@@ -409,6 +400,7 @@ class DirectVideoView extends React.Component {
       isLoading: true,
       // connectionStatus: STREAM_STATUS.CONNECTING,
     });
+    __DEV__ && console.log('GOND Connecting 5');
     Snackbar.show({
       text: STREAM_STATUS.CONNECTING,
       duration: Snackbar.LENGTH_LONG,
@@ -585,6 +577,7 @@ class DirectVideoView extends React.Component {
           isLoading: true,
           // connectionStatus: STREAM_STATUS.CONNECTING,
         });
+        __DEV__ && console.log('GOND Connecting 6');
         Snackbar.show({
           text: STREAM_STATUS.CONNECTING,
           duration: Snackbar.LENGTH_LONG,
@@ -1233,8 +1226,14 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      serverInfo,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&

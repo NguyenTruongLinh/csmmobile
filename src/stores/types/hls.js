@@ -619,7 +619,7 @@ export default HLSStreamModel = types
         self.reconnectTimeout = setTimeout(() => {
           if (isAlive(self)) {
             self.reconnect(info);
-            self.clearStreamReconnectTimeout();
+            self.reconnectTimeout = null;
           }
         }, REST_TIME);
       }
@@ -805,6 +805,17 @@ export default HLSStreamModel = types
     // clearStreamTimeout() {
     //   self.streamTimeout && clearTimeout(self.streamTimeout);
     // },
+    onExitSinglePlayer() {
+      self.targetUrl.getUrlRetries = 0;
+      self.targetUrl.clearStreamTimeout();
+      self.targetUrl.isFailed = false;
+      self.targetUrl.resetRetries();
+      self.resetRetries();
+
+      self.setLive(true);
+      self.setHD(false);
+      self.select(false);
+    },
     release() {
       // self.isDead = true;
       // self.clearStreamTimeout();

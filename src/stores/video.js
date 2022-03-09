@@ -1310,16 +1310,21 @@ export const VideoModel = types
         if (value === self.noVideo) return;
         if (__DEV__) {
           console.log('GOND ======= Set Novideo = ', value);
-          console.trace();
+          // console.trace();
         }
         self.noVideo = value;
         if (value === true) {
           snackbarUtil.onMessage(STREAM_STATUS.NOVIDEO);
-          self.selectedStream &&
+          if (self.selectedStream) {
             self.selectedStream.setStreamStatus({
               isLoading: false,
               connectionStatus: STREAM_STATUS.NOVIDEO,
             });
+
+            if (self.cloudType == CLOUD_TYPE.HLS) {
+              self.selectedStream.stopWaitingForStream();
+            }
+          }
           if (resetTimeline) self.timeline = [];
           // self.displayDateTime = self.searchDate.toFormat(
           //   NVRPlayerConfig.FrameFormat
@@ -1333,9 +1338,7 @@ export const VideoModel = types
         // self.isSingleMode = false;
         if (self.cloudType == CLOUD_TYPE.HLS) {
           if (self.selectedStream) {
-            self.selectedStream.setLive(true);
-            self.selectedStream.setHD(false);
-            self.selectedStream.select(false);
+            self.selectedStream.onExitSinglePlayer();
           }
         }
 
@@ -2304,7 +2307,11 @@ export const VideoModel = types
               self.stopWaitTimezone();
             }
           } else {
-            if (!self.hlsStreams || self.hlsStreams.length == 0) {
+            if (
+              !self.hlsStreams ||
+              self.hlsStreams.length == 0 ||
+              self.noVideo
+            ) {
               __DEV__ &&
                 console.log(
                   `GOND onHLSInfoResponse handle error stream list empty`
