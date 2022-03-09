@@ -569,8 +569,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -584,7 +584,8 @@ export default HLSStreamModel = types
               : HLSDiscontinuityMode.ALWAYS, // temp removed
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 100,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(
@@ -619,7 +620,7 @@ export default HLSStreamModel = types
         self.reconnectTimeout = setTimeout(() => {
           if (isAlive(self)) {
             self.reconnect(info);
-            self.reconnectTimeout = null;
+            self.clearStreamReconnectTimeout();
           }
         }, REST_TIME);
       }
