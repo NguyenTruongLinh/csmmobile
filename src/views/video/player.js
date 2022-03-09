@@ -849,7 +849,6 @@ class VideoPlayerView extends Component {
         </View>
         <View style={styles.controlButtonContainer}>
           {!isLive &&
-          this.playerRef &&
           !noVideo &&
           selectedStream &&
           !selectedStream.isLoading &&
