@@ -1908,6 +1908,10 @@ export const VideoModel = types
           // console.trace();
         }
         self.waitForTimeline = true;
+        if (self.checkTimelineTimeout) {
+          clearTimeout(self.checkTimelineTimeout);
+          self.checkTimelineTimeout = null;
+        }
         self.checkTimelineTimeout = setTimeout(
           () => self.getTimelineDirectly(channelNo, sid),
           HLS_DATA_REQUEST_TIMEOUT
@@ -1934,7 +1938,7 @@ export const VideoModel = types
             self.timelineRetries = 0;
             self.waitForTimeline = false;
           } else if (self.timelineRetries < HLS_MAX_RETRY) {
-            self.timelineRetries++;
+            // self.timelineRetries++;
             self.checkTimelineTimeout = setTimeout(
               () => self.getTimelineDirectly(channelNo, sid),
               HLS_GET_DATA_DIRECTLY_TIMEOUT
@@ -2137,7 +2141,8 @@ export const VideoModel = types
             requestParams
           );
           __DEV__ && console.log(`GOND get multi HLS URL: `, res);
-          __DEV__ && console.log('GOND == PROFILING == Sent VSC Request: ', new Date());
+          __DEV__ &&
+            console.log('GOND == PROFILING == Sent VSC Request: ', new Date());
         } catch (error) {
           console.log(`Could not get HLS video info: ${error}`);
           snackbarUtil.handleRequestFailed(error);
@@ -2323,6 +2328,7 @@ export const VideoModel = types
               s => s.targetUrl.sid == info.sid
             );
             if (target) {
+              __DEV__ && console.log(`GOND !!! HLShandleError 3`);
               target.handleError();
             } else {
               __DEV__ &&

@@ -602,7 +602,7 @@ class HLSStreamingView extends React.Component {
         );
       }
     } else if (!isLive) {
-      if (streamData.connectionStatus == STREAM_STATUS.BUFFERING)
+      if (streamData.isLoading)
         this.setStreamStatus({
           connectionStatus: STREAM_STATUS.DONE,
           isLoading: false,
@@ -644,7 +644,11 @@ class HLSStreamingView extends React.Component {
       error.errorString == 'Unrecognized media format'
     ) {
       // TODO: new search time
-      this.handleStreamError();
+      if (!this.errorTimeout)
+        this.errorTimeout = setTimeout(() => {
+          this.handleStreamError();
+          this.errorTimeout = null;
+        }, 5000);
       return;
     }
     /*
@@ -674,6 +678,7 @@ class HLSStreamingView extends React.Component {
     // } else {
     this.errorTimeout = setTimeout(() => {
       this.reconnect();
+      this.errorTimeout = null;
     }, 5000);
     // }
   };
@@ -991,6 +996,7 @@ class HLSStreamingView extends React.Component {
     // }
     if (!isLive && this.frameTime > 0)
       this.lastSearchTime = this.computeTime(this.frameTime);
+    __DEV__ && console.log(`GOND !!! HLShandleError 5`);
     streamData.handleError();
     // if (this.reInitCount < MAX_REINIT) {
     //   if (!this.reInitTimeout) {
@@ -1065,22 +1071,34 @@ class HLSStreamingView extends React.Component {
     this.frameTime = 0;
     this.lastVideoTime = 0;
     this.tsIndex = -1;
-    this.setState({
-      timeBeginPlaying: this.lastSearchTime,
-      refreshCount: 0,
-    });
     // videoStore.setPlayTimeForSearch(
     //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
     // );
     this.pause(true);
     // streamData.setStreamReady(false);
+    this.setState({
+      timeBeginPlaying: this.lastSearchTime,
+    });
     await videoStore.onHLSTimeChanged(time);
-    // this.refresh(true);
+    const {streamUrl} = this.state;
+    this.setState(
+      {
+        // refreshCount: this.state.refreshCount > 0 ? 0 : 1,
+        streamUrl: '',
+      },
+      () => this.setState({streamUrl})
+    );
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;

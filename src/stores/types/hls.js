@@ -458,6 +458,7 @@ export default HLSStreamModel = types
           streamTimeout: setTimeout(() => {
             if (currentUrl.increaseRetry()) self.getStreamDirectly(sid);
             else {
+              __DEV__ && console.log(`GOND !!! HLShandleError 2`);
               self.handleError();
             }
           }, HLS_GET_DATA_DIRECTLY_TIMEOUT),
@@ -573,16 +574,20 @@ export default HLSStreamModel = types
           {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
+            // HLSFragmentSelector: {
+            //   FragmentSelectorType: self.isLive
+            //     ? FragmentSelectorType.PRODUCER_TIMESTAMP
+            //     : FragmentSelectorType.SERVER_TIMESTAMP,
+            // },
+            // DiscontinuityMode: self.isLive
+            //   ? HLSDiscontinuityMode.ON_DISCONTINUITY
+            //   : HLSDiscontinuityMode.ALWAYS,
             HLSFragmentSelector: {
-              FragmentSelectorType: self.isLive
-                ? FragmentSelectorType.PRODUCER_TIMESTAMP
-                : FragmentSelectorType.SERVER_TIMESTAMP,
+              FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
             },
+            DiscontinuityMode: HLSDiscontinuityMode.ALWAYS,
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
-            DiscontinuityMode: self.isLive
-              ? HLSDiscontinuityMode.ON_DISCONTINUITY
-              : HLSDiscontinuityMode.ALWAYS, // temp removed
-            MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 100,
+            MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : undefined,
             Expires: HLS_MAX_EXPIRE_TIME,
           }
         );
@@ -699,6 +704,7 @@ export default HLSStreamModel = types
         //   isLoading: false,
         // });
         // self.onStreamError(self.channelNo, self.isLive);
+        __DEV__ && console.log(`GOND !!! HLShandleError 4`);
         self.handleError();
         return false;
       }
@@ -743,6 +749,7 @@ export default HLSStreamModel = types
         setTimeout(() => {
           if (isAlive(self) && self.targetUrl.sid == lastId) {
             self.resetRetries();
+            __DEV__ && console.log(`GOND !!! HLShandleError 1`);
             self.handleError();
           }
         }, HLS_GET_DATA_DIRECTLY_TIMEOUT);
