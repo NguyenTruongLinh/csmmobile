@@ -487,6 +487,7 @@ export default HLSStreamModel = types
         // });
         return false;
       }
+      self.stopWaitingForStream(info.sid);
       if (
         util.isValidHttpUrl(currentUrl.url) &&
         (info.StreamName == self.streamName ||
@@ -510,6 +511,7 @@ export default HLSStreamModel = types
 
         return;
       }
+      console.log('GOND == PROFILING == Got stream name: ', new Date());
       currentUrl.resetRetries();
       currentUrl.clearStreamTimeout();
 
@@ -567,8 +569,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -580,10 +582,9 @@ export default HLSStreamModel = types
             DiscontinuityMode: self.isLive
               ? HLSDiscontinuityMode.ON_DISCONTINUITY
               : HLSDiscontinuityMode.ALWAYS, // temp removed
-            MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 5000,
+            MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 100,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ &&
           console.log(
@@ -591,8 +592,9 @@ export default HLSStreamModel = types
             response
           );
         // self.setUrl(response.HLSStreamingSessionURL, cmd);
-        if (!isAlive(self)) return;
+        if (!isAlive(self) || !isAlive(currentUrl)) return;
         currentUrl.set({url: response.HLSStreamingSessionURL});
+        console.log('GOND == PROFILING == Got stream URL: ', new Date());
 
         self.retryRemaining = MAX_RETRY;
         self.reInitRemaining = MAX_RETRY;

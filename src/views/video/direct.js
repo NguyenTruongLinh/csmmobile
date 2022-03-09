@@ -71,6 +71,8 @@ class DirectVideoView extends React.Component {
     this.didSubmitLogin = false;
     this.newSeekPos = 0;
     this.oldPos = 0;
+    this.dateChanged = false;
+    this.loginTimeout = null;
   }
 
   componentDidMount() {
@@ -181,10 +183,10 @@ class DirectVideoView extends React.Component {
             if (newChannelNo == null || previousValue == null) return;
             // this.setNative({refresh: true}, true);
 
-            // this.props.serverInfo.setStreamStatus({
-            //   isLoading: true,
-            //   // connectionStatus: STREAM_STATUS.CONNECTING,
-            // });
+            this.props.serverInfo.setStreamStatus({
+              isLoading: true,
+              // connectionStatus: STREAM_STATUS.CONNECTING,
+            });
             Snackbar.show({
               text: STREAM_STATUS.CONNECTING,
               duration: Snackbar.LENGTH_LONG,
@@ -419,6 +421,13 @@ class DirectVideoView extends React.Component {
     );
   };
 
+  clearLoginTimeout = () => {
+    if (this.loginTimeout) {
+      clearTimeout(this.loginTimeout);
+      this.loginTimeout = null;
+    }
+  };
+
   reconnect = (shouldStop = true) => {
     // this.setNative({disconnect: true}, true);
     const {serverInfo, videoStore, isLive, hdMode} = this.props;
@@ -442,7 +451,7 @@ class DirectVideoView extends React.Component {
         ).toFormat(NVRPlayerConfig.RequestTimeFormat)
       );
     }
-    this.setNativePlayback(true, {}, true);
+    this.setNativePlayback(shouldStop);
   };
 
   setNativePlayback = (delay = false, paramsObject = {}) => {
@@ -492,7 +501,7 @@ class DirectVideoView extends React.Component {
       );
     // __DEV__ && console.trace();
     if (delay) {
-      this.pause();
+      // this.pause();
       setTimeout(() => {
         if (
           this._isMounted /*&& this.ffmpegPlayer*/ &&
@@ -557,6 +566,9 @@ class DirectVideoView extends React.Component {
     //     ', ch: ',
     //     channel
     //   );
+    if (this.loginTimeout && msgid != NATIVE_MESSAGE.LOGIN_MESSAGE) {
+      this.clearLoginTimeout();
+    }
 
     switch (msgid) {
       case NATIVE_MESSAGE.FRAME_DATA:
@@ -595,6 +607,12 @@ class DirectVideoView extends React.Component {
         // this.setState({message: value});
         __DEV__ &&
           console.log('GOND onDirectVideoMessage - Login message: ', value);
+        this.loginTimeout = setTimeout(() => {
+          if (this._isMounted) {
+            this.loginTimeout = null;
+            this.reconnect();
+          }
+        }, 10000);
         break;
       case NATIVE_MESSAGE.LOGIN_FAILED:
         // this.setState({message: 'Login failed'});
@@ -917,14 +935,14 @@ class DirectVideoView extends React.Component {
         console.log('GOND ==^^^== DirectVideo ServerMessage ==^^^==', value);
         break;
       case NATIVE_MESSAGE.SHOULD_RECONNECT:
-      case NATIVE_MESSAGE.SERVER_DISCONNECTED:
         __DEV__ &&
           console.log(
             'GOND Request reconnecting from native ... msgid: ',
             msgid
           );
-        // this.reconnect();
+        setTimeout(() => this.reconnect(false), 1000);
         break;
+      case NATIVE_MESSAGE.SERVER_DISCONNECTED:
       default:
         break;
     }
@@ -934,6 +952,7 @@ class DirectVideoView extends React.Component {
     if (!this.props.videoStore.paused) {
       this.setNative({pause: true});
     }
+    this.dateChanged = true;
   };
 
   onBeginDraggingTimeline = () => {
@@ -955,18 +974,20 @@ class DirectVideoView extends React.Component {
   };
 
   onHDMode = isHD => {
+    // this.setNative({hd: isHD});
     if (this.props.isLive) this.setNative({hd: isHD});
     else {
       this.pause();
       setTimeout(() => {
-        this.playAt(
-          this.lastFrameTime
-            ? this.lastFrameTime.toSeconds() -
-                this.lastFrameTime.startOf('day').toSeconds()
-            : 0
-        );
-        this.newSeekPos = 0;
-        this.oldPos = 0;
+        // this.playAt(
+        //   this.lastFrameTime
+        //     ? this.lastFrameTime.toSeconds() -
+        //         this.lastFrameTime.startOf('day').toSeconds()
+        //     : 0
+        // );
+        // this.newSeekPos = 0;
+        // this.oldPos = 0;
+        this.pause(false);
       }, 200);
     }
   };
@@ -1126,6 +1147,19 @@ class DirectVideoView extends React.Component {
           ? NVRPlayerConfig.ResponseTimeFormat
           : NVRPlayerConfig.RequestTimeFormat;
       const timeObj = DateTime.fromFormat(value, timeFormat);
+      if (this.dateChanged) {
+        if (
+          timeObj.toFormat(NVRPlayerConfig.QueryStringUTCDateFormat) !=
+          videoStore.searchDate.toFormat(
+            NVRPlayerConfig.QueryStringUTCDateFormat
+          )
+        ) {
+          // old frame from previous date
+          return;
+        } else {
+          this.dateChanged = false;
+        }
+      }
       const pos = timeObj.toSeconds() - timeObj.startOf('day').toSeconds();
       if (this.newSeekPos > 0 && this.oldPos > 0) {
         __DEV__ &&

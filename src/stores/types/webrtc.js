@@ -74,6 +74,9 @@ const ChannelConnectionModel = types
     get channelName() {
       return self.channel ? self.channel.name : '';
     },
+    get isReady() {
+      return true;
+    },
   }))
   .actions(self => {
     return {

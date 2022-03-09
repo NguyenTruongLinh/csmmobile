@@ -188,6 +188,9 @@ const DirectStreamModel = types
         ? {uri: 'data:image/jpeg;base64,' + self.videoFrame}
         : NVR_Play_NoVideo_Image;
     },
+    get isReady() {
+      return true;
+    },
   }))
   .volatile(self => ({
     videoFrame: null,
@@ -1672,15 +1675,19 @@ export const VideoModel = types
           self.directConnection = parseDirectServer(res);
           // __DEV__ && console.log('GOND direct setChannel 3');
 
-          self.currentGridPage = 0;
-          self.directConnection.setChannels(
-            self.allChannels
-              .filter(ch =>
-                ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
-              )
-              .map(ch => ch.channelNo)
-              .filter((_, index) => index < self.gridItemsPerPage)
-          );
+          if (!channelNo) {
+            self.currentGridPage = 0;
+            self.directConnection.setChannels(
+              self.allChannels
+                .filter(ch =>
+                  ch.name
+                    .toLowerCase()
+                    .includes(self.channelFilter.toLowerCase())
+                )
+                .map(ch => ch.channelNo)
+                .filter((_, index) => index < self.gridItemsPerPage)
+            );
+          }
 
           // get NVR user and password from first data:
           if (
@@ -2127,6 +2134,7 @@ export const VideoModel = types
             requestParams
           );
           __DEV__ && console.log(`GOND get multi HLS URL: `, res);
+          __DEV__ && console.log('GOND == PROFILING == Sent VSC Request: ', new Date());
         } catch (error) {
           console.log(`Could not get HLS video info: ${error}`);
           snackbarUtil.handleRequestFailed(error);
