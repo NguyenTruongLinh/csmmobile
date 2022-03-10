@@ -179,6 +179,9 @@ export default HLSStreamModel = types
     get channelName() {
       return self.channel ? self.channel.name : '';
     },
+    get isActive() {
+      return self.channel ? self.channel.isActive : false;
+    },
     get streamStatus() {
       const {isLoading, connectionStatus, error} = self;
       return {

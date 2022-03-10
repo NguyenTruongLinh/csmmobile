@@ -624,7 +624,10 @@ export const VideoModel = types
       }
     },
     get currentDisplayVideoData() {
-      let videoDataList = self.videoData;
+      let videoDataList =
+        self.cloudType == CLOUD_TYPE.HLS
+          ? self.videoData.filter(s => s.isActive)
+          : self.videoData;
       __DEV__ && console.log('GOND videoDataList ', videoDataList);
       if (videoDataList.length == 0) {
         __DEV__ && console.log('GOND videoDataList is empty <>');
@@ -820,6 +823,18 @@ export const VideoModel = types
         if (self.cloudType == CLOUD_TYPE.HLS && !self.isAlertPlay) {
           // reset previous channel status: Grzzz
           if (self.selectedStream) {
+            if (
+              !self.selectedStream.isLive &&
+              self.selectedStream.targetUrl &&
+              util.isValidHttpUrl(self.selectedStream.targetUrl.url)
+            ) {
+              self.selectedStream.updateStream(
+                self.selectedStream.targetUrl.sid,
+                true
+              );
+              self.selectedStream.targetUrl.reset();
+            }
+
             self.selectedStream.setLive(true);
             self.selectedStream.setHD(false);
             self.selectedStream.select(false);
@@ -1987,7 +2002,20 @@ export const VideoModel = types
           let targetStream = self.hlsStreams.find(
             s => s.channelNo == channelNo
           );
-          if (!targetStream) {
+          if (targetStream) {
+            targetStream.setStreamStatus({
+              isLoading: true,
+              connectionStatus: STREAM_STATUS.CONNECTING,
+            });
+
+            if (
+              targetStream.targetUrl &&
+              util.isValidHttpUrl(targetStream.targetUrl.url)
+            ) {
+              targetStream.updateStream(targetStream.targetUrl.sid, true);
+              targetStream.targetUrl.reset();
+            }
+          } else {
             __DEV__ && console.log('GOND getHLSInfos single create new stream');
             let targetChannel = self.allChannels.find(
               ch => ch.channelNo == channelNo
@@ -2027,19 +2055,6 @@ export const VideoModel = types
               console.log('GOND getHLSInfos single channel: ', channelNo);
 
             self.hlsStreams.push(targetStream);
-          } else {
-            targetStream.setStreamStatus({
-              isLoading: true,
-              connectionStatus: STREAM_STATUS.CONNECTING,
-            });
-
-            if (
-              targetStream.targetUrl &&
-              util.isValidHttpUrl(targetStream.targetUrl.url)
-            ) {
-              targetStream.updateStream(targetStream.targetUrl.sid, true);
-              targetStream.targetUrl.reset();
-            }
           }
           targetStream.startWaitingForStream(targetStream.targetUrl.sid);
           let timeParams = {};

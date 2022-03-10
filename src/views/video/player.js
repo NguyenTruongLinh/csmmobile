@@ -395,6 +395,7 @@ class VideoPlayerView extends Component {
         NVRPlayerConfig.FrameFormat
       )
     );
+    this.ruler && this.ruler.moveToPosition(0);
     if (this.checkDataOnSearchDate(value.dateString)) {
       // videoStore.setNoVideo(false);
       this.setState({showCalendar: false});
