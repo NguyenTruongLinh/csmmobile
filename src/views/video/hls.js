@@ -249,9 +249,10 @@ class HLSStreamingView extends React.Component {
                 //     this.props.isLive
                 //   );
                 if (!this.props.isLive && this.lastSearchTime) {
-                  await this.props.videoStore.onHLSTimeChanged(
-                    this.lastSearchTime
-                  );
+                  // await this.props.videoStore.onHLSTimeChanged(
+                  //   this.lastSearchTime
+                  // );
+                  this.lastSearchTime = null;
                 }
                 this.setState(
                   {
@@ -496,7 +497,7 @@ class HLSStreamingView extends React.Component {
   onBeginDraggingTimeline = () => {
     this.pause(true);
     this.clearBufferTimeout();
-    // this.props.streamData.setStreamReady(false);
+    this.props.streamData.setStreamReady(false);
   };
 
   onSwitchLiveSearch = isLive => {
@@ -538,6 +539,10 @@ class HLSStreamingView extends React.Component {
   onHDMode = isHD => {
     // this.pause(true);
     this.lastSearchTime = this.computeTime(this.frameTime);
+    this.props.videoStore.setPlayTimeForSearch(this.lastSearchTime);
+    this.props.streamData.setStreamReady(false);
+    this.pause(true);
+    this.forceResume = true;
     snackbar.dismiss();
   };
 
@@ -807,7 +812,14 @@ class HLSStreamingView extends React.Component {
     } else {
       if (isLive) {
         // if (Platform.OS == 'ios') {
-        this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
+        if (data.currentTime > this.lastVideoTime) {
+          this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
+          this.lastVideoTime = data.currentTime;
+        } else {
+          console.log(
+            'GOND HLS onProgress LIVE: TIME BEHIND LAST CURRENTTIME!'
+          );
+        }
         // } else {
         //   this.frameTime += 1;
         // }
@@ -865,10 +877,12 @@ class HLSStreamingView extends React.Component {
               data,
               this.lastVideoTime
             );
-            if (this.lastVideoTime == 0) {
-              this.lastVideoTime = Math.floor(data.currentTime);
-              this.frameTime = hlsTimestamps[this.tsIndex];
-            }
+            // if (this.lastVideoTime == 0) {
+            this.lastVideoTime = Math.floor(data.currentTime);
+            this.frameTime = hlsTimestamps[this.tsIndex];
+            // } else {
+            //   this.lastVideoTime = Math.floor(data.currentTime);
+            // }
           } else {
             this.tsIndex += timeDiff;
             this.lastVideoTime = Math.floor(data.currentTime);
@@ -994,8 +1008,10 @@ class HLSStreamingView extends React.Component {
     //     isLoading: true,
     //   });
     // }
-    if (!isLive && this.frameTime > 0)
+    if (!isLive && this.frameTime > 0) {
       this.lastSearchTime = this.computeTime(this.frameTime);
+      videoStore.setPlayTimeForSearch(this.lastSearchTime);
+    }
     __DEV__ && console.log(`GOND !!! HLShandleError 5`);
     streamData.handleError();
     // if (this.reInitCount < MAX_REINIT) {
@@ -1086,7 +1102,10 @@ class HLSStreamingView extends React.Component {
         // refreshCount: this.state.refreshCount > 0 ? 0 : 1,
         streamUrl: '',
       },
-      () => this.setState({streamUrl})
+      () => {
+        this.setState({streamUrl});
+        streamData.setStreamReady(true);
+      }
     );
   };
 

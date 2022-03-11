@@ -161,6 +161,7 @@ export default HLSStreamModel = types
     isLive: types.optional(types.boolean, false),
     isHD: types.optional(types.boolean, false),
     isSelected: types.optional(types.boolean, false),
+    noVideo: types.optional(types.boolean, false),
     // isWaitingReconnect: types.optional(types.boolean, false),
   })
   .volatile(self => ({
@@ -261,6 +262,9 @@ export default HLSStreamModel = types
       }
       self.clearStreamInitTimeout();
       self.clearStreamReconnectTimeout();
+    },
+    setNoVideo(value) {
+      self.noVideo = value;
     },
     resetRetries() {
       self.clearStreamReconnectTimeout();
@@ -436,7 +440,7 @@ export default HLSStreamModel = types
         streamTimeout: setTimeout(() => {
           if (isAlive(currentUrl)) {
             currentUrl.clearStreamTimeout();
-            self.getStreamDirectly(sid);
+            if (self.isLive || !self.noVideo) self.getStreamDirectly(sid);
           }
         }, HLS_DATA_REQUEST_TIMEOUT),
       });
@@ -577,17 +581,17 @@ export default HLSStreamModel = types
           {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
-            // HLSFragmentSelector: {
-            //   FragmentSelectorType: self.isLive
-            //     ? FragmentSelectorType.PRODUCER_TIMESTAMP
-            //     : FragmentSelectorType.SERVER_TIMESTAMP,
-            // },
+            HLSFragmentSelector: {
+              FragmentSelectorType: self.isLive
+                ? FragmentSelectorType.PRODUCER_TIMESTAMP
+                : FragmentSelectorType.SERVER_TIMESTAMP,
+            },
             // DiscontinuityMode: self.isLive
             //   ? HLSDiscontinuityMode.ON_DISCONTINUITY
             //   : HLSDiscontinuityMode.ALWAYS,
-            HLSFragmentSelector: {
-              FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
-            },
+            // HLSFragmentSelector: {
+            //   FragmentSelectorType: FragmentSelectorType.PRODUCER_TIMESTAMP,
+            // },
             DiscontinuityMode: HLSDiscontinuityMode.ALWAYS,
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : undefined,

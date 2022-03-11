@@ -1345,9 +1345,22 @@ export const VideoModel = types
           //   NVRPlayerConfig.FrameFormat
           // );
         }
+        if (self.cloudType == CLOUD_TYPE.HLS) {
+          self.selectedStream.setNoVideo(value);
+        }
       },
       setPlayTimeForSearch(value) {
-        self.searchPlayTime = value;
+        if (DateTime.isDateTime(value)) {
+          self.searchPlayTime = value.toFormat(
+            NVRPlayerConfig.RequestTimeFormat
+          );
+        } else if (value == null || typeof value == 'string')
+          self.searchPlayTime = value;
+        else {
+          console.log(
+            'GOND - WARN! setPlayTimeForSearch VALUE IS NOT DATETIME NOR STRING'
+          );
+        }
       },
       onExitSinglePlayer(currentRoute) {
         // self.isSingleMode = false;

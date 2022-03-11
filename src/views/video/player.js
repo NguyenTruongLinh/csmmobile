@@ -303,32 +303,6 @@ class VideoPlayerView extends Component {
     return true;
   };
 
-  // onVideoReady = () => {
-  //   // TODO: get nvr timezone first
-  //   const {videoStore} = this.props;
-  //   __DEV__ && console.log('GOND onVideoReady', videoStore.searchPlayTime);
-  //   videoStore.setStreamReadyCallback(null);
-  //   if (videoStore.isLive) {
-  //     // Did it auto play?
-  //   } else if (this.playerRef) {
-  //     if (videoStore.searchPlayTime) {
-  //       // this.playerRef.playAt(videoStore.searchPlayTimeBySeconds);
-  //       const searchTime = DateTime.fromISO(videoStore.searchPlayTime, {
-  //         zone: 'utc',
-  //       });
-  //       __DEV__ && console.log('GOND onVideoReady 2 ', searchTime);
-
-  //       this.onSetSearchTime(
-  //         searchTime.hour,
-  //         searchTime.minute,
-  //         searchTime.second
-  //       );
-  //     } // else {
-  //     // this.playerRef.playAt(0);
-  //     // }
-  //   }
-  // };
-
   onDimensionsChange = ({window}) => {
     const {width, height} = window;
     __DEV__ && console.log('GOND onDimensionsChange: ', window);
@@ -372,8 +346,8 @@ class VideoPlayerView extends Component {
   };
 
   onHDMode = () => {
-    this.props.videoStore.switchHD();
     this.playerRef && this.playerRef.onHDMode(this.props.videoStore.hdMode);
+    this.props.videoStore.switchHD();
   };
 
   handleChannelsScroll = event => {};
