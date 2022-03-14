@@ -84,6 +84,7 @@ class VideoPlayerView extends Component {
     this.eventSubscribers = [];
     this.resumeFromInterupt = false;
     this.lastOrientation = OrientationType.LANDSCAPE;
+    // this.reactions = [];
   }
 
   componentDidMount() {
@@ -109,6 +110,7 @@ class VideoPlayerView extends Component {
 
     Orientation.addDeviceOrientationListener(this.onOrientationChange);
     Orientation.unlockAllOrientations();
+    // this.initReactions();
   }
 
   updateHeader = () => {
@@ -154,7 +156,19 @@ class VideoPlayerView extends Component {
     Orientation.lockToPortrait();
     // this.unsubSearchTimeReaction();
     StatusBar.setHidden(false);
+    // this.reactions.forEach(unsubsribe => unsubsribe());
   }
+
+  // initReactions = () => {
+  //   const {videoStore} = this.props;
+
+  //   this.reactions = [
+  //     reaction(
+  //       () => videoStore.searchDate,
+  //       () => this.ruler && this.ruler.forceUpdate()
+  //     ),
+  //   ];
+  // };
 
   //#region Event handlers
   clearAppStateTimeout = () => {
@@ -379,11 +393,11 @@ class VideoPlayerView extends Component {
     }
   };
 
-  onSetSearchTime = (hours, minutes, seconds) => {
+  onSetSearchTime = (hourIndex, hours, minutes, seconds) => {
     if (!this.playerRef) return;
     const {videoStore} = this.props;
     const secondsValue =
-      parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+      parseInt(hourIndex) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
     __DEV__ &&
       console.log(
         'GOND onSetSearchTime: ',
@@ -563,7 +577,19 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
 
     this.timeOnTimeline && this.timeOnTimeline.setValue(time);
-    const dateString = videoStore.frameTimeString.split(' - ')[0];
+    const dateString =
+      videoStore.frameTimeString && videoStore.frameTimeString.length > 0
+        ? videoStore.frameTimeString.split(' - ')[0]
+        : videoStore.searchDate.toFormat(NVRPlayerConfig.FrameDateFormat);
+    __DEV__ &&
+      console.log(
+        'GOND === onDraggingTimeRuler',
+        dateString,
+        ' --- ',
+        time,
+        ', ',
+        videoStore.frameTimeString
+      );
     videoStore.setDisplayDateTime(dateString + ' - ' + time);
   };
   //#endregion Event handlers
@@ -942,6 +968,7 @@ class VideoPlayerView extends Component {
   renderTimeline = () => {
     const {videoStore} = this.props;
     const {sWidth} = this.state;
+    // console.log('GONND searchDate ', videoStore.getSafeSearchDate());
 
     return videoStore.isLive ? (
       <View style={{flex: 8}}></View>
@@ -951,12 +978,13 @@ class VideoPlayerView extends Component {
           <TimeRuler
             ref={r => (this.ruler = r)}
             searchDate={videoStore.searchDateInSeconds()} // if direct ('UTC', {keepLocalTime: true})
+            datetime={videoStore.getSafeSearchDate()}
             height="100%"
             markerPosition="absolute"
             timeData={videoStore.timeline}
             currentTime={videoStore.frameTime}
             onBeginSrcoll={this.onTimelineScrollBegin}
-            onScrollBeginDrag={this.onDraggingTimeRuler}
+            onScrolling={this.onDraggingTimeRuler}
             // onPauseVideoScrolling={() => this.setState({pause: true})}
             onPauseVideoScrolling={() =>
               // this.playerRef && this.playerRef.pause(true)
@@ -1086,6 +1114,7 @@ class VideoPlayerView extends Component {
         }}
         onCancel={() => this.timePickerRef && this.timePickerRef.close()}
         onConfirm={this.onSetSearchTime}
+        datetime={this.props.videoStore.getSafeSearchDate()}
       />
     );
   };

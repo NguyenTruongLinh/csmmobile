@@ -1,5 +1,7 @@
 import React, {PureComponent} from 'react';
 import {Dimensions, View, ScrollView, Text} from 'react-native';
+import {DateTime} from 'luxon';
+
 import CMSColors from '../../styles/cmscolors';
 import {
   default24H,
@@ -11,6 +13,7 @@ import {
   MINUTE_PER_HOUR,
   SECONDS_PER_MINUTE,
 } from '../../consts/video';
+import {NVRPlayerConfig} from '../../consts/misc';
 // import moment from 'moment';
 
 export default class TimeRuler extends PureComponent {
@@ -38,8 +41,6 @@ export default class TimeRuler extends PureComponent {
   };
   constructor(props) {
     super(props);
-    // this.arrayof24HTime = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
-    // this.arrayof12HTime = ['12:00 AM', '01:00 AM', '02:00 AM', '03:00 AM', '04:00 AM', '05:00 AM', '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM', '11:00 PM'];
     this.color = ['pink', 'orange', 'blue', 'green', '00ff00'];
     const {width, height} = Dimensions.get('window');
 
@@ -73,6 +74,7 @@ export default class TimeRuler extends PureComponent {
       dwidth: width / this.props.numofHours, //*this.props.numofHours*/)
       secondValue: this.props.numofHours * this.props.numofMin,
       labelhour: '',
+      hoursArray: this.constructArrayOfHours(props.is24hour),
     };
 
     this.isAutoScrolling = true;
@@ -130,7 +132,48 @@ export default class TimeRuler extends PureComponent {
       // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
       this.scrollTo(sec * secWidth, 0);
     }
+    if (searchDate != prevProps.searchDate) {
+      this.setState({
+        hoursArray: this.constructArrayOfHours(this.props.is24hour),
+      });
+    }
   }
+
+  constructArrayOfHours = is24hour => {
+    const {datetime} = this.props;
+    const res = [];
+    if (!DateTime.isDateTime(datetime)) {
+      __DEV__ &&
+        console.log(
+          'GOND Warning TimeRuler datetime is not a valid Luxon object'
+        );
+      return is24hour ? arrayof24HTime : arrayof12HTime;
+    }
+
+    const selectedDate = datetime.toFormat(
+      NVRPlayerConfig.QueryStringUTCDateFormat
+    );
+    let hourIterator = datetime.startOf('day');
+    let currentDate = hourIterator.toFormat(
+      NVRPlayerConfig.QueryStringUTCDateFormat
+    );
+
+    do {
+      res.push(hourIterator.toFormat(is24hour ? 'HH:mm' : 'hh:mm a'));
+      hourIterator = hourIterator.plus({hour: 1});
+      currentDate = hourIterator.toFormat(
+        NVRPlayerConfig.QueryStringUTCDateFormat
+      );
+      // __DEV__ &&
+      //   console.log(
+      //     'GOND TimeRuler constructArrayOfHours',
+      //     currentDate,
+      //     hourIterator
+      //   );
+    } while (currentDate == selectedDate);
+
+    return res;
+  };
 
   moveToPosition = sec => {
     let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
@@ -309,6 +352,7 @@ export default class TimeRuler extends PureComponent {
   // };
 
   onSendTimeData = xAxis => {
+    const {hoursArray} = this.state;
     this.scrollEndTimeout = null;
     // if (this.isTouchEnd && this.isScrollEnd) {
     if (!this._isMounted || xAxis == this.lastScrollOffsetX) {
@@ -320,13 +364,16 @@ export default class TimeRuler extends PureComponent {
     // }
     // let { hourBuildRuler, hourSpecial } = this.props
     let decimalhour = xAxis / this.state.dwidth;
-    let hour = Math.floor(decimalhour);
-    // if (hourBuildRuler == startDST && hour >= hourSpecial) {
-    //   hour++;
-    // } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
-    //   hour--;
-    // }
-    let decimalminutes = (decimalhour - hour) * 60;
+    // let hour = Math.floor(decimalhour);
+    let hourIndex = Math.floor(decimalhour);
+    hourIndex =
+      hourIndex < 0
+        ? 0
+        : hourIndex >= hoursArray.length
+        ? hoursArray.length - 1
+        : hourIndex;
+    let hour = parseInt(hoursArray[hourIndex].split(':')[0]);
+    let decimalminutes = (decimalhour - hourIndex) * 60;
     let minutes = Math.floor(decimalminutes);
     let seconds = Math.floor((decimalminutes - minutes) * 60);
 
@@ -337,7 +384,7 @@ export default class TimeRuler extends PureComponent {
         minutes: minutes,
         seconds: seconds,
         timestamp:
-          /*this.props.searchDate +*/ hour * 3600 + minutes * 60 + seconds,
+          /*this.props.searchDate +*/ hourIndex * 3600 + minutes * 60 + seconds,
       });
 
       // Delaying auto scroll to prevent glitch
@@ -429,12 +476,20 @@ export default class TimeRuler extends PureComponent {
   onScroll = event => {
     __DEV__ && console.log('GOND === TimeRuler onScroll');
     this.clearScrollEndTimeout();
-    let {hourBuildRuler, hourSpecial} = this.props;
+    const {hourBuildRuler, hourSpecial} = this.props;
+    const {hoursArray} = this.state;
     if (this.isManualScrolling == true) {
       // this.isAutoScrolling = true;
       let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
-      let hour = Math.floor(decimalhour);
-      let decimalminutes = (decimalhour - hour) * 60;
+      let hourIndex = Math.floor(decimalhour);
+      hourIndex =
+        hourIndex < 0
+          ? 0
+          : hourIndex >= hoursArray.length
+          ? hoursArray.length - 1
+          : hourIndex;
+      let hour = parseInt(hoursArray[hourIndex].split(':')[0]);
+      let decimalminutes = (decimalhour - hourIndex) * 60;
       let minutes = Math.floor(decimalminutes);
       let seconds = Math.floor((decimalminutes - minutes) * 60);
 
@@ -449,14 +504,18 @@ export default class TimeRuler extends PureComponent {
       //     hour++;
       //   }
       // }
+      /*
       if (hourBuildRuler == startDST && hour >= hourSpecial) {
         hour++;
       } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
         hour--;
       }
+      */
 
-      //this.props.onScrollBeginDrag({hour:hour,minutes:minutes,seconds:seconds, timestamp: (hour*3600+minutes*60+seconds) });
-      this.props.onScrollBeginDrag(
+      __DEV__ &&
+        console.log('GOND === TimeRuler onScroll', hour, minutes, seconds);
+      //this.props.onScrolling({hour:hour,minutes:minutes,seconds:seconds, timestamp: (hour*3600+minutes*60+seconds) });
+      this.props.onScrolling(
         this.formatTime(hour) +
           ':' +
           this.formatTime(minutes) +
@@ -475,9 +534,10 @@ export default class TimeRuler extends PureComponent {
   };
 
   renderTimeHeaderFooter = isheader => {
-    let arrayHours = this.props.is24hour
-      ? arrayof24HTime.slice(0)
-      : arrayof12HTime.slice(0);
+    // let arrayHours = this.props.is24hour
+    //   ? arrayof24HTime.slice(0)
+    //   : arrayof12HTime.slice(0);
+    let arrayHours = [...this.state.hoursArray];
     let attachment = isheader ? arrayHours.reverse() : arrayHours;
     let lenngthofprefix =
       this.props.markerPosition == 'absolute'
@@ -516,7 +576,7 @@ export default class TimeRuler extends PureComponent {
     // __DEV__ && console.log('GOND renderDST minValue = ', minValue);
 
     for (let i = 0; i < numofview; i++) {
-      let value = i;
+      let value = this.state.hoursArray[i]; // i;
       if (hourBuildRuler == startDST && i == parseInt(hourSpecial)) {
         continue;
       }
@@ -524,7 +584,8 @@ export default class TimeRuler extends PureComponent {
         value = i - 1;
       }
       let objectValue = {
-        key: is24hour ? arrayof24HTime[value] : arrayof12HTime[value],
+        // key: is24hour ? arrayof24HTime[value] : arrayof12HTime[value],
+        key: value,
         visible: true,
         color: CMSColors.White,
         value: value,
@@ -564,10 +625,10 @@ export default class TimeRuler extends PureComponent {
     return arrayofViews;
   };
 
-  _renderHours = is24hour => {
-    // console.log('GOND TimeRuler _renderHours!')
+  renderHours = is24hour => {
+    // console.log('GOND TimeRuler renderHours!')
     if (!this.props.timeData) return [];
-    let numofview = 24;
+    let numofview = this.state.hoursArray.length; // 24;
     let arrayofViews = [];
     // let _searchDateNow = new Date();
     // _searchDateNow = moment([_searchDateNow.getFullYear(), _searchDateNow.getMonth(), _searchDateNow.getDate()]).unix();
@@ -581,9 +642,10 @@ export default class TimeRuler extends PureComponent {
     const minValue = 60 / this.props.numofMin;
     // __DEV__ && console.log('GOND renderHours searchDate = ', searchDate);
     for (let i = 0; i < numofview; i++) {
-      let value = i;
+      let value = this.state.hoursArray[i]; // i;
       let objectValue = {
-        key: is24hour ? arrayof24HTime[i] : arrayof12HTime[i],
+        // key: is24hour ? arrayof24HTime[i] : arrayof12HTime[i],
+        key: value,
         visible: true,
         color: CMSColors.White,
         value: value,
@@ -738,7 +800,7 @@ export default class TimeRuler extends PureComponent {
     let _data =
       hourBuildRuler != default24H
         ? this.renderDST(is24hour, hourBuildRuler, hourSpecial, rulerDST)
-        : this._renderHours(is24hour);
+        : this.renderHours(is24hour);
     // __DEV__ &&
     //   timeData &&
     //   console.log('GOND TimeRuler built ruler data: ', _data);
