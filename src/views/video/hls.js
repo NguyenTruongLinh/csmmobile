@@ -778,26 +778,6 @@ class HLSStreamingView extends React.Component {
             }),
           });
           return;
-
-          // Check timeline exist
-          // if (
-          //   hlsTimestamps.length == 0 &&
-          //   !this.checkTimelineInterval &&
-          //   !videoStore.noVideo
-          // ) {
-          //   videoStore.getTimeline(
-          //     streamData.channelNo,
-          //     streamData.targetUrl.sid
-          //   );
-          //   this.checkTimelineInterval = setInterval(
-          //     () =>
-          //       this.onCheckTimelineInterval(
-          //         streamData.channelNo,
-          //         streamData.targetUrl.sid
-          //       ),
-          //     10000
-          //   );
-          // }
         } else {
           __DEV__ && console.log('GOND HLS onProgress: 2');
           this.frameTime = hlsTimestamps[this.tsIndex];
@@ -811,64 +791,23 @@ class HLSStreamingView extends React.Component {
       }
     } else {
       if (isLive) {
-        // if (Platform.OS == 'ios') {
-        if (data.currentTime > this.lastVideoTime) {
-          this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
-          this.lastVideoTime = data.currentTime;
-        } else {
+        const timeDiff = data.currentTime - this.lastVideoTime;
+        // this.frameTime =  timeBeginPlaying.toSeconds() + data.currentTime;
+        if (timeDiff >= 2) {
+          this.frameTime += 1;
+        } else if (timeDiff < 0) {
           console.log(
             'GOND HLS onProgress LIVE: TIME BEHIND LAST CURRENTTIME!'
           );
-        }
-        // } else {
-        //   this.frameTime += 1;
-        // }
-      } else if (this.tsIndex < hlsTimestamps.length) {
-        __DEV__ && console.log('GOND HLS onProgress: 3');
-        /*
-        if (Platform.OS == 'ios') {
-          this.frameTime = timeBeginPlaying.toSeconds() + data.currentTime;
-          let idx = this.tsIndex;
-          // __DEV__ &&
-          //   console.log(
-          //     'GOND HLS onProgress: 4 ',
-          //     this.frameTime,
-          //     hlsTimestamps[idx],
-          //     hlsTimestamps[idx + 1]
-          //   );
-          if (this.frameTime > hlsTimestamps[idx]) {
-            while (idx < hlsTimestamps.length) {
-              if (
-                this.frameTime < hlsTimestamps[idx + 1] &&
-                this.frameTime >= hlsTimestamps[idx]
-              ) {
-                this.tsIndex = idx;
-                break;
-              }
-              idx++;
-            }
-            // __DEV__ && console.log('GOND HLS onProgress: 5 ', this.tsIndex);
-          } else {
-            while (idx > 0) {
-              if (
-                this.frameTime > hlsTimestamps[idx - 1] &&
-                this.frameTime <= hlsTimestamps[idx]
-              ) {
-                this.tsIndex = idx;
-                break;
-              }
-              idx--;
-            }
-            // __DEV__ && console.log('GOND HLS onProgress: 6 ', this.tsIndex);
-          }
-          this.frameTime = hlsTimestamps[this.tsIndex];
         } else {
-          */
-        // __DEV__ && console.log('GOND HLS onProgress 5');
-
+          this.frameTime += timeDiff;
+        }
+        this.lastVideoTime = data.currentTime;
+      } else if (this.tsIndex < hlsTimestamps.length) {
+        // __DEV__ && console.log('GOND HLS onProgress: 3');
         const timeDiff = Math.floor(data.currentTime - this.lastVideoTime);
-        __DEV__ &&
-          console.log('GOND HLS onProgress 6:', timeDiff, this.lastVideoTime);
+        // __DEV__ &&
+        //   console.log('GOND HLS onProgress 4:', timeDiff, this.lastVideoTime);
         if (timeDiff > 0) {
           if (timeDiff >= 3) {
             console.log(
@@ -900,7 +839,7 @@ class HLSStreamingView extends React.Component {
       videoStore.selectedChannel != streamData.channelNo ||
       !this.frameTime
     ) {
-      // __DEV__ && console.log('GOND HLS onProgress: 6');
+      // __DEV__ && console.log('GOND HLS onProgress: 5');
       return;
     }
 
