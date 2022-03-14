@@ -486,7 +486,12 @@ export const HealthModel = types
           }
         );
 
-        const newTotal = !res.Data ? 0 : res.Data.length;
+        let newTotal = !res.Data
+          ? 0
+          : res.Data.reduce((acc, alert) => {
+              return acc.includes(alert.KDVR) ? acc : [...acc, alert.KDVR];
+            }, []).length;
+
         self.selectedAlertType.computeTotalFromChidlren(newTotal);
 
         self.selectedSite.computeTotalFromSubChidlren(
