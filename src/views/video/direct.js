@@ -182,7 +182,7 @@ class DirectVideoView extends React.Component {
               isLoading: true,
               // connectionStatus: STREAM_STATUS.CONNECTING,
             });
-                        this.refreshVideo();
+            this.refreshVideo();
           }
         ),
         // reaction(
@@ -856,55 +856,53 @@ class DirectVideoView extends React.Component {
         }
         this.timeInterval = timeData;
         console.log('GOND timeline: ', timeData);
-        if (timeData && Array.isArray) {
-          if (timeData[0] && timeData[0].begin) {
-            console.log('GOND timeline first time: ', timeData[0].begin);
-            try {
-              const timestamp = numberValue(timeData[0].begin);
-              if (!timestamp) break;
-              const beginOfDay = DateTime.fromSeconds(timestamp)
-                .toUTC()
-                .startOf('day')
-                .toFormat(NVRPlayerConfig.RequestTimeFormat);
-              if (beginOfDay != videoStore.searchDateString) {
-                videoStore.setSearchDate(beginOfDay);
-              }
-            } catch (err) {
-              __DEV__ &&
-                console.log('GOND Parse timestamp failed: ', timeData[0]);
+        if (timeData[0] && timeData[0].begin) {
+          console.log('GOND timeline first time: ', timeData[0].begin);
+          try {
+            const timestamp = numberValue(timeData[0].begin);
+            if (!timestamp) break;
+            const beginOfDay = DateTime.fromSeconds(timestamp)
+              .toUTC()
+              .startOf('day')
+              .toFormat(NVRPlayerConfig.RequestTimeFormat);
+            if (beginOfDay != videoStore.searchDateString) {
+              videoStore.setSearchDate(beginOfDay);
             }
+          } catch (err) {
+            __DEV__ &&
+              console.log('GOND Parse timestamp failed: ', timeData[0]);
           }
-          videoStore.setTimeline(timeData);
-          if (timeData[0] && timeData[0].timezone) {
-            videoStore.setTimezoneOffset(timeData[0].timezone);
-          }
+        }
+        videoStore.setTimeline(timeData);
+        // if (timeData[0] && timeData[0].timezone) {
+        //   videoStore.setTimezoneOffset(timeData[0].timezone);
+        // }
 
-          // dongpt: set play time from alert/exception after receiving timeline
-          const {searchPlayTimeLuxon} = videoStore;
-          this.lastFrameTime = searchPlayTimeLuxon;
-          if (!isLive && this.shouldSetTime && searchPlayTimeLuxon) {
-            setTimeout(() => {
-              if (this._isMounted && this.ffmpegPlayer) {
-                const secondsValue =
-                  searchPlayTimeLuxon.toSeconds() -
-                  searchPlayTimeLuxon.startOf('day').toSeconds();
-                __DEV__ &&
-                  console.log(
-                    'GOND Direct on play search at time: ',
-                    secondsValue
-                  );
-                // if (this.noPermission) {
-                //   this.stop();
-                //   setTimeout(() => this.setNativePlayback(), 200);
-                //   this.noPermission = false;
-                // } else
-                this.playAt(secondsValue);
-                this.newSeekPos = 0;
-                this.oldPos = 0;
-              }
-            }, 100);
-            this.shouldSetTime = false;
-          }
+        // dongpt: set play time from alert/exception after receiving timeline
+        const {searchPlayTimeLuxon} = videoStore;
+        this.lastFrameTime = searchPlayTimeLuxon;
+        if (!isLive && this.shouldSetTime && searchPlayTimeLuxon) {
+          setTimeout(() => {
+            if (this._isMounted && this.ffmpegPlayer) {
+              const secondsValue =
+                searchPlayTimeLuxon.toSeconds() -
+                searchPlayTimeLuxon.startOf('day').toSeconds();
+              __DEV__ &&
+                console.log(
+                  'GOND Direct on play search at time: ',
+                  secondsValue
+                );
+              // if (this.noPermission) {
+              //   this.stop();
+              //   setTimeout(() => this.setNativePlayback(), 200);
+              //   this.noPermission = false;
+              // } else
+              this.playAt(secondsValue);
+              this.newSeekPos = 0;
+              this.oldPos = 0;
+            }
+          }, 100);
+          this.shouldSetTime = false;
         }
         break;
       case NATIVE_MESSAGE.HOUR_DATA:

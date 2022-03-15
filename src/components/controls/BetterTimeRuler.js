@@ -66,6 +66,8 @@ export default class TimeRuler extends PureComponent {
       VA: '#05FD00',
       VA_Sensor_Motion: '#00B1FF',
     };
+
+    const [hoursArray, hoursValue] = this.constructArrayOfHours(props.is24hour);
     this.state = {
       width,
       height,
@@ -74,7 +76,8 @@ export default class TimeRuler extends PureComponent {
       dwidth: width / this.props.numofHours, //*this.props.numofHours*/)
       secondValue: this.props.numofHours * this.props.numofMin,
       labelhour: '',
-      hoursArray: this.constructArrayOfHours(props.is24hour),
+      hoursArray,
+      hoursValue,
     };
 
     this.isAutoScrolling = true;
@@ -123,25 +126,46 @@ export default class TimeRuler extends PureComponent {
     //     this.isManualScrolling
     //   );
     if (currentTime != lastTime && !this.isManualScrolling) {
+      const {hoursValue} = this.state;
       let sec = currentTime - searchDate;
-      let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
+      const secsPerHour = SECONDS_PER_MINUTE * MINUTE_PER_HOUR;
+      let secWidth = this.state.dwidth / secsPerHour;
 
       // TODO: handle DST
       // ---
+      let secToAdd = 0;
+      let hourIndex = 0;
+      for (; hourIndex < hoursValue.length; hourIndex++) {
+        const currentHourSec = hoursValue[hourIndex] * secsPerHour;
+        const nextHourSec = hoursValue[hourIndex + 1] * secsPerHour;
+        if (sec < nextHourSec && sec > currentHourSec) {
+          secToAdd = sec - currentHourSec;
+          break;
+        }
+      }
 
-      // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
-      this.scrollTo(sec * secWidth, 0);
+      if (hourIndex < hoursValue.length) {
+        const realSecToScroll = hourIndex * secsPerHour + secToAdd;
+        // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
+        // this.scrollTo(sec * secWidth, 0);
+        this.scrollTo(realSecToScroll * secWidth, 0);
+      }
     }
     if (searchDate != prevProps.searchDate) {
+      const [hoursArray, hoursValue] = this.constructArrayOfHours(
+        this.props.is24hour
+      );
       this.setState({
-        hoursArray: this.constructArrayOfHours(this.props.is24hour),
+        hoursArray,
+        hoursValue,
       });
     }
   }
 
   constructArrayOfHours = is24hour => {
     const {datetime} = this.props;
-    const res = [];
+    const resString = [];
+    const resValues = [];
     if (!DateTime.isDateTime(datetime)) {
       __DEV__ &&
         console.log(
@@ -159,20 +183,22 @@ export default class TimeRuler extends PureComponent {
     );
 
     do {
-      res.push(hourIterator.toFormat(is24hour ? 'HH:mm' : 'hh:mm a'));
+      resString.push(hourIterator.toFormat(is24hour ? 'HH:mm' : 'hh:mm a'));
+      resValues.push(hourIterator.hour);
       hourIterator = hourIterator.plus({hour: 1});
       currentDate = hourIterator.toFormat(
         NVRPlayerConfig.QueryStringUTCDateFormat
       );
-      // __DEV__ &&
-      //   console.log(
-      //     'GOND TimeRuler constructArrayOfHours',
-      //     currentDate,
-      //     hourIterator
-      //   );
+      __DEV__ &&
+        console.log(
+          'GOND TimeRuler constructArrayOfHours',
+          currentDate,
+          hourIterator,
+          hourIterator.hour
+        );
     } while (currentDate == selectedDate);
 
-    return res;
+    return [resString, resValues];
   };
 
   moveToPosition = sec => {
@@ -352,7 +378,7 @@ export default class TimeRuler extends PureComponent {
   // };
 
   onSendTimeData = xAxis => {
-    const {hoursArray} = this.state;
+    const {hoursArray, hoursValue} = this.state;
     this.scrollEndTimeout = null;
     // if (this.isTouchEnd && this.isScrollEnd) {
     if (!this._isMounted || xAxis == this.lastScrollOffsetX) {
@@ -372,7 +398,7 @@ export default class TimeRuler extends PureComponent {
         : hourIndex >= hoursArray.length
         ? hoursArray.length - 1
         : hourIndex;
-    let hour = parseInt(hoursArray[hourIndex].split(':')[0]);
+    let hour = hoursValue[hourIndex]; // parseInt(hoursArray[hourIndex].split(':')[0]);
     let decimalminutes = (decimalhour - hourIndex) * 60;
     let minutes = Math.floor(decimalminutes);
     let seconds = Math.floor((decimalminutes - minutes) * 60);
@@ -477,7 +503,7 @@ export default class TimeRuler extends PureComponent {
     __DEV__ && console.log('GOND === TimeRuler onScroll');
     this.clearScrollEndTimeout();
     const {hourBuildRuler, hourSpecial} = this.props;
-    const {hoursArray} = this.state;
+    const {hoursArray, hoursValue} = this.state;
     if (this.isManualScrolling == true) {
       // this.isAutoScrolling = true;
       let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
@@ -488,7 +514,7 @@ export default class TimeRuler extends PureComponent {
           : hourIndex >= hoursArray.length
           ? hoursArray.length - 1
           : hourIndex;
-      let hour = parseInt(hoursArray[hourIndex].split(':')[0]);
+      let hour = hoursValue[hourIndex]; // parseInt(hoursArray[hourIndex].split(':')[0]);
       let decimalminutes = (decimalhour - hourIndex) * 60;
       let minutes = Math.floor(decimalminutes);
       let seconds = Math.floor((decimalminutes - minutes) * 60);
@@ -596,7 +622,8 @@ export default class TimeRuler extends PureComponent {
         // let start = j * minValue;
         // let end = start + (minValue - 1);
         let minObject = {};
-        let long_start = searchDate + i * 3600 + j * minValue * 60;
+        let long_start =
+          searchDate + this.state.hoursValue[i] * 3600 + j * minValue * 60;
         let long_end = long_start + minValue * 60 - 1;
         // __DEV__ &&
         //   console.log(
@@ -655,7 +682,8 @@ export default class TimeRuler extends PureComponent {
         // let start = j * minValue;
         // let end = start + (minValue - 1);
         let minObject = {};
-        let long_start = searchDate + i * 3600 + j * minValue * 60;
+        let long_start =
+          searchDate + this.state.hoursValue[i] * 3600 + j * minValue * 60;
         let long_end = long_start + minValue * 60 - 1;
         // __DEV__ &&
         //   console.log(

@@ -477,19 +477,19 @@ export const VideoModel = types
       );
     },
     get timezone() {
-      if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
-        return util.isNullOrUndef(self.timezoneOffset)
-          ? DateTime.local().zone.name
-          : `UTC${
-              self.timezoneOffset > 0
-                ? '+' + self.timezoneOffset
-                : self.timezoneOffset < 0
-                ? self.timezoneOffset
-                : ''
-            }`;
-      } else {
-        return self.timezoneName ?? DateTime.local().zone.name;
-      }
+      // if (self.cloudType == CLOUD_TYPE.DEFAULT || CLOUD_TYPE.DIRECTION) {
+      //   return util.isNullOrUndef(self.timezoneOffset)
+      //     ? DateTime.local().zone.name
+      //     : `UTC${
+      //         self.timezoneOffset > 0
+      //           ? '+' + self.timezoneOffset
+      //           : self.timezoneOffset < 0
+      //           ? self.timezoneOffset
+      //           : ''
+      //       }`;
+      // } else {
+      return self.timezoneName ?? DateTime.local().zone.name;
+      // }
     },
     get hoursOfDay() {
       if (
@@ -1027,7 +1027,7 @@ export const VideoModel = types
       },
       buildTimezoneData(data) {
         self.stopWaitTimezone();
-        // __DEV__ && console.log('GOND buildTimezoneData');
+        __DEV__ && console.log('GOND buildTimezoneData: ', data);
 
         if (self.dvrTimezone && self.timezoneName) {
           __DEV__ &&
@@ -1093,13 +1093,44 @@ export const VideoModel = types
         // }
 
         // Request data after timezone acquired
-        if (self.cloudType == CLOUD_TYPE.HLS) {
-          __DEV__ && console.log(`GOND on HLS get HLS info after build TZ`);
-          self.getHLSInfos({
-            channelNo: self.selectedChannel ?? undefined,
-            daylist: !self.isLive,
-            timeline: !self.isLive,
-          });
+        // if (self.cloudType == CLOUD_TYPE.HLS) {
+        //   __DEV__ && console.log(`GOND on HLS get HLS info after build TZ`);
+        //   self.getHLSInfos({
+        //     channelNo: self.selectedChannel ?? undefined,
+        //     daylist: !self.isLive,
+        //     timeline: !self.isLive,
+        //   });
+        // }
+        self.onTimezoneAcquired();
+      },
+      onTimezoneAcquired() {
+        switch (self.cloudType) {
+          case CLOUD_TYPE.DEFAULT:
+          case CLOUD_TYPE.DIRECTION:
+            getInfoPromise = self.getDirectInfos(
+              self.selectedChannel ?? undefined
+            );
+            break;
+          case CLOUD_TYPE.HLS:
+            __DEV__ && console.log(`GOND on HLS get HLS info after build TZ`);
+            self.getHLSInfos({
+              channelNo: self.selectedChannel ?? undefined,
+              daylist: !self.isLive,
+              timeline: !self.isLive,
+            });
+            break;
+          // case CLOUD_TYPE.RTC:
+          //   __DEV__ && console.log('GOND getRTCInfos');
+          //   getInfoPromise = self.getRTCInfos(channelNo);
+          //   break;
+          default:
+            getInfoPromise = Promise.resolve(false);
+            __DEV__ &&
+              console.log(
+                'GOND onTimezoneAcquired default case: ',
+                self.cloudType
+              );
+            break;
         }
       },
       setTimezoneOffset(value) {
@@ -1325,7 +1356,7 @@ export const VideoModel = types
         if (value === self.noVideo) return;
         if (__DEV__) {
           console.log('GOND ======= Set Novideo = ', value);
-          // console.trace();
+          console.trace();
         }
         self.noVideo = value;
         if (value === true) {
@@ -1832,6 +1863,7 @@ export const VideoModel = types
         }
       },
       getDVRTimezone: flow(function* (channelNo) {
+        __DEV__ && console.log('GOND getDVRTimezone');
         self.waitForTimezone = true;
         let sid = util.getRandomId();
         self.timezoneRetries = 0;
@@ -2769,8 +2801,8 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            getInfoPromise = self.getDirectInfos(channelNo);
-            break;
+          // getInfoPromise = self.getDirectInfos(channelNo);
+          // break;
           case CLOUD_TYPE.HLS:
             // getInfoPromise = self.getHLSInfos({
             //   channelNo,

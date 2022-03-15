@@ -137,7 +137,7 @@ class AboutView extends Component {
                 />
               </View>
 
-              <Text style={styles.rowText}>Privacy policies</Text>
+              <Text style={styles.rowText}>Privacy policy</Text>
               <View style={styles.rowIconEnd}>
                 <IconCustom
                   name="keyboard-right-arrow-button"
