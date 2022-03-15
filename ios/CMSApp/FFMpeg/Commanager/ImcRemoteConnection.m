@@ -20,7 +20,7 @@
 #import "AppDelegate.h"
 
 #define KEEP_ALIVE_CHECKING_INTERVAL 5 // 15 seconds
-#define MAX_KEEP_ALIVE_COUNTING 3
+#define MAX_KEEP_ALIVE_COUNTING 10
 
 @implementation ImcRemoteConnection
 
