@@ -70,6 +70,7 @@ class LiveChannelsView extends React.Component {
     this.firstFocus = true;
     this.directViewList = [];
     this.resumeFromInterupt = false;
+    this.reactions = [];
     // this.viewableList = [];
     // this.showAllTimeout = null;
     // this.didFilter = false;
@@ -89,6 +90,7 @@ class LiveChannelsView extends React.Component {
     videoStore.enterVideoView(false);
     // this.stopAll();
     // videoStore.setStreamReadyCallback(null);
+    this.reactions && this.reactions.forEach(unsub => unsub());
   }
 
   componentDidMount() {
@@ -127,22 +129,37 @@ class LiveChannelsView extends React.Component {
     //   this.pauseAll(false);
     // });
 
-    reaction(
-      () => videoStore.videoData,
-      videoList => {
-        if (videoList && videoList.length > 0) {
-          if (
-            videoStore.cloudType == CLOUD_TYPE.HLS ||
-            videoStore.cloudType == CLOUD_TYPE.RTC
-          )
-            this.playerRefs = videoList.map(() => null);
-          else this.directViewList = videoList.map(() => null);
-        } else this.playerRefs = [];
-      }
-    );
-
+    this.initReactions();
     this.getChannelsInfo();
   }
+
+  initReactions = () => {
+    const {videoStore} = this.props;
+
+    this.reactions = [
+      reaction(
+        () => videoStore.videoData,
+        videoList => {
+          if (videoList && videoList.length > 0) {
+            if (
+              videoStore.cloudType == CLOUD_TYPE.HLS ||
+              videoStore.cloudType == CLOUD_TYPE.RTC
+            )
+              this.playerRefs = videoList.map(() => null);
+            else this.directViewList = videoList.map(() => null);
+          } else this.playerRefs = [];
+        }
+      ),
+      reaction(
+        () => videoStore.needAuthen,
+        (needAuthen, previousValue) => {
+          if (needAuthen && !previousValue) {
+            videoStore.displayAuthen(true);
+          }
+        }
+      ),
+    ];
+  };
 
   /*
   componentDidUpdate(prevProps) {
@@ -292,11 +309,11 @@ class LiveChannelsView extends React.Component {
     }
 
     res = res && (await videoStore.getVideoInfos());
-    if (videoStore.needAuthen) {
-      __DEV__ && console.log('GOND need authen ->');
-      videoStore.displayAuthen(true);
-      return;
-    }
+    // if (videoStore.needAuthen) {
+    //   __DEV__ && console.log('GOND need authen ->');
+    //   videoStore.displayAuthen(true);
+    //   return;
+    // }
   };
 
   // onAuthenCancel = () => {
