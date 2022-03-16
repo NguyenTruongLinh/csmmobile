@@ -130,9 +130,8 @@ export default class TimeRuler extends PureComponent {
       let sec = currentTime - searchDate;
       const secsPerHour = SECONDS_PER_MINUTE * MINUTE_PER_HOUR;
       let secWidth = this.state.dwidth / secsPerHour;
+      __DEV__ && console.log('GOND auto update timeline: ', currentTime);
 
-      // TODO: handle DST
-      // ---
       let secToAdd = 0;
       let hourIndex = 0;
       for (; hourIndex < hoursValue.length; hourIndex++) {
@@ -146,12 +145,17 @@ export default class TimeRuler extends PureComponent {
 
       if (hourIndex < hoursValue.length) {
         const realSecToScroll = hourIndex * secsPerHour + secToAdd;
-        // console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
+        // __DEV__ && console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
         // this.scrollTo(sec * secWidth, 0);
         this.scrollTo(realSecToScroll * secWidth, 0);
       }
     }
     if (searchDate != prevProps.searchDate) {
+      __DEV__ && console.log(
+        'GOND searchDate changed: ',
+        searchDate,
+        prevProps.searchDate
+      );
       const [hoursArray, hoursValue] = this.constructArrayOfHours(
         this.props.is24hour
       );
@@ -707,7 +711,7 @@ export default class TimeRuler extends PureComponent {
     } else {
       arrayofViews = arrayofViews.concat(this.renderTimeHeaderFooter(true));
     }
-
+    // __DEV__ && console.log('GOND TimeRuler renderHours', arrayofViews);
     return arrayofViews;
   };
 

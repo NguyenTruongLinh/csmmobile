@@ -112,7 +112,11 @@ class HLSStreamingView extends React.Component {
     this.clearReconnectTimeout();
     this.clearCheckTimelineInterval();
     const {streamData} = this.props;
-    if (isAlive(streamData) && streamData.isLoading) {
+    if (
+      this.props.singlePlayer &&
+      isAlive(streamData) &&
+      streamData.isLoading
+    ) {
       streamData.setStreamStatus({
         isLoading: false,
         connectionStatus: STREAM_STATUS.DONE,

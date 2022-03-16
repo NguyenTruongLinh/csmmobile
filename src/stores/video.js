@@ -318,6 +318,8 @@ export const VideoModel = types
     currentGridPage: types.optional(types.number, 0),
     isInVideoView: types.optional(types.boolean, false),
     isDraggingTimeline: types.optional(types.boolean, false),
+    shouldShowSnackbar: types.optional(types.boolean, true),
+    isDirectDSTAwareness: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     frameTime: 0,
@@ -518,14 +520,14 @@ export const VideoModel = types
       if (zone) {
         return searchDate.setZone(zone, options).toSeconds();
       }
-      if (
-        self.cloudType == CLOUD_TYPE.DEFAULT ||
-        self.cloudType == CLOUD_TYPE.DIRECTION
-      ) {
-        return searchDate.setZone('utc', {keepLocalTime: true}).toSeconds();
-      } else {
-        return searchDate.toSeconds();
-      }
+      // if (
+      //   self.cloudType == CLOUD_TYPE.DEFAULT ||
+      //   self.cloudType == CLOUD_TYPE.DIRECTION
+      // ) {
+      //   return searchDate.setZone('utc', {keepLocalTime: true}).toSeconds();
+      // } else {
+      return searchDate.toSeconds();
+      // }
     },
     get searchDateString() {
       const searchDate =
@@ -718,8 +720,8 @@ export const VideoModel = types
   }))
   .actions(self => {
     // volatile state:
-    let streamReadyCallback = null;
-    let streamTimeout = null;
+    // let streamReadyCallback = null;
+    // let streamTimeout = null;
     // let listIdToCheck = [];
     // let streamInfoCallback = null;
     // let peerConnectionStatsInterval = null;
@@ -738,6 +740,12 @@ export const VideoModel = types
       },
       setLoading(value) {
         self.isLoading = value;
+      },
+      setShouldShowVideoMessage(value) {
+        self.shouldShowSnackbar = value ? true : false;
+      },
+      setDirectDSTAwareness(value) {
+        self.isDirectDSTAwareness = value ? true : false;
       },
       selectDVR(value) {
         if (util.isNullOrUndef(value)) return;
@@ -1148,16 +1156,16 @@ export const VideoModel = types
         __DEV__ &&
           console.log('GOND checkTimeOnTimeline ', value, self.timeline);
         let timeToCheck = value;
-        if (
-          self.cloudType == CLOUD_TYPE.DEFAULT ||
-          self.cloudType == CLOUD_TYPE.DIRECTION
-        ) {
-          timeToCheck = DateTime.fromSeconds(timeToCheck, {zone: self.timezone})
-            .setZone('utc', {keepLocalTime: true})
-            .toSeconds();
-          __DEV__ &&
-            console.log('GOND checkTimeOnTimeline direct', timeToCheck);
-        }
+        // if (
+        //   self.cloudType == CLOUD_TYPE.DEFAULT ||
+        //   self.cloudType == CLOUD_TYPE.DIRECTION
+        // ) {
+        //   timeToCheck = DateTime.fromSeconds(timeToCheck, {zone: self.timezone})
+        //     .setZone('utc', {keepLocalTime: true})
+        //     .toSeconds();
+        //   __DEV__ &&
+        //     console.log('GOND checkTimeOnTimeline direct', timeToCheck);
+        // }
 
         for (let i = 0; i < self.timeline.length; i++) {
           if (timeToCheck <= self.timeline[i].end) {
@@ -1172,6 +1180,24 @@ export const VideoModel = types
           }
         }
         return false;
+      },
+      buildDirectTimeline(data) {
+        const processedData = self.isDirectDSTAwareness
+          ? data
+          : data.map(item => ({
+              ...item,
+              begin: DateTime.fromSeconds(numberValue(item.begin), {
+                zone: 'utc',
+              })
+                .setZone(self.timezone, {keepLocalTime: true})
+                .toSeconds(),
+              end: DateTime.fromSeconds(numberValue(item.end), {
+                zone: 'utc',
+              })
+                .setZone(self.timezone, {keepLocalTime: true})
+                .toSeconds(),
+            }));
+        self.setTimeline(processedData);
       },
       setTimeline(value) {
         // if (TimelineModel.is(value)) {
@@ -1209,6 +1235,7 @@ export const VideoModel = types
         self.forceDstHour = value;
       },
       displayAuthen(value) {
+        __DEV__ && console.trace('GOND displaying Login form: ');
         self.showAuthenModal = value;
       },
       resetNVRAuthentication() {
@@ -1360,7 +1387,8 @@ export const VideoModel = types
         }
         self.noVideo = value;
         if (value === true) {
-          snackbarUtil.onMessage(STREAM_STATUS.NOVIDEO);
+          self.shouldShowSnackbar &&
+            snackbarUtil.onMessage(STREAM_STATUS.NOVIDEO);
           if (self.selectedStream) {
             self.selectedStream.setStreamStatus({
               isLoading: false,
@@ -1786,7 +1814,9 @@ export const VideoModel = types
                     'GOND HLS - requested channel not found: ',
                     channelNo
                   );
-                snackbarUtil.onError(VIDEO_TXT.CHANNEL_ERROR);
+                self.shouldShowSnackbar &&
+                  self.isInVideoView &&
+                  snackbarUtil.onError(VIDEO_TXT.CHANNEL_ERROR);
                 return false;
               }
             }
@@ -1809,7 +1839,7 @@ export const VideoModel = types
           // }
         } catch (err) {
           console.log('GOND cannot get direct video info: ', err);
-          snackbarUtil.handleRequestFailed(err);
+          self.isInVideoView && snackbarUtil.handleRequestFailed(err);
           self.isLoading = false;
           return false;
         }
@@ -1875,7 +1905,8 @@ export const VideoModel = types
           // },
           HLS_DATA_REQUEST_TIMEOUT //* 3
         ); // 30 secs wait time
-        snackbarUtil.onMessage(STREAM_STATUS.CONNECTING);
+        self.shouldShowSnackbar &&
+          snackbarUtil.onMessage(STREAM_STATUS.CONNECTING);
         return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
       }),
       getDVRTimezoneDirectly: flow(function* (sid) {
@@ -1908,7 +1939,8 @@ export const VideoModel = types
                 HLS_DATA_REQUEST_TIMEOUT / 2
               );
             } else {
-              snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
+              self.shouldShowSnackbar &&
+                snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
               self.stopWaitTimezone();
             }
           } catch (err) {
@@ -2205,7 +2237,9 @@ export const VideoModel = types
             console.log('GOND == PROFILING == Sent VSC Request: ', new Date());
         } catch (error) {
           console.log(`Could not get HLS video info: ${error}`);
-          snackbarUtil.handleRequestFailed(error);
+          self.shouldShowSnackbar &&
+            self.isInVideoView &&
+            snackbarUtil.handleRequestFailed(error);
           return false;
         }
         // self.scheduleTimeoutChecking();
@@ -2335,7 +2369,9 @@ export const VideoModel = types
           return true;
         } catch (error) {
           console.log(`Could not get HLS video info: ${error}`);
-          snackbarUtil.handleRequestFailed(error);
+          self.shouldShowSnackbar &&
+            self.isInVideoView &&
+            snackbarUtil.handleRequestFailed(error);
           return false;
         }
       }),
@@ -2368,7 +2404,8 @@ export const VideoModel = types
         if (info.status == 'FAIL') {
           if (cmd == VSCCommandString.TIMEZONE) {
             if (self.hlsStreams.length == 0) {
-              snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
+              self.shouldShowSnackbar &&
+                snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
               self.stopWaitTimezone();
             }
           } else {
@@ -2732,7 +2769,7 @@ export const VideoModel = types
               : self.activeChannels
           );
           self.isLoading = false;
-          streamReadyCallback && streamReadyCallback();
+          // streamReadyCallback && streamReadyCallback();
         }
       }),
       // #endregion WebRTC streaming
@@ -2838,6 +2875,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
+            self.onHLSInfoResponse(streamInfo, cmd);
             console.log(
               'GOND Warning: direct connection not receive stream info through notification'
             );
@@ -2903,7 +2941,7 @@ export const VideoModel = types
               'GOND onAlertPlay channels has been removed or not existed!'
             );
           // self.error = 'Channel is not existed or has been removed!';
-          snackbarUtil.onError(VIDEO_TXT.CHANNEL_ERROR);
+          self.isInVideoView && snackbarUtil.onError(VIDEO_TXT.CHANNEL_ERROR);
           return false;
         }
         // Get timezone first

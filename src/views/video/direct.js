@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
+import {isAlive} from 'mobx-state-tree';
 import {reaction} from 'mobx';
 import {DateTime} from 'luxon';
 
@@ -136,10 +137,13 @@ class DirectVideoView extends React.Component {
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }
-    this.props.serverInfo.setStreamStatus({
-      isLoading: false,
-      connectionStatus: STREAM_STATUS.DONE,
-    });
+    const {serverInfo, singlePlayer} = this.props;
+    if (singlePlayer && isAlive(serverInfo)) {
+      serverInfo.setStreamStatus({
+        isLoading: false,
+        connectionStatus: STREAM_STATUS.DONE,
+      });
+    }
 
     // this.setNative({disconnect: true}, true);
     this.stop(true);
@@ -643,6 +647,7 @@ class DirectVideoView extends React.Component {
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
         __DEV__ && console.log('GOND onDirectVideoMessage: login success');
         if (this.didSubmitLogin) this.didSubmitLogin = false;
+        videoStore.setDirectDSTAwareness(false);
         videoStore.onLoginSuccess();
         // this.props.videoStore.onLoginSuccess();
         // if (!videoStore.isLive && searchPlayTime) {
@@ -842,6 +847,15 @@ class DirectVideoView extends React.Component {
         videoStore.setRecordingDates(value);
         break;
       case NATIVE_MESSAGE.TIME_DATA:
+        if (
+          serverInfo.isLoading ||
+          serverInfo.connectionStatus != STREAM_STATUS.DONE
+        ) {
+          serverInfo.setStreamStatus({
+            isLoading: false,
+            connectionStatus: STREAM_STATUS.DONE,
+          });
+        }
         if (!singlePlayer) break;
 
         let timeData = null;
@@ -855,9 +869,10 @@ class DirectVideoView extends React.Component {
           return;
         }
         this.timeInterval = timeData;
-        console.log('GOND timeline: ', timeData);
+        __DEV__ && console.log('GOND timeline: ', timeData);
         if (timeData[0] && timeData[0].begin) {
-          console.log('GOND timeline first time: ', timeData[0].begin);
+          __DEV__ &&
+            console.log('GOND timeline first time: ', timeData[0].begin);
           try {
             const timestamp = numberValue(timeData[0].begin);
             if (!timestamp) break;
@@ -869,11 +884,10 @@ class DirectVideoView extends React.Component {
               videoStore.setSearchDate(beginOfDay);
             }
           } catch (err) {
-            __DEV__ &&
-              console.log('GOND Parse timestamp failed: ', timeData[0]);
+            console.log('GOND Parse timestamp failed: ', timeData[0]);
           }
         }
-        videoStore.setTimeline(timeData);
+        videoStore.buildDirectTimeline(timeData);
         // if (timeData[0] && timeData[0].timezone) {
         //   videoStore.setTimezoneOffset(timeData[0].timezone);
         // }
@@ -919,6 +933,7 @@ class DirectVideoView extends React.Component {
         break;
       case NATIVE_MESSAGE.RULER_DST:
         __DEV__ && console.log('GOND RULER_DST: ', value);
+        videoStore.setDirectDSTAwareness(true);
         break;
       case NATIVE_MESSAGE.UNKNOWN:
         break;
@@ -940,6 +955,8 @@ class DirectVideoView extends React.Component {
   };
 
   onChangeSearchDate = () => {
+    this.newSeekPos = 0;
+    this.oldPos = 0;
     if (!this.props.videoStore.paused) {
       this.setNative({pause: true});
     }
@@ -953,12 +970,16 @@ class DirectVideoView extends React.Component {
   };
 
   onSwitchLiveSearch = isLive => {
+    this.newSeekPos = 0;
+    this.oldPos = 0;
     if (!this.props.videoStore.paused) {
       this.setNative({pause: true});
     }
   };
 
   onChangeChannel = channelNo => {
+    this.newSeekPos = 0;
+    this.oldPos = 0;
     if (!this.props.videoStore.paused) {
       this.setNative({pause: true});
     }
@@ -1163,6 +1184,7 @@ class DirectVideoView extends React.Component {
         if (
           pos < this.newSeekPos ||
           (pos > this.oldPos &&
+            Math.abs(this.oldPos - this.newSeekPos) > 2 &&
             Math.abs(pos - this.newSeekPos) > Math.abs(pos - this.oldPos))
         ) {
           __DEV__ && console.log('GOND skip this old frame');
@@ -1176,7 +1198,14 @@ class DirectVideoView extends React.Component {
 
       videoStore.setDisplayDateTime(timeString);
 
-      const frameTime = DateTime.fromFormat(value, timeFormat, {zone: 'utc'}); //.toSeconds();
+      let frameTime = DateTime.fromFormat(value, timeFormat, {
+        zone: 'utc',
+      }); //.toSeconds();
+      // if (!videoStore.isDirectDSTAwareness) {
+      frameTime = frameTime.setZone(videoStore.timezone, {
+        keepLocalTime: true,
+      });
+      // }
       __DEV__ && console.log('GOND onFrameTime frameTime: ', frameTime);
 
       videoStore.setFrameTime(frameTime.toSeconds());

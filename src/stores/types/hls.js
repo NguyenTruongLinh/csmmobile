@@ -396,10 +396,7 @@ export default HLSStreamModel = types
     // setStreamStatus({connectionStatus, error, isLoading, needReset}) {
     setStreamStatus(statusObject) {
       if (!isAlive(self)) return;
-      if (__DEV__) {
-        console.log('GOND HLS: Set stream status: ', statusObject);
-        // console.trace();
-      }
+      __DEV__ && console.trace('GOND HLS: Set stream status: ', statusObject);
 
       self.targetUrl.setStreamStatus(statusObject);
       // connectionStatus != undefined &&
@@ -594,7 +591,7 @@ export default HLSStreamModel = types
             // },
             DiscontinuityMode: HLSDiscontinuityMode.ALWAYS,
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
-            MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : undefined,
+            MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 15,
             Expires: HLS_MAX_EXPIRE_TIME,
           }
         );

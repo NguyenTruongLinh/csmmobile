@@ -49,11 +49,13 @@ class ChannelsSettingView extends Component {
   componentWillUnmount() {
     __DEV__ && console.log('ChannelsSettingView componentWillUnmount');
     this.onFilter('');
+    this.props.videoStore.setShouldShowVideoMessage(true);
   }
 
   async componentDidMount() {
     const {videoStore} = this.props;
     __DEV__ && console.log('ChannelsSettingView componentDidMount');
+    videoStore.setShouldShowVideoMessage(false);
     this.setHeader(false);
     if (!videoStore.allChannels || videoStore.allChannels.length == 0) {
       const result = await videoStore.getDisplayingChannels();
