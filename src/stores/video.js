@@ -1,4 +1,5 @@
 import {flow, types, getSnapshot, applySnapshot} from 'mobx-state-tree';
+import {Platform} from 'react-native';
 
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
@@ -746,6 +747,7 @@ export const VideoModel = types
         self.shouldShowSnackbar = value ? true : false;
       },
       setDirectDSTAwareness(value) {
+        if (Platform.OS == 'ios') return; // TODO: temporarily fix for iOS
         self.isDirectDSTAwareness = value ? true : false;
       },
       selectDVR(value) {

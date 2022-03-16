@@ -1907,7 +1907,11 @@ const uint32_t numLayers = 24;
       
     }
       break;
-      
+    case IMC_CMD_CONNECTION_CONNECT_ERROR:
+    {
+      [self handleResponseMessage:IMC_MSG_CONNECTION_NEED_RESET fromView:nil withData:nil];
+    }
+      break;
     case IMC_CMD_START_TRANSFER_VIDEO_FOR_SERVER_RESPONSE:
     {
       NSArray* data = (NSArray*)parameter;
@@ -2731,7 +2735,7 @@ const uint32_t numLayers = 24;
     else
     {
       NSTimeInterval offset = [nextDaylight timeIntervalSinceDate:selectedDate];
-      if(offset < HoursPerDay*60*60 )
+      /*if(offset < HoursPerDay*60*60 )
       {
         if([currentServer.serverTimezone isDaylightSavingTimeForDate:selectedDate])// end daylight
         {
@@ -2742,7 +2746,7 @@ const uint32_t numLayers = 24;
           m_dayType = BEGIN_DAYLIGHT;
         }
       }
-      else
+      else*/
       {
         m_dayType = NORMAL;
       }
