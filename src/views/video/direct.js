@@ -452,7 +452,7 @@ class DirectVideoView extends React.Component {
 
   setNativePlayback = (delay = false, paramsObject = {}) => {
     const {serverInfo, videoStore, isLive, hdMode} = this.props;
-    // console.log('GOND direct setNativePlayback: ', serverInfo);
+    // __DEV__ && console.trace('GOND direct setNativePlayback: ', serverInfo);
     if (
       // !this._isMounted ||
       // !this.ffmpegPlayer ||

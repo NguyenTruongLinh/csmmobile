@@ -366,7 +366,8 @@ export const VideoModel = types
       return (
         (self.cloudType == CLOUD_TYPE.DIRECTION ||
           self.cloudType == CLOUD_TYPE.DEFAULT) &&
-        (!self.nvrUser || !self.nvrPassword)
+        ((self.nvrUser && self.nvrUser.length == 0) ||
+          (self.nvrPassword && self.nvrPassword.length == 0))
       );
     },
     // get directStreams() {
