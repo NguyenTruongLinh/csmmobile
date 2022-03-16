@@ -1428,6 +1428,17 @@ export const VideoModel = types
           if (self.selectedStream) {
             self.selectedStream.onExitSinglePlayer();
           }
+        } else if (
+          self.cloudType == CLOUD_TYPE.DIRECTION ||
+          self.cloudType == CLOUD_TYPE.DEFAULT
+        ) {
+          self.directStreams.forEach(s => {
+            if (s.isLoading || s.connectionStatus != STREAM_STATUS.DONE)
+              s.setStreamStatus({
+                isLoading: false,
+                connectionStatus: STREAM_STATUS.DONE,
+              });
+          });
         }
 
         self.selectedChannel = null;
