@@ -2015,6 +2015,7 @@ export const VideoModel = types
         }
         self.waitForTimeline = true;
         if (self.checkTimelineTimeout) {
+          __DEV__ && console.trace('GOND clear TimelineTimeout 1 ');
           clearTimeout(self.checkTimelineTimeout);
           self.checkTimelineTimeout = null;
         }
@@ -2045,6 +2046,11 @@ export const VideoModel = types
             self.waitForTimeline = false;
           } else if (self.timelineRetries < HLS_MAX_RETRY) {
             // self.timelineRetries++;
+            if (self.checkTimelineTimeout) {
+              __DEV__ && console.trace('GOND clear TimelineTimeout 2 ');
+              clearTimeout(self.checkTimelineTimeout);
+              self.checkTimelineTimeout = null;
+            }
             self.checkTimelineTimeout = setTimeout(
               () => self.getTimelineDirectly(channelNo, sid),
               HLS_GET_DATA_DIRECTLY_TIMEOUT
@@ -2466,6 +2472,7 @@ export const VideoModel = types
             break;
           case VSCCommandString.TIMELINE:
             if (self.checkTimelineTimeout) {
+              __DEV__ && console.trace('GOND clear TimelineTimeout 3 ');
               clearTimeout(self.checkTimelineTimeout);
               self.checkTimelineTimeout = null;
             }
