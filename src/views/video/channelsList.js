@@ -84,6 +84,7 @@ class ChannelsListView extends React.Component {
       //     healthStore.isLiveVideo
       //   );
       videoStore.switchLiveSearch(healthStore.isLiveVideo);
+      videoStore.setShouldShowVideoMessage(false);
     });
     // __DEV__ &&
     //   console.log(
@@ -105,8 +106,13 @@ class ChannelsListView extends React.Component {
 
   setHeader = enableSettingButton => {
     if (!this._isMounted) return;
-    const {navigation, videoStore, healthStore, sitesStore, userStore} =
-      this.props;
+    const {
+      navigation,
+      videoStore,
+      healthStore,
+      sitesStore,
+      userStore,
+    } = this.props;
     const {isListView} = this.state;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() =>
@@ -195,6 +201,7 @@ class ChannelsListView extends React.Component {
     // this.pauseAll(true);
     setTimeout(() => {
       // __DEV__ && console.log('GOND select channel to Health Video ');
+      videoStore.setShouldShowVideoMessage(true);
       navigation.push(ROUTERS.VIDEO_PLAYER);
     }, 500);
   };
