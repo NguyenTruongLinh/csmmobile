@@ -338,6 +338,8 @@ export const VideoModel = types
     waitForTimeline: false,
     checkTimelineTimeout: null,
     checkDaylistTimeout: null,
+
+    timelineRequestId: '',
   }))
   .views(self => ({
     get isCloud() {
@@ -1483,6 +1485,7 @@ export const VideoModel = types
           __DEV__ && console.log('2 self.isLive = ', self.isLive);
         }
         self.isHealthPlay = false;
+        self.timelineRequestId = '';
       },
       updateDirectFrame(channel, frameData) {
         const target = self.directStreams.find(s => s.videoSource == channel);
@@ -1920,6 +1923,7 @@ export const VideoModel = types
           HLS_DATA_REQUEST_TIMEOUT //* 3
         ); // 30 secs wait time
         self.shouldShowSnackbar &&
+          self.isInVideoView &&
           snackbarUtil.onMessage(STREAM_STATUS.CONNECTING);
         return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
       }),
@@ -2023,6 +2027,7 @@ export const VideoModel = types
           () => self.getTimelineDirectly(channelNo, sid),
           HLS_DATA_REQUEST_TIMEOUT
         ); // 1 min wait time
+        self.timelineRequestId = sid;
         return yield self.sendVSCCommand(VSCCommand.TIMELINE, channelNo, {
           requestDate: self
             .getSafeSearchDate()
@@ -2036,7 +2041,7 @@ export const VideoModel = types
         if (
           self.isInVideoView &&
           self.selectedChannel == channelNo &&
-          self.selectedStream.targetUrl.sid == sid
+          self.timelineRequestId == sid
         ) {
           // self.getTimeline(channelNo, sid);
           const isSuccess = yield self.buildTimelineData({BigData: 1}); // get timeline directly
@@ -2044,6 +2049,8 @@ export const VideoModel = types
           if (isSuccess) {
             self.timelineRetries = 0;
             self.waitForTimeline = false;
+            self.timelineRequestId = '';
+            self.checkTimelineTimeout = null;
           } else if (self.timelineRetries < HLS_MAX_RETRY) {
             // self.timelineRetries++;
             if (self.checkTimelineTimeout) {
@@ -2056,11 +2063,20 @@ export const VideoModel = types
               HLS_GET_DATA_DIRECTLY_TIMEOUT
             );
           } else {
+            self.timelineRetries = 0;
             self.waitForTimeline = false;
+            self.checkTimelineTimeout = null;
             __DEV__ &&
               console.log('GOND Get Timeline failed , max retries reached!');
             // snackbarUtil.onError(VIDEO_TXT.CANNOT_CONNECT);
           }
+        } else {
+          __DEV__ &&
+            console.log(
+              'GOND Get Timeline id has changed, cancel: ',
+              self.timelineRequestId,
+              sid
+            );
         }
       }),
       stopHLSStream: flow(function* (channelNo, sid, forceStop = false) {
@@ -2477,6 +2493,7 @@ export const VideoModel = types
               self.checkTimelineTimeout = null;
             }
             self.buildTimelineData(info);
+            // self.timelineRequestId = '';
             break;
           case VSCCommandString.DAYLIST:
             if (self.checkDaylistTimeout) {
@@ -2495,6 +2512,7 @@ export const VideoModel = types
           case VSCCommandString.STOP:
             break;
           default:
+            break;
         }
       },
       onReceiveHLSStream: flow(function* (info, cmd) {
