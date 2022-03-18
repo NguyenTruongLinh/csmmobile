@@ -142,7 +142,7 @@ android {
         applicationId "com.i3international.cmsapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3000010
+        versionCode 3000101
         versionName "3.0.1"
         multiDexEnabled true
     }
