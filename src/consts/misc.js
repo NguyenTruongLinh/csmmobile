@@ -374,11 +374,13 @@ export const ExceptionSortField = {
   Count: 4,
 };
 
+export const ExceptionSortFieldOrder = [-1, 2, 1, 0, -1];
+
 export const ExceptionSortFieldName = [
-  'EMPLOYEE',
-  'RISK FACTOR',
-  'TOTAL AMOUNT',
-  'RATIO TO SALE',
+  'Employee',
+  'Risk factor',
+  'Total amount',
+  'Ration to sale',
 ];
 
 export const ChannelStatus = {

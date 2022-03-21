@@ -18,7 +18,7 @@ import CMSCalendarRange from '../../components/views/CMSCalendarRange';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import {IconCustom, MaterialIcons} from '../../components/CMSStyleSheet';
+import {Icon, IconCustom, MaterialIcons} from '../../components/CMSStyleSheet';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -205,7 +205,8 @@ export default class ExceptionSearchModal extends Component {
 
   renderFooter = () => {
     return (
-      <View style={[commonStyles.modalFooter, {flex: 15}]}>
+      <View
+        style={[commonStyles.modalFooter, {flex: 15, paddingHorizontal: 12}]}>
         <View style={commonStyles.modalButtonCancelContainer}>
           <Button
             style={commonStyles.modalButtonCancel}
@@ -367,7 +368,8 @@ export default class ExceptionSearchModal extends Component {
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: CMSColors.White,
-            padding: 10,
+            paddingLeft: 15,
+            paddingRight: 2,
           }}>
           <Text
             style={{
@@ -382,16 +384,18 @@ export default class ExceptionSearchModal extends Component {
               : '' + selectedSites.length + ' sites selected'}
           </Text>
           <View style={{flex: 1, alignItems: 'flex-end'}}>
-            <Button
-              style={{}}
-              caption={isSortAZ === true ? 'SORT (Z-A)' : 'SORT (A-Z)'}
-              type="flat"
-              enable={true}
-              onPress={() => this.setState({isSortAZ: !isSortAZ})}
-            />
+            <Ripple
+              style={styles.button_sort}
+              onPress={() => this.setState({isSortAZ: !isSortAZ})}>
+              <Icon
+                name={isSortAZ == true ? 'sort-alpha-desc' : 'sort-alpha-asc'}
+                color={CMSColors.PrimaryText}
+                size={17}
+              />
+            </Ripple>
           </View>
         </View>
-        <View style={commonStyles.flatSearchBarContainer}>
+        <View style={styles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
             value={sitesStore.siteFilter}
@@ -531,5 +535,17 @@ const styles = StyleSheet.create({
   },
   siteNameText: {
     fontSize: 14,
+  },
+  button_sort: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  flatSearchBarContainer: {
+    paddingLeft: 18,
+    paddingRight: 4,
+    height: 50,
+    backgroundColor: CMSColors.White,
   },
 });

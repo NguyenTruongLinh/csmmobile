@@ -31,7 +31,7 @@ import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 import {Login as LoginTxt, VIDEO as VIDEO_TXT} from '../../localization/texts'; //'../../localization/texts';
 import cmscolors from '../../styles/cmscolors';
 
-import Snackbar from 'react-native-snackbar';
+import snackbarUtil from '../../util/snackbar';
 
 import {
   Video_State,
@@ -98,11 +98,7 @@ class DirectVideoView extends React.Component {
           isLoading: true,
           // connectionStatus: STREAM_STATUS.LOGING_IN,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.LOGING_IN,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Success,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
         this.setNativePlayback();
       } else {
         __DEV__ &&
@@ -113,11 +109,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.ERROR,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.ERROR,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Danger,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.ERROR, cmscolors.Danger);
       }
     } else {
       __DEV__ &&
@@ -158,6 +150,7 @@ class DirectVideoView extends React.Component {
     //   isLoading: true,
     //   connectionStatus: STREAM_STATUS.CONNECTING,
     // });
+    // snackbarUtil.showToast(STREAM_STATUS.CONNECTING, cmscolors.Success);
     setTimeout(() => this.setNativePlayback(), 500);
   };
 
@@ -182,10 +175,12 @@ class DirectVideoView extends React.Component {
             if (newChannelNo == null || previousValue == null) return;
             // this.setNative({refresh: true}, true);
 
-            this.props.serverInfo.setStreamStatus({
-              isLoading: true,
-              // connectionStatus: STREAM_STATUS.CONNECTING,
-            });
+            // this.props.serverInfo.setStreamStatus({
+            //   isLoading: true,
+            //   // connectionStatus: STREAM_STATUS.CONNECTING,
+            // });
+            snackbarUtil.showToast(STREAM_STATUS.CONNECTING, cmscolors.Success);
+            // setTimeout(() => this.setNativePlayback(), 1000);
             this.refreshVideo();
           }
         ),
@@ -225,12 +220,7 @@ class DirectVideoView extends React.Component {
               isLoading: true,
               // connectionStatus: STREAM_STATUS.CONNECTING,
             });
-            __DEV__ && console.log('GOND Connecting 3');
-            Snackbar.show({
-              text: STREAM_STATUS.CONNECTING,
-              duration: Snackbar.LENGTH_LONG,
-              backgroundColor: cmscolors.Success,
-            });
+            snackbarUtil.showToast(STREAM_STATUS.CONNECTING, cmscolors.Success);
             if (this.noPermission) {
               this.noPermission = false;
               this.stop();
@@ -261,12 +251,10 @@ class DirectVideoView extends React.Component {
                 isLoading: true,
                 // connectionStatus: STREAM_STATUS.CONNECTING,
               });
-              __DEV__ && console.log('GOND Connecting 4');
-              Snackbar.show({
-                text: STREAM_STATUS.CONNECTING,
-                duration: Snackbar.LENGTH_LONG,
-                backgroundColor: cmscolors.Success,
-              });
+              snackbarUtil.showToast(
+                STREAM_STATUS.CONNECTING,
+                cmscolors.Success
+              );
               this.setNativePlayback(true);
             }
             // }
@@ -404,12 +392,7 @@ class DirectVideoView extends React.Component {
       isLoading: true,
       // connectionStatus: STREAM_STATUS.CONNECTING,
     });
-    __DEV__ && console.log('GOND Connecting 5');
-    Snackbar.show({
-      text: STREAM_STATUS.CONNECTING,
-      duration: Snackbar.LENGTH_LONG,
-      backgroundColor: cmscolors.Success,
-    });
+    snackbarUtil.showToast(STREAM_STATUS.CONNECTING, cmscolors.Success);
     this.didSubmitLogin = true;
     this.setNativePlayback(
       false,
@@ -433,11 +416,7 @@ class DirectVideoView extends React.Component {
       isLoading: true,
       // connectionStatus: STREAM_STATUS.RECONNECTING,
     });
-    Snackbar.show({
-      text: STREAM_STATUS.RECONNECTING,
-      duration: Snackbar.LENGTH_LONG,
-      backgroundColor: cmscolors.Success,
-    });
+    snackbarUtil.showToast(STREAM_STATUS.RECONNECTING, cmscolors.Success);
     if (!isLive) {
       this.shouldSetTime = true;
       videoStore.setPlayTimeForSearch(
@@ -581,12 +560,7 @@ class DirectVideoView extends React.Component {
           isLoading: true,
           // connectionStatus: STREAM_STATUS.CONNECTING,
         });
-        __DEV__ && console.log('GOND Connecting 6');
-        Snackbar.show({
-          text: STREAM_STATUS.CONNECTING,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Success,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.CONNECTING, cmscolors.Success);
         break;
       case NATIVE_MESSAGE.CONNECTED:
         __DEV__ && console.log('GOND onDirectVideoMessage: Connected', value);
@@ -594,11 +568,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.CONNECTED,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.CONNECTED,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Success,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.CONNECTED, cmscolors.Success);
         break;
       case NATIVE_MESSAGE.LOGIN_MESSAGE:
         // this.setState({message: value});
@@ -624,11 +594,10 @@ class DirectVideoView extends React.Component {
             // connectionStatus: STREAM_STATUS.LOGIN_FAILED,
           });
           if (this.didSubmitLogin) {
-            Snackbar.show({
-              text: STREAM_STATUS.LOGIN_FAILED,
-              duration: Snackbar.LENGTH_LONG,
-              backgroundColor: cmscolors.Danger,
-            });
+            snackbarUtil.showToast(
+              STREAM_STATUS.LOGIN_FAILED,
+              cmscolors.Danger
+            );
             this.didSubmitLogin = false;
           }
           this.props.videoStore.resetNVRAuthentication();
@@ -638,11 +607,10 @@ class DirectVideoView extends React.Component {
           this.lastLogin.password // &&
           // (index == 0 || singlePlayer)
         )
-          Snackbar.show({
-            text: LoginTxt.errorLoginIncorrect,
-            duration: Snackbar.LENGTH_LONG,
-            backgroundColor: cmscolors.Danger,
-          });
+          snackbarUtil.showToast(
+            LoginTxt.errorLoginIncorrect,
+            cmscolors.Danger
+          );
         break;
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
         __DEV__ && console.log('GOND onDirectVideoMessage: login success');
@@ -667,11 +635,7 @@ class DirectVideoView extends React.Component {
         setTimeout(() => {
           if (this.state.showLoginSuccessFlag)
             // && (index == 0 || singlePlayer))
-            Snackbar.show({
-              text: LoginTxt.loginSuccess,
-              duration: Snackbar.LENGTH_LONG,
-              backgroundColor: cmscolors.Success,
-            });
+            snackbarUtil.showToast(LoginTxt.loginSuccess, cmscolors.Success);
           if (this._isMounted) {
             serverInfo.setStreamStatus({
               isLoading: false,
@@ -690,11 +654,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.SERVER_REJECT,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.SERVER_REJECT,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Danger,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.SERVER_REJECT, cmscolors.Danger);
         break;
       case NATIVE_MESSAGE.LOGIN_MESSAGE_WRONG_SERVERID:
         // this.setState({message: 'Wrong server ID'});
@@ -703,11 +663,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.WRONG_SERVER,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.WRONG_SERVER,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Danger,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.WRONG_SERVER, cmscolors.Danger);
         break;
       case NATIVE_MESSAGE.LOGIN_MESSAGE_VIDEO_PORT_ERROR:
         // this.setState({message: 'Video port error'});
@@ -716,11 +672,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.PORT_ERROR,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.PORT_ERROR,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Danger,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.PORT_ERROR, cmscolors.Danger);
         break;
       case NATIVE_MESSAGE.CANNOT_CONNECT_SERVER:
         // this.setState({
@@ -731,11 +683,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.ERROR,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.ERROR,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Danger,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.ERROR, cmscolors.Danger);
         // setTimeout(() => this.reconnect(), 1000);
         break;
       case NATIVE_MESSAGE.ORIENTATION_CHANGED:
@@ -754,11 +702,7 @@ class DirectVideoView extends React.Component {
             isLoading: false,
             // connectionStatus: STREAM_STATUS.NOVIDEO,
           });
-          Snackbar.show({
-            text: VIDEO_TXT.NO_VIDEO,
-            duration: Snackbar.LENGTH_LONG,
-            backgroundColor: cmscolors.Success,
-          });
+          snackbarUtil.showToast(VIDEO_TXT.NO_VIDEO, cmscolors.Success);
           videoStore.setNoVideo(true);
         }
         break;
@@ -818,11 +762,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.DISABLED,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.DISABLED,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Success,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.DISABLED, cmscolors.Success);
         break;
       case NATIVE_MESSAGE.PERMISSION_CHANNEL_DISABLE:
         __DEV__ && console.log('GOND Direct video: PERMISSION_CHANNEL_DISABLE');
@@ -830,11 +770,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.NO_PERMISSION,
         });
-        Snackbar.show({
-          text: STREAM_STATUS.NO_PERMISSION,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Success,
-        });
+        snackbarUtil.showToast(STREAM_STATUS.NO_PERMISSION, cmscolors.Success);
         this.noPermission = true;
         break;
       case NATIVE_MESSAGE.RECORDING_DATE:

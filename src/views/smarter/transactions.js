@@ -31,6 +31,8 @@ import ROUTERS from '../../consts/routes';
 
 const ALERTS_GRID_LAYOUT = 2;
 
+const {width, height} = Dimensions.get('window');
+
 // const HEADER_MAX_HEIGHT = Platform.OS !== 'ios' ? 54 : 64;
 // const HEADER_MIN_HEIGHT = 35;
 // const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
@@ -93,21 +95,19 @@ class ExceptionsView extends Component {
       ? this.searchbarRef.getSearchButton(() => this.setHeader())
       : null;
     // __DEV__ && console.log('GOND ExceptionsView setHeader');
-
+    let title =
+      (selectedEmployee.employeeName && selectedEmployee.employeeName.length > 0
+        ? selectedEmployee.employeeName + ' - '
+        : '') + selectedEmployee.siteName;
     navigation.setOptions({
       headerTitle:
-        (selectedEmployee.employeeName &&
-        selectedEmployee.employeeName.length > 0
-          ? selectedEmployee.employeeName + ' - '
-          : '') + selectedEmployee.siteName,
+        width < 400 && title.length > 17
+          ? title.substring(0, 16) + '...'
+          : title,
       headerRight: () => (
         <View style={commonStyles.headerContainer}>
           <CMSTouchableIcon
-            iconCustom={
-              isListView
-                ? 'two-rows-and-three-columns-layout'
-                : 'view-list-button'
-            }
+            iconCustom={isListView ? 'grid-view-4' : 'view-list-button'}
             size={24}
             color={CMSColors.ColorText}
             styles={commonStyles.headerIcon}

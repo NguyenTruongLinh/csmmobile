@@ -31,6 +31,7 @@ import variables from '../../styles/variables';
 import {Comps as CompTxt} from '../../localization/texts';
 import {No_Data} from '../../consts/images';
 import {WIDGET_COUNTS} from '../../consts/misc';
+import {clientLogID} from '../../stores/user';
 
 // const ListViewHeight = 56; // Dimensions.get('window').height / 16;
 
@@ -99,6 +100,7 @@ class SitesView extends Component {
     this.setHeader();
     if (isHealthRoute) {
       userStore.resetWidgetCount(WIDGET_COUNTS.HEALTH);
+      userStore.setActivites(clientLogID.HEALTH);
     }
   }
 

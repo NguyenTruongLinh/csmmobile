@@ -1,6 +1,5 @@
 import {types, flow} from 'mobx-state-tree';
 import {Alert} from 'react-native';
-import Snackbar from 'react-native-snackbar';
 
 import {WIDGET_COUNTS, MODULES, Orient, NOTIFY_ACTION} from '../consts/misc';
 import APP_INFO from '../consts/appInfo';
@@ -11,6 +10,7 @@ import {
   Account as AccountRoute,
   Users as UserRoute,
   FCM as FCMRoute,
+  ACConfig,
 } from '../consts/apiRoutes';
 import {Login as LoginTxt} from '../localization/texts';
 import apiService from '../services/api';
@@ -25,6 +25,29 @@ import {LocalDBName, MODULE_PERMISSIONS} from '../consts/misc';
 
 import cmscolors from '../styles/cmscolors';
 import notificationController from '../notification/notificationController';
+import {toUTCDate} from '../util/general.js';
+
+export const clientLogID = {
+  LOGIN: 600,
+  LOGOUT: 601,
+  ALARM: 602,
+  HEALTH: 603,
+  BI: 605,
+  POS: 604,
+  OPTIONS: 606,
+  PVM: 607,
+  VIDEO: 608,
+};
+export const ClientType = {
+  BROWSER: 0,
+  CMS_MOBILE_ANDROID: 1,
+  CMS_MOBILE_IOS: 2,
+  ALERT_CENTER: 3,
+  OTHER: 4,
+};
+
+let moduleSwitchLogId = 0;
+let loginLogId = 0;
 
 const LOGIN_FAIL_CAUSES = {
   USER_LOCK: 'USER_LOCK',
@@ -425,6 +448,7 @@ export const UserStoreModel = types
       self.saveLocal(); // no need to yield
       // clear login info
       self.loginInfo.postLogin();
+      self.setActivites(clientLogID.LOGIN);
     }),
     loginFailed(data) {
       if (data.status === 401) {
@@ -457,6 +481,9 @@ export const UserStoreModel = types
     },
     logout: flow(function* () {
       if (!self.deleteLocal()) return false;
+
+      self.setActivites(clientLogID.LOGOUT);
+
       self.onLogout();
 
       self.loginInfo = LoginModel.create({
@@ -627,7 +654,8 @@ export const UserStoreModel = types
           ) {
             self.moduleUpdatedFlag = false;
             const prevDisableTabIndexes = self.getDisableTabIndexes();
-            const prevDisableHomeWidgetIndexes = self.getDisableHomeWidgetIndexes();
+            const prevDisableHomeWidgetIndexes =
+              self.getDisableHomeWidgetIndexes();
             self.modules = res.map(item => parseModule(item));
             self.moduleUpdatedFlag =
               JSON.stringify(prevDisableTabIndexes) !=
@@ -659,11 +687,10 @@ export const UserStoreModel = types
         );
         __DEV__ && console.log('GOND user changePassword: ', res);
         if (res && res.status == 200 && res.Result && !res.Result.error) {
-          Snackbar.show({
-            text: LoginTxt.passwordChangedSuccess,
-            duration: Snackbar.LENGTH_LONG,
-            backgroundColor: cmscolors.Success,
-          });
+          snackbarUtil.showToast(
+            LoginTxt.passwordChangedSuccess,
+            cmscolors.Success
+          );
           appStore.naviService.replace(ROUTERS.LOGIN, {});
           return true;
         } else if (
@@ -1045,6 +1072,45 @@ export const UserStoreModel = types
         );
         return true;
       }
+    }),
+    setActivites: flow(function* (reportId) {
+      const isScreenSwitch =
+        reportId == clientLogID.LOGIN || reportId == clientLogID.LOGOUT;
+      let model = {
+        LogID: isScreenSwitch ? moduleSwitchLogId : loginLogId,
+        UserID: self.user.UserID,
+        AccessTime: new Date(),
+        ClientTime: toUTCDate(new Date()),
+        ReportID: reportId,
+        ClientName: APP_INFO.Name,
+        Version: APP_INFO.Version,
+        ClientType:
+          Platform.OS == 'ios'
+            ? ClientType.CMS_MOBILE_IOS
+            : ClientType.CMS_MOBILE_ANDROID,
+      };
+      let logId = yield apiService.post(
+        ACConfig.controller,
+        self.user.userId,
+        ACConfig.setActivites,
+        model
+      );
+      if (isScreenSwitch) moduleSwitchLogId = logId;
+      else loginLogId = logId;
+      __DEV__ && console.log('setActivites 1st request', `logId=${logId}`);
+      if (logId == 0) {
+        model.LogID = 0;
+        logId = yield apiService.post(
+          ACConfig.controller,
+          self.user.userId,
+          ACConfig.setActivites,
+          model
+        );
+        if (isScreenSwitch) moduleSwitchLogId = logId;
+        else loginLogId = logId;
+        __DEV__ && console.log('setActivites 2nd request', `logId=${logId}`);
+      }
+      return true;
     }),
     // #endregion
   }));

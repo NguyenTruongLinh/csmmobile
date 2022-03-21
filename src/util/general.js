@@ -669,3 +669,35 @@ exports.getAutoRotateState = async () => {
   }
   return Promise.resolve(true);
 };
+
+function _pad(number) {
+  if (number < 10) {
+    return '0' + number;
+  }
+  return number;
+}
+
+function _ISODateString(date) {
+  return (
+    date.getFullYear() +
+    '-' +
+    _pad(date.getMonth() + 1) +
+    '-' +
+    _pad(date.getDate()) +
+    'T' +
+    _pad(date.getHours()) +
+    ':' +
+    _pad(date.getMinutes()) +
+    ':' +
+    _pad(date.getSeconds()) +
+    '.' +
+    (date.getMilliseconds() / 1000).toFixed(3).slice(2, 5) +
+    'Z'
+  );
+}
+
+exports.toUTCDate = local_date => {
+  var _date = _ISODateString(local_date);
+  var dd = new Date(_date);
+  return dd;
+};

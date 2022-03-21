@@ -15,6 +15,7 @@ import CMSImage from '../../components/containers/CMSImage';
 import CMSStyleSheet from '../../components/CMSStyleSheet';
 import ROUTERS from '../../consts/routes';
 import {MODULE_PERMISSIONS} from '../../consts/misc';
+import {clientLogID} from '../../stores/user';
 const IconCustom = CMSStyleSheet.IconCustom;
 
 class SettingsView extends Component {
@@ -30,7 +31,9 @@ class SettingsView extends Component {
   }
 
   componentDidMount() {
+    const {userStore} = this.props;
     __DEV__ && console.log('GOND SettingsView componentDidMount');
+    userStore.setActivites(clientLogID.OPTIONS);
   }
 
   onLogout = () => {

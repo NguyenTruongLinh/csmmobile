@@ -79,14 +79,14 @@ class TransactionBillView extends Component {
   renderHeaderInfo = (label, value) => {
     return (
       <View style={styles.normalTextContainer} key={'head_' + label}>
-        <Text style={styles.normalText}>{label + ': ' + value}</Text>
+        <Text style={styles.headerText}>{label + ': ' + value}</Text>
       </View>
     );
   };
 
   renderDetailItem = (item, index) => {
     return (
-      <View key={'item_' + index} style={{height: 42, flexDirection: 'row'}}>
+      <View key={'item_' + index} style={{height: 32, flexDirection: 'row'}}>
         <View style={{flex: 1}}>
           <Text style={styles.normalText}>{item.quantity}</Text>
         </View>
@@ -109,7 +109,7 @@ class TransactionBillView extends Component {
       <View
         key={'paym_' + index}
         style={{
-          height: 42,
+          height: 36,
           flexDirection: 'row',
           justifyContent: 'center',
         }}>
@@ -160,14 +160,18 @@ const styles = StyleSheet.create({
     backgroundColor: CMSColors.White,
   },
   normalText: {
-    fontSize: 12,
+    fontSize: 13,
+  },
+  headerText: {
+    fontSize: 15,
   },
   normalTextContainer: {
     height: 35,
   },
   paymentText: {
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 15,
+    textAlign: 'right',
   },
 });
 

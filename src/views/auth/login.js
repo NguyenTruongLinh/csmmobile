@@ -49,6 +49,7 @@ class LoginView extends Component {
       domain: loginInfo ? loginInfo.domainname : '',
       username: loginInfo ? loginInfo.username : '',
       password: '',
+      domainErrorFlag: false,
       errors: {
         domain: '',
         username: '',
@@ -116,7 +117,23 @@ class LoginView extends Component {
   //   //   Alert.alert('Login successfully', 'Yay!');
   // };
 
-  onTypingDomain = text => {};
+  onTypingDomain = text => {
+    let domain = text;
+    if (!domain) return;
+
+    const regexSubName = /^[A-z0-9]+$/;
+    if (regexSubName.test(domain)) {
+      domain = Domain.urlI3care + domain;
+    }
+
+    domain = domain.toLowerCase();
+
+    let invalidMsg = isValidHttpUrl(domain)
+      ? null
+      : 'Domain is not a valid url.';
+    __DEV__ && console.log('login', `invalidMsg=${invalidMsg}`);
+    this.setState({errors: {domain: invalidMsg}});
+  };
 
   onSubmitDomain = () => {
     this._refs.username && this._refs.username.focus();
@@ -134,21 +151,17 @@ class LoginView extends Component {
       if (text != this.state[name]) {
         this.setState({[name]: text});
       }
+      this.updateError(name, text);
     }
   };
 
-  onFocus = event => {
-    let {errors = {}} = this.state;
-    // this._scrollToInput(findNodeHandle(event.target));
-    for (let name in errors) {
-      let ref = this._refs[name];
-      // __DEV__ && console.log('GOND onFocus ref = ', ref);
-      if (ref && ref.isFocused && ref.isFocused()) {
-        delete errors[name];
-      }
-    }
-    this.setState({errors});
+  updateError = (name, text) => {
+    this.setState({
+      domainErrorFlag: name === 'domain' || this.state.domainErrorFlag,
+    });
   };
+
+  onFocus = event => {};
 
   removeSpecificPort = domain => {
     let ssl_port = ':443';
@@ -164,22 +177,6 @@ class LoginView extends Component {
     return domain;
   };
 
-  validatedomain = domain => {
-    if (!domain) return;
-
-    if (!domain.startsWith('http://') && !domain.startsWith('https://'))
-      domain = 'https://' + domain;
-
-    // let options = {
-    //   schemes: ['http', 'https'],
-    //   allowLocal: true,
-    //   message: 'Domain is not a valid url.',
-    // };
-    // __DEV__ && console.log('GOND validate domain: ', domain);
-    // return validators.url({website: domain}, options);
-    return isValidHttpUrl(domain) ? null : 'Domain is not a valid url.';
-  };
-
   onLogin = () => {
     const {username, password} = this.state;
     let domain = '' + this.state.domain;
@@ -190,19 +187,21 @@ class LoginView extends Component {
       domain = Domain.urlI3care + domain;
     }
 
-    if (
-      !domain.startsWith(domain, 'http://') &&
-      !domain.startsWith(domain, 'https://')
-    )
-      domain = 'https://' + domain;
+    // if (
+    //   !domain.startsWith(domain, 'http://') &&
+    //   !domain.startsWith(domain, 'https://')
+    // )
+    //   domain = 'https://' + domain;
 
     domain = domain.toLowerCase();
 
-    let invalidMsg = this.validatedomain(domain);
-    if (invalidMsg) {
-      this.setState({errors: {domain: invalidMsg}});
-      return;
-    }
+    // let invalidMsg = isValidHttpUrl(domain)
+    //   ? null
+    //   : 'Domain is not a valid url.';
+    // if (invalidMsg) {
+    //   this.setState({errors: {domain: invalidMsg}});
+    //   return;
+    // }
 
     domain = this.removeSpecificPort(domain);
 
@@ -222,7 +221,7 @@ class LoginView extends Component {
 
   render() {
     const {width} = Dimensions.get('window');
-    const {domain, username, password, errors} = this.state;
+    const {domain, username, password, errors, domainErrorFlag} = this.state;
     // const {isLoading} = this.props.appStore;
     // const {error} = this.props.userStore;
     // console.log('GOND login render isLoading: ', isLoading);
@@ -288,7 +287,7 @@ class LoginView extends Component {
               textColor={CMSColors.PrimaryText}
               baseColor={CMSColors.PrimaryText}
               iconColor={CMSColors.InputIconColor}
-              error={errors.domain}
+              error={domainErrorFlag && errors.domain}
               disabled={false}
               secureTextEntry={false}
               fixAndroidBottomLine={true}
@@ -360,7 +359,7 @@ class LoginView extends Component {
               captionStyle={{}}
               onPress={this.onLogin}
               enable={
-                domain && username && password // &&
+                domain && username && password && !errors.domain // &&
                 // !this.props.appStore.isLoading
               }
             />

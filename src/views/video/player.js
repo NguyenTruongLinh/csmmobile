@@ -46,11 +46,14 @@ import {
   NVRPlayerConfig,
   CALENDAR_DATE_FORMAT,
   OrientationType,
+  DateFormat,
 } from '../../consts/misc';
 import CMSColors from '../../styles/cmscolors';
 import {STREAM_STATUS, VIDEO as VIDEO_TXT} from '../../localization/texts';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
+import VideoDateModal from './videoDateModal';
+import VideoTimeModal from './videoTimeModal';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
 const IconSize = normalize(28);
@@ -67,15 +70,14 @@ class VideoPlayerView extends Component {
 
     this.state = {
       showCalendar: false,
+      showTimerPicker: false,
       showController: false,
       videoLoading: true,
       // pause: false,
       seekpos: {},
       sWidth: width,
       sHeight: height,
-      // selectedHour: '0',
-      // selectedMinute: '00',
-      // selectedSecond: '00',
+      selectedTime: {hour: 0, minute: 0, second: 0},
     };
 
     this.timelineAutoScroll = true;
@@ -366,31 +368,33 @@ class VideoPlayerView extends Component {
 
   handleChannelsScroll = event => {};
 
-  onSelectDate = value => {
+  onSelectDate = dateString => {
+    if (!dateString) return;
     const {videoStore} = this.props;
     // value = {year, month, day, timestamp, dateString}
     __DEV__ &&
       console.log(
         'GOND onSelectDate: ',
-        value,
+        dateString,
         ', recording dates: ',
         Object.keys(videoStore.recordingDates)
       );
 
-    this.playerRef && this.playerRef.onChangeSearchDate(value);
+    this.playerRef && this.playerRef.onChangeSearchDate(dateString);
     videoStore.setDisplayDateTime(
-      DateTime.fromFormat(value.dateString, CALENDAR_DATE_FORMAT).toFormat(
+      DateTime.fromFormat(dateString, CALENDAR_DATE_FORMAT).toFormat(
         NVRPlayerConfig.FrameFormat
       )
     );
     this.ruler && this.ruler.moveToPosition(0);
-    if (this.checkDataOnSearchDate(value.dateString)) {
+    if (this.checkDataOnSearchDate(dateString)) {
       // videoStore.setNoVideo(false);
       this.setState({showCalendar: false});
-      videoStore.setSearchDate(value.dateString, CALENDAR_DATE_FORMAT);
+      videoStore.setSearchDate(dateString, CALENDAR_DATE_FORMAT);
     } else {
       this.setState({showCalendar: false});
     }
+    this.setState({showCalendar: false});
   };
 
   onSetSearchTime = (hourIndex, hours, minutes, seconds) => {
@@ -421,7 +425,8 @@ class VideoPlayerView extends Component {
       seconds: parseInt(seconds),
       timestamp: secondsValue,
     });
-    this.timePickerRef && this.timePickerRef.close();
+    if (Platform.OS == 'ios') this.timePickerRef && this.timePickerRef.close();
+    else this.closeTimePickerAndroid();
   };
 
   onSwitchChannel = channelNo => {
@@ -592,6 +597,23 @@ class VideoPlayerView extends Component {
       );
     videoStore.setDisplayDateTime(dateString + ' - ' + time);
   };
+
+  onOpenTimePicker = () => {
+    const {displayDateTime, isLive} = this.props.videoStore;
+    const [date, time] = displayDateTime.split(' - ');
+    const [hour, minute, second] = time.split(':');
+
+    if (!isLive) {
+      if (Platform.OS == 'ios') this.timePickerRef && this.timePickerRef.open();
+      else {
+        this.setState({
+          showTimerPicker: true,
+          selectedTime: {hour, minute, second},
+        });
+      }
+    }
+  };
+
   //#endregion Event handlers
 
   /**
@@ -614,6 +636,7 @@ class VideoPlayerView extends Component {
   */
 
   //#region Render
+  /*
   renderCalendar = () => {
     const {videoStore} = this.props;
     const {sWidth, sHeight} = this.state;
@@ -647,6 +670,26 @@ class VideoPlayerView extends Component {
           />
         </View>
       </Modal>
+    );
+  };
+  */
+
+  renderCalendar = () => {
+    const {videoStore} = this.props;
+    const {displayDateTime, isLive, isFullscreen} = videoStore;
+    const [date, time] = displayDateTime.split(' - ');
+    const displayDate = DateTime.fromFormat(date, DateFormat.POS_Filter_Date);
+
+    return (
+      <VideoDateModal
+        isVisible={this.state.showCalendar}
+        onBackdropPress={() => this.setState({showCalendar: false})}
+        onBackButtonPress={() => this.setState({showCalendar: false})}
+        markedDates={videoStore.recordingDates}
+        date={displayDate}
+        onSubmit={this.onSelectDate}
+        onDismiss={() => this.setState({showCalendar: false})}
+      />
     );
   };
 
@@ -801,10 +844,7 @@ class VideoPlayerView extends Component {
           </CMSRipple>
         )}
         {isLive ? null : <Text style={textStyle}> - </Text>}
-        <CMSRipple
-          onPress={() =>
-            !isLive && this.timePickerRef && this.timePickerRef.open()
-          }>
+        <CMSRipple onPress={this.onOpenTimePicker}>
           <Text style={textStyle}>{time}</Text>
         </CMSRipple>
       </View>
@@ -1106,8 +1146,12 @@ class VideoPlayerView extends Component {
     );
   };
 
+  closeTimePickerAndroid = () => {
+    this.setState({showTimerPicker: false});
+  };
+
   renderTimePicker = () => {
-    return (
+    return Platform.OS == 'ios' ? (
       <TimePicker
         ref={ref => {
           this.timePickerRef = ref;
@@ -1116,6 +1160,14 @@ class VideoPlayerView extends Component {
         onConfirm={this.onSetSearchTime}
         datetime={this.props.videoStore.getSafeSearchDate()}
       />
+    ) : (
+      <VideoTimeModal
+        isVisible={this.state.showTimerPicker}
+        onBackdropPress={this.closeTimePickerAndroid}
+        onBackButtonPress={this.closeTimePickerAndroid}
+        selectedTime={this.state.selectedTime}
+        onSubmit={this.onSetSearchTime}
+        onDismiss={this.closeTimePickerAndroid}></VideoTimeModal>
     );
   };
 

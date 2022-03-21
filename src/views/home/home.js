@@ -2,12 +2,20 @@
 // <!-- START MODULES -->
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {View, Text, Image, Platform, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  Platform,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import {useIsFocused} from '@react-navigation/native';
 import {inject, observer} from 'mobx-react';
 
 import HomeWidget from '../../components/containers/HomeWidget';
 import {IconCustom} from '../../components/CMSStyleSheet';
+const {width, height} = Dimensions.get('window');
 
 import {
   Home_Alarm,
@@ -87,6 +95,8 @@ class HomeView extends Component {
   render() {
     const {userStore} = this.props;
     const disableIndexes = userStore.disableHomeWidgetIndexes;
+    const topIconSize = ((width - 118) * (width > 600 ? 4 : 5.8)) / 20;
+    const iconSize = ((width - 78) * (width > 600 ? 3.5 : 4)) / 20;
     return (
       <View style={styles.container}>
         <View style={styles.header} />
@@ -100,6 +110,7 @@ class HomeView extends Component {
               alertCount={userStore.alarmWidgetCount}
               titleStyle={styles.topWidgetTitle}
               onPress={this.onAlarmPress}
+              iconSize={topIconSize}
             />
           </View>
           <View style={styles.rightWidget}>
@@ -109,6 +120,7 @@ class HomeView extends Component {
               title="Video"
               titleStyle={styles.topWidgetTitle}
               onPress={this.onVideoPress}
+              iconSize={topIconSize}
             />
           </View>
         </View>
@@ -121,6 +133,7 @@ class HomeView extends Component {
               alertCount={userStore.healthWidgetCount}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onHealthPress}
+              iconSize={iconSize}
             />
           </View>
           <View style={styles.rightWidget}>
@@ -131,6 +144,7 @@ class HomeView extends Component {
               alertCount={userStore.smartWidgetCount}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onSmartERPress}
+              iconSize={iconSize}
             />
           </View>
         </View>
@@ -143,6 +157,7 @@ class HomeView extends Component {
               alertCount={userStore.oamWidgetCount}
               titleStyle={styles.normalWidgetTitle}
               onPress={this.onOAMPress}
+              iconSize={iconSize}
             />
           </View>
           <View style={styles.rightWidget}></View>
@@ -193,6 +208,8 @@ const styles = StyleSheet.create({
         elevation: 10,
       },
     }),
+    // borderColor: 'red',
+    // borderWidth: 1,
   },
   topWidgetTitle: {
     fontSize: 21,
@@ -210,6 +227,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     margin: 25,
     marginTop: 0,
+    // borderColor: 'red',
+    // borderWidth: 1,
   },
 });
 

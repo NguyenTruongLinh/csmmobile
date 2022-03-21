@@ -19,6 +19,7 @@ import {
 import {
   DateFormat,
   ExceptionSortField,
+  ExceptionSortFieldOrder,
   ExceptionSortFieldName,
   GroupByException,
 } from '../consts/misc';
@@ -639,9 +640,13 @@ export const POSModel = types
       return data.sort((a, b) => a.value - b.value);
     },
     get displaySortFields() {
-      return Object.values(ExceptionSortField).filter(
-        x => x != ExceptionSortField.Employee && x != ExceptionSortField.Count
+      let result = Object.values(ExceptionSortField).filter(
+        x => ExceptionSortFieldOrder[x] != -1
       );
+      result.sort(
+        (a, b) => ExceptionSortFieldOrder[a] - ExceptionSortFieldOrder[b]
+      );
+      return result;
     },
   }))
   .actions(self => ({

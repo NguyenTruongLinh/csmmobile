@@ -47,8 +47,25 @@ class FlagWeightModal extends Component {
             alignItems: 'center',
           }}>
           <IconCustom size={20} color={item.color} name="ic_flag_black_48px" />
-          <View style={{position: 'absolute', top: 0, right: 0}}>
-            <Text style={{color: CMSColors.Red, fontSize: 10}}>
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: -6 * item.typeWeight.toString().length,
+            }}>
+            <View style={{width: 10}}></View>
+            <Text
+              style={{
+                color: CMSColors.Red,
+                fontSize: 10,
+                borderColor: 'lightgray',
+                borderWidth: 1,
+                minWidth: 15,
+                height: 15,
+                borderRadius: 10,
+                textAlign: 'center',
+                paddingHorizontal: 3,
+              }}>
               {item.typeWeight}
             </Text>
           </View>

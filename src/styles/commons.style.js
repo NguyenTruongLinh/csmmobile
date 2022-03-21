@@ -116,13 +116,13 @@ module.exports = StyleSheet.create({
     height: 50,
     flex: 2,
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: 1,
   },
   modalButtonApplyContainer: {
     height: 50,
     flex: 2,
     justifyContent: 'center',
-    marginLeft: 10,
+    marginLeft: 1,
   },
   modalButtonCancel: {
     height: 50,

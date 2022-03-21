@@ -45,6 +45,7 @@ class RegionsView extends Component {
   }
 
   componentDidMount() {
+    const {userStore} = this.props;
     this._isMounted = true;
     if (__DEV__) console.log('RegionsView componentDidMount');
 
@@ -248,4 +249,8 @@ const styles = StyleSheet.create({
     color: CMSColors.PrimaryText,
   },
 });
-export default inject('appStore', 'sitesStore')(observer(RegionsView));
+export default inject(
+  'appStore',
+  'sitesStore',
+  'userStore'
+)(observer(RegionsView));

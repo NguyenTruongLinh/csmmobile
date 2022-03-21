@@ -23,6 +23,7 @@ import ROUTERS from '../../consts/routes';
 import {No_Data} from '../../consts/images';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import {WIDGET_COUNTS} from '../../consts/misc';
+import {clientLogID} from '../../stores/user';
 
 const Item = ({title}) => (
   <View style={styles.item}>
@@ -50,6 +51,7 @@ class OAMSitesView extends Component {
     this.setHeader();
     sitesStore.getOAMSites();
     userStore.resetWidgetCount(WIDGET_COUNTS.OAM);
+    userStore.setActivites(clientLogID.PVM);
   }
 
   setHeader = () => {

@@ -3,6 +3,7 @@ import {Provider} from 'mobx-react';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import PushNotification from 'react-native-push-notification';
 // import {ModalPortal} from 'react-native-modals';
+import {RootSiblingParent} from 'react-native-root-siblings';
 
 import appStore from './stores/appStore';
 import userStore from './stores/user';
@@ -92,8 +93,10 @@ const Main = () => {
       exceptionStore={exceptionStore}
       healthStore={healthStore}
       oamStore={oamStore}>
-      <App />
-      {/* <ModalPortal /> */}
+      <RootSiblingParent>
+        <App />
+        {/* <ModalPortal /> */}
+      </RootSiblingParent>
     </Provider>
   );
 };

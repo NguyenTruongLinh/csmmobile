@@ -31,8 +31,6 @@ import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 import {Login as LoginTxt, VIDEO as VIDEO_TXT} from '../../localization/texts'; //'../../localization/texts';
 import cmscolors from '../../styles/cmscolors';
 
-import Snackbar from 'react-native-snackbar';
-
 import {
   Video_State,
   Limit_Time_Allow_Change_Live_Search,

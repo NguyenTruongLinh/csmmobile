@@ -1,6 +1,5 @@
 import {ROUTERS} from '../models/consts';
 import {VSCCommand, CLOUD_TYPE} from '../models/videoconsts';
-import Snackbar from 'react-native-snackbar';
 import dayjs from 'dayjs';
 import CMSColors from '../styles/cmscolors';
 

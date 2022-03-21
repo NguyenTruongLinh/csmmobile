@@ -48,6 +48,7 @@ import {
   Comps as CompTxt,
 } from '../../localization/texts';
 import commonStyles from '../../styles/commons.style';
+import {clientLogID} from '../../stores/user';
 
 const {width, height} = Dimensions.get('window');
 const MAX_TEXT_LENGTH = 32;
@@ -95,6 +96,7 @@ class DashboardView extends React.Component {
     this.setHeader();
     this.getData();
     userStore.resetWidgetCount(WIDGET_COUNTS.SMART_ER);
+    userStore.setActivites(clientLogID.POS);
   }
 
   componentWillUnmount() {
@@ -231,7 +233,7 @@ class DashboardView extends React.Component {
                       ? CMSColors.PrimaryActive
                       : CMSColors.ColorText
                   }
-                  size={20}
+                  size={24}
                 />
                 <Text style={styles.sortItemText}>
                   {ExceptionSortFieldName[item]}
@@ -562,7 +564,7 @@ class DashboardView extends React.Component {
         <View style={styles.chartHeader}>
           <Text style={styles.chartHeaderText}>{SMARTER_TXT.TOTAL_RISK}</Text>
           <Text style={styles.chartHeaderRiskValue}>
-            {exceptionStore.totalRiskFactors}
+            {formatNumber(exceptionStore.totalRiskFactors)}
           </Text>
         </View>
         <View style={styles.chartContainer}>{this.renderChart()}</View>
@@ -675,13 +677,13 @@ const styles = StyleSheet.create({
   sortItemRipple: {
     width: '100%',
     height: ListViewHeight,
-    borderBottomWidth: 1,
-    borderBottomColor: CMSColors.BorderColorListRow,
+    // borderBottomWidth: 1,
+    // borderBottomColor: CMSColors.BorderColorListRow,
     paddingLeft: 14,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  sortItemText: {marginLeft: 14},
+  sortItemText: {marginLeft: 14, fontSize: 15},
   siteIconContainer: {marginLeft: 19, marginRight: 14},
   siteNameContainer: {
     flex: 1,

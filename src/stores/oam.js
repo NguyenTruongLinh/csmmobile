@@ -1,9 +1,9 @@
 import {types, flow, applySnapshot} from 'mobx-state-tree';
-import Snackbar from 'react-native-snackbar';
 
 import {OAM} from '../consts/apiRoutes';
 import apiService from '../services/api';
 import cmscolors from '../styles/cmscolors';
+import snackbarUtil from '../util/snackbar';
 
 const PVM_SNACK_BAR_MESSAGES = {
   PVM_OFFLINE: 'NVR is offline.',
@@ -228,13 +228,12 @@ export const OAMModel = types
     }),
     notifyShowSnackBarMessage(kDVR) {
       if (!kDVR)
-        Snackbar.show({
-          text: self.data.offline
+        snackbarUtil.showToast(
+          self.data.offline
             ? PVM_SNACK_BAR_MESSAGES.PVM_OFFLINE
             : PVM_SNACK_BAR_MESSAGES.PVM_NO_UPDATE,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: cmscolors.Danger,
-        });
+          cmscolors.Danger
+        );
     },
     notifyRefeshFromPN(pnData) {
       if (self.data) {
@@ -272,14 +271,12 @@ export const OAMModel = types
         __DEV__ && console.log('HAI Could not postAcknowledge! ', err);
       }
       if (error) {
-        Snackbar.show({
-          text:
-            'Failed to acknowledge (' +
+        snackbarUtil.showToast(
+          'Failed to acknowledge (' +
             result.error +
             '), please try again later',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: CMSColors.Danger,
-        });
+          CMSColors.Danger
+        );
         self.isAckPopupVisible = true;
         self.data.kAlertEventDetail = tempKAlertEventDetail;
       }

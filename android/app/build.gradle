@@ -233,7 +233,6 @@ dependencies {
     implementation project(':react-native-linear-gradient')
     implementation project(':react-native-video')
     implementation project(':react-native-charts-wrapper')
-    implementation project(':react-native-snackbar')
     implementation project(':react-native-vector-icons')
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-device-info')

@@ -28,6 +28,7 @@ import {AlertType_Support, WIDGET_COUNTS} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
 import {No_Data, No_Image} from '../../consts/images';
 import {PAGE_LENGTH} from '../../stores/alarm';
+import {clientLogID} from '../../stores/user';
 
 class AlarmsLiveView extends Component {
   constructor(props) {
@@ -41,6 +42,7 @@ class AlarmsLiveView extends Component {
 
     const {userStore} = this.props;
     userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
+    userStore.setActivites(clientLogID.ALARM);
     this.props.alarmStore.getLiveData(this.buildRequestParams());
     // this.refreshLiveData();
     this.setHeader();
