@@ -20,7 +20,7 @@ import CMSNumberPicker from '../../components/views/CMSNumberPicker';
 
 const SECTION_HEADER_HEIGHT = 48;
 
-const HOURS = Array.from(Array(24).keys());
+const ALL_HOURS = Array.from(Array(24).keys());
 const MINUTES = Array.from(Array(60).keys());
 const SECONDS = Array.from(Array(60).keys());
 
@@ -45,7 +45,7 @@ export default class VideoTimeModal extends Component {
     const {hour, minute, second} = this.props;
 
     this.selectedTime = {
-      hourIndex: HOURS.findIndex(value => hour == value),
+      hourIndex: ALL_HOURS.findIndex(value => hour == value),
       hour,
       minute,
       second,
@@ -116,11 +116,21 @@ export default class VideoTimeModal extends Component {
   };
 
   renderContent = () => {
+    const DTSHours = [];
+    const selectedDate = this.props.datetime.toFormat('yyyyMMdd');
+    let hourIterator = this.props.datetime.startOf('day');
+    let currentDate = hourIterator.toFormat('yyyyMMdd');
+    do {
+      DTSHours.push(hourIterator.toFormat('H'));
+      hourIterator = hourIterator.plus({hour: 1});
+      currentDate = hourIterator.toFormat('yyyyMMdd');
+    } while (currentDate == selectedDate);
+
     return (
       <View style={{flex: 1, flexDirection: 'row'}}>
         <CMSNumberPicker
           ref={r => (this.hourRef = r)}
-          numbers={HOURS}
+          numbers={DTSHours}
           onSelectNumber={(number, index) => {
             this.onTimeChange('hour', number);
             this.onTimeChange('hourIndex', index);

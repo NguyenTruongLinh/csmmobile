@@ -1168,6 +1168,7 @@ class VideoPlayerView extends Component {
         selectedTime={this.state.selectedTime}
         onSubmit={this.onSetSearchTime}
         onDismiss={this.closeTimePickerAndroid}
+        datetime={this.props.videoStore.getSafeSearchDate()}
       />
     );
   };
