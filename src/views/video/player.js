@@ -1167,7 +1167,8 @@ class VideoPlayerView extends Component {
         onBackButtonPress={this.closeTimePickerAndroid}
         selectedTime={this.state.selectedTime}
         onSubmit={this.onSetSearchTime}
-        onDismiss={this.closeTimePickerAndroid}></VideoTimeModal>
+        onDismiss={this.closeTimePickerAndroid}
+      />
     );
   };
 
