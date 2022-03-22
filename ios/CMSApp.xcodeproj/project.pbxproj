@@ -77,7 +77,6 @@
 		18D3E57C26663845006AEE48 /* libReact-RCTVibration.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55D26663843006AEE48 /* libReact-RCTVibration.a */; };
 		18D3E57D26663845006AEE48 /* libReactCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55E26663843006AEE48 /* libReactCommon.a */; };
 		18D3E57E26663845006AEE48 /* libRNCharts.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55F26663843006AEE48 /* libRNCharts.a */; };
-		18D3E57F26663845006AEE48 /* libRNSnackbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E56026663843006AEE48 /* libRNSnackbar.a */; };
 		18D3E58026663846006AEE48 /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E56126663843006AEE48 /* libRNVectorIcons.a */; };
 		18D3E58126663846006AEE48 /* libSwiftyJSON.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E56226663843006AEE48 /* libSwiftyJSON.a */; };
 		18D3E58226663846006AEE48 /* libYoga.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E56326663843006AEE48 /* libYoga.a */; };
@@ -205,7 +204,6 @@
 		18D3E55D26663843006AEE48 /* libReact-RCTVibration.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-RCTVibration.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		18D3E55E26663843006AEE48 /* libReactCommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReactCommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		18D3E55F26663843006AEE48 /* libRNCharts.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNCharts.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		18D3E56026663843006AEE48 /* libRNSnackbar.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNSnackbar.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		18D3E56126663843006AEE48 /* libRNVectorIcons.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNVectorIcons.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		18D3E56226663843006AEE48 /* libSwiftyJSON.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libSwiftyJSON.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		18D3E56326663843006AEE48 /* libYoga.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libYoga.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -252,7 +250,6 @@
 				184BD8FE2680AEEF003F7FDE /* libavdevice.a in Frameworks */,
 				1822C9782666102F00BEF572 /* libswiftWebKit.tbd in Frameworks */,
 				18D3E56626663844006AEE48 /* libDoubleConversion.a in Frameworks */,
-				18D3E57F26663845006AEE48 /* libRNSnackbar.a in Frameworks */,
 				184BD9002680AEF0003F7FDE /* libswscale.a in Frameworks */,
 				18D3E56D26663844006AEE48 /* libReact-Core.a in Frameworks */,
 				18D3E56B26663844006AEE48 /* libRCT-Folly.a in Frameworks */,
@@ -438,7 +435,6 @@
 				18D3E55D26663843006AEE48 /* libReact-RCTVibration.a */,
 				18D3E55E26663843006AEE48 /* libReactCommon.a */,
 				18D3E55F26663843006AEE48 /* libRNCharts.a */,
-				18D3E56026663843006AEE48 /* libRNSnackbar.a */,
 				18D3E56126663843006AEE48 /* libRNVectorIcons.a */,
 				18D3E56226663843006AEE48 /* libSwiftyJSON.a */,
 				18D3E56326663843006AEE48 /* libYoga.a */,
@@ -886,7 +882,6 @@
 					"\"${PODS_ROOT}/Headers/Public/RNSVG\"",
 					"\"${PODS_ROOT}/Headers/Public/RNScreens\"",
 					"\"${PODS_ROOT}/Headers/Public/RNShare\"",
-					"\"${PODS_ROOT}/Headers/Public/RNSnackbar\"",
 					"\"${PODS_ROOT}/Headers/Public/RNVectorIcons\"",
 					"\"${PODS_ROOT}/Headers/Public/React\"",
 					"\"${PODS_ROOT}/Headers/Public/React-Core\"/**",
@@ -972,7 +967,6 @@
 					"\"${PODS_ROOT}/Headers/Public/RNSVG\"",
 					"\"${PODS_ROOT}/Headers/Public/RNScreens\"",
 					"\"${PODS_ROOT}/Headers/Public/RNShare\"",
-					"\"${PODS_ROOT}/Headers/Public/RNSnackbar\"",
 					"\"${PODS_ROOT}/Headers/Public/RNVectorIcons\"",
 					"\"${PODS_ROOT}/Headers/Public/React\"",
 					"\"${PODS_ROOT}/Headers/Public/React-Core\"/**",

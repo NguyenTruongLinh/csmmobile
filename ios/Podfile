@@ -95,7 +95,6 @@ target 'CMSApp' do
 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
-  pod 'RNSnackbar', :path => '../node_modules/react-native-snackbar'
   pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
   # Comment the next line if you don't want to use dynamic frameworks
   # use_frameworks!
