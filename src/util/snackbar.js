@@ -10,6 +10,7 @@ const showToast = (
   backgroundColor,
   duration = Toast.durations.LONG
 ) => {
+  __DEV__ && console.log(`showToast showToast `);
   Toast.show(message, {
     containerStyle: {
       flex: 1,
@@ -64,6 +65,11 @@ exports.onSuccess = message => {
 
 const onMessage = (msg, backcolor) => {
   showToast(msg, backcolor ?? CMSColors.Success);
+};
+
+exports.dismiss = () => {
+  __DEV__ && console.log(`showToast dismiss `);
+  // Toast.hide(lastToast);
 };
 
 exports.onMessage = onMessage;
