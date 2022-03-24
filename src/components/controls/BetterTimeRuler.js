@@ -130,13 +130,25 @@ export default class TimeRuler extends PureComponent {
       let sec = currentTime - searchDate;
       const secsPerHour = SECONDS_PER_MINUTE * MINUTE_PER_HOUR;
       let secWidth = this.state.dwidth / secsPerHour;
-      __DEV__ && console.log('GOND auto update timeline: ', currentTime);
+      __DEV__ && console.log('GOND auto update timeline: ', currentTime, sec);
 
       let secToAdd = 0;
       let hourIndex = 0;
       for (; hourIndex < hoursValue.length; hourIndex++) {
-        const currentHourSec = hoursValue[hourIndex] * secsPerHour;
-        const nextHourSec = hoursValue[hourIndex + 1] * secsPerHour;
+        const currentHourSec =
+          (hoursValue.length > default24H ? hourIndex : hoursValue[hourIndex]) *
+          secsPerHour;
+        const nextHourSec =
+          (hoursValue.length > default24H
+            ? hourIndex + 1
+            : hoursValue[hourIndex + 1]) * secsPerHour;
+        __DEV__ &&
+          console.log(
+            'GOND auto timeline check: ',
+            currentHourSec,
+            nextHourSec,
+            sec
+          );
         if (sec < nextHourSec && sec > currentHourSec) {
           secToAdd = sec - currentHourSec;
           break;
@@ -151,11 +163,12 @@ export default class TimeRuler extends PureComponent {
       }
     }
     if (searchDate != prevProps.searchDate) {
-      __DEV__ && console.log(
-        'GOND searchDate changed: ',
-        searchDate,
-        prevProps.searchDate
-      );
+      __DEV__ &&
+        console.log(
+          'GOND searchDate changed: ',
+          searchDate,
+          prevProps.searchDate
+        );
       const [hoursArray, hoursValue] = this.constructArrayOfHours(
         this.props.is24hour
       );

@@ -203,6 +203,7 @@ export const HLS_DATA_REQUEST_TIMEOUT = /*__DEV__ ? 5000 :*/ 7000;
 export const HLS_GET_DATA_DIRECTLY_TIMEOUT = 2000;
 export const HLS_MAX_RETRY = 10;
 export const VIDEO_INACTIVE_TIMEOUT = 120000;
+export const DIRECT_MAX_OLD_FRAME_SKIP = 5;
 
 export const CONTROLLER_TIMEOUT = 3000; // 3 seconds
 

@@ -861,14 +861,17 @@ public class CommunicationSocket implements Runnable {
 
 
 
-                    long l1 = SearchTimeData.getSecond(value.getBegin(),currentServerTimeZone);
-                    long l2 = SearchTimeData.getSecond(value.getEnd(),currentServerTimeZone);
+                    // long l1 = SearchTimeData.getSecond(value.getBegin(),currentServerTimeZone);
+                    // long l2 = SearchTimeData.getSecond(value.getEnd(),currentServerTimeZone);
 
-                    if(daylight.isBeginOfDST() || daylight.isEndOfDST())
-                    {
-                        l1 = value.getBegin();
-                        l2 = value.getEnd();
-                    }
+                    // if(daylight.isBeginOfDST() || daylight.isEndOfDST())
+                    // {
+                    //     l1 = value.getBegin();
+                    //     l2 = value.getEnd();
+                    // }
+
+                    long l1 = value.getBegin();
+                    long l2 = value.getEnd();
 
                     String s1 = SearchTimeData.getTimeDisplayFull(value.getBegin(),currentServerTimeZone).replaceAll("/","-");
                     //String s2 = SearchTimeData.getTimeDisplayFull(value.getEnd(),currentServerTimeZone).replaceAll("/","-");

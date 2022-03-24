@@ -37,6 +37,7 @@ import {
   Video_State,
   Limit_Time_Allow_Change_Live_Search,
   NATURAL_RATIO,
+  DIRECT_MAX_OLD_FRAME_SKIP,
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
 
@@ -74,6 +75,7 @@ class DirectVideoView extends React.Component {
     this.oldPos = 0;
     this.dateChanged = false;
     this.loginTimeout = null;
+    this.oldFrameSkipped = 0;
   }
 
   componentDidMount() {
@@ -812,18 +814,19 @@ class DirectVideoView extends React.Component {
           try {
             const timestamp = numberValue(timeData[0].begin);
             if (!timestamp) break;
-            const beginOfDay = DateTime.fromSeconds(timestamp)
-              .toUTC()
-              .startOf('day')
-              .toFormat(NVRPlayerConfig.RequestTimeFormat);
-            if (beginOfDay != videoStore.searchDateString) {
-              videoStore.setSearchDate(beginOfDay);
-            }
+            // const beginOfDay = DateTime.fromSeconds(timestamp)
+            //   .toUTC()
+            //   .startOf('day')
+            //   .toFormat(NVRPlayerConfig.RequestTimeFormat);
+            // if (beginOfDay != videoStore.searchDateString) {
+            //   videoStore.setSearchDate(beginOfDay);
+            // }
           } catch (err) {
             console.log('GOND Parse timestamp failed: ', timeData[0]);
           }
         }
-        videoStore.buildDirectTimeline(timeData);
+        // videoStore.buildDirectTimeline(timeData);
+        videoStore.setTimeline(timeData);
         // if (timeData[0] && timeData[0].timezone) {
         //   videoStore.setTimezoneOffset(timeData[0].timezone);
         // }
@@ -1094,7 +1097,9 @@ class DirectVideoView extends React.Component {
         Platform.OS == 'android'
           ? NVRPlayerConfig.ResponseTimeFormat
           : NVRPlayerConfig.RequestTimeFormat;
-      const timeObj = DateTime.fromFormat(value, timeFormat);
+      const timeObj = videoStore.isDSTEndDate
+        ? DateTime.fromSeconds(timestamp, {zone: videoStore.timezone})
+        : DateTime.fromFormat(value, timeFormat);
       if (this.dateChanged) {
         if (
           timeObj.toFormat(NVRPlayerConfig.QueryStringUTCDateFormat) !=
@@ -1102,7 +1107,8 @@ class DirectVideoView extends React.Component {
             NVRPlayerConfig.QueryStringUTCDateFormat
           )
         ) {
-          // old frame from previous date
+          __DEV__ &&
+            console.log('GOND onFrameTime skip old frame from previous date!');
           return;
         } else {
           this.dateChanged = false;
@@ -1118,15 +1124,18 @@ class DirectVideoView extends React.Component {
             this.oldPos
           );
         if (
-          pos < this.newSeekPos ||
-          (pos > this.oldPos &&
-            Math.abs(this.oldPos - this.newSeekPos) > 2 &&
-            Math.abs(pos - this.newSeekPos) > Math.abs(pos - this.oldPos))
+          this.oldFrameSkipped < DIRECT_MAX_OLD_FRAME_SKIP &&
+          (pos < this.newSeekPos ||
+            (pos > this.oldPos &&
+              Math.abs(this.oldPos - this.newSeekPos) > 2 &&
+              Math.abs(pos - this.newSeekPos) > Math.abs(pos - this.oldPos)))
         ) {
           __DEV__ && console.log('GOND skip this old frame');
+          this.oldFrameSkipped++;
           return;
         } else {
           this.newSeekPos = 0;
+          this.oldFrameSkipped = 0;
         }
       }
       this.oldPos = pos;
@@ -1144,10 +1153,18 @@ class DirectVideoView extends React.Component {
       // }
       __DEV__ && console.log('GOND onFrameTime frameTime: ', frameTime);
 
-      videoStore.setFrameTime(frameTime.toSeconds());
-      this.lastFrameTime = DateTime.fromFormat(value, timeFormat, {
-        zone: videoStore.timezone,
-      });
+      if (videoStore.isDirectDSTAwareness) {
+        __DEV__ && console.log('GOND onFrameTime set on DST date');
+        videoStore.setFrameTime(timestamp);
+        this.lastFrameTime = DateTime.fromSeconds(timestamp, {
+          zone: videoStore.timezone,
+        });
+      } else {
+        videoStore.setFrameTime(frameTime.toSeconds());
+        this.lastFrameTime = DateTime.fromFormat(value, timeFormat, {
+          zone: videoStore.timezone,
+        });
+      }
       // this.lastFrameTime =
       // Platform.OS == 'android'
       //   ? DateTime.fromFormat(value, NVRPlayerConfig.ResponseTimeFormat).toFormat(NVRPlayerConfig.RequestTimeFormat)

@@ -63,6 +63,11 @@ exports.onSuccess = message => {
   toastResult(message ?? ActionMessages.SUCCESS, false);
 };
 
+exports.dismiss = () => {
+  __DEV__ && console.log('GOND snackbar dismiss!');
+  // TODO
+};
+
 const onMessage = (msg, backcolor) => {
   showToast(msg, backcolor ?? CMSColors.Success);
 };

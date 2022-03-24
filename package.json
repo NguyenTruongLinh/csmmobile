@@ -12,7 +12,8 @@
     "eslint-check": "./node_modules/.bin/eslint --print-config .eslintrc.js | eslint-config-prettier-check",
     "clean-android": "cd android && ./gradlew clean && cd ..",
     "build-android-release": "cd android && ./gradlew clean && ./gradlew :app:assembleRelease && cd ..",
-    "bundle-android": "cd android && ./gradlew clean && ./gradlew bundleRelease && cd .."
+    "bundle-android": "cd android && ./gradlew clean && ./gradlew bundleRelease && cd ..",
+    "build-android-debug": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
     "@aws-sdk/client-kinesis-video": "^3.19.0",

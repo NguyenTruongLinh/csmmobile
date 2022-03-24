@@ -16,6 +16,7 @@ import {VSC, DVR} from '../consts/apiRoutes';
 import util from '../util/general';
 import {numberValue} from '../util/types';
 import {
+  default24H,
   CLOUD_TYPE,
   DAY_INTERVAL,
   VSCCommand,
@@ -639,37 +640,7 @@ export const VideoModel = types
         __DEV__ && console.log('GOND videoDataList is empty <>');
         return [];
       }
-      /*
-      switch (self.cloudType) {
-        case CLOUD_TYPE.DEFAULT:
-        case CLOUD_TYPE.DIRECTION:
-          videoDataList = self.directStreams.filter(s =>
-            s.channelName
-              .toLowerCase()
-              .includes(self.channelFilter.toLowerCase())
-          );
-          break;
-        case CLOUD_TYPE.HLS:
-          videoDataList = self.hlsStreams.filter(
-            s =>
-              s.channel.isActive &&
-              s.channel.name
-                .toLowerCase()
-                .includes(self.channelFilter.toLowerCase())
-          );
-          break;
-        case CLOUD_TYPE.RTC:
-          videoDataList = self.rtcConnection
-            ? self.rtcConnection.viewers.filter(
-                v =>
-                  v.channel.isActive &&
-                  v.channelName
-                    .toLowerCase()
-                    .includes(self.channelFilter.toLowerCase())
-              )
-            : [];
-          break;
-      }*/
+
       __DEV__ &&
         console.log(
           'GOND videoDataList: ',
@@ -689,37 +660,32 @@ export const VideoModel = types
         videoDataList.push({});
 
       return videoDataList ?? [];
-
-      // if (
-      //   !videoDataList ||
-      //   !Array.isArray(videoDataList) ||
-      //   videoDataList.length == 0
-      // )
-      //   return [];
-
-      // let result = [];
-      // let totalRow = Math.ceil(videoDataList.length / self.gridLayout);
-
-      // for (let row = 0; row < totalRow; row++) {
-      //   let newRow = {key: 'videoRow_' + row, data: []};
-      //   for (let col = 0; col < self.gridLayout; col++) {
-      //     let index = row * self.gridLayout + col;
-      //     if (index < videoDataList.length) {
-      //       newRow.data.push(videoDataList[index]);
-      //       __DEV__ &&
-      //         console.log('LiveChannelsView build video newRow.data: ', newRow);
-      //     } else newRow.data.push({});
-      //   }
-      //   result.push(newRow);
-      // }
-
-      // __DEV__ && console.log('LiveChannelsView build video data: ', result);
-      // return result;
     },
     get displayDateTime() {
       return self.frameTimeString && self.frameTimeString.length > 0
         ? self.frameTimeString
         : self.searchPlayTimeLuxon.toFormat(NVRPlayerConfig.FrameFormat);
+    },
+    get hoursOfSearchDate() {
+      if (!self.searchDate) return 0;
+      const res =
+        (self.searchDate.endOf('day').toSeconds() -
+          self.searchDate.startOf('day').toSeconds()) /
+        3600;
+      __DEV__ && console.log('GOND $$$ hoursOfSearchDate: ', res);
+      return res;
+    },
+    get isDSTTransitionDate() {
+      if (!self.searchDate) return false;
+      return self.hoursOfSearchDate != default24H;
+    },
+    get isDSTStartDate() {
+      if (!self.searchDate) return false;
+      return self.hoursOfSearchDate < default24H;
+    },
+    get isDSTEndDate() {
+      if (!self.searchDate) return false;
+      return self.hoursOfSearchDate > default24H;
     },
   }))
   .actions(self => {
@@ -921,7 +887,7 @@ export const VideoModel = types
               ) {
                 self.getHLSInfos({channelNo: value, timeline: !self.isLive});
               } // else if (!self.waitForTimezone) {
-              //   self.getVideoInfos(value);
+              // self.getVideoInfos(value);
               // }
               newStream.setLive(self.isLive);
               newStream.setHD(self.hdMode);
@@ -1782,7 +1748,7 @@ export const VideoModel = types
           self.directConnection = parseDirectServer(res);
           // __DEV__ && console.log('GOND direct setChannel 3');
 
-          if (!channelNo) {
+          if (util.isNullOrUndef(channelNo)) {
             self.currentGridPage = 0;
             self.directConnection.setChannels(
               self.allChannels
@@ -2825,6 +2791,7 @@ export const VideoModel = types
           }
 
           if (self.allChannels.length == 0) {
+            __DEV__ && console.log('GOND getVideoInfos channels list empty!');
             switch (self.cloudType) {
               case CLOUD_TYPE.DEFAULT:
               case CLOUD_TYPE.DIRECTION:
@@ -2856,10 +2823,16 @@ export const VideoModel = types
         }
 
         if (
-          !channelNo &&
+          util.isNullOrUndef(channelNo) &&
           self.activeChannels.length == 0 &&
           (self.cloudType == CLOUD_TYPE.HLS || self.cloudType == CLOUD_TYPE.RTC)
         ) {
+          __DEV__ &&
+            console.log(
+              'GOND getVideoInfos no channel select nor active channels!',
+              channelNo,
+              self.activeChannels
+            );
           switch (self.cloudType) {
             case CLOUD_TYPE.HLS:
               self.hlsStreams = [];
@@ -3038,6 +3011,7 @@ export const VideoModel = types
           // util.isValidHttpUrl(s.searchHDUrl.url) &&
           //   self.stopHLSStream(s.channelNo, s.searchHDUrl.sid, true);
         });
+        __DEV__ && console.trace('GOND releaseHLSStreams!');
         self.hlsStreams = [];
       },
       releaseStreams() {
