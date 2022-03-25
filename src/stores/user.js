@@ -106,7 +106,6 @@ const APIModel = types
     id: types.string,
     apiKey: types.string,
     token: types.string,
-    // devId: types.string,
   })
   .views(self => ({
     get data() {
@@ -126,7 +125,6 @@ const APIModel = types
       self.id = _api._ApiToken.Id || self.id;
       self.apiKey = _api._ApiToken.ApiKey || self.apiKey;
       self.token = _api._ApiToken.Token || self.token;
-      // self.devId = _api._ApiToken.devId || self.devId;
       return true;
     },
   }));
@@ -139,7 +137,6 @@ const getDefaultAPI = () =>
     id: '',
     apiKey: '',
     token: '',
-    // devId: '',
   });
 
 const UserModel = types
@@ -400,7 +397,6 @@ export const UserStoreModel = types
         id: '',
         apiKey: '',
         token: '',
-        // devId: appStore.deviceInfo.deviceId,
       });
 
       self.setConfigApi();
@@ -1074,8 +1070,7 @@ export const UserStoreModel = types
       }
     }),
     setActivites: flow(function* (reportId) {
-      const isScreenSwitch =
-        reportId == clientLogID.LOGIN || reportId == clientLogID.LOGOUT;
+      const isScreenSwitch = reportId > clientLogID.LOGOUT;
       let model = {
         LogID: isScreenSwitch ? moduleSwitchLogId : loginLogId,
         UserID: self.user.UserID,
