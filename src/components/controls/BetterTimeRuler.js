@@ -176,6 +176,9 @@ export default class TimeRuler extends PureComponent {
         hoursArray,
         hoursValue,
       });
+      this.draggedX = 0;
+      this.lastX = 0;
+      this.lastScrollOffsetX = -1;
     }
   }
 
