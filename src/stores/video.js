@@ -668,10 +668,12 @@ export const VideoModel = types
     },
     get hoursOfSearchDate() {
       if (!self.searchDate) return 0;
-      const res =
+      const res = Math.round(
         (self.searchDate.endOf('day').toSeconds() -
-          self.searchDate.startOf('day').toSeconds()) /
-        3600;
+          self.searchDate.startOf('day').toSeconds() +
+          1) /
+          3600
+      );
       __DEV__ && console.log('GOND $$$ hoursOfSearchDate: ', res);
       return res;
     },

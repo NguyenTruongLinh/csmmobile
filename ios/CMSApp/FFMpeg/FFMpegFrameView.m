@@ -2594,29 +2594,29 @@ const uint32_t numLayers = 24;
         }
         
         long time = 0;
-        if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
+//        if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
           NSDateFormatter* formatTimeDST = [[NSDateFormatter alloc] init];
           [formatTimeDST setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
           [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
 
           NSString* Date = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",components.year, components.month, components.day, components.hour, components.minute, components.second];
           NSTimeInterval tmp_Date = [[formatTimeDST dateFromString:Date] timeIntervalSince1970];
-          if(m_dayType == END_DAYLIGHT){
-            tmp_Date -= 3600;
-          }
+//          if(m_dayType == END_DAYLIGHT){
+//            tmp_Date -= 3600;
+//          }
 
           time = [currentServer.serverTimezone secondsFromGMT] > 0 ?  tmp_Date + [currentServer.serverTimezone secondsFromGMT]:
                                                                       tmp_Date - [currentServer.serverTimezone secondsFromGMT];
           //time = [displayFrame.frameTime timeIntervalSince1970];
-        }
-        else {
-          NSDateFormatter* formatTimeDST = [[NSDateFormatter alloc] init];
-          [formatTimeDST setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
-          [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-          NSString* sDate = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",components.year, components.month, components.day, components.hour, components.minute, components.second];
-          
-          time = [[formatTimeDST dateFromString:sDate] timeIntervalSince1970];
-        }
+//        }
+//        else {
+//          NSDateFormatter* formatTimeDST = [[NSDateFormatter alloc] init];
+//          [formatTimeDST setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
+//          [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+//          NSString* sDate = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",components.year, components.month, components.day, components.hour, components.minute, components.second];
+//
+//          time = [[formatTimeDST dateFromString:sDate] timeIntervalSince1970];
+//        }
         
         NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeTextLabel, m_channel];
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
@@ -2728,14 +2728,14 @@ const uint32_t numLayers = 24;
     NSDate* selectedDate = [NSDate dateWithTimeIntervalSince1970:chosenDayInterval.time];
     NSDate* nextDaylight = [currentServer.serverTimezone nextDaylightSavingTimeTransitionAfterDate:selectedDate];
 
-    if(nextDaylight==nil)
-    {
+    /*if(nextDaylight==nil)
+    {*/
       m_dayType = NORMAL;
-    }
+    /*}
     else
     {
       NSTimeInterval offset = [nextDaylight timeIntervalSinceDate:selectedDate];
-      /*if(offset < HoursPerDay*60*60 )
+      if(offset < HoursPerDay*60*60 )
       {
         if([currentServer.serverTimezone isDaylightSavingTimeForDate:selectedDate])// end daylight
         {
@@ -2746,11 +2746,11 @@ const uint32_t numLayers = 24;
           m_dayType = BEGIN_DAYLIGHT;
         }
       }
-      else*/
+      else
       {
         m_dayType = NORMAL;
       }
-    }
+    }*/
     
     NSCalendar* calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     [calendar setTimeZone:currentServer.serverTimezone];
@@ -2758,6 +2758,7 @@ const uint32_t numLayers = 24;
     NSDateComponents* chosenDayComponents = [calendar components:unitFlags fromDate:chosenDay];
     NSInteger currentDay = chosenDayComponents.day;
     NSMutableArray* timeArr = [[NSMutableArray alloc] init];
+    NSLog(@"GOND build Ruler %d", m_dayType);
     
     for (ImcTimeInterval* ti in chosenDayInterval.timeInterval) {
       ti.deviceID = ti.deviceID != -1 ? ti.deviceID : 0;
@@ -2766,7 +2767,8 @@ const uint32_t numLayers = 24;
       NSDate* timeStart;
       NSDate* timeEnd;
       
-      if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
+//      if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
+        NSLog(@"GOND 11111111111");
         NSDate* begin = [NSDate dateWithTimeIntervalSince1970:ti.begin];
         NSDate* end = [NSDate dateWithTimeIntervalSince1970:ti.end];
         NSDateComponents* chosenSDayComponents = [calendar components:unitFlags fromDate:begin];
@@ -2805,30 +2807,31 @@ const uint32_t numLayers = 24;
           tmp_S -= 3600;
           tmp_E -= 3600;
         }
-        
-        tmp_S = [currentServer.serverTimezone secondsFromGMT] > 0 ? tmp_S + [currentServer.serverTimezone secondsFromGMT]:
-        tmp_S - [currentServer.serverTimezone secondsFromGMT];
-        tmp_E = [currentServer.serverTimezone secondsFromGMT] > 0 ? tmp_E + [currentServer.serverTimezone secondsFromGMT]:
-        tmp_E - [currentServer.serverTimezone secondsFromGMT];
+        NSLog(@"GOND builRuler offset: %ld, %ld", [currentServer.serverTimezone secondsFromGMTForDate:begin], tmp_S);
+        tmp_S = [currentServer.serverTimezone secondsFromGMTForDate:begin] > 0 ? tmp_S + [currentServer.serverTimezone secondsFromGMTForDate:begin]:
+        tmp_S - [currentServer.serverTimezone secondsFromGMTForDate:begin];
+        tmp_E = [currentServer.serverTimezone secondsFromGMTForDate:end] > 0 ? tmp_E + [currentServer.serverTimezone secondsFromGMTForDate:end]:
+        tmp_E - [currentServer.serverTimezone secondsFromGMTForDate:end];
         
         timeStart = [NSDate dateWithTimeIntervalSince1970:tmp_S];
         timeEnd = [NSDate dateWithTimeIntervalSince1970:tmp_E];
-      }
-      else
-      {
-        NSDateFormatter* formatTimeDST = [[NSDateFormatter alloc] init];
-        [formatTimeDST setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
-        [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-        
-        NSDateComponents* sChosenDayComponents = [calendar components:unitFlags fromDate:[NSDate dateWithTimeIntervalSince1970:ti.begin]];
-        NSString* sDate = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",sChosenDayComponents.year, sChosenDayComponents.month, sChosenDayComponents.day, sChosenDayComponents.hour, sChosenDayComponents.minute, sChosenDayComponents.second];
-        
-        NSDateComponents* eChosenDayComponents = [calendar components:unitFlags fromDate:[NSDate dateWithTimeIntervalSince1970:ti.end]];
-        NSString* eDate = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",eChosenDayComponents.year, eChosenDayComponents.month, eChosenDayComponents.day, eChosenDayComponents.hour, eChosenDayComponents.minute, eChosenDayComponents.second];
-        
-        timeStart = [formatTimeDST dateFromString:sDate];
-        timeEnd = [formatTimeDST dateFromString:eDate];
-      }
+//      }
+//      else
+//      {
+//        NSLog(@"GOND 2222222222");
+//        NSDateFormatter* formatTimeDST = [[NSDateFormatter alloc] init];
+//        [formatTimeDST setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
+//        [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+//
+//        NSDateComponents* sChosenDayComponents = [calendar components:unitFlags fromDate:[NSDate dateWithTimeIntervalSince1970:ti.begin]];
+//        NSString* sDate = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",sChosenDayComponents.year, sChosenDayComponents.month, sChosenDayComponents.day, sChosenDayComponents.hour, sChosenDayComponents.minute, sChosenDayComponents.second];
+//
+//        NSDateComponents* eChosenDayComponents = [calendar components:unitFlags fromDate:[NSDate dateWithTimeIntervalSince1970:ti.end]];
+//        NSString* eDate = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",eChosenDayComponents.year, eChosenDayComponents.month, eChosenDayComponents.day, eChosenDayComponents.hour, eChosenDayComponents.minute, eChosenDayComponents.second];
+//
+//        timeStart = [formatTimeDST dateFromString:sDate];
+//        timeEnd = [formatTimeDST dateFromString:eDate];
+//      }
       
       NSDate* tmpBegin = timeStart;
       NSDate* tmpEnd = timeStart;
@@ -2874,6 +2877,7 @@ const uint32_t numLayers = 24;
 
 //Build interval 1 day
 -(void)buildRulerDST: (NSDate* )chosenDay {
+  NSLog(@"GOND buildRulerDST ");
   if([dateIntervalList count] > 0){
     ImcDateInterval* chosenDayInterval = [dateIntervalList objectAtIndex:chosenChannelIndex];
     NSDate* selectedDate = [NSDate dateWithTimeIntervalSince1970:chosenDayInterval.time];
@@ -2886,16 +2890,18 @@ const uint32_t numLayers = 24;
     
     if(nextDaylight != nil)
     {
+      NSLog(@"GOND buildRulerDST 11111");
       NSTimeInterval offset = [nextDaylight timeIntervalSinceDate:selectedDate];
-      if(offset < HoursPerDay*60*60 )
+      /*if(offset < HoursPerDay*60*60 )
       {
+        NSLog(@"GOND buildRulerDST 22222");
         NSCalendar* calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
         [calendar setTimeZone:currentServer.serverTimezone];
         unsigned unitFlags = NSCalendarUnitTimeZone | NSCalendarUnitSecond | NSCalendarUnitMinute | NSCalendarUnitHour | NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear;
         NSDateComponents *component = [calendar components:unitFlags fromDate:nextDaylight];
         if([currentServer.serverTimezone isDaylightSavingTimeForDate:selectedDate])// end daylight
         {
-          m_dayType = END_DAYLIGHT;
+//          m_dayType = END_DAYLIGHT;
           hoursofDay = 25;
           hourSpecial = component.hour;
           hourSpecialFirst = component.hour;
@@ -2903,14 +2909,14 @@ const uint32_t numLayers = 24;
         }
         else // begin daylight
         {
-          m_dayType = BEGIN_DAYLIGHT;
+//          m_dayType = BEGIN_DAYLIGHT;
           hoursofDay = 23;
           hourSpecial = component.hour - 1;
           hourSpecialFirst = component.hour - 1;
           hourSpecialDST = component.hour - 1;
         }
       }
-      else
+      else*/
       {
         m_dayType = NORMAL;
         hoursofDay = 24;
@@ -2922,14 +2928,15 @@ const uint32_t numLayers = 24;
       
       NSTimeInterval intervalChosenDay = [chosenDay timeIntervalSince1970];
       
-      if(m_dayType == END_DAYLIGHT){
-        intervalChosenDay -= 3600;
-      }
+//      if(m_dayType == END_DAYLIGHT){
+//        intervalChosenDay -= 3600;
+//      }
       
       intervalChosenDay = [currentServer.serverTimezone secondsFromGMT] > 0 ? intervalChosenDay + [currentServer.serverTimezone secondsFromGMT]:
       intervalChosenDay - [currentServer.serverTimezone secondsFromGMT];
       
       if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
+        NSLog(@"GOND buildRulerDST 33333");
         int minValue = 1;
         NSString* color = [NSString stringWithString:@"#FFFFFF"];
         NSMutableArray* arrHour = [[NSMutableArray alloc] init];
@@ -3024,14 +3031,14 @@ const uint32_t numLayers = 24;
             NSString* timeText = [NSString stringWithFormat:@"%zd/%02zd/%02zd %02zd:%02zd:%02zd",components.year, components.month, components.day, components.hour, components.minute, components.second];
             
             long time = 0;
-            if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
+//            if(m_dayType == BEGIN_DAYLIGHT || m_dayType == END_DAYLIGHT){
               time = [displayFrame.frameTime timeIntervalSince1970];
-            }
-            else {
-              time = [currentServer.serverTimezone secondsFromGMT] > 0 ? [displayFrame.frameTime timeIntervalSince1970] - [currentServer.serverTimezone secondsFromGMT]
-              : [displayFrame.frameTime timeIntervalSince1970] + [currentServer.serverTimezone secondsFromGMT];
-             
-            }
+//            }
+//            else {
+//              time = [currentServer.serverTimezone secondsFromGMT] > 0 ? [displayFrame.frameTime timeIntervalSince1970] - [currentServer.serverTimezone secondsFromGMT]
+//              : [displayFrame.frameTime timeIntervalSince1970] + [currentServer.serverTimezone secondsFromGMT];
+//
+//            }
             
             NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, m_channel];
             NSString* res = [NSString stringWithFormat:@"[%@]",str_min];

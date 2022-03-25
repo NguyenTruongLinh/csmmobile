@@ -1075,7 +1075,8 @@ class DirectVideoView extends React.Component {
 
   onFrameTime = frameTime => {
     const {videoStore, serverInfo} = this.props;
-    const {timestamp, value, channel} = frameTime;
+    const {value, channel} = frameTime;
+    const timestamp = parseInt(frameTime.timestamp);
     if (channel && parseInt(channel) != serverInfo.channelNo) {
       __DEV__ &&
         console.log(
@@ -1108,7 +1109,11 @@ class DirectVideoView extends React.Component {
           )
         ) {
           __DEV__ &&
-            console.log('GOND onFrameTime skip old frame from previous date!');
+            console.log(
+              'GOND onFrameTime skip old frame from previous date!',
+              timeObj,
+              videoStore.searchDate
+            );
           return;
         } else {
           this.dateChanged = false;

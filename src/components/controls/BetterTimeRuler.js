@@ -364,6 +364,8 @@ export default class TimeRuler extends PureComponent {
       }
       this.scrollRef.scrollTo({x: x, y: y, animated: false});
       this.lastX = x;
+    } else {
+      __DEV__ && console.log('GOND onTimeRuler autoScroll is disabled ---!');
     }
   };
 
