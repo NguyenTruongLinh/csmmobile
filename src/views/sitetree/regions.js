@@ -25,6 +25,7 @@ import variables from '../../styles/variables';
 import {Comps as CompTxt} from '../../localization/texts';
 import {reaction} from 'mobx';
 import {No_Data} from '../../consts/images';
+import {clientLogID} from '../../stores/user';
 
 class RegionsView extends Component {
   constructor(props) {
@@ -52,6 +53,7 @@ class RegionsView extends Component {
     this.getRegionsList();
     this.initReactions();
     this.setHeader();
+    userStore.setActivites(clientLogID.VIDEO);
   }
 
   initReactions = () => {

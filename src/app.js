@@ -37,6 +37,7 @@ import APP_INFO from './consts/appInfo';
 
 import {CLOUD_TYPE} from './consts/video';
 import CMSColors from './styles/cmscolors';
+import {clientLogID} from './stores/user';
 
 const {height, width} = getwindow(); //Dimensions.get('window')
 
@@ -326,6 +327,7 @@ class App extends React.Component {
 
   _handleAppStateChange = async nextAppState => {
     if (this.appState) {
+      let {userStore} = this.props;
       __DEV__ &&
         console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
       if (nextAppState === 'active') {
@@ -333,22 +335,10 @@ class App extends React.Component {
           console.log('App has come to the foreground!');
         } else {
           console.log('App launch');
-          // if (this.props.user.Api)
-          //   this.props.GetCloudType(this.props.user.Api, this.props.user.Api._ApiToken.devId);
-          // else
-          //   console.log('%c Warning! Cannot get cloud config user API not defined!', 'color: red; font-style: bold')
         }
+        userStore.setActivites(clientLogID.APP_TO_FOREGROUND);
       } else {
-        //if (nextAppState == 'background') {
-        // dongpt: update kill state before app closed
-        if (Platform.OS == 'ios') {
-          __DEV__ &&
-            console.log(
-              'GOND _handleAppStateChange iOS to background ',
-              nextAppState
-            );
-          // await this.onTokenMessage(1, 1);
-        }
+        userStore.setActivites(clientLogID.APP_TO_BACKGROUND);
       }
     }
     this.appState = nextAppState;

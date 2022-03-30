@@ -28,13 +28,16 @@ import notificationController from '../notification/notificationController';
 import {toUTCDate} from '../util/general.js';
 
 export const clientLogID = {
+  APP_TO_BACKGROUND: -1,
+  HOME: -1,
+  APP_TO_FOREGROUND: 0,
   LOGIN: 600,
   LOGOUT: 601,
   ALARM: 602,
   HEALTH: 603,
   BI: 605,
-  POS: 604,
-  OPTIONS: 606,
+  SMART_ER: 604,
+  SETTINGS: 606,
   PVM: 607,
   VIDEO: 608,
 };
@@ -48,6 +51,7 @@ export const ClientType = {
 
 let moduleSwitchLogId = 0;
 let loginLogId = 0;
+let lastReportId = clientLogID.APP_TO_BACKGROUND;
 
 const LOGIN_FAIL_CAUSES = {
   USER_LOCK: 'USER_LOCK',
@@ -1070,13 +1074,18 @@ export const UserStoreModel = types
       }
     }),
     setActivites: flow(function* (reportId) {
+      __DEV__ && console.log('setActivites ', `reportId=${reportId}`);
       const isScreenSwitch = reportId > clientLogID.LOGOUT;
+
       let model = {
-        LogID: isScreenSwitch ? moduleSwitchLogId : loginLogId,
+        LogID:
+          isScreenSwitch || reportId == clientLogID.APP_TO_BACKGROUND
+            ? moduleSwitchLogId
+            : loginLogId,
         UserID: self.user.UserID,
         AccessTime: new Date(),
         ClientTime: toUTCDate(new Date()),
-        ReportID: reportId,
+        // ReportID: reportId,
         ClientName: APP_INFO.Name,
         Version: APP_INFO.Version,
         ClientType:
@@ -1084,26 +1093,48 @@ export const UserStoreModel = types
             ? ClientType.CMS_MOBILE_IOS
             : ClientType.CMS_MOBILE_ANDROID,
       };
-      let logId = yield apiService.post(
-        ACConfig.controller,
-        self.user.userId,
-        ACConfig.setActivites,
-        model
-      );
-      if (isScreenSwitch) moduleSwitchLogId = logId;
-      else loginLogId = logId;
-      __DEV__ && console.log('setActivites 1st request', `logId=${logId}`);
-      if (logId == 0) {
-        model.LogID = 0;
+
+      if (
+        reportId != clientLogID.APP_TO_FOREGROUND &&
+        reportId != clientLogID.APP_TO_BACKGROUND
+      ) {
+        model.ReportID = reportId;
+        lastReportId = reportId;
+      } else {
+        model.ReportID = lastReportId;
+      }
+
+      let logId = 0;
+
+      //set activity STOP OLD activity
+      if (reportId != clientLogID.APP_TO_FOREGROUND) {
         logId = yield apiService.post(
           ACConfig.controller,
           self.user.userId,
           ACConfig.setActivites,
           model
         );
+        __DEV__ && console.log('setActivites 1st request', `logId=${logId}`);
+
         if (isScreenSwitch) moduleSwitchLogId = logId;
         else loginLogId = logId;
-        __DEV__ && console.log('setActivites 2nd request', `logId=${logId}`);
+      }
+
+      //set activity START NEW activity
+      if (reportId != clientLogID.APP_TO_BACKGROUND) {
+        if (logId == 0) {
+          model.LogID = 0;
+          logId = yield apiService.post(
+            ACConfig.controller,
+            self.user.userId,
+            ACConfig.setActivites,
+            model
+          );
+          __DEV__ && console.log('setActivites 2nd request', `logId=${logId}`);
+
+          if (isScreenSwitch) moduleSwitchLogId = logId;
+          else loginLogId = logId;
+        }
       }
       return true;
     }),

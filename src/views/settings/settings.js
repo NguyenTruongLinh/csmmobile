@@ -33,7 +33,7 @@ class SettingsView extends Component {
   componentDidMount() {
     const {userStore} = this.props;
     __DEV__ && console.log('GOND SettingsView componentDidMount');
-    userStore.setActivites(clientLogID.OPTIONS);
+    userStore.setActivites(clientLogID.SETTINGS);
   }
 
   onLogout = () => {

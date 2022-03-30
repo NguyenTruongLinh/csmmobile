@@ -26,6 +26,7 @@ import {
 } from '../../consts/images';
 import ROUTERS from '../../consts/routes';
 import CMSColors from '../../styles/cmscolors';
+import {clientLogID} from '../../stores/user';
 
 class HomeView extends Component {
   constructor(props) {
@@ -55,6 +56,8 @@ class HomeView extends Component {
       __DEV__ && console.log('Home componentWillBeBlurred');
       this.notifyClearIntervals();
     });
+
+    userStore.setActivites(clientLogID.HOME);
   }
 
   componentWillUnmount() {

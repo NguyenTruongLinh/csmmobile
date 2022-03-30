@@ -96,7 +96,7 @@ class DashboardView extends React.Component {
     this.setHeader();
     this.getData();
     userStore.resetWidgetCount(WIDGET_COUNTS.SMART_ER);
-    userStore.setActivites(clientLogID.POS);
+    userStore.setActivites(clientLogID.SMART_ER);
   }
 
   componentWillUnmount() {
