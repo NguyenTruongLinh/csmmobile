@@ -289,6 +289,20 @@ class DirectVideoView extends React.Component {
             }
           }
         ),
+        reaction(
+          () => videoStore.searchPlayTime,
+          searchPlayTime => {
+            const {searchPlayTimeLuxon} = videoStore;
+            if (searchPlayTime) {
+              __DEV__ &&
+                console.log('DirectStreamingView on searchPlayTime changed');
+              this.playAt(
+                searchPlayTimeLuxon.toSeconds() -
+                  searchPlayTimeLuxon.startOf('day').toSeconds()
+              );
+            }
+          }
+        ),
       ];
     } else {
       // -- MULTIPLAYERS MODE
@@ -450,18 +464,30 @@ class DirectVideoView extends React.Component {
       return;
     }
 
-    const {searchDateString, searchDate} = videoStore;
+    const {
+      searchDateString,
+      searchDate,
+      searchPlayTime,
+      searchPlayTimeLuxon,
+    } = videoStore;
     __DEV__ &&
       console.log(
         'GOND direct searchDateString  ',
         searchDateString,
-        searchDate
+        searchDate,
+        searchPlayTime
       );
     const playbackInfo = {
       ...serverInfo.playData,
       searchMode: !isLive,
       date: isLive ? undefined : searchDateString,
       hd: hdMode,
+      seekpos: searchPlayTime
+        ? {
+            pos: searchPlayTimeLuxon.toSeconds() - searchDate.toSeconds(),
+            hd: hdMode,
+          }
+        : undefined,
       ...paramsObject,
     };
 

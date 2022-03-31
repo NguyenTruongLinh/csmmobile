@@ -86,7 +86,9 @@ class VideoPlayerView extends Component {
     this.eventSubscribers = [];
     this.resumeFromInterupt = false;
     this.lastOrientation = OrientationType.LANDSCAPE;
-    // this.reactions = [];
+    this.ruler = null;
+    this.savedTimelinePosition = null;
+    this.reactions = [];
   }
 
   componentDidMount() {
@@ -112,7 +114,7 @@ class VideoPlayerView extends Component {
 
     Orientation.addDeviceOrientationListener(this.onOrientationChange);
     Orientation.unlockAllOrientations();
-    // this.initReactions();
+    this.initReactions();
   }
 
   updateHeader = () => {
@@ -158,23 +160,53 @@ class VideoPlayerView extends Component {
     Orientation.lockToPortrait();
     // this.unsubSearchTimeReaction();
     StatusBar.setHidden(false);
-    // this.reactions.forEach(unsubsribe => unsubsribe());
+    this.reactions.forEach(unsubsribe => unsubsribe());
   }
 
-  // initReactions = () => {
-  //   const {videoStore} = this.props;
+  componentDidUpdate(prevProps) {
+    const {videoStore} = this.props;
 
-  //   this.reactions = [
-  //     reaction(
-  //       () => videoStore.searchDate,
-  //       () => this.ruler && this.ruler.forceUpdate()
-  //     ),
-  //   ];
-  // };
+    if (this.ruler && this.savedTimelinePosition) {
+      this.ruler.moveToPosition(videoStore.searchPlayTimeBySeconds);
+      videoStore.setDisplayDateTime(
+        videoStore.searchPlayTimeLuxon.toFormat(NVRPlayerConfig.FrameFormat)
+      );
+      this.savedTimelinePosition = null;
+    }
+  }
+
+  initReactions = () => {
+    const {videoStore} = this.props;
+
+    this.reactions = [
+      // reaction(
+      //   () => videoStore.searchDate,
+      //   () => this.ruler && this.ruler.forceUpdate()
+      // ),
+      reaction(
+        () => videoStore.searchPlayTime,
+        searchPlayTime => {
+          __DEV__ &&
+            console.log('GOND on searchPlayTime changed: ', this.ruler);
+          if (!searchPlayTime) return;
+          if (this.ruler) {
+            this.ruler.moveToPosition(videoStore.searchPlayTimeBySeconds);
+            videoStore.setDisplayDateTime(
+              videoStore.searchPlayTimeLuxon.toFormat(
+                NVRPlayerConfig.FrameFormat
+              )
+            );
+          } else {
+            this.savedTimelinePosition = videoStore.searchPlayTimeBySeconds;
+          }
+        }
+      ),
+    ];
+  };
 
   //#region Event handlers
   clearAppStateTimeout = () => {
-    __DEV__ && console.log('GOND: clearAppStateTimeout ') && console.trace();
+    // __DEV__ && console.trace('GOND: clearAppStateTimeout ');
     BackgroundTimer.stopBackgroundTimer();
     this.resumeFromInterupt = false;
   };
@@ -347,8 +379,8 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onSwitchLiveSearch(!videoStore.isLive);
-    this.ruler && this.ruler.moveToPosition(0);
     videoStore.switchLiveSearch(undefined, true);
+    this.ruler && this.ruler.moveToPosition(videoStore.searchPlayTimeBySeconds);
     this.updateHeader();
     // this.playerRef && this.playerRef.pause(true);
     setTimeout(() => {

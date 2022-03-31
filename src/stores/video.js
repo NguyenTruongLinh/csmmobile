@@ -28,6 +28,8 @@ import {
   BEGIN_OF_DAY_STRING,
   END_OF_DAY_STRING,
   HLS_GET_DATA_DIRECTLY_TIMEOUT,
+  DEFAULT_SEARCH_OFFSET_IN_SECONDS,
+  REFRESH_TIMELINE_INTERVAL,
 } from '../consts/video';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../consts/misc';
@@ -318,10 +320,6 @@ export const VideoModel = types
     isAlertPlay: types.optional(types.boolean, false),
     isPreloadStream: types.optional(types.boolean, false),
     currentGridPage: types.optional(types.number, 0),
-    isInVideoView: types.optional(types.boolean, false),
-    isDraggingTimeline: types.optional(types.boolean, false),
-    shouldShowSnackbar: types.optional(types.boolean, true),
-    isDirectDSTAwareness: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     frameTime: 0,
@@ -341,6 +339,15 @@ export const VideoModel = types
     checkDaylistTimeout: null,
 
     timelineRequestId: '',
+
+    isInVideoView: false,
+    isDraggingTimeline: false,
+    shouldShowSnackbar: true,
+    isDirectDSTAwareness: false,
+    shouldUpdateSearchTimeOnGetTimeline: false,
+
+    // refreshingTimeline: false,
+    refreshTimelineInterval: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -415,17 +422,6 @@ export const VideoModel = types
             s => s.channelNo == self.selectedChannel
           );
           return server ?? null;
-        // return {
-        //   ...server,
-        //   hd: self.hdMode,
-        //   searchMode: !self.isLive,
-        //   date:
-        //     self.searchDate ??
-        //     DateTime.local()
-        //       .setZone(self.timezone)
-        //       .startOf('day')
-        //       .toFormat(NVRPlayerConfig.RequestTimeFormat),
-        // };
         case CLOUD_TYPE.HLS:
           const s = self.hlsStreams.find(
             s => s.channel.channelNo == self.selectedChannel
@@ -592,7 +588,7 @@ export const VideoModel = types
     },
     get searchPlayTimeBySeconds() {
       return self.searchPlayTime
-        ? searchPlayTimeLuxon.toSeconds() - self.searchDate.toSeconds()
+        ? self.searchPlayTimeLuxon.toSeconds() - self.searchDate.toSeconds()
         : 0;
     },
     get directData() {
@@ -929,6 +925,41 @@ export const VideoModel = types
             self.frameTime = value;
           }
         }
+        self.checkForRefreshingTimeline();
+      },
+      checkForRefreshingTimeline() {
+        if (
+          !self.isLive &&
+          self.timeline &&
+          self.frameTime >= self.timeline[self.timeline.length - 1].begin &&
+          !self.refreshTimelineInterval
+          // !self.refreshingTimeline
+        ) {
+          __DEV__ && console.log('GOND start Refreshing timeline interval ');
+          self.refreshTimelineInterval = setInterval(() => {
+            // self.refreshingTimeline = true;
+            if (!self.timeline || self.timeline.length == 0) {
+              clearInterval(self.refreshTimelineInterval);
+              self.refreshTimelineInterval = null;
+            }
+            if (self.frameTime < self.timeline[self.timeline.length - 1].begin)
+              return;
+            switch (self.cloudType) {
+              case CLOUD_TYPE.DEFAULT:
+              case CLOUD_TYPE.DIRECTION:
+                break;
+              case CLOUD_TYPE.HLS:
+                if (self.selectedChannel && self.selectedStream)
+                  self.getTimeline(
+                    self.selectedChannel,
+                    self.selectedStream.targetUrl.sid
+                  );
+                break;
+              case CLOUD_TYPE.RTC:
+                break;
+            }
+          }, REFRESH_TIMELINE_INTERVAL);
+        }
       },
       setDisplayDateTime(value) {
         self.frameTimeString = value;
@@ -1176,12 +1207,15 @@ export const VideoModel = types
         // if (TimelineModel.is(value)) {
         //   self.timeline = TimelineModel.create(getSnapshot(value));
         // }
+        // self.refreshingTimeline && (self.refreshingTimeline = false);
         if (!value || !Array.isArray(value)) {
           __DEV__ && console.log('GOND setTimeline, not an array ', value);
+          self.shouldUpdateSearchTimeOnGetTimeline = false;
           return;
         }
         __DEV__ && console.log('GOND setTimeline ', value);
         if (value.length == 0) {
+          self.shouldUpdateSearchTimeOnGetTimeline = false;
           self.setNoVideo(true);
           return;
         }
@@ -1195,6 +1229,10 @@ export const VideoModel = types
             type: numberValue(item.type),
           })
         );
+        if (self.shouldUpdateSearchTimeOnGetTimeline) {
+          __DEV__ && console.log('GOND shouldUpdateSearchTimeOnGetTimeline');
+          self.onUpdateSearchTimePostTimeline();
+        }
         // .sort((x, y) => x.begin - y.begin);
         // __DEV__ && console.log('GOND after settimeline ', self.timeline);
       },
@@ -1263,34 +1301,10 @@ export const VideoModel = types
           }
           // dongpt: end
 
-          // if (
-          //   !self.searchDate // ||
-          //   // (self.searchDate.toSeconds() ==
-          //   //   DateTime.now()
-          //   //     .setZone(self.timezone)
-          //   //     .startOf('day')
-          //   //     .toSeconds() &&
-          //   //   self.searchDate.zone.name != self.timezone)
-          // ) {
-          //   // if (self.frameTimeString && self.frameTimeString.length > 0) {
-
-          //   // } else {
-          //   self.searchDate = DateTime.now()
-          //     .setZone(self.timezone)
-          //     .startOf('day');
-          //   // }
-          //   __DEV__ &&
-          //     console.log(
-          //       'GOND @@@ switchlivesearch zone:',
-          //       self.timezone,
-          //       '\n - searchDate: ',
-          //       self.searchDate.toFormat(NVRPlayerConfig.RequestTimeFormat)
-          //     );
-          // }
-
           self.setDisplayDateTime(
             self.getSafeSearchDate().toFormat(NVRPlayerConfig.FrameFormat)
           );
+          self.onDefaultSearchTime();
         }
         self.isLive = nextIsLive === undefined ? !self.isLive : nextIsLive;
         __DEV__ && console.log('1 self.isLive = ', self.isLive);
@@ -1310,6 +1324,20 @@ export const VideoModel = types
             daylist: !self.isLive,
           });
         }
+      },
+      onDefaultSearchTime() {
+        let targetTime =
+          parseInt(DateTime.now().toSeconds()) -
+          parseInt(DEFAULT_SEARCH_OFFSET_IN_SECONDS);
+        self.setPlayTimeForSearch(targetTime);
+        __DEV__ &&
+          console.log(
+            'GOND onDefaultSearchTime: ',
+            DEFAULT_SEARCH_OFFSET_IN_SECONDS,
+            DateTime.now().toSeconds(),
+            targetTime
+          );
+        self.shouldUpdateSearchTimeOnGetTimeline = true;
       },
       // pauseAll(value) {
       //   self.paused = value;
@@ -1388,11 +1416,18 @@ export const VideoModel = types
           );
         } else if (value == null || typeof value == 'string')
           self.searchPlayTime = value;
-        else {
+        else if (typeof value == 'number') {
+          self.searchPlayTime = DateTime.fromSeconds(value, {
+            zone: self.timezone,
+          }).toFormat(NVRPlayerConfig.RequestTimeFormat);
+        } else {
           console.log(
             'GOND - WARN! setPlayTimeForSearch VALUE IS NOT DATETIME NOR STRING'
           );
+          return;
         }
+        // self.shouldUpdateSearchTimeOnGetTimeline &&
+        //   (self.shouldUpdateSearchTimeOnGetTimeline = false);
       },
       onExitSinglePlayer(currentRoute) {
         // self.isSingleMode = false;
@@ -1454,6 +1489,12 @@ export const VideoModel = types
         }
         self.isHealthPlay = false;
         self.timelineRequestId = '';
+        self.shouldUpdateSearchTimeOnGetTimeline = false;
+        // self.refreshingTimeline = false;
+        if (self.refreshTimelineInterval) {
+          clearInterval(self.refreshTimelineInterval);
+          self.refreshTimelineInterval = null;
+        }
       },
       updateDirectFrame(channel, frameData) {
         const target = self.directStreams.find(s => s.videoSource == channel);
@@ -2598,6 +2639,78 @@ export const VideoModel = types
         }
         return result;
       },
+      onUpdateSearchTimePostTimeline() {
+        let result = null;
+
+        self.shouldUpdateSearchTimeOnGetTimeline = false;
+        __DEV__ &&
+          console.log(
+            'GOND onUpdateSearchTimePostTimeline: ',
+            self.timeline.length
+          );
+        for (let i = self.timeline.length - 1; i >= 0; i--) {
+          if (self.timeline[i].begin >= self.searchPlayTimeLuxon.toSeconds()) {
+            __DEV__ &&
+              console.log(
+                'GOND onUpdateSearchTimePostTimeline: ',
+                self.searchPlayTimeLuxon.toSeconds(),
+                self.timeline[i].begin
+              );
+            result = self.timeline[i];
+          } else {
+            // if (result != null) {
+            //   __DEV__ && console.log('GOND onUpdateSearchTimePostTimeline 111');
+            //   break;
+            // } else {
+            //   if (lastVideoTime == 0) {
+            //     __DEV__ &&
+            //       console.log('GOND onUpdateSearchTimePostTimeline 222');
+            //     lastVideoTime = self.timeline[i].end;
+            //     result = self.timeline[i];
+            //   } else {
+            //     if (
+            //       self.timeline[i].begin - lastVideoTime >
+            //       DEFAULT_SEARCH_OFFSET_IN_SECONDS
+            //     ) {
+            //       __DEV__ &&
+            //         console.log('GOND onUpdateSearchTimePostTimeline 333');
+            //       break;
+            //     } else {
+            //       __DEV__ &&
+            //         console.log('GOND onUpdateSearchTimePostTimeline 444');
+            //       result = self.timeline[i];
+            //     }
+            //   }
+            // }
+            result = self.timeline[i];
+            break;
+          }
+        }
+        if (result != null) {
+          __DEV__ &&
+            console.log('GOND onUpdateSearchTimePostTimeline result: ', result);
+          if (
+            result.begin <= self.searchPlayTimeLuxon.toSeconds() &&
+            result.end >= self.searchPlayTimeLuxon.toSeconds()
+          ) {
+            __DEV__ &&
+              console.log(
+                'GOND onUpdateSearchTimePostTimeline: search time have data no need to update'
+              );
+            return;
+          } else {
+            self.setPlayTimeForSearch(
+              result.end - DEFAULT_SEARCH_OFFSET_IN_SECONDS
+            );
+          }
+        } else {
+          __DEV__ &&
+            console.log(
+              'GOND onUpdateSearchTimePostTimeline: something is wrong, it should be NOVIDEO',
+              self.timeline
+            );
+        }
+      },
       buildTimelineData: flow(function* (data) {
         self.waitForTimeline = false;
         if (!self.selectedStream) {
@@ -2650,6 +2763,8 @@ export const VideoModel = types
             isLoading: false,
             connectionStatus: STREAM_STATUS.NOVIDEO,
           });
+          self.shouldUpdateSearchTimeOnGetTimeline &&
+            (self.shouldUpdateSearchTimeOnGetTimeline = false);
           return true;
         }
 
@@ -2673,6 +2788,8 @@ export const VideoModel = types
               isLoading: false,
               connectionStatus: STREAM_STATUS.NOVIDEO,
             });
+            self.shouldUpdateSearchTimeOnGetTimeline &&
+              (self.shouldUpdateSearchTimeOnGetTimeline = false);
             return true;
           }
 

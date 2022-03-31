@@ -141,6 +141,8 @@ export default class TimeRuler extends PureComponent {
         const nextHourSec =
           (hoursValue.length > default24H
             ? hourIndex + 1
+            : hourIndex == hoursValue.length - 1
+            ? hoursValue[hourIndex] + 1
             : hoursValue[hourIndex + 1]) * secsPerHour;
         __DEV__ &&
           console.log(
@@ -160,6 +162,9 @@ export default class TimeRuler extends PureComponent {
         // __DEV__ && console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
         // this.scrollTo(sec * secWidth, 0);
         this.scrollTo(realSecToScroll * secWidth, 0);
+      } else {
+        __DEV__ &&
+          console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
       }
     }
     if (searchDate != prevProps.searchDate) {

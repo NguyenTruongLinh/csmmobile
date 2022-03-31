@@ -204,6 +204,8 @@ export const HLS_GET_DATA_DIRECTLY_TIMEOUT = 2000;
 export const HLS_MAX_RETRY = 10;
 export const VIDEO_INACTIVE_TIMEOUT = 120000;
 export const DIRECT_MAX_OLD_FRAME_SKIP = 5;
+export const DEFAULT_SEARCH_OFFSET_IN_SECONDS = 60;
+export const REFRESH_TIMELINE_INTERVAL = 60;
 
 export const CONTROLLER_TIMEOUT = 3000; // 3 seconds
 
