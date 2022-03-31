@@ -880,6 +880,7 @@ export const UserStoreModel = types
       if (shouldLogin) {
         self.isLoggedIn = yield self.getDataPostLogin(true);
         if (!self.isLoggedIn) self.deleteLocal();
+        else self.setActivites(clientLogID.LOGIN);
         // __DEV__ && console.log('GOND self.isLoggedIn: ', self.isLoggedIn);
       }
       appStore.setLoading(false);
@@ -1114,7 +1115,11 @@ export const UserStoreModel = types
           ACConfig.setActivites,
           model
         );
-        __DEV__ && console.log('setActivites 1st request', `logId=${logId}`);
+        __DEV__ &&
+          console.log(
+            'setActivites 1st request STOP OLD activity',
+            `logId=${logId}`
+          );
 
         if (isScreenSwitch) moduleSwitchLogId = logId;
         else loginLogId = logId;
@@ -1130,7 +1135,11 @@ export const UserStoreModel = types
             ACConfig.setActivites,
             model
           );
-          __DEV__ && console.log('setActivites 2nd request', `logId=${logId}`);
+          __DEV__ &&
+            console.log(
+              'setActivites 2nd request START NEW activity',
+              `logId=${logId}`
+            );
 
           if (isScreenSwitch) moduleSwitchLogId = logId;
           else loginLogId = logId;
