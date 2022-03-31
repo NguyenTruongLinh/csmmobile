@@ -2,6 +2,7 @@ import Toast from 'react-native-root-toast';
 import {ActionMessages} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
 import {Dimensions} from 'react-native';
+import variables from '../styles/variables';
 
 const {width, height} = Dimensions.get('window');
 
@@ -18,6 +19,7 @@ const showToast = (
       height: 50,
       justifyContent: 'center',
       // marginBottom: 50,
+      marginTop: variables.isPhoneX ? 40 : 0,
     },
     duration: duration,
     position: Toast.positions.TOP, //BOTTOM, //
