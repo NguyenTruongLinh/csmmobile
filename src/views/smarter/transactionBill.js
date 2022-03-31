@@ -57,7 +57,7 @@ class TransactionBillView extends Component {
       );
     // transaction.changeAmount &&
     paymentData.push({
-      label: SMARTER_TXT.CHANGE + (transaction.changeAmount > 0 ? 's' : ''),
+      label: SMARTER_TXT.CHANGE,
       value: transaction.changeAmount,
     });
 
