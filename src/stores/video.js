@@ -348,6 +348,7 @@ export const VideoModel = types
 
     // refreshingTimeline: false,
     refreshTimelineInterval: null,
+    beginSearchTime: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -591,6 +592,11 @@ export const VideoModel = types
         ? self.searchPlayTimeLuxon.toSeconds() - self.searchDate.toSeconds()
         : 0;
     },
+    get beginSearchTimeOffset() {
+      return self.searchPlayTime
+        ? self.beginSearchTime.toSeconds() - self.searchDate.toSeconds()
+        : 0;
+    },
     get directData() {
       return self.directStreams.filter(s =>
         s.channelName.toLowerCase().includes(self.channelFilter.toLowerCase())
@@ -660,6 +666,8 @@ export const VideoModel = types
     get displayDateTime() {
       return self.frameTimeString && self.frameTimeString.length > 0
         ? self.frameTimeString
+        : self.beginSearchTime
+        ? self.beginSearchTime.toFormat(NVRPlayerConfig.FrameFormat)
         : self.searchPlayTimeLuxon.toFormat(NVRPlayerConfig.FrameFormat);
     },
     get hoursOfSearchDate() {
@@ -931,6 +939,7 @@ export const VideoModel = types
         if (
           !self.isLive &&
           self.timeline &&
+          self.timeline.length > 0 &&
           self.frameTime >= self.timeline[self.timeline.length - 1].begin &&
           !self.refreshTimelineInterval
           // !self.refreshingTimeline
@@ -1220,15 +1229,17 @@ export const VideoModel = types
           return;
         }
 
-        self.timeline = value.map(item =>
-          // TimelineModel.create({
-          ({
-            id: numberValue(item.id),
-            begin: numberValue(item.begin),
-            end: numberValue(item.end),
-            type: numberValue(item.type),
-          })
-        );
+        self.timeline = value
+          .map(item =>
+            // TimelineModel.create({
+            ({
+              id: numberValue(item.id),
+              begin: numberValue(item.begin),
+              end: numberValue(item.end),
+              type: numberValue(item.type),
+            })
+          )
+          .sort((x, y) => x.begin - y.begin);
         if (self.shouldUpdateSearchTimeOnGetTimeline) {
           __DEV__ && console.log('GOND shouldUpdateSearchTimeOnGetTimeline');
           self.onUpdateSearchTimePostTimeline();
@@ -1327,14 +1338,13 @@ export const VideoModel = types
       },
       onDefaultSearchTime() {
         let targetTime =
-          parseInt(DateTime.now().toSeconds()) -
-          parseInt(DEFAULT_SEARCH_OFFSET_IN_SECONDS);
-        self.setPlayTimeForSearch(targetTime);
+          DateTime.now().toSeconds() - DEFAULT_SEARCH_OFFSET_IN_SECONDS;
+        self.setBeginSearchTime(targetTime);
         __DEV__ &&
           console.log(
             'GOND onDefaultSearchTime: ',
             DEFAULT_SEARCH_OFFSET_IN_SECONDS,
-            DateTime.now().toSeconds(),
+            DateTime.now(),
             targetTime
           );
         self.shouldUpdateSearchTimeOnGetTimeline = true;
@@ -1429,6 +1439,28 @@ export const VideoModel = types
         // self.shouldUpdateSearchTimeOnGetTimeline &&
         //   (self.shouldUpdateSearchTimeOnGetTimeline = false);
       },
+      setBeginSearchTime(value) {
+        if (value == null || DateTime.isDateTime(value)) {
+          if (!value && __DEV__) console.trace('GOND setBginSearchTime null');
+          self.beginSearchTime = value;
+        } else if (typeof value == 'string')
+          self.beginSearchTime = DateTime.fromFormat(
+            value,
+            NVRPlayerConfig.RequestTimeFormat,
+            {zone: self.timezone}
+          );
+        else if (typeof value == 'number') {
+          self.beginSearchTime = DateTime.fromSeconds(value, {
+            zone: self.timezone,
+          });
+        } else {
+          console.log(
+            'GOND - WARN! setBeginSearchTime VALUE IS NOT DATETIME NOR STRING'
+          );
+          return;
+        }
+        console.log('GOND setBeginSearchTime ', self.beginSearchTime);
+      },
       onExitSinglePlayer(currentRoute) {
         // self.isSingleMode = false;
         if (self.cloudType == CLOUD_TYPE.HLS) {
@@ -1495,6 +1527,7 @@ export const VideoModel = types
           clearInterval(self.refreshTimelineInterval);
           self.refreshTimelineInterval = null;
         }
+        self.beginSearchTime = null;
       },
       updateDirectFrame(channel, frameData) {
         const target = self.directStreams.find(s => s.videoSource == channel);
@@ -2196,7 +2229,11 @@ export const VideoModel = types
                 .toFormat(NVRPlayerConfig.HLSRequestDateFormat),
               BeginTime:
                 searchTime ??
-                (self.searchPlayTime
+                (self.beginSearchTime
+                  ? self.beginSearchTime.toFormat(
+                      NVRPlayerConfig.HLSRequestTimeFormat
+                    )
+                  : self.searchPlayTime
                   ? self.searchPlayTimeLuxon.toFormat(
                       NVRPlayerConfig.HLSRequestTimeFormat
                     )
@@ -2641,6 +2678,13 @@ export const VideoModel = types
       },
       onUpdateSearchTimePostTimeline() {
         let result = null;
+        if (!self.beginSearchTime) {
+          __DEV__ &&
+            console.log(
+              'GOND onUpdateSearchTimePostTimeline beginSearchTime not set!'
+            );
+          return;
+        }
 
         self.shouldUpdateSearchTimeOnGetTimeline = false;
         __DEV__ &&
@@ -2649,11 +2693,11 @@ export const VideoModel = types
             self.timeline.length
           );
         for (let i = self.timeline.length - 1; i >= 0; i--) {
-          if (self.timeline[i].begin >= self.searchPlayTimeLuxon.toSeconds()) {
+          if (self.timeline[i].begin >= self.beginSearchTime.toSeconds()) {
             __DEV__ &&
               console.log(
                 'GOND onUpdateSearchTimePostTimeline: ',
-                self.searchPlayTimeLuxon.toSeconds(),
+                self.beginSearchTime.toSeconds(),
                 self.timeline[i].begin
               );
             result = self.timeline[i];
@@ -2690,8 +2734,8 @@ export const VideoModel = types
           __DEV__ &&
             console.log('GOND onUpdateSearchTimePostTimeline result: ', result);
           if (
-            result.begin <= self.searchPlayTimeLuxon.toSeconds() &&
-            result.end >= self.searchPlayTimeLuxon.toSeconds()
+            result.begin <= self.beginSearchTime.toSeconds() &&
+            result.end >= self.beginSearchTime.toSeconds()
           ) {
             __DEV__ &&
               console.log(
@@ -2699,7 +2743,7 @@ export const VideoModel = types
               );
             return;
           } else {
-            self.setPlayTimeForSearch(
+            self.setBeginSearchTime(
               result.end - DEFAULT_SEARCH_OFFSET_IN_SECONDS
             );
           }

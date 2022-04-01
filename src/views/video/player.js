@@ -167,11 +167,14 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
 
     if (this.ruler && this.savedTimelinePosition) {
-      this.ruler.moveToPosition(videoStore.searchPlayTimeBySeconds);
+      this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
       videoStore.setDisplayDateTime(
-        videoStore.searchPlayTimeLuxon.toFormat(NVRPlayerConfig.FrameFormat)
+        videoStore.beginSearchTime.toFormat(NVRPlayerConfig.FrameFormat)
       );
       this.savedTimelinePosition = null;
+      // if (videoStore.timeline) {
+      //   videoStore.setBeginSearchTime(null);
+      // }
     }
   }
 
@@ -184,20 +187,21 @@ class VideoPlayerView extends Component {
       //   () => this.ruler && this.ruler.forceUpdate()
       // ),
       reaction(
-        () => videoStore.searchPlayTime,
-        searchPlayTime => {
+        () => videoStore.beginSearchTime,
+        beginSearchTime => {
           __DEV__ &&
             console.log('GOND on searchPlayTime changed: ', this.ruler);
-          if (!searchPlayTime) return;
+          if (!beginSearchTime) return;
           if (this.ruler) {
-            this.ruler.moveToPosition(videoStore.searchPlayTimeBySeconds);
+            this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
             videoStore.setDisplayDateTime(
-              videoStore.searchPlayTimeLuxon.toFormat(
-                NVRPlayerConfig.FrameFormat
-              )
+              beginSearchTime.toFormat(NVRPlayerConfig.FrameFormat)
             );
+            // if (videoStore.timeline) {
+            //   videoStore.setBeginSearchTime(null);
+            // }
           } else {
-            this.savedTimelinePosition = videoStore.searchPlayTimeBySeconds;
+            this.savedTimelinePosition = videoStore.beginSearchTimeOffset;
           }
         }
       ),
@@ -380,7 +384,7 @@ class VideoPlayerView extends Component {
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onSwitchLiveSearch(!videoStore.isLive);
     videoStore.switchLiveSearch(undefined, true);
-    this.ruler && this.ruler.moveToPosition(videoStore.searchPlayTimeBySeconds);
+    this.ruler && this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
     this.updateHeader();
     // this.playerRef && this.playerRef.pause(true);
     setTimeout(() => {
@@ -412,6 +416,7 @@ class VideoPlayerView extends Component {
         Object.keys(videoStore.recordingDates)
       );
 
+    videoStore.setBeginSearchTime(null);
     this.playerRef && this.playerRef.onChangeSearchDate(dateString);
     videoStore.setDisplayDateTime(
       DateTime.fromFormat(dateString, CALENDAR_DATE_FORMAT).toFormat(
@@ -467,9 +472,8 @@ class VideoPlayerView extends Component {
     if (videoStore.selectedChannel && channelNo == videoStore.selectedChannel)
       return;
 
-    this.playerRef && this.playerRef.onChangeChannel(channelNo);
     if (videoStore.frameTimeString) {
-      videoStore.setPlayTimeForSearch(
+      videoStore.setBeginSearchTime(
         DateTime.fromFormat(
           videoStore.frameTimeString,
           NVRPlayerConfig.FrameFormat
@@ -477,6 +481,7 @@ class VideoPlayerView extends Component {
       );
     }
     // videoStore.setNoVideo(false);
+    this.playerRef && this.playerRef.onChangeChannel(channelNo);
     videoStore.selectChannel(channelNo);
     // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
   };
