@@ -935,6 +935,12 @@ export const VideoModel = types
         }
         self.checkForRefreshingTimeline();
       },
+      clearRefreshTimelineInterval() {
+        if (self.refreshTimelineInterval) {
+          clearInterval(self.refreshTimelineInterval);
+          self.refreshTimelineInterval = null;
+        }
+      },
       checkForRefreshingTimeline() {
         if (
           !self.isLive &&
@@ -948,8 +954,8 @@ export const VideoModel = types
           self.refreshTimelineInterval = setInterval(() => {
             // self.refreshingTimeline = true;
             if (!self.timeline || self.timeline.length == 0) {
-              clearInterval(self.refreshTimelineInterval);
-              self.refreshTimelineInterval = null;
+              self.clearRefreshTimelineInterval();
+              return;
             }
             if (self.frameTime < self.timeline[self.timeline.length - 1].begin)
               return;
@@ -1523,10 +1529,7 @@ export const VideoModel = types
         self.timelineRequestId = '';
         self.shouldUpdateSearchTimeOnGetTimeline = false;
         // self.refreshingTimeline = false;
-        if (self.refreshTimelineInterval) {
-          clearInterval(self.refreshTimelineInterval);
-          self.refreshTimelineInterval = null;
-        }
+        self.clearRefreshTimelineInterval();
         self.beginSearchTime = null;
       },
       updateDirectFrame(channel, frameData) {
