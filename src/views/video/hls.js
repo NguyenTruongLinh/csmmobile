@@ -81,6 +81,8 @@ class HLSStreamingView extends React.Component {
     this.forceResume = false;
 
     this.waitingForNewUrl = false;
+    this.lastSeekableDuration = 0;
+    this.skippedDuration = 0;
   }
 
   componentDidMount() {
@@ -672,9 +674,19 @@ class HLSStreamingView extends React.Component {
       return;
     }
     __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
+    // dongpt: skip old frames after dragging timeline or setting search time
+    if (this.skippedDuration > 0 && this.player) {
+      this.player.seek(Math.ceil(this.skippedDuration), 500);
+      this.skippedDuration = 0;
+      return;
+    }
 
     const {hlsTimestamps} = videoStore;
     const {timeBeginPlaying} = this.state;
+
+    // dongpt: save seekableDuration for skipping old frame when drag timeline or set search time
+    if (!isLive) this.lastSeekableDuration = data.seekableDuration;
+    else if (this.lastSeekableDuration != 0) this.lastSeekableDuration = 0;
 
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
@@ -979,8 +991,13 @@ class HLSStreamingView extends React.Component {
         streamUrl: '',
       },
       () => {
-        this.setState({streamUrl});
-        streamData.setStreamReady(true);
+        this.setState({streamUrl}, () => {
+          streamData.setStreamReady(true);
+          if (this.lastSeekableDuration > 0) {
+            this.skippedDuration = this.lastSeekableDuration;
+            this.lastSeekableDuration = 0;
+          }
+        });
       }
     );
   };
