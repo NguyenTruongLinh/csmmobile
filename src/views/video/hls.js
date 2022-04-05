@@ -418,6 +418,8 @@ class HLSStreamingView extends React.Component {
   onChangeSearchDate = () => {
     this.lastSearchTime = null;
     this.frameTime = 0;
+    this.lastSeekableDuration = 0;
+    this.skippedDuration = 0;
     this.clearBufferTimeout();
     this.refresh();
     this.pause(true);
@@ -448,6 +450,10 @@ class HLSStreamingView extends React.Component {
     this.pause(true);
     snackbar.dismiss();
     this.props.streamData.setStreamReady(false);
+    if (isLive) {
+      this.lastSeekableDuration = 0;
+      this.skippedDuration = 0;
+    }
     setTimeout(
       () =>
         this.setStreamStatus({
@@ -465,6 +471,8 @@ class HLSStreamingView extends React.Component {
     this.pause(true);
     snackbar.dismiss();
     this.props.streamData.setStreamReady(false);
+    this.lastSeekableDuration = 0;
+    this.skippedDuration = 0;
     setTimeout(
       () =>
         this.setStreamStatus({
@@ -478,6 +486,8 @@ class HLSStreamingView extends React.Component {
   onHDMode = isHD => {
     // this.pause(true);
     this.lastSearchTime = this.computeTime(this.frameTime);
+    this.lastSeekableDuration = 0;
+    this.skippedDuration = 0;
     this.props.videoStore.setBeginSearchTime(this.lastSearchTime);
     this.props.streamData.setStreamReady(false);
     this.pause(true);
@@ -685,8 +695,8 @@ class HLSStreamingView extends React.Component {
     const {timeBeginPlaying} = this.state;
 
     // dongpt: save seekableDuration for skipping old frame when drag timeline or set search time
-    if (!isLive) this.lastSeekableDuration = data.seekableDuration;
-    else if (this.lastSeekableDuration != 0) this.lastSeekableDuration = 0;
+    if (!isLive && data.seekableDuration > 0)
+      this.lastSeekableDuration = data.seekableDuration;
 
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
@@ -1003,14 +1013,8 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      streamData,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;

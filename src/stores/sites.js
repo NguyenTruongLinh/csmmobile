@@ -480,8 +480,8 @@ export const SitesMapModel = types
               );
             return false;
           }
-          __DEV__ &&
-            console.log('GOND get site tree result: ', self.regionsList);
+          // __DEV__ &&
+          //   console.log('GOND get site tree result: ', self.regionsList);
           self.endLoad();
           return true;
         }
