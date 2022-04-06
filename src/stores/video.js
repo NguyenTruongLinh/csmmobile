@@ -1498,6 +1498,7 @@ export const VideoModel = types
         self.hdMode = false;
         self.paused = false;
         self.showAuthenModal = false;
+        self.recordingDates = {};
         self.timeline = [];
         self.timezoneOffset = 0;
         self.noVideo = false;

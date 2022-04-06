@@ -686,7 +686,9 @@ class HLSStreamingView extends React.Component {
     __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
     // dongpt: skip old frames after dragging timeline or setting search time
     if (this.skippedDuration > 0 && this.player) {
-      this.player.seek(Math.ceil(this.skippedDuration), 500);
+      if (Platform.OS == 'ios') {
+        this.player.seek(Math.ceil(data.seekableDuration), 50);
+      } else this.player.seek(Math.ceil(this.skippedDuration), 50);
       this.skippedDuration = 0;
       return;
     }
@@ -1081,6 +1083,9 @@ class HLSStreamingView extends React.Component {
                 onPlaybackResume={this.onPlaybackResume}
                 onProgress={this.onProgress}
                 onLoad={this.onLoad}
+                onSeek={event =>
+                  __DEV__ && console.log('GOND HLS onSeek: ', event)
+                }
                 onTimedMetadata={event => {
                   __DEV__ && console.log('GOND HLS onTimedMetadata', event);
                 }}
