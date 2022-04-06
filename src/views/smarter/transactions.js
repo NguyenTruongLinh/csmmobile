@@ -101,8 +101,8 @@ class ExceptionsView extends Component {
         : '') + selectedEmployee.siteName;
     navigation.setOptions({
       headerTitle:
-        width < 440 && title.length > 17
-          ? title.substring(0, 16) + '...'
+        width < 440 && title.length > 19
+          ? title.substring(0, 18) + '...'
           : title,
       headerRight: () => (
         <View style={commonStyles.headerContainer}>
