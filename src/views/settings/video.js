@@ -143,7 +143,11 @@ class VideosettingView extends Component {
       <MaterialIcons
         style={{marginTop: 15, marginRight: 8}}
         name={isChecked ? 'radio-button-checked' : 'radio-button-unchecked'}
-        color={CMSColors.PrimaryActive}
+        color={
+          item.value && !isStreamingAvailable
+            ? CMSColors.DisableItemColor
+            : CMSColors.PrimaryActive
+        }
         size={28}
       />
     );
@@ -178,7 +182,7 @@ class VideosettingView extends Component {
               style={[
                 styles.rowButton_icon,
                 item.value && !isStreamingAvailable
-                  ? {tintColor: 'lightgray'}
+                  ? {tintColor: CMSColors.DisableItemColor}
                   : {},
               ]}
             />
@@ -187,14 +191,18 @@ class VideosettingView extends Component {
             <Text
               style={[
                 styles.rowButton_name,
-                item.value && !isStreamingAvailable ? {color: 'lightgray'} : {},
+                item.value && !isStreamingAvailable
+                  ? {color: CMSColors.DisableItemColor}
+                  : {},
               ]}>
               {item.name}
             </Text>
             <Text
               style={[
                 styles.rowButton_desc,
-                item.value && !isStreamingAvailable ? {color: 'lightgray'} : {},
+                item.value && !isStreamingAvailable
+                  ? {color: CMSColors.DisableItemColor}
+                  : {},
               ]}>
               {item.description}
             </Text>

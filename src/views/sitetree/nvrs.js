@@ -63,10 +63,10 @@ class NVRsView extends Component {
     const {sitesStore, navigation} = this.props;
     this.reactions = [
       reaction(
-        () => sitesStore.selectedSite.name,
-        newSiteName => {
+        () => sitesStore.selectedSite,
+        newSite => {
           navigation.setOptions({
-            headerTitle: newSiteName || 'Unknown site',
+            headerTitle: newSite ? newSite.name : '',
           });
         }
       ),

@@ -324,7 +324,7 @@ export const UserStoreModel = types
       let result = [1, 2];
       let tmp = [];
       for (const [key, value] of MODULE_TAB_MAP.entries()) {
-        if (self.hasPermission(key)) {
+        if (key == MODULE_PERMISSIONS.VSC || self.hasPermission(key)) {
           tmp.push(...value);
         }
       }
@@ -335,7 +335,7 @@ export const UserStoreModel = types
       let result = [0, 1, 2, 3, 4];
       let tmp = [];
       for (const [key, value] of MODULE_HOME_WIDGET_MAP.entries()) {
-        if (self.hasPermission(key)) {
+        if (key == MODULE_PERMISSIONS.VSC || self.hasPermission(key)) {
           tmp.push(...value);
         }
       }
@@ -654,8 +654,7 @@ export const UserStoreModel = types
           ) {
             self.moduleUpdatedFlag = false;
             const prevDisableTabIndexes = self.getDisableTabIndexes();
-            const prevDisableHomeWidgetIndexes =
-              self.getDisableHomeWidgetIndexes();
+            const prevDisableHomeWidgetIndexes = self.getDisableHomeWidgetIndexes();
             self.modules = res.map(item => parseModule(item));
             self.moduleUpdatedFlag =
               JSON.stringify(prevDisableTabIndexes) !=
