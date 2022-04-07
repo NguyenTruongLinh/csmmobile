@@ -953,7 +953,7 @@ export const VideoModel = types
           __DEV__ && console.log('GOND start Refreshing timeline interval ');
           self.refreshTimelineInterval = setInterval(() => {
             // self.refreshingTimeline = true;
-            if (!self.timeline || self.timeline.length == 0) {
+            if (self.isLive || !self.timeline || self.timeline.length == 0) {
               self.clearRefreshTimelineInterval();
               return;
             }
@@ -2151,6 +2151,7 @@ export const VideoModel = types
         }
 
         if (timezone) yield self.getDVRTimezone();
+        self.clearRefreshTimelineInterval();
 
         // listIdToCheck = [];
         let requestParams = [];
@@ -2416,6 +2417,7 @@ export const VideoModel = types
           );
           return;
         }
+        self.clearRefreshTimelineInterval();
         /*self.selectedStream.setStreamStatus({
           connectionStatus: STREAM_STATUS.CONNECTING,
           isLoading: true,
@@ -2618,6 +2620,7 @@ export const VideoModel = types
                     self.buildDaylistData(data);
                   }
                 }, 1000);
+                return;
               }
               daysData =
                 typeof res.Data === 'string' ? JSON.parse(res.Data) : res.Data;
@@ -2761,10 +2764,10 @@ export const VideoModel = types
       },
       buildTimelineData: flow(function* (data) {
         self.waitForTimeline = false;
-        if (!self.selectedStream) {
+        if (!self.selectedStream || self.isLive) {
           __DEV__ &&
             console.log(
-              'GOND HLS buildTimelineData no stream',
+              'GOND HLS buildTimelineData no stream or currently in live mode',
               self.selectedStream
             );
           return false;
