@@ -28,8 +28,6 @@ import notificationController from '../notification/notificationController';
 import {toUTCDate} from '../util/general.js';
 
 export const clientLogID = {
-  APP_TO_BACKGROUND: -1,
-  APP_TO_FOREGROUND: 0,
   LOGIN: 600,
   LOGOUT: 601,
   ALARM: 602,
@@ -40,6 +38,8 @@ export const clientLogID = {
   PVM: 607,
   VIDEO: 608,
   HOME: 609,
+  APP_TO_BACKGROUND: 698,
+  APP_TO_FOREGROUND: 699,
 };
 export const ClientType = {
   BROWSER: 0,
@@ -654,7 +654,8 @@ export const UserStoreModel = types
           ) {
             self.moduleUpdatedFlag = false;
             const prevDisableTabIndexes = self.getDisableTabIndexes();
-            const prevDisableHomeWidgetIndexes = self.getDisableHomeWidgetIndexes();
+            const prevDisableHomeWidgetIndexes =
+              self.getDisableHomeWidgetIndexes();
             self.modules = res.map(item => parseModule(item));
             self.moduleUpdatedFlag =
               JSON.stringify(prevDisableTabIndexes) !=
