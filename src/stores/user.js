@@ -29,7 +29,6 @@ import {toUTCDate} from '../util/general.js';
 
 export const clientLogID = {
   APP_TO_BACKGROUND: -1,
-  HOME: -1,
   APP_TO_FOREGROUND: 0,
   LOGIN: 600,
   LOGOUT: 601,
@@ -40,6 +39,7 @@ export const clientLogID = {
   SETTINGS: 606,
   PVM: 607,
   VIDEO: 608,
+  HOME: 609,
 };
 export const ClientType = {
   BROWSER: 0,
@@ -480,9 +480,9 @@ export const UserStoreModel = types
       appStore.setLoading(false);
     },
     logout: flow(function* () {
-      if (!self.deleteLocal()) return false;
+      yield self.setActivites(clientLogID.LOGOUT);
 
-      self.setActivites(clientLogID.LOGOUT);
+      if (!self.deleteLocal()) return false;
 
       self.onLogout();
 
@@ -879,7 +879,7 @@ export const UserStoreModel = types
       if (shouldLogin) {
         self.isLoggedIn = yield self.getDataPostLogin(true);
         if (!self.isLoggedIn) self.deleteLocal();
-        else self.setActivites(clientLogID.LOGIN);
+        // else self.setActivites(clientLogID.LOGIN);
         // __DEV__ && console.log('GOND self.isLoggedIn: ', self.isLoggedIn);
       }
       appStore.setLoading(false);
@@ -1117,7 +1117,7 @@ export const UserStoreModel = types
         __DEV__ &&
           console.log(
             'setActivites 1st request STOP OLD activity',
-            `logId=${logId}`
+            `logId=${JSON.stringify(logId)}`
           );
 
         if (isScreenSwitch) moduleSwitchLogId = logId;
@@ -1137,7 +1137,7 @@ export const UserStoreModel = types
           __DEV__ &&
             console.log(
               'setActivites 2nd request START NEW activity',
-              `logId=${logId}`
+              `logId=${JSON.stringify(logId)}`
             );
 
           if (isScreenSwitch) moduleSwitchLogId = logId;
