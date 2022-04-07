@@ -396,7 +396,7 @@ export default HLSStreamModel = types
     // setStreamStatus({connectionStatus, error, isLoading, needReset}) {
     setStreamStatus(statusObject) {
       if (!isAlive(self)) return;
-      __DEV__ && console.trace('GOND HLS: Set stream status: ', statusObject);
+      // __DEV__ && console.trace('GOND HLS: Set stream status: ', statusObject);
 
       self.targetUrl.setStreamStatus(statusObject);
       // connectionStatus != undefined &&

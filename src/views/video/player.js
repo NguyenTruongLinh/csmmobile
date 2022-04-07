@@ -167,7 +167,11 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
 
     if (this.ruler && this.savedTimelinePosition) {
-      this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
+      // __DEV__ && console.log(
+      //   'GOND on player setTimelinePosition 2: ',
+      //   videoStore.beginSearchTimeOffset
+      // );
+      this.ruler.moveToPosition(this.savedTimelinePosition);
       videoStore.setDisplayDateTime(
         videoStore.beginSearchTime.toFormat(NVRPlayerConfig.FrameFormat)
       );
@@ -188,14 +192,22 @@ class VideoPlayerView extends Component {
       // ),
       reaction(
         () => videoStore.beginSearchTime,
-        beginSearchTime => {
+        searchTime => {
           __DEV__ &&
-            console.log('GOND on searchPlayTime changed: ', this.ruler);
-          if (!beginSearchTime) return;
+            console.log(
+              'GOND on searchPlayTime changed: ',
+              this.ruler,
+              searchTime
+            );
+          if (!searchTime) return;
           if (this.ruler) {
+            // __DEV__ && console.log(
+            //   'GOND on player setTimelinePosition 1: ',
+            //   videoStore.beginSearchTimeOffset
+            // );
             this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
             videoStore.setDisplayDateTime(
-              beginSearchTime.toFormat(NVRPlayerConfig.FrameFormat)
+              searchTime.toFormat(NVRPlayerConfig.FrameFormat)
             );
             // if (videoStore.timeline) {
             //   videoStore.setBeginSearchTime(null);
@@ -384,7 +396,11 @@ class VideoPlayerView extends Component {
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onSwitchLiveSearch(!videoStore.isLive);
     videoStore.switchLiveSearch(undefined, true);
-    this.ruler && this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
+    // __DEV__ && console.log(
+    //   'GOND on player setTimelinePosition 3: ',
+    //   videoStore.beginSearchTimeOffset
+    // );
+    // this.ruler && this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
     this.updateHeader();
     // this.playerRef && this.playerRef.pause(true);
     setTimeout(() => {
@@ -423,6 +439,7 @@ class VideoPlayerView extends Component {
         NVRPlayerConfig.FrameFormat
       )
     );
+    // __DEV__ && console.log('GOND on player setTimelinePosition 4: ');
     this.ruler && this.ruler.moveToPosition(0);
     if (this.checkDataOnSearchDate(dateString)) {
       // videoStore.setNoVideo(false);
@@ -450,6 +467,7 @@ class VideoPlayerView extends Component {
         ' = ',
         secondsValue
       );
+    // __DEV__ && console.log('GOND on player setTimelinePosition 5: ', secondsValue);
     this.ruler && this.ruler.moveToPosition(secondsValue);
     this.playerRef && this.playerRef.onBeginDraggingTimeline();
 
@@ -493,21 +511,22 @@ class VideoPlayerView extends Component {
   onShowControlButtons = () => {
     // __DEV__ && console.log('GOND onShowControlButtons');
     // if (__DEV__ && this.props.videoStore.isFullscreen) {
-    //   this.setState({showController: !this.state.showController});
-    // } else {
-    this.setState({showController: true}, () => {
-      // __DEV__ && console.log('GOND onShowControlButtons already showed');
-      if (this.controllerTimeout) clearTimeout(this.controllerTimeout);
-      this.controllerTimeout = setTimeout(
-        () => {
-          // __DEV__ && console.log('GOND onShowControlButtons hidden');
-          if (this._isMounted) this.setState({showController: false});
-          this.controllerTimeout = null;
-        },
-        __DEV__ ? 5000 : CONTROLLER_TIMEOUT
-      );
-    });
-    // }
+    if (__DEV__) {
+      this.setState({showController: !this.state.showController});
+    } else {
+      this.setState({showController: true}, () => {
+        // __DEV__ && console.log('GOND onShowControlButtons already showed');
+        if (this.controllerTimeout) clearTimeout(this.controllerTimeout);
+        this.controllerTimeout = setTimeout(
+          () => {
+            // __DEV__ && console.log('GOND onShowControlButtons hidden');
+            if (this._isMounted) this.setState({showController: false});
+            this.controllerTimeout = null;
+          },
+          __DEV__ ? 5000 : CONTROLLER_TIMEOUT
+        );
+      });
+    }
   };
 
   formatTimeValue = value => {

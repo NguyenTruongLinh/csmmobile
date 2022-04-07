@@ -257,35 +257,6 @@ class HLSStreamingView extends React.Component {
             }
           }
         ),
-        // reaction(
-        //   () => videoStore.selectedChannel,
-        //   (newChannel, lastChannel) => {
-        //     __DEV__ &&
-        //       console.log('HLSStreamingView channel changed: ', newChannel);
-        //     // if ((lastChannel == null)) {
-        //     this.pause(true);
-        //     // this.stop();
-        //     // }
-        //     this.setState({internalLoading: true});
-        //     this.lastSearchTime = null;
-        //   }
-        // ),
-        // reaction(
-        //   () => videoStore.isLive,
-        //   isLive => {
-        //     // __DEV__ &&
-        //     //   console.log('HLSStreamingView switch mode isLive: ', isLive);
-        //     this.lastSearchTime = null;
-        //   }
-        // ),
-        // reaction(
-        //   () => videoStore.hdMode,
-        //   isHD => {
-        //     // __DEV__ &&
-        //     //   console.log('HLSStreamingView switch mode isHD: ', isHD);
-        //     this.lastSearchTime = this.computeTime(this.frameTime);
-        //   }
-        // ),
         reaction(
           () => videoStore.noVideo,
           isNoVideo => {
@@ -308,6 +279,16 @@ class HLSStreamingView extends React.Component {
             }
           }
         ),
+        // reaction(
+        //   () => videoStore.beginSearchTime,
+        //   newSearchTime => {
+        //     this.frameTime = 0;
+        //     this.tsIndex = -1;
+        //     this.setState({
+        //       timeBeginPlaying: newSearchTime,
+        //     });
+        //   }
+        // ),
       ];
     } else {
       this.reactions = [
@@ -686,9 +667,9 @@ class HLSStreamingView extends React.Component {
     __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
     // dongpt: skip old frames after dragging timeline or setting search time
     if (this.skippedDuration > 0 && this.player) {
-      if (Platform.OS == 'ios') {
-        this.player.seek(Math.ceil(data.seekableDuration), 50);
-      } else this.player.seek(Math.ceil(this.skippedDuration), 50);
+      // if (Platform.OS == 'ios') {
+      this.player.seek(data.seekableDuration, 50);
+      // } else this.player.seek(Math.ceil(this.skippedDuration), 50);
       this.skippedDuration = 0;
       return;
     }
@@ -1015,8 +996,14 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;

@@ -214,13 +214,13 @@ export default class TimeRuler extends PureComponent {
       currentDate = hourIterator.toFormat(
         NVRPlayerConfig.QueryStringUTCDateFormat
       );
-      __DEV__ &&
-        console.log(
-          'GOND TimeRuler constructArrayOfHours',
-          currentDate,
-          hourIterator,
-          hourIterator.hour
-        );
+      // __DEV__ &&
+      //   console.log(
+      //     'GOND TimeRuler constructArrayOfHours',
+      //     currentDate,
+      //     hourIterator,
+      //     hourIterator.hour
+      //   );
     } while (currentDate == selectedDate);
 
     return [resString, resValues];

@@ -348,7 +348,7 @@ export const VideoModel = types
 
     // refreshingTimeline: false,
     refreshTimelineInterval: null,
-    beginSearchTime: null,
+    beginSearchTime: null, // luxon DateTime
   }))
   .views(self => ({
     get isCloud() {
@@ -593,8 +593,9 @@ export const VideoModel = types
         : 0;
     },
     get beginSearchTimeOffset() {
-      return self.searchPlayTime
-        ? self.beginSearchTime.toSeconds() - self.searchDate.toSeconds()
+      return self.beginSearchTime
+        ? self.beginSearchTime.toSeconds() -
+            self.beginSearchTime.startOf('day').toSeconds()
         : 0;
     },
     get directData() {
@@ -933,6 +934,13 @@ export const VideoModel = types
             self.frameTime = value;
           }
         }
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND setFrameTime ',
+        //     DateTime.fromSeconds(value, {zone: self.timezone}).toFormat(
+        //       NVRPlayerConfig.FrameFormat
+        //     )
+        //   );
         self.checkForRefreshingTimeline();
       },
       clearRefreshTimelineInterval() {
@@ -3181,7 +3189,7 @@ export const VideoModel = types
           // util.isValidHttpUrl(s.searchHDUrl.url) &&
           //   self.stopHLSStream(s.channelNo, s.searchHDUrl.sid, true);
         });
-        __DEV__ && console.trace('GOND releaseHLSStreams!');
+        // __DEV__ && console.trace('GOND releaseHLSStreams!');
         self.hlsStreams = [];
       },
       releaseStreams() {
