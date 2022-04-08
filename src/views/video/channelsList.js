@@ -31,6 +31,8 @@ import commonStyles from '../../styles/commons.style';
 import {Comps as CompTxt, VIDEO as VIDEO_TXT} from '../../localization/texts';
 // import Ripple from 'react-native-material-ripple';
 
+const {width, height} = Dimensions.get('window');
+
 const ITEMS_PER_ROW = 2;
 const ITEM_HEIGHT = 200;
 const DROPDOWN_ITEM_HEIGHT = 56;
@@ -106,19 +108,23 @@ class ChannelsListView extends React.Component {
 
   setHeader = enableSettingButton => {
     if (!this._isMounted) return;
-    const {
-      navigation,
-      videoStore,
-      healthStore,
-      sitesStore,
-      userStore,
-    } = this.props;
+    const {navigation, videoStore, healthStore, sitesStore, userStore} =
+      this.props;
     const {isListView} = this.state;
+
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() =>
           this.setHeader(enableSettingButton)
         )
       : null;
+
+    let title = sitesStore.selectedSite
+      ? sitesStore.selectedSite.name
+      : 'No Site was selected';
+
+    title =
+      width < 440 && title.length > 10 ? title.substring(0, 9) + '...' : title;
+
     __DEV__ &&
       console.log(
         'GOND channels setHeader: isLive = ',
@@ -126,9 +132,7 @@ class ChannelsListView extends React.Component {
       );
 
     navigation.setOptions({
-      headerTitle: sitesStore.selectedSite
-        ? sitesStore.selectedSite.name
-        : 'No Site was selected',
+      headerTitle: title,
       headerRight: () => (
         <View style={commonStyles.headerContainer}>
           {healthStore.isLiveVideo &&
