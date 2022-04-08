@@ -16,7 +16,7 @@ const showToast = (
     containerStyle: {
       flex: 1,
       width: width - 30,
-      height: 50,
+      // height: 50,
       justifyContent: 'center',
       // marginBottom: 50,
       marginTop: variables.isPhoneX ? 40 : 0,
