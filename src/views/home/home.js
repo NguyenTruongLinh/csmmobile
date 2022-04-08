@@ -50,14 +50,13 @@ class HomeView extends Component {
         userStore.getWidgetCounts();
         __DEV__ && console.log('GOND intervalUpdateWidgetCounts ...');
       }, 30 * 1000);
+      userStore.setActivites(clientLogID.HOME);
     });
 
     this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
       __DEV__ && console.log('Home componentWillBeBlurred');
       this.notifyClearIntervals();
     });
-
-    userStore.setActivites(clientLogID.HOME);
   }
 
   componentWillUnmount() {

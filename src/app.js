@@ -337,7 +337,7 @@ class App extends React.Component {
           console.log('App launch');
         }
         userStore.setActivites(clientLogID.APP_TO_FOREGROUND);
-      } else {
+      } else if (Platform.OS === 'android' || nextAppState === 'inactive') {
         userStore.setActivites(clientLogID.APP_TO_BACKGROUND);
       }
     }
