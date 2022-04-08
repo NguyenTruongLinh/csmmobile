@@ -1257,6 +1257,12 @@ export const VideoModel = types
         if (self.shouldUpdateSearchTimeOnGetTimeline) {
           __DEV__ && console.log('GOND shouldUpdateSearchTimeOnGetTimeline');
           self.onUpdateSearchTimePostTimeline();
+        } else {
+          if (!self.checkTimeOnTimeline(self.beginSearchTime.toSeconds())) {
+            self.selectedStream.setNoVideo(true);
+            self.selectedStream.stopWaitingForStream();
+            self.setNoVideo(true);
+          }
         }
         // .sort((x, y) => x.begin - y.begin);
         // __DEV__ && console.log('GOND after settimeline ', self.timeline);
@@ -1300,6 +1306,7 @@ export const VideoModel = types
         }
 
         self.setNoVideo(false);
+        self.clearRefreshTimelineInterval();
         if (!nextIsLive) {
           // dongpt: handle different timezone when switching from Live to Search mode
           if (
@@ -2521,8 +2528,7 @@ export const VideoModel = types
               s => s.targetUrl.sid == info.sid
             );
             if (target) {
-              __DEV__ && console.log(`GOND !!! HLShandleError 3`);
-              target.handleError();
+              target.handleError(info);
             } else {
               __DEV__ &&
                 console.log(
@@ -2717,30 +2723,6 @@ export const VideoModel = types
               );
             result = self.timeline[i];
           } else {
-            // if (result != null) {
-            //   __DEV__ && console.log('GOND onUpdateSearchTimePostTimeline 111');
-            //   break;
-            // } else {
-            //   if (lastVideoTime == 0) {
-            //     __DEV__ &&
-            //       console.log('GOND onUpdateSearchTimePostTimeline 222');
-            //     lastVideoTime = self.timeline[i].end;
-            //     result = self.timeline[i];
-            //   } else {
-            //     if (
-            //       self.timeline[i].begin - lastVideoTime >
-            //       DEFAULT_SEARCH_OFFSET_IN_SECONDS
-            //     ) {
-            //       __DEV__ &&
-            //         console.log('GOND onUpdateSearchTimePostTimeline 333');
-            //       break;
-            //     } else {
-            //       __DEV__ &&
-            //         console.log('GOND onUpdateSearchTimePostTimeline 444');
-            //       result = self.timeline[i];
-            //     }
-            //   }
-            // }
             result = self.timeline[i];
             break;
           }

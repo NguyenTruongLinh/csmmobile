@@ -172,6 +172,7 @@ export default HLSStreamModel = types
     keepAliveInterval: null,
     reInitTimeout: null,
     reconnectTimeout: null,
+    noIncomingVideoCount: 0,
   }))
   .views(self => ({
     get channelNo() {
@@ -265,6 +266,11 @@ export default HLSStreamModel = types
     },
     setNoVideo(value) {
       self.noVideo = value;
+      self.noIncomingVideoCount = 0;
+      self.setStreamStatus({
+        connectionStatus: STREAM_STATUS.NOVIDEO,
+        isLoading: false,
+      });
     },
     resetRetries() {
       self.clearStreamReconnectTimeout();
@@ -287,16 +293,19 @@ export default HLSStreamModel = types
     setLive(isLive) {
       if (self.isLive != isLive) {
         self.isLive = isLive;
+        self.noIncomingVideoCount = 0;
       }
     },
     setHD(isHD) {
       self.isHD = isHD;
+      self.noIncomingVideoCount = 0;
     },
     select(isSelected) {
       self.isSelected = isSelected;
     },
     setChannel(value) {
       self.channel = value;
+      self.noIncomingVideoCount = 0;
     },
     setOnErrorCallback(fn) {
       if (!fn || typeof fn != 'function') return;
@@ -508,7 +517,7 @@ export default HLSStreamModel = types
             if (!isAlive(currentUrl) || currentUrl.sid != info.sid) return;
             if (currentUrl.increaseRetry()) self.getStreamDirectly(info.sid);
             else {
-              // self.handleError();
+              // self.handleHLSError();
               self.giveUp();
             }
           }, HLS_GET_DATA_DIRECTLY_TIMEOUT),
@@ -708,7 +717,7 @@ export default HLSStreamModel = types
         //   isLoading: false,
         // });
         // self.onStreamError(self.channelNo, self.isLive);
-        __DEV__ && console.log(`GOND !!! HLShandleError 4`);
+        // __DEV__ && console.log(`GOND !!! HLShandleError 4`);
         self.handleError();
         return false;
       }
@@ -739,7 +748,7 @@ export default HLSStreamModel = types
       //       textColor: CMSColors.White,
       //       onPress: () => {
       //         self.resetRetries();
-      //         self.handleError();
+      //         self.handleHLSError();
       //       },
       //     }
       //   );
@@ -764,9 +773,19 @@ export default HLSStreamModel = types
         });
       }
     },
-    handleError(resumeTime) {
+    handleError(info, resumeTime) {
       __DEV__ &&
         console.log(`GOND reinit HLS stream: `, self.channelName, resumeTime);
+      if (info && parseInt(info.error_code) == 5) {
+        // description == 'No incoming video'
+        if (self.noIncomingVideoCount < 3) {
+          self.noIncomingVideoCount++;
+        } else {
+          self.setNoVideo(true);
+          self.stopWaitingForStream();
+          return;
+        }
+      }
       self.stopWaitingForStream();
       if (self.reInitRemaining > 0) {
         if (!self.reInitTimeout) {
@@ -810,7 +829,7 @@ export default HLSStreamModel = types
     //       //   connectionStatus: STREAM_STATUS.TIMEOUT,
     //       //   isLoading: false,
     //       // });
-    //       self.handleError();
+    //       self.handleHLSError();
     //     }
     //   }, time ?? STREAM_TIMEOUT);
     // },

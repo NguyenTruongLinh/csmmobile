@@ -900,7 +900,7 @@ class HLSStreamingView extends React.Component {
     //     this.reInitCount++;
     //     this.lastVideoTime = 0;
     //     this.reInitTimeout = setTimeout(() => {
-    //       this._isMounted && streamData.handleError(this.lastSearchTime);
+    //       this._isMounted && streamData.handleError();
     //       this.reInitTimeout = null;
     //     }, 1500);
     //   }
