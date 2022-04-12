@@ -540,9 +540,10 @@ export const AlarmModel = types
       __DEV__ && console.log(`getAlarms debug = `, debug);
       if (params) self.lastParams = params;
       self.isSearch = isSearch ?? self.isSearch;
+      const isSearchAlarms = self.isSearch;
 
       self.isLoading = true;
-      if (self.isSearch) {
+      if (isSearchAlarms) {
         self.searchAlarms = [];
         self.searchRawAlarms = [];
         self.searchCurrentPage = 0;
@@ -561,14 +562,14 @@ export const AlarmModel = types
         __DEV__ &&
           console.log(
             'GOND get getAlarms ',
-            self.isSearch ? 'search: ' : 'live: ',
+            isSearchAlarms ? 'search: ' : 'live: ',
             res
           );
 
         if (res.error) {
           __DEV__ && console.log('GOND get getAlarms failed: ', res.error);
         } else {
-          if (self.isSearch) {
+          if (isSearchAlarms) {
             self.searchRawAlarms = res;
           } else {
             self.liveRawAlarms = res;
@@ -579,7 +580,7 @@ export const AlarmModel = types
             const alarm = parseAlarmData(item);
             return alarm;
           });
-          if (self.isSearch) {
+          if (isSearchAlarms) {
             self.searchAlarms.push(...pageData);
             self.searchCurrentPage = 1;
           } else {
@@ -601,8 +602,9 @@ export const AlarmModel = types
         let currentPage = self.isSearch
           ? self.searchCurrentPage
           : self.liveCurrentPage;
-        let rawPageData = (
-          self.isSearch ? self.searchRawAlarms : self.liveRawAlarms
+        let rawPageData = (self.isSearch
+          ? self.searchRawAlarms
+          : self.liveRawAlarms
         ).slice(currentPage * PAGE_LENGTH, (currentPage + 1) * PAGE_LENGTH);
         const pageData = rawPageData.map((item, index) => {
           makeItemSnapshot(item);
