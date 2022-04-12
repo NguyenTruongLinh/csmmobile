@@ -32,7 +32,7 @@ import NotificationController from './notification/notificationController';
 import {getwindow, isNullOrUndef} from './util/general';
 
 // import styles from './styles/scenes/appnavigation.style';
-import {ROUTERS, DateFormat, Store_Name} from './consts/misc';
+import {ROUTERS, DateFormat, MODULE_PERMISSIONS} from './consts/misc';
 import APP_INFO from './consts/appInfo';
 
 import {CLOUD_TYPE} from './consts/video';
@@ -374,7 +374,10 @@ class App extends React.Component {
     const {videoStore, userStore, healthStore} = this.props;
 
     __DEV__ && console.log('GOND %%% ON LOGGED IN!');
-    videoStore.getCloudSetting();
+    const isStreamingAvailable = userStore.hasPermission(
+      MODULE_PERMISSIONS.VSC
+    );
+    videoStore.getCloudSetting(isStreamingAvailable);
     if (userStore.settings.alertTypes.length > 0)
       healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);
   };

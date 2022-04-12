@@ -790,7 +790,19 @@ export const VideoModel = types
         streamReadyCallback = fn;
       },
       */
-      selectChannel(value, key = 'channelNo') {
+      selectChannel(value, autoStart = true) {
+        let key =
+          typeof value == 'number'
+            ? 'channelNo'
+            : typeof value == 'string'
+            ? 'name'
+            : undefined;
+        if (key == undefined) {
+          __DEV__ &&
+            console.log('GOND ERROR !!! Select channel failed: ', value);
+          return;
+        }
+
         const foundChannel = self.allChannels.find(ch => ch[key] == value);
         if (!foundChannel) {
           console.log('GOND selected Channel not found: ', value);
@@ -853,7 +865,8 @@ export const VideoModel = types
               ) {
                 foundStream.setLive(self.isLive);
                 foundStream.setHD(self.hdMode);
-                self.getHLSInfos({channelNo: value, timeline: !self.isLive});
+                if (autoStart)
+                  self.getHLSInfos({channelNo: value, timeline: !self.isLive});
               }
               break;
             case CLOUD_TYPE.RTC:
@@ -1258,7 +1271,10 @@ export const VideoModel = types
           __DEV__ && console.log('GOND shouldUpdateSearchTimeOnGetTimeline');
           self.onUpdateSearchTimePostTimeline();
         } else {
-          if (!self.checkTimeOnTimeline(self.beginSearchTime.toSeconds())) {
+          if (
+            self.beginSearchTime &&
+            !self.checkTimeOnTimeline(self.beginSearchTime.toSeconds())
+          ) {
             self.selectedStream.setNoVideo(true);
             self.selectedStream.stopWaitingForStream();
             self.setNoVideo(true);
@@ -1297,6 +1313,9 @@ export const VideoModel = types
       },
       onAuthenCancel() {
         self.displayAuthen(false);
+      },
+      setLiveMode(nextIsLive) {
+        if (self.isLive != nextIsLive) self.isLive = nextIsLive;
       },
       switchLiveSearch(nextIsLive, startStream = false) {
         // console.trace();
@@ -1358,6 +1377,7 @@ export const VideoModel = types
         }
       },
       onDefaultSearchTime() {
+        if (self.isAlertPlay) return;
         let targetTime =
           DateTime.now().toSeconds() - DEFAULT_SEARCH_OFFSET_IN_SECONDS;
         self.setBeginSearchTime(targetTime);
@@ -1461,6 +1481,7 @@ export const VideoModel = types
         //   (self.shouldUpdateSearchTimeOnGetTimeline = false);
       },
       setBeginSearchTime(value) {
+        if (self.isAlertPlay) return;
         if (value == null || DateTime.isDateTime(value)) {
           if (!value && __DEV__) console.trace('GOND setBginSearchTime null');
           self.beginSearchTime = value;
@@ -1605,8 +1626,12 @@ export const VideoModel = types
       },
       // #endregion Build data
       // #region settings
-      getCloudSetting: flow(function* () {
+      getCloudSetting: flow(function* (hasVSCPermission = true) {
         let res = undefined;
+        if (!hasVSCPermission) {
+          self.cloudType = CLOUD_TYPE.DIRECTION;
+          return Promise.resolve(true);
+        }
         self.isLoading = true;
         try {
           res = yield apiService.get(
@@ -2160,7 +2185,7 @@ export const VideoModel = types
         const {channelNo, timezone, daylist, timeline, searchTime} =
           params ?? {};
         self.isLoading = true;
-        __DEV__ && console.log('GOND getHLSInfos channel: ', channelNo);
+        __DEV__ && console.trace('GOND getHLSInfos channel: ', channelNo);
         if (!self.activeChannels || self.activeChannels.length <= 0) {
           yield self.getActiveChannels();
         }
@@ -3098,15 +3123,18 @@ export const VideoModel = types
         }
         yield self.getDisplayingChannels();
 
+        let channelId;
         if (alertData.channelNo) {
-          self.selectChannel(alertData.channelNo);
+          channelId = alertData.channelNo;
         } else if (alertData.channelName) {
-          self.selectChannel(alertData.channelName, 'name');
+          channelId = channelName;
         } else if (alertData.camName) {
-          self.selectChannel(parseInt(alertData.camName));
+          channelId = parseInt(alertData.camName);
         } else {
-          self.selectChannel(self.displayChannels[0].channelNo);
+          channelId = self.displayChannels[0].channelNo;
         }
+        self.selectChannel(channelId, false);
+
         if (self.selectedChannelData == null) {
           __DEV__ &&
             console.log(

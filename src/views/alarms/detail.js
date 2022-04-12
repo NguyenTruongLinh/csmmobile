@@ -290,7 +290,7 @@ class AlarmDetailView extends Component {
     //   let res = await videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
 
     // res &&
-    videoStore.switchLiveSearch(isLive);
+    // videoStore.switchLiveSearch(isLive);
     if (!isLive) {
       videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
     }

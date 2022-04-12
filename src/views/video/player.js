@@ -151,9 +151,9 @@ class VideoPlayerView extends Component {
       this.onFullscreenPress(false);
     }
 
-    if (!videoStore.isPreloadStream) {
-      videoStore.onExitSinglePlayer(route.name);
-    }
+    // if (!videoStore.isPreloadStream) {
+    videoStore.onExitSinglePlayer(route.name);
+    // }
 
     // dongpt: TODO handle Orientation
     Orientation.removeDeviceOrientationListener(this.onOrientationChange);

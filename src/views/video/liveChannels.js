@@ -298,11 +298,14 @@ class LiveChannelsView extends React.Component {
   };
 
   getChannelsInfo = async () => {
-    const {videoStore} = this.props;
+    const {videoStore, userStore} = this.props;
     // let newState = {};
     // this.stopAll();
 
-    let res = await videoStore.getCloudSetting();
+    const isStreamingAvailable = userStore.hasPermission(
+      MODULE_PERMISSIONS.VSC
+    );
+    let res = await videoStore.getCloudSetting(isStreamingAvailable);
     res = res && (await videoStore.getDisplayingChannels());
     if (res) {
       this.setHeader(true);

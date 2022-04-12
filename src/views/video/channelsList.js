@@ -85,7 +85,7 @@ class ChannelsListView extends React.Component {
       //     'GOND channels list view on focused, set islive: ',
       //     healthStore.isLiveVideo
       //   );
-      videoStore.switchLiveSearch(healthStore.isLiveVideo);
+      videoStore.setLiveMode(healthStore.isLiveVideo);
       videoStore.setShouldShowVideoMessage(false);
     });
     // __DEV__ &&
@@ -197,7 +197,8 @@ class ChannelsListView extends React.Component {
 
     if (healthStore.isLiveVideo) {
       videoStore.selectChannel(
-        value.channelNo // ?? value.channel.channelNo
+        value.channelNo, // ?? value.channel.channelNo
+        false
       );
     } else {
       videoStore.onHealthPlay(healthStore.isLiveVideo, value);

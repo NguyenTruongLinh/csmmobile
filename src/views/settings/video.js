@@ -50,7 +50,7 @@ const CloudSettingData = [
 class VideosettingView extends Component {
   constructor(props) {
     super(props);
-    this.getCloudSetting = this.getCloudSetting.bind(this);
+    // this.getCloudSetting = this.getCloudSetting.bind(this);
     // this.canSave = this.canSave.bind(this);
 
     this.state = {
@@ -96,7 +96,12 @@ class VideosettingView extends Component {
   };
 
   getCloudSetting = async () => {
-    const res = await this.props.videoStore.getCloudSetting();
+    const isStreamingAvailable = this.props.userStore.hasPermission(
+      MODULE_PERMISSIONS.VSC
+    );
+    const res = await this.props.videoStore.getCloudSetting(
+      isStreamingAvailable
+    );
     if (res) {
       this.setState({
         selectedValue: this.props.videoStore.isCloud,

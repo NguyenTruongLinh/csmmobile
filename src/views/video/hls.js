@@ -55,7 +55,10 @@ class HLSStreamingView extends React.Component {
       urlParams: '',
       refreshCount: 0,
       pausedUrl: '',
-      timeBeginPlaying: DateTime.now().setZone(videoStore.timezone),
+      timeBeginPlaying: videoStore.searchPlayTime
+        ? videoStore.searchPlayTimeLuxon
+        : videoStore.beginSearchTime ??
+          DateTime.now().setZone(videoStore.timezone),
       internalLoading: false,
     };
     this._isMounted = false;
@@ -196,8 +199,9 @@ class HLSStreamingView extends React.Component {
                     timeBeginPlaying: this.props.isLive
                       ? DateTime.now().setZone(videoStore.timezone)
                       : this.lastSearchTime ??
-                        videoStore.beginSearchTime ??
-                        videoStore.searchPlayTimeLuxon,
+                        (videoStore.searchPlayTime != null
+                          ? videoStore.searchPlayTimeLuxon
+                          : videoStore.beginSearchTime),
                     internalLoading: false,
                     refreshCount: 0,
                   } // ,
@@ -664,7 +668,8 @@ class HLSStreamingView extends React.Component {
       // __DEV__ && console.log('GOND HLS progress: AAAAAA 1');
       return;
     }
-    __DEV__ && console.log('GOND HLS progress: ', streamData.channelName, data);
+    __DEV__ &&
+      console.log('GOND HLS progress 0: ', streamData.channelName, data);
     // dongpt: skip old frames after dragging timeline or setting search time
     if (this.skippedDuration > 0 && this.player) {
       // if (Platform.OS == 'ios') {
@@ -683,16 +688,16 @@ class HLSStreamingView extends React.Component {
 
     // __DEV__ && console.log('GOND HLS onProgress: ', data);
     if (this.frameTime == 0 || (!isLive && this.tsIndex < 0)) {
-      __DEV__ && console.log('GOND HLS onProgress: 1');
+      __DEV__ &&
+        console.log(
+          'GOND HLS onProgress: 1 timeBeginPlaying ',
+          timeBeginPlaying.toFormat(NVRPlayerConfig.FrameFormat)
+        );
       this.frameTime = timeBeginPlaying.toSeconds();
       this.lastVideoTime = 0;
 
       __DEV__ &&
-        console.log(
-          'GOND HLS onProgress: this.frameTime = ',
-          this.frameTime,
-          timeBeginPlaying
-        );
+        console.log('GOND HLS onProgress: this.frameTime = ', this.frameTime);
       if (isLive) {
         this.setState({
           timeBeginPlaying: DateTime.now()
@@ -702,7 +707,14 @@ class HLSStreamingView extends React.Component {
         // this.frameTime = timeBeginPlaying.toSeconds();
       } else if (hlsTimestamps.length > 0) {
         this.tsIndex = hlsTimestamps.findIndex(t => t >= this.frameTime);
-        __DEV__ && console.log('GOND HLS onProgress: ', this.tsIndex);
+        __DEV__ &&
+          console.log(
+            'GOND HLS onProgress: ',
+            this.tsIndex,
+            DateTime.fromSeconds(this.frameTime, {
+              zone: videoStore.timezone,
+            }).toFormat(NVRPlayerConfig.FrameFormat)
+          );
         if (this.tsIndex < 0) {
           __DEV__ &&
             console.log(
@@ -721,7 +733,12 @@ class HLSStreamingView extends React.Component {
           });
           return;
         } else {
-          __DEV__ && console.log('GOND HLS onProgress: 2');
+          __DEV__ &&
+            console.log(
+              'GOND HLS onProgress: 2 ',
+              this.tsIndex,
+              hlsTimestamps[this.tsIndex]
+            );
           this.frameTime = hlsTimestamps[this.tsIndex];
           this.setState({
             timeBeginPlaying: DateTime.fromSeconds(this.frameTime, {
