@@ -151,9 +151,9 @@ class VideoPlayerView extends Component {
       this.onFullscreenPress(false);
     }
 
-    // if (!videoStore.isPreloadStream) {
-    videoStore.onExitSinglePlayer(route.name);
-    // }
+    if (!videoStore.isPreloadStream) {
+      videoStore.onExitSinglePlayer(route.name);
+    }
 
     // dongpt: TODO handle Orientation
     Orientation.removeDeviceOrientationListener(this.onOrientationChange);
@@ -199,7 +199,7 @@ class VideoPlayerView extends Component {
               this.ruler,
               searchTime
             );
-          if (!searchTime) return;
+          if (!searchTime || videoStore.isLive) return;
           if (this.ruler) {
             // __DEV__ && console.log(
             //   'GOND on player setTimelinePosition 1: ',

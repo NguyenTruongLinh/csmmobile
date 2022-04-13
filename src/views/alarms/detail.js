@@ -103,7 +103,7 @@ class AlarmDetailView extends Component {
     this._isMounted = false;
 
     alarmStore.onExitAlarmDetail();
-    videoStore.onExitSinglePlayer();
+    if (videoStore.isPreloadStream) videoStore.onExitSinglePlayer();
     videoStore.releaseStreams();
     this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
 
@@ -290,7 +290,7 @@ class AlarmDetailView extends Component {
     //   let res = await videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
 
     // res &&
-    // videoStore.switchLiveSearch(isLive);
+    // videoStore.setLiveMode(isLive);
     if (!isLive) {
       videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
     }

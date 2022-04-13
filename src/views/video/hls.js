@@ -55,7 +55,9 @@ class HLSStreamingView extends React.Component {
       urlParams: '',
       refreshCount: 0,
       pausedUrl: '',
-      timeBeginPlaying: videoStore.searchPlayTime
+      timeBeginPlaying: props.isLive
+        ? DateTime.now().setZone(videoStore.timezone)
+        : videoStore.searchPlayTime
         ? videoStore.searchPlayTimeLuxon
         : videoStore.beginSearchTime ?? videoStore.getSafeSearchDate(),
       internalLoading: false,

@@ -668,6 +668,8 @@ export const VideoModel = types
     get displayDateTime() {
       return self.frameTimeString && self.frameTimeString.length > 0
         ? self.frameTimeString
+        : self.isLive
+        ? DateTime.now().toFormat(NVRPlayerConfig.FrameFormat)
         : self.beginSearchTime
         ? self.beginSearchTime.toFormat(NVRPlayerConfig.FrameFormat)
         : self.searchPlayTimeLuxon.toFormat(NVRPlayerConfig.FrameFormat);
@@ -1000,7 +1002,7 @@ export const VideoModel = types
       },
       setDisplayDateTime(value) {
         self.frameTimeString = value;
-        // __DEV__ && console.log('GOND setDisplayDateTime: ', value);
+        // __DEV__ && console.trace('GOND setDisplayDateTime: ', value);
       },
       setSearchDate(value, format) {
         __DEV__ && console.log('GOND setSearchDate ', value, format);
