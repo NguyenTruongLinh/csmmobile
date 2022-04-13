@@ -287,7 +287,7 @@ class LoginView extends Component {
               textColor={CMSColors.PrimaryText}
               baseColor={CMSColors.PrimaryText}
               iconColor={CMSColors.InputIconColor}
-              error={domainErrorFlag && errors.domain}
+              error={domainErrorFlag ? errors.domain : undefined}
               disabled={false}
               secureTextEntry={false}
               fixAndroidBottomLine={true}

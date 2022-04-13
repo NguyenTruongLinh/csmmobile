@@ -57,10 +57,11 @@ class HLSStreamingView extends React.Component {
       pausedUrl: '',
       timeBeginPlaying: videoStore.searchPlayTime
         ? videoStore.searchPlayTimeLuxon
-        : videoStore.beginSearchTime ??
-          DateTime.now().setZone(videoStore.timezone),
+        : videoStore.beginSearchTime ?? videoStore.getSafeSearchDate(),
       internalLoading: false,
     };
+    __DEV__ &&
+      console.log('GOND HLS set beginTime 0: ', this.state.timeBeginPlaying);
     this._isMounted = false;
     this.frameTime = 0;
     this.tsIndex = -1;
@@ -201,16 +202,22 @@ class HLSStreamingView extends React.Component {
                       : this.lastSearchTime ??
                         (videoStore.searchPlayTime != null
                           ? videoStore.searchPlayTimeLuxon
-                          : videoStore.beginSearchTime),
+                          : videoStore.beginSearchTime ??
+                            videoStore.getSafeSearchDate()),
                     internalLoading: false,
                     refreshCount: 0,
-                  } // ,
-                  // () => {
-                  //   if (this._isMounted && videoStore.paused) {
-                  //     this.pause(false);
-                  //     setTimeout(() => this._isMounted && this.pause(true), 100);
-                  //   }
-                  // }
+                  },
+                  () => {
+                    // if (this._isMounted && videoStore.paused) {
+                    //   this.pause(false);
+                    //   setTimeout(() => this._isMounted && this.pause(true), 100);
+                    // }
+                    __DEV__ &&
+                      console.log(
+                        'GOND HLS set beginTime 1: ',
+                        this.state.timeBeginPlaying
+                      );
+                  }
                 );
                 // reset these value everytimes streamUrl changed
                 this.frameTime = 0;

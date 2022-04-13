@@ -39,7 +39,8 @@ import ROUTERS from '../consts/routes';
 
 const DirectServerModel = types
   .model({
-    serverIP: types.identifier,
+    id: types.optional(types.identifier, () => util.getRandomId()),
+    serverIP: types.string,
     publicIP: types.string,
     name: types.maybeNull(types.string),
     port: types.number,
@@ -1925,7 +1926,7 @@ export const VideoModel = types
             }
             // self.directStreams = [
             //   DirectStreamModel.create({
-            //     server: self.directConnection.serverIP,
+            //     server: self.directConnection.id,
             //     channel: targetChannel,
             //     // playing: false,
             //   }),
@@ -1934,7 +1935,7 @@ export const VideoModel = types
           // else {
           self.directStreams = self.allChannels.map(ch =>
             DirectStreamModel.create({
-              server: self.directConnection.serverIP,
+              server: self.directConnection.id,
               channel: ch,
               // playing: false,
             })
