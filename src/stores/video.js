@@ -1280,7 +1280,7 @@ export const VideoModel = types
           ) {
             self.selectedStream.setNoVideo(true);
             self.selectedStream.stopWaitingForStream();
-            self.setNoVideo(true);
+            // self.setNoVideo(true);
           }
         }
         // .sort((x, y) => x.begin - y.begin);
@@ -1437,8 +1437,7 @@ export const VideoModel = types
       setNoVideo(value, resetTimeline = true) {
         if (value === self.noVideo) return;
         if (__DEV__) {
-          console.log('GOND ======= Set Novideo = ', value);
-          console.trace();
+          console.trace('GOND ======= Set Novideo = ', value);
         }
         self.noVideo = value;
         if (value === true) {
@@ -2837,6 +2836,24 @@ export const VideoModel = types
           return true;
         }
 
+        if (jTimeStamp[0].channel_mask) {
+          const targetChannelNo = Math.log2(jTimeStamp[0].channel_mask);
+          __DEV__ &&
+            console.log(
+              'GOND HLS timeline channelNo: ',
+              targetChannelNo,
+              self.selectedChannel
+            );
+          if (
+            Number.isInteger(targetChannelNo) &&
+            targetChannelNo != self.selectedChannel
+          ) {
+            __DEV__ &&
+              console.log('GOND HLS buildTimeline not current channel!');
+            return true;
+          }
+        }
+
         let jtimeData = jTimeStamp[0].di[self.selectedStream.channelNo];
         let timeInterval = [];
 
@@ -2860,6 +2877,12 @@ export const VideoModel = types
             self.shouldUpdateSearchTimeOnGetTimeline &&
               (self.shouldUpdateSearchTimeOnGetTimeline = false);
             return true;
+          }
+          if (
+            !self.timeline ||
+            (self.timeline.length <= 0 && self.noVideo == true)
+          ) {
+            self.setNoVideo(false);
           }
 
           __DEV__ && console.log('-- GOND searchDate', self.searchDate);
