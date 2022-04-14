@@ -12,6 +12,7 @@ import {
   HOURS_ON_SCREEN,
   MINUTE_PER_HOUR,
   SECONDS_PER_MINUTE,
+  SECONDS_PER_HOUR,
 } from '../../consts/video';
 import {NVRPlayerConfig} from '../../consts/misc';
 // import moment from 'moment';
@@ -38,6 +39,9 @@ export default class TimeRuler extends PureComponent {
     hourBuildRuler: default24H,
     hourSpecial: '',
     rulerDST: null,
+    onPositionChanged: x =>
+      __DEV__ && console.log('GOND TimeRuler onPositionChanged not defined.'),
+    initialPosition: 0,
   };
   constructor(props) {
     super(props);
@@ -90,6 +94,8 @@ export default class TimeRuler extends PureComponent {
     // this.isScrollEnd = true;
     this.scrollEndTimeout = null;
     this.lastDataTime = 0;
+
+    this.savedSecPos = 0;
   }
 
   componentDidMount() {
@@ -99,7 +105,14 @@ export default class TimeRuler extends PureComponent {
     );
     this._isMounted = true;
 
-    // const {currentTime, searchDate} = this.props;
+    const {initialPosition} = this.props;
+    __DEV__ && console.log('GOND TimeRuler didMount', initialPosition);
+    if (initialPosition) {
+      // this.moveToPosition(initialPosition);
+      this.savedSecPos = initialPosition;
+    }
+
+    // this.autoUpdatePosition(currentTime, searchDate);
     // if (currentTime && currentTime > searchDate) {
     //   let sec = currentTime - searchDate;
     //   let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
@@ -126,46 +139,7 @@ export default class TimeRuler extends PureComponent {
     //     this.isManualScrolling
     //   );
     if (currentTime != lastTime && !this.isManualScrolling) {
-      const {hoursValue} = this.state;
-      let sec = currentTime - searchDate;
-      const secsPerHour = SECONDS_PER_MINUTE * MINUTE_PER_HOUR;
-      let secWidth = this.state.dwidth / secsPerHour;
-      __DEV__ && console.log('GOND auto update timeline: ', currentTime, sec);
-
-      let secToAdd = 0;
-      let hourIndex = 0;
-      for (; hourIndex < hoursValue.length; hourIndex++) {
-        const currentHourSec =
-          (hoursValue.length > default24H ? hourIndex : hoursValue[hourIndex]) *
-          secsPerHour;
-        const nextHourSec =
-          (hoursValue.length > default24H
-            ? hourIndex + 1
-            : hourIndex == hoursValue.length - 1
-            ? hoursValue[hourIndex] + 1
-            : hoursValue[hourIndex + 1]) * secsPerHour;
-        __DEV__ &&
-          console.log(
-            'GOND auto timeline check: ',
-            currentHourSec,
-            nextHourSec,
-            sec
-          );
-        if (sec < nextHourSec && sec > currentHourSec) {
-          secToAdd = sec - currentHourSec;
-          break;
-        }
-      }
-
-      if (hourIndex < hoursValue.length) {
-        const realSecToScroll = hourIndex * secsPerHour + secToAdd;
-        // __DEV__ && console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
-        // this.scrollTo(sec * secWidth, 0);
-        this.scrollTo(realSecToScroll * secWidth, 0);
-      } else {
-        __DEV__ &&
-          console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
-      }
+      this.autoUpdatePosition(currentTime, searchDate);
     }
     if (searchDate != prevProps.searchDate) {
       __DEV__ &&
@@ -224,6 +198,49 @@ export default class TimeRuler extends PureComponent {
     } while (currentDate == selectedDate);
 
     return [resString, resValues];
+  };
+
+  autoUpdatePosition = (currentTime, searchDate) => {
+    const {hoursValue} = this.state;
+    let sec = currentTime - searchDate;
+    // const secsPerHour = SECONDS_PER_MINUTE * MINUTE_PER_HOUR;
+    let secWidth = this.state.dwidth / SECONDS_PER_HOUR;
+    __DEV__ && console.log('GOND auto update timeline: ', currentTime, sec);
+
+    let secToAdd = 0;
+    let hourIndex = 0;
+    for (; hourIndex < hoursValue.length; hourIndex++) {
+      const currentHourSec =
+        (hoursValue.length > default24H ? hourIndex : hoursValue[hourIndex]) *
+        SECONDS_PER_HOUR;
+      const nextHourSec =
+        (hoursValue.length > default24H
+          ? hourIndex + 1
+          : hourIndex == hoursValue.length - 1
+          ? hoursValue[hourIndex] + 1
+          : hoursValue[hourIndex + 1]) * SECONDS_PER_HOUR;
+      __DEV__ &&
+        console.log(
+          'GOND auto timeline check: ',
+          currentHourSec,
+          nextHourSec,
+          sec
+        );
+      if (sec < nextHourSec && sec > currentHourSec) {
+        secToAdd = sec - currentHourSec;
+        break;
+      }
+    }
+
+    if (hourIndex < hoursValue.length) {
+      const realSecToScroll = hourIndex * SECONDS_PER_HOUR + secToAdd;
+      // __DEV__ && console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
+      // this.scrollTo(sec * secWidth, 0);
+      this.scrollTo(realSecToScroll * secWidth, 0);
+    } else {
+      __DEV__ &&
+        console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
+    }
   };
 
   moveToPosition = sec => {
@@ -346,6 +363,15 @@ export default class TimeRuler extends PureComponent {
   };
 
   scrollTo = (x, y) => {
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND === TimeRuler scrollTo ',
+    //     this.isAutoScrolling,
+    //     this.isManualScrolling,
+    //     this.scrollRef,
+    //     'pos: ',
+    //     x
+    //   );
     if (this.isAutoScrolling && !this.isManualScrolling && this.scrollRef) {
       // __DEV__ && console.log('GOND === TimeRuler AAAAAAAAAAAAAAAAAAAAA');
       if (this.lastScrollOffsetX >= 0) this.lastScrollOffsetX = -1;
@@ -368,7 +394,10 @@ export default class TimeRuler extends PureComponent {
         }
       }
       this.scrollRef.scrollTo({x: x, y: y, animated: false});
+      const secWidth = this.state.dwidth / SECONDS_PER_HOUR;
+      this.props.onPositionChanged(x / secWidth);
       this.lastX = x;
+      this.savedSecPos = 0;
     } else {
       __DEV__ && console.log('GOND onTimeRuler autoScroll is disabled ---!');
     }
@@ -388,12 +417,21 @@ export default class TimeRuler extends PureComponent {
 
   onLayout = event => {
     const {width, height} = event.nativeEvent.layout;
-    this.setState({
-      width,
-      height,
-      dwidth: width / this.props.numofHours,
-      widthMarker: width / (this.props.numofHours * this.props.numofMin),
-    });
+    __DEV__ && console.log('GOND onTimeRuler onLayout!', width, height);
+    this.setState(
+      {
+        width,
+        height,
+        dwidth: width / this.props.numofHours,
+        widthMarker: width / (this.props.numofHours * this.props.numofMin),
+      },
+      () => {
+        if (this.savedSecPos) {
+          this.moveToPosition(this.savedSecPos);
+          // this.savedSecPos = 0;
+        }
+      }
+    );
   };
 
   // _roundOddToEven = value => {
@@ -439,6 +477,8 @@ export default class TimeRuler extends PureComponent {
         timestamp:
           /*this.props.searchDate +*/ hourIndex * 3600 + minutes * 60 + seconds,
       });
+      const secWidth = this.state.dwidth / SECONDS_PER_HOUR;
+      this.props.onPositionChanged(xAxis / secWidth);
 
       // Delaying auto scroll to prevent glitch
       setTimeout(() => {
@@ -527,7 +567,7 @@ export default class TimeRuler extends PureComponent {
   };
 
   onScroll = event => {
-    __DEV__ && console.log('GOND === TimeRuler onScroll');
+    // __DEV__ && console.log('GOND === TimeRuler onScroll', event);
     this.clearScrollEndTimeout();
     const {hourBuildRuler, hourSpecial} = this.props;
     const {hoursArray, hoursValue} = this.state;

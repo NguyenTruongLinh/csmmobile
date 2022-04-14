@@ -89,6 +89,7 @@ class VideoPlayerView extends Component {
     this.ruler = null;
     this.savedTimelinePosition = null;
     this.reactions = [];
+    this.lastRulerPosition = 0;
   }
 
   componentDidMount() {
@@ -395,6 +396,7 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onSwitchLiveSearch(!videoStore.isLive);
+    this.lastRulerPosition = 0;
     videoStore.switchLiveSearch(undefined, true);
     // __DEV__ && console.log(
     //   'GOND on player setTimelinePosition 3: ',
@@ -432,6 +434,7 @@ class VideoPlayerView extends Component {
         Object.keys(videoStore.recordingDates)
       );
 
+    this.lastRulerPosition = 0;
     videoStore.setBeginSearchTime(null);
     this.playerRef && this.playerRef.onChangeSearchDate(dateString);
     videoStore.setDisplayDateTime(
@@ -584,6 +587,7 @@ class VideoPlayerView extends Component {
       this.formatTimeValue(value.seconds);
     videoStore.setDisplayDateTime(dateString + ' - ' + timeString);
     videoStore.setTimelineDraggingStatus(false);
+    videoStore.setFrameTime(searchDate.plus({seconds: value.timestamp}));
 
     if (videoStore.isFullscreen) {
       this.controllerTimeout = setTimeout(() => {
@@ -1086,17 +1090,30 @@ class VideoPlayerView extends Component {
             markerPosition="absolute"
             timeData={videoStore.timeline}
             currentTime={videoStore.frameTime}
-            onBeginSrcoll={this.onTimelineScrollBegin}
+            onBeginScroll={this.onTimelineScrollBegin}
             onScrolling={this.onDraggingTimeRuler}
-            // onPauseVideoScrolling={() => this.setState({pause: true})}
             onPauseVideoScrolling={() =>
-              // this.playerRef && this.playerRef.pause(true)
               this.playerRef && this.playerRef.onBeginDraggingTimeline()
             }
             setShowHideTimeOnTimeRule={value => {
               this.timeOnTimeline && this.timeOnTimeline.setShowHide(value);
             }}
             onScrollEnd={this.onTimelineScrollEnd}
+            onPositionChanged={secOffset => {
+              // const hour = Math.floor(secOffset / 3600);
+              // const minute = Math.floor((secOffset - hour * 3600) / 60);
+              // const sec = secOffset - hour * 3600 - minute * 60;
+              // __DEV__ &&
+              //   console.log(
+              //     'GOND Timeruler onReceiveRulerPosition: ',
+              //     secOffset,
+              //     hour,
+              //     minute,
+              //     sec
+              //   );
+              this.lastRulerPosition = secOffset;
+            }}
+            initialPosition={this.lastRulerPosition}
           />
         </View>
         <TimeOnTimeRuler
