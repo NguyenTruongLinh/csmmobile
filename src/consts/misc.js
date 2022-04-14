@@ -380,7 +380,7 @@ export const ExceptionSortFieldName = [
   'Employee',
   'Risk factor',
   'Total amount',
-  'Ration to sale',
+  'Ratio to sale',
 ];
 
 export const ChannelStatus = {
