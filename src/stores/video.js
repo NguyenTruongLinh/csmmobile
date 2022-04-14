@@ -2187,6 +2187,7 @@ export const VideoModel = types
         const {channelNo, timezone, daylist, timeline, searchTime} =
           params ?? {};
         self.isLoading = true;
+        self.setNoVideo(false);
         __DEV__ && console.trace('GOND getHLSInfos channel: ', channelNo);
         if (!self.activeChannels || self.activeChannels.length <= 0) {
           yield self.getActiveChannels();
@@ -2472,6 +2473,13 @@ export const VideoModel = types
         self.selectedStream.startWaitingForStream(
           self.selectedStream.targetUrl.sid
         );*/
+        if (!self.selectedStream.streamUrl) {
+          self.getHLSInfos({
+            channelNo: self.selectedChannel,
+            searchTime: time.toFormat(NVRPlayerConfig.HLSRequestTimeFormat),
+          });
+          return;
+        }
 
         let requestParams = {
           ID: apiService.configToken.devId,
@@ -2581,7 +2589,7 @@ export const VideoModel = types
             break;
           case VSCCommandString.TIMELINE:
             if (self.checkTimelineTimeout) {
-              __DEV__ && console.trace('GOND clear TimelineTimeout 3 ');
+              // __DEV__ && console.trace('GOND clear TimelineTimeout 3 ');
               clearTimeout(self.checkTimelineTimeout);
               self.checkTimelineTimeout = null;
             }
@@ -2596,9 +2604,9 @@ export const VideoModel = types
             self.buildDaylistData(info);
             break;
           case VSCCommandString.TIMEZONE:
-            __DEV__ && console.log(`GOND on HLS response TZ 1`);
+            // __DEV__ && console.log(`GOND on HLS response TZ 1`);
             if (typeof info == 'object' && info.Bias && info.StandardName) {
-              __DEV__ && console.log(`GOND on HLS response TZ 2`);
+              // __DEV__ && console.log(`GOND on HLS response TZ 2`);
               self.buildTimezoneData(info);
             }
             break;

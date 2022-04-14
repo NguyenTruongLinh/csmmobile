@@ -921,9 +921,20 @@ class VideoPlayerView extends Component {
       noVideo,
       selectedStream,
       timeline,
+      cloudType,
     } = videoStore;
     const {sHeight, showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
+
+    let showPlayPauseButton =
+      !isLive &&
+      !noVideo &&
+      selectedStream &&
+      !selectedStream.isLoading &&
+      selectedStream.isReady;
+    if (cloudType == CLOUD_TYPE.HLS) {
+      showPlayPauseButton = showPlayPauseButton && selectedStream.streamUrl;
+    }
 
     return (
       <View style={styles.controlsContainer}>
@@ -945,11 +956,7 @@ class VideoPlayerView extends Component {
           )}
         </View>
         <View style={styles.controlButtonContainer}>
-          {!isLive &&
-          !noVideo &&
-          selectedStream &&
-          !selectedStream.isLoading &&
-          selectedStream.isReady &&
+          {showPlayPauseButton &&
           // timeline &&
           // timeline.length > 0 &&
           (showController || paused) ? (

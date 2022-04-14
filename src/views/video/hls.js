@@ -182,7 +182,7 @@ class HLSStreamingView extends React.Component {
                 this.props.noVideo
               );
             if (!videoStore.noVideo && newUrl != this.state.streamUrl) {
-              if (util.isValidHttpUrl(newUrl)) {
+              if (util.isValidHttpUrl(newUrl) || newUrl == null) {
                 // __DEV__ &&
                 //   console.log(
                 //     'HLSStreamingView newURL time: ',

@@ -778,7 +778,7 @@ export default HLSStreamModel = types
         console.log(`GOND reinit HLS stream: `, self.channelName, resumeTime);
       if (info && parseInt(info.error_code) == 5) {
         // description == 'No incoming video'
-        if (self.noIncomingVideoCount < 3) {
+        if (self.noIncomingVideoCount < 5) {
           self.noIncomingVideoCount++;
         } else {
           self.setNoVideo(true);
