@@ -20,7 +20,7 @@ const VStack = createStackNavigator();
 export default function VideoStack() {
   return (
     <VStack.Navigator
-      initialRouteName={ROUTERS.VIDEO_REGIONS} //{ROUTERS.VIDEO_REGIONS}
+      initialRouteName={ROUTERS.VIDEO_SITES} //{ROUTERS.VIDEO_REGIONS}
       screenOptions={({route, navigation}) => ({
         headerStyle: {
           // backgroundColor: CMSColors.White,

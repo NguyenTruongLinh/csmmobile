@@ -69,7 +69,7 @@ class SitesView extends Component {
   async componentDidMount() {
     this._isMounted = true;
     // const {sitesStore, healthStore, userStore, route} = this.props;
-    const {navigation, userStore} = this.props;
+    const {navigation, userStore, sitesStore} = this.props;
     const {isHealthRoute} = this.state;
     if (__DEV__)
       console.log('SitesView componentDidMount: ', this.searchbarRef);
@@ -94,7 +94,9 @@ class SitesView extends Component {
       this.blurFlag = true;
       this.setState({refreshOnResume: false});
     });
-
+    if (sitesStore.selectedRegion == null) {
+      navigation.setOptions({headerLeft: () => null});
+    }
     await this.getData();
 
     this.setHeader();
