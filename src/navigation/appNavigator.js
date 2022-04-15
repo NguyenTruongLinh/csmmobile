@@ -312,12 +312,12 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
         CMSMainTab()
       ) : (
         <WelcomeStack.Navigator
-          initialRouteName={ROUTERS.INTRO_WELCOME}
+          initialRouteName={ROUTERS.LOGIN}
           headerMode="none">
-          <WelcomeStack.Screen
+          {/* <WelcomeStack.Screen
             name={ROUTERS.INTRO_WELCOME}
             component={WelcomeView}
-          />
+          /> */}
           <WelcomeStack.Screen name={ROUTERS.LOGIN} component={LoginView} />
 
           <WelcomeStack.Screen

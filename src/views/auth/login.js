@@ -240,7 +240,7 @@ class LoginView extends Component {
 
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-        <Button
+        {/* <Button
           style={styles.closeButton}
           enable={true}
           type={'flat'}
@@ -251,7 +251,7 @@ class LoginView extends Component {
           }}
           // iconStyleDisable={{}}
           onPress={this.onBack}
-        />
+        /> */}
         <View style={styles.viewContainer}>
           <View style={styles.closeButtonContainer}></View>
           <View style={styles.space} />
