@@ -759,22 +759,24 @@ class LiveChannelsView extends React.Component {
             }}
           />
         ) : null}
-        <FlatList
-          key={'grid_' + videoStore.gridLayout}
-          ref={r => (this.videoListRef = r)}
-          renderItem={this.renderVideoPlayer}
-          numColumns={videoStore.gridLayout}
-          data={videoStore.currentDisplayVideoData}
-          keyExtractor={(item, index) =>
-            'ch_' + (item && item.channelNo ? item.channelNo : 'none' + index)
-          }
-          refreshing={
-            videoStore.isLoading ||
-            this.state.internalLoading ||
-            videoStore.waitForTimezone
-          }
-          scrollEnabled={false}
-        />
+        {videoStore.canDisplayChannels && (
+          <FlatList
+            key={'grid_' + videoStore.gridLayout}
+            ref={r => (this.videoListRef = r)}
+            renderItem={this.renderVideoPlayer}
+            numColumns={videoStore.gridLayout}
+            data={videoStore.currentDisplayVideoData}
+            keyExtractor={(item, index) =>
+              'ch_' + (item && item.channelNo ? item.channelNo : 'none' + index)
+            }
+            refreshing={
+              videoStore.isLoading ||
+              this.state.internalLoading ||
+              videoStore.waitForTimezone
+            }
+            scrollEnabled={false}
+          />
+        )}
       </GestureRecognizer>
     );
   };

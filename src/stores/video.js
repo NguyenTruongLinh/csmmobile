@@ -383,6 +383,13 @@ export const VideoModel = types
           (self.nvrPassword && self.nvrPassword.length == 0))
       );
     },
+    get canDisplayChannels() {
+      return (
+        (self.cloudType != CLOUD_TYPE.DIRECTION &&
+          self.cloudType != CLOUD_TYPE.DEFAULT) ||
+        self.isAuthenticated
+      );
+    },
     // get directStreams() {
     //   return self.allChannels
     //     .filter(ch =>
