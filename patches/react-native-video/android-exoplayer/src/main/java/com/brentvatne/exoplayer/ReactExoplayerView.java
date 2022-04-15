@@ -506,6 +506,7 @@ class ReactExoplayerView extends FrameLayout implements
     private MediaSource buildMediaSource(Uri uri, String overrideExtension, DrmSessionManager drmSessionManager) {
         int type = Util.inferContentType(!TextUtils.isEmpty(overrideExtension) ? "." + overrideExtension
                 : uri.getLastPathSegment());
+        // Log.e("GOND", "**EXO*** buildMediaSource, type: " + type);
         switch (type) {
             case C.TYPE_SS:
                 return new SsMediaSource.Factory(
@@ -975,12 +976,16 @@ class ReactExoplayerView extends FrameLayout implements
         else if (e.type == ExoPlaybackException.TYPE_SOURCE) {
             errorString = getResources().getString(R.string.unrecognized_media_format);
         }
-        eventEmitter.error(errorString, ex);
         playerNeedsSource = true;
         if (isBehindLiveWindow(e)) {
-            clearResumePosition();
+            // clearResumePosition();
+            Log.e("GOND", "**EXO*** Behind live window exception: " + e);
+            errorString = getResources().getString(R.string.behind_live_window);
+            eventEmitter.error(errorString, ex);
+            updateResumePosition();
             initializePlayer();
         } else {
+            eventEmitter.error(errorString, ex);
             updateResumePosition();
         }
     }
@@ -1039,6 +1044,7 @@ class ReactExoplayerView extends FrameLayout implements
 
     public void clearSrc() {
         if (srcUri != null) {
+            // Log.d("GOND", "Refresh video ===========");
             player.stop(true);
             this.srcUri = null;
             this.extension = null;
