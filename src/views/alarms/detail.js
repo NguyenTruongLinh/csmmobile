@@ -291,9 +291,9 @@ class AlarmDetailView extends Component {
 
     // res &&
     // videoStore.setLiveMode(isLive);
-    if (!isLive) {
-      videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
-    }
+    // if (!isLive) {
+    videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm, true);
+    // }
     setTimeout(() => {
       navigation.push(ROUTERS.VIDEO_PLAYER);
       this.setState({isLoading: false});

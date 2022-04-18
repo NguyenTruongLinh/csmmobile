@@ -1165,9 +1165,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            getInfoPromise = self.getDirectInfos(
-              self.selectedChannel ?? undefined
-            );
+            self.getDirectInfos(self.selectedChannel ?? undefined);
             break;
           case CLOUD_TYPE.HLS:
             __DEV__ && console.log(`GOND on HLS get HLS info after build TZ`);
@@ -1182,7 +1180,7 @@ export const VideoModel = types
           //   getInfoPromise = self.getRTCInfos(channelNo);
           //   break;
           default:
-            getInfoPromise = Promise.resolve(false);
+            Promise.resolve(false);
             __DEV__ &&
               console.log(
                 'GOND onTimezoneAcquired default case: ',
@@ -2114,7 +2112,7 @@ export const VideoModel = types
         }
         self.waitForTimeline = true;
         if (self.checkTimelineTimeout) {
-          __DEV__ && console.trace('GOND clear TimelineTimeout 1 ');
+          // __DEV__ && console.trace('GOND clear TimelineTimeout 1 ');
           clearTimeout(self.checkTimelineTimeout);
           self.checkTimelineTimeout = null;
         }
@@ -2149,7 +2147,7 @@ export const VideoModel = types
           } else if (self.timelineRetries < HLS_MAX_RETRY) {
             // self.timelineRetries++;
             if (self.checkTimelineTimeout) {
-              __DEV__ && console.trace('GOND clear TimelineTimeout 2 ');
+              // __DEV__ && console.trace('GOND clear TimelineTimeout 2 ');
               clearTimeout(self.checkTimelineTimeout);
               self.checkTimelineTimeout = null;
             }
@@ -2907,8 +2905,8 @@ export const VideoModel = types
           __DEV__ && console.log('-- GOND generateHLSTimeline');
           if (self.cloudType == CLOUD_TYPE.HLS) {
             self.hlsTimestamps = self.generateHLSTimeline(timeInterval);
-            __DEV__ &&
-              console.log('-- GOND hlsTimestamps = ', self.hlsTimestamps);
+            // __DEV__ &&
+            //   console.log('-- GOND hlsTimestamps = ', self.hlsTimestamps);
             // self.selectedStream.setTimelines(timeInterval, self.hlsTimestamps);
           }
           // return timeInterval;
@@ -3135,32 +3133,34 @@ export const VideoModel = types
         self.kDVR = alertData.kDVR;
         self.isLive = isLive;
         __DEV__ && console.log('3 self.isLive = ', self.isLive);
-        let searchTime = alertData.searchTime ?? alertData.timezone;
-        if (searchTime) {
-          const dtObj = DateTime.fromISO(searchTime, {
-            zone: 'utc',
-            setZone: true,
-          });
-          // __DEV__ && console.log('GOND onAlertPlay searchTime: ', dtObj);
-          if (dtObj.isValid)
-            self.searchPlayTime = dtObj.toFormat(
-              NVRPlayerConfig.RequestTimeFormat
-            );
-          else self.searchPlayTime = searchTime;
-          // __DEV__ && console.log('GOND onAlertPlay 2: ', self.searchPlayTime);
+        if (!isLive) {
+          let searchTime = alertData.searchTime ?? alertData.timezone;
+          if (searchTime) {
+            const dtObj = DateTime.fromISO(searchTime, {
+              zone: 'utc',
+              setZone: true,
+            });
+            // __DEV__ && console.log('GOND onAlertPlay searchTime: ', dtObj);
+            if (dtObj.isValid)
+              self.searchPlayTime = dtObj.toFormat(
+                NVRPlayerConfig.RequestTimeFormat
+              );
+            else self.searchPlayTime = searchTime;
+            // __DEV__ && console.log('GOND onAlertPlay 2: ', self.searchPlayTime);
 
-          // }
-          self.searchDate = DateTime.fromISO(searchTime, {
-            zone: 'utc',
-          })
-            .setZone(self.timezone, {keepLocalTime: true})
-            .startOf('day');
-          // __DEV__ && console.log('GOND onAlertPlay 3: ', self.searchDate);
-        } else {
-          // __DEV__ && console.log('GOND onAlertPlay 4: ', self.timezoneName);
-          self.searchDate = self.timezoneName
-            ? DateTime.now().setZone(self.timezoneName).startOf('day')
-            : DateTime.now().startOf('day');
+            // }
+            self.searchDate = DateTime.fromISO(searchTime, {
+              zone: 'utc',
+            })
+              .setZone(self.timezone, {keepLocalTime: true})
+              .startOf('day');
+            // __DEV__ && console.log('GOND onAlertPlay 3: ', self.searchDate);
+          } else {
+            // __DEV__ && console.log('GOND onAlertPlay 4: ', self.timezoneName);
+            self.searchDate = self.timezoneName
+              ? DateTime.now().setZone(self.timezoneName).startOf('day')
+              : DateTime.now().startOf('day');
+          }
         }
         yield self.getDisplayingChannels();
 
@@ -3186,7 +3186,13 @@ export const VideoModel = types
           return false;
         }
         // Get timezone first
-        yield self.getVideoInfos(alertData.channelNo);
+        if (
+          self.cloudType != CLOUD_TYPE.HLS ||
+          !self.isLive ||
+          !util.isValidHttpUrl(self.selectedStream.streamUrl)
+        ) {
+          yield self.getVideoInfos(alertData.channelNo);
+        }
 
         // else {
         //   // dongpt: only Direct need to be build?

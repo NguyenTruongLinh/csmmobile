@@ -442,7 +442,7 @@ export const SitesMapModel = types
           apiService.configToken.userId ?? 0,
           SiteRoute.getAllRegions
         );
-        __DEV__ && console.log('GOND get regions: ', resRegions);
+        // __DEV__ && console.log('GOND get regions: ', resRegions);
         if (resRegions) {
           // TODO: Map sites to region by key, can improve?
           // self.sitesList.forEach(s => {

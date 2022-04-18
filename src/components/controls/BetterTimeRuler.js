@@ -219,13 +219,13 @@ export default class TimeRuler extends PureComponent {
           : hourIndex == hoursValue.length - 1
           ? hoursValue[hourIndex] + 1
           : hoursValue[hourIndex + 1]) * SECONDS_PER_HOUR;
-      __DEV__ &&
-        console.log(
-          'GOND auto timeline check: ',
-          currentHourSec,
-          nextHourSec,
-          sec
-        );
+      // __DEV__ &&
+      //   console.log(
+      //     'GOND auto timeline check: ',
+      //     currentHourSec,
+      //     nextHourSec,
+      //     sec
+      //   );
       if (sec < nextHourSec && sec > currentHourSec) {
         secToAdd = sec - currentHourSec;
         break;
