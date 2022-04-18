@@ -246,6 +246,11 @@ export default HLSStreamModel = types
     get isReady() {
       return self.targetUrl.isReady;
     },
+    get isWaitingForStream() {
+      return (
+        self.targetUrl.checkStreamTimeout != null && self.targetUrl.isLoading
+      );
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -436,6 +441,14 @@ export default HLSStreamModel = types
       const currentUrl = sid ? self.getUrlById(sid) : self.targetUrl;
       if (!currentUrl || !isAlive(self)) return;
       currentUrl.clearStreamTimeout();
+    },
+    stopWaitingCauseNoVideo(sid) {
+      self.stopWaitingForStream(sid);
+      self.noIncomingVideoCount = 0;
+      self.setStreamStatus({
+        connectionStatus: STREAM_STATUS.NOVIDEO,
+        isLoading: false,
+      });
     },
     startWaitingForStream(sid) {
       const currentUrl = self.getUrlById(sid);
@@ -776,7 +789,7 @@ export default HLSStreamModel = types
     handleError(info, resumeTime) {
       __DEV__ &&
         console.log(`GOND reinit HLS stream: `, self.channelName, resumeTime);
-      if (info && parseInt(info.error_code) == 5) {
+      if (info && parseInt(info.error_code) == 3) {
         // description == 'No incoming video'
         if (self.noIncomingVideoCount < 5) {
           self.noIncomingVideoCount++;

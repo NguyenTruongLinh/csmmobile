@@ -565,7 +565,7 @@ class HLSStreamingView extends React.Component {
 
   onBufferTimeout = () => {
     this.clearBufferTimeout();
-    this.reconnect();
+    if (this.state.streamUrl != null) this.reconnect();
   };
 
   onError = ({error}) => {
@@ -929,7 +929,7 @@ class HLSStreamingView extends React.Component {
       return;
     }
     if (__DEV__) {
-      console.log('GOND ------- HLS reconnect: ', this.retryCount);
+      console.trace('GOND ------- HLS reconnect: ', this.retryCount);
       // console.trace();
     }
     // if (!this.videoReconnectTimeout) {

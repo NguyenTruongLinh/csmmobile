@@ -1,4 +1,5 @@
 import {flow, types, getSnapshot, applySnapshot} from 'mobx-state-tree';
+import {reaction} from 'mobx';
 import {Platform} from 'react-native';
 
 import 'react-native-get-random-values';
@@ -323,6 +324,7 @@ export const VideoModel = types
     currentGridPage: types.optional(types.number, 0),
   })
   .volatile(self => ({
+    reactions: [],
     frameTime: 0,
     frameTimeString: null, // NVRPlayerConfig.FrameFormat
 
@@ -712,8 +714,36 @@ export const VideoModel = types
     // let listIdToCheck = [];
     // let streamInfoCallback = null;
     // let peerConnectionStatsInterval = null;
-    // #region setters
     return {
+      // #region hooks
+      afterCreate() {
+        self.reactions = [
+          reaction(
+            () => self.timeline,
+            (newTimeline, oldTimeline) => {
+              if (
+                self.cloudType == CLOUD_TYPE.HLS &&
+                !self.isLive &&
+                self.selectedStream &&
+                self.selectedStream.isWaitingForStream
+              ) {
+                if (
+                  !newTimeline ||
+                  newTimeline.length == 0 ||
+                  self.beginSearchTime.toSeconds() >
+                    newTimeline[newTimeline.length - 1].end
+                ) {
+                  self.selectedStream.stopWaitingCauseNoVideo();
+                }
+              }
+            }
+          ),
+        ];
+      },
+      beforeDestroy() {
+        self.reactions && self.reactions.forEach(unsubscribe => unsubscribe());
+      },
+      // #region setters
       setNVRLoginInfo(username, password) {
         self.nvrUser = username;
         self.nvrPassword = password;
@@ -1203,7 +1233,7 @@ export const VideoModel = types
       checkTimeOnTimeline(value) {
         __DEV__ &&
           console.log('GOND checkTimeOnTimeline ', value, self.timeline);
-        let timeToCheck = value;
+        // let timeToCheck = value;
         // if (
         //   self.cloudType == CLOUD_TYPE.DEFAULT ||
         //   self.cloudType == CLOUD_TYPE.DIRECTION
@@ -1215,19 +1245,28 @@ export const VideoModel = types
         //     console.log('GOND checkTimeOnTimeline direct', timeToCheck);
         // }
 
-        for (let i = 0; i < self.timeline.length; i++) {
-          if (timeToCheck <= self.timeline[i].end) {
-            __DEV__ &&
-              console.log(
-                'GOND checkTimeOnTimeline ',
-                timeToCheck,
-                self.timeline[i].end,
-                timeToCheck - self.timeline[i].end
-              );
-            return true;
-          }
-        }
-        return false;
+        // for (let i = 0; i < self.timeline.length; i++) {
+        //   if (timeToCheck <= self.timeline[i].end) {
+        //     __DEV__ &&
+        //       console.log(
+        //         'GOND checkTimeOnTimeline ',
+        //         timeToCheck,
+        //         self.timeline[i].end,
+        //         timeToCheck - self.timeline[i].end
+        //       );
+        //     return true;
+        //   }
+        // }
+        // return false;
+        if (!self.timeline || self.timeline.length == 0) return false;
+        const lastTime = self.timeline[self.timeline.length - 1].end;
+        __DEV__ &&
+          console.log(
+            'GOND checkTimeOnTimeline 2 : ',
+            lastTime,
+            value < lastTime
+          );
+        return value < lastTime;
       },
       buildDirectTimeline(data) {
         const processedData = self.isDirectDSTAwareness
@@ -2568,18 +2607,22 @@ export const VideoModel = types
               s => s.targetUrl.sid == info.sid
             );
             if (target) {
-              target.handleError(info);
+              if (self.checkTimeOnTimeline(self.beginSearchTime.toSeconds())) {
+                target.handleError(info);
+              } else {
+                target.setStreamStatus({
+                  isLoading: false,
+                  connectionStatus: STREAM_STATUS.NOVIDEO,
+                  // error: info.description,
+                });
+              }
             } else {
               __DEV__ &&
                 console.log(
                   `GOND onHLSInfoResponse handle error stream not found`
                 );
             }
-            // target.setStreamStatus({
-            //   isLoading: false,
-            //   connectionStatus: STREAM_STATUS.NOVIDEO,
-            //   error: info.description,
-            // });
+
             return;
             // }
           }
@@ -3004,7 +3047,11 @@ export const VideoModel = types
       // #endregion WebRTC streaming
       // #region Get and receive videoinfos
       getVideoInfos: flow(function* (channelNo) {
-        // __DEV__ && console.log('GOND getVideoInfos ', self.allChannels);
+        __DEV__ &&
+          console.trace(
+            'GOND getVideoInfos ',
+            channelNo != undefined ? channelNo : self.allChannels
+          );
         let getInfoPromise = null;
         if (!self.allChannels || self.allChannels.length <= 0) {
           let res = yield self.getDisplayingChannels();
