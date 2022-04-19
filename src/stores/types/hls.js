@@ -39,6 +39,7 @@ import CMSColors from '../../styles/cmscolors';
 const MAX_RETRY = 7;
 const KEEP_ALIVE_TIMEOUT = 60000;
 const REST_TIME = 2000;
+export const FORCE_SENT_DATA_USAGE = -1;
 
 const HLSURLModel = types
   .model({
@@ -51,6 +52,14 @@ const HLSURLModel = types
     error: types.maybeNull(types.string),
     needReset: types.optional(types.boolean, false),
     isReady: types.optional(types.boolean, false),
+
+    bitrateRecordTimePoint: types.maybeNull(types.frozen()),
+
+    currentBitrate: types.maybeNull(types.frozen()),
+
+    accumulatedDataUsage: types.maybeNull(types.frozen()),
+
+    dataUsageSentTimePoint: types.maybeNull(types.frozen()),
   })
   .volatile(self => ({
     getUrlRetries: 0,
@@ -104,6 +113,71 @@ const HLSURLModel = types
       needReset != undefined && (self.needReset = needReset);
       error != undefined && (self.error = error);
     },
+    resetBitrateInfo() {
+      __DEV__ &&
+        console.log(`updateBitrate resetBitrateInfo >>>>>>>>>>>>>>>>>>>>>`);
+      self.bitrateRecordTimePoint = 0;
+      self.currentBitrate = 0;
+      self.accumulatedDataUsage = 0;
+      self.dataUsageSentTimePoint = new Date().getTime();
+    },
+    updateBitrate: flow(function* (bitrate, debug) {
+      __DEV__ &&
+        console.log(`updateBitrate bitrate = `, bitrate, ' debug = ', debug);
+      // bitrate = 1000;
+      if (!self.bitrateRecordTimePoint) {
+        self.bitrateRecordTimePoint = new Date().getTime();
+        self.currentBitrate = 0;
+        self.accumulatedDataUsage = 0;
+        self.dataUsageSentTimePoint = new Date().getTime();
+      }
+      if (Platform.OS == 'android') {
+        let newBitrateRecordTimePoint = new Date().getTime();
+        let segmentLoad =
+          self.currentBitrate == FORCE_SENT_DATA_USAGE
+            ? 0
+            : (self.currentBitrate *
+                (newBitrateRecordTimePoint - self.bitrateRecordTimePoint)) /
+              1000;
+        __DEV__ &&
+          console.log(
+            `updateBitrate newBitrateRecordTimePoint, self.dataUsageSentTimePoint = `,
+            newBitrateRecordTimePoint,
+            self.dataUsageSentTimePoint
+          );
+
+        self.accumulatedDataUsage += segmentLoad;
+        __DEV__ &&
+          console.log(
+            `updateBitrate self.accumulatedDataUsage = `,
+            self.accumulatedDataUsage
+          );
+        if (
+          bitrate == FORCE_SENT_DATA_USAGE ||
+          (newBitrateRecordTimePoint - self.dataUsageSentTimePoint >=
+            10 * 1000 &&
+            self.accumulatedDataUsage > 0)
+        ) {
+          //callAPI(segmentLoad)
+          __DEV__ &&
+            console.log(
+              `updateBitrate callAPI self.accumulatedDataUsage = `,
+              self.accumulatedDataUsage,
+              bitrate == FORCE_SENT_DATA_USAGE
+                ? 'STREAM STOPPED'
+                : 'AFTER 10 SECS',
+              ' ************************************** '
+            );
+          self.bitrateRecordTimePoint = new Date().getTime();
+          self.currentBitrate = 0;
+          self.accumulatedDataUsage = 0;
+          self.dataUsageSentTimePoint = new Date().getTime();
+        }
+        self.currentBitrate = bitrate;
+        self.bitrateRecordTimePoint = newBitrateRecordTimePoint;
+      } else {
+      }
+    }),
   }));
 
 // const HLSURLModel = types
@@ -429,6 +503,11 @@ export default HLSStreamModel = types
         console.log('GOND --- set HLS Ready --- ', isReady);
         // console.trace();
       }
+      if (!isReady)
+        self.targetUrl.updateBitrate(
+          FORCE_SENT_DATA_USAGE,
+          'setStreamReady false'
+        );
     },
     // setReconnectStatus(value) {
     //   self.isWaitingReconnect = value;
@@ -596,8 +675,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -615,8 +694,7 @@ export default HLSStreamModel = types
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 15,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ &&
           console.log(
@@ -827,6 +905,9 @@ export default HLSStreamModel = types
       __DEV__ && console.log(`GOND on updateStream stopped: `, isStopped, sid);
       apiService.post(VSC.controller, sid, VSC.updateStream, isStopped);
     },
+    updateBitrate(bitrate, debug) {
+      self.targetUrl.updateBitrate(bitrate, debug);
+    },
     // scheduleCheckTimeout(time) {
     //   self.clearStreamTimeout();
     //   self.streamTimeout = setTimeout(() => {
@@ -850,6 +931,7 @@ export default HLSStreamModel = types
     //   self.streamTimeout && clearTimeout(self.streamTimeout);
     // },
     onExitSinglePlayer() {
+      self.updateBitrate(FORCE_SENT_DATA_USAGE, 'onExitSinglePlayer');
       self.targetUrl.getUrlRetries = 0;
       self.targetUrl.clearStreamTimeout();
       self.targetUrl.isFailed = false;

@@ -8,7 +8,7 @@ import {LocalZone, DateTime} from 'luxon';
 
 import ChannelModel, {parseChannel} from './types/channel';
 import RTCStreamModel from './types/webrtc';
-import HLSStreamModel from './types/hls';
+import HLSStreamModel, {FORCE_SENT_DATA_USAGE} from './types/hls';
 
 import apiService from '../services/api';
 
@@ -322,6 +322,14 @@ export const VideoModel = types
     isAlertPlay: types.optional(types.boolean, false),
     isPreloadStream: types.optional(types.boolean, false),
     currentGridPage: types.optional(types.number, 0),
+
+    bitrateRecordTimePoint: types.maybeNull(types.frozen()),
+
+    currentBitrate: types.maybeNull(types.frozen()),
+
+    accumulatedDataUsage: types.maybeNull(types.frozen()),
+
+    dataUsageSentTimePoint: types.maybeNull(types.frozen()),
   })
   .volatile(self => ({
     reactions: [],
@@ -2212,10 +2220,12 @@ export const VideoModel = types
         }
       }),
       stopHLSStream: flow(function* (channelNo, sid, forceStop = false) {
+        __DEV__ && console.log(` stopHLSStream `);
         // do not stop multi division live channels
         const targetStream = self.hlsStreams.find(
           s => s.channelNo == channelNo
         );
+        targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
         if (
           !forceStop &&
           !self.isAlertPlay &&
@@ -3375,6 +3385,14 @@ const storeDefault = {
   isAlertPlay: false,
   isPreloadStream: false,
   currentGridPage: 0,
+
+  bitrateRecordTimePoint: 0,
+
+  currentBitrate: 0,
+
+  accumulatedDataUsage: 0,
+
+  dataUsageSentTimePoint: 0,
 };
 
 const videoStore = VideoModel.create(storeDefault);

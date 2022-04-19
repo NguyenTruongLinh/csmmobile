@@ -505,6 +505,12 @@ class HLSStreamingView extends React.Component {
     __DEV__ && console.log('GOND onPlaybackResume: ', event);
   };
 
+  onBandwidthUpdate = data => {
+    const {videoStore, streamData} = this.props;
+    __DEV__ && console.log('GOND onBandwidthUpdate: ', data.bitrate);
+    streamData.updateBitrate(data.bitrate, 'onBandwidthUpdate');
+  };
+
   onReady = event => {
     const {streamData, videoStore, singlePlayer} = this.props;
     __DEV__ &&
@@ -1093,14 +1099,8 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      streamData,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
@@ -1165,6 +1165,7 @@ class HLSStreamingView extends React.Component {
                 onError={this.onError}
                 onPlaybackStalled={this.onPlaybackStalled}
                 onPlaybackResume={this.onPlaybackResume}
+                onBandwidthUpdate={this.onBandwidthUpdate}
                 onProgress={this.onProgress}
                 onLoad={this.onLoad}
                 onSeek={event =>
@@ -1174,8 +1175,8 @@ class HLSStreamingView extends React.Component {
                   __DEV__ && console.log('GOND HLS onTimedMetadata', event);
                 }}
                 onPlaybackRateChange={data => {
-                  // __DEV__ &&
-                  //   console.log('GOND HLS onPlaybackRateChange: ', data);
+                  __DEV__ &&
+                    console.log('GOND HLS onPlaybackRateChange: ', data);
                 }}
                 muted={true}
                 volume={0}
@@ -1195,6 +1196,7 @@ class HLSStreamingView extends React.Component {
                   bufferForPlaybackAfterRebufferMs: 2500,
                 }}
                 maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
+                reportBandwidth={true}
               />
               // ) : null
             }
