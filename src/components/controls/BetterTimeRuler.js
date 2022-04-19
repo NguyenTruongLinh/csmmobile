@@ -249,8 +249,10 @@ export default class TimeRuler extends PureComponent {
     // TODO: handle DST
     console.log('GOND moveToPosition, sec: ', sec, ', secW = ', secWidth);
     this.isAutoScrolling = false;
-    this.scrollRef &&
+    if (this.scrollRef)
       this.scrollRef.scrollTo({x: sec * secWidth, y: 0, animated: false});
+    this.props.onPositionChanged(sec);
+    this.savedSecPos = sec;
     setTimeout(() => {
       this.isAutoScrolling = true;
     }, 2000);
@@ -373,7 +375,6 @@ export default class TimeRuler extends PureComponent {
     //     x
     //   );
     if (this.isAutoScrolling && !this.isManualScrolling && this.scrollRef) {
-      // __DEV__ && console.log('GOND === TimeRuler AAAAAAAAAAAAAAAAAAAAA');
       if (this.lastScrollOffsetX >= 0) this.lastScrollOffsetX = -1;
       if (this.draggedX > 0) {
         if (
@@ -393,6 +394,7 @@ export default class TimeRuler extends PureComponent {
           return;
         }
       }
+      // __DEV__ && console.log('GOND === TimeRuler scrollTo $ure ', x);
       this.scrollRef.scrollTo({x: x, y: y, animated: false});
       const secWidth = this.state.dwidth / SECONDS_PER_HOUR;
       this.props.onPositionChanged(x / secWidth);
@@ -429,6 +431,9 @@ export default class TimeRuler extends PureComponent {
         if (this.savedSecPos) {
           this.moveToPosition(this.savedSecPos);
           // this.savedSecPos = 0;
+        } else {
+          __DEV__ && console.log('GOND onTimeRuler onLayout TEST TEST TEST!');
+          // this.moveToPosition(12300);
         }
       }
     );
