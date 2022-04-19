@@ -60,6 +60,8 @@ const HLSURLModel = types
     accumulatedDataUsage: types.maybeNull(types.frozen()),
 
     dataUsageSentTimePoint: types.maybeNull(types.frozen()),
+
+    iOSDataUsageInterval: types.maybeNull(types.frozen()),
   })
   .volatile(self => ({
     getUrlRetries: 0,
@@ -121,9 +123,19 @@ const HLSURLModel = types
       self.accumulatedDataUsage = 0;
       self.dataUsageSentTimePoint = new Date().getTime();
     },
+    updateBitrateRecordTimePoint() {
+      self.bitrateRecordTimePoint = new Date().getTime();
+    },
     updateBitrate: flow(function* (bitrate, debug) {
       __DEV__ &&
-        console.log(`updateBitrate bitrate = `, bitrate, ' debug = ', debug);
+        console.log(
+          `updateBitrate bitrate = `,
+          bitrate,
+          ' debug = ',
+          debug,
+          ' self.bitrateRecordTimePoint = ',
+          self.bitrateRecordTimePoint
+        );
       // bitrate = 1000;
       if (!self.bitrateRecordTimePoint) {
         self.bitrateRecordTimePoint = new Date().getTime();
@@ -176,6 +188,43 @@ const HLSURLModel = types
         self.currentBitrate = bitrate;
         self.bitrateRecordTimePoint = newBitrateRecordTimePoint;
       } else {
+        if (bitrate != FORCE_SENT_DATA_USAGE) {
+          self.currentBitrate = bitrate;
+          self.bitrateRecordTimePoint = new Date().getTime();
+          if (self.currentBitrate > 0) {
+            self.iOSDataUsageInterval = setInterval(() => {
+              //callAPI(load);
+              self.updateBitrateRecordTimePoint();
+              let load = self.currentBitrate * 10;
+              __DEV__ &&
+                console.log(
+                  `updateBitrate callAPI load = `,
+                  self.currentBitrate,
+                  'x',
+                  10,
+                  '=',
+                  load
+                );
+            }, 10 * 1000);
+          }
+        } else if (self.currentBitrate > 0) {
+          clearInterval(self.iOSDataUsageInterval);
+          let dataSentTimePoint = new Date().getTime();
+          let load =
+            (self.currentBitrate *
+              (dataSentTimePoint - self.bitrateRecordTimePoint)) /
+            1000;
+          //callAPI(load);
+          __DEV__ &&
+            console.log(
+              `updateBitrate callAPI load = `,
+              self.currentBitrate,
+              'x',
+              (dataSentTimePoint - self.bitrateRecordTimePoint) / 1000,
+              '=',
+              load
+            );
+        }
       }
     }),
   }));
