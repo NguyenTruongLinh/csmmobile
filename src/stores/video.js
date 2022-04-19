@@ -738,8 +738,9 @@ export const VideoModel = types
                 if (
                   !newTimeline ||
                   newTimeline.length == 0 ||
-                  self.beginSearchTime.toSeconds() >
-                    newTimeline[newTimeline.length - 1].end
+                  (self.beginSearchTime &&
+                    self.beginSearchTime.toSeconds() >
+                      newTimeline[newTimeline.length - 1].end)
                 ) {
                   self.selectedStream.stopWaitingCauseNoVideo();
                 }
@@ -1271,6 +1272,7 @@ export const VideoModel = types
         __DEV__ &&
           console.log(
             'GOND checkTimeOnTimeline 2 : ',
+            DateTime.fromSeconds(value, {zone: self.timezone}),
             lastTime,
             value < lastTime
           );

@@ -612,6 +612,7 @@ class VideoPlayerView extends Component {
     } // else if (videoStore.noVideo) {
     //   videoStore.setNoVideo(false, false);
     // }
+    videoStore.setBeginSearchTime(destinationTime);
     if (this.playerRef) {
       this.playerRef.playAt(value.timestamp);
     } else {
