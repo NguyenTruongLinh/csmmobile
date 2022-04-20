@@ -322,14 +322,6 @@ export const VideoModel = types
     isAlertPlay: types.optional(types.boolean, false),
     isPreloadStream: types.optional(types.boolean, false),
     currentGridPage: types.optional(types.number, 0),
-
-    bitrateRecordTimePoint: types.maybeNull(types.frozen()),
-
-    currentBitrate: types.maybeNull(types.frozen()),
-
-    accumulatedDataUsage: types.maybeNull(types.frozen()),
-
-    dataUsageSentTimePoint: types.maybeNull(types.frozen()),
   })
   .volatile(self => ({
     reactions: [],
@@ -3387,14 +3379,6 @@ const storeDefault = {
   isAlertPlay: false,
   isPreloadStream: false,
   currentGridPage: 0,
-
-  bitrateRecordTimePoint: 0,
-
-  currentBitrate: 0,
-
-  accumulatedDataUsage: 0,
-
-  dataUsageSentTimePoint: 0,
 };
 
 const videoStore = VideoModel.create(storeDefault);

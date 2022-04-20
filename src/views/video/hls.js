@@ -1165,7 +1165,7 @@ class HLSStreamingView extends React.Component {
                 onError={this.onError}
                 onPlaybackStalled={this.onPlaybackStalled}
                 onPlaybackResume={this.onPlaybackResume}
-                onBandwidthUpdate={this.onBandwidthUpdate}
+                // onBandwidthUpdate={this.onBandwidthUpdate}
                 onProgress={this.onProgress}
                 onLoad={this.onLoad}
                 onSeek={event =>
