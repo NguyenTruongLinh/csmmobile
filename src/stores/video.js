@@ -2219,7 +2219,7 @@ export const VideoModel = types
         const targetStream = self.hlsStreams.find(
           s => s.channelNo == channelNo
         );
-        targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
+        // targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
         if (
           !forceStop &&
           !self.isAlertPlay &&

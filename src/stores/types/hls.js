@@ -552,11 +552,11 @@ export default HLSStreamModel = types
         console.log('GOND --- set HLS Ready --- ', isReady);
         // console.trace();
       }
-      if (!isReady)
-        self.targetUrl.updateBitrate(
-          FORCE_SENT_DATA_USAGE,
-          'setStreamReady false'
-        );
+      // if (!isReady)
+      //   self.targetUrl.updateBitrate(
+      //     FORCE_SENT_DATA_USAGE,
+      //     'setStreamReady false'
+      //   );
     },
     // setReconnectStatus(value) {
     //   self.isWaitingReconnect = value;
@@ -955,7 +955,7 @@ export default HLSStreamModel = types
       apiService.post(VSC.controller, sid, VSC.updateStream, isStopped);
     },
     updateBitrate(bitrate, debug) {
-      self.targetUrl.updateBitrate(bitrate, debug);
+      // self.targetUrl.updateBitrate(bitrate, debug);
     },
     // scheduleCheckTimeout(time) {
     //   self.clearStreamTimeout();
@@ -980,7 +980,7 @@ export default HLSStreamModel = types
     //   self.streamTimeout && clearTimeout(self.streamTimeout);
     // },
     onExitSinglePlayer() {
-      self.updateBitrate(FORCE_SENT_DATA_USAGE, 'onExitSinglePlayer');
+      // self.updateBitrate(FORCE_SENT_DATA_USAGE, 'onExitSinglePlayer');
       self.targetUrl.getUrlRetries = 0;
       self.targetUrl.clearStreamTimeout();
       self.targetUrl.isFailed = false;

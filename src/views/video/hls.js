@@ -508,7 +508,7 @@ class HLSStreamingView extends React.Component {
   onBandwidthUpdate = data => {
     const {videoStore, streamData} = this.props;
     __DEV__ && console.log('GOND onBandwidthUpdate: ', data); //.bitrate
-    streamData.updateBitrate(data.bitrate, 'onBandwidthUpdate');
+    // streamData.updateBitrate(data.bitrate, 'onBandwidthUpdate');
   };
 
   onReady = event => {
