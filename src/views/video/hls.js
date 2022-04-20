@@ -27,6 +27,7 @@ import {
 import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../../localization/texts';
+import {V3_1_BITRATE_USAGE} from '../../stores/types/hls';
 
 const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
 const MAX_RETRY = 5;
@@ -506,9 +507,10 @@ class HLSStreamingView extends React.Component {
   };
 
   onBandwidthUpdate = data => {
+    if (!V3_1_BITRATE_USAGE) return;
     const {videoStore, streamData} = this.props;
     __DEV__ && console.log('GOND onBandwidthUpdate: ', data); //.bitrate
-    // streamData.updateBitrate(data.bitrate, 'onBandwidthUpdate');
+    streamData.updateBitrate(data.bitrate, 'onBandwidthUpdate');
   };
 
   onReady = event => {
@@ -1165,7 +1167,7 @@ class HLSStreamingView extends React.Component {
                 onError={this.onError}
                 onPlaybackStalled={this.onPlaybackStalled}
                 onPlaybackResume={this.onPlaybackResume}
-                // onBandwidthUpdate={this.onBandwidthUpdate}
+                onBandwidthUpdate={this.onBandwidthUpdate}
                 onProgress={this.onProgress}
                 onLoad={this.onLoad}
                 onSeek={event =>

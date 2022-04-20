@@ -908,6 +908,8 @@ export const VideoModel = types
                 foundStream.setHD(self.hdMode);
                 if (autoStart)
                   self.getHLSInfos({channelNo: value, timeline: !self.isLive});
+              } else {
+                foundStream.targetUrl.resetBitrateInfo();
               }
               break;
             case CLOUD_TYPE.RTC:
@@ -2219,7 +2221,7 @@ export const VideoModel = types
         const targetStream = self.hlsStreams.find(
           s => s.channelNo == channelNo
         );
-        // targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
+        targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
         if (
           !forceStop &&
           !self.isAlertPlay &&
