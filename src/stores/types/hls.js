@@ -722,8 +722,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -741,7 +741,8 @@ export default HLSStreamModel = types
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 15,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(

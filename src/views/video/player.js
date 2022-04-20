@@ -578,7 +578,7 @@ class VideoPlayerView extends Component {
         destinationTime >= timeline[timeline.length - 1].end
       );
 
-    const dateString = videoStore.frameTimeString.split(' - ')[0];
+    const dateString = searchDate.toFormat(NVRPlayerConfig.FrameDateFormat);
     const timeString =
       this.formatTimeValue(value.hour) +
       ':' +

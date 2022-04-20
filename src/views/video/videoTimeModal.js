@@ -32,6 +32,9 @@ export default class VideoTimeModal extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      dstHours: ALL_HOURS,
+    };
     this.calendarRef = null;
     this.selectedTime = {hourIndex: 0, hour: 0, minute: 0, second: 0};
     this.hourRef = null;
@@ -42,15 +45,35 @@ export default class VideoTimeModal extends Component {
     //   Dimensions.addEventListener('change', this.onDimensionChange);
     // }
     // this.onDimensionChange({window: Dimensions.get('window')});
-    const {hour, minute, second} = this.props;
+    const {hour, minute, second} = this.props.selectedTime ?? {
+      hour: 0,
+      minute: 0,
+      second: 0,
+    };
+
+    this.constructArrayOfHours();
 
     this.selectedTime = {
-      hourIndex: ALL_HOURS.findIndex(value => hour == value),
-      hour,
-      minute,
-      second,
+      hourIndex: this.state.dstHours.findIndex(value => hour == value),
+      hour: hour ?? 0,
+      minute: minute ?? 0,
+      second: second ?? 0,
     };
   }
+
+  constructArrayOfHours = () => {
+    const dstHours = [];
+    const selectedDate = this.props.datetime.toFormat('yyyyMMdd');
+    let hourIterator = this.props.datetime.startOf('day');
+    let currentDate = hourIterator.toFormat('yyyyMMdd');
+    do {
+      dstHours.push(hourIterator.toFormat('H'));
+      hourIterator = hourIterator.plus({hour: 1});
+      currentDate = hourIterator.toFormat('yyyyMMdd');
+    } while (currentDate == selectedDate);
+
+    this.setState({dstHours});
+  };
 
   componentWillUnmount() {
     // if (this.props.Rotatable) {
@@ -92,6 +115,8 @@ export default class VideoTimeModal extends Component {
           enable={true}
           onPress={() => {
             const {onSubmit} = this.props;
+            __DEV__ &&
+              console.log('GOND TimePicker onSubmit: ', this.selectedTime);
             onSubmit &&
               onSubmit(
                 this.selectedTime.hourIndex,
@@ -116,21 +141,11 @@ export default class VideoTimeModal extends Component {
   };
 
   renderContent = () => {
-    const DTSHours = [];
-    const selectedDate = this.props.datetime.toFormat('yyyyMMdd');
-    let hourIterator = this.props.datetime.startOf('day');
-    let currentDate = hourIterator.toFormat('yyyyMMdd');
-    do {
-      DTSHours.push(hourIterator.toFormat('H'));
-      hourIterator = hourIterator.plus({hour: 1});
-      currentDate = hourIterator.toFormat('yyyyMMdd');
-    } while (currentDate == selectedDate);
-
     return (
       <View style={{flex: 1, flexDirection: 'row'}}>
         <CMSNumberPicker
           ref={r => (this.hourRef = r)}
-          numbers={DTSHours}
+          numbers={this.state.dstHours}
           onSelectNumber={(number, index) => {
             this.onTimeChange('hour', number);
             this.onTimeChange('hourIndex', index);

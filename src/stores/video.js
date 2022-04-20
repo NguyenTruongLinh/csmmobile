@@ -2613,7 +2613,10 @@ export const VideoModel = types
               s => s.targetUrl.sid == info.sid
             );
             if (target) {
-              if (self.checkTimeOnTimeline(self.beginSearchTime.toSeconds())) {
+              if (
+                !self.beginSearchTime ||
+                self.checkTimeOnTimeline(self.beginSearchTime.toSeconds())
+              ) {
                 target.handleError(info);
               } else {
                 target.setStreamStatus({

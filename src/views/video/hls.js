@@ -593,8 +593,10 @@ class HLSStreamingView extends React.Component {
     // this.frameTime = 0;
 
     if (
-      error.domain == 'NSURLErrorDomain' ||
-      error.errorString == 'Unrecognized media format'
+      error.errorString == 'Unrecognized media format' || // android
+      error.errorString == 'Behind Live window' || // android
+      error.domain == 'NSURLErrorDomain' || // iOS
+      error.localizedFailureReason == 'Stream ended unexpectedly' // iOS
     ) {
       // TODO: new search time
       if (!this.errorTimeout)
@@ -1101,8 +1103,14 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
