@@ -551,14 +551,14 @@ class HLSStreamingView extends React.Component {
         });
         this.firstBuffer = false;
       }
-      this.clearErrorTimeout(); // should be here?
-      // It could cause reconnecting forever
-      if (!this.videoBufferTimeout) {
-        this.videoBufferTimeout = setTimeout(
-          this.onBufferTimeout,
-          __DEV__ ? 15000 : BUFFER_TIMEOUT
-        );
-      }
+      // this.clearErrorTimeout(); // should be here?
+      // // It could cause reconnecting forever
+      // if (!this.videoBufferTimeout) {
+      //   this.videoBufferTimeout = setTimeout(
+      //     this.onBufferTimeout,
+      //     __DEV__ ? 15000 : BUFFER_TIMEOUT
+      //   );
+      // }
     } else if (!isLive) {
       if (streamData.isLoading)
         this.setStreamStatus({
@@ -588,7 +588,8 @@ class HLSStreamingView extends React.Component {
         'GOND HLS onError ',
         this.props.streamData.channelName,
         JSON.stringify(error),
-        error.errorString
+        error.errorString,
+        error.localizedFailureReason
       );
     const {streamData, isLive, hdMode} = this.props;
     if (this.state.internalLoading) this.setState({internalLoading: false});
@@ -598,10 +599,12 @@ class HLSStreamingView extends React.Component {
     // this.frameTime = 0;
 
     if (
-      error.errorString == 'Unrecognized media format' || // android
-      error.errorString == 'Behind Live window' || // android
+      (error.errorString &&
+        (error.errorString.includes('Unrecognized media format') || // android
+          error.errorString.include('Behind Live window'))) || // android
       error.domain == 'NSURLErrorDomain' || // iOS
-      error.localizedFailureReason == 'Stream ended unexpectedly' // iOS
+      (error.localizedFailureReason &&
+        error.localizedFailureReason.includes('Stream ended unexpectedly')) // iOS
     ) {
       // TODO: new search time
       if (!this.errorTimeout)
@@ -1091,33 +1094,27 @@ class HLSStreamingView extends React.Component {
     await videoStore.onHLSTimeChanged(time);
     __DEV__ && console.log('GOND =HLS= on refresh streamUrl begin');
     const {streamUrl} = this.state;
-    // this.setState(
-    //   {
-    //     // refreshCount: this.state.refreshCount > 0 ? 0 : 1,
-    //     streamUrl: '',
-    //   },
-    //   () => {
-    //     this.setState({streamUrl}, () => {
-    streamData.setStreamReady(true);
-    if (this.lastSeekableDuration > 0) {
-      this.skippedDuration = this.lastSeekableDuration;
-      this.lastSeekableDuration = 0;
-    }
-    __DEV__ && console.log('GOND =HLS= on refresh streamUrl end');
-    //     });
-    //   }
-    // );
+    this.setState(
+      {
+        // refreshCount: this.state.refreshCount > 0 ? 0 : 1,
+        streamUrl: '',
+      },
+      () => {
+        this.setState({streamUrl}, () => {
+          streamData.setStreamReady(true);
+          if (this.lastSeekableDuration > 0) {
+            this.skippedDuration = this.lastSeekableDuration;
+            this.lastSeekableDuration = 0;
+          }
+          __DEV__ && console.log('GOND =HLS= on refresh streamUrl end');
+        });
+      }
+    );
   };
 
   render() {
-    const {
-      width,
-      height,
-      streamData,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
