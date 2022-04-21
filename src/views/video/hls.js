@@ -63,8 +63,8 @@ class HLSStreamingView extends React.Component {
         : videoStore.beginSearchTime ?? videoStore.getSafeSearchDate(),
       internalLoading: false,
     };
-    __DEV__ &&
-      console.log('GOND HLS set beginTime 0: ', this.state.timeBeginPlaying);
+    // __DEV__ &&
+    //   console.log('GOND HLS set beginTime 0: ', this.state.timeBeginPlaying);
     this._isMounted = false;
     this.frameTime = 0;
     this.tsIndex = -1;
@@ -209,11 +209,11 @@ class HLSStreamingView extends React.Component {
                     //   this.pause(false);
                     //   setTimeout(() => this._isMounted && this.pause(true), 100);
                     // }
-                    __DEV__ &&
-                      console.log(
-                        'GOND HLS set beginTime 1: ',
-                        this.state.timeBeginPlaying
-                      );
+                    // __DEV__ &&
+                    //   console.log(
+                    //     'GOND HLS set beginTime 1: ',
+                    //     this.state.timeBeginPlaying
+                    //   );
                   }
                 );
                 // reset these value everytimes streamUrl changed
@@ -416,6 +416,7 @@ class HLSStreamingView extends React.Component {
     this.refresh();
     this.pause(true);
     snackbar.dismiss();
+    __DEV__ && console.log('GOND =HLS= onChangeSearchDate ready false');
     this.props.streamData.setStreamReady(false);
     setTimeout(
       () =>
@@ -430,6 +431,7 @@ class HLSStreamingView extends React.Component {
   onBeginDraggingTimeline = () => {
     this.pause(true);
     this.clearBufferTimeout();
+    __DEV__ && console.log('GOND =HLS= onBeginDraggingTimeline ready false');
     this.props.streamData.setStreamReady(false);
   };
 
@@ -441,6 +443,7 @@ class HLSStreamingView extends React.Component {
     this.refresh();
     this.pause(true);
     snackbar.dismiss();
+    __DEV__ && console.log('GOND =HLS= onSwitchLiveSearch ready false');
     this.props.streamData.setStreamReady(false);
     if (isLive) {
       this.lastSeekableDuration = 0;
@@ -462,6 +465,7 @@ class HLSStreamingView extends React.Component {
     this.refresh();
     this.pause(true);
     snackbar.dismiss();
+    __DEV__ && console.log('GOND =HLS= onChangeChannel ready false');
     this.props.streamData.setStreamReady(false);
     this.lastSeekableDuration = 0;
     this.skippedDuration = 0;
@@ -480,6 +484,7 @@ class HLSStreamingView extends React.Component {
     this.lastSearchTime = this.computeTime(this.frameTime);
     this.lastSeekableDuration = 0;
     this.skippedDuration = 0;
+    __DEV__ && console.log('GOND =HLS= onHDMode ready false');
     this.props.videoStore.setBeginSearchTime(this.lastSearchTime);
     this.props.streamData.setStreamReady(false);
     this.pause(true);
@@ -517,10 +522,10 @@ class HLSStreamingView extends React.Component {
     const {streamData, videoStore, singlePlayer} = this.props;
     __DEV__ &&
       console.log(
-        'GOND HLS onReady: ',
-        streamData.channelName,
-        ', shouldResume: ',
-        this.shouldResume
+        'GOND =HLS= onReady true: ',
+        streamData.channelName
+        // ', shouldResume: ',
+        // this.shouldResume
       );
 
     // if (singlePlayer && this.shouldResume) {
@@ -1071,35 +1076,37 @@ class HLSStreamingView extends React.Component {
     //   time.toFormat(NVRPlayerConfig.RequestTimeFormat)
     // );
     this.pause(true);
-    // streamData.setStreamReady(false);
+    streamData.setStreamReady(false);
     this.setState(
       {
         timeBeginPlaying: this.lastSearchTime,
-      },
-      () =>
-        __DEV__ &&
-        console.log(
-          'GOND HLS set beginTime 3: ',
-          this.state.timeBeginPlaying.toFormat(NVRPlayerConfig.FrameFormat)
-        )
+      } // ,
+      // () =>
+      //   __DEV__ &&
+      //   console.log(
+      //     'GOND HLS set beginTime 3: ',
+      //     this.state.timeBeginPlaying.toFormat(NVRPlayerConfig.FrameFormat)
+      //   )
     );
     await videoStore.onHLSTimeChanged(time);
+    __DEV__ && console.log('GOND =HLS= on refresh streamUrl begin');
     const {streamUrl} = this.state;
-    this.setState(
-      {
-        // refreshCount: this.state.refreshCount > 0 ? 0 : 1,
-        streamUrl: '',
-      },
-      () => {
-        this.setState({streamUrl}, () => {
-          streamData.setStreamReady(true);
-          if (this.lastSeekableDuration > 0) {
-            this.skippedDuration = this.lastSeekableDuration;
-            this.lastSeekableDuration = 0;
-          }
-        });
-      }
-    );
+    // this.setState(
+    //   {
+    //     // refreshCount: this.state.refreshCount > 0 ? 0 : 1,
+    //     streamUrl: '',
+    //   },
+    //   () => {
+    //     this.setState({streamUrl}, () => {
+    streamData.setStreamReady(true);
+    if (this.lastSeekableDuration > 0) {
+      this.skippedDuration = this.lastSeekableDuration;
+      this.lastSeekableDuration = 0;
+    }
+    __DEV__ && console.log('GOND =HLS= on refresh streamUrl end');
+    //     });
+    //   }
+    // );
   };
 
   render() {

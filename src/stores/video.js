@@ -1619,6 +1619,25 @@ export const VideoModel = types
         self.clearRefreshTimelineInterval();
         self.beginSearchTime = null;
       },
+      onDisconnectNVR() {
+        self.dvrTimezone = null;
+        self.timezoneOffset = null;
+        self.timezoneName = null;
+
+        self.channelFilter = '';
+        // self.gridLayout = 2;
+        self.isLoading = false;
+        self.allChannels = [];
+        self.rtcConnection = null;
+        self.hlsStreams = [];
+        self.directConnection = null;
+        self.directStreams = [];
+        self.isAuthenticated = false;
+        self.showAuthenModal = false;
+
+        self.isPreloadStream = false;
+        self.currentGridPage = 0;
+      },
       updateDirectFrame(channel, frameData) {
         const target = self.directStreams.find(s => s.videoSource == channel);
 
