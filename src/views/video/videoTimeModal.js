@@ -124,7 +124,7 @@ export default class VideoTimeModal extends Component {
                 this.selectedTime.minute,
                 this.selectedTime.second
               );
-            this.selectedTime = {};
+            // this.selectedTime = {};
           }}>
           <Text
             style={[
