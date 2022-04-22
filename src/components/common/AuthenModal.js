@@ -46,9 +46,11 @@ class AuthenModal extends Component {
         () => videoStore.showAuthenModal,
         showAuthenModal => {
           if (showAuthenModal) {
-            this._refs.password.clear();
-            this._refs.username.clear();
-            this._refs.username.focus();
+            this._refs.password && this._refs.password.clear();
+            if (this._refs.username) {
+              this._refs.username.clear();
+              this._refs.username.focus();
+            }
           }
         }
       ),
