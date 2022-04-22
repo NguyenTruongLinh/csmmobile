@@ -559,15 +559,18 @@ export default class Carousel extends Component {
         for (let i = 0; i < this._positions.length; i++) {
             const { start, end } = this._positions[i];
             if (center + centerOffset >= start && center - centerOffset <= end) {
+                __DEV__ && console.log(`_getActiveItem offset = `, offset, `| i = `, i)
                 return i;
             }
         }
 
         const lastIndex = this._positions.length - 1;
         if (this._positions[lastIndex] && center - centerOffset > this._positions[lastIndex].end) {
+            __DEV__ && console.log(`_getActiveItem offset = `, offset, `| lastIndex = `, lastIndex)
             return lastIndex;
         }
 
+        __DEV__ && console.log(`_getActiveItem offset = `, offset, `| result = `, 0)
         return 0;
     }
 
@@ -873,6 +876,7 @@ export default class Carousel extends Component {
 
         this._scrollStartOffset = this._getScrollOffset(event);
         this._scrollStartActive = this._getActiveItem(this._scrollStartOffset);
+        __DEV__ && console.log(`active this._scrollStartActive = `, this._scrollStartActive)
         this._ignoreNextMomentum = false;
         // this._canFireCallback = false;
 
@@ -922,9 +926,10 @@ export default class Carousel extends Component {
 
         this._scrollEndOffset = this._currentContentOffset;
         this._scrollEndActive = this._getActiveItem(this._scrollEndOffset);
-
+        __DEV__ && console.log(`active this._scrollEndActive = `, this._scrollEndActive)
         if (enableSnap) {
-            this._snapScroll(this._scrollEndOffset - this._scrollStartOffset);
+            // this._snapScroll(this._scrollEndOffset - this._scrollStartOffset);
+            this._snapToItem(this._scrollEndActive);
         }
 
         // The touchEnd event is buggy on Android, so this will serve as a fallback whenever needed
@@ -967,38 +972,44 @@ export default class Carousel extends Component {
         }
     }
 
-    _snapScroll (delta) {
-        const { swipeThreshold } = this.props;
+    // _snapScroll (delta) {
+    //     const { swipeThreshold } = this.props;
+    //     __DEV__ && console.log(`_snapScroll delta = `, delta, `swipeThreshold = `, swipeThreshold, `| this._scrollStartActive = `, this._scrollStartActive, `| this._scrollEndActive = `, this._scrollEndActive)
+    //     // When using momentum and releasing the touch with
+    //     // no velocity, scrollEndActive will be undefined (iOS)
+    //     if (!this._scrollEndActive && this._scrollEndActive !== 0 && IS_IOS) {
+    //         this._scrollEndActive = this._scrollStartActive;
+    //     }
 
-        // When using momentum and releasing the touch with
-        // no velocity, scrollEndActive will be undefined (iOS)
-        if (!this._scrollEndActive && this._scrollEndActive !== 0 && IS_IOS) {
-            this._scrollEndActive = this._scrollStartActive;
-        }
-
-        if (this._scrollStartActive !== this._scrollEndActive) {
-            // Snap to the new active item
-            this._snapToItem(this._scrollEndActive);
-        } else {
-            // Snap depending on delta
-            if (delta > 0) {
-                if (delta > swipeThreshold) {
-                    this._snapToItem(this._scrollStartActive + 1);
-                } else {
-                    this._snapToItem(this._scrollEndActive);
-                }
-            } else if (delta < 0) {
-                if (delta < -swipeThreshold) {
-                    this._snapToItem(this._scrollStartActive - 1);
-                } else {
-                    this._snapToItem(this._scrollEndActive);
-                }
-            } else {
-                // Snap to current
-                this._snapToItem(this._scrollEndActive);
-            }
-        }
-    }
+    //     if (this._scrollStartActive !== this._scrollEndActive) {
+    //         // Snap to the new active item
+    //         this._snapToItem(this._scrollEndActive);
+    //         __DEV__ && console.log(` _snapScroll  if 1 - `, this._scrollEndActive)
+    //     } else {
+    //         // Snap depending on delta
+    //         if (delta > 0) {
+    //             if (delta > swipeThreshold) {
+    //                 this._snapToItem(this._scrollStartActive + 1);
+    //                 __DEV__ && console.log(` _snapScroll else if if 2 - `, this._scrollStartActive + 1)
+    //             } else {
+    //                 this._snapToItem(this._scrollEndActive);
+    //                 __DEV__ && console.log(` _snapScroll else if else 3 - `, this._scrollEndActive)
+    //             }
+    //         } else if (delta < 0) {
+    //             if (delta < -swipeThreshold) {
+    //                 this._snapToItem(this._scrollStartActive - 1);
+    //                 __DEV__ && console.log(` _snapScroll else else if 4 - `, this._scrollStartActive - 1)
+    //             } else {
+    //                 this._snapToItem(this._scrollEndActive);
+    //                 __DEV__ && console.log(` _snapScroll else else else 5 - `, this._scrollEndActive)
+    //             }
+    //         } else {
+    //             // Snap to current
+    //             this._snapToItem(this._scrollEndActive);
+    //             __DEV__ && console.log(` _snapScroll else else 6 - `, this._scrollEndActive)
+    //         }
+    //     }
+    // }
 
     _snapToItem (index, animated = true, fireCallback = true, initial = false, lockScroll = true) {
         const { enableMomentum, onSnapToItem, onBeforeSnapToItem } = this.props;

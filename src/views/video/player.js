@@ -78,6 +78,7 @@ class VideoPlayerView extends Component {
       sWidth: width,
       sHeight: height,
       selectedTime: {hour: 0, minute: 0, second: 0},
+      timePickerDatetime: props.videoStore.getSafeSearchDate(),
     };
 
     this.timelineAutoScroll = true;
@@ -564,19 +565,20 @@ class VideoPlayerView extends Component {
     //       .startOf('day')
     //       .plus({seconds: value.timestamp})
     //       .toSeconds();
-
+    __DEV__ &&
+      console.log(`onTimelineScrollEnd value.timestamp = `, value.timestamp);
     const destinationTime = searchDate
       .plus({seconds: value.timestamp})
       .toSeconds();
-    __DEV__ &&
-      console.log(
-        'GOND onTimeline sliding end: ',
-        value,
-        searchDate,
-        destinationTime,
-        timeline[timeline.length - 1],
-        destinationTime >= timeline[timeline.length - 1].end
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND onTimeline sliding end: ',
+    //     value,
+    //     searchDate,
+    //     destinationTime,
+    //     timeline[timeline.length - 1],
+    //     destinationTime >= timeline[timeline.length - 1].end
+    //   );
 
     const dateString = searchDate.toFormat(NVRPlayerConfig.FrameDateFormat);
     const timeString =
@@ -670,6 +672,7 @@ class VideoPlayerView extends Component {
         this.setState({
           showTimerPicker: true,
           selectedTime: {hour, minute, second},
+          timePickerDatetime: this.props.videoStore.getSafeSearchDate(),
         });
       }
     }
@@ -1232,6 +1235,11 @@ class VideoPlayerView extends Component {
   };
 
   renderTimePicker = () => {
+    __DEV__ &&
+      console.log(
+        ` renderTimePicker this.state.timePickerDatetime = `,
+        this.state.timePickerDatetime
+      );
     return Platform.OS == 'ios' ? (
       <TimePicker
         ref={ref => {
@@ -1240,6 +1248,7 @@ class VideoPlayerView extends Component {
         onCancel={() => this.timePickerRef && this.timePickerRef.close()}
         onConfirm={this.onSetSearchTime}
         datetime={this.props.videoStore.getSafeSearchDate()}
+        // datetime={this.state.timePickerDatetime}
       />
     ) : (
       <VideoTimeModal
@@ -1249,7 +1258,8 @@ class VideoPlayerView extends Component {
         selectedTime={this.state.selectedTime}
         onSubmit={this.onSetSearchTime}
         onDismiss={this.closeTimePickerAndroid}
-        datetime={this.props.videoStore.getSafeSearchDate()}
+        datetime={this.state.timePickerDatetime}
+        // datetime={this.props.videoStore.getSafeSearchDate()}
       />
     );
   };

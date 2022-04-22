@@ -23,6 +23,7 @@ const SECTION_HEADER_HEIGHT = 48;
 const ALL_HOURS = Array.from(Array(24).keys());
 const MINUTES = Array.from(Array(60).keys());
 const SECONDS = Array.from(Array(60).keys());
+const {width, height} = Dimensions.get('window');
 
 export default class VideoTimeModal extends Component {
   static defaultProps = {
@@ -41,6 +42,7 @@ export default class VideoTimeModal extends Component {
   }
 
   componentDidMount() {
+    __DEV__ && console.log(`VideoTimeModal timepicker componentDidMount `);
     // if (this.props.Rotatable) {
     //   Dimensions.addEventListener('change', this.onDimensionChange);
     // }
@@ -83,6 +85,7 @@ export default class VideoTimeModal extends Component {
 
   onTimeChange = (key, value) => {
     this.selectedTime[key] = value;
+    __DEV__ && console.log(`onTimeChange key = `, key, `| value = `, value);
   };
 
   renderHeader = () => {
@@ -140,7 +143,7 @@ export default class VideoTimeModal extends Component {
     );
   };
 
-  renderContent = () => {
+  renderContent = height => {
     return (
       <View style={{flex: 1, flexDirection: 'row'}}>
         <CMSNumberPicker
@@ -151,16 +154,19 @@ export default class VideoTimeModal extends Component {
             this.onTimeChange('hourIndex', index);
           }}
           selected={this.props.selectedTime.hour}
+          slideHeight={height}
         />
         <CMSNumberPicker
           numbers={MINUTES}
           onSelectNumber={number => this.onTimeChange('minute', number)}
           selected={this.props.selectedTime.minute}
+          slideHeight={height}
         />
         <CMSNumberPicker
           numbers={SECONDS}
           onSelectNumber={number => this.onTimeChange('second', number)}
           selected={this.props.selectedTime.second}
+          slideHeight={height}
         />
       </View>
     );
@@ -188,7 +194,7 @@ export default class VideoTimeModal extends Component {
             flexDirection: 'column',
           }}>
           {this.renderHeader()}
-          {this.renderContent()}
+          {this.renderContent((height * 40) / 100 - 50)}
         </View>
       </Modal>
     );
