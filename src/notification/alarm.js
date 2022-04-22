@@ -10,8 +10,8 @@ import ROUTERS from '../consts/routes';
 import {generateNotifId} from '../util/general';
 
 export function onAlarmEvent({alarmStore, naviService, action, content}) {
-  __DEV__ &&
-    console.log(`onAlarmEvent action = `, action, `| content = `, content);
+  // __DEV__ &&
+  //   console.log(`onAlarmEvent action = `, action, `| content = `, content);
   const alert = content;
   if (!alert) return;
 

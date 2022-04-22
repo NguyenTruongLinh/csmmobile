@@ -110,7 +110,7 @@ export const STREAM_STATUS = {
   CONNECTING: 'Connecting...',
   RECONNECTING: 'Reconnecting...',
   CONNECTED: 'Connected.',
-  LOGING_IN: 'Loging in...',
+  LOGING_IN: 'Logging in...',
   LOGIN_FAILED: 'Login failed',
   BUFFERING: 'Buffering...',
   SOURCE_ERROR: 'Video source error.',
