@@ -5,14 +5,16 @@ import {Dimensions} from 'react-native';
 import variables from '../styles/variables';
 
 const {width, height} = Dimensions.get('window');
-
+let lastToast = null;
+let lastMessage = null;
 const showToast = (
   message,
   backgroundColor,
   duration = Toast.durations.LONG
 ) => {
-  __DEV__ && console.log(`showToast showToast `);
-  Toast.show(message, {
+  _DEV_ && console.log(`showToast showToast `);
+  if (lastToast && lastMessage == message) Toast.hide(lastToast);
+  lastToast = Toast.show(message, {
     containerStyle: {
       flex: 1,
       width: width - 30,
@@ -30,6 +32,7 @@ const showToast = (
     backgroundColor: backgroundColor,
     opacity: 1,
   });
+  lastMessage = message;
 };
 
 const toastResult = (message, isError = true) => {
