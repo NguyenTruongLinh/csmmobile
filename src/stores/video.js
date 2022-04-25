@@ -269,14 +269,27 @@ const RecordingDateModel = types.model({
   marked: types.maybeNull(types.boolean),
 });
 
-DateTimeModel = types.model({
-  year: types.number,
-  month: types.number,
-  day: types.number,
-  hour: types.number,
-  minute: types.number,
-  timezoneOffset: types.number,
-});
+// DateTimeModel = types.model({
+//   year: types.number,
+//   month: types.number,
+//   day: types.number,
+//   hour: types.number,
+//   minute: types.number,
+//   timezoneOffset: types.number,
+// });
+
+// const AuthenModel = types
+//   .model({
+//     serverID: types.string,
+//     userName: types.string,
+//     password: types.string,
+//   })
+//   .actions({
+//     save(userName, password) {
+//       self.userName = userName;
+//       self.password = password;
+//     },
+//   });
 
 export const VideoModel = types
   .model({
@@ -285,6 +298,7 @@ export const VideoModel = types
     allChannels: types.array(ChannelModel),
     maxReadyChannels: types.number,
     cloudType: types.number,
+    // authenData: types.array(AuthenModel),
 
     rtcConnection: types.maybeNull(RTCStreamModel),
     hlsStreams: types.array(HLSStreamModel),
@@ -381,8 +395,10 @@ export const VideoModel = types
       return (
         (self.cloudType == CLOUD_TYPE.DIRECTION ||
           self.cloudType == CLOUD_TYPE.DEFAULT) &&
-        ((self.nvrUser && self.nvrUser.length == 0) ||
-          (self.nvrPassword && self.nvrPassword.length == 0))
+        (!self.nvrUser ||
+          self.nvrUser.length == 0 ||
+          !self.nvrPassword ||
+          self.nvrPassword.length == 0)
       );
     },
     get canDisplayChannels() {
@@ -1352,8 +1368,44 @@ export const VideoModel = types
         if (self.nvrUser) self.setNVRLoginInfo('', '');
         self.showAuthenModal = true;
       },
+      saveLoginInfo: flow(function* () {
+        // if (!self.directConnection) return;
+        //   const server = self.authenData.find(
+        //     s => s.serverID == self.directConnection.serverID
+        //   );
+        //   if (server) {
+        //     server.save(self.nvrUser, self.nvrPassword);
+        //   } else {
+        //     self.authenData.push(
+        //       AuthenModel.create({
+        //         serverID: self.directConnection.serverID,
+        //         userName: self.nvrUser,
+        //         password: self.nvrPassword,
+        //       })
+        //     );
+        //   }
+        if (!self.kDVR) return;
+
+        const key = util.getRandomId();
+        const res = yield apiService.post(
+          VSC.controller,
+          self.kDVR,
+          VSC.linkNVRUser,
+          {
+            KDvr: self.kDVR,
+            SID: key,
+            UserName: util.AES_encrypt(self.nvrUser, key),
+            Password: util.AES_encrypt(self.nvrPassword, key), // ('i3admin', key), //
+          }
+        );
+        __DEV__ && console.log('GOND linkNVRUser: ', res);
+      }),
+
       onLoginSuccess() {
         if (!self.isAuthenticated) self.isAuthenticated = true;
+
+        // dongpt: post login info to CMS
+        self.saveLoginInfo();
       },
       onAuthenSubmit({username, password}) {
         // __DEV__ && console.log('GOND onAuthenSubmit ', {username, password});
@@ -3373,6 +3425,7 @@ const storeDefault = {
   // activeChannels: [],
   maxReadyChannels: 0,
   cloudType: CLOUD_TYPE.UNKNOWN,
+  // authenData: [],
 
   // rtcStreams: [],
   hlsStreams: [],

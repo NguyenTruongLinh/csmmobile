@@ -90,6 +90,7 @@ export const VSC = {
   activeChannels: 'ActiveChannels',
   getActiveChannels: 'GetVSCActiveChannel',
   updateActiveChannels: 'UpdateVSCActiveChannel',
+  linkNVRUser: 'LinkNVRUserToCMS',
 };
 
 export const OAM = {
