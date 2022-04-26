@@ -366,6 +366,7 @@ export const VideoModel = types
     // refreshingTimeline: false,
     refreshTimelineInterval: null,
     beginSearchTime: null, // luxon DateTime
+    shouldLinkNVRUser: false, // enable when input login form
   }))
   .views(self => ({
     get isCloud() {
@@ -392,13 +393,13 @@ export const VideoModel = types
       return self.gridLayout * self.gridLayout;
     },
     get needAuthen() {
+      __DEV__ &&
+        console.log('GOND needAuthen: ', self.nvrUser, self.nvrPassword);
       return (
         (self.cloudType == CLOUD_TYPE.DIRECTION ||
           self.cloudType == CLOUD_TYPE.DEFAULT) &&
-        (!self.nvrUser ||
-          self.nvrUser.length == 0 ||
-          !self.nvrPassword ||
-          self.nvrPassword.length == 0)
+        ((self.nvrUser && self.nvrUser.length == 0) ||
+          (self.nvrPassword && self.nvrPassword.length == 0))
       );
     },
     get canDisplayChannels() {
@@ -1360,7 +1361,7 @@ export const VideoModel = types
         self.forceDstHour = value;
       },
       displayAuthen(value) {
-        __DEV__ && console.trace('GOND displaying Login form: ');
+        __DEV__ && console.trace('GOND displaying Login form: ', value);
         self.showAuthenModal = value;
       },
       resetNVRAuthentication() {
@@ -1405,7 +1406,7 @@ export const VideoModel = types
         if (!self.isAuthenticated) self.isAuthenticated = true;
 
         // dongpt: post login info to CMS
-        self.saveLoginInfo();
+        if (self.shouldLinkNVRUser) self.saveLoginInfo();
       },
       onAuthenSubmit({username, password}) {
         // __DEV__ && console.log('GOND onAuthenSubmit ', {username, password});
@@ -1413,6 +1414,7 @@ export const VideoModel = types
         // __DEV__ && console.log('GOND onAuthenSubmit 2');
         self.setNVRLoginInfo(username, password);
         self.displayAuthen(false);
+        self.shouldLinkNVRUser = true;
       },
       onAuthenCancel() {
         self.displayAuthen(false);
@@ -3127,11 +3129,11 @@ export const VideoModel = types
       // #endregion WebRTC streaming
       // #region Get and receive videoinfos
       getVideoInfos: flow(function* (channelNo) {
-        __DEV__ &&
-          console.trace(
-            'GOND getVideoInfos ',
-            channelNo != undefined ? channelNo : self.allChannels
-          );
+        // __DEV__ &&
+        //   console.trace(
+        //     'GOND getVideoInfos ',
+        //     channelNo != undefined ? channelNo : self.allChannels
+        //   );
         let getInfoPromise = null;
         if (!self.allChannels || self.allChannels.length <= 0) {
           let res = yield self.getDisplayingChannels();
@@ -3197,12 +3199,15 @@ export const VideoModel = types
           return Promise.resolve(true);
         }
 
-        __DEV__ && console.log('GOND getVideoInfos 2');
+        __DEV__ && console.log('GOND getVideoInfos 2: ', self.nvrUser);
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
           // getInfoPromise = self.getDirectInfos(channelNo);
           // break;
+          // if (self.needAuthen) {
+          //   self.displayAuthen(true);
+          // }
           case CLOUD_TYPE.HLS:
             // getInfoPromise = self.getHLSInfos({
             //   channelNo,

@@ -118,6 +118,9 @@ class LiveChannelsView extends React.Component {
     videoStore.switchLiveSearch(true);
     videoStore.enterVideoView(true);
 
+    // dongpt test:
+    // videoStore.saveLoginInfo();
+
     // videoStore.setStreamInfoCallback(this.onReceiveStreamInfo);
     // videoStore.setStreamReadyCallback(this.onStreamReady);
     // this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
@@ -153,7 +156,9 @@ class LiveChannelsView extends React.Component {
       reaction(
         () => videoStore.needAuthen,
         (needAuthen, previousValue) => {
-          if (needAuthen && !previousValue) {
+          if (needAuthen == true && previousValue == false) {
+            __DEV__ &&
+              console.log('GOND displayAuthen::check need authen', needAuthen);
             videoStore.displayAuthen(true);
           }
         }

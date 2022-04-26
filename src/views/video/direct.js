@@ -100,7 +100,6 @@ class DirectVideoView extends React.Component {
           isLoading: true,
           // connectionStatus: STREAM_STATUS.LOGING_IN,
         });
-        snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
         this.setNativePlayback();
       } else {
         __DEV__ &&
@@ -482,6 +481,17 @@ class DirectVideoView extends React.Component {
     // const playTime = isLive
     //   ? null
     //   : beginSearchTime ?? (searchPlayTime ? searchPlayTimeLuxon : null);
+    if (
+      !serverInfo.playData.userName ||
+      serverInfo.playData.userName.length == 0 ||
+      !serverInfo.playData.password ||
+      serverInfo.playData.password.length == 0
+    ) {
+      __DEV__ && console.log('GOND displayAuthen::setNativePlayback');
+      videoStore.displayAuthen(true);
+      return;
+    }
+
     const playbackInfo = {
       ...serverInfo.playData,
       searchMode: !isLive,
@@ -500,6 +510,7 @@ class DirectVideoView extends React.Component {
       userName: playbackInfo.userName,
       password: playbackInfo.password,
     };
+    snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
     __DEV__ &&
       console.log(
         'GOND setNativePlayback, info = ',
