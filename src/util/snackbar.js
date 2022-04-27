@@ -12,7 +12,7 @@ const showToast = (
   backgroundColor,
   duration = Toast.durations.LONG
 ) => {
-  _DEV_ && console.log(`showToast showToast `);
+  // __DEV__ && console.log(`showToast showToast `);
   if (lastToast && lastMessage == message) Toast.hide(lastToast);
   lastToast = Toast.show(message, {
     containerStyle: {

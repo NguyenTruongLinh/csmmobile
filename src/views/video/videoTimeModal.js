@@ -98,7 +98,6 @@ export default class VideoTimeModal extends Component {
           onPress={() => {
             const {onDismiss} = this.props;
             onDismiss && onDismiss();
-            this.selectedTime = {};
           }}>
           <Text
             style={[
@@ -127,7 +126,6 @@ export default class VideoTimeModal extends Component {
                 this.selectedTime.minute,
                 this.selectedTime.second
               );
-            // this.selectedTime = {};
           }}>
           <Text
             style={[
