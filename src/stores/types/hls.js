@@ -54,20 +54,15 @@ const HLSURLModel = types
     error: types.maybeNull(types.string),
     needReset: types.optional(types.boolean, false),
     isReady: types.optional(types.boolean, false),
-
-    bitrateRecordTimePoint: types.maybeNull(types.frozen()),
-
-    currentBitrate: types.maybeNull(types.frozen()),
-
-    accumulatedDataUsage: types.maybeNull(types.frozen()),
-
-    dataUsageSentTimePoint: types.maybeNull(types.frozen()),
-
-    iOSDataUsageInterval: types.maybeNull(types.frozen()),
   })
   .volatile(self => ({
     getUrlRetries: 0,
     checkStreamTimeout: null,
+    bitrateRecordTimePoint: new Date().getTime(),
+    currentBitrate: 0,
+    accumulatedDataUsage: 0,
+    dataUsageSentTimePoint: new Date().getTime(),
+    iOSDataUsageInterval: null,
   }))
   .actions(self => ({
     beforeDestroy() {
@@ -722,8 +717,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -741,8 +736,7 @@ export default HLSStreamModel = types
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 15,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ &&
           console.log(
