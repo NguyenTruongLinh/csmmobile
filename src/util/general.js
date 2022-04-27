@@ -701,3 +701,16 @@ exports.toUTCDate = local_date => {
   var dd = new Date(_date);
   return dd;
 };
+
+exports.extractModuleNameFromScreenName = screenName => {
+  __DEV__ &&
+    console.log(
+      `extractModuleNameFromScreenName typeof screenName = `,
+      typeof screenName
+    );
+  if (screenName.includes('oam')) return 'OAM';
+  if (screenName.includes('health')) return 'health';
+  if (screenName.includes('alarm')) return 'alarm';
+  if (screenName.includes('video')) return 'video';
+  if (screenName.includes('pos')) return 'smartER';
+};

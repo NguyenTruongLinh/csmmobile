@@ -133,7 +133,21 @@ const NavigationService = types
         _state = currentRoute.state;
         if (!_state) return currentRoute.name;
       }
+      return 'Not ready yet';
+    },
 
+    getPreviousRouteName() {
+      __DEV__ && console.log(`getPreviousRouteName`);
+      let _state = self.state;
+      while (_state) {
+        const currentRoute = _state.routes[_state.index];
+        let _nextState = currentRoute.state;
+        if (!_nextState) {
+          return _state.routes[_state.index - 1].name;
+        } else {
+          _state = _nextState;
+        }
+      }
       return 'Not ready yet';
     },
 

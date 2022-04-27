@@ -190,6 +190,7 @@ export const DateFormat = {
   TranDate: 'MM/dd/yyyy HH:mm:ss',
   QuerryDateTime: 'yyyyMMddHHmmss',
   CalendarDate: 'yyyy-MM-dd',
+  VideoDataUsageDate: 'yyyy-MM-dd HH:mm:ss',
 };
 
 export const Domain = {

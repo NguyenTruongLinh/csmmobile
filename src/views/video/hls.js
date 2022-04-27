@@ -108,6 +108,10 @@ class HLSStreamingView extends React.Component {
     //   __DEV__ && console.log('HLSStreamingView should resume');
     //   this.shouldResume = true;
     // }
+
+    this.trackingVideoSource = util.extractModuleNameFromScreenName(
+      this.props.appStore.naviService.getPreviousRouteName()
+    );
   }
 
   componentWillUnmount() {
@@ -513,9 +517,14 @@ class HLSStreamingView extends React.Component {
 
   onBandwidthUpdate = data => {
     if (!V3_1_BITRATE_USAGE) return;
-    const {videoStore, streamData} = this.props;
+    const {videoStore, streamData, appStore} = this.props;
     __DEV__ && console.log('GOND onBandwidthUpdate: ', data); //.bitrate
-    streamData.updateBitrate(data.bitrate, 'onBandwidthUpdate');
+    streamData.updateBitrate(
+      data.bitrate,
+      this.trackingVideoSource,
+      videoStore.timezone,
+      'onBandwidthUpdate'
+    );
   };
 
   onReady = event => {
@@ -1223,4 +1232,4 @@ class HLSStreamingView extends React.Component {
 
 // const styles = StyleSheet.create({});
 
-export default inject('videoStore')(observer(HLSStreamingView));
+export default inject('videoStore', 'appStore')(observer(HLSStreamingView));
