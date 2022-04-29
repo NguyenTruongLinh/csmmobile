@@ -146,7 +146,8 @@ export default class CMSNumberPicker extends React.Component {
         swipeThreshold={0}
         activeSlideOffset={0}
         firstItem={parseInt(this.state.selected)}
-        useScrollView={true}
+        // useScrollView={true}
+        initialNumToRender={numbers.length}
       />
       // <FlatList
       //   initialScrollIndex={this.state.selected}

@@ -142,8 +142,8 @@ android {
         applicationId "com.i3international.cmsapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3000101
-        versionName "3.0.1"
+        versionCode 3000204
+        versionName "3.0.4"
         multiDexEnabled true
     }
     splits {
