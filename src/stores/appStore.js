@@ -15,7 +15,7 @@ import {getAppstoreAppMetadata} from 'react-native-appstore-version-checker';
 import variables from '../styles/variables';
 import compareVersions from 'compare-versions';
 import RNExitApp from 'react-native-exit-app';
-import {BackHandler} from 'react-native';
+import {Alert, BackHandler, Linking} from 'react-native';
 
 export const CHECK_UPDATE_FLAG = false;
 const IOS_APP_ID = '1315944118';
