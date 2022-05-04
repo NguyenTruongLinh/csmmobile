@@ -38,6 +38,7 @@ import APP_INFO from './consts/appInfo';
 import {CLOUD_TYPE} from './consts/video';
 import CMSColors from './styles/cmscolors';
 import {clientLogID} from './stores/user';
+import {CHECK_UPDATE_FLAG} from './stores/appStore';
 
 const {height, width} = getwindow(); //Dimensions.get('window')
 
@@ -75,6 +76,7 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
+    const {appStore} = this.props;
     __DEV__ && console.log('GOND APP did mount');
     LogBox.ignoreLogs(['Trying to load empty source.']);
     this.appStateEvtListener = AppState.addEventListener(
@@ -116,7 +118,16 @@ class App extends React.Component {
           );
       }
     }
+    if (CHECK_UPDATE_FLAG) appStore.checkUpdate(this.autoLogin);
+    else this.autoLogin();
+    __DEV__ &&
+      console.log(
+        `checkNeedsUpdate DeviceInfo.getVersion = `,
+        DeviceInfo.getVersion()
+      );
+  }
 
+  autoLogin = async () => {
     // autoLogin
     // if (isLoggedIn) this.props.videoStore.getCloudSetting();
     const {appStore, userStore, videoStore, healthStore} = this.props;
@@ -133,7 +144,7 @@ class App extends React.Component {
     //   this.props.appStore.setLoading(false);
     //   this.setState({notificationController: <NotificationController />});
     // }, 100);
-  }
+  };
 
   componentWillUnmount() {
     __DEV__ && console.log('app componentWillUnmount');
