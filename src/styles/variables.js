@@ -363,4 +363,5 @@ export default {
 
   //
   exceptionFlagOffset: 5,
+  appVersion: DeviceInfo.getVersion(),
 };
