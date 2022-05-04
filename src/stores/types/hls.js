@@ -20,7 +20,7 @@ import {
 import ChannelModel from './channel';
 
 import apiService from '../../services/api';
-import {VSC} from '../../consts/apiRoutes';
+import {SetDataUsageActivityLogs, VSC} from '../../consts/apiRoutes';
 
 import util from '../../util/general';
 import snackbarUtil from '../../util/snackbar';
@@ -146,7 +146,7 @@ const HLSURLModel = types
               (newBitrateRecordTimePoint - self.bitrateRecordTimePoint);
         __DEV__ &&
           console.log(
-            `updateBitrate newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
+            `updateBitrate 0428 newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
             newBitrateRecordTimePoint - self.dataUsageSentTimePoint
           );
 
@@ -170,8 +170,14 @@ const HLSURLModel = types
           params.EndTime = DateTime.fromSeconds(newBitrateRecordTimePoint, {
             // zone: timezone,
           }).toFormat(DateFormat.VideoDataUsageDate);
-          params.DataOut = Math.floor(self.accumulatedDataUsage / 8);
+          params.BytesUsed = Math.floor(self.accumulatedDataUsage / 8);
           // callAPI(params)
+          apiService.post(
+            VSC.controller,
+            1,
+            VSC.SetDataUsageActivityLogs,
+            params
+          );
           __DEV__ &&
             console.log(
               `updateBitrate callAPI self.accumulatedDataUsage = `,
@@ -183,7 +189,7 @@ const HLSURLModel = types
             );
           __DEV__ &&
             console.log(
-              `updateBitrate callAPI params `,
+              `updateBitrate 0428 callAPI params `,
               JSON.stringify(params)
             );
           self.resetBitrateInfo();
@@ -210,10 +216,15 @@ const HLSURLModel = types
                   // zone: timezone,
                 }
               ).toFormat(DateFormat.VideoDataUsageDate);
-              params.DataOut = (self.currentBitrate * 10) / 8;
+              params.BytesUsed = (self.currentBitrate * 10) / 8;
 
               // callAPI(params)
-
+              apiService.post(
+                VSC.controller,
+                1,
+                VSC.SetDataUsageActivityLogs,
+                params
+              );
               __DEV__ &&
                 console.log(
                   `updateBitrate callAPI params AFTER 10 SECS`,
@@ -241,12 +252,18 @@ const HLSURLModel = types
           params.EndTime = DateTime.fromSeconds(self.dataSentTimePoint, {
             // zone: timezone,
           }).toFormat(DateFormat.VideoDataUsageDate);
-          params.DataOut =
+          params.BytesUsed =
             (self.currentBitrate *
               (dataSentTimePoint - self.bitrateRecordTimePoint)) /
             8;
 
           //callAPI(load);
+          apiService.post(
+            VSC.controller,
+            1,
+            VSC.SetDataUsageActivityLogs,
+            params
+          );
 
           __DEV__ &&
             console.log(

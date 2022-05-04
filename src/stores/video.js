@@ -13,7 +13,7 @@ import HLSStreamModel, {FORCE_SENT_DATA_USAGE} from './types/hls';
 import apiService from '../services/api';
 
 import snackbarUtil from '../util/snackbar';
-import {VSC, DVR} from '../consts/apiRoutes';
+import {VSC, DVR, SetDataUsageActivityLogs} from '../consts/apiRoutes';
 import util from '../util/general';
 import {numberValue} from '../util/types';
 import {
@@ -3419,6 +3419,17 @@ export const VideoModel = types
       },
       cleanUp() {
         applySnapshot(self, storeDefault);
+      },
+      testUpdateBitrate() {
+        __DEV__ && console.log(` testUpdateBitrate `);
+        apiService.post(VSC.controller, 1, VSC.SetDataUsageActivityLogs, {
+          KChannel: 5523,
+          ViewMode: 0,
+          Source: 'MP4_CMSMobile_OAM',
+          StartTime: '2022-04-28 13:52:48',
+          EndTime: '2022-04-28 13:52:58',
+          BytesUsed: 7715737,
+        });
       },
     };
   });
