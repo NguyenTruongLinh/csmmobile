@@ -17,7 +17,7 @@ import compareVersions from 'compare-versions';
 import RNExitApp from 'react-native-exit-app';
 import {Alert, BackHandler, Linking} from 'react-native';
 
-export const CHECK_UPDATE_FLAG = false;
+export const CHECK_UPDATE_FLAG = true;
 const IOS_APP_ID = '1315944118';
 const APP_STORE_LINK = `itms-apps://itunes.apple.com/us/app/apple-store/${IOS_APP_ID}?mt=8`;
 
@@ -100,8 +100,10 @@ const appStore = types
       else self.checkUpdateIOS(noUpdateCb);
     },
     checkUpdateIOS(noUpdateCb) {
+      self.setLoading(true);
       getAppstoreAppMetadata(IOS_APP_ID) //put any apps id here
         .then(appVersion => {
+          self.setLoading(true);
           console.log(
             'checkUpdateIOS curVersion = ',
             variables.appVersion,
@@ -137,6 +139,7 @@ const appStore = types
         });
     },
     checkUpdateAndroid(noUpdateCb) {
+      __DEV__ && console.log(`checkNeedsUpdate checkUpdateAndroid `);
       self.setLoading(true);
       const inAppUpdates = new SpInAppUpdates(false);
       inAppUpdates.checkNeedsUpdate().then(result => {
@@ -159,10 +162,6 @@ const appStore = types
                 ` checkNeedsUpdate addStatusUpdateListener status = `,
                 JSON.stringify(status)
               );
-            snackbarUtil.showToast(
-              'statusUpdateListenerE' + status.status,
-              'red'
-            );
           });
           inAppUpdates.addIntentSelectionListener(result => {
             __DEV__ &&
@@ -170,10 +169,6 @@ const appStore = types
                 ` checkNeedsUpdate addIntentSelectionListener result = `,
                 JSON.stringify(result)
               );
-            snackbarUtil.showToast(
-              'addIntentSelectionListener result = ' + JSON.stringify(result),
-              'red'
-            );
             if (result == 6) BackHandler.exitApp();
           });
           inAppUpdates.startUpdate({
