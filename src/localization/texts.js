@@ -102,6 +102,7 @@ export const VIDEO = {
   NO_PERMISSION: "You don't have VSC permission",
   NO_VIDEO_COME: 'No incoming video',
   CANNOT_CONNECT: 'Cannot connect to NVR',
+  WRONG_CLOUD_TYPE: 'Cloud type config is incorrect, please contact support.',
 };
 
 export const STREAM_STATUS = {

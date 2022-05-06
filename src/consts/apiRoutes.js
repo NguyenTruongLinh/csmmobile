@@ -26,6 +26,7 @@ export const Site = {
   getSiteOam: '?all=true&dvr=true&filter=pvm',
   getAllRegions: 'getallregions',
   getRegionSites: 'getregions',
+  getNVRPermission: 'GetSiteByIdNVRPermission',
 };
 
 export const Alert = {

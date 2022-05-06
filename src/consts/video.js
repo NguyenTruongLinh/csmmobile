@@ -227,3 +227,16 @@ export const LAYOUT_DATA = [
     icon: 'grid-view-16',
   },
 ];
+
+export const CHANNEL_CONTROL_STATUS = {
+  /// Not have channels
+  NOT_CHANNEL: 0,
+  /// Have channel but have not pro config
+  NOT_PRO_CONFIG: 1,
+  /// ???
+  HAVE_PRO_CONFIG: 2,
+  /// Have channel but have not Link user
+  NOT_LINK: 3,
+  /// Have channel , have pro config but not privilege
+  NOT_PRIVILEGE: 4,
+};

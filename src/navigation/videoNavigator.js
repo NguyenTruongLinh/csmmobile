@@ -50,6 +50,7 @@ export default function VideoStack() {
       <VStack.Screen
         name={ROUTERS.VIDEO_CHANNELS}
         component={LiveChannelsView}
+        options={{gestureEnabled: false}}
       />
       <VStack.Screen
         name={ROUTERS.VIDEO_CHANNELS_SETTING}

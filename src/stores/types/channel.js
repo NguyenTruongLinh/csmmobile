@@ -23,6 +23,8 @@ export default ChannelModel = types
     resolution: types.maybeNull(types.string), // ?
     modelName: types.string,
     isActive: types.boolean,
+    canLive: types.optional(types.boolean, false),
+    canSearch: types.optional(types.boolean, false),
     // image: types.maybeNull(types.string),
   })
   .volatile(self => ({
@@ -38,6 +40,10 @@ export default ChannelModel = types
   .actions(self => ({
     saveSnapshot(value) {
       self.snapshot = value;
+    },
+    setLiveSearchPermission(canLive, canSearch) {
+      self.canLive = canLive;
+      self.canSearch = canSearch;
     },
   }));
 

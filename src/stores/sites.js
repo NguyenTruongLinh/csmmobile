@@ -291,12 +291,36 @@ export const SitesMapModel = types
       self.siteFilter = value;
     },
     selectDVR(item) {
-      if (utils.isNullOrUndef(item)) {
-        self.selectedDVR = self.selectedSiteDefaultDVR;
-        return;
+      let selected = item;
+      if (utils.isNullOrUndef(selected)) {
+        selected = self.selectedSiteDefaultDVR;
       }
-      self.selectedDVR = item;
+      self.selectedDVR = selected;
+      // self.getSelectedDVRPermission();
     },
+    // getSelectedDVRPermission: flow(function* () {
+    //   if (!self.selectedSite || !self.selectedDVR) {
+    //     __DEV__ &&
+    //       console.log(
+    //         'GOND getSelectedDVRPermission - none site or nvr was selected: ',
+    //         self.selectedSite,
+    //         self.selectedDVR
+    //       );
+    //     return;
+    //   }
+    //   const res = yield apiService.get(
+    //     SiteRoute.controller,
+    //     0,
+    //     SiteRoute.getNVRPermission,
+    //     {
+    //       hasChannels: true,
+    //       siteId: self.selectedSite.key,
+    //       serverId: self.selectedDVR.kDVR,
+    //     }
+    //   );
+    //   __DEV__ &&
+    //     console.log('GOND getSelectedDVRPermission: ', self.selectedDVR, res);
+    // }),
     deselectDVR() {
       self.selectedDVR = null;
     },

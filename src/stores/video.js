@@ -13,7 +13,7 @@ import HLSStreamModel, {FORCE_SENT_DATA_USAGE} from './types/hls';
 import apiService from '../services/api';
 
 import snackbarUtil from '../util/snackbar';
-import {VSC, DVR, SetDataUsageActivityLogs} from '../consts/apiRoutes';
+import {VSC, DVR, Site as SiteRoute} from '../consts/apiRoutes';
 import util from '../util/general';
 import {numberValue} from '../util/types';
 import {
@@ -22,7 +22,6 @@ import {
   DAY_INTERVAL,
   VSCCommand,
   VSCCommandString,
-  LAYOUT_DATA,
   DEFAULT_REGION,
   HLS_DATA_REQUEST_TIMEOUT,
   HLS_MAX_RETRY,
@@ -33,10 +32,13 @@ import {
   REFRESH_TIMELINE_INTERVAL,
 } from '../consts/video';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
-import {NVRPlayerConfig, CALENDAR_DATE_FORMAT} from '../consts/misc';
+import {
+  NVRPlayerConfig,
+  CALENDAR_DATE_FORMAT,
+  SITE_TREE_UNIT_TYPE,
+} from '../consts/misc';
 import {TIMEZONE_MAP} from '../consts/timezonesmap';
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../localization/texts';
-import ROUTERS from '../consts/routes';
 
 const DirectServerModel = types
   .model({
@@ -396,8 +398,9 @@ export const VideoModel = types
       __DEV__ &&
         console.log('GOND needAuthen: ', self.nvrUser, self.nvrPassword);
       return (
-        (self.cloudType == CLOUD_TYPE.DIRECTION ||
-          self.cloudType == CLOUD_TYPE.DEFAULT) &&
+        //self.cloudType == CLOUD_TYPE.DIRECTION ||
+        // self.cloudType == CLOUD_TYPE.DEFAULT) &&
+        !self.isAuthenticated &&
         ((self.nvrUser && self.nvrUser.length == 0) ||
           (self.nvrPassword && self.nvrPassword.length == 0))
       );
@@ -658,6 +661,9 @@ export const VideoModel = types
                     .includes(self.channelFilter.toLowerCase())
               )
             : [];
+        default:
+          snackbarUtil.onError(VIDEO_TXT.WRONG_CLOUD_TYPE);
+          return [];
       }
     },
     get currentDisplayVideoData() {
@@ -666,7 +672,7 @@ export const VideoModel = types
           ? self.videoData.filter(s => s.isActive)
           : self.videoData;
       __DEV__ && console.log('GOND videoDataList ', videoDataList);
-      if (videoDataList.length == 0) {
+      if (!videoDataList || videoDataList.length == 0) {
         __DEV__ && console.log('GOND videoDataList is empty <>');
         return [];
       }
@@ -1507,8 +1513,6 @@ export const VideoModel = types
           if (self.selectedStream) {
             self.selectedStream.setHD(self.hdMode);
           }
-          // self.onHLSSingleStreamChanged(false);
-          // self.stopHLSStream();
           self.getHLSInfos({channelNo: self.selectedChannel});
         }
       },
@@ -1781,7 +1785,10 @@ export const VideoModel = types
         } else {
           __DEV__ &&
             console.log('GOND get cloud type return wrong value, res = ', res);
-          result = false;
+          //dongpt: temporarily set default values for wrong settings:
+          self.cloudType =
+            res >= CLOUD_TYPE.TOTAL ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
+          // result = false;
         }
         self.isLoading = false;
         return result;
@@ -3366,6 +3373,83 @@ export const VideoModel = types
         return true;
       }),
       // #endregion Alert play
+      // #region Permission
+      // dongpt: get user linked status (CMS user to NVR user), must be call
+      //   after 'getDisplayingChannels' function
+      getDVRPermission: flow(function* (siteKey) {
+        if (util.isNullOrUndef(siteKey) || util.isNullOrUndef(self.kDVR)) {
+          __DEV__ &&
+            console.log(
+              'GOND getDVRPermission - none site or nvr was selected: ',
+              self.selectedSite,
+              self.kDVR
+            );
+          return;
+        }
+        try {
+          const res = yield apiService.get(
+            SiteRoute.controller,
+            1,
+            SiteRoute.getNVRPermission,
+            {
+              hasChannels: true,
+              siteId: siteKey,
+              serverId: self.kDVR,
+            }
+          );
+          __DEV__ && console.log('GOND getDVRPermission: ', self.kDVR, res);
+          if (!res || !res.Sites || !Array.isArray(res.Sites)) {
+            __DEV__ &&
+              console.log(
+                'GOND getDVRPermission result is not valid: ',
+                res ? res.Sites : res
+              );
+            return;
+          }
+          self.isAuthenticated = res.ChannelControlStatus === null;
+          if (!self.isAuthenticated) {
+            // if not authenticated yet, will be back to check live/search permission
+            //   after logged in
+            // show Authentication popup
+            return;
+          }
+
+          let currentArray = res.Sites;
+          while (
+            currentArray &&
+            currentArray.length > 0 &&
+            currentArray[0].Type != SITE_TREE_UNIT_TYPE.CHANNEL
+          ) {
+            currentArray = currentArray.Sites;
+          }
+          if (self.allChannels.length == 0) {
+            console.log(
+              'GOND getDVRPermission must be call after getDisplayingChannels: ',
+              self.allChannels
+            );
+            return;
+          }
+          if (currentArray && currentArray.length > 0) {
+            self.allChannels = self.allChannels.reduce((result, ch, index) => {
+              let currentChannel =
+                currentArray[index] &&
+                currentArray[index].ChannelNo == ch.channelNo
+                  ? currentArray[index]
+                  : currentArray.find(item => item.ChannelNo == ch.channelNo);
+              ch.setLiveSearchPermission(
+                currentChannel.CanLive,
+                currentChannel.CanSearch
+              );
+
+              return result;
+            }, []);
+          }
+        } catch (ex) {
+          console.log('GOND getDVRPermission failed: ', ex);
+          return;
+        }
+      }),
+      // #endregion Permission
       releaseHLSStreams() {
         self.hlsStreams.forEach(s => {
           s.release();

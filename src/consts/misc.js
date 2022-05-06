@@ -603,3 +603,11 @@ export const OrientationType = {
   LANDSCAPE_RIGHT: 'LANDSCAPE-RIGHT',
   PORTRAIT_UPSIDE_DOWN: 'PORTRAIT-UPSIDEDOWN',
 };
+
+export const SITE_TREE_UNIT_TYPE = {
+  REGION: 0,
+  SITE: 1,
+  DVR: 2,
+  CHANNEL: 3,
+  CLOUD: 4,
+};
