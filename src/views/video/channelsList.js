@@ -98,7 +98,7 @@ class ChannelsListView extends React.Component {
       sitesStore.selectDVR(); // select default
       videoStore.selectDVR(sitesStore.selectedSiteDefaultDVR);
     }
-    // videoStore.getDVRPermission(sitesStore.selectedSite);
+    videoStore.getDVRPermission(sitesStore.selectedSite.key);
     videoStore.enterVideoView(true);
 
     this.dvrSelectorRef && this.dvrSelectorRef.onSelect(sitesStore.selectedDVR);

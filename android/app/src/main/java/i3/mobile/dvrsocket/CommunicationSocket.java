@@ -283,7 +283,7 @@ public class CommunicationSocket implements Runnable {
         running = false;
     }
 
-     protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset)
+    protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset)
     {
         int count = 0;
         try {

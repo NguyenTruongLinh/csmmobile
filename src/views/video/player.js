@@ -760,12 +760,12 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {selectedStream} = videoStore;
+    const {selectedStream, isAuthenticated} = videoStore;
     const {pause, sWidth, sHeight} = this.state;
     const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
     // __DEV__ && console.log('GOND renderVid player: ', selectedStream);
-    if (!selectedStream) {
+    if (!selectedStream || !isAuthenticated) {
       return (
         <Image
           style={{width: width, height: height}}
