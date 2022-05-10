@@ -654,8 +654,7 @@ export const UserStoreModel = types
           ) {
             self.moduleUpdatedFlag = false;
             const prevDisableTabIndexes = self.getDisableTabIndexes();
-            const prevDisableHomeWidgetIndexes =
-              self.getDisableHomeWidgetIndexes();
+            const prevDisableHomeWidgetIndexes = self.getDisableHomeWidgetIndexes();
             self.modules = res.map(item => parseModule(item));
             self.moduleUpdatedFlag =
               JSON.stringify(prevDisableTabIndexes) !=
@@ -736,7 +735,7 @@ export const UserStoreModel = types
             self.user.userId,
             UserRoute.alertCount
           );
-          __DEV__ && console.log('GOND user getWidgetCounts: res = ', res);
+          // __DEV__ && console.log('GOND user getWidgetCounts: res = ', res);
           if (!Array.isArray(res)) return false;
           let data = {};
           res.map(item => {

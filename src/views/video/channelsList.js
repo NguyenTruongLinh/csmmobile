@@ -185,11 +185,6 @@ class ChannelsListView extends React.Component {
       if (res && healthStore.isLiveVideo)
         res = await videoStore.getVideoInfos();
       this.setState({isLoading: false});
-      // if (videoStore.needAuthen) {
-      //   __DEV__ && console.log('GOND need authen ->');
-      //   videoStore.displayAuthen(true);
-      //   return;
-      // }
     });
   };
 

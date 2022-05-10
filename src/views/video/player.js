@@ -417,7 +417,7 @@ class VideoPlayerView extends Component {
   };
 
   onHDMode = () => {
-    this.playerRef && this.playerRef.onHDMode(this.props.videoStore.hdMode);
+    this.playerRef && this.playerRef.onHDMode(!this.props.videoStore.hdMode);
     this.props.videoStore.switchHD();
   };
 
@@ -1235,11 +1235,11 @@ class VideoPlayerView extends Component {
   };
 
   renderTimePicker = () => {
-    __DEV__ &&
-      console.log(
-        ` renderTimePicker this.state.timePickerDatetime = `,
-        this.state.timePickerDatetime
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     ` renderTimePicker this.state.timePickerDatetime = `,
+    //     this.state.timePickerDatetime
+    //   );
     return Platform.OS == 'ios' ? (
       <TimePicker
         ref={ref => {

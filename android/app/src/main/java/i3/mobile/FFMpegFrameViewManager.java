@@ -179,15 +179,15 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
     }
     @ReactProp(name = "startplayback")
     public void setStart(FFMpegFrameView view, @Nullable ReadableMap source) {
-        Log.i("GOND", "startplayback called " + source);
+        Log.i("GOND", "startplayback called " + source + " - " + source.toString());
         ServerSite s = GetServerInfo(source);
-        Log.i("GOND", "setStart 1");
+        // Log.i("GOND", "setStart 1");
         String channel = source.getString("channels");
-        Log.i("GOND", "setStart 2");
+        Log.i("GOND", "setStart 2 ChangePlay: " + channel);
         boolean by_channel = source.getBoolean("byChannel");
-        Log.i("GOND", "setStart 3");
+        // Log.i("GOND", "setStart 3");
         /*boolean*/ isSearch = source.getBoolean("searchMode");
-        Log.i("GOND", "setStart 4");
+        // Log.i("GOND", "setStart 4");
         boolean HD = false;
         if( source.hasKey("hd"))
         {
@@ -199,7 +199,7 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
             }
 
         }
-        Log.i("GOND", "setStart 5");
+        // Log.i("GOND", "setStart 5");
         if(view.socket_handler == null || view.video_thread == null || view.socket_handler.running == false) {
             view.setServer(s);
             view.setByChannels(by_channel);
@@ -209,13 +209,14 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         {
             String old_channel = view.getChannels();
             boolean old_bychannel = view.getByChannels();
+            // Log.d("GOND", "ChangePlay 0: " + channel + ", old: " + old_channel);
             if( old_bychannel != by_channel || old_channel != channel)
             {
                 view.setByChannels(by_channel);
-                view.setChannels( channel);
+                view.setChannels(channel);
             }
         }
-        Log.i("GOND", "setStart 6");
+        // Log.i("GOND", "setStart 6");
         if(isSearch) {
             DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss");
             DateTime dt = formatter.parseDateTime(source.getString("date"));
@@ -226,7 +227,7 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
             view.StartLive(HD);
         //onLandScape();
         //onFullScreen();
-        Log.i("GOND", "setStart 7");
+        // Log.i("GOND", "setStart 7");
     }
 
     @ReactProp(name = "hd")

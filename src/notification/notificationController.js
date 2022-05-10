@@ -252,8 +252,8 @@ class NotificationController extends React.Component {
       alertAction: 'view',
       category: CHANNEL_ID,
     };
-    __DEV__ &&
-      console.log('GOND displayLocalNotification: ', notificationRequest);
+    // __DEV__ &&
+    //   console.log('GOND displayLocalNotification: ', notificationRequest);
 
     Platform.OS === 'ios'
       ? PushNotification.localNotification(notificationRequest)

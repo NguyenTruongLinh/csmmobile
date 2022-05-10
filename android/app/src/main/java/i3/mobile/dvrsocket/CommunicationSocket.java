@@ -917,6 +917,7 @@ public class CommunicationSocket implements Runnable {
     }
     protected int [] ChannelNo(boolean islive){
         int[] channelNo = this.getChannel();
+        // Log.d("GOND", "ChangePlay GetChannel: " + channelNo.toString());
         if(this.getPlaybyChannel() == false)
             channelNo = ChannelFromIndex( this.getChannel());
 
@@ -942,6 +943,7 @@ public class CommunicationSocket implements Runnable {
             }
         }
 
+        // Log.d("GOND", "ChangePlay GetChannel result: " + ret);
         int[] values = new int[ret.size()];
         int index = 0;
         for ( Integer it :ret) {
@@ -1221,8 +1223,10 @@ public class CommunicationSocket implements Runnable {
     }
     public  void ChangePlay( boolean islive, boolean reload, String channel)
     {
+        // Log.d("GOND", "ChangePlay: " + channel + ", old: " + str_Channel);
         if( str_Channel != channel)
         {
+            // Log.d("GOND", "ChangePlay channel changed");
             str_Channel = channel;
             String[] chs = channel.split(",");
             Channel = new int[chs.length];
@@ -1237,14 +1241,17 @@ public class CommunicationSocket implements Runnable {
     private  void ChangePlay( boolean islive, boolean reload, Boolean mainstream )
     {
         this.HDMode = mainstream;
-        if( ServerInfo.getisLive() == islive && PlaybackStatus == Constant.EnumPlaybackSatus.VIDEO_PLAY)
-            return;
+
+        // dongpt: remove these line, why do not allow switch channel when playing live?
+        // if( ServerInfo.getisLive() == islive && PlaybackStatus == Constant.EnumPlaybackSatus.VIDEO_PLAY)
+        //     return;
 
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_PLAY;
         //int[] v_index = this.Channel;
         //if( this.PlaybyChannel == false)
         // v_index = GetChannelforIndex(this.getChannel());//this.GetVideoSourceIndex(this.Channel);
         int [] ChannelNo = this.ChannelNo(islive);
+        // Log.d("GOND", "ChangePlay get live: " + ChannelNo);
         if( ChannelNo == null || ChannelNo.length == 0)
         {
 
@@ -1266,6 +1273,7 @@ public class CommunicationSocket implements Runnable {
         }
         if(islive == true)//change search to live
         {
+            // Log.d("GOND", "ChangePlay channel 111");
             boolean need_stop_search = this.ServerInfo.getSearchTime() == null? false : true;
             if(ServerInfo.getisLive() == false )
                 need_stop_search = true;
@@ -1292,6 +1300,7 @@ public class CommunicationSocket implements Runnable {
         }
         else// switch from Live => search
         {
+            // Log.d("GOND", "ChangePlay channel 222");
               boolean _islive = ServerInfo.getisLive();
             ServerInfo.setLive( islive);
 

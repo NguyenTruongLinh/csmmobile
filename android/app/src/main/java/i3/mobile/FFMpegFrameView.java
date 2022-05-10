@@ -637,7 +637,7 @@ public class FFMpegFrameView extends View {
         else
         {
             socket_handler.setHDMode(HD);
-            socket_handler.ChangePlay( true, false, Channels);
+            socket_handler.ChangePlay( true, false, this.Channels);
         }
     }
     public  void  PauseVideo(){

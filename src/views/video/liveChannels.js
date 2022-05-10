@@ -37,6 +37,7 @@ import {
   CLOUD_TYPE,
   LAYOUT_DATA,
   VIDEO_INACTIVE_TIMEOUT,
+  AUTHENTICATION_STATES,
 } from '../../consts/video';
 import ROUTERS from '../../consts/routes';
 import {MODULE_PERMISSIONS} from '../../consts/misc';
@@ -153,12 +154,29 @@ class LiveChannelsView extends React.Component {
           } else this.playerRefs = [];
         }
       ),
+      // reaction(
+      //   () => videoStore.needAuthen,
+      //   (needAuthen, previousValue) => {
+      //     if (needAuthen == true && previousValue == false) {
+      //       __DEV__ &&
+      //         console.log('GOND displayAuthen::check need authen', needAuthen);
+      //       videoStore.displayAuthen(true);
+      //     }
+      //   }
+      // ),
       reaction(
-        () => videoStore.needAuthen,
-        (needAuthen, previousValue) => {
-          if (needAuthen == true && previousValue == false) {
+        () => videoStore.authenticationState,
+        (authenticationState, previousValue) => {
+          if (
+            authenticationState == AUTHENTICATION_STATES.AUTHEN_FAILED &&
+            previousValue != authenticationState
+          ) {
             __DEV__ &&
-              console.log('GOND displayAuthen::check need authen', needAuthen);
+              console.log(
+                'GOND displayAuthen::check need authen',
+                authenticationState,
+                previousValue
+              );
             videoStore.displayAuthen(true);
           }
         }
@@ -303,7 +321,7 @@ class LiveChannelsView extends React.Component {
   };
 
   getChannelsInfo = async () => {
-    const {videoStore, userStore} = this.props;
+    const {videoStore, userStore, sitesStore} = this.props;
     // let newState = {};
     // this.stopAll();
 
@@ -315,6 +333,7 @@ class LiveChannelsView extends React.Component {
     if (res) {
       this.setHeader(true);
     }
+    videoStore.getDVRPermission(sitesStore.selectedSite.key);
 
     res = res && (await videoStore.getVideoInfos());
     // if (videoStore.needAuthen) {
@@ -764,24 +783,28 @@ class LiveChannelsView extends React.Component {
             }}
           />
         ) : null}
-        {videoStore.canDisplayChannels && (
-          <FlatList
-            key={'grid_' + videoStore.gridLayout}
-            ref={r => (this.videoListRef = r)}
-            renderItem={this.renderVideoPlayer}
-            numColumns={videoStore.gridLayout}
-            data={videoStore.currentDisplayVideoData}
-            keyExtractor={(item, index) =>
-              'ch_' + (item && item.channelNo ? item.channelNo : 'none' + index)
-            }
-            refreshing={
-              videoStore.isLoading ||
-              this.state.internalLoading ||
-              videoStore.waitForTimezone
-            }
-            scrollEnabled={false}
-          />
-        )}
+        {
+          // videoStore.canDisplayChannels && (
+          videoStore.isAuthenticated && (
+            <FlatList
+              key={'grid_' + videoStore.gridLayout}
+              ref={r => (this.videoListRef = r)}
+              renderItem={this.renderVideoPlayer}
+              numColumns={videoStore.gridLayout}
+              data={videoStore.currentDisplayVideoData}
+              keyExtractor={(item, index) =>
+                'ch_' +
+                (item && item.channelNo ? item.channelNo : 'none' + index)
+              }
+              refreshing={
+                videoStore.isLoading ||
+                this.state.internalLoading ||
+                videoStore.waitForTimezone
+              }
+              scrollEnabled={false}
+            />
+          )
+        }
       </GestureRecognizer>
     );
   };

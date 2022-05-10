@@ -240,3 +240,9 @@ export const CHANNEL_CONTROL_STATUS = {
   /// Have channel , have pro config but not privilege
   NOT_PRIVILEGE: 4,
 };
+
+export const AUTHENTICATION_STATES = {
+  NOT_AUTHEN: 0,
+  AUTHENTICATED: 1,
+  AUTHEN_FAILED: 2,
+};

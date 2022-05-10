@@ -100,6 +100,7 @@ class DirectVideoView extends React.Component {
           isLoading: true,
           // connectionStatus: STREAM_STATUS.LOGING_IN,
         });
+        snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
         this.setNativePlayback();
       } else {
         __DEV__ &&
@@ -174,15 +175,8 @@ class DirectVideoView extends React.Component {
                 newChannelNo
               );
             if (newChannelNo == null || previousValue == null) return;
-            // this.setNative({refresh: true}, true);
-
-            // this.props.serverInfo.setStreamStatus({
-            //   isLoading: true,
-            //   // connectionStatus: STREAM_STATUS.CONNECTING,
-            // });
             snackbarUtil.showToast(STREAM_STATUS.CONNECTING, cmscolors.Success);
-            // setTimeout(() => this.setNativePlayback(), 1000);
-            this.refreshVideo();
+            this.setNativePlayback(false, {channels: '' + newChannelNo});
           }
         ),
         // reaction(
@@ -326,10 +320,8 @@ class DirectVideoView extends React.Component {
               previousValue != null // ||
               // value == serverInfo.channelNo
             ) {
-              // if (this.isViewable) {
               // this.pause(false);
               this.refreshVideo();
-              // }
             }
             // }
           }
@@ -380,8 +372,9 @@ class DirectVideoView extends React.Component {
                 console.log(
                   'DirectStreamingView on channel list changed startPlay'
                 );
-              this.pause();
-              setTimeout(() => this.setNativePlayback(), 500);
+              // this.pause();
+              // setTimeout(() => this.setNativePlayback(), 500);
+              this.setNativePlayback(false, {channels: strChannels});
             }
           }
         ),
@@ -471,13 +464,13 @@ class DirectVideoView extends React.Component {
       searchPlayTimeLuxon,
       beginSearchTime,
     } = videoStore;
-    __DEV__ &&
-      console.log(
-        'GOND direct searchDateString  ',
-        searchDateString,
-        searchDate,
-        searchPlayTime
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND direct searchDateString  ',
+    //     searchDateString,
+    //     searchDate,
+    //     searchPlayTime
+    //   );
     // const playTime = isLive
     //   ? null
     //   : beginSearchTime ?? (searchPlayTime ? searchPlayTimeLuxon : null);
@@ -510,7 +503,7 @@ class DirectVideoView extends React.Component {
       userName: playbackInfo.userName,
       password: playbackInfo.password,
     };
-    snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
+    // snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
     __DEV__ &&
       console.log(
         'GOND setNativePlayback, info = ',
@@ -763,17 +756,17 @@ class DirectVideoView extends React.Component {
               //     videoLoading: false,
               //     message: '',
               //   });
-              __DEV__ &&
-                console.log(
-                  'GOND direct frame time: ',
-                  serverInfo.channelName,
-                  valueObj
-                );
+              // __DEV__ &&
+              //   console.log(
+              //     'GOND direct frame time: ',
+              //     serverInfo.channelName,
+              //     valueObj
+              //   );
 
               if (videoStore.selectedChannel != serverInfo.channelNo) return;
 
               if (Array.isArray(valueObj) && valueObj.length > 0) {
-                __DEV__ && console.log(` SEARCH_FRAME_TIME = `, valueObj[0]);
+                // __DEV__ && console.log(` SEARCH_FRAME_TIME = `, valueObj[0]);
                 this.onFrameTime(valueObj[0]);
               } else
                 console.log('GOND direct frame time not valid: ', valueObj);
@@ -973,7 +966,7 @@ class DirectVideoView extends React.Component {
     this.newSeekPos = 0;
     this.oldPos = 0;
     if (!videoStore.paused) {
-      this.setNative({pause: true});
+      // this.setNative({pause: true});
       // this.playAt(
       //   this.lastFrameTime.toSeconds() -
       //     this.lastFrameTime.startOf('day').toSeconds()
@@ -1027,6 +1020,7 @@ class DirectVideoView extends React.Component {
       return;
     }
 
+    // __DEV__ && console.trace('GOND setNative: ', params);
     this.ffmpegPlayer.setNativeProps(params);
     this.setPlayStatus(params);
   };
@@ -1217,7 +1211,7 @@ class DirectVideoView extends React.Component {
         keepLocalTime: true,
       });
       // }
-      __DEV__ && console.log('GOND onFrameTime frameTime: ', frameTime);
+      // __DEV__ && console.log('GOND onFrameTime frameTime: ', frameTime);
 
       if (videoStore.isDirectDSTAwareness) {
         __DEV__ && console.log('GOND onFrameTime set on DST date');

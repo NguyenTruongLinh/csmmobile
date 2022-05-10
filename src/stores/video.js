@@ -30,6 +30,8 @@ import {
   HLS_GET_DATA_DIRECTLY_TIMEOUT,
   DEFAULT_SEARCH_OFFSET_IN_SECONDS,
   REFRESH_TIMELINE_INTERVAL,
+  CHANNEL_CONTROL_STATUS,
+  AUTHENTICATION_STATES,
 } from '../consts/video';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {
@@ -295,48 +297,88 @@ const RecordingDateModel = types.model({
 
 export const VideoModel = types
   .model({
+    // selected kdvr
     kDVR: types.maybeNull(types.number),
 
+    // list of all channels that current user has permission to view
     allChannels: types.array(ChannelModel),
+    // maximum channels can be selected on Channels Setting screen
     maxReadyChannels: types.number,
+    // streaming type of video
     cloudType: types.number,
     // authenData: types.array(AuthenModel),
-
+    // 
     rtcConnection: types.maybeNull(RTCStreamModel),
+    // list of hls streams, each represent respective channel (HLS mode)
     hlsStreams: types.array(HLSStreamModel),
+    // a single connection to selected dvr (Direct connection mode)
     directConnection: types.maybeNull(DirectServerModel),
+    // list of direct video data, each represent respective channel (Direct connection mode)
     directStreams: types.array(DirectStreamModel),
+    // selected channel in single video view
     selectedChannel: types.maybeNull(types.number),
-
+    // number of video per row/columns in multiple live video view (Division Screen)
     gridLayout: types.optional(types.number, 2),
+    // string filter of channels on Division Screen
     channelFilter: types.string,
+    // is video loading
     isLoading: types.boolean,
+    // unused yet?!?
     message: types.string,
+    // user name for logging in to view video
     nvrUser: types.maybeNull(types.string),
+    // password for logging in to view video
     nvrPassword: types.maybeNull(types.string),
-    isAuthenticated: types.optional(types.boolean, false),
+    // check if user has been authenticated to view video, moved to computed value
+    // isAuthenticated: types.optional(types.boolean, false),
+    // current authentication state: a replacement for isAuthenticated
+    //   to solve more complex authentication flows,
+    //   values is defined in enum AUTHENTICATION_STATES
+    authenticationState: types.optional(
+      types.number,
+      AUTHENTICATION_STATES.NOT_AUTHEN
+    ),
+    // live: true, search: false
     isLive: types.boolean,
+    // is video full screen
     isFullscreen: types.boolean,
+    // is hd mode on or off
     hdMode: types.boolean,
+    // unused yet?!?
     canSwitchMode: types.boolean,
+    // is video paused
     paused: types.optional(types.boolean, false),
+    // if there is no video
     noVideo: types.optional(types.boolean, false),
+    // enable/disable authentication popup
     showAuthenModal: types.boolean,
     // frameTime: types.number,
     // frameTimeString: types.string,
+    // search date in DateTime (luxon)
     searchDate: types.maybeNull(types.frozen()), // luxon DateTime
+    // time to start playing search (use in case of alert videos)
     searchPlayTime: types.maybeNull(types.string),
+    // timezone of selected dvr
     dvrTimezone: types.maybeNull(TimezoneModel),
+    // timezone offset of selected dvr
     timezoneOffset: types.maybeNull(types.number), // offset value
-    timezoneName: types.maybeNull(types.string), // IANA string
-    // TODO: timestamp should use BigNumber?
+    // timezone name (IANA string) of selected dvr
+    timezoneName: types.maybeNull(types.string),
+    // unused yet?!?
     searchBegin: types.maybeNull(types.number),
+    // unused yet?!?
     searchEnd: types.maybeNull(types.number),
+    // unused value of DST
     staticHoursOfDay: types.maybeNull(types.number),
     forceDstHour: types.maybeNull(types.number),
+    // is playing alert of Health Monitor
     isHealthPlay: types.optional(types.boolean, false),
+    // is playing alert of Alarm
     isAlertPlay: types.optional(types.boolean, false),
+    // is video stream loaded before enter video view
+    //  => not release stream after exit video view (HLS, RTC)
     isPreloadStream: types.optional(types.boolean, false),
+    // current page of video in Multiple live videos (Division Screen)
     currentGridPage: types.optional(types.number, 0),
   })
   .volatile(self => ({
@@ -395,21 +437,25 @@ export const VideoModel = types
       return self.gridLayout * self.gridLayout;
     },
     get needAuthen() {
-      __DEV__ &&
-        console.log('GOND needAuthen: ', self.nvrUser, self.nvrPassword);
+      __DEV__ && console.log('GOND needAuthen: ', self.authenticationState); //self.nvrUser, self.nvrPassword);
       return (
-        //self.cloudType == CLOUD_TYPE.DIRECTION ||
-        // self.cloudType == CLOUD_TYPE.DEFAULT) &&
-        !self.isAuthenticated &&
-        ((self.nvrUser && self.nvrUser.length == 0) ||
-          (self.nvrPassword && self.nvrPassword.length == 0))
+        !self.isLoading &&
+        self.authenticationState != AUTHENTICATION_STATES.AUTHENTICATED
       );
+      // return (
+      //   //self.cloudType == CLOUD_TYPE.DIRECTION ||
+      //   // self.cloudType == CLOUD_TYPE.DEFAULT) &&
+      //   !self.isAuthenticated &&
+      //   ((self.nvrUser && self.nvrUser.length == 0) ||
+      //     (self.nvrPassword && self.nvrPassword.length == 0))
+      // );
     },
     get canDisplayChannels() {
       return (
         (self.cloudType != CLOUD_TYPE.DIRECTION &&
           self.cloudType != CLOUD_TYPE.DEFAULT) ||
-        self.isAuthenticated
+        // self.isAuthenticated
+        self.authenticationState != AUTHENTICATION_STATES.AUTHENTICATED
       );
     },
     // get directStreams() {
@@ -714,7 +760,7 @@ export const VideoModel = types
           1) /
           3600
       );
-      __DEV__ && console.log('GOND $$$ hoursOfSearchDate: ', res);
+      // __DEV__ && console.log('GOND $$$ hoursOfSearchDate: ', res);
       return res;
     },
     get isDSTTransitionDate() {
@@ -728,6 +774,9 @@ export const VideoModel = types
     get isDSTEndDate() {
       if (!self.searchDate) return false;
       return self.hoursOfSearchDate > default24H;
+    },
+    get isAuthenticated() {
+      return self.authenticationState == AUTHENTICATION_STATES.AUTHENTICATED;
     },
   }))
   .actions(self => {
@@ -1367,13 +1416,16 @@ export const VideoModel = types
         self.forceDstHour = value;
       },
       displayAuthen(value) {
-        __DEV__ && console.trace('GOND displaying Login form: ', value);
+        if (value)
+          __DEV__ && console.trace('GOND displaying Login form: ', value);
         self.showAuthenModal = value;
       },
       resetNVRAuthentication() {
+        // dongpt: do we need this?
         if (self.isAuthenticated) return;
+
         if (self.nvrUser) self.setNVRLoginInfo('', '');
-        self.showAuthenModal = true;
+        self.displayAuthen(true);
       },
       saveLoginInfo: flow(function* () {
         // if (!self.directConnection) return;
@@ -1391,7 +1443,7 @@ export const VideoModel = types
         //       })
         //     );
         //   }
-        if (!self.kDVR) return;
+        if (!self.kDVR) return false;
 
         const key = util.getRandomId();
         const res = yield apiService.post(
@@ -1406,21 +1458,43 @@ export const VideoModel = types
           }
         );
         __DEV__ && console.log('GOND linkNVRUser: ', res);
+        if (self.cloudType != CLOUD_TYPE.DIRECTION) {
+          if (
+            res &&
+            !util.isNullOrUndef(res.KUser) &&
+            !util.isNullOrUndef(res.KDVR) &&
+            res.NVRUser &&
+            res.NVRUser.length > 0
+          ) {
+            // self.isAuthenticated = true;
+            self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
+          } else {
+            __DEV__ && console.log('GOND linkNVRUser logain failed: ', res);
+            // self.isAuthenticated = false;
+            self.authenticationState = AUTHENTICATION_STATES.AUTHEN_FAILED;
+            self.displayAuthen(true);
+            snackbarUtil.onError(STREAM_STATUS.LOGIN_FAILED);
+          }
+        }
       }),
 
       onLoginSuccess() {
-        if (!self.isAuthenticated) self.isAuthenticated = true;
+        // if (!self.isAuthenticated) self.isAuthenticated = true;
+        if (!self.isAuthenticated)
+          self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
 
         // dongpt: post login info to CMS
         if (self.shouldLinkNVRUser) self.saveLoginInfo();
       },
       onAuthenSubmit({username, password}) {
-        // __DEV__ && console.log('GOND onAuthenSubmit ', {username, password});
+        __DEV__ && console.log('GOND onAuthenSubmit ', {username, password});
         if (!username || !password) return;
         // __DEV__ && console.log('GOND onAuthenSubmit 2');
         self.setNVRLoginInfo(username, password);
         self.displayAuthen(false);
-        self.shouldLinkNVRUser = true;
+        if (self.cloudType == CLOUD_TYPE.DIRECTION)
+          self.shouldLinkNVRUser = true;
+        else self.saveLoginInfo();
       },
       onAuthenCancel() {
         self.displayAuthen(false);
@@ -1641,7 +1715,7 @@ export const VideoModel = types
         self.isFullscreen = false;
         self.hdMode = false;
         self.paused = false;
-        self.showAuthenModal = false;
+        self.displayAuthen(false);
         self.recordingDates = {};
         self.timeline = [];
         self.timezoneOffset = 0;
@@ -1690,8 +1764,9 @@ export const VideoModel = types
         self.hlsStreams = [];
         self.directConnection = null;
         self.directStreams = [];
-        self.isAuthenticated = false;
-        self.showAuthenModal = false;
+        // self.isAuthenticated = false;
+        self.authenticationState = AUTHENTICATION_STATES.NOT_AUTHEN;
+        self.displayAuthen(false);
 
         self.isPreloadStream = false;
         self.currentGridPage = 0;
@@ -1779,7 +1854,7 @@ export const VideoModel = types
         } else if (
           typeof res === 'number' &&
           res < CLOUD_TYPE.TOTAL &&
-          res > CLOUD_TYPE.UNKNOWN
+          res > CLOUD_TYPE.DEFAULT
         ) {
           self.cloudType = res;
         } else {
@@ -2318,7 +2393,7 @@ export const VideoModel = types
           params ?? {};
         self.isLoading = true;
         self.setNoVideo(false);
-        __DEV__ && console.trace('GOND getHLSInfos channel: ', channelNo);
+        __DEV__ && console.log('GOND getHLSInfos channel: ', channelNo);
         if (!self.activeChannels || self.activeChannels.length <= 0) {
           yield self.getActiveChannels();
         }
@@ -3406,15 +3481,41 @@ export const VideoModel = types
               );
             return;
           }
-          self.isAuthenticated = res.ChannelControlStatus === null;
+          let currentArray = res.Sites;
+          while (
+            currentArray &&
+            currentArray.length > 0 &&
+            currentArray[0].Type != SITE_TREE_UNIT_TYPE.DVR
+          ) {
+            currentArray = currentArray.Sites;
+          }
+          if (!currentArray || currentArray.length == 0) {
+            __DEV__ &&
+              console.log(
+                'GOND getDVRPermission : ChannelControlStatus not supported!'
+              );
+            // self.isAuthenticated = false;
+            self.authenticationState = AUTHENTICATION_STATES.NOT_AUTHEN;
+            self.displayAuthen(true);
+            return;
+          }
+
+          __DEV__ &&
+            console.log('GOND getDVRPermission check linked ', currentArray[0]);
+          // self.isAuthenticated =
+          self.authenticationState =
+            currentArray[0].ChannelControlStatus ==
+            CHANNEL_CONTROL_STATUS.HAVE_PRO_CONFIG
+              ? AUTHENTICATION_STATES.AUTHENTICATED
+              : AUTHENTICATION_STATES.NOT_AUTHEN;
           if (!self.isAuthenticated) {
             // if not authenticated yet, will be back to check live/search permission
             //   after logged in
             // show Authentication popup
+            self.displayAuthen(true);
             return;
           }
 
-          let currentArray = res.Sites;
           while (
             currentArray &&
             currentArray.length > 0 &&
@@ -3491,7 +3592,9 @@ export const VideoModel = types
         }
         self.nvrUser = null;
         self.nvrPassword = null;
-        self.isAuthenticated = false;
+        // self.isAuthenticated = false;
+        self.authenticationState = AUTHENTICATION_STATES.NOT_AUTHEN;
+
         self.allChannels = [];
 
         self.timezoneName = null;
