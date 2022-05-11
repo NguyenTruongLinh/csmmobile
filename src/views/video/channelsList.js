@@ -85,8 +85,9 @@ class ChannelsListView extends React.Component {
       //     'GOND channels list view on focused, set islive: ',
       //     healthStore.isLiveVideo
       //   );
-      videoStore.setLiveMode(healthStore.isLiveVideo);
       videoStore.setShouldShowVideoMessage(false);
+      videoStore.setLiveMode(healthStore.isLiveVideo);
+      videoStore.resetNVRAuthentication();
     });
     // __DEV__ &&
     //   console.log(

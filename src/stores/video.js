@@ -273,28 +273,6 @@ const RecordingDateModel = types.model({
   marked: types.maybeNull(types.boolean),
 });
 
-// DateTimeModel = types.model({
-//   year: types.number,
-//   month: types.number,
-//   day: types.number,
-//   hour: types.number,
-//   minute: types.number,
-//   timezoneOffset: types.number,
-// });
-
-// const AuthenModel = types
-//   .model({
-//     serverID: types.string,
-//     userName: types.string,
-//     password: types.string,
-//   })
-//   .actions({
-//     save(userName, password) {
-//       self.userName = userName;
-//       self.password = password;
-//     },
-//   });
-
 export const VideoModel = types
   .model({
     // selected kdvr
@@ -307,7 +285,7 @@ export const VideoModel = types
     // streaming type of video
     cloudType: types.number,
     // authenData: types.array(AuthenModel),
-    // 
+    //
     rtcConnection: types.maybeNull(RTCStreamModel),
     // list of hls streams, each represent respective channel (HLS mode)
     hlsStreams: types.array(HLSStreamModel),
@@ -1239,31 +1217,12 @@ export const VideoModel = types
           daylightDate: parseDSTDate(data.DaylightDate),
           standardDate: parseDSTDate(data.StandardDate),
         });
-        // __DEV__ &&
-        //   console.log(`GOND HLS get timezone: `, tzName, self.timezone);
+        __DEV__ &&
+          console.log(`GOND get timezone done: `, tzName, self.timezone);
 
         // correct search date after timezone acquired
         self.getSafeSearchDate();
-        // if (self.searchDate) {
-        //   if (self.searchDate.zone.name != self.timezone)
-        //     self.searchDate = self.searchDate
-        //       .setZone(self.timezone, {keepLocalTime: true})
-        //       .startOf('day');
-        // } else {
-        //   self.searchDate = DateTime.now()
-        //     .setZone(self.timezone)
-        //     .startOf('day');
-        // }
 
-        // Request data after timezone acquired
-        // if (self.cloudType == CLOUD_TYPE.HLS) {
-        //   __DEV__ && console.log(`GOND on HLS get HLS info after build TZ`);
-        //   self.getHLSInfos({
-        //     channelNo: self.selectedChannel ?? undefined,
-        //     daylist: !self.isLive,
-        //     timeline: !self.isLive,
-        //   });
-        // }
         self.onTimezoneAcquired();
       },
       onTimezoneAcquired() {
@@ -1428,21 +1387,6 @@ export const VideoModel = types
         self.displayAuthen(true);
       },
       saveLoginInfo: flow(function* () {
-        // if (!self.directConnection) return;
-        //   const server = self.authenData.find(
-        //     s => s.serverID == self.directConnection.serverID
-        //   );
-        //   if (server) {
-        //     server.save(self.nvrUser, self.nvrPassword);
-        //   } else {
-        //     self.authenData.push(
-        //       AuthenModel.create({
-        //         serverID: self.directConnection.serverID,
-        //         userName: self.nvrUser,
-        //         password: self.nvrPassword,
-        //       })
-        //     );
-        //   }
         if (!self.kDVR) return false;
 
         const key = util.getRandomId();
@@ -1469,7 +1413,7 @@ export const VideoModel = types
             // self.isAuthenticated = true;
             self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
           } else {
-            __DEV__ && console.log('GOND linkNVRUser logain failed: ', res);
+            __DEV__ && console.log('GOND linkNVRUser login failed: ', res);
             // self.isAuthenticated = false;
             self.authenticationState = AUTHENTICATION_STATES.AUTHEN_FAILED;
             self.displayAuthen(true);
@@ -1486,6 +1430,7 @@ export const VideoModel = types
         // dongpt: post login info to CMS
         if (self.shouldLinkNVRUser) self.saveLoginInfo();
       },
+
       onAuthenSubmit({username, password}) {
         __DEV__ && console.log('GOND onAuthenSubmit ', {username, password});
         if (!username || !password) return;
@@ -3479,6 +3424,8 @@ export const VideoModel = types
                 'GOND getDVRPermission result is not valid: ',
                 res ? res.Sites : res
               );
+            // CMSAPI not support yet, let pass the authentication for now
+            self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
             return;
           }
           let currentArray = res.Sites;
