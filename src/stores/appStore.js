@@ -108,9 +108,16 @@ const appStore = types
             'checkUpdateIOS curVersion = ',
             variables.appVersion,
             'checkUpdateIOS appStoreVersion = ',
-            JSON.stringify(appVersion)
+            // JSON.stringify(appVersion)
+            appVersion.version
           );
-          if (compareVersions(appVersion.version, variables.appVersion, '>')) {
+          if (
+            compareVersions.compare(
+              appVersion.version,
+              variables.appVersion,
+              '>'
+            )
+          ) {
             Alert.alert(
               'New Update Available',
               'There is a version of app available. Please update it now',

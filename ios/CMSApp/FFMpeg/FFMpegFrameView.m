@@ -902,13 +902,16 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setHdmode:(BOOL)hdmode{
+  NSLog(@"GOND HDMode start");
   if (mainDisplayVideo.fullscreenView >= 0 && mainDisplayVideo.fullscreenView < [mainDisplayVideo getDisplayView].count) {
+    NSLog(@"GOND HDMode entered");
     ImcViewDisplay* view = [[mainDisplayVideo getDisplayView] objectAtIndex:mainDisplayVideo.fullscreenView];
     ImcScreenDisplay* screen = [[mainDisplayVideo getDisplayScreens]  objectAtIndex:view.screenIndex];
     
     //if (screen.needMainStream && screen.hasSubStream && hdmode == NO)
     if(hdmode == NO)
     {
+      NSLog(@"GOND HDMode DISABLED");
       screen.needMainStream = NO;
       if(videoPlayerStatus == STATE_PAUSE){
         [self handleResponseMessage:IMC_MSG_MAIN_VIEW_TO_LIVE_VIEW fromView:self withData:nil];
@@ -924,6 +927,7 @@ const uint32_t numLayers = 24;
     //else if ((screen.hasSubStream || screen.isSubStream) && hdmode == YES)
     else if (hdmode == YES)
     {
+      NSLog(@"GOND HDMode ENABLED");
       screen.needMainStream = YES;
       if(videoPlayerStatus == STATE_PAUSE){
         [self handleResponseMessage:IMC_MSG_MAIN_VIEW_TO_LIVE_VIEW fromView:self withData:nil];
@@ -2808,10 +2812,12 @@ const uint32_t numLayers = 24;
           tmp_E -= 3600;
         }
         NSLog(@"GOND builRuler offset: %ld, %ld", [currentServer.serverTimezone secondsFromGMTForDate:begin], tmp_S);
-        tmp_S = [currentServer.serverTimezone secondsFromGMTForDate:begin] > 0 ? tmp_S + [currentServer.serverTimezone secondsFromGMTForDate:begin]:
-        tmp_S - [currentServer.serverTimezone secondsFromGMTForDate:begin];
-        tmp_E = [currentServer.serverTimezone secondsFromGMTForDate:end] > 0 ? tmp_E + [currentServer.serverTimezone secondsFromGMTForDate:end]:
-        tmp_E - [currentServer.serverTimezone secondsFromGMTForDate:end];
+//        tmp_S = [currentServer.serverTimezone secondsFromGMTForDate:begin] > 0 ? tmp_S + [currentServer.serverTimezone secondsFromGMTForDate:begin]:
+//        tmp_S - [currentServer.serverTimezone secondsFromGMTForDate:begin];
+//        tmp_E = [currentServer.serverTimezone secondsFromGMTForDate:end] > 0 ? tmp_E + [currentServer.serverTimezone secondsFromGMTForDate:end]:
+//        tmp_E - [currentServer.serverTimezone secondsFromGMTForDate:end];
+        tmp_S = tmp_S - [currentServer.serverTimezone secondsFromGMTForDate:begin];
+        tmp_E = tmp_E - [currentServer.serverTimezone secondsFromGMTForDate:end];
         
         timeStart = [NSDate dateWithTimeIntervalSince1970:tmp_S];
         timeEnd = [NSDate dateWithTimeIntervalSince1970:tmp_E];

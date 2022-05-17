@@ -980,7 +980,7 @@ class DirectVideoView extends React.Component {
 
   onHDMode = isHD => {
     // this.setNative({hd: isHD});
-    if (this.props.isLive) this.setNative({hd: isHD});
+    if (this.props.isLive) this.setNative({hdmode: isHD});
     else {
       this.pause();
       setTimeout(() => {
@@ -1091,7 +1091,7 @@ class DirectVideoView extends React.Component {
             startplayback: {
               ...serverInfo.playData,
               searchMode: !isLive,
-              hd: hdMode,
+              hdmode: hdMode,
             },
           });
         }
