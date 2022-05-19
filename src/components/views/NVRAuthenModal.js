@@ -1,12 +1,13 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
+import {inject, observer} from 'mobx-react';
 import Modal from 'react-native-modal';
 
 import AuthenModal from '../common/AuthenModal';
 
 import CMSColors from '../../styles/cmscolors';
 import {VIDEO as VIDEO_TXT} from '../../localization/texts';
-import {inject, observer} from 'mobx-react';
+import ROUTERS from '../../consts/routes';
 
 class NVRAuthenModal extends React.Component {
   constructor(props) {
@@ -22,11 +23,14 @@ class NVRAuthenModal extends React.Component {
   };
 
   render() {
-    const {videoStore} = this.props;
+    const {videoStore, appStore} = this.props;
+    const currentScreen = appStore.naviService.getCurrentRouteName();
+    // __DEV__ && console.log('GOND render Authen modal: ', currentScreen);
 
-    return (
+    return currentScreen == ROUTERS.VIDEO_PLAYER ||
+      currentScreen == ROUTERS.VIDEO_CHANNELS ? (
       <Modal
-        isVisible={videoStore.showAuthenModal}
+        isVisible={videoStore.needAuthen && videoStore.showAuthenModal}
         onBackdropPress={videoStore.onAuthenCancel}
         onBackButtonPress={videoStore.onAuthenCancel}
         backdropOpacity={0}
@@ -42,7 +46,7 @@ class NVRAuthenModal extends React.Component {
           />
         </View>
       </Modal>
-    );
+    ) : null;
   }
 }
 
@@ -56,4 +60,4 @@ const styles = StyleSheet.create({
   authenModal: {flex: 0, width: 343, height: 303},
 });
 
-export default inject('videoStore')(observer(NVRAuthenModal));
+export default inject('videoStore', 'appStore')(observer(NVRAuthenModal));

@@ -230,8 +230,9 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         // Log.i("GOND", "setStart 7");
     }
 
-    @ReactProp(name = "hd")
+    @ReactProp(name = "hdmode")
     public void setHD(FFMpegFrameView view,@Nullable Boolean HDMode){
+        Log.i("GOND", "setHDMode enter");
         if(HDMode != null)
             view.ViewHD(HDMode);
     }

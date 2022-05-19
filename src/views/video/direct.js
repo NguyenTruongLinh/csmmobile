@@ -90,12 +90,12 @@ class DirectVideoView extends React.Component {
         this.onNativeMessage
       );
     }
-    const {serverInfo} = this.props;
+    const {serverInfo, videoStore} = this.props;
     // __DEV__ &&
     //   console.log('DirectStreamingView renderLimit: ', renderLimit, index);
 
-    if (this.ffmpegPlayer && serverInfo) {
-      if (serverInfo.serverIP && serverInfo.port) {
+    if (videoStore.isAuthenticated) {
+      if (serverInfo && serverInfo.serverIP && serverInfo.port) {
         this.props.serverInfo.setStreamStatus({
           isLoading: true,
           // connectionStatus: STREAM_STATUS.LOGING_IN,
@@ -115,7 +115,10 @@ class DirectVideoView extends React.Component {
       }
     } else {
       __DEV__ &&
-        console.log('GOND serverInfo not valid reference: ', {...serverInfo});
+        console.log(
+          'GOND serverInfo not valid reference, or not logged in yet: ',
+          {...serverInfo}
+        );
     }
 
     // reactions:
@@ -380,6 +383,23 @@ class DirectVideoView extends React.Component {
         ),
       ];
     }
+
+    this.reactions = [
+      ...this.reactions,
+      reaction(
+        () => videoStore.isAuthenticated,
+        (isAuthenticated, previousValue) => {
+          if (isAuthenticated == true && previousValue == false) {
+            this.props.serverInfo.setStreamStatus({
+              isLoading: true,
+              connectionStatus: STREAM_STATUS.LOGING_IN,
+            });
+            snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
+            this.setNativePlayback();
+          }
+        }
+      ),
+    ];
   };
 
   onReceivePlayerRef = ref => {

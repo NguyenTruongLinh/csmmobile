@@ -26,7 +26,8 @@ export const Site = {
   getSiteOam: '?all=true&dvr=true&filter=pvm',
   getAllRegions: 'getallregions',
   getRegionSites: 'getregions',
-  getNVRPermission: 'GetSiteByIdNVRPermission',
+  getNVRAndSitePermission: 'GetSiteByIdNVRPermission',
+  getNVRPermission: 'GetNVRPermissionById',
 };
 
 export const Alert = {
@@ -38,7 +39,7 @@ export const Alert = {
 
 export const Health = {
   controller: 'Mobile_SiteAlert',
-  summaryController: 'alertsummary',
+  summary: 'alertsummary',
   dvrAlerts: 'GetAlertLastByDvrs',
   dvrSensorAlerts: 'GetSensorsAlertByDvrs',
 };
@@ -48,6 +49,7 @@ export const DVR = {
   getConnection: 'infoconnectvideo',
   getChannels: 'channels',
   getAllChannels: 'getallchannels',
+  getTimezone: 'GetTimeZone',
 };
 
 export const Users = {

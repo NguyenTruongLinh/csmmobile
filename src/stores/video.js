@@ -255,8 +255,8 @@ const TimezoneModel = types.model({
   standardName: types.string,
   daylightName: types.string,
   daylightBias: types.number,
-  daylightDate: DSTDateModel,
-  standardDate: DSTDateModel,
+  daylightDate: types.maybeNull(DSTDateModel),
+  standardDate: types.maybeNull(DSTDateModel),
 });
 
 const TimelineModel = types.model({
@@ -358,6 +358,8 @@ export const VideoModel = types
     isPreloadStream: types.optional(types.boolean, false),
     // current page of video in Multiple live videos (Division Screen)
     currentGridPage: types.optional(types.number, 0),
+    // is API support permission
+    isAPIPermissionSupported: types.optional(types.boolean, false),
   })
   .volatile(self => ({
     reactions: [],
@@ -389,6 +391,7 @@ export const VideoModel = types
     refreshTimelineInterval: null,
     beginSearchTime: null, // luxon DateTime
     shouldLinkNVRUser: false, // enable when input login form
+    isAuthenCanceled: false,
   }))
   .views(self => ({
     get isCloud() {
@@ -417,8 +420,8 @@ export const VideoModel = types
     get needAuthen() {
       __DEV__ && console.log('GOND needAuthen: ', self.authenticationState); //self.nvrUser, self.nvrPassword);
       return (
-        !self.isLoading &&
-        self.authenticationState != AUTHENTICATION_STATES.AUTHENTICATED
+        self.authenticationState != AUTHENTICATION_STATES.AUTHENTICATED &&
+        self.authenticationState != AUTHENTICATION_STATES.ON_AUTHENICATING
       );
       // return (
       //   //self.cloudType == CLOUD_TYPE.DIRECTION ||
@@ -755,6 +758,31 @@ export const VideoModel = types
     },
     get isAuthenticated() {
       return self.authenticationState == AUTHENTICATION_STATES.AUTHENTICATED;
+    },
+    canPlaySelectedChannel(isLive) {
+      if (self.isAPIPermissionSupported)
+        return self.selectedChannelData
+          ? isLive
+            ? self.selectedChannelData.canLive
+            : selectedChannelData.canSearch
+          : false;
+      return true;
+    },
+    get canLiveSelectedChannel() {
+      if (self.isAPIPermissionSupported)
+        return self.selectedChannelData
+          ? self.selectedChannelData.canLive
+          : false;
+
+      return true;
+    },
+    get canSearchSelectedChannel() {
+      if (self.isAPIPermissionSupported)
+        return self.selectedChannelData
+          ? self.selectedChannelData.canSearch
+          : false;
+
+      return true;
     },
   }))
   .actions(self => {
@@ -1209,13 +1237,19 @@ export const VideoModel = types
           }
         }
         self.timezoneName = tzName;
+        const date = DateTime.now().setZone(tzName);
+        // dongpt: temporarily handle get dvrTimezone name only
         self.dvrTimezone = TimezoneModel.create({
-          bias: parseInt(data.Bias),
-          daylightBias: parseInt(data.DaylightBias),
+          bias: data.Bias ? parseInt(data.Bias) : 0,
+          daylightBias: data.DaylightBias ? parseInt(data.DaylightBias) : 0,
           standardName: data.StandardName,
           daylightName: data.DaylightName,
-          daylightDate: parseDSTDate(data.DaylightDate),
-          standardDate: parseDSTDate(data.StandardDate),
+          daylightDate: data.DaylightDate
+            ? parseDSTDate(data.DaylightDate)
+            : null,
+          standardDate: data.StandardDate
+            ? parseDSTDate(data.StandardDate)
+            : null,
         });
         __DEV__ &&
           console.log(`GOND get timezone done: `, tzName, self.timezone);
@@ -1374,16 +1408,26 @@ export const VideoModel = types
       setDSTHour(value) {
         self.forceDstHour = value;
       },
-      displayAuthen(value) {
-        if (value)
-          __DEV__ && console.trace('GOND displaying Login form: ', value);
+      displayAuthen(value, force = false) {
+        if (value == true) {
+          // __DEV__ && console.trace('GOND displaying Login form: ', value);
+          if (force == false && self.isAuthenCanceled == true) return;
+        }
         self.showAuthenModal = value;
       },
       resetNVRAuthentication() {
         // dongpt: do we need this?
+        // __DEV__ &&
+        //   console.trace(
+        //     'GOND resetNVRAuthentication entered: ',
+        //     self.authenticationState
+        //   );
         if (self.isAuthenticated) return;
 
-        if (self.nvrUser) self.setNVRLoginInfo('', '');
+        __DEV__ && console.log('GOND resetNVRAuthentication reset...');
+        if (self.nvrUser && self.nvrUser.length > 0)
+          self.setNVRLoginInfo('', '');
+        if (self.isAuthenCanceled == true) self.isAuthenCanceled = false;
         self.displayAuthen(true);
       },
       saveLoginInfo: flow(function* () {
@@ -1402,24 +1446,27 @@ export const VideoModel = types
           }
         );
         __DEV__ && console.log('GOND linkNVRUser: ', res);
-        if (self.cloudType != CLOUD_TYPE.DIRECTION) {
-          if (
-            res &&
-            !util.isNullOrUndef(res.KUser) &&
-            !util.isNullOrUndef(res.KDVR) &&
-            res.NVRUser &&
-            res.NVRUser.length > 0
-          ) {
-            // self.isAuthenticated = true;
-            self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
-          } else {
-            __DEV__ && console.log('GOND linkNVRUser login failed: ', res);
-            // self.isAuthenticated = false;
-            self.authenticationState = AUTHENTICATION_STATES.AUTHEN_FAILED;
-            self.displayAuthen(true);
-            snackbarUtil.onError(STREAM_STATUS.LOGIN_FAILED);
-          }
+        // if (self.cloudType != CLOUD_TYPE.DIRECTION) {
+        if (
+          res &&
+          !util.isNullOrUndef(res.KUser) &&
+          !util.isNullOrUndef(res.KDVR) &&
+          res.NVRUser &&
+          res.NVRUser.length > 0
+        ) {
+          // self.isAuthenticated = true;
+          self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
+          yield self.getDVRPermission();
+          return true;
+        } else {
+          __DEV__ && console.log('GOND linkNVRUser login failed: ', res);
+          // self.isAuthenticated = false;
+          self.authenticationState = AUTHENTICATION_STATES.AUTHEN_FAILED;
+          self.displayAuthen(true);
+          snackbarUtil.onError(STREAM_STATUS.LOGIN_FAILED);
+          return false;
         }
+        // }
       }),
 
       onLoginSuccess() {
@@ -1437,11 +1484,13 @@ export const VideoModel = types
         // __DEV__ && console.log('GOND onAuthenSubmit 2');
         self.setNVRLoginInfo(username, password);
         self.displayAuthen(false);
-        if (self.cloudType == CLOUD_TYPE.DIRECTION)
-          self.shouldLinkNVRUser = true;
-        else self.saveLoginInfo();
+        // if (self.cloudType == CLOUD_TYPE.DIRECTION)
+        // self.shouldLinkNVRUser = true;
+        // else
+        self.saveLoginInfo();
       },
       onAuthenCancel() {
+        self.isAuthenCanceled = true;
         self.displayAuthen(false);
       },
       setLiveMode(nextIsLive) {
@@ -1648,6 +1697,12 @@ export const VideoModel = types
               });
           });
         }
+        self.isAuthenCanceled = false;
+        if (self.isAlertPlay == true || self.isHealthPlay == true) {
+          self.resetNVRAuthentication();
+        } else {
+          self.displayAuthen(false);
+        }
 
         self.selectedChannel = null;
         self.searchBegin = null;
@@ -1660,7 +1715,6 @@ export const VideoModel = types
         self.isFullscreen = false;
         self.hdMode = false;
         self.paused = false;
-        self.displayAuthen(false);
         self.recordingDates = {};
         self.timeline = [];
         self.timezoneOffset = 0;
@@ -1863,6 +1917,7 @@ export const VideoModel = types
       }),
       // #endregion settings
       // #region get channels
+      /*
       refreshChannelsList(newList) {
         if (self.allChannels.length == newList.length) {
           const fnSort = (a, b) => a.channelNo - b.channelNo;
@@ -1878,7 +1933,10 @@ export const VideoModel = types
             //     JSON.stringify(getSnapshot(arrCompareChannels[i]))
             //   );
             if (
-              JSON.stringify(getSnapshot(arrayAllChannels[i])) !=
+              JSON.stringify({...getSnapshot(arrayAllChannels[i]),
+                canLive: undefined,
+                canSearch: undefined,
+              }) !=
               JSON.stringify(getSnapshot(arrCompareChannels[i]))
             ) {
               isDiff = true;
@@ -1898,9 +1956,62 @@ export const VideoModel = types
         //   console.log('GOND - getDVRChannels: channels list changed', newList);
         self.allChannels = newList; //.map(ch => ch);
       },
+      */
+      refreshChannelsList(newList) {
+        const oldList = self.allChannels;
+
+        // dongpt: check selected stream
+        console.log('GOND 111111111');
+        if (
+          self.selectedStream &&
+          !self.newList.find(
+            ch => ch.channelNo == self.selectedStream.channelNo
+          )
+        ) {
+          self.selectedChannel = null;
+        }
+
+        console.log('GOND 2222222');
+        // dongpt: check and update current streams
+        const updateFn = (result, currentItem) => {
+          if (newList.find(ch => ch.channelNo == currentItem.channelNo)) {
+            result.push(currentItem);
+          }
+          return result;
+        };
+        switch (self.cloudType) {
+          case CLOUD_TYPE.DEFAULT:
+          case CLOUD_TYPE.DIRECTION:
+            self.directStreams = self.directStreams.reduce(updateFn, []);
+            break;
+          case CLOUD_TYPE.HLS:
+            self.hlsStreams = self.hlsStreams.reduce(updateFn, []);
+            break;
+          case CLOUD_TYPE.RTC:
+            self.rtcConnection.updateViews(
+              self.rtcConnection.viewers.reduce(updateFn, [])
+            );
+            break;
+          default:
+            break;
+        }
+
+        console.log('GOND 333333333');
+        self.allChannels = newList.map(chData => {
+          const found = oldList.find(
+            item => item.channelNo == chData.channelNo
+          );
+          if (found) {
+            found.update(chData);
+            return found;
+          }
+          return chData;
+        });
+      },
       getDvrChannels: flow(function* (isGetAll = false) {
         if (!self.kDVR) {
           console.log('GOND Could not get channels info, no dvr selected');
+          return false;
         }
         self.isLoading = true;
 
@@ -1931,9 +2042,10 @@ export const VideoModel = types
         self.isLoading = false;
         return true;
       }),
-      getActiveChannels: flow(function* getActiveChannels() {
+      getActiveChannels: flow(function* () {
         if (!self.kDVR) {
           console.log('GOND Could not get channels info, no dvr selected');
+          return false;
         }
         self.isLoading = true;
 
@@ -1980,15 +2092,21 @@ export const VideoModel = types
         self.isLoading = false;
         return true;
       }),
-      getDisplayingChannels: flow(function* getDisplayingChannels() {
+      getDisplayingChannels: flow(function* () {
+        let res = null;
         if (
           self.cloudType == CLOUD_TYPE.DIRECTION ||
           self.cloudType == CLOUD_TYPE.DEFAULT
         ) {
-          return yield self.getDvrChannels();
+          res = yield self.getDvrChannels();
         } else {
-          return yield self.getActiveChannels();
+          res = yield self.getActiveChannels();
         }
+        if (res) {
+          // updating permission
+          yield self.getDVRPermission();
+        }
+        return res;
       }),
       // #endregion get channels
       // #region direct connection
@@ -2147,7 +2265,6 @@ export const VideoModel = types
       },
       getDVRTimezone: flow(function* (channelNo) {
         __DEV__ && console.log('GOND getDVRTimezone');
-        self.waitForTimezone = true;
         let sid = util.getRandomId();
         self.timezoneRetries = 0;
         self.checkTimezoneTimeout = setTimeout(
@@ -2160,8 +2277,22 @@ export const VideoModel = types
         ); // 30 secs wait time
         self.shouldShowSnackbar &&
           self.isInVideoView &&
+          self.isAuthenticated &&
           snackbarUtil.onMessage(STREAM_STATUS.CONNECTING);
-        return yield self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
+        const res = yield apiService.get(DVR.controller, 1, DVR.getTimezone, {
+          kdvr: self.kDVR,
+        });
+
+        __DEV__ && console.log('GOND getDVRTimezone: ', res);
+        if (res && typeof res == 'string') {
+          self.waitForTimezone = false;
+          self.buildTimezoneData({
+            StandardName: res,
+            DaylightName: res,
+          });
+          return true;
+        }
+        self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
       }),
       getDVRTimezoneDirectly: flow(function* (sid) {
         if (self.isInVideoView && self.waitForTimezone) {
@@ -3316,12 +3447,22 @@ export const VideoModel = types
             // __DEV__ && console.log('GOND onAlertPlay 3: ', self.searchDate);
           } else {
             // __DEV__ && console.log('GOND onAlertPlay 4: ', self.timezoneName);
+            // TODO: dongpt: get timezone before set searchDate
             self.searchDate = self.timezoneName
               ? DateTime.now().setZone(self.timezoneName).startOf('day')
               : DateTime.now().startOf('day');
           }
         }
-        yield self.getDisplayingChannels();
+        if (
+          self.allChannels.length <= 0 ||
+          self.kDVR != self.allChannels[0].kDVR
+        ) {
+          const res = yield self.getDisplayingChannels();
+          if (res === false) {
+            __DEV__ && console.log('GOND onAlertPlay get channels list failed');
+            return false;
+          }
+        }
 
         let channelId;
         if (alertData.channelNo) {
@@ -3347,17 +3488,11 @@ export const VideoModel = types
         // Get timezone first
         if (
           self.cloudType != CLOUD_TYPE.HLS ||
-          !self.isLive ||
+          // !self.isLive ||  // removed: prevent stream not created or was released
           !util.isValidHttpUrl(self.selectedStream.streamUrl)
         ) {
           yield self.getVideoInfos(alertData.channelNo);
         }
-
-        // else {
-        //   // dongpt: only Direct need to be build?
-        //   self.buildVideoData(alertData.channelNo);
-        //   streamReadyCallback && streamReadyCallback();
-        // }
         return true;
       }),
       onHealthPlay: flow(function* (isLive, data) {
@@ -3396,16 +3531,18 @@ export const VideoModel = types
       // #region Permission
       // dongpt: get user linked status (CMS user to NVR user), must be call
       //   after 'getDisplayingChannels' function
-      getDVRPermission: flow(function* (siteKey) {
-        if (util.isNullOrUndef(siteKey) || util.isNullOrUndef(self.kDVR)) {
+      getDVRPermission: flow(function* (kDVR /*, siteKey*/) {
+        if (!util.isNullOrUndef(kDVR) && kDVR != self.kDVR) self.kDVR = kDVR;
+        if (util.isNullOrUndef(self.kDVR)) {
           __DEV__ &&
             console.log(
               'GOND getDVRPermission - none site or nvr was selected: ',
-              self.selectedSite,
+              // siteKey,
               self.kDVR
             );
           return;
         }
+        self.authenticationState = AUTHENTICATION_STATES.ON_AUTHENICATING;
         try {
           const res = yield apiService.get(
             SiteRoute.controller,
@@ -3413,8 +3550,8 @@ export const VideoModel = types
             SiteRoute.getNVRPermission,
             {
               hasChannels: true,
-              siteId: siteKey,
-              serverId: self.kDVR,
+              // siteId: siteKey,
+              kdvr: self.kDVR,
             }
           );
           __DEV__ && console.log('GOND getDVRPermission: ', self.kDVR, res);
@@ -3426,24 +3563,46 @@ export const VideoModel = types
               );
             // CMSAPI not support yet, let pass the authentication for now
             self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
+            self.isAPIPermissionSupported = false;
             return;
           }
+          self.isAPIPermissionSupported = true;
           let currentArray = res.Sites;
+          let currentObject = res;
           while (
             currentArray &&
             currentArray.length > 0 &&
-            currentArray[0].Type != SITE_TREE_UNIT_TYPE.DVR
+            currentObject.Type != SITE_TREE_UNIT_TYPE.DVR
           ) {
+            currentObject = currentArray[0];
             currentArray = currentArray.Sites;
           }
-          if (!currentArray || currentArray.length == 0) {
-            __DEV__ &&
-              console.log(
-                'GOND getDVRPermission : ChannelControlStatus not supported!'
-              );
-            // self.isAuthenticated = false;
+          __DEV__ &&
+            console.log(
+              'GOND getDVRPermission check linked0:  ',
+              currentArray,
+              self.isAuthenticated
+            );
+          if (
+            // !self.isAuthenticated &&
+            currentObject.ChannelControlStatus ==
+            CHANNEL_CONTROL_STATUS.NOT_LINK
+          ) {
             self.authenticationState = AUTHENTICATION_STATES.NOT_AUTHEN;
             self.displayAuthen(true);
+            // self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
+            // self.isAPIPermissionSupported = false;
+            return;
+          }
+
+          if (
+            currentObject.ChannelControlStatus ==
+              CHANNEL_CONTROL_STATUS.NOT_PRIVILEGE ||
+            !currentArray ||
+            currentArray.length == 0
+          ) {
+            // dongpt: no permission or channel list is empty
+            self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
             return;
           }
 
@@ -3451,7 +3610,7 @@ export const VideoModel = types
             console.log('GOND getDVRPermission check linked ', currentArray[0]);
           // self.isAuthenticated =
           self.authenticationState =
-            currentArray[0].ChannelControlStatus ==
+            currentObject.ChannelControlStatus ==
             CHANNEL_CONTROL_STATUS.HAVE_PRO_CONFIG
               ? AUTHENTICATION_STATES.AUTHENTICATED
               : AUTHENTICATION_STATES.NOT_AUTHEN;
@@ -3463,37 +3622,58 @@ export const VideoModel = types
             return;
           }
 
-          while (
-            currentArray &&
-            currentArray.length > 0 &&
-            currentArray[0].Type != SITE_TREE_UNIT_TYPE.CHANNEL
-          ) {
-            currentArray = currentArray.Sites;
-          }
+          // while (
+          //   currentArray &&
+          //   currentArray.length > 0 &&
+          //   currentArray[0].Type != SITE_TREE_UNIT_TYPE.CHANNEL
+          // ) {
+          //   currentObject = currentArray[0];
+          //   currentArray = currentArray.Sites;
+          // }
           if (self.allChannels.length == 0) {
             console.log(
-              'GOND getDVRPermission must be call after getDisplayingChannels: ',
+              'GOND getDVRPermission should be call after getDisplayingChannels: ',
               self.allChannels
             );
-            return;
+            //
+            // const res = yield self.getDisplayingChannels();
+            // if (res === false) {
+            //   console.log(
+            //     'GOND getDVRPermission interupted because cannot get channels data'
+            //   );
+            //   return currentArray;
+            // }
+            return currentArray;
           }
-          if (currentArray && currentArray.length > 0) {
+          if (
+            currentArray &&
+            currentArray.length > 0 &&
+            self.allChannels.length > 0
+          ) {
             self.allChannels = self.allChannels.reduce((result, ch, index) => {
               let currentChannel =
                 currentArray[index] &&
                 currentArray[index].ChannelNo == ch.channelNo
                   ? currentArray[index]
                   : currentArray.find(item => item.ChannelNo == ch.channelNo);
-              ch.setLiveSearchPermission(
-                currentChannel.CanLive,
-                currentChannel.CanSearch
-              );
+              if (currentChannel) {
+                ch.setLiveSearchPermission(
+                  currentChannel.CanLive,
+                  currentChannel.CanSearch
+                );
+              }
 
+              result.push(ch);
               return result;
             }, []);
           }
         } catch (ex) {
           console.log('GOND getDVRPermission failed: ', ex);
+          if (
+            self.authenticationState == AUTHENTICATION_STATES.ON_AUTHENICATING
+          ) {
+            self.authenticationState = AUTHENTICATION_STATES.AUTHEN_FAILED;
+          }
           return;
         }
       }),

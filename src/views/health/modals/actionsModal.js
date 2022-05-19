@@ -59,6 +59,7 @@ class AlertActionsModal extends React.Component {
     __DEV__ && console.log('GOND Health gotoVideo ... ', data);
     if (data.kDVR) {
       videoStore.onAlertPlay(isLive, data);
+      // videoStore.onHealthPlay(isLive, data);
       setTimeout(() => {
         navigation.push(ROUTERS.VIDEO_PLAYER);
       }, 500);

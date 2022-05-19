@@ -317,7 +317,7 @@ export const HealthModel = types
       }, '');
       try {
         const res = yield apiService.get(
-          HealthRoute.summaryController,
+          HealthRoute.summary,
           null,
           null,
           params
@@ -386,7 +386,7 @@ export const HealthModel = types
 
       try {
         const res = yield apiService.get(
-          HealthRoute.summaryController,
+          HealthRoute.summary,
           '' + site.id,
           undefined,
           site ? {sdate: site.sdate, edate: site.edate} : {}

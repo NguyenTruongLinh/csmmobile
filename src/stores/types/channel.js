@@ -2,9 +2,9 @@ import {types} from 'mobx-state-tree';
 
 export default ChannelModel = types
   .model({
-    channelNo: types.number,
+    channelNo: types.identifierNumber, // types.number,
     kDVR: types.number,
-    kChannel: types.identifierNumber,
+    kChannel: types.number, // types.identifierNumber,
     videoSource: types.number,
     kAudioSource: types.number,
     kPTZ: types.number,
@@ -23,8 +23,8 @@ export default ChannelModel = types
     resolution: types.maybeNull(types.string), // ?
     modelName: types.string,
     isActive: types.boolean,
-    canLive: types.optional(types.boolean, false),
-    canSearch: types.optional(types.boolean, false),
+    canLive: types.optional(types.boolean, true),
+    canSearch: types.optional(types.boolean, true),
     // image: types.maybeNull(types.string),
   })
   .volatile(self => ({
@@ -44,6 +44,30 @@ export default ChannelModel = types
     setLiveSearchPermission(canLive, canSearch) {
       self.canLive = canLive;
       self.canSearch = canSearch;
+    },
+    update(data) {
+      if (self.channelNo != data.channelNo) return;
+      if (self.kChannel != data.kChannel || self.name != data.name) {
+        self.kDVR = data.kDVR;
+        self.kChannel = data.kChannel;
+        self.videoSource = data.videoSource;
+        self.kAudioSource = data.kAudioSource;
+        self.kPTZ = data.kPTZ;
+        self.status = data.status;
+        self.name = data.name;
+        self.enable = data.enable;
+        self.dwellTime = data.dwellTime;
+        self.ap = data.ap;
+        self.cameraID = data.cameraID;
+        self.videoCompressQual = data.videoCompressQual;
+        self.videoType = data.videoType;
+        self.kVideo = data.kVideo;
+        self.enableiSearch = data.enableiSearch;
+        self.dvrName = data.dvrName;
+        self.fps = data.fps;
+        self.resolution = data.resolution;
+        self.modelName = data.modelName;
+      }
     },
   }));
 

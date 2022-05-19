@@ -66,10 +66,12 @@ class AlarmDetailView extends Component {
     this.reactions = [];
     this._isMounted = false;
     this.shouldReloadOnExit = false;
+    this.firstFocus = true;
+    this.unsubFocusEvent = null;
   }
 
   async componentDidMount() {
-    const {alarmStore, videoStore} = this.props;
+    const {alarmStore, videoStore, navigation} = this.props;
     this._isMounted = true;
     LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
     __DEV__ && console.log('AlarmDetail componentDidMount');
@@ -83,13 +85,20 @@ class AlarmDetailView extends Component {
     this.setHeader();
     alarmStore.selectedAlarm.loadSnapshotImages();
     this.initReactions();
+    this.unsubFocusEvent = navigation.addListener('focus', () => {
+      __DEV__ &&
+        console.log('GOND alarm detail on focused, first ', this.firstFocus);
+      videoStore.setShouldShowVideoMessage(false);
+      if (this.firstFocus) {
+        this.firstFocus = false;
+      } else {
+        videoStore.resetNVRAuthentication();
+      }
+    });
+    let res = await videoStore.getDVRPermission(alarmStore.selectedAlarm.kDVR);
 
     // Preload video streaming: Live mode
-    let res = await videoStore.onAlertPlay(
-      true,
-      alarmStore.selectedAlarm,
-      true
-    );
+    res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm, true);
     videoStore.enterVideoView(true);
     // const snapShots = getSnapshot(alarmStore.selectedAlarm.snapshot);
     // __DEV__ && console.log(` snapShots = `, snapShots);
@@ -102,6 +111,7 @@ class AlarmDetailView extends Component {
     __DEV__ && console.log('AlarmDetail componentWillUnmount');
     this._isMounted = false;
 
+    this.unsubFocusEvent && this.unsubFocusEvent();
     alarmStore.onExitAlarmDetail();
     if (videoStore.isPreloadStream) videoStore.onExitSinglePlayer();
     videoStore.releaseStreams();
@@ -658,6 +668,11 @@ class AlarmDetailView extends Component {
 
   renderVideoButtons = () => {
     const {isLoading} = this.state;
+    const {
+      canLiveSelectedChannel,
+      canSearchSelectedChannel,
+    } = this.props.videoStore;
+
     return (
       <View
         style={{
@@ -673,7 +688,7 @@ class AlarmDetailView extends Component {
             onPress={() => this.gotoVideo(false)}
             color={CMSColors.IconButton}
             disabledColor={CMSColors.DisabledIconButton}
-            disabled={isLoading}
+            disabled={isLoading} // || !canSearchSelectedChannel}
           />
         </View>
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -683,7 +698,7 @@ class AlarmDetailView extends Component {
             onPress={() => this.gotoVideo(true)}
             color={CMSColors.IconButton}
             disabledColor={CMSColors.DisabledIconButton}
-            disabled={isLoading}
+            disabled={isLoading} // || !canLiveSelectedChannel}
           />
         </View>
       </View>

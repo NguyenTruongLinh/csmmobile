@@ -48,6 +48,7 @@ module.exports = {
   Transparent: 'rgba(0,0,0,0)',
   ButtonRight: White,
   OpacityButton: 'rgba(255, 255, 255, 0.1)',
+  VideoOpacityLayer: 'rgba(0, 0, 0, 0.3)',
 
   ActionText: 'rgba(0,0,0,0.84)',
   InactiveText: 'rgb(153,153,153)',

@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   Image,
+  ImageBackground,
   Dimensions,
   Platform,
   AppState,
@@ -20,6 +21,7 @@ import Orientation from 'react-native-orientation-locker';
 import TimePicker from 'react-native-24h-timepicker';
 import {DateTime} from 'luxon';
 
+import {IconCustom} from '../../components/CMSStyleSheet';
 import CMSRipple from '../../components/controls/CMSRipple';
 import CMSImage from '../../components/containers/CMSImage';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
@@ -27,11 +29,15 @@ import TimeRuler from '../../components/controls/BetterTimeRuler';
 import BackButton from '../../components/controls/BackButton';
 import TimeOnTimeRuler from '../../components/controls/TimeOnTimeRuler';
 import Swipe from '../../components/controls/Swipe';
+import NVRAuthenModal from '../../components/views/NVRAuthenModal';
+
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
 import RTCStreamingView from './rtc';
-import {IconCustom} from '../../components/CMSStyleSheet';
 import {StatusBar} from 'react-native';
+
+import VideoDateModal from './videoDateModal';
+import VideoTimeModal from './videoTimeModal';
 
 import snackbar from '../../util/snackbar';
 import {normalize, isNullOrUndef, getAutoRotateState} from '../../util/general';
@@ -51,9 +57,8 @@ import {
 import CMSColors from '../../styles/cmscolors';
 import {STREAM_STATUS, VIDEO as VIDEO_TXT} from '../../localization/texts';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
-import NVRAuthenModal from '../../components/views/NVRAuthenModal';
-import VideoDateModal from './videoDateModal';
-import VideoTimeModal from './videoTimeModal';
+
+import videoStyles from '../../styles/scenes/videoPlayer.style';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
 const IconSize = normalize(28);
@@ -117,6 +122,8 @@ class VideoPlayerView extends Component {
     Orientation.addDeviceOrientationListener(this.onOrientationChange);
     Orientation.unlockAllOrientations();
     this.initReactions();
+
+    this.authenRef && this.authenRef.forceUpdate();
   }
 
   updateHeader = () => {
@@ -760,18 +767,57 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {selectedStream, isAuthenticated} = videoStore;
-    const {pause, sWidth, sHeight} = this.state;
+    const {
+      selectedStream,
+      isAuthenticated,
+      isAPIPermissionSupported,
+    } = videoStore;
+    const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
-    // __DEV__ && console.log('GOND renderVid player: ', selectedStream);
-    if (!selectedStream || !isAuthenticated) {
+    __DEV__ &&
+      console.log(
+        'GOND renderVid player: ',
+        selectedStream,
+        isAPIPermissionSupported
+      );
+    if (
+      !selectedStream ||
+      // !isAPIPermissionSupported ||
+      !isAuthenticated
+    ) {
       return (
         <Image
           style={{width: width, height: height}}
           source={NVR_Play_NoVideo_Image}
           resizeMode="cover"
         />
+      );
+    }
+
+    if (
+      isAPIPermissionSupported &&
+      (selectedStream.channel && videoStore.isLive
+        ? !selectedStream.channel.canLive
+        : !selectedStream.channel.canSearch)
+    ) {
+      __DEV__ && console.log('GOND renderVid player NO PERMISSION');
+      return (
+        <ImageBackground
+          source={NVR_Play_NoVideo_Image}
+          style={{width: width, height: height}}
+          resizeMode="cover">
+          <Text style={videoStyles.channelInfo}>
+            {selectedStream.channelName ?? 'Unknown'}
+          </Text>
+          <View style={videoStyles.statusView}>
+            <View style={videoStyles.textContainer}>
+              <Text style={videoStyles.textMessage}>
+                {STREAM_STATUS.NO_PERMISSION}
+              </Text>
+            </View>
+          </View>
+        </ImageBackground>
       );
     }
 
@@ -945,7 +991,15 @@ class VideoPlayerView extends Component {
     }
 
     return (
-      <View style={styles.controlsContainer}>
+      <View
+        style={[
+          styles.controlsContainer,
+          {
+            backgroundColor: showController
+              ? CMSColors.VideoOpacityLayer
+              : undefined,
+          },
+        ]}>
         <View style={styles.controlButtonContainer}>
           {showController && selectedChannelIndex > 0 ? (
             <IconCustom
@@ -1033,6 +1087,11 @@ class VideoPlayerView extends Component {
               // style={styles.buttonStyle}
               onPress={this.onSwitchLiveSearch}
               // disabled={videoStore.isLoading || !this.playerRef}
+              disabled={
+                videoStore.isLive
+                  ? !videoStore.canSearchSelectedChannel
+                  : !videoStore.canLiveSelectedChannel
+              }
             />
           </View>
         )}
@@ -1081,7 +1140,7 @@ class VideoPlayerView extends Component {
     const {sWidth} = this.state;
     // console.log('GONND searchDate ', videoStore.getSafeSearchDate());
 
-    return videoStore.isLive ? (
+    return videoStore.isLive || !videoStore.isAuthenticated ? (
       <View style={{flex: 8}}></View>
     ) : (
       <View style={styles.timelineContainer}>
@@ -1200,6 +1259,7 @@ class VideoPlayerView extends Component {
       selectedChannel,
       isFullscreen,
       isLive,
+      isAuthenticated,
     } = this.props.videoStore;
     // console.log('GOND renderChannelsList: ', isFullscreen);
     const itemWidth = this.state.sWidth / NUM_CHANNELS_ON_SCREEN;
@@ -1207,25 +1267,27 @@ class VideoPlayerView extends Component {
 
     return isFullscreen ? null : (
       <View style={styles.channelsListContainer}>
-        <FlatList
-          ref={r => (this.channelsScrollView = r)}
-          style={{flex: 1}}
-          data={[{}, {}, ...displayChannels, {}, {}]}
-          renderItem={this.renderChannelItem}
-          keyExtractor={(item, index) => item.channelNo ?? 'dummy' + index}
-          getItemLayout={(data, index) => ({
-            length: itemWidth,
-            offset: itemWidth * index,
-            index,
-          })}
-          initialNumToRender={displayChannels.length + 4}
-          initialScrollIndex={
-            isNullOrUndef(selectedChannel) ? undefined : selectedChannelIndex
-          }
-          refreshing={!selectedStream}
-          horizontal={true}
-          onScroll={this.handleChannelsScroll}
-        />
+        {isAuthenticated && (
+          <FlatList
+            ref={r => (this.channelsScrollView = r)}
+            style={{flex: 1}}
+            data={[{}, {}, ...displayChannels, {}, {}]}
+            renderItem={this.renderChannelItem}
+            keyExtractor={(item, index) => item.channelNo ?? 'dummy' + index}
+            getItemLayout={(data, index) => ({
+              length: itemWidth,
+              offset: itemWidth * index,
+              index,
+            })}
+            initialNumToRender={displayChannels.length + 4}
+            initialScrollIndex={
+              isNullOrUndef(selectedChannel) ? undefined : selectedChannelIndex
+            }
+            refreshing={!selectedStream}
+            horizontal={true}
+            onScroll={this.handleChannelsScroll}
+          />
+        )}
       </View>
     );
   };
@@ -1287,7 +1349,10 @@ class VideoPlayerView extends Component {
         {fullscreenFooter}
         {calendar}
         {datetimeBox}
-        <NVRAuthenModal onSubmit={this.onAuthenSubmit} />
+        <NVRAuthenModal
+          ref={r => (this.authenRef = r)}
+          onSubmit={this.onAuthenSubmit}
+        />
         <View
           style={styles.playerContainer}
           // onLongPress={__DEV__ ? this.onShowControlButtons : undefined}
@@ -1374,7 +1439,7 @@ const styles = StyleSheet.create({
   },
   controlButton: {
     color: CMSColors.White,
-    backgroundColor: CMSColors.OpacityButton,
+    // backgroundColor: CMSColors.OpacityButton,
     padding: 7,
   },
   pauseButton: {

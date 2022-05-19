@@ -67,7 +67,7 @@ class OAMDetailView extends Component {
     videoStore.enterVideoView(false);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const {navigation, oamStore, videoStore} = this.props;
     __DEV__ && console.log('RTCStreamingView componentDidMount');
     // videoStore.testUpdateBitrate();
@@ -86,6 +86,8 @@ class OAMDetailView extends Component {
     this.unsubscribleBlurEvent = navigation.addListener('blur', () => {
       StatusBar.setHidden(false);
     });
+    let res = await videoStore.getDVRPermission(oamStore.kdvr);
+
     this.initReactions();
     videoStore.enterVideoView(true);
   }

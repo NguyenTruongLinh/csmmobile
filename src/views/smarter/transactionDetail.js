@@ -55,6 +55,9 @@ class TransactionDetailView extends Component {
     };
 
     this.reactions = [];
+    this.unsubBackEvent = null;
+    // this.unsubFocusEvent = null;
+    // this.firstFocus = true;
   }
 
   componentWillUnmount() {
@@ -62,6 +65,7 @@ class TransactionDetailView extends Component {
 
     this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
     this.unsubBackEvent && this.unsubBackEvent();
+    // this.unsubFocusEvent && this.unsubFocusEvent();
     this.props.videoStore.releaseStreams();
     this.props.exceptionStore.onExitTransactionDetail();
 
@@ -71,29 +75,41 @@ class TransactionDetailView extends Component {
       this.props.appStore.hideBottomTabs(false);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    const {route, navigation, videoStore, exceptionStore} = this.props;
     __DEV__ &&
       console.log(
         'TransactionDetailView componentDidMount: ',
-        this.props.exceptionStore.selectedTransaction
+        exceptionStore.selectedTransaction
       );
-    const {route, navigation} = this.props;
 
     if (!route || !route.params || !route.params.fromNotify) {
       this.getData();
     }
+    let res = await videoStore.getDVRPermission(
+      exceptionStore.selectedTransaction.pacId
+    );
 
     this.setHeader();
     this.initReactions();
 
+    // this.unsubFocusEvent = navigation.addListener('focus', () => {
+    //   __DEV__ && console.log('GOND trans detail on focused');
+    //   videoStore.setShouldShowVideoMessage(false);
+    //   if (this.firstFocus) {
+    //     this.firstFocus = false;
+    //   } else {
+    //     videoStore.resetNVRAuthentication();
+    //   }
+    // });
     this.unsubBackEvent = navigation.addListener('beforeRemove', e => {
       if (!this.state.viewMode == ViewModes.normal) {
-        e.preventDefault();
+        e.preventDefault(); // prevent back behaviour
         this.onExitFullscren();
       }
     });
 
-    this.props.videoStore.enterVideoView(true);
+    videoStore.enterVideoView(true);
   }
 
   initReactions = () => {

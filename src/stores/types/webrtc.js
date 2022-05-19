@@ -147,10 +147,11 @@ const ChannelConnectionModel = types
         // Get signaling channel ARN
         let describeSignalingChannelResponse = null;
         try {
-          describeSignalingChannelResponse =
-            yield kinesisVideoClient.describeSignalingChannel({
+          describeSignalingChannelResponse = yield kinesisVideoClient.describeSignalingChannel(
+            {
               ChannelName: rtcChannelName,
-            });
+            }
+          );
         } catch (error) {
           console.log('[GOND] describeSignalingChannelResponse error: ', error);
           self.isLoading = false;
@@ -169,28 +170,28 @@ const ChannelConnectionModel = types
           describeSignalingChannelResponse.ChannelInfo.ChannelARN;
         __DEV__ && console.log('[GOND] Channel ARN: ', channelARN);
         // Get signaling channel endpoints
-        const getSignalingChannelEndpointResponse =
-          yield kinesisVideoClient.getSignalingChannelEndpoint({
+        const getSignalingChannelEndpointResponse = yield kinesisVideoClient.getSignalingChannelEndpoint(
+          {
             ChannelARN: channelARN,
             SingleMasterChannelEndpointConfiguration: {
               Protocols: ['WSS', 'HTTPS'],
               Role: Role.VIEWER,
             },
-          });
+          }
+        );
 
         // __DEV__ &&
         //   console.log(
         //     '[GOND] getSignalingChannelEndpointResponse: ',
         //     getSignalingChannelEndpointResponse
         //   );
-        const endpointsByProtocol =
-          getSignalingChannelEndpointResponse.ResourceEndpointList.reduce(
-            (endpoints, endpoint) => {
-              endpoints[endpoint.Protocol] = endpoint.ResourceEndpoint;
-              return endpoints;
-            },
-            {}
-          );
+        const endpointsByProtocol = getSignalingChannelEndpointResponse.ResourceEndpointList.reduce(
+          (endpoints, endpoint) => {
+            endpoints[endpoint.Protocol] = endpoint.ResourceEndpoint;
+            return endpoints;
+          },
+          {}
+        );
         __DEV__ && console.log('[GOND] - Endpoints: ', endpointsByProtocol);
 
         //
@@ -213,10 +214,11 @@ const ChannelConnectionModel = types
         //   });
         // }
 
-        const getIceServerConfigResponse =
-          yield kinesisVideoSignalingChannelsClient.getIceServerConfig({
+        const getIceServerConfigResponse = yield kinesisVideoSignalingChannelsClient.getIceServerConfig(
+          {
             ChannelARN: channelARN,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(
@@ -556,6 +558,9 @@ const RTCStreamModel = types
     initPeerConnections(conns) {
       __DEV__ && console.log('[GOND] initPeerConnections ', conns);
       self.viewers = conns ?? [];
+    },
+    updateViews(newList) {
+      self.viewers = newList;
     },
     // addConnection(conn) {
     //   self.viewers.push(conn);

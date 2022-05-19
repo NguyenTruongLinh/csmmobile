@@ -51,6 +51,7 @@ class ChannelsListView extends React.Component {
     };
     this._isMounted = false;
     this.dvrSelectorRef = null;
+    this.firstFocus = true;
   }
 
   componentWillUnmount() {
@@ -67,7 +68,7 @@ class ChannelsListView extends React.Component {
     videoStore.enterVideoView(false);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this._isMounted = true;
     const {videoStore, healthStore, sitesStore, navigation} = this.props;
     if (__DEV__) {
@@ -87,7 +88,11 @@ class ChannelsListView extends React.Component {
       //   );
       videoStore.setShouldShowVideoMessage(false);
       videoStore.setLiveMode(healthStore.isLiveVideo);
-      videoStore.resetNVRAuthentication();
+      // if (this.firstFocus) {
+      //   this.firstFocus = false;
+      // } else {
+      //   videoStore.resetNVRAuthentication();
+      // }
     });
     // __DEV__ &&
     //   console.log(
@@ -99,7 +104,6 @@ class ChannelsListView extends React.Component {
       sitesStore.selectDVR(); // select default
       videoStore.selectDVR(sitesStore.selectedSiteDefaultDVR);
     }
-    videoStore.getDVRPermission(sitesStore.selectedSite.key);
     videoStore.enterVideoView(true);
 
     this.dvrSelectorRef && this.dvrSelectorRef.onSelect(sitesStore.selectedDVR);
@@ -183,8 +187,10 @@ class ChannelsListView extends React.Component {
         this.setHeader(true);
       }
 
-      if (res && healthStore.isLiveVideo)
+      // await videoStore.getDVRPermission(); // already called in getDisplayingChannels
+      if (videoStore.isAuthenticated && res && healthStore.isLiveVideo) {
         res = await videoStore.getVideoInfos();
+      }
       this.setState({isLoading: false});
     });
   };
@@ -406,7 +412,6 @@ class ChannelsListView extends React.Component {
               ref={r => (this.videoListRef = r)}
               renderItem={renderItem}
               data={data} // {this.state.liveData}
-              keyExtractor={item => item.key}
               columnWrapperStyle={
                 isListView ? undefined : {justifyContent: 'space-between'}
               }

@@ -9,6 +9,7 @@ import {
   // TouchableOpacity,
   AppState,
   // BackHandler,
+  ImageBackground,
 } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import {reaction} from 'mobx';
@@ -41,9 +42,16 @@ import {
 } from '../../consts/video';
 import ROUTERS from '../../consts/routes';
 import {MODULE_PERMISSIONS} from '../../consts/misc';
+import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
-import {Comps as CompTxt, VIDEO as VIDEO_TXT} from '../../localization/texts';
+import videoStyles from '../../styles/scenes/videoPlayer.style';
+
+import {
+  Comps as CompTxt,
+  VIDEO as VIDEO_TXT,
+  STREAM_STATUS,
+} from '../../localization/texts';
 
 class LiveChannelsView extends React.Component {
   constructor(props) {
@@ -83,6 +91,7 @@ class LiveChannelsView extends React.Component {
     const {videoStore, sitesStore} = this.props;
     this._isMounted = false;
     AppState.removeEventListener('change', this.handleAppStateChange);
+    videoStore.resetNVRAuthentication();
     // this.appStateEvtSub && this.appStateEvtSub.remove();
     videoStore.releaseStreams();
     videoStore.setChannelFilter('');
@@ -94,7 +103,7 @@ class LiveChannelsView extends React.Component {
     this.reactions && this.reactions.forEach(unsub => unsub());
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this._isMounted = true;
     const {videoStore, sitesStore, navigation} = this.props;
     /*if (__DEV__) {
@@ -135,6 +144,7 @@ class LiveChannelsView extends React.Component {
 
     this.initReactions();
     this.getChannelsInfo();
+    this.authenRef && this.authenRef.forceUpdate();
   }
 
   initReactions = () => {
@@ -167,10 +177,8 @@ class LiveChannelsView extends React.Component {
       reaction(
         () => videoStore.authenticationState,
         (authenticationState, previousValue) => {
-          if (
-            authenticationState == AUTHENTICATION_STATES.AUTHEN_FAILED &&
-            previousValue != authenticationState
-          ) {
+          if (previousValue == authenticationState) return;
+          if (authenticationState == AUTHENTICATION_STATES.AUTHEN_FAILED) {
             __DEV__ &&
               console.log(
                 'GOND displayAuthen::check need authen',
@@ -178,6 +186,10 @@ class LiveChannelsView extends React.Component {
                 previousValue
               );
             videoStore.displayAuthen(true);
+          } else if (
+            authenticationState == AUTHENTICATION_STATES.AUTHENTICATED
+          ) {
+            videoStore.getVideoInfos();
           }
         }
       ),
@@ -274,6 +286,12 @@ class LiveChannelsView extends React.Component {
         gridIcon = 'grid-view-16';
         break;
     }
+    __DEV__ &&
+      console.trace(
+        'GOND liveChannels setHeaders: ',
+        enableSettingButton,
+        userStore.hasPermission(MODULE_PERMISSIONS.VSC)
+      );
 
     navigation.setOptions({
       headerTitle: sitesStore.selectedDVR
@@ -333,9 +351,12 @@ class LiveChannelsView extends React.Component {
     if (res) {
       this.setHeader(true);
     }
-    videoStore.getDVRPermission(sitesStore.selectedSite.key);
 
-    res = res && (await videoStore.getVideoInfos());
+    // await videoStore.getDVRPermission(); // already called in getDisplayingChannels
+    if (videoStore.isAuthenticated && res) {
+      res = await videoStore.getVideoInfos();
+    }
+
     // if (videoStore.needAuthen) {
     //   __DEV__ && console.log('GOND need authen ->');
     //   videoStore.displayAuthen(true);
@@ -586,6 +607,30 @@ class LiveChannelsView extends React.Component {
   //   );
   // };
 
+  renderNoPermissionChannel = item => {
+    const {width, height} = this.state.videoWindow;
+
+    return (
+      // <View>
+      <ImageBackground
+        source={NVR_Play_NoVideo_Image}
+        style={{width: width, height: height}}
+        resizeMode="cover">
+        <Text style={videoStyles.channelInfo}>
+          {item.channelName ?? 'Unknown'}
+        </Text>
+        <View style={videoStyles.statusView}>
+          <View style={videoStyles.textContainer}>
+            <Text style={videoStyles.textMessage}>
+              {STREAM_STATUS.NO_PERMISSION}
+            </Text>
+          </View>
+        </View>
+      </ImageBackground>
+      // </View>
+    );
+  };
+
   // renderVideoPlayer = (item, index) => {
   renderVideoPlayer = ({item, index}) => {
     // __DEV__ && console.log('GOND renderVid liveChannels ', item);
@@ -608,6 +653,10 @@ class LiveChannelsView extends React.Component {
       index,
     };
     let player = null;
+    const canView = videoStore.isAPIPermissionSupported
+      ? item.channel && item.channel.canLive
+      : true;
+
     // __DEV__ && console.log('GOND renderVid password ', videoStore.nvrPassword);
     switch (videoStore.cloudType) {
       case CLOUD_TYPE.DEFAULT:
@@ -662,13 +711,14 @@ class LiveChannelsView extends React.Component {
           },
         ]}
         onPress={() => this.onChannelSelect(item)}>
-        {player}
+        {canView ? player : this.renderNoPermissionChannel(item)}
       </CMSRipple>
     );
   };
 
   renderInfoText = () => {
-    const {userStore, navigation} = this.props;
+    const {userStore, videoStore, navigation} = this.props;
+    if (!videoStore.isAuthenticated) return null;
 
     return userStore.hasPermission(MODULE_PERMISSIONS.VSC) ? (
       <View style={styles.infoTextContainer}>
@@ -785,7 +835,7 @@ class LiveChannelsView extends React.Component {
         ) : null}
         {
           // videoStore.canDisplayChannels && (
-          videoStore.isAuthenticated && (
+          /*!videoStore.isAPIPermissionSupported ||*/ videoStore.isAuthenticated && (
             <FlatList
               key={'grid_' + videoStore.gridLayout}
               ref={r => (this.videoListRef = r)}
@@ -825,7 +875,10 @@ class LiveChannelsView extends React.Component {
           value={videoStore.channelFilter}
           animation={false}
         />
-        <NVRAuthenModal onSubmit={this.onAuthenSubmit} />
+        <NVRAuthenModal
+          ref={r => (this.authenRef = r)}
+          onSubmit={this.onAuthenSubmit}
+        />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           {videoStore.isLoading ||
           videoStore.waitForTimezone ||
