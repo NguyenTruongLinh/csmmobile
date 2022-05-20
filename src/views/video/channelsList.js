@@ -24,7 +24,7 @@ import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import {CLOUD_TYPE} from '../../consts/video';
 import ROUTERS from '../../consts/routes';
-import {MODULE_PERMISSIONS} from '../../consts/misc';
+import {MODULE_PERMISSIONS, ChannelStatus} from '../../consts/misc';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
@@ -248,6 +248,7 @@ class ChannelsListView extends React.Component {
 
   renderItemList = ({item}) => {
     console.log('GOND renderItemList ');
+    const isStatusOK = item.status && item.status != ChannelStatus.VIDEOLOSS;
 
     return (
       <CMSRipple
@@ -273,9 +274,9 @@ class ChannelsListView extends React.Component {
           <View style={styles.listInfoContainer}>
             <IconCustom
               name={
-                item.enable ? 'videocam-filled-tool' : 'turn-video-off-button'
+                isStatusOK ? 'videocam-filled-tool' : 'turn-video-off-button'
               }
-              color={item.enable ? CMSColors.Green : CMSColors.DarkText}
+              color={isStatusOK ? CMSColors.Success : CMSColors.SecondaryText}
               size={24}
             />
             <View style={styles.channelName}>
