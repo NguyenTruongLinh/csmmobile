@@ -1408,9 +1408,7 @@ class HLSStreamingView extends React.Component {
               style={[
                 controlStyles.controlsContainer,
                 {
-                  backgroundColor: showController
-                    ? CMSColors.VideoOpacityLayer
-                    : undefined,
+                  backgroundColor: CMSColors.VideoOpacityLayer,
                 },
               ]}
             />
