@@ -45,6 +45,11 @@
 
 @property (readwrite) IMC_DIVISION_MODE currentDiv;
 @property (readwrite) int fullscreenView;
+@property (readwrite) int playerWidth;
+@property (readwrite) int playerHeight;
+@property (readwrite) float scaleXY;
+@property (readwrite) int translateX;
+@property (readwrite) int translateY;
 @property (nonatomic, weak) id<i3ProcessConnectionDelegate> delegate;
 @property IMC_DISPLAY_MODE displayMode;
 @property (nonatomic, readwrite) CGFloat scaleValue;

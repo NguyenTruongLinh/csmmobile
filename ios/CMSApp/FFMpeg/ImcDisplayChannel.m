@@ -66,28 +66,25 @@
     transValue.y = 0.5 - scaleValue/2;
 }
 
--(UIImage*)getScaledImage
+//-(UIImage*)getScaledImage
+-(UIImage*)getScaledImage:(int)playerWidth :(int)playerHeight :(float)scaleXY :(int)translateX :(int)translateY
 {
-  //NSLog(@"Shark scaled image");
-  if(scaleValue>=1.0)
-    {
-      //NSLog(@"Shark scaleValue>=1.0");
-      return displayImage;
-    }
+  CGRect fullScaled = CGRectMake(0, 0, displayImage.size.width, displayImage.size.height);
+
+  //apply zoom
+  CGRect cropScaled = CGRectInset(fullScaled, displayImage.size.width/2 - displayImage.size.width/scaleXY/2, displayImage.size.height/2 - displayImage.size.height/scaleXY/2);
   
-  //NSLog(@"Shark scaleValue else");
-  CGRect imgRect = CGRectMake(0, 0, displayImage.size.width, displayImage.size.height);
-  CGFloat dx = imgRect.size.width*(1-scaleValue)/2;
-  CGFloat dy = imgRect.size.height*(1-scaleValue)/2;
-  CGRect scaledImgRect = CGRectInset(imgRect, dx, dy);
-  CGFloat trans_x = transValue.x*displayImage.size.width;
-  CGFloat trans_y = transValue.y*displayImage.size.height;
-  scaledImgRect = CGRectOffset(scaledImgRect, trans_x, trans_y);
-  scaledImgRect = CGRectIntersection(scaledImgRect, imgRect);
-  CGImageRef drawImg = CGImageCreateWithImageInRect(displayImage.CGImage,scaledImgRect);
+  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
+  
+  //apply translate
+  cropScaled.origin.x = -translateX*displayImage.size.width/scaleXY/playerWidth;
+  cropScaled.origin.y = -translateY*displayImage.size.height/scaleXY/playerHeight;
+  
+  CGImageRef drawImg = CGImageCreateWithImageInRect(displayImage.CGImage, cropScaled);
   
   UIImage *imageOut = [UIImage imageWithCGImage:drawImg];
   return imageOut;
+  
 }
 
 -(NSTimeInterval)timeFromLastUpdate

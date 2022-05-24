@@ -40,6 +40,12 @@ RCT_EXPORT_MODULE()
 
 #pragma mark - Props
 
+RCT_EXPORT_VIEW_PROPERTY(scaleXY, NSNumber);
+
+RCT_EXPORT_VIEW_PROPERTY(translateX, NSNumber);
+
+RCT_EXPORT_VIEW_PROPERTY(translateY, NSNumber);
+
 RCT_EXPORT_VIEW_PROPERTY(width, NSNumber);
 
 RCT_EXPORT_VIEW_PROPERTY(height, NSNumber);

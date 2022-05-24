@@ -21,6 +21,10 @@ const iFFMpegFrameView = {
     src: PropTypes.string,
     hdmode: PropTypes.number,
     onFFMPegFrameChange: PropTypes.func,
+    scaleXY: PropTypes.number,
+    scaleXYZ: PropTypes.number,
+    translateX: PropTypes.number,
+    translateY: PropTypes.number,
     // ...ViewPropTypes
   },
 };

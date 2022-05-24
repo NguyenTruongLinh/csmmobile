@@ -14,7 +14,7 @@
 
 @interface ImcScreenDisplay : NSObject{
   NSString* serverName;
-  NSString* serverAddress;
+  NSString* serverAddress;	
   NSInteger serverPort;
   NSInteger channelIndex;
   NSInteger viewIndex;
@@ -51,7 +51,7 @@
 @property                           BOOL      needMainStream;
 @property                           BOOL      showPtzIcon;
 
--(UIImage*)getScaledImage;
+-(UIImage*)getScaledImage:(int)playerWidth :(int)playerHeight :(float)scaleXY :(int)translateX :(int)translateY;
 -(void)applyTransValue:(CGPoint)_transValue;
 -(NSTimeInterval)timeFromLastUpdate;
 -(BOOL)needDrawScreen;

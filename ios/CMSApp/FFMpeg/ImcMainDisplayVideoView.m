@@ -21,7 +21,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 
 @implementation ImcMainDisplayVideoView
 
-@synthesize currentDiv,delegate,fullscreenView,displayMode,scaleValue,selectedView, singleTapScreenIndex, fullscreenIndex, alarmLoop, connectedServerList, logoImage, channelConfigBuffer;
+@synthesize currentDiv,delegate,fullscreenView,playerWidth,playerHeight,scaleXY,translateX,translateY,displayMode,scaleValue,selectedView, singleTapScreenIndex, fullscreenIndex, alarmLoop, connectedServerList, logoImage, channelConfigBuffer;
 
 - (id)init
 {
@@ -74,6 +74,9 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     //Default Pro Remote on mobile MIC_DIV_4
     currentDiv = IMC_DIV_1;
     fullscreenView = -1;
+    scaleXY = 1.f;
+    translateX = 0;
+    translateY = 0;
     touchedViewIndex = -1;
     needToClearScreen = false;
     rootLayer = nil;
@@ -171,6 +174,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       ImcViewDisplay* displayView = [displayViews objectAtIndex:index];
       ImcScreenDisplay* displayScreen = [displayScreens objectAtIndex:displayView.screenIndex];
       scaleValue = displayScreen.scaleValue;
+      NSLog(@"initDisplayRectwithDiv displayScreen.scaleValue: %f", displayScreen.scaleValue);
       
       CALayer* layer = [displayLayers objectAtIndex:index];
       displayView.frame = CGRectMake(margin_x + j*stepWidth, margin_y + i*stepHeight, stepWidth, stepHeight);
@@ -520,7 +524,6 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     //[videoLock unlock];
   }
 }
-
 - (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx
 {
   if (fullscreenView < 0) return; // CMS added
@@ -692,7 +695,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
           if (screen.displayImage.CGImage) {
             // NSLog(@"GOND draw frame in fullscreen: %f x %f", displayRect.size.width, displayRect.size.height);
             // NSLog(@"GOND draw frame in rect fullscreen");
-            sublayer.contents = (__bridge id)([screen getScaledImage].CGImage); // (screen.displayImage.CGImage);
+            sublayer.contents = (__bridge id)([screen getScaledImage:playerWidth:playerHeight:scaleXY:translateX:translateY].CGImage); // (screen.displayImage.CGImage);
             sublayer.frame = displayRect;
             // layer.sublayers = nil;
 			// dongpt: add nil
@@ -1656,7 +1659,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   if( fullscreenView < 0 )
     return;
-  
+
   ImcScreenDisplay* fullScreen = [displayScreens objectAtIndex:fullscreenIndex];
   scaleValue = fullScreen.scaleValue;
   if(fullScreen.scaleValue > 1)
@@ -1670,13 +1673,13 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     fullScreen.scaleValue = 0.25;
     return;
   }
-  
+
   CGPoint ptAfterZoom = CGPointMake(translatePt.x*ratio, translatePt.y*ratio);
   CGPoint diffPT = CGPointMake(ptAfterZoom.x-translatePt.x, ptAfterZoom.y-translatePt.y);
   CGFloat scale = 1/ratio/*1 - (scaleValue - ratio)*/;
   [fullScreen applyTransValue:diffPT];
   fullScreen.scaleValue = fullScreen.scaleValue*scale;
-  
+
   CALayer* fullscreenLayer = [self fullscreenLayer];
   dispatch_async(dispatch_get_main_queue(), ^{[fullscreenLayer setNeedsDisplay];});
 }
