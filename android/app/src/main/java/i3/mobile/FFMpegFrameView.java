@@ -60,6 +60,9 @@ public class FFMpegFrameView extends View {
     private static float RATIO = 16f / 9f;
     double _width = 0;
     double _height = 0;
+    double _scaleXY = 1;
+    int _translateX = 0;
+    int _translateY = 0;
     boolean firstRunAlarm;
     boolean singlePlayer = false;
     int index = 0;
@@ -316,6 +319,11 @@ public class FFMpegFrameView extends View {
         setLayerType(View.LAYER_TYPE_NONE, mPaint);
     }
 
+    public static int dip2px(Context context, float dpValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
+    }
+
     protected void onDraw(Canvas canvas) {
         if (!this.singlePlayer)
         {
@@ -324,6 +332,8 @@ public class FFMpegFrameView extends View {
         //canvas.drawColor(Color.TRANSPARENT);
         super.onDraw(canvas);
         // CMSMobile not draw here
+        canvas.translate(this._translateX, this._translateY);
+        canvas.scale((float) this._scaleXY, (float) this._scaleXY);
 
         if(DrawBitmap != null)
         {
@@ -669,6 +679,21 @@ public class FFMpegFrameView extends View {
     public void ViewHD( boolean HDMode)
     {
         socket_handler.ChangetoHD(HDMode);
+    }
+
+    public void setScaleXY(double scaleXY) {
+        this._scaleXY = scaleXY;
+        this.invalidate();
+    }
+
+    public void setTranslateX(int translateX) {
+        this._translateX = this.dip2px((ReactContext)getContext(), translateX);
+        this.invalidate();
+    }
+
+    public void setTranslateY(int translateY) {
+        this._translateY = this.dip2px((ReactContext)getContext(), translateY);
+        this.invalidate();
     }
 
 }

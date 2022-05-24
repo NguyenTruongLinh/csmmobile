@@ -236,6 +236,22 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         if(HDMode != null)
             view.ViewHD(HDMode);
     }
+    
+    @ReactProp(name = "scaleXY")
+    public void setScaleXY(FFMpegFrameView view, double scaleXY){
+        view.setScaleXY(scaleXY);
+    }
+
+    @ReactProp(name = "translateX")
+    public void setTranslateX(FFMpegFrameView view, int translateX){
+        view.setTranslateX(translateX);
+    }
+
+    @ReactProp(name = "translateY")
+    public void setTranslateY(FFMpegFrameView view, int translateY){
+        view.setTranslateY(translateY);
+    }
+
     @ReactMethod
     public void UpdateFrame(FFMpegFrameView view, int width, int height, String dataEncode, int channelId, int serverVersion, int index){
         //view.UpdateVideoFrame(width, height,dataEncode,channelId, serverVersion, index);

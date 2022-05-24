@@ -17,6 +17,13 @@ import {isAlive} from 'mobx-state-tree';
 import {reaction} from 'mobx';
 import {DateTime} from 'luxon';
 
+import {
+  PinchGestureHandler,
+  GestureDetector,
+  Gesture,
+  Directions,
+} from 'react-native-gesture-handler';
+
 import FFMpegFrameView from '../../components/native/videonative';
 import FFMpegFrameViewIOS from '../../components/native/videoios';
 
@@ -40,6 +47,7 @@ import {
   DIRECT_MAX_OLD_FRAME_SKIP,
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
+const MAX_ZOOM = 10;
 
 class DirectVideoView extends React.Component {
   static defaultProps = {
@@ -54,6 +62,10 @@ class DirectVideoView extends React.Component {
       width: props.width,
       height: props.height,
       showLoginSuccessFlag: true,
+      zoom: 1,
+      translateX: 0,
+      translateY: 0,
+      isFilterShown: false,
     };
 
     this.nativeVideoEventListener = null;
@@ -76,7 +88,82 @@ class DirectVideoView extends React.Component {
     this.dateChanged = false;
     this.loginTimeout = null;
     this.oldFrameSkipped = 0;
+    this.tapGesture = Gesture.Tap().onStart(_e => {
+      __DEV__ &&
+        console.log(
+          `Gesture.Tap() originFocalX = `,
+          this.computeOriginFocal(_e.x, this.state.translateX)
+        );
+      props.onPress();
+      this.setState({isFilterShown: !this.state.isFilterShown});
+    });
+
+    this.rightFlingGesture = Gesture.Fling()
+      .direction(Directions.RIGHT)
+      .onStart(e => {
+        __DEV__ &&
+          console.log(` rightFlingGesture onStart e = `, JSON.stringify(e));
+      })
+      .onEnd(e => {
+        __DEV__ &&
+          console.log(` rightFlingGesture onEnd e = `, JSON.stringify(e));
+        if (this.state.zoom > 1.01) {
+        } else props.onSwipeRight();
+      });
+
+    this.leftFlingGesture = Gesture.Fling()
+      .direction(Directions.LEFT)
+      .onEnd(e => {
+        __DEV__ && console.log(` leftFlingGesture e = `, JSON.stringify(e));
+        if (this.state.zoom > 1.01) {
+        } else props.onSwipeLeft();
+      });
+
+    this.pinchGesture = Gesture.Pinch()
+      .onStart(e => {
+        this.curZoom = this.state.zoom;
+        this.originFocalX = this.computeOriginFocal(
+          e.focalX,
+          this.state.translateX
+        );
+        this.originFocalY = this.computeOriginFocal(
+          e.focalY,
+          this.state.translateY
+        );
+      })
+      .onUpdate(e => {
+        let newZoom = this.curZoom * e.scale;
+        if (newZoom > 1 && newZoom < MAX_ZOOM) {
+          this.setState({zoom: newZoom});
+          let translateX = this.computeTranslatePos(newZoom, this.originFocalX);
+          let translateY = this.computeTranslatePos(newZoom, this.originFocalY);
+          this.setState({
+            translateX,
+            translateY,
+          });
+        }
+      });
+
+    this.composed = Gesture.Race(
+      this.pinchGesture,
+      this.tapGesture,
+      this.rightFlingGesture,
+      this.leftFlingGesture
+      // this.panGesture
+    );
   }
+  computeOriginFocal(zoomedFocal, translate) {
+    return (zoomedFocal - translate) / this.state.zoom;
+  }
+
+  computeTranslatePos(zoom, pos) {
+    return (1 - zoom) * pos;
+  }
+
+  resetZoom = () => {
+    __DEV__ && console.log(` resetZoom `);
+    this.setState({zoom: 1, translateX: 0, translateY: 0});
+  };
 
   componentDidMount() {
     this._isMounted = true;
@@ -1286,53 +1373,51 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      serverInfo,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
+      this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
     //   console.log('GOND direct render channel: ', serverInfo.channelName);
 
     return singlePlayer ? (
-      <View
-        onLayout={this.onLayout}
-        // {...this.props}
-      >
-        <ImageBackground
-          source={NVR_Play_NoVideo_Image}
-          style={{width: width, height: height}}
-          resizeMode="cover">
-          <Text
-            style={[
-              styles.channelInfo,
-              {
-                top: videoStore.isFullscreen ? '10%' : 0,
-              },
-            ]}>
-            {serverInfo.channelName ?? 'Unknown'}
-          </Text>
-          <View style={styles.statusView}>
-            <View style={styles.textContainer}>
-              <Text style={[styles.textMessage]}>{connectionStatus}</Text>
+      <GestureDetector gesture={this.composed}>
+        <View
+          onLayout={this.onLayout}
+          // {...this.props}
+        >
+          <ImageBackground
+            source={NVR_Play_NoVideo_Image}
+            style={{width: width, height: height}}
+            resizeMode="cover">
+            <Text
+              style={[
+                styles.channelInfo,
+                {
+                  top: videoStore.isFullscreen ? '10%' : 0,
+                },
+              ]}>
+              {serverInfo.channelName ?? 'Unknown'}
+            </Text>
+            <View style={styles.statusView}>
+              <View style={styles.textContainer}>
+                <Text style={[styles.textMessage]}>{connectionStatus}</Text>
+              </View>
+              {isLoading && (
+                <ActivityIndicator
+                  style={styles.loadingIndicator}
+                  size="large"
+                  color="white"
+                />
+              )}
             </View>
-            {isLoading && (
-              <ActivityIndicator
-                style={styles.loadingIndicator}
-                size="large"
-                color="white"
-              />
-            )}
-          </View>
-          {noVideo ? null : (
-            <View
-              style={[styles.playerView, {zIndexn: noVideo ? -1 : undefined}]}>
-              {/* {Platform.OS === 'ios' ? (
+            {noVideo ? null : (
+              <View
+                style={[
+                  styles.playerView,
+                  {zIndexn: noVideo ? -1 : undefined},
+                ]}>
+                {/* {Platform.OS === 'ios' ? (
                 <FFMpegFrameViewIOS
                   width={this.state.width} // {this.state.width}
                   height={this.state.height} // {this.state.height}
@@ -1350,31 +1435,54 @@ class DirectVideoView extends React.Component {
                   singlePlayer={true}
                 />
               )} */}
-              {Platform.select({
-                ios: (
-                  <FFMpegFrameViewIOS
-                    width={this.state.width} // {this.state.width}
-                    height={this.state.height} // {this.state.height}
-                    ref={this.onReceivePlayerRef}
-                    onFFMPegFrameChange={this.onNativeMessage}
-                    singlePlayer={true}
-                  />
-                ),
-                android: (
-                  <FFMpegFrameView
-                    iterationCount={1}
-                    width={width}
-                    height={height}
-                    ref={this.onReceivePlayerRef}
-                    onFFMPegFrameChange={this.onNativeMessage}
-                    singlePlayer={true}
-                  />
-                ),
-              })}
-            </View>
+
+                {Platform.select({
+                  ios: (
+                    <FFMpegFrameViewIOS
+                      width={this.state.width} // {this.state.width}
+                      height={this.state.height} // {this.state.height}
+                      scaleXY={this.state.zoom}
+                      translateX={this.state.translateX}
+                      translateY={this.state.translateY}
+                      ref={this.onReceivePlayerRef}
+                      onFFMPegFrameChange={this.onNativeMessage}
+                      singlePlayer={true}
+                    />
+                  ),
+                  android: (
+                    <FFMpegFrameView
+                      iterationCount={1}
+                      width={width}
+                      height={height}
+                      ref={this.onReceivePlayerRef}
+                      onFFMPegFrameChange={this.onNativeMessage}
+                      singlePlayer={true}
+                      // scaleXY={0.5}
+                      // translateX={50}
+                      // translateY={50}
+                      scaleXY={this.state.zoom}
+                      translateX={this.state.translateX}
+                      translateY={this.state.translateY}
+                    />
+                  ),
+                })}
+              </View>
+            )}
+          </ImageBackground>
+          {this.state.isFilterShown && (
+            <View
+              style={[
+                controlStyles.controlsContainer,
+                {
+                  backgroundColor: showController
+                    ? CMSColors.VideoOpacityLayer
+                    : undefined,
+                },
+              ]}
+            />
           )}
-        </ImageBackground>
-      </View>
+        </View>
+      </GestureDetector>
     ) : (
       <View style={{width: 0, height: 0}}>
         {/* {Platform.OS === 'ios' ? (
@@ -1417,4 +1525,16 @@ class DirectVideoView extends React.Component {
   }
 }
 
+const controlStyles = StyleSheet.create({
+  controlsContainer: {
+    position: 'absolute',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+  },
+});
 export default inject('videoStore')(observer(DirectVideoView));

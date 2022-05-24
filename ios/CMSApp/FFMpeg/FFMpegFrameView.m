@@ -260,9 +260,35 @@ const uint32_t numLayers = 24;
 
 #pragma mark - Native Props
 
+
+-(void)setScaleXY:(NSNumber *) scale {
+  if([scale floatValue] != mainDisplayVideo.scaleXY){
+    mainDisplayVideo.scaleXY = [scale floatValue];
+    [self reactSetFrame:self.frame];
+    [self setNeedsLayout];
+  }
+}
+
+-(void)setTranslateX:(NSNumber *)translatex {
+  if([translatex intValue] != mainDisplayVideo.translateX){
+    mainDisplayVideo.translateX = [translatex intValue];
+    [self reactSetFrame:self.frame];
+    [self setNeedsLayout];
+  }
+}
+
+-(void)setTranslateY:(NSNumber *)translatey {
+  if([translatey intValue] != mainDisplayVideo.translateY){
+    mainDisplayVideo.translateY = [translatey intValue];
+    [self reactSetFrame:self.frame];
+    [self setNeedsLayout];
+  }
+}
+
 -(void)setWidth:(NSNumber *)width {
   if(width != _w){
     _w = [width copy];
+    mainDisplayVideo.playerWidth = [width intValue];
     [self reactSetFrame:self.frame];
     [self setNeedsLayout];
   }
@@ -271,6 +297,7 @@ const uint32_t numLayers = 24;
 -(void)setHeight:(NSNumber *)height {
   if(height != _h){
     _h = [height copy];
+    mainDisplayVideo.playerHeight = [height intValue];
     [self reactSetFrame:self.frame];
     [self setNeedsLayout];
   }

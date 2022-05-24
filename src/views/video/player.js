@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, Fragment} from 'react';
 import {
   View,
   StyleSheet,
@@ -398,6 +398,7 @@ class VideoPlayerView extends Component {
       // );
     }
     StatusBar.setHidden(videoStore.isFullscreen);
+    this.playerRef.resetZoom();
   };
 
   onSwitchLiveSearch = () => {
@@ -512,6 +513,7 @@ class VideoPlayerView extends Component {
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onChangeChannel(channelNo);
     videoStore.selectChannel(channelNo);
+    this.playerRef.resetZoom();
     // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
   };
 
@@ -642,10 +644,12 @@ class VideoPlayerView extends Component {
 
   onNext = () => {
     this.props.videoStore.nextChannel();
+    this.playerRef.resetZoom();
   };
 
   onPrevious = () => {
     this.props.videoStore.previousChannel();
+    this.playerRef.resetZoom();
   };
 
   onDraggingTimeRuler = time => {
@@ -767,11 +771,8 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {
-      selectedStream,
-      isAuthenticated,
-      isAPIPermissionSupported,
-    } = videoStore;
+    const {selectedStream, isAuthenticated, isAPIPermissionSupported} =
+      videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
@@ -842,6 +843,9 @@ class VideoPlayerView extends Component {
             {...playerProps}
             ref={r => (this.playerRef = r)}
             serverInfo={selectedStream}
+            onSwipeLeft={this.onNext}
+            onSwipeRight={this.onPrevious}
+            onPress={this.onShowControlButtons}
           />
         );
         break;
@@ -858,6 +862,9 @@ class VideoPlayerView extends Component {
             // }
             // streamUrl={selectedStream.streamUrl}
             timezone={videoStore.timezone}
+            onSwipeLeft={this.onNext}
+            onSwipeRight={this.onPrevious}
+            onPress={this.onShowControlButtons}
           />
         );
         break;
@@ -976,6 +983,7 @@ class VideoPlayerView extends Component {
       selectedStream,
       timeline,
       cloudType,
+      isFullscreen,
     } = videoStore;
     const {sHeight, showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
@@ -989,19 +997,16 @@ class VideoPlayerView extends Component {
     if (cloudType == CLOUD_TYPE.HLS) {
       showPlayPauseButton = showPlayPauseButton && selectedStream.streamUrl;
     }
+    let verticalPos = {
+      marginTop:
+        -IconViewSize / 2 +
+        (isFullscreen ? 0 : Platform.OS === 'android' ? 12 : 48),
+    };
 
     return (
-      <View
-        style={[
-          styles.controlsContainer,
-          {
-            backgroundColor: showController
-              ? CMSColors.VideoOpacityLayer
-              : undefined,
-          },
-        ]}>
-        <View style={styles.controlButtonContainer}>
-          {showController && selectedChannelIndex > 0 ? (
+      <Fragment>
+        {showController && selectedChannelIndex > 0 && (
+          <View style={[styles.controlButtonContainer, verticalPos]}>
             <IconCustom
               name="keyboard-left-arrow-button"
               size={IconSize}
@@ -1013,15 +1018,15 @@ class VideoPlayerView extends Component {
                 },
               ]}
             />
-          ) : (
-            <View />
-          )}
-        </View>
-        <View style={styles.controlButtonContainer}>
-          {showPlayPauseButton &&
-          // timeline &&
-          // timeline.length > 0 &&
-          (showController || paused) ? (
+          </View>
+        )}
+        {showPlayPauseButton && (showController || paused) && (
+          <View
+            style={[
+              styles.controlButtonContainer,
+              verticalPos,
+              {left: '50%', marginLeft: -IconViewSize / 2},
+            ]}>
             <IconCustom
               name={paused ? 'play' : 'pause'}
               size={IconSize + 4}
@@ -1032,11 +1037,11 @@ class VideoPlayerView extends Component {
                 this.playerRef && this.playerRef.pause(!paused);
               }}
             />
-          ) : null}
-        </View>
-        <View style={styles.controlButtonContainer}>
-          {showController &&
-          selectedChannelIndex < displayChannels.length - 1 ? (
+          </View>
+        )}
+        {showController && selectedChannelIndex < displayChannels.length - 1 && (
+          <View
+            style={[styles.controlButtonContainer, verticalPos, {right: 0}]}>
             <IconCustom
               name="keyboard-right-arrow-button"
               size={IconSize}
@@ -1048,11 +1053,9 @@ class VideoPlayerView extends Component {
                 },
               ]}
             />
-          ) : (
-            <View />
-          )}
-        </View>
-      </View>
+          </View>
+        )}
+      </Fragment>
     );
   };
 
@@ -1357,13 +1360,14 @@ class VideoPlayerView extends Component {
           style={styles.playerContainer}
           // onLongPress={__DEV__ ? this.onShowControlButtons : undefined}
         >
-          <Swipe
+          {/* <Swipe
             onSwipeLeft={this.onNext}
             onSwipeRight={this.onPrevious}
-            onPress={this.onShowControlButtons}>
-            {videoPlayer}
-            {controlButtons}
-          </Swipe>
+            onPress={this.onShowControlButtons}
+            > */}
+          {videoPlayer}
+          {controlButtons}
+          {/* </Swipe> */}
         </View>
         {buttons}
         {timeline}
@@ -1431,11 +1435,15 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   controlButtonContainer: {
+    position: 'absolute',
     width: IconViewSize,
     height: IconViewSize,
     justifyContent: 'center',
     alignItems: 'center',
-    // margin: 14,
+    top: '50%',
+    // marginTop: -IconViewSize / 2 + 12,
+    // marginTop: -IconViewSize / 2,
+    // backgroundColor: '#00ff0088',
   },
   controlButton: {
     color: CMSColors.White,

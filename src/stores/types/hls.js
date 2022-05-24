@@ -1061,6 +1061,7 @@ export default HLSStreamModel = types
     release() {
       // self.isDead = true;
       // self.clearStreamTimeout();
+      self.updateBitrate(FORCE_SENT_DATA_USAGE, 'release');
       self.updateStreamsStatus(false);
     },
   }));
