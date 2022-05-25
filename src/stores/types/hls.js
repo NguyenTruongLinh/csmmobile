@@ -430,6 +430,9 @@ export default HLSStreamModel = types
         self.targetUrl.checkStreamTimeout != null && self.targetUrl.isLoading
       );
     },
+    get snapshot() {
+      return self.channel ? self.channel.snapshot : null;
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -607,7 +610,7 @@ export default HLSStreamModel = types
       }
       isAlive(self) && self.targetUrl.set({ready: isReady});
       if (__DEV__) {
-        console.log('GOND --- set HLS Ready --- ', isReady);
+        // console.log('GOND --- set HLS Ready --- ', isReady);
         // console.trace();
       }
       if (!isReady)
@@ -782,8 +785,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response =
-          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
+          {
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -801,7 +804,8 @@ export default HLSStreamModel = types
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 15,
             Expires: HLS_MAX_EXPIRE_TIME,
-          });
+          }
+        );
 
         __DEV__ &&
           console.log(

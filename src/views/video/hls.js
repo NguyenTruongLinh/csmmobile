@@ -13,6 +13,14 @@ import {reaction} from 'mobx';
 import {isAlive} from 'mobx-state-tree';
 import Video from 'react-native-video';
 import {DateTime} from 'luxon';
+import {
+  PinchGestureHandler,
+  GestureDetector,
+  Gesture,
+  Directions,
+} from 'react-native-gesture-handler';
+
+import CMSImage from '../../components/containers/CMSImage';
 
 import util from '../../util/general';
 import snackbar from '../../util/snackbar';
@@ -28,12 +36,6 @@ import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../../localization/texts';
 import {V3_1_BITRATE_USAGE} from '../../stores/types/hls';
-import {
-  PinchGestureHandler,
-  GestureDetector,
-  Gesture,
-  Directions,
-} from 'react-native-gesture-handler';
 
 const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
 const MAX_RETRY = 5;
@@ -709,7 +711,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onBuffer = event => {
-    __DEV__ && console.log('GOND HLS onBuffer: ', event);
+    // __DEV__ && console.log('GOND HLS onBuffer: ', event);
     const {streamData, isLive} = this.props;
     if (event.isBuffering) {
       if (this.firstBuffer) {
@@ -1281,8 +1283,14 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
@@ -1303,10 +1311,24 @@ class HLSStreamingView extends React.Component {
     return (
       <GestureDetector gesture={this.composed}>
         <View onLayout={this.onLayout}>
-          <ImageBackground
+          {/* <ImageBackground
             source={NVR_Play_NoVideo_Image}
             style={{width: width, height: height}}
-            resizeMode="cover">
+            resizeMode="cover"> */}
+          <CMSImage
+            isBackground={true}
+            dataSource={streamData.snapshot}
+            defaultImage={NVR_Play_NoVideo_Image}
+            resizeMode="cover"
+            styleImage={{width: width, height: height}}
+            dataCompleteHandler={(param, data) =>
+              streamData.channel && streamData.channel.saveSnapshot(data)
+            }
+            domain={{
+              controller: 'channel',
+              action: 'image',
+              id: streamData.kChannel,
+            }}>
             <Text
               style={[
                 styles.channelInfo,
@@ -1330,79 +1352,80 @@ class HLSStreamingView extends React.Component {
             </View>
             <View style={styles.playerView}>
               {
-                /*!isLoading &&*/
-                // playbackUrl ? (
-                <Video
-                  key={`${streamData.channelName}${
-                    singlePlayer ? '_single' : ''
-                  }_${refreshCount}`}
-                  style={[
-                    {
-                      width: width,
-                      height: height,
-                      // transform: [{scaleX: 2}, {scaleY: 2}],
-                    },
-                  ]}
-                  hls={true}
-                  resizeMode={'stretch'}
-                  source={{uri: playbackUrl ?? '', type: 'm3u8'}}
-                  paused={
-                    singlePlayer && !videoStore.isLive
-                      ? videoStore.paused
-                      : false
-                  }
-                  ref={ref => {
-                    this.player = ref;
-                  }}
-                  progressUpdateInterval={1000} // 1 seconds per onProgress called
-                  onReadyForDisplay={this.onReady}
-                  onBuffer={this.onBuffer}
-                  onError={this.onError}
-                  onPlaybackStalled={this.onPlaybackStalled}
-                  onPlaybackResume={this.onPlaybackResume}
-                  onBandwidthUpdate={this.onBandwidthUpdate}
-                  onProgress={this.onProgress}
-                  onLoad={this.onLoad}
-                  onSeek={event =>
-                    __DEV__ && console.log('GOND HLS onSeek: ', event)
-                  }
-                  onTimedMetadata={event => {
-                    __DEV__ && console.log('GOND HLS onTimedMetadata', event);
-                  }}
-                  onPlaybackRateChange={data => {
-                    __DEV__ &&
-                      console.log('GOND HLS onPlaybackRateChange: ', data);
-                  }}
-                  muted={true}
-                  volume={0}
-                  selectedAudioTrack={{type: 'disabled'}}
-                  selectedTextTrack={{type: 'disabled'}}
-                  rate={1.0}
-                  automaticallyWaitsToMinimizeStalling={false}
-                  preferredForwardBufferDuration={5}
-                  playInBackground={true}
-                  playWhenInactive={true}
-                  useTextureView={false}
-                  disableFocus={true}
-                  bufferConfig={{
-                    minBufferMs: 3500,
-                    maxBufferMs: 15000,
-                    bufferForPlaybackMs: 2500,
-                    bufferForPlaybackAfterRebufferMs: 2500,
-                  }}
-                  maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
-                  reportBandwidth={true}
-                  transform={[
-                    {translateX: this.state.translateX},
-                    {translateY: this.state.translateY},
-                    {scaleX: this.state.zoom},
-                    {scaleY: this.state.zoom},
-                  ]}
-                />
+                playbackUrl && (
+                  <Video
+                    key={`${streamData.channelName}${
+                      singlePlayer ? '_single' : ''
+                    }_${refreshCount}`}
+                    style={[
+                      {
+                        width: width,
+                        height: height,
+                        // transform: [{scaleX: 2}, {scaleY: 2}],
+                      },
+                    ]}
+                    hls={true}
+                    resizeMode={'stretch'}
+                    source={{uri: playbackUrl ?? '', type: 'm3u8'}}
+                    paused={
+                      singlePlayer && !videoStore.isLive
+                        ? videoStore.paused
+                        : false
+                    }
+                    ref={ref => {
+                      this.player = ref;
+                    }}
+                    progressUpdateInterval={1000} // 1 seconds per onProgress called
+                    onReadyForDisplay={this.onReady}
+                    onBuffer={this.onBuffer}
+                    onError={this.onError}
+                    onPlaybackStalled={this.onPlaybackStalled}
+                    onPlaybackResume={this.onPlaybackResume}
+                    onBandwidthUpdate={this.onBandwidthUpdate}
+                    onProgress={this.onProgress}
+                    onLoad={this.onLoad}
+                    onSeek={event =>
+                      __DEV__ && console.log('GOND HLS onSeek: ', event)
+                    }
+                    onTimedMetadata={event => {
+                      __DEV__ && console.log('GOND HLS onTimedMetadata', event);
+                    }}
+                    onPlaybackRateChange={data => {
+                      __DEV__ &&
+                        console.log('GOND HLS onPlaybackRateChange: ', data);
+                    }}
+                    muted={true}
+                    volume={0}
+                    selectedAudioTrack={{type: 'disabled'}}
+                    selectedTextTrack={{type: 'disabled'}}
+                    rate={1.0}
+                    automaticallyWaitsToMinimizeStalling={false}
+                    preferredForwardBufferDuration={5}
+                    playInBackground={true}
+                    playWhenInactive={true}
+                    useTextureView={false}
+                    disableFocus={true}
+                    bufferConfig={{
+                      minBufferMs: 3500,
+                      maxBufferMs: 15000,
+                      bufferForPlaybackMs: 2500,
+                      bufferForPlaybackAfterRebufferMs: 2500,
+                    }}
+                    maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
+                    reportBandwidth={true}
+                    transform={[
+                      {translateX: this.state.translateX},
+                      {translateY: this.state.translateY},
+                      {scaleX: this.state.zoom},
+                      {scaleY: this.state.zoom},
+                    ]}
+                  />
+                )
                 // ) : null
               }
             </View>
-          </ImageBackground>
+          </CMSImage>
+          {/* </ImageBackground> */}
           {this.state.isFilterShown && (
             <View
               style={[

@@ -131,7 +131,10 @@ const NavigationService = types
       while (_state) {
         const currentRoute = _state.routes[_state.index];
         _state = currentRoute.state;
-        if (!_state) return currentRoute.name;
+        if (!_state) {
+          __DEV__ && console.log('GOND getCurrentRouteName ', currentRoute);
+          return currentRoute.name;
+        }
       }
       return 'Not ready yet';
     },

@@ -121,6 +121,7 @@ class VideoPlayerView extends Component {
 
     Orientation.addDeviceOrientationListener(this.onOrientationChange);
     Orientation.unlockAllOrientations();
+
     this.initReactions();
 
     this.authenRef && this.authenRef.forceUpdate();
@@ -517,7 +518,9 @@ class VideoPlayerView extends Component {
     // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
   };
 
-  onChannelSnapshotLoaded = (param, image) => {};
+  onChannelSnapshotLoaded = (channel, params, imageData) => {
+    channel.saveSnapshot(imageData);
+  };
 
   onTakeVideoSnapshot = () => {};
 
@@ -771,8 +774,11 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {selectedStream, isAuthenticated, isAPIPermissionSupported} =
-      videoStore;
+    const {
+      selectedStream,
+      isAuthenticated,
+      isAPIPermissionSupported,
+    } = videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
@@ -804,10 +810,24 @@ class VideoPlayerView extends Component {
     ) {
       __DEV__ && console.log('GOND renderVid player NO PERMISSION');
       return (
-        <ImageBackground
-          source={NVR_Play_NoVideo_Image}
-          style={{width: width, height: height}}
-          resizeMode="cover">
+        // <ImageBackground
+        //   source={NVR_Play_NoVideo_Image}
+        //   style={{width: width, height: height}}
+        //   resizeMode="cover">
+        <CMSImage
+          isBackground={true}
+          dataSource={item.snapshot}
+          defaultImage={NVR_Play_NoVideo_Image}
+          resizeMode="cover"
+          styleImage={{width: width, height: height}}
+          dataCompleteHandler={(param, data) =>
+            item.channel && item.channel.saveSnapshot(data)
+          }
+          domain={{
+            controller: 'channel',
+            action: 'image',
+            id: item.kChannel,
+          }}>
           <Text style={videoStyles.channelInfo}>
             {selectedStream.channelName ?? 'Unknown'}
           </Text>
@@ -818,7 +838,8 @@ class VideoPlayerView extends Component {
               </Text>
             </View>
           </View>
-        </ImageBackground>
+        </CMSImage>
+        // </ImageBackground>
       );
     }
 
@@ -1233,7 +1254,9 @@ class VideoPlayerView extends Component {
           // resizeMode="cover"
           style={{height: imageW}}
           styleImage={[borderStyle, {width: imageW, height: imageW}]}
-          dataCompleteHandler={this.onChannelSnapshotLoaded}
+          dataCompleteHandler={(params, imageData) =>
+            this.onChannelSnapshotLoaded(item, params, imageData)
+          }
           // zzz
           domain={{
             controller: 'channel',

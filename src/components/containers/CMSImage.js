@@ -1,8 +1,8 @@
 'use strict';
 
-import React from 'react';
+import React, {Fragment} from 'react';
 import PropTypes from 'prop-types';
-import {View, Image, ActivityIndicator} from 'react-native';
+import {View, Image, ImageBackground, ActivityIndicator} from 'react-native';
 import CryptoJS from 'crypto-js';
 
 import apiService from '../../services/api';
@@ -29,27 +29,50 @@ class CMSImage extends React.Component {
       PropTypes.arrayOf(PropTypes.object),
     ]),
     twoStepsLoading: PropTypes.bool,
+    isBackground: PropTypes.bool,
+    // dataSource: PropTypes.string,
+    // defaultImage: PropTypes.object,
   };
 
   loadImage = async () => {
-    const {domain, source, twoStepsLoading, srcUrl} = this.props;
-    if (srcUrl && isValidHttpUrl(srcUrl)) {
+    const {
+      domain,
+      source,
+      twoStepsLoading,
+      // srcUrl,
+      dataSource,
+      defaultImage,
+    } = this.props;
+    // if (srcUrl && isValidHttpUrl(srcUrl)) {
+    if (dataSource && dataSource.length > 0) {
       this.setState({
         isLoading: false,
-        image: {uri: srcUrl},
+        image: {uri: dataSource},
       });
+      __DEV__ && console.log('GOND loadImage return 1');
       return;
     }
 
-    this.setState({isLoading: true});
-    let imgData = await this.loadImageAsync(domain, source, twoStepsLoading);
-    // __DEV__ && console.log('GOND loadImage imgData =', imgData);
+    this.setState({isLoading: true, image: defaultImage});
+    let imgData = await this.loadImageAsync(
+      domain,
+      source,
+      defaultImage,
+      twoStepsLoading
+    );
+    __DEV__ && console.log('GOND loadImage completed imgData =', imgData);
     if (this._isMounted) {
       this.onLoadingCompleted(domain, imgData);
-      this.setState({
-        isLoading: false,
-        image: imgData.url_thumnail ? {uri: imgData.url_thumnail} : imgData,
-      });
+      this.setState(
+        imgData
+          ? {
+              isLoading: false,
+              image: imgData.url_thumnail
+                ? {uri: imgData.url_thumnail}
+                : imgData,
+            }
+          : {isLoading: false}
+      );
     }
   };
 
@@ -59,12 +82,13 @@ class CMSImage extends React.Component {
    * @param {string} source
    * @returns
    */
-  loadImageAsync = async (data, source, isTwoSteps) => {
+  loadImageAsync = async (data, source, defaultImage, isTwoSteps) => {
     // __DEV__ && console.log('GOND loadImageAsync, source: ', source);
     if (source) {
       return {uri: 'data:image/jpeg;base64,' + this.props.source};
     } else {
       if (isNullOrUndef(data)) {
+        // __DEV__ && console.log('GOND loadImage return 2');
         return null;
       }
 
@@ -79,7 +103,7 @@ class CMSImage extends React.Component {
             CommonActions.image
           );
           // __DEV__ &&
-          //   console.log('GOND loadImageAsync step 1 res = ', pathResponse);
+          // console.log('GOND loadImageAsync step 1 res = ', pathResponse);
 
           if (pathResponse && !pathResponse.isCloud) {
             if (pathResponse.isExist) {
@@ -115,10 +139,11 @@ class CMSImage extends React.Component {
             data.param
           );
         }
-        // __DEV__ && console.log('GOND loadImageAsync res = ', response);
-        let imgbase64 = response.data;
+        __DEV__ && console.log('GOND loadImageAsync res = ', response);
+        let imgbase64 =
+          response.data && response.data != 'null' ? response.data : null;
         if (imgbase64) return {uri: 'data:image/jpeg;base64,' + imgbase64};
-        else return noImage;
+        else return defaultImage ? null : noImage;
       } else return data;
     }
   };
@@ -150,13 +175,14 @@ class CMSImage extends React.Component {
   }
 
   render() {
-    const {styles, styleImage, resizeMode} = this.props;
-    const {image} = this.state;
-    // __DEV__ && console.log('GOND render CMSImage: ', image);
+    const {styles, styleImage, resizeMode, isBackground, children} = this.props;
+    const {isLoading, image} = this.state;
+    __DEV__ && console.log('GOND render CMSImage: ', isLoading, image);
     if (image && image.uri && image.uri.uri) image.uri = image.uri.uri;
     return (
       <View style={styles}>
-        {this.state.isLoading ? (
+        {/* <Fragment> */}
+        {isLoading ? (
           <ActivityIndicator
             animating={true}
             style={{
@@ -172,9 +198,17 @@ class CMSImage extends React.Component {
             size="small"
             color="#039BE5"
           />
+        ) : isBackground ? (
+          <ImageBackground
+            style={styleImage}
+            source={image}
+            resizeMode={resizeMode}
+            children={children}
+          />
         ) : (
           <Image style={styleImage} source={image} resizeMode={resizeMode} />
         )}
+        {/* </Fragment> */}
       </View>
     );
   }

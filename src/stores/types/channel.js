@@ -36,6 +36,9 @@ export default ChannelModel = types
     //   __DEV__ && console.log('GOND channel snapshot = ', res);
     //   return res;
     // },
+    canPlayMode(isLive) {
+      return isLive ? self.canLive : self.canSearch;
+    },
   }))
   .actions(self => ({
     saveSnapshot(value) {
@@ -47,27 +50,28 @@ export default ChannelModel = types
     },
     update(data) {
       if (self.channelNo != data.channelNo) return;
-      if (self.kChannel != data.kChannel || self.name != data.name) {
-        self.kDVR = data.kDVR;
-        self.kChannel = data.kChannel;
-        self.videoSource = data.videoSource;
-        self.kAudioSource = data.kAudioSource;
-        self.kPTZ = data.kPTZ;
-        self.status = data.status;
-        self.name = data.name;
-        self.enable = data.enable;
-        self.dwellTime = data.dwellTime;
-        self.ap = data.ap;
-        self.cameraID = data.cameraID;
-        self.videoCompressQual = data.videoCompressQual;
-        self.videoType = data.videoType;
-        self.kVideo = data.kVideo;
-        self.enableiSearch = data.enableiSearch;
-        self.dvrName = data.dvrName;
-        self.fps = data.fps;
-        self.resolution = data.resolution;
-        self.modelName = data.modelName;
-      }
+      // if (self.kChannel != data.kChannel || self.name != data.name) {
+      self.kDVR = data.kDVR;
+      self.kChannel = data.kChannel;
+      self.videoSource = data.videoSource;
+      self.kAudioSource = data.kAudioSource;
+      self.kPTZ = data.kPTZ;
+      self.status = data.status;
+      self.name = data.name;
+      self.enable = data.enable;
+      self.dwellTime = data.dwellTime;
+      self.ap = data.ap;
+      self.cameraID = data.cameraID;
+      self.videoCompressQual = data.videoCompressQual;
+      self.videoType = data.videoType;
+      self.kVideo = data.kVideo;
+      self.enableiSearch = data.enableiSearch;
+      self.dvrName = data.dvrName;
+      self.fps = data.fps;
+      self.resolution = data.resolution;
+      self.modelName = data.modelName;
+      self.isActive = data.isActive;
+      // }
     },
   }));
 

@@ -205,12 +205,12 @@ class SitesView extends Component {
     const {isHealthRoute} = this.state;
 
     if (isHealthRoute) {
-      __DEV__ && console.log(` selectSite 6 item = `, JSON.stringify(item));
+      // __DEV__ && console.log(` selectSite 6 item = `, JSON.stringify(item));
       sitesStore.selectSite(item.id);
       healthStore.selectSite(item.id);
       navigation.push(ROUTERS.HEALTH_DETAIL);
     } else {
-      __DEV__ && console.log(` selectSite  7 item = `, JSON.stringify(item));
+      // __DEV__ && console.log(` selectSite  7 item = `, JSON.stringify(item));
       sitesStore.selectSite(item.key);
       if (item.dvrs.length == 1) {
         if (sitesStore.selectedDVR) return; // prevent double click

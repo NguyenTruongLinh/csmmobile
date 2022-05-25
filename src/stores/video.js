@@ -201,6 +201,9 @@ const DirectStreamModel = types
     get isReady() {
       return true;
     },
+    get snapshot() {
+      return self.channel ? self.channel.snapshot : null;
+    },
   }))
   .volatile(self => ({
     videoFrame: null,
@@ -359,7 +362,7 @@ export const VideoModel = types
     // current page of video in Multiple live videos (Division Screen)
     currentGridPage: types.optional(types.number, 0),
     // is API support permission
-    isAPIPermissionSupported: types.optional(types.boolean, false),
+    isAPIPermissionSupported: types.optional(types.boolean, true),
   })
   .volatile(self => ({
     reactions: [],
@@ -398,6 +401,7 @@ export const VideoModel = types
       return self.cloudType > CLOUD_TYPE.DIRECTION;
     },
     get activeChannels() {
+      if (self.cloudType == CLOUD_TYPE.DIRECTION) return self.allChannels;
       const res = self.allChannels.filter(ch => ch.isActive);
       return res; // res.map(ch => ch.data);
     },
@@ -420,7 +424,7 @@ export const VideoModel = types
     get needAuthen() {
       __DEV__ && console.log('GOND needAuthen: ', self.authenticationState); //self.nvrUser, self.nvrPassword);
       return (
-        self.authenticationState != AUTHENTICATION_STATES.AUTHENTICATED &&
+        self.authenticationState < AUTHENTICATION_STATES.AUTHENTICATED &&
         self.authenticationState != AUTHENTICATION_STATES.ON_AUTHENICATING
       );
       // return (
@@ -494,6 +498,14 @@ export const VideoModel = types
           );
       }
       return null;
+    },
+    get privilegedLiveChannels() {
+      __DEV__ &&
+        console.log('GOND HLS privilegedLiveChannels: ', self.activeChannels);
+      return self.activeChannels.reduce((result, ch) => {
+        if (ch.canLive) result.push(ch);
+        return result;
+      }, []);
     },
     get filteredChannels() {
       if (!self.channelFilter) return self.allChannels;
@@ -698,7 +710,7 @@ export const VideoModel = types
         self.cloudType == CLOUD_TYPE.HLS
           ? self.videoData.filter(s => s.isActive)
           : self.videoData;
-      __DEV__ && console.log('GOND videoDataList ', videoDataList);
+      __DEV__ && console.log('GOND videoDataList 1', videoDataList);
       if (!videoDataList || videoDataList.length == 0) {
         __DEV__ && console.log('GOND videoDataList is empty <>');
         return [];
@@ -706,7 +718,7 @@ export const VideoModel = types
 
       __DEV__ &&
         console.log(
-          'GOND videoDataList: ',
+          'GOND videoDataList 2: ',
           self.gridItemsPerPage,
           self.currentGridPage,
           videoDataList
@@ -717,7 +729,7 @@ export const VideoModel = types
           index >= self.gridItemsPerPage * self.currentGridPage
       );
 
-      __DEV__ && console.log('GOND videoDataList 2: ', videoDataList);
+      __DEV__ && console.log('GOND videoDataList 3: ', videoDataList);
 
       while (videoDataList.length % self.gridLayout != 0)
         videoDataList.push({});
@@ -757,7 +769,13 @@ export const VideoModel = types
       return self.hoursOfSearchDate > default24H;
     },
     get isAuthenticated() {
-      return self.authenticationState == AUTHENTICATION_STATES.AUTHENTICATED;
+      return self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED;
+    },
+    get canLoadStream() {
+      return (
+        !self.isAPIPermissionSupported ||
+        self.authenticationState == AUTHENTICATION_STATES.PRIVILEGE_LOADED
+      );
     },
     canPlaySelectedChannel(isLive) {
       if (self.isAPIPermissionSupported)
@@ -1959,9 +1977,13 @@ export const VideoModel = types
       */
       refreshChannelsList(newList) {
         const oldList = self.allChannels;
+        __DEV__ &&
+          console.log(
+            'GOND refreshChannelsList to new: ',
+            newList.map(ch => getSnapshot(ch))
+          );
 
         // dongpt: check selected stream
-        console.log('GOND 111111111');
         if (
           self.selectedStream &&
           !self.newList.find(
@@ -1971,7 +1993,6 @@ export const VideoModel = types
           self.selectedChannel = null;
         }
 
-        console.log('GOND 2222222');
         // dongpt: check and update current streams
         const updateFn = (result, currentItem) => {
           if (newList.find(ch => ch.channelNo == currentItem.channelNo)) {
@@ -1982,31 +2003,56 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            self.directStreams = self.directStreams.reduce(updateFn, []);
+            // self.directStreams = self.directStreams.reduce(updateFn, []);
+            self.directStreams = self.directStreams.filter(currentItem =>
+              newList.find(ch => ch.channelNo == currentItem.channelNo)
+            );
             break;
           case CLOUD_TYPE.HLS:
-            self.hlsStreams = self.hlsStreams.reduce(updateFn, []);
+            // self.hlsStreams = self.hlsStreams.reduce(updateFn, []);
+            self.hlsStreams = self.hlsStreams.filter(currentItem =>
+              newList.find(ch => ch.channelNo == currentItem.channelNo)
+            );
             break;
           case CLOUD_TYPE.RTC:
+            // self.rtcConnection.updateViews(
+            //   self.rtcConnection.viewers.reduce(updateFn, [])
+            // );
             self.rtcConnection.updateViews(
-              self.rtcConnection.viewers.reduce(updateFn, [])
+              self.rtcConnection.viewers.filter(currentItem =>
+                newList.find(ch => ch.channelNo == currentItem.channelNo)
+              )
             );
             break;
           default:
             break;
         }
 
-        console.log('GOND 333333333');
-        self.allChannels = newList.map(chData => {
+        let isSelectedChannelExist = false;
+        const newChannels = newList.map(chData => {
           const found = oldList.find(
             item => item.channelNo == chData.channelNo
           );
+          if (chData.channelNo == self.selectedChannel) {
+            isSelectedChannelExist = true;
+          }
           if (found) {
             found.update(chData);
             return found;
           }
           return chData;
         });
+        if (!isSelectedChannelExist) {
+          self.selectedChannel = null;
+        }
+        __DEV__ &&
+          console.log(
+            'GOND refreshChannelsList: ',
+            self.allChannels.map(ch => getSnapshot(ch)),
+            newChannels.map(ch => getSnapshot(ch))
+          );
+
+        self.allChannels = newChannels;
       },
       getDvrChannels: flow(function* (isGetAll = false) {
         if (!self.kDVR) {
@@ -2481,8 +2527,27 @@ export const VideoModel = types
         let requestParams = [];
 
         if (!util.isNullOrUndef(channelNo)) {
+          // dongpt: get stream on single mode
           __DEV__ &&
             console.log('GOND getHLSInfos single channel: ', channelNo);
+          // check channel privilege
+          const targetChannel = self.allChannels.find(
+            ch => ch.channelNo == channelNo
+          );
+          if (
+            !targetChannel ||
+            (self.isAPIPermissionSupported &&
+              ((self.isLive && !targetChannel.canLive) ||
+                (!self.isLive && !targetChannel.canSearch)))
+          ) {
+            __DEV__ &&
+              console.log(
+                'GOND getHLSInfos channel not found or no privilege: ',
+                targetChannel
+              );
+            return;
+          }
+
           let targetStream = self.hlsStreams.find(
             s => s.channelNo == channelNo
           );
@@ -2598,13 +2663,15 @@ export const VideoModel = types
             },
           ];
         } else {
+          // dongpt: get stream on multi division mode
           // dongpt: ONLY LIVE MODE =======
           if (self.activeChannels.length <= 0) {
             __DEV__ && console.log(`GOND get multi HLS URL: No active channel`);
             return false;
           }
           if (self.hlsStreams.length > 0) self.releaseHLSStreams();
-          self.hlsStreams = self.activeChannels.map(ch => {
+          // self.hlsStreams = self.activeChannels.map(ch => {
+          self.hlsStreams = self.privilegedLiveChannels.map(ch => {
             const newConnection = HLSStreamModel.create({
               // id: util.getRandomId(),
               channel: ch,
@@ -3287,11 +3354,11 @@ export const VideoModel = types
       // #endregion WebRTC streaming
       // #region Get and receive videoinfos
       getVideoInfos: flow(function* (channelNo) {
-        // __DEV__ &&
-        //   console.trace(
-        //     'GOND getVideoInfos ',
-        //     channelNo != undefined ? channelNo : self.allChannels
-        //   );
+        __DEV__ &&
+          console.trace(
+            'GOND getVideoInfos ',
+            channelNo != undefined ? channelNo : self.allChannels
+          );
         let getInfoPromise = null;
         if (!self.allChannels || self.allChannels.length <= 0) {
           let res = yield self.getDisplayingChannels();
@@ -3666,6 +3733,7 @@ export const VideoModel = types
               result.push(ch);
               return result;
             }, []);
+            self.authenticationState = AUTHENTICATION_STATES.PRIVILEGE_LOADED;
           }
         } catch (ex) {
           console.log('GOND getDVRPermission failed: ', ex);

@@ -26,11 +26,12 @@ import DirectChannelView from './directChannel';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 // import InputTextIcon from '../../components/controls/InputTextIcon';
-import {IconCustom} from '../../components/CMSStyleSheet';
+// import {IconCustom} from '../../components/CMSStyleSheet';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSRipple from '../../components/controls/CMSRipple';
 import LoadingOverlay from '../../components/common/loadingOverlay';
 // import Swipe from '../../components/controls/Swipe';
+import CMSImage from '../../components/containers/CMSImage';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -187,7 +188,8 @@ class LiveChannelsView extends React.Component {
               );
             videoStore.displayAuthen(true);
           } else if (
-            authenticationState == AUTHENTICATION_STATES.AUTHENTICATED
+            authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED &&
+            videoStore.canLoadStream == true
           ) {
             videoStore.getVideoInfos();
           }
@@ -286,12 +288,12 @@ class LiveChannelsView extends React.Component {
         gridIcon = 'grid-view-16';
         break;
     }
-    __DEV__ &&
-      console.trace(
-        'GOND liveChannels setHeaders: ',
-        enableSettingButton,
-        userStore.hasPermission(MODULE_PERMISSIONS.VSC)
-      );
+    // __DEV__ &&
+    //   console.trace(
+    //     'GOND liveChannels setHeaders: ',
+    //     enableSettingButton,
+    //     userStore.hasPermission(MODULE_PERMISSIONS.VSC)
+    //   );
 
     navigation.setOptions({
       headerTitle: sitesStore.selectedDVR
@@ -348,13 +350,17 @@ class LiveChannelsView extends React.Component {
     );
     let res = await videoStore.getCloudSetting(isStreamingAvailable);
     res = res && (await videoStore.getDisplayingChannels());
-    if (res) {
-      this.setHeader(true);
-    }
 
+    __DEV__ &&
+      console.log(
+        'GOND liveChannels getChannelsInfo: ',
+        res,
+        videoStore.isAuthenticated
+      );
     // await videoStore.getDVRPermission(); // already called in getDisplayingChannels
     if (videoStore.isAuthenticated && res) {
-      res = await videoStore.getVideoInfos();
+      this.setHeader(true);
+      // res = await videoStore.getVideoInfos();
     }
 
     // if (videoStore.needAuthen) {
@@ -388,6 +394,14 @@ class LiveChannelsView extends React.Component {
     videoStore.selectChannel(
       value.channelNo // ?? value.channel.channelNo
     );
+
+    if (
+      videoStore.isAPIPermissionSupported == true &&
+      !videoStore.selectedChannelData.canPlayMode(true) &&
+      videoStore.selectedChannelData.canPlayMode(false)
+    ) {
+      videoStore.switchLiveSearch(false, false);
+    }
     // this.pauseAll(true);
     setTimeout(() => {
       this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
@@ -611,11 +625,24 @@ class LiveChannelsView extends React.Component {
     const {width, height} = this.state.videoWindow;
 
     return (
-      // <View>
-      <ImageBackground
-        source={NVR_Play_NoVideo_Image}
-        style={{width: width, height: height}}
-        resizeMode="cover">
+      // <ImageBackground
+      //   source={NVR_Play_NoVideo_Image}
+      //   style={{width: width, height: height}}
+      //   resizeMode="cover">
+      <CMSImage
+        isBackground={true}
+        dataSource={item.snapshot}
+        defaultImage={NVR_Play_NoVideo_Image}
+        resizeMode="cover"
+        styleImage={{width: width, height: height}}
+        dataCompleteHandler={(param, data) =>
+          item.channel && item.channel.saveSnapshot(data)
+        }
+        domain={{
+          controller: 'channel',
+          action: 'image',
+          id: item.kChannel,
+        }}>
         <Text style={videoStyles.channelInfo}>
           {item.channelName ?? 'Unknown'}
         </Text>
@@ -626,8 +653,8 @@ class LiveChannelsView extends React.Component {
             </Text>
           </View>
         </View>
-      </ImageBackground>
-      // </View>
+      </CMSImage>
+      // </ImageBackground>
     );
   };
 
@@ -760,7 +787,7 @@ class LiveChannelsView extends React.Component {
         onRefresh={this.getChannelsInfo}
         refreshing={videoStore.isLoading}
         maxToRenderPerBatch={videoStore.gridLayout}
-        onViewableItemsChanged={this.onVideosViewableChanged}
+        // onViewableItemsChanged={this.onVideosViewableChanged}
         viewabilityConfig={{
           minimumViewTime: 200,
           // viewAreaCoveragePercentThreshold: 25,

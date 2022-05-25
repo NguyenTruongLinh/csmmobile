@@ -26,10 +26,10 @@ import {
 
 import FFMpegFrameView from '../../components/native/videonative';
 import FFMpegFrameViewIOS from '../../components/native/videoios';
+import CMSImage from '../../components/containers/CMSImage';
 
 import util from '../../util/general';
 import {numberValue} from '../../util/types';
-import CMSColors from '../../styles/cmscolors';
 import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {NATIVE_MESSAGE} from '../../consts/video';
@@ -1373,8 +1373,14 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      serverInfo,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
@@ -1386,10 +1392,24 @@ class DirectVideoView extends React.Component {
           onLayout={this.onLayout}
           // {...this.props}
         >
-          <ImageBackground
+          {/* <ImageBackground
             source={NVR_Play_NoVideo_Image}
             style={{width: width, height: height}}
-            resizeMode="cover">
+            resizeMode="cover"> */}
+          <CMSImage
+            isBackground={true}
+            dataSource={serverInfo.snapshot}
+            defaultImage={NVR_Play_NoVideo_Image}
+            resizeMode="cover"
+            styleImage={{width: width, height: height}}
+            dataCompleteHandler={(param, data) =>
+              serverInfo.channel && serverInfo.channel.saveSnapshot(data)
+            }
+            domain={{
+              controller: 'channel',
+              action: 'image',
+              id: serverInfo.kChannel,
+            }}>
             <Text
               style={[
                 styles.channelInfo,
@@ -1417,25 +1437,6 @@ class DirectVideoView extends React.Component {
                   styles.playerView,
                   {zIndexn: noVideo ? -1 : undefined},
                 ]}>
-                {/* {Platform.OS === 'ios' ? (
-                <FFMpegFrameViewIOS
-                  width={this.state.width} // {this.state.width}
-                  height={this.state.height} // {this.state.height}
-                  ref={this.onReceivePlayerRef}
-                  onFFMPegFrameChange={this.onNativeMessage}
-                  singlePlayer={true}
-                />
-              ) : (
-                <FFMpegFrameView
-                  iterationCount={1}
-                  width={width}
-                  height={height}
-                  ref={this.onReceivePlayerRef}
-                  onFFMPegFrameChange={this.onNativeMessage}
-                  singlePlayer={true}
-                />
-              )} */}
-
                 {Platform.select({
                   ios: (
                     <FFMpegFrameViewIOS
@@ -1468,13 +1469,14 @@ class DirectVideoView extends React.Component {
                 })}
               </View>
             )}
-          </ImageBackground>
+          </CMSImage>
+          {/* </ImageBackground> */}
           {this.state.isFilterShown && (
             <View
               style={[
                 controlStyles.controlsContainer,
                 {
-                  backgroundColor: CMSColors.VideoOpacityLayer,
+                  backgroundColor: cmscolors.VideoOpacityLayer,
                 },
               ]}
             />

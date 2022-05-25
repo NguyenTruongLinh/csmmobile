@@ -20,10 +20,8 @@ import CMSRipple from '../../components/controls/CMSRipple';
 import AlertActionModal from './modals/actionsModal';
 import AlertDismissModal from './modals/dismissModal';
 import InputTextIcon from '../../components/controls/InputTextIcon';
-// import BackButton from '../../components/controls/BackButton';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSImage from '../../components/containers/CMSImage';
-// import FullWidthImage from '../../components/containers/FullWidthImage';
 import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 
 import utils from '../../util/general';

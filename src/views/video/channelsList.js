@@ -183,14 +183,14 @@ class ChannelsListView extends React.Component {
     this.setState({isLoading: true}, async () => {
       let res = await videoStore.getCloudSetting();
       res = res && (await videoStore.getDisplayingChannels());
-      if (res) {
+      if (videoStore.isAuthenticated && res) {
         this.setHeader(true);
+
+        if (healthStore.isLiveVideo) {
+          res = await videoStore.getVideoInfos();
+        }
       }
 
-      // await videoStore.getDVRPermission(); // already called in getDisplayingChannels
-      if (videoStore.isAuthenticated && res && healthStore.isLiveVideo) {
-        res = await videoStore.getVideoInfos();
-      }
       this.setState({isLoading: false});
     });
   };
@@ -289,7 +289,7 @@ class ChannelsListView extends React.Component {
   };
 
   renderItemGrid = ({item, index}) => {
-    __DEV__ && console.log('GOND renderChannelItem: ', item);
+    // __DEV__ && console.log('GOND renderChannelItem: ', item);
     return Object.keys(item).length == 0 ? (
       <View key="ch_none" style={styles.gridNoItem} />
     ) : (
@@ -308,7 +308,8 @@ class ChannelsListView extends React.Component {
             id={'grid_' + item.kChannel}
             resizeMode="cover"
             styleImage={styles.gridImage}
-            src={item.snapshot}
+            // src={item.snapshot}
+            dataSource={item.snapshot}
             dataCompleteHandler={(param, data) =>
               this.onChannelSnapshotLoaded(item, data)
             }
