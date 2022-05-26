@@ -1429,7 +1429,7 @@ export const VideoModel = types
       displayAuthen(value, force = false) {
         if (value == true) {
           // __DEV__ && console.trace('GOND displaying Login form: ', value);
-          if (force == false && self.isAuthenCanceled == true) return;
+          if (!force && self.isAuthenCanceled == true) return;
         }
         self.showAuthenModal = value;
       },
@@ -2068,8 +2068,8 @@ export const VideoModel = types
             '' + self.kDVR,
             isGetAll ? DVR.getAllChannels : DVR.getChannels
           );
-          __DEV__ &&
-            console.log(`GOND get channels info (GetAll = ${isGetAll}): `, res);
+          // __DEV__ &&
+          //   console.log(`GOND get channels info (GetAll = ${isGetAll}): `, res);
           if (res && res.error) {
             __DEV__ &&
               console.log('GOND cannot get channels info: ', res.error);
@@ -3800,6 +3800,8 @@ export const VideoModel = types
       // enter/leave video view
       enterVideoView(isEnter) {
         self.isInVideoView = isEnter;
+        // dongpt: prevent authen popup blinking
+        self.displayAuthen(false);
       },
       cleanUp() {
         applySnapshot(self, storeDefault);
