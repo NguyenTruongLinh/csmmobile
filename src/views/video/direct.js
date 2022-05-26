@@ -753,7 +753,7 @@ class DirectVideoView extends React.Component {
             );
             this.didSubmitLogin = false;
           }
-          this.props.videoStore.resetNVRAuthentication();
+          this.props.videoStore.resetNVRAuthentication(true);
         }
         if (
           this.lastLogin.userName &&

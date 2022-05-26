@@ -242,6 +242,7 @@ class ChannelsListView extends React.Component {
     if (!videoStore.selectedDVR || item.kDVR != videoStore.selectedDVR.kDVR) {
       sitesStore.selectDVR(item.kDVR); // select default
       videoStore.selectDVR(item.kDVR);
+      videoStore.resetNVRAuthentication(true);
       this.getChannelsInfo();
     }
   };

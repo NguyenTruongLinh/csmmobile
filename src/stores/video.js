@@ -1433,19 +1433,20 @@ export const VideoModel = types
         }
         self.showAuthenModal = value;
       },
-      resetNVRAuthentication() {
+      resetNVRAuthentication(forceReset = false) {
         // dongpt: do we need this?
         // __DEV__ &&
         //   console.trace(
         //     'GOND resetNVRAuthentication entered: ',
         //     self.authenticationState
         //   );
-        if (self.isAuthenticated) return;
+        if (!forceReset && self.isAuthenticated) return;
 
         __DEV__ && console.log('GOND resetNVRAuthentication reset...');
         if (self.nvrUser && self.nvrUser.length > 0)
           self.setNVRLoginInfo('', '');
         if (self.isAuthenCanceled == true) self.isAuthenCanceled = false;
+        self.authenticationState = AUTHENTICATION_STATES.NOT_AUTHEN;
         self.displayAuthen(true);
       },
       saveLoginInfo: flow(function* () {
@@ -3670,6 +3671,7 @@ export const VideoModel = types
           ) {
             // dongpt: no permission or channel list is empty
             self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
+            snackbarUtil.onMessage(STREAM_STATUS.NO_PERMISSION);
             return;
           }
 

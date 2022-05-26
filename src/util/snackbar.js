@@ -74,6 +74,8 @@ exports.dismiss = () => {
 };
 
 const onMessage = (msg, backcolor) => {
+  // if (__DEV__ && msg == 'Connecting...')
+  //   console.trace('GOND toast connecting ...');
   showToast(msg, backcolor ?? CMSColors.Success);
 };
 
