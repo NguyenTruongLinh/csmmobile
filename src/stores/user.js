@@ -1,4 +1,4 @@
-import {types, flow} from 'mobx-state-tree';
+import {types, flow, getSnapshot} from 'mobx-state-tree';
 import {Alert} from 'react-native';
 
 import {WIDGET_COUNTS, MODULES, Orient, NOTIFY_ACTION} from '../consts/misc';
@@ -816,7 +816,7 @@ export const UserStoreModel = types
     }),
     deleteLocal: flow(function* () {
       let res = yield dbService.delete(LocalDBName.user);
-      // __DEV__ && console.log('GOND user delete local: ', res);
+      // __DEV__ && console.trace('GOND user delete local: ', res);
       return res;
     }),
     loadLocalData: flow(function* () {
@@ -877,8 +877,13 @@ export const UserStoreModel = types
         yield appStore.loadLocalData();
       }
       if (shouldLogin) {
+        // __DEV__ &&
+        //   console.log('GOND shouldAutoLogin before: ', getSnapshot(self.user));
         self.isLoggedIn = yield self.getDataPostLogin(true);
-        if (!self.isLoggedIn) self.deleteLocal();
+        // __DEV__ &&
+        //   console.log('GOND shouldAutoLogin after: ', getSnapshot(self.user));
+        // dongpt: no need to delete local data #51542
+        // if (!self.isLoggedIn) self.deleteLocal();
         // else self.setActivites(clientLogID.LOGIN);
         // __DEV__ && console.log('GOND self.isLoggedIn: ', self.isLoggedIn);
       }
