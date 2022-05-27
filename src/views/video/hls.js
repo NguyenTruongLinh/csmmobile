@@ -1320,6 +1320,7 @@ class HLSStreamingView extends React.Component {
             dataSource={streamData.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
             resizeMode="cover"
+            showLoading={false}
             styleImage={{width: width, height: height}}
             dataCompleteHandler={(param, data) =>
               streamData.channel && streamData.channel.saveSnapshot(data)

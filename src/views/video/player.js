@@ -810,24 +810,10 @@ class VideoPlayerView extends Component {
     ) {
       __DEV__ && console.log('GOND renderVid player NO PERMISSION');
       return (
-        // <ImageBackground
-        //   source={NVR_Play_NoVideo_Image}
-        //   style={{width: width, height: height}}
-        //   resizeMode="cover">
-        <CMSImage
-          isBackground={true}
-          dataSource={item.snapshot}
-          defaultImage={NVR_Play_NoVideo_Image}
-          resizeMode="cover"
-          styleImage={{width: width, height: height}}
-          dataCompleteHandler={(param, data) =>
-            item.channel && item.channel.saveSnapshot(data)
-          }
-          domain={{
-            controller: 'channel',
-            action: 'image',
-            id: item.kChannel,
-          }}>
+        <ImageBackground
+          source={NVR_Play_NoVideo_Image}
+          style={{width: width, height: height}}
+          resizeMode="cover">
           <Text style={videoStyles.channelInfo}>
             {selectedStream.channelName ?? 'Unknown'}
           </Text>
@@ -838,8 +824,7 @@ class VideoPlayerView extends Component {
               </Text>
             </View>
           </View>
-        </CMSImage>
-        // </ImageBackground>
+        </ImageBackground>
       );
     }
 

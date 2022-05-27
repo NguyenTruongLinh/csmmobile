@@ -265,7 +265,10 @@ class DirectVideoView extends React.Component {
                 newChannelNo
               );
             if (newChannelNo == null || previousValue == null) return;
-            snackbarUtil.showToast(STREAM_STATUS.CONNECTING, cmscolors.Success);
+            this.props.serverInfo.setStreamStatus({
+              isLoading: true,
+            });
+            snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
             this.setNativePlayback(false, {channels: '' + newChannelNo});
           }
         ),
@@ -717,10 +720,10 @@ class DirectVideoView extends React.Component {
         break;
       case NATIVE_MESSAGE.CONNECTED:
         __DEV__ && console.log('GOND onDirectVideoMessage: Connected', value);
-        serverInfo.setStreamStatus({
-          isLoading: false,
-          // connectionStatus: STREAM_STATUS.CONNECTED,
-        });
+        // serverInfo.setStreamStatus({
+        //   isLoading: false,
+        //   // connectionStatus: STREAM_STATUS.CONNECTED,
+        // });
         snackbarUtil.showToast(STREAM_STATUS.CONNECTED, cmscolors.Success);
         break;
       case NATIVE_MESSAGE.LOGIN_MESSAGE:

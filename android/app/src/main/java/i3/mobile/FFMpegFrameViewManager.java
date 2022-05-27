@@ -199,7 +199,6 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
             }
 
         }
-        // Log.i("GOND", "setStart 5");
         if(view.socket_handler == null || view.video_thread == null || view.socket_handler.running == false) {
             view.setServer(s);
             view.setByChannels(by_channel);

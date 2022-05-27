@@ -96,7 +96,10 @@ public class FFMpegFrameView extends View {
     boolean ByChannel;
     Handler handler = null;
     public  ServerSite getServer(){ return Server;}
-    public  void  setServer(ServerSite value){ this.Server = value; }
+    public  void  setServer(ServerSite value){ 
+        if (this.Server == null || !this.Server.EqualWith(value))
+            this.Server = value; 
+    }
 
     public String getChannels(){ return  this.Channels;}
     public  void  setChannels(String value){ this.Channels = value;}
@@ -532,7 +535,7 @@ public class FFMpegFrameView extends View {
                     return;
                 }
             }
-
+        
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             Bitmap bitmap = bmp;
             // Log.e("GOND", "UpdateFrame w = " + _width + ", h = " + _height);
@@ -678,6 +681,7 @@ public class FFMpegFrameView extends View {
     }
     public void ViewHD( boolean HDMode)
     {
+        Log.i("GOND", "View HD " + (HDMode == true ? "true" : "false"));
         socket_handler.ChangetoHD(HDMode);
     }
 

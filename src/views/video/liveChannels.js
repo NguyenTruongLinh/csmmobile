@@ -309,7 +309,8 @@ class LiveChannelsView extends React.Component {
               color={CMSColors.ColorText}
               disabled={
                 !enableSettingButton ||
-                !userStore.hasPermission(MODULE_PERMISSIONS.VSC)
+                !userStore.hasPermission(MODULE_PERMISSIONS.VSC) ||
+                !videoStore.hasNVRPermission
               }
               styles={{
                 flex: 1,
@@ -577,72 +578,14 @@ class LiveChannelsView extends React.Component {
     ) : null;
   };
 
-  // renderRow = ({item, index}) => {
-  //   const {viewableWindow, videoWindow} = this.state;
-  //   console.log(
-  //     'GOND renderRow videoWindow = ',
-  //     videoWindow,
-  //     ', item = ',
-  //     item
-  //   );
-  //   const playerViews = [];
-
-  //   for (let i = 0; i < item.data.length; i++) {
-  //     const videoIndex = item.data.length * index + i;
-  //     playerViews.push(
-  //       <View
-  //         key={item.key + '_' + i}
-  //         style={[
-  //           styles.videoRow,
-  //           {
-  //             width: videoWindow.width,
-  //             height: videoWindow.height,
-  //           },
-  //         ]}>
-  //         <CMSRipple
-  //           style={{width: '100%', height: '100%', borderWidth: 0}}
-  //           onPress={() => this.onChannelSelect(item.data[i])}>
-  //           {this.renderVideoPlayer(item.data[i], videoIndex)}
-  //         </CMSRipple>
-  //       </View>
-  //     );
-  //   }
-
-  //   return (
-  //     <View
-  //       key={item.key}
-  //       style={{
-  //         flexDirection: 'row',
-  //         height: videoWindow.height,
-  //         width: viewableWindow.width,
-  //       }}>
-  //       {playerViews}
-  //     </View>
-  //   );
-  // };
-
   renderNoPermissionChannel = item => {
     const {width, height} = this.state.videoWindow;
 
     return (
-      // <ImageBackground
-      //   source={NVR_Play_NoVideo_Image}
-      //   style={{width: width, height: height}}
-      //   resizeMode="cover">
-      <CMSImage
-        isBackground={true}
-        dataSource={item.snapshot}
-        defaultImage={NVR_Play_NoVideo_Image}
-        resizeMode="cover"
-        styleImage={{width: width, height: height}}
-        dataCompleteHandler={(param, data) =>
-          item.channel && item.channel.saveSnapshot(data)
-        }
-        domain={{
-          controller: 'channel',
-          action: 'image',
-          id: item.kChannel,
-        }}>
+      <ImageBackground
+        source={NVR_Play_NoVideo_Image}
+        style={{width: width, height: height}}
+        resizeMode="cover">
         <Text style={videoStyles.channelInfo}>
           {item.channelName ?? 'Unknown'}
         </Text>
@@ -653,8 +596,7 @@ class LiveChannelsView extends React.Component {
             </Text>
           </View>
         </View>
-      </CMSImage>
-      // </ImageBackground>
+      </ImageBackground>
     );
   };
 
@@ -747,7 +689,8 @@ class LiveChannelsView extends React.Component {
     const {userStore, videoStore, navigation} = this.props;
     if (!videoStore.isAuthenticated) return null;
 
-    return userStore.hasPermission(MODULE_PERMISSIONS.VSC) ? (
+    return userStore.hasPermission(MODULE_PERMISSIONS.VSC) &&
+      videoStore.hasNVRPermission ? (
       <View style={styles.infoTextContainer}>
         <Text>{VIDEO_TXT.SELECT_CHANNEL_1}</Text>
         <CMSTouchableIcon
@@ -767,7 +710,11 @@ class LiveChannelsView extends React.Component {
       </View>
     ) : (
       <View style={styles.infoTextContainer}>
-        <Text>{VIDEO_TXT.NO_PERMISSION}</Text>
+        <Text>
+          {userStore.hasPermission(MODULE_PERMISSIONS.VSC)
+            ? STREAM_STATUS.NO_PERMISSION
+            : VIDEO_TXT.NO_PERMISSION}
+        </Text>
       </View>
     );
   };

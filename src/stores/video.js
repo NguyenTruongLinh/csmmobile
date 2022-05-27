@@ -60,6 +60,12 @@ const DirectServerModel = types
     date: types.string,
     hd: types.boolean,
     // interval: types.number,
+
+    // dongpt: connection status
+    isLoading: types.optional(types.boolean, false),
+    connectionStatus: types.optional(types.string, ''),
+    error: types.maybeNull(types.string),
+    needReset: types.optional(types.boolean, false),
   })
   .views(self => ({
     get data() {
@@ -109,9 +115,16 @@ const DirectServerModel = types
         console.log('GOND DirectConnection set channels not valid: ', value);
       }
     },
-    setStreamStatus(statusObject) {},
     reset() {
       self.channelList = [];
+    },
+    setStreamStatus({connectionStatus, error, isLoading, needReset}) {
+      // __DEV__ && console.trace('GOND DirectServerModel setStream: ', isLoading);
+      connectionStatus != undefined &&
+        (self.connectionStatus = connectionStatus);
+      isLoading != undefined && (self.isLoading = isLoading);
+      needReset != undefined && (self.needReset = needReset);
+      error != undefined && (self.error = error);
     },
   }));
 
@@ -136,10 +149,6 @@ const DirectStreamModel = types
   .model({
     server: types.reference(DirectServerModel),
     channel: types.reference(ChannelModel),
-    isLoading: types.optional(types.boolean, false),
-    connectionStatus: types.optional(types.string, ''),
-    error: types.maybeNull(types.string),
-    needReset: types.optional(types.boolean, false),
   })
   .views(self => ({
     get playData() {
@@ -186,7 +195,7 @@ const DirectStreamModel = types
       return self.channel ? String(self.channel.channelNo) : '';
     },
     get streamStatus() {
-      const {isLoading, connectionStatus, error} = self;
+      const {isLoading, connectionStatus, error} = self.server;
       return {
         isLoading,
         connectionStatus,
@@ -204,6 +213,12 @@ const DirectStreamModel = types
     get snapshot() {
       return self.channel ? self.channel.snapshot : null;
     },
+    get isLoading() {
+      return self.server ? self.server.isLoading : false;
+    },
+    get connectionStatus() {
+      return self.server ? self.server.connectionStatus : '';
+    },
   }))
   .volatile(self => ({
     videoFrame: null,
@@ -215,12 +230,10 @@ const DirectStreamModel = types
     setSearchDate(value) {
       self.server.date = value;
     },
-    setStreamStatus({connectionStatus, error, isLoading, needReset}) {
-      connectionStatus != undefined &&
-        (self.connectionStatus = connectionStatus);
-      isLoading != undefined && (self.isLoading = isLoading);
-      needReset != undefined && (self.needReset = needReset);
-      error != undefined && (self.error = error);
+    setStreamStatus(statusObject) {
+      // __DEV__ &&
+      //   console.trace('GOND DirectStreamModel setStreamStatus: ', statusObject);
+      self.server.setStreamStatus(statusObject);
     },
     updateFrame(value) {
       if (value && typeof value == 'string' && value.length > 0)
@@ -777,6 +790,7 @@ export const VideoModel = types
         self.authenticationState == AUTHENTICATION_STATES.PRIVILEGE_LOADED
       );
     },
+    // #region permission's computed values
     canPlaySelectedChannel(isLive) {
       if (self.isAPIPermissionSupported)
         return self.selectedChannelData
@@ -802,6 +816,13 @@ export const VideoModel = types
 
       return true;
     },
+    get hasNVRPermission() {
+      return self.isAPIPermissionSupported
+        ? self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED &&
+            self.authenticationState != AUTHENTICATION_STATES.NO_PRIVILEGE
+        : true;
+    },
+    // #endregion permission's computed values
   }))
   .actions(self => {
     // volatile state:
@@ -907,8 +928,14 @@ export const VideoModel = types
         if (isNext && self.currentGridPage < totalPage - 1) {
           self.currentGridPage++;
           changed = true;
+        } else if (isNext && self.currentGridPage == totalPage - 1) {
+          self.currentGridPage = 0;
+          changed = true;
         } else if (!isNext && self.currentGridPage > 0) {
           self.currentGridPage--;
+          changed = true;
+        } else if (!isNext && self.currentGridPage == 0) {
+          self.currentGridPage = totalPage - 1;
           changed = true;
         }
         if (changed) {
@@ -2538,8 +2565,7 @@ export const VideoModel = types
           if (
             !targetChannel ||
             (self.isAPIPermissionSupported &&
-              ((self.isLive && !targetChannel.canLive) ||
-                (!self.isLive && !targetChannel.canSearch)))
+              !targetChannel.canPlayMode(self.isLive))
           ) {
             __DEV__ &&
               console.log(
@@ -2552,6 +2578,7 @@ export const VideoModel = types
           let targetStream = self.hlsStreams.find(
             s => s.channelNo == channelNo
           );
+
           if (targetStream) {
             targetStream.setStreamStatus({
               isLoading: true,
@@ -2643,8 +2670,6 @@ export const VideoModel = types
                 self.searchDate
               );
           }
-          // listIdToCheck.push(targetStream.targetUrl.sid);
-          // targetStream.scheduleCheckTimeout();
 
           requestParams = [
             {
@@ -2682,17 +2707,11 @@ export const VideoModel = types
               isLive: self.isLive,
             });
             newConnection.setOnErrorCallback(self.onHLSError);
-            // newConnection.scheduleCheckTimeout();
-            // if (self.isLive)
-            // newConnection.targetUrl.set({sid: util.getRandomId()});
             newConnection.startWaitingForStream(newConnection.targetUrl.sid);
 
             return newConnection;
           });
-          // streamReadyCallback && streamReadyCallback();
           self.isLoading = false;
-          // listIdToCheck = self.hlsStreams.map(s => s.id);
-          // return true;
 
           requestParams = self.hlsStreams.map(s => ({
             ID: apiService.configToken.devId,
@@ -2721,44 +2740,8 @@ export const VideoModel = types
             snackbarUtil.handleRequestFailed(error);
           return false;
         }
-        // self.scheduleTimeoutChecking();
         return true;
       }),
-      // scheduleTimeoutChecking() {
-      //   __DEV__ &&
-      //     console.log(
-      //       `GOND scheduleTimeoutChecking: listIdToCheck = ${listIdToCheck}`
-      //     );
-      //   if (streamTimeout) clearTimeout(streamTimeout);
-      //   streamTimeout = setTimeout(() => {
-      //     __DEV__ && console.log(`GOND onstream timeout`);
-      //     if (self.hlsStreams && self.hlsStreams.length > 0) {
-      //       __DEV__ && console.log(`GOND onstream timeout checking`);
-      //       self.hlsStreams.forEach(s => {
-      //         __DEV__ &&
-      //           console.log(
-      //             `GOND onstream timeout s = ${s.targetUrl.sid}, ch = ${s.channelName}, loading = ${s.isLoading}, url: ${s.targetUrl.url}`
-      //           );
-      //         if (
-      //           listIdToCheck.includes(s.id) &&
-      //           s.isLoading &&
-      //           // !s.targetUrl.isAcquired(self.isLive, self.isHD)
-      //           !s.isURLAcquired
-      //         ) {
-      //           __DEV__ &&
-      //             console.log(
-      //               `GOND === it timeout s = ${s.targetUrl.sid}, ch = `,
-      //               s.channelName
-      //             );
-      //           s.setStreamStatus({
-      //             connectionStatus: STREAM_STATUS.TIMEOUT,
-      //             isLoading: false,
-      //           });
-      //         }
-      //       });
-      //     }
-      //   }, STREAM_TIMEOUT);
-      // },
       resumeVideoStreamFromBackground(isSingleMode) {
         if (isSingleMode) {
           if (!self.isLive) {
@@ -2778,10 +2761,6 @@ export const VideoModel = types
         }
       },
       onHLSError(channelNo, isLive, resumeTime) {
-        // self.resumeVideoStreamFromBackground(
-        //   self.selectedChannel ? true : false
-        // );
-        // self.getHLSInfos({channelNo /*, daylist: !isLive, timeline: !isLive*/});
         const searchTime =
           !isLive && resumeTime && DateTime.isDateTime(resumeTime)
             ? resumeTime.toFormat(NVRPlayerConfig.HLSRequestTimeFormat)
@@ -2810,18 +2789,6 @@ export const VideoModel = types
           return;
         }
         self.clearRefreshTimelineInterval();
-        /*self.selectedStream.setStreamStatus({
-          connectionStatus: STREAM_STATUS.CONNECTING,
-          isLoading: true,
-        });
-        self.selectedStream.updateStream(
-          self.selectedStream.targetUrl.sid,
-          true
-        );
-        self.selectedStream.targetUrl.reset();
-        self.selectedStream.startWaitingForStream(
-          self.selectedStream.targetUrl.sid
-        );*/
         if (!self.selectedStream.streamUrl) {
           self.getHLSInfos({
             channelNo: self.selectedChannel,
@@ -2862,30 +2829,6 @@ export const VideoModel = types
           return false;
         }
       }),
-      // onHLSSingleStreamChanged: flow(function* (stopCurrent) {
-      //   if (self.cloudType != CLOUD_TYPE.HLS) return;
-      //   if (stopCurrent) {
-      //     yield self.stopHLSStream(self.selectedChannel);
-      //     self.selectedStream.setUrls({search: null, searchHD: null});
-      //   }
-      //   if (self.selectedStream.isURLAcquired) {
-      //     __DEV__ &&
-      //       console.log(
-      //         'GOND URL already acquired, use it: ',
-      //         getSnapshot(self.selectedStream.targetUrl),
-      //         getSnapshot(self.selectedStream)
-      //       );
-      //     return;
-      //   }
-      //   // if (self.isLive) {
-      //   //   self.selectedStream.targetUrl.set({sid: util.getRandomId()});
-      //   // }
-      //   self.selectedStream.setStreamStatus({
-      //     connectionStatus: STREAM_STATUS.CONNECTING,
-      //     isLoading: true,
-      //   });
-      //   self.getHLSInfos({channelNo: self.selectedChannel});
-      // }),
       onHLSInfoResponse(info, cmd) {
         __DEV__ && console.log(`GOND on HLS response ${cmd}: `, info);
         if (info.status == 'FAIL') {
@@ -3401,6 +3344,12 @@ export const VideoModel = types
           }
         }
 
+        // dongpt: check permission
+        if (!self.hasNVRPermission) {
+          __DEV__ && console.log('GOND getVideoInfos no permission!');
+          return;
+        }
+
         if (
           util.isNullOrUndef(channelNo) &&
           self.activeChannels.length == 0 &&
@@ -3435,12 +3384,6 @@ export const VideoModel = types
           //   self.displayAuthen(true);
           // }
           case CLOUD_TYPE.HLS:
-            // getInfoPromise = self.getHLSInfos({
-            //   channelNo,
-            //   timezone: true,
-            //   daylist: !self.isLive,
-            //   timeline: !self.isLive,
-            // });
             getInfoPromise = self.getDVRTimezone(channelNo);
             break;
           case CLOUD_TYPE.RTC:
@@ -3670,7 +3613,7 @@ export const VideoModel = types
             currentArray.length == 0
           ) {
             // dongpt: no permission or channel list is empty
-            self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
+            self.authenticationState = AUTHENTICATION_STATES.NO_PRIVILEGE;
             snackbarUtil.onMessage(STREAM_STATUS.NO_PERMISSION);
             return;
           }
@@ -3751,14 +3694,6 @@ export const VideoModel = types
       releaseHLSStreams() {
         self.hlsStreams.forEach(s => {
           s.release();
-          // util.isValidHttpUrl(s.liveUrl.url) &&
-          //   self.stopHLSStream(s.channelNo, s.liveUrl.sid, true);
-          // util.isValidHttpUrl(s.liveHDUrl.url) &&
-          //   self.stopHLSStream(s.channelNo, s.liveHDUrl.sid, true);
-          // util.isValidHttpUrl(s.searchUrl.url) &&
-          //   self.stopHLSStream(s.channelNo, s.searchUrl.sid, true);
-          // util.isValidHttpUrl(s.searchHDUrl.url) &&
-          //   self.stopHLSStream(s.channelNo, s.searchHDUrl.sid, true);
         });
         // __DEV__ && console.trace('GOND releaseHLSStreams!');
         self.hlsStreams = [];

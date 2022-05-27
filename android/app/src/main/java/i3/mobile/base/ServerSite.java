@@ -102,6 +102,10 @@ public class ServerSite
             return ("Server_" + serverIP+ "_" + serverPort);
         }
     }
+    public boolean EqualWith(ServerSite svr)
+    {
+        return this.EqualWith(svr.serverName, svr.serverIP, svr.serverPort, svr.serverID, svr.userName, svr.pass);
+    }
     public boolean EqualWith(String _svrName, String _svrIP, String _svrPort, String _svrID, String _usr, String _pass)
     {
         if((!_svrName.equals(serverName)) || (!_svrIP.equals(serverIP)) || (!_svrPort.equals(serverPort))

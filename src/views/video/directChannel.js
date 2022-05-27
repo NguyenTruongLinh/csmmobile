@@ -117,6 +117,7 @@ class DirectChannelView extends React.Component {
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     const {nextFrame} = this.state;
+    __DEV__ && console.log('GOND direct render channel: ', isLoading);
 
     return (
       <Fragment>
@@ -165,8 +166,8 @@ class DirectChannelView extends React.Component {
     // const {connectionStatus, isLoading} = serverInfo;
     // const {nextFrame} = this.state;
     // if (!this.isViewable) return <View />;
-    __DEV__ &&
-      console.log('GOND direct render channel: ', serverInfo.videoImage);
+    // __DEV__ &&
+    //   console.log('GOND direct render channel: ', serverInfo.videoImage);
     const videoShowed =
       !noVideo &&
       serverInfo.videoImage &&
@@ -196,6 +197,7 @@ class DirectChannelView extends React.Component {
             dataSource={serverInfo.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
             resizeMode="cover"
+            showLoading={false}
             styleImage={{width: width, height: height}}
             dataCompleteHandler={(param, data) =>
               serverInfo.channel && serverInfo.channel.saveSnapshot(data)

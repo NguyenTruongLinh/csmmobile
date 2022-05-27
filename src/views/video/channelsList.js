@@ -28,7 +28,11 @@ import {MODULE_PERMISSIONS, ChannelStatus} from '../../consts/misc';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
-import {Comps as CompTxt, VIDEO as VIDEO_TXT} from '../../localization/texts';
+import {
+  Comps as CompTxt,
+  VIDEO as VIDEO_TXT,
+  STREAM_STATUS,
+} from '../../localization/texts';
 // import Ripple from 'react-native-material-ripple';
 
 const {width, height} = Dimensions.get('window');
@@ -155,7 +159,8 @@ class ChannelsListView extends React.Component {
               color={CMSColors.ColorText}
               disabled={
                 !enableSettingButton ||
-                !userStore.hasPermission(MODULE_PERMISSIONS.VSC)
+                !userStore.hasPermission(MODULE_PERMISSIONS.VSC) ||
+                !videoStore.hasNVRPermission
               }
               styles={commonStyles.headerIcon}
               iconCustom="add-cam"
@@ -343,9 +348,17 @@ class ChannelsListView extends React.Component {
   };
 
   renderInfoText = () => {
-    const {userStore} = this.props;
+    const {userStore, videoStore} = this.props;
 
-    return userStore.hasPermission(MODULE_PERMISSIONS.VSC) ? (
+    __DEV__ &&
+      console.log(
+        'GOND channels renderInfoText',
+        videoStore.authenticationState,
+        videoStore.hasNVRPermission,
+        videoStore.isAPIPermissionSupported
+      );
+    return userStore.hasPermission(MODULE_PERMISSIONS.VSC) &&
+      videoStore.hasNVRPermission ? (
       <View style={styles.infoTextContainer}>
         <Text>{VIDEO_TXT.SELECT_CHANNEL_1}</Text>
         <IconCustom name="add-cam" size={22} color={CMSColors.ColorText} />
@@ -353,7 +366,11 @@ class ChannelsListView extends React.Component {
       </View>
     ) : (
       <View style={styles.infoTextContainer}>
-        <Text>{VIDEO_TXT.NO_PERMISSION}</Text>
+        <Text>
+          {userStore.hasPermission(MODULE_PERMISSIONS.VSC)
+            ? STREAM_STATUS.NO_PERMISSION
+            : VIDEO_TXT.NO_PERMISSION}
+        </Text>
       </View>
     );
   };

@@ -30,6 +30,17 @@ class CMSImage extends React.Component {
     ]),
     twoStepsLoading: PropTypes.bool,
     isBackground: PropTypes.bool,
+    showLoading: PropTypes.bool,
+    // dataSource: PropTypes.string,
+    // defaultImage: PropTypes.object,
+  };
+
+  static defaultProps = {
+    styles: {},
+    styleImage: {},
+    twoStepsLoading: false,
+    isBackground: false,
+    showLoading: true,
     // dataSource: PropTypes.string,
     // defaultImage: PropTypes.object,
   };
@@ -175,14 +186,21 @@ class CMSImage extends React.Component {
   }
 
   render() {
-    const {styles, styleImage, resizeMode, isBackground, children} = this.props;
+    const {
+      styles,
+      styleImage,
+      resizeMode,
+      isBackground,
+      children,
+      showLoading,
+    } = this.props;
     const {isLoading, image} = this.state;
     __DEV__ && console.log('GOND render CMSImage: ', isLoading, image);
     if (image && image.uri && image.uri.uri) image.uri = image.uri.uri;
     return (
       <View style={styles}>
         {/* <Fragment> */}
-        {isLoading ? (
+        {isLoading && showLoading ? (
           <ActivityIndicator
             animating={true}
             style={{
@@ -196,7 +214,7 @@ class CMSImage extends React.Component {
               justifyContent: 'center',
             }}
             size="small"
-            color="#039BE5"
+            color="white" // "#039BE5"
           />
         ) : isBackground ? (
           <ImageBackground
