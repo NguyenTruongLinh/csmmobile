@@ -60,7 +60,7 @@ class CMSImage extends React.Component {
         isLoading: false,
         image: {uri: dataSource},
       });
-      __DEV__ && console.log('GOND loadImage return 1');
+      __DEV__ && console.log('GOND CMSImage loadImage return 1');
       return;
     }
 
@@ -71,7 +71,7 @@ class CMSImage extends React.Component {
       defaultImage,
       twoStepsLoading
     );
-    __DEV__ && console.log('GOND loadImage completed imgData =', imgData);
+    // __DEV__ && console.log('GOND CMSImage completed imgData =', imgData);
     if (this._isMounted) {
       this.onLoadingCompleted(domain, imgData);
       this.setState(
@@ -99,7 +99,7 @@ class CMSImage extends React.Component {
       return {uri: 'data:image/jpeg;base64,' + this.props.source};
     } else {
       if (isNullOrUndef(data)) {
-        // __DEV__ && console.log('GOND loadImage return 2');
+        __DEV__ && console.log('GOND CMSImage loadImage return 2');
         return null;
       }
 
@@ -150,7 +150,7 @@ class CMSImage extends React.Component {
             data.param
           );
         }
-        __DEV__ && console.log('GOND loadImageAsync res = ', response);
+        // __DEV__ && console.log('GOND CMSImage loadImageAsync res = ', response);
         let imgbase64 =
           response.data && response.data != 'null' ? response.data : null;
         if (imgbase64) return {uri: 'data:image/jpeg;base64,' + imgbase64};
@@ -195,8 +195,9 @@ class CMSImage extends React.Component {
       showLoading,
     } = this.props;
     const {isLoading, image} = this.state;
-    __DEV__ && console.log('GOND render CMSImage: ', isLoading, image);
+    // __DEV__ && console.log('GOND CMSImage render: ', isLoading, image);
     if (image && image.uri && image.uri.uri) image.uri = image.uri.uri;
+
     return (
       <View style={styles}>
         {/* <Fragment> */}

@@ -360,6 +360,9 @@ export default HLSStreamModel = types
     get channelName() {
       return self.channel ? self.channel.name : '';
     },
+    get kChannel() {
+      return self.channel ? self.channel.kChannel : -1;
+    },
     get isActive() {
       return self.channel ? self.channel.isActive : false;
     },

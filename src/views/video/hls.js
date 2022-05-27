@@ -1420,6 +1420,7 @@ class HLSStreamingView extends React.Component {
                       {scaleX: this.state.zoom},
                       {scaleY: this.state.zoom},
                     ]}
+                    poster={streamData.snapshot}
                   />
                 )
                 // ) : null
