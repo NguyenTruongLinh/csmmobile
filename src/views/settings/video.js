@@ -9,6 +9,7 @@ import {
   // StatusBar,
 } from 'react-native';
 
+import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
 import Ripple from 'react-native-material-ripple';
 
@@ -58,6 +59,8 @@ class VideosettingView extends Component {
       selectedValue: null,
       settingLoaded: false,
     };
+
+    this.reactions = [];
   }
 
   componentDidMount() {
@@ -66,6 +69,17 @@ class VideosettingView extends Component {
     this.refreshSaveButton();
     // console.log('GOND comDidMount videoStore: ', this.props.videoStore);
     this.getCloudSetting();
+
+    this.reactions = [
+      reaction(
+        () => this.props.videoStore.isCloud,
+        (newIsCloud, oldValue) => {
+          if (newIsCloud != oldValue) {
+            this.refreshSaveButton();
+          }
+        }
+      ),
+    ];
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -75,6 +89,12 @@ class VideosettingView extends Component {
   }
 
   canSave = () => {
+    __DEV__ &&
+      console.log(
+        'VideoSettingView cansave: ',
+        this.state.selectedValue,
+        this.props.videoStore.isCloud
+      );
     return this.props.videoStore
       ? this.state.selectedValue != this.props.videoStore.isCloud
       : false;
@@ -112,7 +132,7 @@ class VideosettingView extends Component {
   };
 
   updateCloudSetting = async () => {
-    const res = this.props.videoStore.updateCloudSetting(
+    const res = await this.props.videoStore.updateCloudSetting(
       this.state.selectedValue
     );
     // console.log('GOND save cloud setting response: ', response)
