@@ -166,6 +166,12 @@ const uint32_t numLayers = 24;
   // NSLog(@"GOND_setter setChannels: %@", value);
   _channels = value;
   channelList = [_channels componentsSeparatedByString:@","];
+  // NSString* channelStr = @"";
+  // for(NSString* ch in channelList)
+  // {
+  //   channelStr = [NSString stringWithFormat:@"%@, %@", channelStr, ch];
+  // }
+  // NSLog(@"GOND_setter setChannels 2: %@", channelStr);
 //  if (channelList.count == 1 && _isSingle)
 //  {
 //    mainDisplayVideo.fullscreenView = [[channelList objectAtIndex:0] intValue];
@@ -355,8 +361,6 @@ const uint32_t numLayers = 24;
 
 -(void)setStartplayback:(NSDictionary *)startplayback {
  
-  [self resetParam]; 
-  [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
   if(startplayback.count == 0){
     // NSLog(@"GOND qqqqqqqqqq setStartplayback failed 1");
     return;
@@ -371,8 +375,21 @@ const uint32_t numLayers = 24;
     [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
     
     ImcConnectedServer* selectedServer = [self setConnectionServer:startplayback];
+//    NSLog(@"GOND setStartplayback: %d, %d", connectedServerList.count, connectedServers.count);
+    
+    for (ImcConnectedServer* server in connectedServerList)
+    {
+//      NSLog(@"GOND setStartplayback compare server: %@ vs %@, %ld vs %ld, %@ vs %@, %@ vs %@", server.server_address, selectedServer.server_address, (long)server.server_port, (long)selectedServer.server_port, server.username, selectedServer.username, server.password, selectedServer.password);
+      if ([server isEqual:selectedServer])
+      {
+        selectedServer = server;
+        NSLog(@"GOND setStartplayback found server: %s", server.connected ? "YES" : "NO");
+      }
+    }
+    
     NSString* channel = [self get_obj:startplayback for_key:@"channels"];
     m_channel = channel;
+    NSString* previousChannel = _channels;
     BOOL by_channel = [[self get_obj:startplayback for_key:@"byChannel"] boolValue];
     BOOL isSearch = [[self get_obj: startplayback for_key:@"searchMode"] boolValue];
     NSNumber* interval = [self get_obj:startplayback for_key:@"interval"];
@@ -404,13 +421,22 @@ const uint32_t numLayers = 24;
     
     if( selectedServer.connected )
     {
-      isConnecting = YES;
+//      isConnecting = YES;
 //      NSArray* buttonList = [NSArray arrayWithObjects:@"View channel list", @"Disconnect", nil];
-//      NSLog(@"GOND qqqqqqqqqq setStartplayback 2 server connected");
+      NSLog(@"GOND setStartplayback 2 server connected: updating channels list");
+	  [self setChannels:channel];
+      if (![_channels isEqualToString:previousChannel] && previousChannel != nil)
+      {
+//        [controllerThread updateServerDisplayMask:selectedServer.server_address :selectedServer.server_port :[self getChannelMask]];
+        [self handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:self withData:nil];
+      }
     }
-    else if (connectedServers.count < MAX_SERVER_CONNECTION)
+    else // if (connectedServers.count < MAX_SERVER_CONNECTION)
     {
-//      NSLog(@"GOND qqqqqqqqqq setStartplayback 2 server connecting : %d", connectedServers.count);
+      [self resetParam];
+      [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
+      
+      NSLog(@"GOND setStartplayback 2 start connection : %d", connectedServers.count);
       [connectedServerList addObject:selectedServer];
 //      NSString* previousChannel = _channels;
       [self setChannels:channel];
@@ -427,10 +453,10 @@ const uint32_t numLayers = 24;
                                                                               }];
       [self handleResponseMessage:IMC_MSG_CONNECTION_CONNECT fromView:self withData:selectedServer];
     }
-    else
-    {
-      NSLog(@"GOND qqqqqqqqqq setStartplayback 3 server full, not handled");
-    }
+//    else
+//    {
+//      NSLog(@"GOND qqqqqqqqqq setStartplayback 3 server full, not handled");
+//    }
     videoPlayerStatus = STATE_PLAY;
     
     [self checkIsSearch];
@@ -1893,6 +1919,7 @@ const uint32_t numLayers = 24;
           if ([connectedServer.server_address isEqualToString:server.server_address]) {
             //Update server version from parse header
             connectedServer.serverVersion = server.serverVersion;
+            connectedServer.connected = TRUE;
             needToAdd = FALSE;
             break;
           }
@@ -3358,10 +3385,13 @@ const uint32_t numLayers = 24;
 - (uint64_t) getChannelMask
 {
   uint64_t channelDisplayMask = 0;
+  NSString* channelStr = @"";
   for(NSString* ch in channelList)
   {
     channelDisplayMask |= ((uint64_t)0x01<<[ch intValue]);
+    channelStr = [NSString stringWithFormat:@"%@, %@", channelStr, ch];
   }
+  NSLog(@"GOND channelMask: %llu, %@", channelDisplayMask, channelStr);
   return channelDisplayMask;
 }
 

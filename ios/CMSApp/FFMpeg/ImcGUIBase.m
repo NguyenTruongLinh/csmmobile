@@ -147,7 +147,8 @@
 
 -(BOOL)isEqual:(ImcConnectionServer *)object
 {
-  return [server_address isEqualToString:object.server_address] && (server_port==object.server_port);
+//  NSLog(@"GOND compare server: %s, %s, %s, %s", [server_address isEqualToString:object.server_address] ? "Y" : "N", (server_port==object.server_port) ? "Y" : "N", [username isEqualToString:object.username] ? "Y" : "N", [password isEqualToString:object.password] ? "Y" : "N");
+  return [server_address isEqualToString:object.server_address] && (server_port==object.server_port) && [username isEqualToString:object.username] && [password isEqualToString:object.password];
 }
 
 @end
