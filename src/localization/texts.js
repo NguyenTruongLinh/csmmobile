@@ -103,6 +103,7 @@ export const VIDEO = {
   NO_VIDEO_COME: 'No incoming video',
   CANNOT_CONNECT: 'Cannot connect to NVR',
   WRONG_CLOUD_TYPE: 'Cloud type config is incorrect, please contact support.',
+  SNAPSHOT_TAKEN: 'The snapshot has been moved to photo folder.',
 };
 
 export const STREAM_STATUS = {

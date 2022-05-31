@@ -19,6 +19,10 @@ import {
   Gesture,
   Directions,
 } from 'react-native-gesture-handler';
+import {captureScreen} from 'react-native-view-shot';
+import cmscolors from '../../styles/cmscolors';
+import snackbarUtil from '../../util/snackbar'; ///util/snackbar';
+import CameraRoll from '@react-native-community/cameraroll';
 
 import CMSImage from '../../components/containers/CMSImage';
 
@@ -34,7 +38,12 @@ import {
 } from '../../consts/video';
 import {CALENDAR_DATE_FORMAT, NVRPlayerConfig} from '../../consts/misc';
 
-import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../../localization/texts';
+import {
+  VIDEO as VIDEO_TXT,
+  STREAM_STATUS,
+  VIDEO,
+} from '../../localization/texts';
+
 import {V3_1_BITRATE_USAGE} from '../../stores/types/hls';
 
 const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
@@ -1282,15 +1291,23 @@ class HLSStreamingView extends React.Component {
     );
   };
 
+  onSnapshotSuccess = () => {
+    snackbarUtil.showToast(VIDEO.SNAPSHOT_TAKEN, cmscolors.Success);
+  };
+
+  takeSnapshotNative = () => {
+    console.log(
+      '0523 takeSnapshotNative this.player.takeScreenShot = ',
+      this.player.takeScreenShot
+    );
+    if (this.player.takeScreenShot) {
+      this.player.takeScreenShot();
+    }
+  };
+
   render() {
-    const {
-      width,
-      height,
-      streamData,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
+      this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
@@ -1383,6 +1400,7 @@ class HLSStreamingView extends React.Component {
                     onPlaybackStalled={this.onPlaybackStalled}
                     onPlaybackResume={this.onPlaybackResume}
                     onBandwidthUpdate={this.onBandwidthUpdate}
+                    onSnapshotSuccess={this.onSnapshotSuccess}
                     onProgress={this.onProgress}
                     onLoad={this.onLoad}
                     onSeek={event =>
@@ -1404,7 +1422,7 @@ class HLSStreamingView extends React.Component {
                     preferredForwardBufferDuration={5}
                     playInBackground={true}
                     playWhenInactive={true}
-                    useTextureView={false}
+                    useTextureView={singlePlayer}
                     disableFocus={true}
                     bufferConfig={{
                       minBufferMs: 3500,

@@ -60,6 +60,8 @@
 	<string>LaunchScreen</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Our application needs permission to write photos...</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Our application needs permission to write photos...</string>
 	<key>Non-Exempt Encryption</key>
 	<false/>
 	<key>UIAppFonts</key>

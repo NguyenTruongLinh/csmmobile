@@ -10,6 +10,7 @@ import {
   AppState,
   TouchableOpacity,
   FlatList,
+  PermissionsAndroid,
 } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import {inject, observer} from 'mobx-react';
@@ -39,7 +40,9 @@ import {StatusBar} from 'react-native';
 import VideoDateModal from './videoDateModal';
 import VideoTimeModal from './videoTimeModal';
 
-import snackbar from '../../util/snackbar';
+import snackbarUtil from '../../util/snackbar';
+import CameraRoll from '@react-native-community/cameraroll';
+
 import {normalize, isNullOrUndef, getAutoRotateState} from '../../util/general';
 import {
   CLOUD_TYPE,
@@ -49,13 +52,18 @@ import {
   VIDEO_INACTIVE_TIMEOUT,
 } from '../../consts/video';
 import {
+  STREAM_STATUS,
+  VIDEO,
+  VIDEO as VIDEO_TXT,
+} from '../../localization/texts';
+import {
   NVRPlayerConfig,
   CALENDAR_DATE_FORMAT,
   OrientationType,
   DateFormat,
 } from '../../consts/misc';
+import ViewShot from 'react-native-view-shot';
 import CMSColors from '../../styles/cmscolors';
-import {STREAM_STATUS, VIDEO as VIDEO_TXT} from '../../localization/texts';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 
 import videoStyles from '../../styles/scenes/videoPlayer.style';
@@ -774,11 +782,8 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {
-      selectedStream,
-      isAuthenticated,
-      isAPIPermissionSupported,
-    } = videoStore;
+    const {selectedStream, isAuthenticated, isAPIPermissionSupported} =
+      videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
@@ -926,7 +931,7 @@ class VideoPlayerView extends Component {
                 top: -sHeight,
               },
         ]}>
-        <View style={{flex: 75, alignContent: 'flex-start'}}>
+        <View style={{flex: 70, alignContent: 'flex-start'}}>
           {this.renderTimeline()}
         </View>
         <View
@@ -1065,6 +1070,46 @@ class VideoPlayerView extends Component {
     );
   };
 
+  hasAndroidPermission = async () => {
+    const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+
+    const hasPermission = await PermissionsAndroid.check(permission);
+    if (hasPermission) {
+      return true;
+    }
+
+    const status = await PermissionsAndroid.request(permission);
+    return status === 'granted';
+  };
+
+  takeSnapshot = () => {
+    const {videoStore} = this.props;
+    this.playerRef.resetZoom();
+    setTimeout(() => {
+      if (Platform.OS === 'ios' && videoStore.cloudType == CLOUD_TYPE.HLS) {
+        this.playerRef.takeSnapshotNative();
+      } else {
+        this.viewShot.capture().then(async fileSource => {
+          console.log('takeSnapshot fileSource = ', fileSource);
+          if (
+            Platform.OS === 'android' &&
+            !(await this.hasAndroidPermission())
+          ) {
+            return;
+          }
+          CameraRoll.save(fileSource, {type: 'photo'})
+            .then(() => {
+              snackbarUtil.showToast(VIDEO.SNAPSHOT_TAKEN, cmscolors.Success);
+              console.log('takeSnapshot SUCC fileDest = ');
+            })
+            .catch(function (error) {
+              console.log('takeSnapshot ERROR = ', error);
+            });
+        });
+      }
+    }, 100);
+  };
+
   renderFeatureButtons = () => {
     const {videoStore} = this.props;
     // const {sWidth, sHeight} = this.state;
@@ -1101,6 +1146,16 @@ class VideoPlayerView extends Component {
                   ? !videoStore.canSearchSelectedChannel
                   : !videoStore.canLiveSelectedChannel
               }
+            />
+          </View>
+        )}
+        {this.state.showController && (
+          <View style={styles.buttonWrap}>
+            <CMSTouchableIcon
+              iconCustom={'camera'}
+              color={CMSColors.White}
+              size={IconSize}
+              onPress={this.takeSnapshot}
             />
           </View>
         )}
@@ -1364,18 +1419,14 @@ class VideoPlayerView extends Component {
           ref={r => (this.authenRef = r)}
           onSubmit={this.onAuthenSubmit}
         />
-        <View
-          style={styles.playerContainer}
-          // onLongPress={__DEV__ ? this.onShowControlButtons : undefined}
-        >
-          {/* <Swipe
-            onSwipeLeft={this.onNext}
-            onSwipeRight={this.onPrevious}
-            onPress={this.onShowControlButtons}
-            > */}
-          {videoPlayer}
+        <View style={styles.playerContainer}>
+          <ViewShot
+            ref={ref => {
+              this.viewShot = ref;
+            }}>
+            {videoPlayer}
+          </ViewShot>
           {controlButtons}
-          {/* </Swipe> */}
         </View>
         {buttons}
         {timeline}
@@ -1557,7 +1608,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   footerButtonsWrap: {
-    flex: 25,
+    flex: 30,
     justifyContent: 'center',
     paddingLeft: 20,
   },
