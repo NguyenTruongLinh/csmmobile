@@ -1306,23 +1306,35 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
     const playbackUrl =
       streamUrl && streamUrl.length > 0 ? streamUrl /*+ urlParams*/ : null;
+    const poster = streamData.snapshot
+      ? typeof streamData.snapshot == 'object'
+        ? streamData.snapshot.uri ?? ''
+        : '' + streamData.snapshot
+      : '';
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
-        videoStore.paused,
+        // videoStore.paused,
         // ', status: ',
-        playbackUrl,
-        'width: ',
-        width,
-        'height: ',
-        height
+        playbackUrl
+        // 'width: ',
+        // width,
+        // 'height: ',
+        // height
+        // streamData.snapshot
       );
 
     return (
@@ -1438,7 +1450,8 @@ class HLSStreamingView extends React.Component {
                       {scaleX: this.state.zoom},
                       {scaleY: this.state.zoom},
                     ]}
-                    poster={streamData.snapshot}
+                    poster={poster}
+                    posterResizeMode="cover"
                   />
                 )
                 // ) : null

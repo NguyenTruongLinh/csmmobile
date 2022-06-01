@@ -191,6 +191,7 @@ class LiveChannelsView extends React.Component {
             authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED &&
             videoStore.canLoadStream == true
           ) {
+            this.setHeader(true);
             videoStore.getVideoInfos();
           }
         }
