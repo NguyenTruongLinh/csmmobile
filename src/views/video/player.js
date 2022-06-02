@@ -1091,7 +1091,7 @@ class VideoPlayerView extends Component {
     setTimeout(() => {
       if (Platform.OS === 'ios' && videoStore.cloudType == CLOUD_TYPE.HLS) {
         this.playerRef.takeSnapshotNative();
-      } else {
+      } else if (this.viewShot) {
         this.viewShot.capture().then(async fileSource => {
           console.log('takeSnapshot fileSource = ', fileSource);
           if (
@@ -1159,6 +1159,7 @@ class VideoPlayerView extends Component {
               color={CMSColors.White}
               size={IconSize}
               onPress={this.takeSnapshot}
+              disabled={!this.viewShot}
             />
           </View>
         )}

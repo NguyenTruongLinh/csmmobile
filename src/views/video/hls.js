@@ -1309,11 +1309,11 @@ class HLSStreamingView extends React.Component {
   };
 
   takeSnapshotNative = () => {
-    console.log(
-      '0523 takeSnapshotNative this.player.takeScreenShot = ',
-      this.player.takeScreenShot
-    );
-    if (this.player.takeScreenShot) {
+    if (this.player && this.player.takeScreenShot) {
+      console.log(
+        '0523 takeSnapshotNative this.player.takeScreenShot = ',
+        this.player.takeScreenShot
+      );
       this.player.takeScreenShot();
     }
   };
