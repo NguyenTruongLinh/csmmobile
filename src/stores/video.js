@@ -512,6 +512,22 @@ export const VideoModel = types
       }
       return null;
     },
+    get videoStreams() {
+      if (self.allChannels.length == 0) return [];
+      switch (self.cloudType) {
+        case CLOUD_TYPE.DEFAULT:
+        case CLOUD_TYPE.DIRECTION:
+          return self.directStreams;
+        case CLOUD_TYPE.HLS:
+          return self.hlsStreams;
+        // return self.selectedHLSStream;
+        case CLOUD_TYPE.RTC:
+          return self.rtcConnection.viewers;
+      }
+      __DEV__ &&
+        console.log('GOND videoStreams: cloud type not valid', self.cloudType);
+      return [];
+    },
     get privilegedLiveChannels() {
       __DEV__ &&
         console.log('GOND HLS privilegedLiveChannels: ', self.activeChannels);
@@ -792,6 +808,8 @@ export const VideoModel = types
     },
     // #region permission's computed values
     canPlaySelectedChannel(isLive) {
+      if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE)
+        return false;
       if (self.isAPIPermissionSupported)
         return self.selectedChannelData
           ? isLive
@@ -801,6 +819,8 @@ export const VideoModel = types
       return true;
     },
     get canLiveSelectedChannel() {
+      if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE)
+        return false;
       if (self.isAPIPermissionSupported)
         return self.selectedChannelData
           ? self.selectedChannelData.canLive
@@ -809,6 +829,8 @@ export const VideoModel = types
       return true;
     },
     get canSearchSelectedChannel() {
+      if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE)
+        return false;
       if (self.isAPIPermissionSupported)
         return self.selectedChannelData
           ? self.selectedChannelData.canSearch
@@ -3298,11 +3320,11 @@ export const VideoModel = types
       // #endregion WebRTC streaming
       // #region Get and receive videoinfos
       getVideoInfos: flow(function* (channelNo) {
-        __DEV__ &&
-          console.trace(
-            'GOND getVideoInfos ',
-            channelNo != undefined ? channelNo : self.allChannels
-          );
+        // __DEV__ &&
+        //   console.trace(
+        //     'GOND getVideoInfos ',
+        //     channelNo != undefined ? channelNo : self.allChannels
+        //   );
         let getInfoPromise = null;
         if (!self.allChannels || self.allChannels.length <= 0) {
           let res = yield self.getDisplayingChannels();
@@ -3346,7 +3368,24 @@ export const VideoModel = types
 
         // dongpt: check permission
         if (!self.hasNVRPermission) {
-          __DEV__ && console.log('GOND getVideoInfos no permission!');
+          __DEV__ &&
+            console.log(
+              'GOND getVideoInfos no permission! ',
+              self.selectedStream
+            );
+          if (self.selectedStream) {
+            self.selectedStream.setStreamStatus({
+              isLoading: false,
+              connectionStatus: STREAM_STATUS.NO_PERMISSION,
+            });
+          } else {
+            self.videoStreams.forEach(s =>
+              s.setStreamStatus({
+                isLoading: false,
+                connectionStatus: STREAM_STATUS.NO_PERMISSION,
+              })
+            );
+          }
           return;
         }
 
@@ -3614,7 +3653,8 @@ export const VideoModel = types
           ) {
             // dongpt: no permission or channel list is empty
             self.authenticationState = AUTHENTICATION_STATES.NO_PRIVILEGE;
-            snackbarUtil.onMessage(STREAM_STATUS.NO_PERMISSION);
+            // snackbarUtil.onMessage(STREAM_STATUS.NO_PERMISSION);
+
             return;
           }
 

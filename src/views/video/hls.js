@@ -222,12 +222,14 @@ class HLSStreamingView extends React.Component {
     __DEV__ &&
       console.log('HLSStreamingView componentDidMount', this.props.streamData);
     this._isMounted = true;
+    const {appStore, videoStore, isLive} = this.props;
+
     this.initReactions();
     this.setStreamStatus({
       connectionStatus: STREAM_STATUS.CONNECTING,
       isLoading: true,
     });
-    if (this.props.videoStore.paused && this.props.isLive) {
+    if (videoStore.paused && isLive) {
       this.pause(false);
     }
     // if (this.props.isLive || !videoStore.paused) {
@@ -236,7 +238,7 @@ class HLSStreamingView extends React.Component {
     // }
 
     this.trackingVideoSource = util.extractModuleNameFromScreenName(
-      this.props.appStore.naviService.getPreviousRouteName()
+      appStore.naviService.getPreviousRouteName()
     );
   }
 
@@ -553,9 +555,20 @@ class HLSStreamingView extends React.Component {
   };
 
   setStreamStatus = statusObject => {
-    const {streamData, singlePlayer} = this.props;
+    const {streamData, singlePlayer, videoStore, isLive} = this.props;
     if (!this._isMounted) return;
-
+    // __DEV__ && console.log(
+    //   'GOND HLS setStreamStatus!',
+    //   streamData.channel.canPlayMode(isLive),
+    //   streamData.channel
+    // );
+    if (
+      !videoStore.hasNVRPermission ||
+      (streamData.channel && !streamData.channel.canPlayMode(isLive))
+    ) {
+      console.log('GOND HLS no permission: do not change status!');
+      return;
+    }
     if (singlePlayer) {
       streamData.setStreamStatus(statusObject);
     } else {

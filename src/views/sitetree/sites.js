@@ -18,7 +18,7 @@ import CMSRipple from '../../components/controls/CMSRipple';
 import AlertDismissModal from '../health/modals/dismissModal';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 // import InputTextIcon from '../../components/controls/InputTextIcon';
-// import BackButton from '../../components/controls/BackButton';
+import BackButton from '../../components/controls/BackButton';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 
@@ -140,6 +140,7 @@ class SitesView extends Component {
       __DEV__ &&
         console.log('SitesView setHeader isHealthRoute: ', isHealthRoute);
       navigation.setOptions({
+        headerLeft: () => <BackButton navigator={navigation} />,
         headerRight: () => (
           <View style={styles.headerContainer}>{searchButton}</View>
         ),

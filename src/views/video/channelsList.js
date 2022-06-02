@@ -14,7 +14,6 @@ import {inject, observer} from 'mobx-react';
 import {Dropdown} from 'react-native-element-dropdown';
 
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import InputTextIcon from '../../components/controls/InputTextIcon';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSImage from '../../components/containers/CMSImage';
 import {IconCustom} from '../../components/CMSStyleSheet';
@@ -25,7 +24,6 @@ import CMSColors from '../../styles/cmscolors';
 import {CLOUD_TYPE} from '../../consts/video';
 import ROUTERS from '../../consts/routes';
 import {MODULE_PERMISSIONS, ChannelStatus} from '../../consts/misc';
-import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 // import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
 import {
@@ -247,6 +245,7 @@ class ChannelsListView extends React.Component {
     if (!videoStore.selectedDVR || item.kDVR != videoStore.selectedDVR.kDVR) {
       sitesStore.selectDVR(item.kDVR); // select default
       videoStore.selectDVR(item.kDVR);
+      videoStore.releaseStreams();
       videoStore.resetNVRAuthentication(true);
       this.getChannelsInfo();
     }
@@ -357,17 +356,25 @@ class ChannelsListView extends React.Component {
         videoStore.hasNVRPermission,
         videoStore.isAPIPermissionSupported
       );
-    return userStore.hasPermission(MODULE_PERMISSIONS.VSC) &&
-      videoStore.hasNVRPermission ? (
-      <View style={styles.infoTextContainer}>
-        <Text>{VIDEO_TXT.SELECT_CHANNEL_1}</Text>
-        <IconCustom name="add-cam" size={22} color={CMSColors.ColorText} />
-        <Text>{VIDEO_TXT.SELECT_CHANNEL_2}</Text>
-      </View>
-    ) : (
+
+    if (
+      userStore.hasPermission(MODULE_PERMISSIONS.VSC) &&
+      videoStore.hasNVRPermission
+    )
+      return (
+        <View style={styles.infoTextContainer}>
+          <Text>{VIDEO_TXT.SELECT_CHANNEL_1}</Text>
+          <IconCustom name="add-cam" size={22} color={CMSColors.ColorText} />
+          <Text>{VIDEO_TXT.SELECT_CHANNEL_2}</Text>
+        </View>
+      );
+
+    return (
       <View style={styles.infoTextContainer}>
         <Text>
-          {userStore.hasPermission(MODULE_PERMISSIONS.VSC)
+          {videoStore.allChannels.length == 0
+            ? VIDEO_TXT.NO_CHANNEL
+            : userStore.hasPermission(MODULE_PERMISSIONS.VSC)
             ? STREAM_STATUS.NO_PERMISSION
             : VIDEO_TXT.NO_PERMISSION}
         </Text>
@@ -427,7 +434,8 @@ class ChannelsListView extends React.Component {
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           {isLoading ||
           !videoStore.isCloud ||
-          videoStore.displayChannels.length > 0 ? (
+          (videoStore.displayChannels.length > 0 &&
+            videoStore.hasNVRPermission) ? (
             <FlatList
               ref={r => (this.videoListRef = r)}
               renderItem={renderItem}

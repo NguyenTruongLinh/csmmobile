@@ -96,7 +96,7 @@ const HLSURLModel = types
     },
     resetRetries() {
       if (__DEV__) {
-        console.log('GOND reset GetUrlDirectly retries: ---');
+        // console.trace('GOND reset GetUrlDirectly retries: ---');
         // console.trace();
       }
       self.getUrlRetries = 0;
@@ -108,6 +108,7 @@ const HLSURLModel = types
       }
     },
     setStreamStatus({connectionStatus, error, isLoading, needReset}) {
+      // __DEV__ && console.trace('GOND hls setStatus: ', isLoading);
       connectionStatus != undefined &&
         (self.connectionStatus = connectionStatus);
       isLoading != undefined && (self.isLoading = isLoading);

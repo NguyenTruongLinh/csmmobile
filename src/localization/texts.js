@@ -95,6 +95,7 @@ export const VIDEO = {
   LIVE: 'Live',
   SEARCH: 'Search',
   NO_VIDEO: 'No video',
+  NO_CHANNEL: 'No channel',
   CHANNEL_ERROR: 'Channel not found!',
   AUTHEN_TITLE: 'NVR Authorization',
   SELECT_CHANNEL_1: 'Please press ',
