@@ -782,8 +782,11 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {selectedStream, isAuthenticated, isAPIPermissionSupported} =
-      videoStore;
+    const {
+      selectedStream,
+      isAuthenticated,
+      isAPIPermissionSupported,
+    } = videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
@@ -1099,7 +1102,7 @@ class VideoPlayerView extends Component {
           }
           CameraRoll.save(fileSource, {type: 'photo'})
             .then(() => {
-              snackbarUtil.showToast(VIDEO.SNAPSHOT_TAKEN, cmscolors.Success);
+              snackbarUtil.showToast(VIDEO.SNAPSHOT_TAKEN, CMSColors.Success);
               console.log('takeSnapshot SUCC fileDest = ');
             })
             .catch(function (error) {
