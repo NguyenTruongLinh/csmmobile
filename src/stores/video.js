@@ -739,26 +739,26 @@ export const VideoModel = types
         self.cloudType == CLOUD_TYPE.HLS
           ? self.videoData.filter(s => s.isActive)
           : self.videoData;
-      __DEV__ && console.log('GOND videoDataList 1', videoDataList);
+      // __DEV__ && console.log('GOND videoDataList 1', videoDataList);
       if (!videoDataList || videoDataList.length == 0) {
         __DEV__ && console.log('GOND videoDataList is empty <>');
         return [];
       }
 
-      __DEV__ &&
-        console.log(
-          'GOND videoDataList 2: ',
-          self.gridItemsPerPage,
-          self.currentGridPage,
-          videoDataList
-        );
+      // __DEV__ &&
+      //   console.log(
+      //     'GOND videoDataList 2: ',
+      //     self.gridItemsPerPage,
+      //     self.currentGridPage,
+      //     videoDataList
+      //   );
       videoDataList = videoDataList.filter(
         (_, index) =>
           index < self.gridItemsPerPage * (self.currentGridPage + 1) &&
           index >= self.gridItemsPerPage * self.currentGridPage
       );
 
-      __DEV__ && console.log('GOND videoDataList 3: ', videoDataList);
+      // __DEV__ && console.log('GOND videoDataList 3: ', videoDataList);
 
       while (videoDataList.length % self.gridLayout != 0)
         videoDataList.push({});
