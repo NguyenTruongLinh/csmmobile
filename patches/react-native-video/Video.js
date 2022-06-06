@@ -316,6 +316,7 @@ export default class Video extends Component {
       onVideoEnd: this._onEnd,
       onVideoBuffer: this._onBuffer,
       onVideoBandwidthUpdate: this._onBandwidthUpdate,
+      onBandwidthUpdate: this._onBandwidthUpdate, //patch change
       onTimedMetadata: this._onTimedMetadata,
       onVideoAudioBecomingNoisy: this._onAudioBecomingNoisy,
       onVideoExternalPlaybackChange: this._onExternalPlaybackChange,

@@ -39,7 +39,7 @@ import CMSColors from '../../styles/cmscolors';
 import {DateTime} from 'luxon';
 import {DateFormat, NVRPlayerConfig} from '../../consts/misc';
 
-export const V3_1_BITRATE_USAGE = false;
+export const V3_1_BITRATE_USAGE = true;
 const MAX_RETRY = 7;
 const KEEP_ALIVE_TIMEOUT = 60000;
 const REST_TIME = 2000;
@@ -789,8 +789,8 @@ export default HLSStreamModel = types
         configs
       );
       try {
-        const response = yield kinesisVideoArchivedContent.getHLSStreamingSessionURL(
-          {
+        const response =
+          yield kinesisVideoArchivedContent.getHLSStreamingSessionURL({
             StreamName: self.streamName,
             PlaybackMode: HLSPlaybackMode.LIVE,
             HLSFragmentSelector: {
@@ -808,8 +808,7 @@ export default HLSStreamModel = types
             ContainerFormat: ContainerFormat.FRAGMENTED_MP4,
             MaxMediaPlaylistFragmentResults: self.isLive ? 1000 : 15,
             Expires: HLS_MAX_EXPIRE_TIME,
-          }
-        );
+          });
 
         __DEV__ &&
           console.log(
