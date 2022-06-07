@@ -1308,6 +1308,7 @@ class VideoPlayerView extends Component {
           dataSource={item.snapshot}
           style={{height: imageW}}
           styleImage={[borderStyle, {width: imageW, height: imageW}]}
+          showLoading={false}
           dataCompleteHandler={(params, imageData) =>
             this.onChannelSnapshotLoaded(item, params, imageData)
           }
