@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.TimeZone;
+import android.util.Log;
 
 import i3.mobile.search.setting.SearchTimeData;
 import i3.mobile.search.setting.ServerTimeZone;
@@ -104,11 +105,15 @@ public class ServerSite
     }
     public boolean EqualWith(ServerSite svr)
     {
-        return this.EqualWith(svr.serverName, svr.serverIP, svr.serverPort, svr.serverID, svr.userName, svr.pass);
+        if (svr == null ) {
+            return false;
+        }
+        // Log.i("GOND","Ip: " + svr.serverIP + ", port: " + svr.serverPort + ", id: " + svr.serverID + ", name: " + svr.userName + ", pass: " + svr.pass);
+        return this.EqualWith(svr.serverIP, svr.serverPort, svr.serverID, svr.userName, svr.pass);
     }
-    public boolean EqualWith(String _svrName, String _svrIP, String _svrPort, String _svrID, String _usr, String _pass)
+    public boolean EqualWith(String _svrIP, String _svrPort, String _svrID, String _usr, String _pass)
     {
-        if((!_svrName.equals(serverName)) || (!_svrIP.equals(serverIP)) || (!_svrPort.equals(serverPort))
+        if((!_svrIP.equals(serverIP)) || (!_svrPort.equals(serverPort))
                 ||(!_svrID.equals(serverID)) || (!_usr.equals(userName)) || (!_pass.equals(pass)))
             return false;
         return true;

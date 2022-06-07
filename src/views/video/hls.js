@@ -19,10 +19,6 @@ import {
   Gesture,
   Directions,
 } from 'react-native-gesture-handler';
-import {captureScreen} from 'react-native-view-shot';
-import cmscolors from '../../styles/cmscolors';
-import snackbarUtil from '../../util/snackbar'; ///util/snackbar';
-import CameraRoll from '@react-native-community/cameraroll';
 
 import CMSImage from '../../components/containers/CMSImage';
 
@@ -115,9 +111,10 @@ class HLSStreamingView extends React.Component {
     this.waitingForNewUrl = false;
     this.lastSeekableDuration = 0;
     this.skippedDuration = 0;
+    this.player = null;
 
-    this.tapGesture = Gesture.Tap().onStart(_e => {
-      props.onPress();
+    const tapGesture = Gesture.Tap().onStart(_e => {
+      props.onPress && props.onPress();
       this.setState({isFilterShown: !this.state.isFilterShown});
     });
 
@@ -139,7 +136,7 @@ class HLSStreamingView extends React.Component {
     //     });
     //   });
 
-    this.rightFlingGesture = Gesture.Fling()
+    const rightFlingGesture = Gesture.Fling()
       .direction(Directions.RIGHT)
       .onStart(e => {
         __DEV__ &&
@@ -152,7 +149,7 @@ class HLSStreamingView extends React.Component {
         } else props.onSwipeRight();
       });
 
-    this.leftFlingGesture = Gesture.Fling()
+    const leftFlingGesture = Gesture.Fling()
       .direction(Directions.LEFT)
       .onEnd(e => {
         __DEV__ && console.log(` leftFlingGesture e = `, JSON.stringify(e));
@@ -160,7 +157,7 @@ class HLSStreamingView extends React.Component {
         } else props.onSwipeLeft();
       });
 
-    this.pinchGesture = Gesture.Pinch()
+    const pinchGesture = Gesture.Pinch()
       .onStart(e => {
         this.curZoom = this.state.zoom;
         this.originFocalX = this.computeOriginFocal(
@@ -196,10 +193,10 @@ class HLSStreamingView extends React.Component {
       });
 
     this.composed = Gesture.Race(
-      this.pinchGesture,
-      this.tapGesture,
-      this.rightFlingGesture,
-      this.leftFlingGesture
+      pinchGesture,
+      tapGesture,
+      rightFlingGesture,
+      leftFlingGesture
       // this.panGesture
     );
   }
@@ -277,7 +274,7 @@ class HLSStreamingView extends React.Component {
 
   initReactions = () => {
     // streamData could be changed
-    const {/*streamData,*/ videoStore, singlePlayer} = this.props;
+    const {streamData, videoStore, singlePlayer} = this.props;
     this.reactions = [
       reaction(
         () => this.props.streamData.error,
@@ -304,6 +301,14 @@ class HLSStreamingView extends React.Component {
               streamUrl,
               singlePlayer ? videoStore.isLive : true
             );
+          }
+        }
+      ),
+      reaction(
+        () => streamData.snapshot,
+        ss => {
+          if (ss && typeof ss === 'string' && ss.length > 0 && !this.player) {
+            this.forceUpdate();
           }
         }
       ),
@@ -1305,7 +1310,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onSnapshotSuccess = () => {
-    snackbarUtil.showToast(VIDEO.SNAPSHOT_TAKEN, cmscolors.Success);
+    snackbar.showToast(VIDEO.SNAPSHOT_TAKEN, CMSColors.Success);
   };
 
   takeSnapshotNative = () => {

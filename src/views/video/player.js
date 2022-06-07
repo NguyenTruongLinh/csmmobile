@@ -8,7 +8,7 @@ import {
   Dimensions,
   Platform,
   AppState,
-  TouchableOpacity,
+  TouchableWithoutFeedback,
   FlatList,
   PermissionsAndroid,
 } from 'react-native';
@@ -407,7 +407,7 @@ class VideoPlayerView extends Component {
       // );
     }
     StatusBar.setHidden(videoStore.isFullscreen);
-    this.playerRef.resetZoom();
+    this.playerRef && this.playerRef.resetZoom();
   };
 
   onSwitchLiveSearch = () => {
@@ -522,7 +522,7 @@ class VideoPlayerView extends Component {
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onChangeChannel(channelNo);
     videoStore.selectChannel(channelNo);
-    this.playerRef.resetZoom();
+    this.playerRef && this.playerRef.resetZoom();
     // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
   };
 
@@ -655,12 +655,12 @@ class VideoPlayerView extends Component {
 
   onNext = () => {
     this.props.videoStore.nextChannel();
-    this.playerRef.resetZoom();
+    this.playerRef && this.playerRef.resetZoom();
   };
 
   onPrevious = () => {
     this.props.videoStore.previousChannel();
-    this.playerRef.resetZoom();
+    this.playerRef && this.playerRef.resetZoom();
   };
 
   onDraggingTimeRuler = time => {
@@ -802,36 +802,43 @@ class VideoPlayerView extends Component {
       !isAuthenticated
     ) {
       return (
-        <Image
-          style={{width: width, height: height}}
-          source={NVR_Play_NoVideo_Image}
-          resizeMode="cover"
-        />
+        <TouchableWithoutFeedback onPress={this.onShowControlButtons}>
+          <Image
+            style={{width: width, height: height}}
+            source={NVR_Play_NoVideo_Image}
+            resizeMode="cover"
+          />
+        </TouchableWithoutFeedback>
       );
     }
 
     if (
       isAPIPermissionSupported &&
-      (selectedStream.channel && videoStore.isLive
-        ? !selectedStream.channel.canLive
-        : !selectedStream.channel.canSearch)
+      !videoStore.canPlaySelectedChannel()
+      // (selectedStream.channel && videoStore.isLive
+      //   ? !selectedStream.channel.canLive
+      //   : !selectedStream.channel.canSearch)
     ) {
       __DEV__ && console.log('GOND renderVid player NO PERMISSION');
       return (
         <ImageBackground
-          source={NVR_Play_NoVideo_Image}
+          source={selectedStream.snapshot ?? NVR_Play_NoVideo_Image}
           style={{width: width, height: height}}
           resizeMode="cover">
-          <Text style={videoStyles.channelInfo}>
-            {selectedStream.channelName ?? 'Unknown'}
-          </Text>
-          <View style={videoStyles.statusView}>
-            <View style={videoStyles.textContainer}>
-              <Text style={videoStyles.textMessage}>
-                {STREAM_STATUS.NO_PERMISSION}
+          <TouchableWithoutFeedback onPress={this.onShowControlButtons}>
+            <View style={{flex: 1}}>
+              <Text style={videoStyles.channelInfo}>
+                {selectedStream.channelName ?? 'Unknown'}
               </Text>
+              <View style={videoStyles.statusView}>
+                <View style={videoStyles.textContainer}>
+                  <Text style={videoStyles.textMessage}>
+                    {STREAM_STATUS.NO_PERMISSION}
+                  </Text>
+                </View>
+              </View>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </ImageBackground>
       );
     }
@@ -869,12 +876,6 @@ class VideoPlayerView extends Component {
             {...playerProps}
             ref={r => (this.playerRef = r)}
             streamData={selectedStream}
-            // streamUrl={
-            //   selectedStream.targetUrl
-            //     ? videoStore.selectedStream.targetUrl.url
-            //     : null
-            // }
-            // streamUrl={selectedStream.streamUrl}
             timezone={videoStore.timezone}
             onSwipeLeft={this.onNext}
             onSwipeRight={this.onPrevious}
@@ -888,6 +889,7 @@ class VideoPlayerView extends Component {
             {...playerProps}
             ref={r => (this.playerRef = r)}
             viewer={selectedStream}
+            onPress={this.onShowControlButtons}
           />
         );
         break;
@@ -1087,13 +1089,17 @@ class VideoPlayerView extends Component {
 
   takeSnapshot = () => {
     const {videoStore} = this.props;
+    if (!this.playerRef) {
+      console.log('takeSnapshot player not ready');
+      return;
+    }
     this.playerRef.resetZoom();
     setTimeout(() => {
       if (Platform.OS === 'ios' && videoStore.cloudType == CLOUD_TYPE.HLS) {
         this.playerRef.takeSnapshotNative();
       } else if (this.viewShot) {
         this.viewShot.capture().then(async fileSource => {
-          console.log('takeSnapshot fileSource = ', fileSource);
+          // console.log('takeSnapshot fileSource = ', fileSource);
           if (
             Platform.OS === 'android' &&
             !(await this.hasAndroidPermission())
@@ -1103,7 +1109,7 @@ class VideoPlayerView extends Component {
           CameraRoll.save(fileSource, {type: 'photo'})
             .then(() => {
               snackbarUtil.showToast(VIDEO.SNAPSHOT_TAKEN, CMSColors.Success);
-              console.log('takeSnapshot SUCC fileDest = ');
+              // console.log('takeSnapshot SUCC fileDest = ');
             })
             .catch(function (error) {
               console.log('takeSnapshot ERROR = ', error);
@@ -1114,9 +1120,12 @@ class VideoPlayerView extends Component {
   };
 
   renderFeatureButtons = () => {
-    const {videoStore} = this.props;
+    const {videoStore, isLive} = this.props;
     // const {sWidth, sHeight} = this.state;
+    const {showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
+    __DEV__ && console.log('GOND renderFeatureButtons', showController);
+
     return (
       <View
         style={
@@ -1125,13 +1134,14 @@ class VideoPlayerView extends Component {
             : [
                 styles.buttonsContainers,
                 {
-                  backgroundColor: this.state.showController
-                    ? CMSColors.DarkElement
-                    : CMSColors.Transparent,
+                  backgroundColor:
+                    showController && !isLive
+                      ? CMSColors.DarkElement
+                      : CMSColors.Transparent,
                 },
               ]
         }>
-        {this.state.showController && (
+        {showController && (
           <View style={styles.buttonWrap}>
             <CMSTouchableIcon
               iconCustom={
@@ -1152,7 +1162,7 @@ class VideoPlayerView extends Component {
             />
           </View>
         )}
-        {this.state.showController && (
+        {showController && (
           <View style={styles.buttonWrap}>
             <CMSTouchableIcon
               iconCustom={'camera'}
@@ -1163,7 +1173,7 @@ class VideoPlayerView extends Component {
             />
           </View>
         )}
-        {this.state.showController && (
+        {showController && (
           <View style={styles.buttonWrap}>
             <CMSTouchableIcon
               iconCustom="hd"
@@ -1184,7 +1194,7 @@ class VideoPlayerView extends Component {
             />
           </View>
         )}
-        {this.state.showController && (
+        {showController && (
           <View style={styles.buttonWrap}>
             <CMSTouchableIcon
               iconCustom={
@@ -1295,7 +1305,7 @@ class VideoPlayerView extends Component {
         ]}
         onPress={() => this.onSwitchChannel(channelNo)}>
         <CMSImage
-          // resizeMode="cover"
+          dataSource={item.snapshot}
           style={{height: imageW}}
           styleImage={[borderStyle, {width: imageW, height: imageW}]}
           dataCompleteHandler={(params, imageData) =>

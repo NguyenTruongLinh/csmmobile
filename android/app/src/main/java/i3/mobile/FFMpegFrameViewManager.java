@@ -270,14 +270,16 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
 
     ServerSite GetServerInfo(@Nullable ReadableMap args)
     {
+        if (args.isNull("serverIP") || args.isNull("port") || args.isNull("userName"))
+            return null;
         ServerSite server = new ServerSite();
         server.serverIP = args.getString("serverIP");
         server.serverWANIp = args.getString("publicIP");//WanIp;
-        server.serverName = args.getString("name");//WanIp;//Name;
+        server.serverName = args.isNull("name") ? "" : args.getString("name");//WanIp;//Name;
         server.serverPort =  Integer.toString(args.getInt("port"));//Integer.toString(port);
         server.serverID =  args.getString("serverID"); //serverID;
         server.userName = args.getString("userName"); //UserName;
-        server.pass = args.getString("password"); //Password;
+        server.pass = args.isNull("password") ? "" : args.getString("password"); //Password;
         server.ID = args.getInt("kDVR");// KDVR;
         return server;
     }

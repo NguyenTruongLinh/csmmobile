@@ -808,13 +808,14 @@ export const VideoModel = types
     },
     // #region permission's computed values
     canPlaySelectedChannel(isLive) {
+      const _isLive = isLive === undefined ? self.isLive : isLive;
       if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE)
         return false;
       if (self.isAPIPermissionSupported)
         return self.selectedChannelData
-          ? isLive
+          ? _isLive
             ? self.selectedChannelData.canLive
-            : selectedChannelData.canSearch
+            : self.selectedChannelData.canSearch
           : false;
       return true;
     },
@@ -2036,9 +2037,7 @@ export const VideoModel = types
         // dongpt: check selected stream
         if (
           self.selectedStream &&
-          !self.newList.find(
-            ch => ch.channelNo == self.selectedStream.channelNo
-          )
+          !newList.find(ch => ch.channelNo == self.selectedStream.channelNo)
         ) {
           self.selectedChannel = null;
         }
@@ -2584,6 +2583,12 @@ export const VideoModel = types
           const targetChannel = self.allChannels.find(
             ch => ch.channelNo == channelNo
           );
+          __DEV__ &&
+            console.log(
+              'GOND getHLSInfos single channel, check permission: ',
+              self.isAPIPermissionSupported,
+              targetChannel.canPlayMode(self.isLive)
+            );
           if (
             !targetChannel ||
             (self.isAPIPermissionSupported &&
@@ -2718,49 +2723,62 @@ export const VideoModel = types
             return false;
           }
           if (self.hlsStreams.length > 0) self.releaseHLSStreams();
-          // self.hlsStreams = self.activeChannels.map(ch => {
-          self.hlsStreams = self.privilegedLiveChannels.map(ch => {
+          self.hlsStreams = self.activeChannels.map(ch => {
+            // self.hlsStreams = self.privilegedLiveChannels.map(ch => {
             const newConnection = HLSStreamModel.create({
               // id: util.getRandomId(),
               channel: ch,
-              isLoading: true,
-              connectionStatus: STREAM_STATUS.CONNECTING,
+              isLoading: ch.canLive ? true : false,
+              connectionStatus: ch.canLive
+                ? STREAM_STATUS.CONNECTING
+                : STREAM_STATUS.NO_PERMISSION,
               isHD: self.hdMode,
               isLive: self.isLive,
             });
             newConnection.setOnErrorCallback(self.onHLSError);
-            newConnection.startWaitingForStream(newConnection.targetUrl.sid);
+            ch.canLive &&
+              newConnection.startWaitingForStream(newConnection.targetUrl.sid);
 
             return newConnection;
           });
           self.isLoading = false;
 
-          requestParams = self.hlsStreams.map(s => ({
-            ID: apiService.configToken.devId,
-            sid: s.targetUrl.sid,
-            KDVR: self.kDVR,
-            ChannelNo: s.channel.channelNo + 1,
-            RequestMode: VSCCommand.LIVE, // should include SEARCH? HD?
-            isMobile: true,
-          }));
+          requestParams = self.hlsStreams.reduce((result, s) => {
+            if (s.canLive) {
+              result.push({
+                ID: apiService.configToken.devId,
+                sid: s.targetUrl.sid,
+                KDVR: self.kDVR,
+                ChannelNo: s.channel.channelNo + 1,
+                RequestMode: VSCCommand.LIVE, // should include SEARCH? HD?
+                isMobile: true,
+              });
+            }
+            return result;
+          }, []);
         }
 
-        try {
-          let res = yield apiService.post(
-            VSC.controller,
-            1,
-            VSC.getMultiURL,
-            requestParams
-          );
-          __DEV__ && console.log(`GOND get multi HLS URL: `, res);
-          __DEV__ &&
-            console.log('GOND == PROFILING == Sent VSC Request: ', new Date());
-        } catch (error) {
-          console.log(`Could not get HLS video info: ${error}`);
-          self.shouldShowSnackbar &&
-            self.isInVideoView &&
-            snackbarUtil.handleRequestFailed(error);
-          return false;
+        if (requestParams.length > 0) {
+          try {
+            let res = yield apiService.post(
+              VSC.controller,
+              1,
+              VSC.getMultiURL,
+              requestParams
+            );
+            __DEV__ && console.log(`GOND get multi HLS URL: `, res);
+            __DEV__ &&
+              console.log(
+                'GOND == PROFILING == Sent VSC Request: ',
+                new Date()
+              );
+          } catch (error) {
+            console.log(`Could not get HLS video info: ${error}`);
+            self.shouldShowSnackbar &&
+              self.isInVideoView &&
+              snackbarUtil.handleRequestFailed(error);
+            return false;
+          }
         }
         return true;
       }),
@@ -3619,6 +3637,7 @@ export const VideoModel = types
           self.isAPIPermissionSupported = true;
           let currentArray = res.Sites;
           let currentObject = res;
+          let currentDvr = null;
           while (
             currentArray &&
             currentArray.length > 0 &&
@@ -3633,6 +3652,8 @@ export const VideoModel = types
               currentArray,
               self.isAuthenticated
             );
+          currentDvr = currentObject;
+
           if (
             // !self.isAuthenticated &&
             currentObject.ChannelControlStatus ==
@@ -3684,8 +3705,8 @@ export const VideoModel = types
           // }
           if (self.allChannels.length == 0) {
             console.log(
-              'GOND getDVRPermission should be call after getDisplayingChannels: ',
-              self.allChannels
+              'GOND getDVRPermission should be call after getDisplayingChannels: '
+              // self.allChannels
             );
             //
             // const res = yield self.getDisplayingChannels();
@@ -3702,23 +3723,50 @@ export const VideoModel = types
             currentArray.length > 0 &&
             self.allChannels.length > 0
           ) {
-            self.allChannels = self.allChannels.reduce((result, ch, index) => {
-              let currentChannel =
-                currentArray[index] &&
-                currentArray[index].ChannelNo == ch.channelNo
-                  ? currentArray[index]
-                  : currentArray.find(item => item.ChannelNo == ch.channelNo);
+            // self.allChannels = self.allChannels.reduce((result, ch, index) => {
+            //   let currentChannel =
+            //     currentArray[index] &&
+            //     currentArray[index].ChannelNo == ch.channelNo
+            //       ? currentArray[index]
+            //       : currentArray.find(item => item.ChannelNo == ch.channelNo);
+            //   if (currentChannel) {
+            //     ch.setLiveSearchPermission(
+            //       currentChannel.CanLive,
+            //       currentChannel.CanSearch
+            //     );
+            //   }
+
+            //   result.push(ch);
+            //   return result;
+            // }, []);
+            self.allChannels.forEach(ch => {
+              let currentChannel = currentArray.find(
+                item => item.ChannelNo == ch.channelNo
+              );
+              __DEV__ &&
+                console.log('GOND ::::: update perm ch: ', getSnapshot(ch));
               if (currentChannel) {
+                __DEV__ &&
+                  console.log('GOND update perm found: ', currentChannel);
                 ch.setLiveSearchPermission(
                   currentChannel.CanLive,
                   currentChannel.CanSearch
                 );
+              } else if (currentDvr) {
+                console.log('GOND update perm not found: ', currentDvr);
+                ch.setLiveSearchPermission(
+                  currentDvr.CanLive,
+                  currentDvr.CanSearch
+                );
               }
-
-              result.push(ch);
-              return result;
-            }, []);
+            });
+            __DEV__ &&
+              console.log(
+                'GOND getDVRPermission final channels: ',
+                self.allChannels.map(ch => getSnapshot(ch))
+              );
             self.authenticationState = AUTHENTICATION_STATES.PRIVILEGE_LOADED;
+          } else {
           }
         } catch (ex) {
           console.log('GOND getDVRPermission failed: ', ex);

@@ -88,17 +88,17 @@ class DirectVideoView extends React.Component {
     this.dateChanged = false;
     this.loginTimeout = null;
     this.oldFrameSkipped = 0;
-    this.tapGesture = Gesture.Tap().onStart(_e => {
+    const tapGesture = Gesture.Tap().onStart(_e => {
       __DEV__ &&
         console.log(
           `Gesture.Tap() originFocalX = `,
           this.computeOriginFocal(_e.x, this.state.translateX)
         );
-      props.onPress();
+      props.onPress && props.onPress();
       this.setState({isFilterShown: !this.state.isFilterShown});
     });
 
-    this.rightFlingGesture = Gesture.Fling()
+    const rightFlingGesture = Gesture.Fling()
       .direction(Directions.RIGHT)
       .onStart(e => {
         __DEV__ &&
@@ -111,7 +111,7 @@ class DirectVideoView extends React.Component {
         } else props.onSwipeRight();
       });
 
-    this.leftFlingGesture = Gesture.Fling()
+    const leftFlingGesture = Gesture.Fling()
       .direction(Directions.LEFT)
       .onEnd(e => {
         __DEV__ && console.log(` leftFlingGesture e = `, JSON.stringify(e));
@@ -119,7 +119,7 @@ class DirectVideoView extends React.Component {
         } else props.onSwipeLeft();
       });
 
-    this.pinchGesture = Gesture.Pinch()
+    const pinchGesture = Gesture.Pinch()
       .onStart(e => {
         this.curZoom = this.state.zoom;
         this.originFocalX = this.computeOriginFocal(
@@ -145,13 +145,14 @@ class DirectVideoView extends React.Component {
       });
 
     this.composed = Gesture.Race(
-      this.pinchGesture,
-      this.tapGesture,
-      this.rightFlingGesture,
-      this.leftFlingGesture
+      pinchGesture,
+      tapGesture,
+      rightFlingGesture,
+      leftFlingGesture
       // this.panGesture
     );
   }
+
   computeOriginFocal(zoomedFocal, translate) {
     return (zoomedFocal - translate) / this.state.zoom;
   }

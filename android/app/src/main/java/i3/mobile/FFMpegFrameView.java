@@ -97,7 +97,7 @@ public class FFMpegFrameView extends View {
     Handler handler = null;
     public  ServerSite getServer(){ return Server;}
     public  void  setServer(ServerSite value){ 
-        if (this.Server == null || !this.Server.EqualWith(value))
+        if (value != null && (this.Server == null || !this.Server.EqualWith(value)))
             this.Server = value; 
     }
 
