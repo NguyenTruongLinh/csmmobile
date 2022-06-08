@@ -81,6 +81,7 @@ class LiveChannelsView extends React.Component {
     this.directViewList = [];
     this.resumeFromInterupt = false;
     this.reactions = [];
+    this.authenRef = null;
     // this.viewableList = [];
     // this.showAllTimeout = null;
     // this.didFilter = false;

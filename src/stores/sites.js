@@ -378,6 +378,13 @@ export const SitesMapModel = types
             SiteRoute.getAllWithDVR
           );
           __DEV__ && console.log('GOND get all sites: ', res);
+          if (self.selectedSite) {
+            self.selectedSite = null;
+          }
+          if (self.selectedDVR) {
+            self.selectedDVR = null;
+          }
+
           self.sitesList = self
             .parseSitesList(res, true)
             .sort((s1, s2) => utils.compareStrings(s1.name, s2.name, false));
@@ -458,7 +465,16 @@ export const SitesMapModel = types
     */
     getSiteTree: flow(function* () {
       self.startLoad();
+      if (self.selectedRegion) {
+        self.selectedRegion = null;
+      }
       self.regionsList = [];
+      if (self.selectedSite) {
+        self.selectedSite = null;
+      }
+      if (self.selectedDVR) {
+        self.selectedDVR = null;
+      }
       self.sitesList = [];
       try {
         const resRegions = yield apiService.get(
@@ -466,7 +482,7 @@ export const SitesMapModel = types
           apiService.configToken.userId ?? 0,
           SiteRoute.getAllRegions
         );
-        // __DEV__ && console.log('GOND get regions: ', resRegions);
+        __DEV__ && console.log('GOND get regions: ', resRegions);
         if (resRegions) {
           // TODO: Map sites to region by key, can improve?
           // self.sitesList.forEach(s => {

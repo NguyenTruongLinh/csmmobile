@@ -65,7 +65,7 @@ class DirectVideoView extends React.Component {
       zoom: 1,
       translateX: 0,
       translateY: 0,
-      isFilterShown: false,
+      // isFilterShown: false,
     };
 
     this.nativeVideoEventListener = null;
@@ -95,7 +95,7 @@ class DirectVideoView extends React.Component {
           this.computeOriginFocal(_e.x, this.state.translateX)
         );
       props.onPress && props.onPress();
-      this.setState({isFilterShown: !this.state.isFilterShown});
+      // this.setState({isFilterShown: !this.state.isFilterShown});
     });
 
     const rightFlingGesture = Gesture.Fling()
@@ -1134,9 +1134,6 @@ class DirectVideoView extends React.Component {
     }
 
     // __DEV__ && console.trace('GOND setNative: ', params);
-    // if (__DEV__ && params.startplayback) {
-    //   console.trace('GOND startplayback: ');
-    // }
     this.ffmpegPlayer.setNativeProps(params);
     this.setPlayStatus(params);
   };
@@ -1158,7 +1155,7 @@ class DirectVideoView extends React.Component {
     //     stop: true,
     //   });
     // }
-    __DEV__ && console.trace('GOND --- onDisconnect ---');
+    __DEV__ && console.log('GOND --- onDisconnect ---');
     // this.setNative({disconnect: endConnection}, true);
     this.setNative(endConnection ? {disconnect: true} : {stop: true}, true);
   };
@@ -1382,8 +1379,15 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      serverInfo,
+      noVideo,
+      videoStore,
+      singlePlayer,
+      filterShown,
+    } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
@@ -1405,7 +1409,6 @@ class DirectVideoView extends React.Component {
             defaultImage={NVR_Play_NoVideo_Image}
             resizeMode="cover"
             styleImage={{width: width, height: height}}
-            showLoading={false}
             dataCompleteHandler={(param, data) =>
               serverInfo.channel && serverInfo.channel.saveSnapshot(data)
             }
@@ -1475,16 +1478,18 @@ class DirectVideoView extends React.Component {
             )}
           </CMSImage>
           {/* </ImageBackground> */}
-          {this.state.isFilterShown && (
-            <View
-              style={[
-                controlStyles.controlsContainer,
-                {
-                  backgroundColor: cmscolors.VideoOpacityLayer,
-                },
-              ]}
-            />
-          )}
+          {
+            /*this.state.isFilterShown*/ filterShown && (
+              <View
+                style={[
+                  controlStyles.controlsContainer,
+                  {
+                    backgroundColor: cmscolors.VideoOpacityLayer,
+                  },
+                ]}
+              />
+            )
+          }
         </View>
       </GestureDetector>
     ) : (

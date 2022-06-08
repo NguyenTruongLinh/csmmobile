@@ -28,7 +28,8 @@ class NVRAuthenModal extends React.Component {
     // __DEV__ && console.log('GOND render Authen modal: ', currentScreen);
 
     return currentScreen == ROUTERS.VIDEO_PLAYER ||
-      currentScreen == ROUTERS.VIDEO_CHANNELS ? (
+      currentScreen == ROUTERS.VIDEO_CHANNELS ||
+      currentScreen == ROUTERS.HEALTH_CHANNELS ? (
       <Modal
         isVisible={videoStore.needAuthen && videoStore.showAuthenModal}
         onBackdropPress={videoStore.onAuthenCancel}

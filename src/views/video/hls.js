@@ -40,6 +40,8 @@ import {
   VIDEO,
 } from '../../localization/texts';
 
+// import {V3_1_BITRATE_USAGE} from '../../stores/types/hls';
+
 const Video_State = {STOP: 0, PLAY: 1, PAUSE: 2};
 const MAX_RETRY = 5;
 const MAX_REINIT = 5;
@@ -113,7 +115,7 @@ class HLSStreamingView extends React.Component {
 
     const tapGesture = Gesture.Tap().onStart(_e => {
       props.onPress && props.onPress();
-      this.setState({isFilterShown: !this.state.isFilterShown});
+      // this.setState({isFilterShown: !this.state.isFilterShown});
     });
 
     // this.panGesture = Gesture.Pan()
@@ -702,6 +704,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onBandwidthUpdate = data => {
+    // if (!V3_1_BITRATE_USAGE) return;
     const {videoStore, streamData, appStore} = this.props;
     __DEV__ && console.log('GOND onBandwidthUpdate: ', data); //.bitrate
     streamData.updateBitrate(
@@ -1321,8 +1324,15 @@ class HLSStreamingView extends React.Component {
   };
 
   render() {
-    const {width, height, streamData, noVideo, videoStore, singlePlayer} =
-      this.props;
+    const {
+      width,
+      height,
+      streamData,
+      noVideo,
+      videoStore,
+      singlePlayer,
+      filterShown,
+    } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
     const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
@@ -1468,16 +1478,18 @@ class HLSStreamingView extends React.Component {
             </View>
           </CMSImage>
           {/* </ImageBackground> */}
-          {this.state.isFilterShown && (
-            <View
-              style={[
-                controlStyles.controlsContainer,
-                {
-                  backgroundColor: CMSColors.VideoOpacityLayer,
-                },
-              ]}
-            />
-          )}
+          {
+            /*this.state.isFilterShown*/ filterShown && (
+              <View
+                style={[
+                  controlStyles.controlsContainer,
+                  {
+                    backgroundColor: CMSColors.VideoOpacityLayer,
+                  },
+                ]}
+              />
+            )
+          }
         </View>
       </GestureDetector>
     );

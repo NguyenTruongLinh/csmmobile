@@ -9,7 +9,7 @@ import {
   Animated,
   // BackHandler,
 } from 'react-native';
-// import {reaction} from 'mobx';
+import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
 import {Dropdown} from 'react-native-element-dropdown';
 
@@ -18,6 +18,7 @@ import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSImage from '../../components/containers/CMSImage';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import CMSRipple from '../../components/controls/CMSRipple';
+import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -54,6 +55,7 @@ class ChannelsListView extends React.Component {
     this._isMounted = false;
     this.dvrSelectorRef = null;
     this.firstFocus = true;
+    this.reactions = [];
   }
 
   componentWillUnmount() {
@@ -107,6 +109,14 @@ class ChannelsListView extends React.Component {
       videoStore.selectDVR(sitesStore.selectedSiteDefaultDVR);
     }
     videoStore.enterVideoView(true);
+    this.reactions = [
+      reaction(
+        () => videoStore.authenticationState,
+        newState => {
+          this.setHeader(true);
+        }
+      ),
+    ];
 
     this.dvrSelectorRef && this.dvrSelectorRef.onSelect(sitesStore.selectedDVR);
     this.setHeader(false);
@@ -140,8 +150,10 @@ class ChannelsListView extends React.Component {
 
     __DEV__ &&
       console.log(
-        'GOND channels setHeader: isLive = ',
-        healthStore.isLiveVideo
+        'GOND channels setHeader: ',
+        healthStore.isLiveVideo,
+        videoStore.hasNVRPermission,
+        videoStore.authenticationState
       );
 
     navigation.setOptions({
@@ -401,6 +413,7 @@ class ChannelsListView extends React.Component {
           onFilter={this.onFilter}
           value={videoStore.channelFilter}
         />
+        <NVRAuthenModal ref={r => (this.authenRef = r)} onSubmit={() => {}} />
         {dvrsCount > 1 && (
           <View style={styles.dropdownContainer}>
             <Dropdown

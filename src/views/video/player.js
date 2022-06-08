@@ -854,6 +854,7 @@ class VideoPlayerView extends Component {
       // searchPlayTime: videoStore.searchPlayTime,
       paused: videoStore.paused,
       singlePlayer: true,
+      filterShown: showController && !videoStore.isLive,
     };
     let player = null;
     switch (videoStore.cloudType) {
