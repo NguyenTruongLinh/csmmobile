@@ -58,7 +58,7 @@ typedef enum
   UIImage* defaultImg;
   CALayer* m_videoLayer;
   // CMS added
-  NSString* m_channel;
+//  NSString* m_channel;
 }
 
 @property (nonatomic) UIDeviceOrientation currentDeviceOrientation;

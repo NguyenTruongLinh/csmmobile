@@ -313,13 +313,13 @@ class DirectVideoView extends React.Component {
             if (this.noPermission) {
               this.noPermission = false;
               this.stop();
-              setTimeout(() => this.setNativePlayback(), 500);
+              // setTimeout(() => this.setNativePlayback(), 500);
             } else {
               // this.refreshVideo();
               this.setNative({pause: true});
-              setTimeout(() => this.setNativePlayback(), 500);
+              // setTimeout(() => this.setNativePlayback(), 500);
             }
-
+            this.setNativePlayback(true);
             // }
           }
         ),
@@ -729,14 +729,16 @@ class DirectVideoView extends React.Component {
         break;
       case NATIVE_MESSAGE.LOGIN_MESSAGE:
         // this.setState({message: value});
-        __DEV__ &&
+        if (__DEV__)
           console.log('GOND onDirectVideoMessage - Login message: ', value);
-        this.loginTimeout = setTimeout(() => {
-          if (this._isMounted) {
-            this.loginTimeout = null;
-            this.reconnect();
-          }
-        }, 10000);
+        else {
+          this.loginTimeout = setTimeout(() => {
+            if (this._isMounted) {
+              this.loginTimeout = null;
+              this.reconnect();
+            }
+          }, 10000);
+        }
         break;
       case NATIVE_MESSAGE.LOGIN_FAILED:
         // this.setState({message: 'Login failed'});
@@ -1132,6 +1134,9 @@ class DirectVideoView extends React.Component {
     }
 
     // __DEV__ && console.trace('GOND setNative: ', params);
+    // if (__DEV__ && params.startplayback) {
+    //   console.trace('GOND startplayback: ');
+    // }
     this.ffmpegPlayer.setNativeProps(params);
     this.setPlayStatus(params);
   };
@@ -1153,7 +1158,7 @@ class DirectVideoView extends React.Component {
     //     stop: true,
     //   });
     // }
-    __DEV__ && console.log('GOND --- onDisconnect ---');
+    __DEV__ && console.trace('GOND --- onDisconnect ---');
     // this.setNative({disconnect: endConnection}, true);
     this.setNative(endConnection ? {disconnect: true} : {stop: true}, true);
   };
@@ -1377,14 +1382,8 @@ class DirectVideoView extends React.Component {
   };
 
   render() {
-    const {
-      width,
-      height,
-      serverInfo,
-      noVideo,
-      videoStore,
-      singlePlayer,
-    } = this.props;
+    const {width, height, serverInfo, noVideo, videoStore, singlePlayer} =
+      this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
     // __DEV__ &&
@@ -1406,6 +1405,7 @@ class DirectVideoView extends React.Component {
             defaultImage={NVR_Play_NoVideo_Image}
             resizeMode="cover"
             styleImage={{width: width, height: height}}
+            showLoading={false}
             dataCompleteHandler={(param, data) =>
               serverInfo.channel && serverInfo.channel.saveSnapshot(data)
             }
