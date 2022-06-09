@@ -32,6 +32,7 @@ import CMSRipple from '../../components/controls/CMSRipple';
 import LoadingOverlay from '../../components/common/loadingOverlay';
 // import Swipe from '../../components/controls/Swipe';
 import CMSImage from '../../components/containers/CMSImage';
+import PermissionModal from '../../components/views/PermissionModal';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
@@ -855,6 +856,7 @@ class LiveChannelsView extends React.Component {
           ref={r => (this.authenRef = r)}
           onSubmit={this.onAuthenSubmit}
         />
+        <PermissionModal />
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
           {videoStore.isLoading ||
           videoStore.waitForTimezone ||

@@ -845,6 +845,12 @@ export const VideoModel = types
             self.authenticationState != AUTHENTICATION_STATES.NO_PRIVILEGE
         : true;
     },
+    get isNoPermission() {
+      return self.isAPIPermissionSupported
+        ? self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED &&
+            self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE
+        : true;
+    },
     // #endregion permission's computed values
   }))
   .actions(self => {

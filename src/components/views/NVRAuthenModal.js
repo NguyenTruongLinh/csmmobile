@@ -9,6 +9,12 @@ import CMSColors from '../../styles/cmscolors';
 import {VIDEO as VIDEO_TXT} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
 
+const VIDEO_AUTHEN_VIEWS = [
+  ROUTERS.VIDEO_PLAYER,
+  ROUTERS.VIDEO_CHANNELS,
+  ROUTERS.HEALTH_CHANNELS,
+];
+
 class NVRAuthenModal extends React.Component {
   constructor(props) {
     super(props);
@@ -27,9 +33,10 @@ class NVRAuthenModal extends React.Component {
     const currentScreen = appStore.naviService.getCurrentRouteName();
     // __DEV__ && console.log('GOND render Authen modal: ', currentScreen);
 
-    return currentScreen == ROUTERS.VIDEO_PLAYER ||
-      currentScreen == ROUTERS.VIDEO_CHANNELS ||
-      currentScreen == ROUTERS.HEALTH_CHANNELS ? (
+    // return currentScreen == ROUTERS.VIDEO_PLAYER ||
+    //   currentScreen == ROUTERS.VIDEO_CHANNELS ||
+    //   currentScreen == ROUTERS.HEALTH_CHANNELS ? (
+    return VIDEO_AUTHEN_VIEWS.includes(currentScreen) ? (
       <Modal
         isVisible={videoStore.needAuthen && videoStore.showAuthenModal}
         onBackdropPress={videoStore.onAuthenCancel}
