@@ -45,6 +45,12 @@ export const Login = {
   passwordChangedSuccess: 'Password changed successfully',
   userPassswordExisted:
     'New password has been used for the last %d times. Please choose another password.',
+  forgotPassword: 'FORGOT PASSWORD?',
+  forgotPasswordTitle: 'Forgot Password',
+  submitedForgotPassword:
+    'An email include your password was sent to your email, please go to your mailbox to get the password.',
+  email: 'Email *',
+  username: 'Username *',
   copyRight:
     '© 2022 i3 International Inc. The i3 logos are property of i3 International Inc & i3 America Nevada Inc. All rights reserved.',
 };
@@ -95,7 +101,6 @@ export const VIDEO = {
   LIVE: 'Live',
   SEARCH: 'Search',
   NO_VIDEO: 'No video',
-  NO_CHANNEL: 'No channel',
   CHANNEL_ERROR: 'Channel not found!',
   AUTHEN_TITLE: 'NVR Authorization',
   SELECT_CHANNEL_1: 'Please press ',
@@ -105,6 +110,7 @@ export const VIDEO = {
   CANNOT_CONNECT: 'Cannot connect to NVR',
   WRONG_CLOUD_TYPE: 'Cloud type config is incorrect, please contact support.',
   SNAPSHOT_TAKEN: 'The snapshot has been moved to photo folder.',
+  DONT_HAVE_PERMISSION: "You don't have permission",
 };
 
 export const STREAM_STATUS = {
