@@ -46,10 +46,12 @@ const appStore = types
     deviceInfo: DeviceInfo,
     showIntro: types.boolean,
     isLoading: types.boolean,
-    naviService: NavigationService,
     showSearchBar: types.boolean,
     showTabbar: types.boolean,
   })
+  .volatile(self => ({
+    naviService: new NavigationService(),
+  }))
   .views(self => ({
     get getDeviceInfo() {
       return self.deviceInfo;
@@ -201,12 +203,13 @@ const appStore = types
     }),
     showIntro: false,
     isLoading: false,
-    naviService: NavigationService.create({
-      _navigator: null,
-      isReady: false,
-      // _navStore: NavigationModel.create({paramsMap: {}}),
-      isReadyForPushShowing: false,
-    }),
+    // naviService: NavigationService.create({
+    //   _navigator: null,
+    //   isReady: false,
+    //   // _navStore: NavigationModel.create({paramsMap: {}}),
+    //   isReadyForPushShowing: false,
+    // }),
+    // naviService: new NavigationService(),
     showSearchBar: false,
     showTabbar: true,
   });

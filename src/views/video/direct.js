@@ -179,8 +179,7 @@ class DirectVideoView extends React.Component {
       );
     }
     const {serverInfo, videoStore} = this.props;
-    // __DEV__ &&
-    //   console.log('DirectStreamingView renderLimit: ', renderLimit, index);
+    // __DEV__ && console.log('DirectStreamingView: ', videoStore.selectedChannel);
 
     if (videoStore.isAuthenticated) {
       if (serverInfo && serverInfo.serverIP && serverInfo.port) {
@@ -269,8 +268,13 @@ class DirectVideoView extends React.Component {
             this.props.serverInfo.setStreamStatus({
               isLoading: true,
             });
-            snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
-            this.setNativePlayback(false, {channels: '' + newChannelNo});
+            // snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
+            // this.setNativePlayback(false, {channels: '' + newChannelNo});
+            setTimeout(
+              () =>
+                this.setNativePlayback(false, {channels: '' + newChannelNo}),
+              500
+            );
           }
         ),
         // reaction(
@@ -319,7 +323,8 @@ class DirectVideoView extends React.Component {
               this.setNative({pause: true});
               // setTimeout(() => this.setNativePlayback(), 500);
             }
-            this.setNativePlayback(true);
+            // this.setNativePlayback(true);
+            setTimeout(() => this.setNativePlayback(), 500);
             // }
           }
         ),
@@ -467,8 +472,8 @@ class DirectVideoView extends React.Component {
                   'DirectStreamingView on channel list changed startPlay'
                 );
               // this.pause();
-              // setTimeout(() => this.setNativePlayback(), 500);
-              this.setNativePlayback(false, {channels: strChannels});
+              setTimeout(() => this.setNativePlayback(), 500);
+              // this.setNativePlayback(false, {channels: strChannels});
             }
           }
         ),
@@ -550,19 +555,30 @@ class DirectVideoView extends React.Component {
   };
 
   setNativePlayback = (delay = false, paramsObject = {}) => {
-    const {serverInfo, videoStore, isLive, hdMode} = this.props;
-    // __DEV__ && console.trace('GOND direct setNativePlayback: ', serverInfo);
+    const {
+      serverInfo,
+      videoStore,
+      isLive,
+      hdMode,
+      singlePlayer,
+      selectedChannel,
+    } = this.props;
+    // const serverInfo = videoStore.directConnection;
+    __DEV__ &&
+      console.trace(
+        'GOND direct setNativePlayback: ',
+        serverInfo,
+        videoStore.selectedChannel
+      );
     if (
-      // !this._isMounted ||
-      // !this.ffmpegPlayer ||
-      !serverInfo /*.server*/ ||
+      // !serverInfo /*.server*/ ||
+      // serverInfo.channels.length <= 0
+      !serverInfo ||
       serverInfo.channels.length <= 0
     ) {
       __DEV__ &&
         console.log(
           'GOND direct setNativePlayback failed ',
-          // this._isMounted,
-          // this.ffmpegPlayer,
           serverInfo.channels
         );
       return;
@@ -601,14 +617,10 @@ class DirectVideoView extends React.Component {
       searchMode: !isLive,
       date: isLive ? undefined : searchDateString,
       hd: hdMode,
-      // seekpos: playTime
-      //   ? {
-      //       pos: Math.floor(playTime.toSeconds() - searchDate.toSeconds()),
-      //       hd: hdMode,
-      //     }
-      //   : undefined,
       ...paramsObject,
     };
+    // if (singlePlayer && videoStore.selectedChannel)
+    //   playbackInfo.channels = '' + videoStore.selectedChannel;
 
     this.lastLogin = {
       userName: playbackInfo.userName,

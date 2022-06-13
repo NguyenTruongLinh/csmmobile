@@ -31,7 +31,7 @@ class PermissionModal extends React.Component {
   }
 
   onOK = () => {
-    this.props.navigation.goBack();
+    this.props.appStore.naviService.goBack();
   };
 
   render() {

@@ -798,6 +798,7 @@ class VideoPlayerView extends Component {
       );
     if (
       !selectedStream ||
+      !selectedStream.channel ||
       // !isAPIPermissionSupported ||
       !isAuthenticated
     ) {

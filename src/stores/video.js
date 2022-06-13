@@ -107,7 +107,7 @@ const DirectServerModel = types
       self.hd = value;
     },
     setChannels(value) {
-      __DEV__ && console.log('GOND setChannels ', value);
+      // __DEV__ && console.trace('GOND setChannels ', value);
       if (value && Array.isArray(value)) {
         // self.channels = value.join(',');
         self.channelList = [...value];
@@ -496,6 +496,11 @@ export const VideoModel = types
           const server = self.directStreams.find(
             s => s.channelNo == self.selectedChannel
           );
+          // __DEV__ &&
+          //   console.log(
+          //     'GOND direct selected: ',
+          //     server ? getSnapshot(server) : 'none server'
+          //   );
           return server ?? null;
         case CLOUD_TYPE.HLS:
           const s = self.hlsStreams.find(
@@ -930,6 +935,13 @@ export const VideoModel = types
           );
       },
       updateCurrentDirectChannel() {
+        // console.log(
+        //   'GOND updateCurrentDirectChannel: ',
+        //   self.directConnection ? getSnapshot(self.directConnection) : 'null',
+        //   self.gridItemsPerPage,
+        //   self.currentGridPage,
+        //   self.directData ? self.directData.map(s => getSnapshot(s)) : 'null'
+        // );
         if (self.directConnection) {
           self.directConnection.setChannels(
             self.directData
@@ -2049,12 +2061,12 @@ export const VideoModel = types
         }
 
         // dongpt: check and update current streams
-        const updateFn = (result, currentItem) => {
-          if (newList.find(ch => ch.channelNo == currentItem.channelNo)) {
-            result.push(currentItem);
-          }
-          return result;
-        };
+        // const updateFn = (result, currentItem) => {
+        //   if (newList.find(ch => ch.channelNo == currentItem.channelNo)) {
+        //     result.push(currentItem);
+        //   }
+        //   return result;
+        // };
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
@@ -2108,6 +2120,7 @@ export const VideoModel = types
           );
 
         self.allChannels = newChannels;
+        self.updateCurrentDirectChannel();
       },
       getDvrChannels: flow(function* (isGetAll = false) {
         if (!self.kDVR) {
@@ -2237,19 +2250,20 @@ export const VideoModel = types
           self.directConnection = parseDirectServer(res);
           // __DEV__ && console.log('GOND direct setChannel 3');
 
-          if (util.isNullOrUndef(channelNo)) {
-            self.currentGridPage = 0;
-            self.directConnection.setChannels(
-              self.allChannels
-                .filter(ch =>
-                  ch.name
-                    .toLowerCase()
-                    .includes(self.channelFilter.toLowerCase())
-                )
-                .map(ch => ch.channelNo)
-                .filter((_, index) => index < self.gridItemsPerPage)
-            );
-          }
+          // if (util.isNullOrUndef(channelNo)) {
+          //   self.currentGridPage = 0;
+          //   // self.directConnection.setChannels(
+          //   //   self.allChannels
+          //   //     .filter(ch =>
+          //   //       ch.name
+          //   //         .toLowerCase()
+          //   //         .includes(self.channelFilter.toLowerCase())
+          //   //     )
+          //   //     .map(ch => ch.channelNo)
+          //   //     .filter((_, index) => index < self.gridItemsPerPage)
+          //   // );
+          //   self.updateCurrentDirectChannel();
+          // }
 
           // get NVR user and password from first data:
           if (
@@ -2308,6 +2322,10 @@ export const VideoModel = types
               // playing: false,
             })
           );
+          if (util.isNullOrUndef(channelNo)) {
+            self.currentGridPage = 0;
+            self.updateCurrentDirectChannel();
+          }
           // }
         } catch (err) {
           console.log('GOND cannot get direct video info: ', err);

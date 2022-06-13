@@ -11,154 +11,157 @@ import ROUTERS from '../consts/routes';
 // let this._navigator;
 // let _navStore = navigationStore;
 
-const NavigationService = types
-  .model({
-    _navigator: types.frozen(),
-    isReady: types.boolean,
-    isReadyForPushShowing: types.maybeNull(types.boolean),
-  })
-  .volatile(self => ({
-    state: null,
-  }))
-  .actions(self => ({
-    setTopLevelNavigator(navigatorRef, route) {
-      if (!navigatorRef) return;
-      __DEV__ && console.log('GOND setTopNav ref = ', navigatorRef);
-      self._navigator = navigatorRef;
-    },
-    onReady(isReady) {
-      __DEV__ && console.log('GOND ON NAVIGATION READY!');
-      self.isReady = isReady == undefined ? true : isReady;
-    },
-    onStateChange(newState) {
-      self.state = newState;
-      if (!self.isReadyForPushShowing)
-        self.isReadyForPushShowing =
-          newState &&
-          newState.routeNames &&
-          JSON.stringify(newState.routeNames) ==
-            JSON.stringify([
-              ROUTERS.HOME_NAVIGATOR,
-              ROUTERS.VIDEO_STACK,
-              ROUTERS.ALARM_STACK,
-              ROUTERS.OPTIONS_NAVIGATOR,
-            ]);
-    },
+class NavigationService {
+  constructor() {
+    this.isReady = false;
+    this.isReadyForPushShowing = false;
+    this._navigator = null;
+    this.state = null;
+  }
 
-    // setNavigationStore(store) {
-    //   self._navStore = store;
-    // },
+  setTopLevelNavigator = (navigatorRef, route) => {
+    if (!navigatorRef) return;
+    __DEV__ && console.log('GOND setTopNav ref = ', navigatorRef);
+    this._navigator = navigatorRef;
+  };
 
-    /**
-     *
-     * @param {string} routeName
-     * @param {object = {params, key}} options
-     */
-    navigate(routeName, options) {
-      // const {params, key} = options || {params: undefined, key: undefined};
-      // if (params || key) {
-      //   const routeParams = RouteParams.create({routeKey: key, params: params});
-      //   // self._navStore.setParamsForRoute(routeParams);
-      // }
-      // self._navigator.dispatch(
-      //   CommonActions.navigate({
-      //     name: routeName,
-      //     key,
-      //     params,
-      //   })
-      // );
-      __DEV__ &&
-        console.log(`navigate routeName`, routeName, `options`, options);
-      self._navigator.navigate(routeName, options);
-    },
+  onReady = isReady => {
+    __DEV__ && console.log('GOND ON NAVIGATION READY!');
+    this.isReady = isReady == undefined ? true : isReady;
+  };
 
-    replace(routeName, options) {
-      self.back();
-      setTimeout(() => {
-        self.navigate(routeName, options);
-      }, 200);
-    },
+  onStateChange = newState => {
+    this.state = newState;
+    if (!this.isReadyForPushShowing)
+      this.isReadyForPushShowing =
+        newState &&
+        newState.routeNames &&
+        JSON.stringify(newState.routeNames) ==
+          JSON.stringify([
+            ROUTERS.HOME_NAVIGATOR,
+            ROUTERS.VIDEO_STACK,
+            ROUTERS.ALARM_STACK,
+            ROUTERS.OPTIONS_NAVIGATOR,
+          ]);
+  };
 
-    push(routeName, params) {
-      if (
-        self._navigator._navigation &&
-        typeof self._navigator._navigation.push == 'function'
-      ) {
-        self._navigator._navigation.push(routeName, params);
-      } else if (typeof self._navigator.push == 'function') {
-        self._navigator.push(routeName, params);
-      } else {
-        console.log(
-          'GOND naviService cannot push new view, use navigate instead'
-        );
-        self._navigator.dispatch(
-          CommonActions.navigate({
-            name: routeName,
-            params,
-          })
-        );
-      }
-    },
-    goBack() {
-      self.back();
-    },
+  // setNavigationStore(store) {
+  //   this._navStore = store;
+  // },
 
-    back() {
-      __DEV__ && console.log('-- NAVIGATE BACK -- ');
-      self._navigator.dispatch(CommonActions.goBack());
-    },
+  /**
+   *
+   * @param {string} routeName
+   * @param {object = {params, key}} options
+   */
+  navigate = (routeName, options) => {
+    // const {params, key} = options || {params: undefined, key: undefined};
+    // if (params || key) {
+    //   const routeParams = RouteParams.create({routeKey: key, params: params});
+    //   // this._navStore.setParamsForRoute(routeParams);
+    // }
+    // this._navigator.dispatch(
+    //   CommonActions.navigate({
+    //     name: routeName,
+    //     key,
+    //     params,
+    //   })
+    // );
+    __DEV__ && console.log(`navigate routeName`, routeName, `options`, options);
+    this._navigator.navigate(routeName, options);
+  };
 
-    dismiss() {
-      self._navigator.dispatch(CommonActions.back(null));
-    },
+  replace = (routeName, options) => {
+    this.back();
+    setTimeout(() => {
+      this.navigate(routeName, options);
+    }, 200);
+  };
 
-    popToTop(immediate = true) {
-      self._navigator.dispatch(StackActions.popToTop());
-    },
-
-    reset({actions, index}) {
-      self._navigator.dispatch(
-        CommonActions.reset({
-          // key: null,
-          index,
-          // actions,
+  push = (routeName, params) => {
+    if (
+      this._navigator._navigation &&
+      typeof this._navigator._navigation.push == 'function'
+    ) {
+      this._navigator._navigation.push(routeName, params);
+    } else if (typeof this._navigator.push == 'function') {
+      this._navigator.push(routeName, params);
+    } else {
+      console.log(
+        'GOND naviService cannot push new view, use navigate instead'
+      );
+      this._navigator.dispatch(
+        CommonActions.navigate({
+          name: routeName,
+          params,
         })
       );
-    },
+    }
+  };
 
-    getCurrentRouteName() {
-      let _state = self.state;
-      while (_state) {
-        const currentRoute = _state.routes[_state.index];
-        _state = currentRoute.state;
-        if (!_state) {
-          __DEV__ && console.log('GOND getCurrentRouteName ', currentRoute);
-          return currentRoute.name;
-        }
+  goBack = () => {
+    this.back();
+  };
+
+  back = () => {
+    __DEV__ && console.log('-- NAVIGATE BACK -- ');
+    this._navigator.dispatch(CommonActions.goBack());
+  };
+
+  dismiss = () => {
+    this._navigator.dispatch(CommonActions.back(null));
+  };
+
+  popToTop = (immediate = true) => {
+    this._navigator.dispatch(StackActions.popToTop());
+  };
+
+  reset = ({actions, index}) => {
+    this._navigator.dispatch(
+      CommonActions.reset({
+        // key: null,
+        index,
+        // actions,
+      })
+    );
+  };
+
+  getCurrentRouteName = () => {
+    let _state = this.state;
+    while (_state) {
+      const currentRoute = _state.routes[_state.index];
+      _state = currentRoute.state;
+      if (!_state) {
+        __DEV__ && console.log('GOND getCurrentRouteName ', currentRoute);
+        return currentRoute.name;
       }
-      return 'Not ready yet';
-    },
+    }
+    return 'Not ready yet';
+  };
 
-    getPreviousRouteName() {
-      __DEV__ && console.log(`getPreviousRouteName`);
-      let _state = self.state;
-      while (_state) {
-        const currentRoute = _state.routes[_state.index];
-        let _nextState = currentRoute.state;
-        if (!_nextState) {
-          return _state.routes[_state.index - 1].name;
-        } else {
-          _state = _nextState;
-        }
+  getPreviousRouteName = () => {
+    __DEV__ && console.log(`getPreviousRouteName`);
+    let _state = this.state;
+    while (_state) {
+      const currentRoute = _state.routes[_state.index];
+      let _nextState = currentRoute.state;
+      if (!_nextState) {
+        return _state.routes[_state.index - 1].name;
+      } else {
+        _state = _nextState;
       }
-      return 'Not ready yet';
-    },
+    }
+    return 'Not ready yet';
+  };
 
-    getTopRouteName() {
-      const {state} = self;
-      if (state) return state.routes[state.index].name;
-      return 'Not ready yet';
-    },
-  }));
+  getTopRouteName = () => {
+    const {state} = this;
+    if (state) return state.routes[state.index].name;
+    return 'Not ready yet';
+  };
+}
 
+// const naviService = new NavigationService();
+
+// export default naviService;
 export default NavigationService;

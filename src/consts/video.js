@@ -233,7 +233,7 @@ export const CHANNEL_CONTROL_STATUS = {
   NOT_CHANNEL: 0,
   /// Have channel but have not pro config
   NOT_PRO_CONFIG: 1,
-  /// ???
+  /// Linked to Pro account
   HAVE_PRO_CONFIG: 2,
   /// Have channel but have not Link user
   NOT_LINK: 3,
