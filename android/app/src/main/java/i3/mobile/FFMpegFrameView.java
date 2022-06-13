@@ -335,9 +335,9 @@ public class FFMpegFrameView extends View {
         //canvas.drawColor(Color.TRANSPARENT);
         super.onDraw(canvas);
         // CMSMobile not draw here
+        canvas.clipRect(0,0, getWidth(), getHeight());
         canvas.translate(this._translateX, this._translateY);
         canvas.scale((float) this._scaleXY, (float) this._scaleXY);
-
         if(DrawBitmap != null)
         {
             Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
