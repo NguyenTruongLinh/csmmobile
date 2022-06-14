@@ -1011,7 +1011,8 @@ export const VideoModel = types
         const foundChannel = self.allChannels.find(ch => ch[key] == value);
         if (!foundChannel) {
           console.log('GOND selected Channel not found: ', value);
-          snackbarUtil.onError('Selected channel not found!');
+          // snackbarUtil.onError('Selected channel not found!');
+          if (self.showAuthenModal) self.displayAuthen(false);
           return false;
         }
         __DEV__ &&
@@ -3585,6 +3586,8 @@ export const VideoModel = types
         ) {
           yield self.getVideoInfos(alertData.channelNo);
         }
+        // if (self.needAuthen)
+        self.resetNVRAuthentication();
         return true;
       }),
       onHealthPlay: flow(function* (isLive, data) {
@@ -3623,7 +3626,7 @@ export const VideoModel = types
       // #region Permission
       // dongpt: get user linked status (CMS user to NVR user), must be call
       //   after 'getDisplayingChannels' function
-      getDVRPermission: flow(function* (kDVR /*, siteKey*/) {
+      getDVRPermission: flow(function* (kDVR /*, siteKey*/, isSilent = true) {
         if (!util.isNullOrUndef(kDVR) && kDVR != self.kDVR) self.kDVR = kDVR;
         if (util.isNullOrUndef(self.kDVR)) {
           __DEV__ &&
@@ -3698,7 +3701,7 @@ export const VideoModel = types
           ) {
             // dongpt: no permission or channel list is empty
             self.authenticationState = AUTHENTICATION_STATES.NO_PRIVILEGE;
-            // snackbarUtil.onMessage(STREAM_STATUS.NO_PERMISSION);
+            if (!isSilent) snackbarUtil.onMessage(STREAM_STATUS.NO_PERMISSION);
 
             return;
           }
