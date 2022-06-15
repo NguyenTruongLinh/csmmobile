@@ -31,7 +31,13 @@ class NVRAuthenModal extends React.Component {
   render() {
     const {videoStore, appStore} = this.props;
     const currentScreen = appStore.naviService.getCurrentRouteName();
-    // __DEV__ && console.log('GOND render Authen modal: ', currentScreen);
+    __DEV__ &&
+      console.log(
+        'GOND !!! render Authen modal: ',
+        videoStore.needAuthen,
+        videoStore.showAuthenModal,
+        videoStore.isAuthenCanceled
+      );
 
     // return currentScreen == ROUTERS.VIDEO_PLAYER ||
     //   currentScreen == ROUTERS.VIDEO_CHANNELS ||

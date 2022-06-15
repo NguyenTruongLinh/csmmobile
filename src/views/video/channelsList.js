@@ -13,6 +13,7 @@ import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
 import {Dropdown} from 'react-native-element-dropdown';
 
+import LoadingOverlay from '../../components/common/loadingOverlay';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSImage from '../../components/containers/CMSImage';
@@ -70,6 +71,7 @@ class ChannelsListView extends React.Component {
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     this.onFilter('');
     videoStore.enterVideoView(false);
+    videoStore.resetNVRAuthentication();
   }
 
   async componentDidMount() {
@@ -148,13 +150,13 @@ class ChannelsListView extends React.Component {
     title =
       width < 440 && title.length > 10 ? title.substring(0, 9) + '...' : title;
 
-    __DEV__ &&
-      console.log(
-        'GOND channels setHeader: ',
-        healthStore.isLiveVideo,
-        videoStore.hasNVRPermission,
-        videoStore.authenticationState
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND channels setHeader: ',
+    //     healthStore.isLiveVideo,
+    //     videoStore.hasNVRPermission,
+    //     videoStore.authenticationState
+    //   );
 
     navigation.setOptions({
       headerTitle: title,
@@ -368,6 +370,15 @@ class ChannelsListView extends React.Component {
         videoStore.hasNVRPermission,
         videoStore.isAPIPermissionSupported
       );
+    if (this.state.isLoading) {
+      return (
+        <LoadingOverlay
+          height={48}
+          backgroundColor={CMSColors.Transparent}
+          indicatorColor={CMSColors.PrimaryActive}
+        />
+      );
+    }
 
     if (
       userStore.hasPermission(MODULE_PERMISSIONS.VSC) &&
@@ -397,8 +408,12 @@ class ChannelsListView extends React.Component {
   render() {
     const {videoStore, sitesStore} = this.props;
     const {isListView, isLoading} = this.state;
-    // __DEV__ &&
-    //   console.log('GOND channels render selected = ', sitesStore.selectedDVR);
+    __DEV__ &&
+      console.log(
+        'GOND channels render: ',
+        videoStore.isAuthenticated,
+        videoStore.authenticationState
+      );
     this.playerRefs = [];
     const renderItem = isListView ? this.renderItemList : this.renderItemGrid;
     const dvrsCount = sitesStore.selectedSiteDVRs.length;
@@ -445,28 +460,31 @@ class ChannelsListView extends React.Component {
           </View>
         )}
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
-          {isLoading ||
-          !videoStore.isCloud ||
-          (videoStore.displayChannels.length > 0 &&
-            videoStore.hasNVRPermission) ? (
-            <FlatList
-              ref={r => (this.videoListRef = r)}
-              renderItem={renderItem}
-              data={data} // {this.state.liveData}
-              columnWrapperStyle={
-                isListView ? undefined : {justifyContent: 'space-between'}
-              }
-              key={isListView ? 'listChannels' : 'gridlChannels'}
-              keyExtractor={item =>
-                (isListView ? 'list_' : 'grid_') + item.kChannel
-              }
-              numColumns={isListView ? 1 : ITEMS_PER_ROW}
-              onRefresh={this.getChannelsInfo}
-              refreshing={isLoading}
-            />
-          ) : (
-            this.renderInfoText()
-          )}
+          {
+            // isLoading ||
+            // !videoStore.isCloud ||
+            videoStore.displayChannels.length > 0 &&
+            videoStore.isAuthenticated &&
+            videoStore.hasNVRPermission ? (
+              <FlatList
+                ref={r => (this.videoListRef = r)}
+                renderItem={renderItem}
+                data={data} // {this.state.liveData}
+                columnWrapperStyle={
+                  isListView ? undefined : {justifyContent: 'space-between'}
+                }
+                key={isListView ? 'listChannels' : 'gridlChannels'}
+                keyExtractor={item =>
+                  (isListView ? 'list_' : 'grid_') + item.kChannel
+                }
+                numColumns={isListView ? 1 : ITEMS_PER_ROW}
+                onRefresh={this.getChannelsInfo}
+                refreshing={isLoading}
+              />
+            ) : (
+              this.renderInfoText()
+            )
+          }
         </View>
       </View>
     );

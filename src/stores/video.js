@@ -2276,6 +2276,8 @@ export const VideoModel = types
           } else if (self.nvrUser && self.nvrPassword) {
             self.directConnection.userName = self.nvrUser;
             self.directConnection.password = self.nvrPassword;
+          } else {
+            self.resetNVRAuthentication(true);
           }
           if (channelNo) {
             // __DEV__ &&

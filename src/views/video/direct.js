@@ -778,10 +778,7 @@ class DirectVideoView extends React.Component {
           this.lastLogin.password // &&
           // (index == 0 || singlePlayer)
         )
-          snackbarUtil.showToast(
-            LoginTxt.errorLoginIncorrect,
-            cmscolors.Danger
-          );
+          snackbarUtil.onError(LoginTxt.errorLoginIncorrect);
         break;
       case NATIVE_MESSAGE.LOGIN_SUCCCESS:
         __DEV__ && console.log('GOND onDirectVideoMessage: login success');

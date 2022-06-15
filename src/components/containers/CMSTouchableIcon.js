@@ -7,7 +7,8 @@ import PropTypes from 'prop-types';
 import {View, Image} from 'react-native';
 
 import {Icon, IconCustom, MaterialIcons} from '../CMSStyleSheet';
-import Ripple from 'react-native-material-ripple';
+// import Ripple from 'react-native-material-ripple';
+import CMSRipple from '../controls/CMSRipple';
 import cmscolors from '../../styles/cmscolors';
 
 // <!-- END MODULES -->
@@ -168,14 +169,14 @@ class CMSTouchableIcon extends React.Component {
 
     let numOpacity = isHidden == true ? 0 : 0.87;
     return (
-      <Ripple
+      <CMSRipple
         disabled={disabled ? disabled : false}
         rippleCentered={true}
         rippleOpacity={numOpacity}
         onPress={this.onPress}
         style={{width: styles.width, height: styles.height}}>
         {content}
-      </Ripple>
+      </CMSRipple>
     );
   }
 }

@@ -44,7 +44,7 @@ exports.handleSaveResult = (result, errorMessage) => {
     toastResult(ActionMessages.saveSuccess, false);
   } else {
     __DEV__ && console.log('GOND save error: ', result.error);
-    toastResult(errorMessage || ActionMessages.saveFail, true);
+    toastResult(errorMessage ?? ActionMessages.saveFail, true);
   }
 };
 
@@ -62,6 +62,10 @@ exports.handleSaveLocalDataFailed = error => {
 
 exports.onError = message => {
   toastResult(message, true);
+};
+
+exports.onWarning = message => {
+  showToast(message, CMSColors.Warning);
 };
 
 exports.onSuccess = message => {

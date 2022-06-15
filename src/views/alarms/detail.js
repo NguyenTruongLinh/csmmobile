@@ -66,7 +66,7 @@ class AlarmDetailView extends Component {
     this.reactions = [];
     this._isMounted = false;
     this.shouldReloadOnExit = false;
-    this.firstFocus = true;
+    // this.firstFocus = true;
     this.unsubFocusEvent = null;
   }
 
@@ -86,14 +86,14 @@ class AlarmDetailView extends Component {
     alarmStore.selectedAlarm.loadSnapshotImages();
     this.initReactions();
     this.unsubFocusEvent = navigation.addListener('focus', () => {
-      __DEV__ &&
-        console.log('GOND alarm detail on focused, first ', this.firstFocus);
+      // __DEV__ &&
+      //   console.log('GOND alarm detail on focused, first ', this.firstFocus);
       videoStore.setShouldShowVideoMessage(false);
-      if (this.firstFocus) {
-        this.firstFocus = false;
-      } else {
-        videoStore.resetNVRAuthentication();
-      }
+      // if (this.firstFocus) {
+      //   this.firstFocus = false;
+      // } else {
+      //   videoStore.resetNVRAuthentication();
+      // }
     });
     let res = await videoStore.getDVRPermission(alarmStore.selectedAlarm.kDVR);
 
@@ -302,6 +302,13 @@ class AlarmDetailView extends Component {
     // res &&
     // videoStore.setLiveMode(isLive);
     // if (!isLive) {
+
+    __DEV__ &&
+      console.log(
+        'GOND Alarm-gotoVideo: ',
+        videoStore.needAuthen,
+        videoStore.showAuthenModal
+      );
     videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm, true);
     // }
     setTimeout(() => {
