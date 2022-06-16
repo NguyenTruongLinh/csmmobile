@@ -3709,7 +3709,7 @@ export const VideoModel = types
           }
 
           __DEV__ &&
-            console.log('GOND getDVRPermission check linked ', currentArray[0]);
+            console.log('GOND getDVRPermission check linked ', currentArray);
           // self.isAuthenticated =
           self.authenticationState =
             currentObject.ChannelControlStatus ==
@@ -3752,23 +3752,28 @@ export const VideoModel = types
             currentArray.length > 0 &&
             self.allChannels.length > 0
           ) {
-            // self.allChannels = self.allChannels.reduce((result, ch, index) => {
-            //   let currentChannel =
-            //     currentArray[index] &&
-            //     currentArray[index].ChannelNo == ch.channelNo
-            //       ? currentArray[index]
-            //       : currentArray.find(item => item.ChannelNo == ch.channelNo);
+            __DEV__ &&
+              console.log('GOND :: update perm before loop: ', currentArray);
+            // self.allChannels.forEach(ch => {
+            //   let currentChannel = currentArray.find(
+            //     item => item.ChannelNo == ch.channelNo
+            //   );
+            //   __DEV__ &&
+            //     console.log('GOND ::::: update perm ch: ', getSnapshot(ch));
             //   if (currentChannel) {
+            //     __DEV__ &&
+            //       console.log('GOND update perm found: ', currentChannel);
             //     ch.setLiveSearchPermission(
             //       currentChannel.CanLive,
             //       currentChannel.CanSearch
             //     );
+            //   } else if (currentDvr) {
+            //     console.log('GOND update perm not found: ', currentDvr);
+            //     ch.setLiveSearchPermission(false, false);
             //   }
-
-            //   result.push(ch);
-            //   return result;
-            // }, []);
-            self.allChannels.forEach(ch => {
+            // });
+            // self.refreshChannelsList(
+            self.allChannels = self.allChannels.reduce((result, ch) => {
               let currentChannel = currentArray.find(
                 item => item.ChannelNo == ch.channelNo
               );
@@ -3781,14 +3786,11 @@ export const VideoModel = types
                   currentChannel.CanLive,
                   currentChannel.CanSearch
                 );
-              } else if (currentDvr) {
-                console.log('GOND update perm not found: ', currentDvr);
-                ch.setLiveSearchPermission(
-                  currentDvr.CanLive,
-                  currentDvr.CanSearch
-                );
+                result.push(ch);
               }
-            });
+              return result;
+            }, []);
+            // );
             __DEV__ &&
               console.log(
                 'GOND getDVRPermission final channels: ',
