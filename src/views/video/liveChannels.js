@@ -407,6 +407,7 @@ class LiveChannelsView extends React.Component {
       videoStore.switchLiveSearch(false, false);
     }
     // this.pauseAll(true);
+    // __DEV__ && console.log('GOND select channel: ', videoStore.selectedChannel);
     setTimeout(() => {
       this.props.navigation.push(ROUTERS.VIDEO_PLAYER);
     }, 500);
@@ -581,14 +582,31 @@ class LiveChannelsView extends React.Component {
     ) : null;
   };
 
-  renderNoPermissionChannel = item => {
-    const {width, height} = this.state.videoWindow;
+  renderNoPermissionChannel = (item, width, height) => {
+    // const {width, height} = this.state.videoWindow;
 
     return (
-      <ImageBackground
+      /*<ImageBackground
         source={NVR_Play_NoVideo_Image}
         style={{width: width, height: height}}
-        resizeMode="cover">
+        resizeMode="cover">*/
+      <CMSImage
+        dataSource={item.snapshot}
+        defaultImage={NVR_Play_NoVideo_Image}
+        resizeMode="cover"
+        isBackground={true}
+        showLoading={false}
+        style={{height: height}}
+        styleImage={{width, height}}
+        dataCompleteHandler={(params, imageData) =>
+          item.channel && item.channel.saveSnapshot(imageData)
+        }
+        // zzz
+        domain={{
+          controller: 'channel',
+          action: 'image',
+          id: item.kChannel,
+        }}>
         <Text style={videoStyles.channelInfo}>
           {item.channelName ?? 'Unknown'}
         </Text>
@@ -599,7 +617,8 @@ class LiveChannelsView extends React.Component {
             </Text>
           </View>
         </View>
-      </ImageBackground>
+      </CMSImage>
+      /* </ImageBackground> */
     );
   };
 
@@ -625,9 +644,7 @@ class LiveChannelsView extends React.Component {
       index,
     };
     let player = null;
-    const canView = videoStore.isAPIPermissionSupported
-      ? item.channel && item.channel.canLive
-      : true;
+    const canView = item.channel && item.channel.canPlayMode(true);
 
     // __DEV__ && console.log('GOND renderVid password ', videoStore.nvrPassword);
     switch (videoStore.cloudType) {
@@ -683,7 +700,13 @@ class LiveChannelsView extends React.Component {
           },
         ]}
         onPress={() => this.onChannelSelect(item)}>
-        {canView ? player : this.renderNoPermissionChannel(item)}
+        {canView
+          ? player
+          : this.renderNoPermissionChannel(
+              item,
+              videoWindow.width,
+              videoWindow.height
+            )}
       </CMSRipple>
     );
   };
