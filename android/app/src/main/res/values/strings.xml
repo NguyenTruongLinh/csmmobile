@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">CMS</string>
+    <string name="default_notification_channel_id">CMS_Channel</string>
+</resources>
