@@ -71,3 +71,6 @@ authors.txt
 # Miscs
 backup/
 patches_backup/
+*.backup
+patches/.vs/
+*.old
