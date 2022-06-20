@@ -410,6 +410,9 @@ export const VideoModel = types
     isAuthenCanceled: false,
   }))
   .views(self => ({
+    get videoType() {
+      return self.cloudType;
+    },
     get isCloud() {
       return self.cloudType > CLOUD_TYPE.DIRECTION;
     },

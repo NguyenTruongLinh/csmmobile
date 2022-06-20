@@ -18,7 +18,7 @@ import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import {MaterialIcons} from '../../components/CMSStyleSheet';
 
 import snackbar from '../util/snackbar';
-// import {CLOUD_TYPE} from '../../consts/video';
+import {CLOUD_TYPE} from '../../consts/video';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
@@ -26,6 +26,7 @@ import variable from '../../styles/variables';
 import {
   Setting_Video_Direct,
   Setting_Video_Cloud,
+  Setting_Video_Relay,
   // Setting_Video_Relay,
 } from '../../consts/images';
 import {Settings as SettingsTxt} from '../../localization/texts';
@@ -37,14 +38,21 @@ const CloudSettingData = [
     name: SettingsTxt.videoDirectName,
     description: SettingsTxt.videoDirecDesc,
     icon: Setting_Video_Direct, // 'desktop',
-    value: false,
+    value: CLOUD_TYPE.DIRECTION,
   },
   {
     id: 'stream',
     name: SettingsTxt.videoStreamName,
     description: SettingsTxt.videoStreamDesc,
     icon: Setting_Video_Cloud, // 'cloud',
-    value: true,
+    value: CLOUD_TYPE.HLS,
+  },
+  {
+    id: 'relay',
+    name: SettingsTxt.videoRelayServer,
+    description: SettingsTxt.videoRelayDesc,
+    icon: Setting_Video_Relay, // 'relay',
+    value: CLOUD_TYPE.RS,
   },
 ];
 
@@ -55,7 +63,7 @@ class VideosettingView extends Component {
     // this.canSave = this.canSave.bind(this);
 
     this.state = {
-      isCloud: true,
+      videoType: CLOUD_TYPE.HLS,
       selectedValue: null,
       settingLoaded: false,
     };
@@ -72,7 +80,7 @@ class VideosettingView extends Component {
 
     this.reactions = [
       reaction(
-        () => this.props.videoStore.isCloud,
+        () => this.props.videoStore.videoType,
         (newIsCloud, oldValue) => {
           if (newIsCloud != oldValue) {
             this.refreshSaveButton();
@@ -93,10 +101,10 @@ class VideosettingView extends Component {
       console.log(
         'VideoSettingView cansave: ',
         this.state.selectedValue,
-        this.props.videoStore.isCloud
+        this.props.videoStore.videoType
       );
     return this.props.videoStore
-      ? this.state.selectedValue != this.props.videoStore.isCloud
+      ? this.state.selectedValue != this.props.videoStore.videoType
       : false;
   };
 
@@ -124,7 +132,7 @@ class VideosettingView extends Component {
     );
     if (res) {
       this.setState({
-        selectedValue: this.props.videoStore.isCloud,
+        selectedValue: this.props.videoStore.videoType,
       });
     } else {
       snackbar.handleRequestFailed();
@@ -133,7 +141,7 @@ class VideosettingView extends Component {
 
   updateCloudSetting = async () => {
     const res = await this.props.videoStore.updateCloudSetting(
-      this.state.selectedValue
+      this.state.selectedValue // ? 1 : 0
     );
     // console.log('GOND save cloud setting response: ', response)
     // if (res) {
@@ -210,6 +218,7 @@ class VideosettingView extends Component {
                   ? {tintColor: CMSColors.DisableItemColor}
                   : {},
               ]}
+              resizeMode="contain"
             />
           </View>
           <View style={styles.rowButton_contain_name}>
