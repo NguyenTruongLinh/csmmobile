@@ -71,10 +71,12 @@ export const Settings = {
   email: 'Email',
   videoDirectName: 'Direct connection',
   videoStreamName: 'Video streaming',
+  videoRelayServer: 'Relay server',
   videoDirecDesc:
     'Connect to your NVR directly. Public IP is required, mobile connection must be opened.',
   videoStreamDesc:
     'Connect to your NVR via cloud. Subject to AWS fees and data caps.',
+  videoRelayDesc: 'Description for Relay server.',
 };
 
 export const ActionMessages = {

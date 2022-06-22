@@ -63,8 +63,9 @@ export const CLOUD_TYPE = {
   DEFAULT: -1,
   DIRECTION: 0,
   HLS: 1,
-  RTC: 2,
-  TOTAL: 3,
+  RS: 2,
+  RTC: 3,
+  TOTAL: 4,
 };
 
 export const RTC_COMMANDS = {
