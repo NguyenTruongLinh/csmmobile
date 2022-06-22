@@ -63,7 +63,6 @@ class VideosettingView extends Component {
     // this.canSave = this.canSave.bind(this);
 
     this.state = {
-      videoType: CLOUD_TYPE.HLS,
       selectedValue: null,
       settingLoaded: false,
     };
@@ -80,7 +79,7 @@ class VideosettingView extends Component {
 
     this.reactions = [
       reaction(
-        () => this.props.videoStore.videoType,
+        () => this.props.videoStore.cloudType,
         (newIsCloud, oldValue) => {
           if (newIsCloud != oldValue) {
             this.refreshSaveButton();
@@ -101,10 +100,10 @@ class VideosettingView extends Component {
       console.log(
         'VideoSettingView cansave: ',
         this.state.selectedValue,
-        this.props.videoStore.videoType
+        this.props.videoStore.cloudType
       );
     return this.props.videoStore
-      ? this.state.selectedValue != this.props.videoStore.videoType
+      ? this.state.selectedValue != this.props.videoStore.cloudType
       : false;
   };
 
@@ -132,7 +131,7 @@ class VideosettingView extends Component {
     );
     if (res) {
       this.setState({
-        selectedValue: this.props.videoStore.videoType,
+        selectedValue: this.props.videoStore.cloudType,
       });
     } else {
       snackbar.handleRequestFailed();
