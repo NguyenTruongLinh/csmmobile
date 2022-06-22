@@ -50,7 +50,7 @@ export default class AlarmFilter extends Component {
       reload: false,
       numberSelectStatus: 0,
       sitesData: this.props.sitesData,
-      contentheight: this.props.initheight,
+      // contentheight: this.props.initheight,
       isSortAZ: true,
       panel: Panels.DateSelect,
       filterMore: filters,

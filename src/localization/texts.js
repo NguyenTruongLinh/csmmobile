@@ -105,12 +105,12 @@ export const VIDEO = {
   AUTHEN_TITLE: 'NVR Authorization',
   SELECT_CHANNEL_1: 'Please press ',
   SELECT_CHANNEL_2: ' to select channels',
-  NO_PERMISSION: "You don't have VSC permission",
+  NO_VSC_PERMISSION: "You don't have VSC permission",
   NO_VIDEO_COME: 'No incoming video',
   CANNOT_CONNECT: 'Cannot connect to NVR',
   WRONG_CLOUD_TYPE: 'Cloud type config is incorrect, please contact support.',
   SNAPSHOT_TAKEN: 'The snapshot has been moved to photo folder.',
-  DONT_HAVE_PERMISSION: "You don't have permission",
+  NO_NVR_PERMISSION: "You don't have permission",
 };
 
 export const STREAM_STATUS = {

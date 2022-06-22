@@ -23,8 +23,10 @@ import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import LoadingOverlay from '../../components/common/loadingOverlay';
+import PermissionModal from '../../components/views/PermissionModal';
 
 import util from '../../util/general';
+import snackbarUtil from '../../util/snackbar';
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
 import variable from '../../styles/variables';
@@ -32,6 +34,7 @@ import {
   Comps as ComponentTxt,
   Settings as SettingsTxt,
   ALARM as ALARM_TXT,
+  VIDEO as VIDEO_TXT,
 } from '../../localization/texts';
 import {
   DateFormat,
@@ -68,6 +71,7 @@ class AlarmDetailView extends Component {
     this.shouldReloadOnExit = false;
     // this.firstFocus = true;
     this.unsubFocusEvent = null;
+    this.permissionModalRef = null;
   }
 
   async componentDidMount() {
@@ -98,7 +102,13 @@ class AlarmDetailView extends Component {
     let res = await videoStore.getDVRPermission(alarmStore.selectedAlarm.kDVR);
 
     // Preload video streaming: Live mode
-    res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm, true);
+    __DEV__ && console.log('GOND alarm detail: ', alarmStore.selectedAlarm);
+    if (
+      videoStore.isAuthenticated &&
+      videoStore.isCloud &&
+      videoStore.canPlayChannel(alarmStore.selectedAlarm.channelNo, true)
+    )
+      res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm, true);
     videoStore.enterVideoView(true);
     // const snapShots = getSnapshot(alarmStore.selectedAlarm.snapshot);
     // __DEV__ && console.log(` snapShots = `, snapShots);
@@ -303,19 +313,25 @@ class AlarmDetailView extends Component {
     // videoStore.setLiveMode(isLive);
     // if (!isLive) {
 
-    __DEV__ &&
-      console.log(
-        'GOND Alarm-gotoVideo: ',
-        videoStore.needAuthen,
-        videoStore.showAuthenModal
+    __DEV__ && console.log('GOND Alarm-gotoVideo: ', alarmStore.selectedAlarm);
+    videoStore.postAuthenticationCheck(() => {
+      const canPlay = videoStore.canPlayChannel(
+        alarmStore.selectedAlarm.channelNo,
+        isLive
       );
-    videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm, true);
-    // }
-    setTimeout(() => {
-      navigation.push(ROUTERS.VIDEO_PLAYER);
-      this.setState({isLoading: false});
-    }, 200);
-    // });
+      __DEV__ && console.log('GOND alarm canPlay: ', canPlay);
+      if (videoStore.isUserNotLinked || canPlay) {
+        videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm, true);
+        // }
+        setTimeout(() => {
+          navigation.push(ROUTERS.VIDEO_PLAYER);
+          this.setState({isLoading: false});
+        }, 100);
+      } else {
+        snackbarUtil.onWarning(VIDEO_TXT.NO_NVR_PERMISSION);
+      }
+      // });
+    });
   };
 
   renderViolationGroup = (imgSize, coordinateList) => {
@@ -675,10 +691,8 @@ class AlarmDetailView extends Component {
 
   renderVideoButtons = () => {
     const {isLoading} = this.state;
-    const {
-      canLiveSelectedChannel,
-      canSearchSelectedChannel,
-    } = this.props.videoStore;
+    const {canLiveSelectedChannel, canSearchSelectedChannel} =
+      this.props.videoStore;
 
     return (
       <View
@@ -781,6 +795,10 @@ class AlarmDetailView extends Component {
               height: imgSize.height,
               flexDirection: 'column',
             }}>
+            <PermissionModal
+              hideOnDefault={true}
+              ref={r => (this.permissionModalRef = r)}
+            />
             <FlatList
               pagingEnabled={true}
               style={{flex: 1}}

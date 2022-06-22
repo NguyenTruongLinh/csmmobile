@@ -739,7 +739,7 @@ class LiveChannelsView extends React.Component {
         <Text>
           {userStore.hasPermission(MODULE_PERMISSIONS.VSC)
             ? STREAM_STATUS.NO_PERMISSION
-            : VIDEO_TXT.NO_PERMISSION}
+            : VIDEO_TXT.NO_VSC_PERMISSION}
         </Text>
       </View>
     );

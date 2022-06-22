@@ -13,10 +13,16 @@ import Button from '../../components/controls/Button';
 import {Warning_Img} from '../../consts/images';
 
 class PermissionModal extends React.Component {
+  static defaultProps = {
+    hideOnDefault: false,
+  };
+
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      showed: !props.hideOnDefault,
+    };
     this._isMounted = false;
   }
 
@@ -30,8 +36,14 @@ class PermissionModal extends React.Component {
     this._isMounted = false;
   }
 
+  show = isShowed => {
+    this.setState({showed: isShowed});
+  };
+
   onOK = () => {
-    this.props.appStore.naviService.goBack();
+    const {hideOnDefault, appStore} = this.props;
+    if (hideOnDefault) this.setState({showed: false});
+    else appStore.naviService.goBack();
   };
 
   render() {
@@ -46,7 +58,7 @@ class PermissionModal extends React.Component {
       );
     return (
       <Modal
-        isVisible={videoStore.isNoPermission}
+        isVisible={videoStore.isNoPermission && this.state.showed}
         onBackdropPress={() => this.onOK()}
         onBackButtonPress={() => this.onOK()}
         backdropOpacity={0.1}

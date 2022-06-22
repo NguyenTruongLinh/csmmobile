@@ -3,7 +3,7 @@ import {
   View,
   Text,
   FlatList,
-  Modal as ModalBase,
+  // Modal as ModalBase,
   Platform,
   Dimensions,
   StyleSheet,
@@ -51,7 +51,7 @@ class AlarmsSearchView extends Component {
     const {filterParams} = props.alarmStore;
 
     this.state = {
-      showFilterModal: true,
+      showFilterModal: __DEV__ ? false : true,
       from: filterParams
         ? DateTime.fromFormat(filterParams.sdate, DateFormat.QuerryDateTime)
         : DateTime.now().minus({days: 1}),
@@ -80,6 +80,7 @@ class AlarmsSearchView extends Component {
     if (!alarmStore.rateConfig || alarmStore.rateConfig.length == 0) {
       alarmStore.getConfigs();
     }
+    // setTimeout(() => this.showFilter(true), 1500);
   }
 
   componentWillUnmount() {
@@ -98,6 +99,9 @@ class AlarmsSearchView extends Component {
         <View style={commonStyles.headerContainer}>{searchButton}</View>
       ),
     });
+  };
+  showFilter = isShowed => {
+    this.setState({showFilterModal: isShowed});
   };
 
   buildSearchParam = () => {
@@ -164,7 +168,7 @@ class AlarmsSearchView extends Component {
       );
     }
 
-    this.setState({showFilterModal: false});
+    this.showFilter(false);
   };
 
   refreshData = () => {
@@ -187,6 +191,7 @@ class AlarmsSearchView extends Component {
   };
 
   onDateChange = ({from, to}) => {
+    __DEV__ && console.log('GOND Alarm search onDateChange: ', from, to);
     this.setState({from, to});
   };
 
@@ -397,10 +402,10 @@ class AlarmsSearchView extends Component {
   modalContent = () => {
     const {alarmStore, sitesStore} = this.props;
     const {from, to, params} = this.state;
-    // __DEV__ &&
-    //   console.log(
-    //     `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
-    //   );
+    __DEV__ &&
+      console.log(
+        `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
+      );
     return (
       <View style={{flex: 75}}>
         <AlarmFilter
@@ -430,15 +435,21 @@ class AlarmsSearchView extends Component {
   };
 
   renderFilterModal = () => {
+    __DEV__ &&
+      console.log('GOND renderFilterModal: ', this.state.showFilterModal);
     return (
       <Modal
         isVisible={this.state.showFilterModal}
-        onBackdropPress={() => this.setState({showFilterModal: false})}
-        // onSwipeOut={() => this.setState({showFilterModal: false})}
-        onBackButtonPress={() => this.setState({showFilterModal: false})}
+        onBackdropPress={() => this.showFilter(false)}
+        // onSwipeOut={() => this.showFilter(false)}
+        onBackButtonPress={() => this.showFilter(false)}
         panResponderThreshold={10}
         backdropOpacity={0.3}
+        useNativeDriver={true}
+        animationInTiming={500}
+        animationOutTiming={500}
         style={{
+          zIndex: 0,
           marginBottom: 0,
           marginTop: '10%',
           marginLeft: 0,
@@ -475,7 +486,7 @@ class AlarmsSearchView extends Component {
       <View style={commonStyles.floatingActionButton}>
         <CMSTouchableIcon
           iconCustom="search_solid_advancedfind"
-          onPress={() => this.setState({showFilterModal: true})}
+          onPress={() => this.showFilter(true)}
           size={28}
           color={CMSColors.White}
         />
