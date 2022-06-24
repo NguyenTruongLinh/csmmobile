@@ -898,7 +898,7 @@ export const VideoModel = types
       return self.isAPIPermissionSupported
         ? self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED &&
             self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE
-        : true;
+        : false;
     },
     // #endregion permission's computed values
   }))
