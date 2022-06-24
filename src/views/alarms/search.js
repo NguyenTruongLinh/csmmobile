@@ -205,6 +205,8 @@ class AlarmsSearchView extends Component {
   };
 
   onAddMoreParams = (data, filterType) => {
+    // __DEV__ &&
+    //   console.log('GOND Alarm search onAddMoreParams: ', data, filterType);
     const {params} = this.state;
     let newParams;
 
@@ -226,61 +228,74 @@ class AlarmsSearchView extends Component {
         break;
       }
       case FilterMore.Time: {
-        if (!params) {
-          let timeNe;
-          if (data.type == 'stime')
-            timeNe = {
-              stime: data.time,
-              etime: 23,
-            };
-          else
-            timeNe = {
-              stime: 0,
-              etime: data.time,
-            };
+        if (!params || !params.time) {
+          // let timeNe;
+          // if (data.type == 'stime')
+          //   timeNe = {
+          //     stime: data.time,
+          //     etime: 23,
+          //   };
+          // else
+          //   timeNe = {
+          //     stime: 0,
+          //     etime: data.time,
+          //   };
           newParams = {
             ...params,
-            time: timeNe,
+            // time: timeNe,
+            time: {
+              stime: data.type == 'stime' ? data.time : 0,
+              etime: data.type == 'etime' ? data.time : 23,
+            },
           };
         } else {
           let {time} = params;
-          if (!time) {
-            let timeN;
-            if (data.type == 'stime')
-              timeN = {
-                stime: data.time,
-                etime: 23,
-              };
-            else
-              timeN = {
-                stime: 0,
-                etime: data.time,
-              };
-            newParams = {
-              ...params,
-              time: timeN,
-            };
-          } else {
-            let timeU;
-            if (data.type == 'stime') {
-              timeU = {
-                stime: data.time,
-                etime: time.etime < data.time ? data.time : time.etime,
-              };
-            } else {
-              timeU = {
-                stime: time.stime > data.time ? data.time : time.stime,
-                etime: data.time,
-              };
-            }
-            newParams = {
-              ...params,
-              time: timeU,
-            };
-          }
+          // if (!time) {
+          // let timeN;
+          // if (data.type == 'stime')
+          //   timeN = {
+          //     stime: data.time,
+          //     etime: 23,
+          //   };
+          // else
+          //   timeN = {
+          //     stime: 0,
+          //     etime: data.time,
+          //   };
+          // newParams = {
+          //   ...params,
+          // time: timeN,
+          // };
+          // } else {
+          // let timeU;
+          // if (data.type == 'stime') {
+          //   timeU = {
+          //     stime: data.time,
+          //     etime: time.etime < data.time ? data.time : time.etime,
+          //   };
+          // } else {
+          //   timeU = {
+          //     stime: time.stime > data.time ? data.time : time.stime,
+          //     etime: data.time,
+          //   };
+          // }
+          newParams = {
+            ...params,
+            // time: timeU,
+            time: {
+              stime: data.type == 'stime' ? data.time : time.stime,
+              etime: data.type == 'etime' ? data.time : time.etime,
+            },
+          };
+          // }
         }
 
-        this.setState({params: newParams});
+        __DEV__ &&
+          console.log('GOND Alarm search onAddMoreParams result: ', newParams);
+        this.setState(
+          {params: newParams}
+          // () => this.filterRef && this.filterRef.forceUpdate()
+        );
         break;
       }
       case FilterMore.AlertType: {
@@ -405,11 +420,14 @@ class AlarmsSearchView extends Component {
     const {from, to, params} = this.state;
     __DEV__ &&
       console.log(
-        `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
+        // `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
+        'GOND modalContent =',
+        params
       );
     return (
       <View style={{flex: 75}}>
         <AlarmFilter
+          ref={r => (this.filterRef = r)}
           dateFrom={from}
           dateTo={to}
           params={params}

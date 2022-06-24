@@ -495,9 +495,9 @@ export default class ExceptionSearchModal extends Component {
     return (
       <Modal
         isVisible={this.props.isVisible}
-        onBackdropPress={() => this.setState({showFilterModal: false})}
+        onBackdropPress={this.onDismiss}
         // onSwipeOut={() => this.setState({showFilterModal: false})}
-        onBackButtonPress={() => this.setState({showFilterModal: false})}
+        onBackButtonPress={this.onDismiss}
         panResponderThreshold={10}
         backdropOpacity={0.3}
         key="posFilterModal"
