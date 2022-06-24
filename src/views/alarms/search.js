@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 // import Ripple from 'react-native-material-ripple';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from '../../components/views/CMSModal';
 import {DateTime} from 'luxon';
 
 import CMSRipple from '../../components/controls/CMSRipple';
@@ -445,7 +446,6 @@ class AlarmsSearchView extends Component {
         onBackButtonPress={() => this.showFilter(false)}
         // panResponderThreshold={10}
         backdropOpacity={0.3}
-        useNativeDriver={true}
         key="alarmFilterModal"
         name="alarmFilterModal"
         style={{

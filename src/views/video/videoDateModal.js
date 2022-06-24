@@ -8,7 +8,8 @@ import {
   Platform,
   FlatList,
 } from 'react-native';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from '../../components/views/CMSModal';
 
 import CMSCalendarSingleDate from '../../components/views/CMSCalendarSingleDate';
 import Button from '../../components/controls/Button';
@@ -122,6 +123,8 @@ export default class VideoDateModal extends Component {
         onBackButtonPress={this.props.onBackButtonPress}
         panResponderThreshold={10}
         backdropOpacity={0.3}
+        key="videoDateModal"
+        name="videoDateModal"
         style={styles.modal}>
         <View style={[commonStyles.modalContainer, {marginTop: '25%'}]}>
           {this.renderHeader()}

@@ -1,7 +1,8 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {inject, observer} from 'mobx-react';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from './CMSModal';
 
 import AuthenModal from '../common/AuthenModal';
 

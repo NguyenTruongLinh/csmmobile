@@ -37,19 +37,21 @@ import TransactionFCMView from '../views/smarter/transactionDetailFCM';
 import ChannelsListView from '../views/video/channelsList';
 import ChannelsSettingView from '../views/video/channelsSetting';
 
+import AccountLocked from '../views/auth/accountLocked';
+import passwordExpired from '../views/auth/passwordExpired';
+
 import VideoStack from './videoNavigator';
 import SettingsStack from './settingsNavigator';
 import AlarmStack from './alarmNavigator';
 import SmartERStack from './smarterNavigator';
 
 import LoadingOverlay from '../components/common/loadingOverlay';
-import ROUTERS, {getHeaderTitle} from '../consts/routes';
-
 import BackButton from '../components/controls/BackButton';
+import GlobalModal from '../components/views/GlobalModal';
+
 import variables from '../styles/variables';
 import CMSColors from '../styles/cmscolors';
-import AccountLocked from '../views/auth/accountLocked';
-import passwordExpired from '../views/auth/passwordExpired';
+import ROUTERS, {getHeaderTitle} from '../consts/routes';
 // import cmscolors from '../styles/cmscolors';
 
 // const getHeaderOptions = route => {
@@ -296,7 +298,7 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
         naviService && naviService.onStateChange(state);
       }}>
       {isLoggedIn && notificationController}
-
+      <GlobalModal ref={r => appStore.setModalRef(r)} />
       {isLoading ? (
         <LoadingOverlay />
       ) : showIntro ? (

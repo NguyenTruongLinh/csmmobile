@@ -2,7 +2,6 @@ import React from 'react';
 import {Provider} from 'mobx-react';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import PushNotification from 'react-native-push-notification';
-// import {ModalPortal} from 'react-native-modals';
 import {RootSiblingParent} from 'react-native-root-siblings';
 
 import appStore from './stores/appStore';

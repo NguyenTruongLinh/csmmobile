@@ -51,6 +51,7 @@ const appStore = types
   })
   .volatile(self => ({
     naviService: new NavigationService(),
+    modalRef: null,
   }))
   .views(self => ({
     get getDeviceInfo() {
@@ -73,6 +74,9 @@ const appStore = types
     },
     setLoading(val = true) {
       self.isLoading = val;
+    },
+    setModalRef(value) {
+      self.modalRef = value;
     },
     loadLocalData: flow(function* loadLocalData() {
       try {
