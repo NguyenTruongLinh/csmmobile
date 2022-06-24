@@ -923,7 +923,7 @@ class DirectVideoView extends React.Component {
           isLoading: false,
           // connectionStatus: STREAM_STATUS.NO_PERMISSION,
         });
-        snackbarUtil.showToast(STREAM_STATUS.NO_PERMISSION, cmscolors.Success);
+        snackbarUtil.onWarning(VIDEO_TXT.NO_NVR_PERMISSION);
         this.noPermission = true;
         break;
       case NATIVE_MESSAGE.RECORDING_DATE:

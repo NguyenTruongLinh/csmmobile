@@ -9,9 +9,9 @@ import {
   Animated,
   LogBox,
 } from 'react-native';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
-import BigNumber from 'bignumber.js';
+// import BigNumber from 'bignumber.js';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 import {AirbnbRating} from 'react-native-ratings';
@@ -22,8 +22,7 @@ import TransThumb from '../../components/views/TransThumb';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import LoadingOverlay from '../../components/common/loadingOverlay';
-import PermissionModal from '../../components/views/PermissionModal';
+// import LoadingOverlay from '../../components/common/loadingOverlay';
 
 import util from '../../util/general';
 import snackbarUtil from '../../util/snackbar';
@@ -71,7 +70,6 @@ class AlarmDetailView extends Component {
     this.shouldReloadOnExit = false;
     // this.firstFocus = true;
     this.unsubFocusEvent = null;
-    this.permissionModalRef = null;
   }
 
   async componentDidMount() {
@@ -106,7 +104,7 @@ class AlarmDetailView extends Component {
     if (
       videoStore.isAuthenticated &&
       videoStore.isCloud &&
-      videoStore.canPlayChannel(alarmStore.selectedAlarm.channelNo, true)
+      videoStore.canEnterChannel(alarmStore.selectedAlarm.channelNo, true)
     )
       res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm, true);
     videoStore.enterVideoView(true);
@@ -315,9 +313,8 @@ class AlarmDetailView extends Component {
 
     __DEV__ && console.log('GOND Alarm-gotoVideo: ', alarmStore.selectedAlarm);
     videoStore.postAuthenticationCheck(() => {
-      const canPlay = videoStore.canPlayChannel(
-        alarmStore.selectedAlarm.channelNo,
-        isLive
+      const canPlay = videoStore.canEnterChannel(
+        alarmStore.selectedAlarm.channelNo
       );
       __DEV__ && console.log('GOND alarm canPlay: ', canPlay);
       if (videoStore.isUserNotLinked || canPlay) {
@@ -691,8 +688,6 @@ class AlarmDetailView extends Component {
 
   renderVideoButtons = () => {
     const {isLoading} = this.state;
-    const {canLiveSelectedChannel, canSearchSelectedChannel} =
-      this.props.videoStore;
 
     return (
       <View
@@ -795,10 +790,6 @@ class AlarmDetailView extends Component {
               height: imgSize.height,
               flexDirection: 'column',
             }}>
-            <PermissionModal
-              hideOnDefault={true}
-              ref={r => (this.permissionModalRef = r)}
-            />
             <FlatList
               pagingEnabled={true}
               style={{flex: 1}}

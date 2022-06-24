@@ -823,35 +823,49 @@ export const VideoModel = types
     },
     // #region permission's computed values
     canPlaySelectedChannel(isLive) {
-      const _isLive = isLive === undefined ? self.isLive : isLive;
-      if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE)
+      // const _isLive = isLive === undefined ? self.isLive : isLive;
+      if (
+        self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE ||
+        !self.selectedChannelData
+      )
         return false;
       if (self.isAPIPermissionSupported)
-        return self.selectedChannelData
-          ? _isLive
-            ? self.selectedChannelData.canLive
-            : self.selectedChannelData.canSearch
-          : false;
+        return isLive == undefined
+          ? self.selectedChannelData.canLive ||
+              self.selectedChannelData.canSearch
+          : isLive
+          ? self.selectedChannelData.canLive
+          : self.selectedChannelData.canSearch;
       return true;
     },
-    canPlayChannel(channelNo, isLive) {
-      const _isLive = isLive === undefined ? self.isLive : isLive;
+    canEnterChannel(channelNo, isLive) {
+      // const _isLive = isLive === undefined ? self.isLive : isLive;
       if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE) {
-        __DEV__ && console.log('GOND canPlayChannel no permission!');
+        __DEV__ && console.log('GOND canEnterChannel no permission!');
         return false;
+      }
+      if (
+        self.authenticationState == AUTHENTICATION_STATES.NOT_LINKED ||
+        self.authenticationState == AUTHENTICATION_STATES.NOT_AUTHEN
+      ) {
+        return true;
       }
       const foundChannel = self.allChannels.find(
         ch => ch.channelNo == channelNo
       );
       if (!foundChannel) {
-        __DEV__ && console.log('GOND canPlayChannel not found!');
+        __DEV__ && console.log('GOND canEnterChannel not found!');
         return false;
       }
 
       __DEV__ &&
-        console.log('GOND canPlayChannel: ', getSnapshot(foundChannel));
+        console.log('GOND canEnterChannel: ', getSnapshot(foundChannel));
       if (self.isAPIPermissionSupported)
-        return _isLive ? foundChannel.canLive : foundChannel.canSearch;
+        return isLive === undefined
+          ? foundChannel.canLive || foundChannel.canSearch
+          : isLive
+          ? foundChannel.canLive
+          : foundChannel.canSearch;
       return true;
     },
     get canLiveSelectedChannel() {
@@ -2370,11 +2384,7 @@ export const VideoModel = types
       }),
       // #endregion direct connection
       // #region HLS streaming
-      sendVSCCommand: flow(function* getStreamInfo(
-        mode,
-        channelNo,
-        params = {}
-      ) {
+      sendVSCCommand: flow(function* (mode, channelNo, params = {}) {
         if (mode < VSCCommand.LIVE || mode > VSCCommand.STOP) {
           __DEV__ && console.log('GOND mode is not valid: ', mode);
           return;
@@ -2399,7 +2409,7 @@ export const VideoModel = types
               sid,
             }
           );
-          __DEV__ && console.log(`GOND get DVR info mode ${mode}:`, res);
+          __DEV__ && console.trace(`GOND get DVR info mode ${mode}:`, res);
         } catch (ex) {
           console.log(`Could not get mode ${mode}: ${ex}`);
           return false;
@@ -3730,7 +3740,7 @@ export const VideoModel = types
           ) {
             // dongpt: no permission or channel list is empty
             self.authenticationState = AUTHENTICATION_STATES.NO_PRIVILEGE;
-            if (!isSilent) snackbarUtil.onMessage(STREAM_STATUS.NO_PERMISSION);
+            if (!isSilent) snackbarUtil.onWarning(VIDEO_TXT.NO_NVR_PERMISSION);
 
             return;
           }

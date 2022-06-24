@@ -538,6 +538,8 @@ class LiveChannelsView extends React.Component {
         // onSwipeOut={() => this.setState({showFilterModal: false})}
         onBackButtonPress={() => this.setState({showLayoutSelection: false})}
         backdropOpacity={0.1}
+        key="divisionModal"
+        name="divisionModal"
         style={{
           ...styles.layoutModalContainer,
           marginBottom: 0,

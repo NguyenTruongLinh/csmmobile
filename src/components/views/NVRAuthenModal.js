@@ -36,19 +36,30 @@ class NVRAuthenModal extends React.Component {
         'GOND !!! render Authen modal: ',
         videoStore.needAuthen,
         videoStore.showAuthenModal,
-        videoStore.isAuthenCanceled
+        videoStore.isAuthenCanceled,
+        currentScreen,
+        VIDEO_AUTHEN_VIEWS.includes(currentScreen),
+        'result =',
+        videoStore.needAuthen && videoStore.showAuthenModal
+        // && VIDEO_AUTHEN_VIEWS.includes(currentScreen)
       );
 
     // return currentScreen == ROUTERS.VIDEO_PLAYER ||
     //   currentScreen == ROUTERS.VIDEO_CHANNELS ||
     //   currentScreen == ROUTERS.HEALTH_CHANNELS ? (
-    return VIDEO_AUTHEN_VIEWS.includes(currentScreen) ? (
+    // return VIDEO_AUTHEN_VIEWS.includes(currentScreen) ? (
+    return (
       <Modal
-        isVisible={videoStore.needAuthen && videoStore.showAuthenModal}
+        isVisible={
+          // VIDEO_AUTHEN_VIEWS.includes(currentScreen) &&
+          videoStore.needAuthen && videoStore.showAuthenModal
+        }
         onBackdropPress={videoStore.onAuthenCancel}
         onBackButtonPress={videoStore.onAuthenCancel}
         backdropOpacity={0}
-        style={{margin: 0}}>
+        style={{margin: 0 /*, zIndex: 99*/}}
+        name="AuthenModal"
+        key="authenModal">
         <View style={[styles.modalcontainer]}>
           <AuthenModal
             style={styles.authenModal}
@@ -60,7 +71,8 @@ class NVRAuthenModal extends React.Component {
           />
         </View>
       </Modal>
-    ) : null;
+    );
+    //) : null;
   }
 }
 

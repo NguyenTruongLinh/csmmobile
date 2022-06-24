@@ -51,7 +51,7 @@ class AlarmsSearchView extends Component {
     const {filterParams} = props.alarmStore;
 
     this.state = {
-      showFilterModal: __DEV__ ? false : true,
+      showFilterModal: true, // __DEV__ ? false : true,
       from: filterParams
         ? DateTime.fromFormat(filterParams.sdate, DateFormat.QuerryDateTime)
         : DateTime.now().minus({days: 1}),
@@ -443,13 +443,12 @@ class AlarmsSearchView extends Component {
         onBackdropPress={() => this.showFilter(false)}
         // onSwipeOut={() => this.showFilter(false)}
         onBackButtonPress={() => this.showFilter(false)}
-        panResponderThreshold={10}
+        // panResponderThreshold={10}
         backdropOpacity={0.3}
         useNativeDriver={true}
-        animationInTiming={500}
-        animationOutTiming={500}
+        key="alarmFilterModal"
+        name="alarmFilterModal"
         style={{
-          zIndex: 0,
           marginBottom: 0,
           marginTop: '10%',
           marginLeft: 0,

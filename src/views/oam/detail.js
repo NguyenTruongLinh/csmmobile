@@ -1,40 +1,34 @@
 'use strict';
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
-  Text,
-  KeyboardAvoidingView,
   Platform,
-  Dimensions,
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
+import Ripple from 'react-native-material-ripple';
 
-import CMSColors from '../../styles/cmscolors';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-
-import {normalize} from '../../util/general';
-
-import commonStyles from '../../styles/commons.style';
-
 import Button from '../../components/controls/Button';
 import CounterView from './widget/CMSCounter';
 import TrendingView from './widget/TrendingView';
 import WaitTime from './widget/WaitTime';
-
-import CMSStyleSheet from '../../components/CMSStyleSheet';
-const IconCustom = CMSStyleSheet.IconCustom;
-
 import AcknowledgePopup from './widget/AcknowledgePopup';
-import ROUTERS from '../../consts/routes';
-import Ripple from 'react-native-material-ripple';
 
-const pvmColors = CMSColors.pvm;
+import {normalize} from '../../util/general';
+import snackbarUtil from '../../util/snackbar';
+
+import CMSColors from '../../styles/cmscolors';
+import commonStyles from '../../styles/commons.style';
+
+import ROUTERS from '../../consts/routes';
+import {VIDEO as VIDEO_TXT} from '../../localization/texts';
+
+// const pvmColors = CMSColors.pvm;
 const BORDER_ALPHA = '28';
 
 class OAMDetailView extends Component {
@@ -146,12 +140,29 @@ class OAMDetailView extends Component {
 
   gotoLiveVideo = () => {
     const {oamStore, videoStore, navigation} = this.props;
-    videoStore.switchLiveSearch(true);
+    videoStore.setLiveMode(true);
     const {kDVR, timezone, channelNo} = oamStore.data;
-    videoStore.onAlertPlay(true, {kDVR, timezone, channelNo});
-    setTimeout(() => {
-      navigation.push(ROUTERS.VIDEO_PLAYER);
-    }, 200);
+    // videoStore.onAlertPlay(true, {kDVR, timezone, channelNo});
+    // setTimeout(() => {
+    //   navigation.push(ROUTERS.VIDEO_PLAYER);
+    // }, 200);
+
+    __DEV__ && console.log('GOND OAM-gotoVideo: ', oamStore.data);
+    videoStore.postAuthenticationCheck(() => {
+      const canPlay = videoStore.canEnterChannel(channelNo);
+      __DEV__ && console.log('GOND OAM canPlay: ', canPlay);
+      if (videoStore.isUserNotLinked || canPlay) {
+        videoStore.onAlertPlay(true, {kDVR, timezone, channelNo});
+        // }
+        setTimeout(() => {
+          navigation.push(ROUTERS.VIDEO_PLAYER);
+          this.setState({isLoading: false});
+        }, 100);
+      } else {
+        snackbarUtil.onWarning(VIDEO_TXT.NO_NVR_PERMISSION);
+      }
+      // });
+    });
   };
 
   renderActionButton() {
