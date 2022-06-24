@@ -4,7 +4,8 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 import {inject, observer} from 'mobx-react';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from './CMSModal';
 
 import CMSColors from '../../styles/cmscolors';
 import ROUTERS from '../../consts/routes';
@@ -43,7 +44,10 @@ class PermissionModal extends React.Component {
   onOK = () => {
     const {hideOnDefault, appStore} = this.props;
     if (hideOnDefault) this.setState({showed: false});
-    else appStore.naviService.goBack();
+    else {
+      this.setState({showed: false}, () => appStore.naviService.goBack());
+      // appStore.naviService.goBack();
+    }
   };
 
   render() {
@@ -62,6 +66,8 @@ class PermissionModal extends React.Component {
         onBackdropPress={() => this.onOK()}
         onBackButtonPress={() => this.onOK()}
         backdropOpacity={0.1}
+        key="permissionModal"
+        name="permissionModal"
         style={styles.containerModal}>
         <View style={styles.containerContent}>
           <Image

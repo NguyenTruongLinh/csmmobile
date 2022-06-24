@@ -9,7 +9,8 @@ import {
   Keyboard,
   Platform,
 } from 'react-native';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from '../views/CMSModal';
 
 import AuthenModal from '../common/AuthenModal';
 import InputText from './InputText';
@@ -111,6 +112,8 @@ class CMSTextInputModal extends React.Component {
         onBackdropPress={this.onCancel}
         onBackButtonPress={this.onCancel}
         backdropOpacity={0.1}
+        key="textInputModal"
+        name="textInputModal"
         style={[
           styles.modalcontainer,
           {

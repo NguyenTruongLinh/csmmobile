@@ -178,7 +178,7 @@ class AlarmsLiveView extends Component {
           <FlatList
             renderItem={this.renderAlarmItem}
             data={alarmStore.filteredLiveData}
-            keyExtractor={item => item.kAlertEvent}
+            // keyExtractor={item => item.kAlertEvent}
             onRefresh={this.refreshLiveData}
             refreshing={alarmStore.isLoading}
             ListEmptyComponent={noData && this.renderNoData()}

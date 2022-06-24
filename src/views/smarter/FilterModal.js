@@ -12,7 +12,8 @@ import {
 import {DateTime} from 'luxon';
 import Ripple from 'react-native-material-ripple';
 import Accordion from 'react-native-collapsible/Accordion';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from '../../components/views/CMSModal';
 
 import CMSCalendarRange from '../../components/views/CMSCalendarRange';
 import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -499,6 +500,8 @@ export default class ExceptionSearchModal extends Component {
         onBackButtonPress={() => this.setState({showFilterModal: false})}
         panResponderThreshold={10}
         backdropOpacity={0.3}
+        key="posFilterModal"
+        name="posFilterModal"
         style={styles.modal}>
         <View style={commonStyles.modalContainer}>
           {this.renderHeader()}

@@ -4,7 +4,8 @@
 import React from 'react';
 import {View, Text, StyleSheet, Dimensions, Platform} from 'react-native';
 import {inject, observer} from 'mobx-react';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from '../../../components/views/CMSModal';
 // import Ripple from 'react-native-material-ripple';
 
 // import InputTextIcon from '../../../components/controls/InputTextIcon';
@@ -90,6 +91,8 @@ class AlertActionsModal extends React.Component {
         // onSwipeOut={() => this.setState({showFilterModal: false})}
         onBackButtonPress={() => healthStore.showActionsModal(false)}
         backdropOpacity={0.1}
+        key="healthActionModal"
+        name="healthActionModal"
         style={[
           styles.actionModal,
           {

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
-import Modal from 'react-native-modal';
+
 import {SwipeRow} from 'react-native-swipe-list-view';
 // import Ripple from 'react-native-material-ripple';
 
@@ -125,34 +125,6 @@ class HealthDetailView extends Component {
     navigation.push(ROUTERS.HEALTH_ALERTS);
   };
 
-  // onDismissAlert = description => {
-  //   const {healthStore} = this.props;
-  //   const {selectedAlertForDismiss} = this.state;
-  //   healthStore.dismissAlertsByType(selectedAlertForDismiss, description);
-  //   this.setState({showDismissModal: false, selectedAlertForDismiss: null});
-  // };
-
-  // onCancelDismiss = () => {
-  //   this.setState({showDismissModal: false, selectedAlertForDismiss: null});
-  // };
-
-  // renderDismissModal = () => {
-  //   return (
-  //     <Modal
-  //       isVisible={videoStore.showAuthenModal}
-  //       onBackdropPress={videoStore.onAuthenCancel}
-  //       onBackButtonPress={videoStore.onAuthenCancel}
-  //       backdropOpacity={0}
-  //       style={{margin: 0}}>
-  //       <View style={{flex: 1}}>
-  //         <View style={{width: 350, height: 300}}>
-  //           <InputTextIcon />
-  //         </View>
-  //       </View>
-  //     </Modal>
-  //   );
-  // };
-
   renderActionButton = () => {
     return (
       <View style={commonStyles.floatingActionButton}>
@@ -168,66 +140,6 @@ class HealthDetailView extends Component {
       </View>
     );
   };
-
-  // renderActionsModal = () => {
-  //   const {height} = Dimensions.get('window');
-  //   const {showDismissAllButtonInHealthDetail} = this.props.healthStore;
-
-  //   return (
-  //     <Modal
-  //       isVisible={this.state.showActionsModal}
-  //       onBackdropPress={() => this.setState({showActionsModal: false})}
-  //       // onSwipeOut={() => this.setState({showFilterModal: false})}
-  //       onBackButtonPress={() => this.setState({showActionsModal: false})}
-  //       backdropOpacity={0.1}
-  //       style={[
-  //         styles.actionModal,
-  //         {
-  //           marginTop:
-  //             height - (showDismissAllButtonInHealthDetail ? 210 : 140),
-  //         },
-  //       ]}>
-  //       <Ripple
-  //         style={[
-  //           styles.actionRowContainer,
-  //           // {borderWidth: 1, borderColor: 'red'},
-  //         ]}
-  //         onPress={() => {}}>
-  //         <IconCustom
-  //           name="videocam-filled-tool"
-  //           color={CMSColors.IconButton}
-  //           size={variables.fix_fontSize_Icon}
-  //         />
-  //         <Text style={styles.actionText}>Live</Text>
-  //       </Ripple>
-  //       <Ripple style={styles.actionRowContainer} onPress={() => {}}>
-  //         <IconCustom
-  //           name="searching-magnifying-glass"
-  //           color={CMSColors.IconButton}
-  //           size={variables.fix_fontSize_Icon}
-  //         />
-  //         <Text style={styles.actionText}>Search</Text>
-  //       </Ripple>
-  //       {showDismissAllButtonInHealthDetail && (
-  //         <Ripple
-  //           style={styles.actionRowContainer}
-  //           onPress={() =>
-  //             this.setState({
-  //               showDismissModal: true,
-  //               selectedAlertForDismiss: null,
-  //             })
-  //           }>
-  //           <IconCustom
-  //             name="double-tick-indicator"
-  //             color={CMSColors.IconButton}
-  //             size={variables.fix_fontSize_Icon}
-  //           />
-  //           <Text style={styles.actionText}>Dismiss all alerts</Text>
-  //         </Ripple>
-  //       )}
-  //     </Modal>
-  //   );
-  // };
 
   renderItem = ({item}) => {
     if (
