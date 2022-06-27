@@ -194,6 +194,12 @@ const DirectStreamModel = types
     get channels() {
       return self.channel ? String(self.channel.channelNo) : '';
     },
+    get canLive() {
+      return self.channel ? self.channel.canLive : false;
+    },
+    get canSearch() {
+      return self.channel ? self.channel.canSearch : false;
+    },
     get streamStatus() {
       const {isLoading, connectionStatus, error} = self.server;
       return {
@@ -1540,6 +1546,7 @@ export const VideoModel = types
         self.forceDstHour = value;
       },
       displayAuthen(value, force = false) {
+        // __DEV__ && console.trace('GOND displaying Login form: ', value);
         if (value == true) {
           // __DEV__ && console.trace('GOND displaying Login form: ', value);
           if (!force && self.isAuthenCanceled == true) return;
@@ -1620,6 +1627,7 @@ export const VideoModel = types
         self.saveLoginInfo();
       },
       onAuthenCancel() {
+        // __DEV__ && console.log('GOND onAuthenCancel');
         self.isAuthenCanceled = true;
         self.displayAuthen(false);
       },
@@ -2783,6 +2791,7 @@ export const VideoModel = types
         } else {
           // dongpt: get stream on multi division mode
           // dongpt: ONLY LIVE MODE =======
+          // __DEV__ && console.log('GOND getHLSInfos channel multi division');
           if (self.activeChannels.length <= 0) {
             __DEV__ && console.log(`GOND get multi HLS URL: No active channel`);
             return false;
@@ -2801,14 +2810,27 @@ export const VideoModel = types
               isLive: self.isLive,
             });
             newConnection.setOnErrorCallback(self.onHLSError);
+            // __DEV__ &&
+            //   console.log('GOND getHLSInfos channel init calive: ', ch.canLive);
             ch.canLive &&
               newConnection.startWaitingForStream(newConnection.targetUrl.sid);
 
             return newConnection;
           });
+          // __DEV__ &&
+          //   console.log(
+          //     'GOND getHLSInfos channel multi division 1 ',
+          //     self.hlsStreams
+          //   );
           self.isLoading = false;
 
           requestParams = self.hlsStreams.reduce((result, s) => {
+            // __DEV__ &&
+            //   console.log(
+            //     'GOND getHLSInfos channel init param: ',
+            //     s.canLive,
+            //     s
+            //   );
             if (s.canLive) {
               result.push({
                 ID: apiService.configToken.devId,
@@ -2822,7 +2844,11 @@ export const VideoModel = types
             return result;
           }, []);
         }
-
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND getHLSInfos channel multi division 2',
+        //     requestParams
+        //   );
         if (requestParams.length > 0) {
           try {
             let res = yield apiService.post(

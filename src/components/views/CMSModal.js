@@ -14,11 +14,14 @@ class CMSModal extends Component {
       modalProps: {isVisible: false},
       shouldUpdate: false,
     };
+    this._isMounted = false;
   }
 
   componentDidMount() {
+    this._isMounted = true;
     if (this.props.isVisible) {
-      __DEV__ && console.log('GOND CMSModal didMount: ', this.props.name);
+      __DEV__ &&
+        console.log('GOND CMSModal didMount visible: ', this.props.name);
       const {modalRef} = this.props.appStore;
       if (modalRef) {
         modalRef.updateProps(this.props);
@@ -30,11 +33,11 @@ class CMSModal extends Component {
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
     if (this.state.isVisible && modalRef) {
-      const {onBackButtonPress} = this.props;
+      const {onDismiss} = this.props;
       modalRef.updateProps({isVisible: false});
-      if (onBackdropPress && typeof onBackdropPress == 'function')
-        onBackdropPress();
+      if (onDismiss && typeof onDismiss == 'function') onDismiss();
     }
   }
 
@@ -74,7 +77,11 @@ class CMSModal extends Component {
     const {isVisible} = this.props;
     const {modalRef} = this.props.appStore;
 
-    if (isVisible || isVisible != prevProps.isVisible) {
+    if (
+      this._isMounted &&
+      modalRef &&
+      (isVisible || isVisible != prevProps.isVisible)
+    ) {
       modalRef.updateProps(this.props);
     } else if (!modalRef) {
       __DEV__ && console.log('GOND CMSModal modalRef not yet created');
@@ -93,7 +100,7 @@ class CMSModal extends Component {
 
   render() {
     const {children} = this.props;
-    __DEV__ && console.log('GOND CMSModal render: ', children);
+    // __DEV__ && console.log('GOND CMSModal render: ', children);
     // if (children) {
     //   // children.forEach(c => c.forceUpdate());
     //   if (

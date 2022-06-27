@@ -37,9 +37,9 @@ class NVRAuthenModal extends React.Component {
         'GOND !!! render Authen modal: ',
         videoStore.needAuthen,
         videoStore.showAuthenModal,
-        videoStore.isAuthenCanceled,
-        currentScreen,
-        VIDEO_AUTHEN_VIEWS.includes(currentScreen),
+        // videoStore.isAuthenCanceled,
+        // currentScreen,
+        // VIDEO_AUTHEN_VIEWS.includes(currentScreen),
         'result =',
         videoStore.needAuthen && videoStore.showAuthenModal
         // && VIDEO_AUTHEN_VIEWS.includes(currentScreen)

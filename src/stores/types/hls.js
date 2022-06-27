@@ -428,6 +428,12 @@ export default HLSStreamModel = types
     get snapshot() {
       return self.channel ? self.channel.snapshot : null;
     },
+    get canLive() {
+      return self.channel ? self.channel.canLive : false;
+    },
+    get canSearch() {
+      return self.channel ? self.channel.canSearch : false;
+    },
   }))
   .actions(self => ({
     afterCreate() {
