@@ -37,10 +37,10 @@ public class VideoSocket extends CommunicationSocket {
     public  static  final  int Resolution_Height = 480;
     FFMPEGDecoder ffmpeg;
 
-    public  VideoSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel)
+    public  VideoSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIP)
     {
 
-        super( hwnd, serverinfo, channel, search, bychannel);
+        super( hwnd, serverinfo, channel, search, bychannel, clientIP);
         ffmpeg = new FFMPEGDecoder();
         ffmpeg.LoadLib();
     }

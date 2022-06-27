@@ -258,6 +258,7 @@ class VideoPlayerView extends Component {
           switch (videoStore.cloudType) {
             case CLOUD_TYPE.DEFAULT:
             case CLOUD_TYPE.DIRECTION:
+            case CLOUD_TYPE.RS:
               this.playerRef.reconnect();
               break;
             case CLOUD_TYPE.HLS:
@@ -782,11 +783,8 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {
-      selectedStream,
-      isAuthenticated,
-      isAPIPermissionSupported,
-    } = videoStore;
+    const {selectedStream, isAuthenticated, isAPIPermissionSupported} =
+      videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
@@ -861,6 +859,7 @@ class VideoPlayerView extends Component {
     switch (videoStore.cloudType) {
       case CLOUD_TYPE.DEFAULT:
       case CLOUD_TYPE.DIRECTION:
+      case CLOUD_TYPE.RS:
         player = (
           <DirectVideoView
             {...playerProps}

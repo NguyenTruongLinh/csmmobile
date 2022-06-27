@@ -41,6 +41,37 @@ import {
 } from '../consts/misc';
 import {TIMEZONE_MAP} from '../consts/timezonesmap';
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../localization/texts';
+import cmscolors from '../styles/cmscolors';
+import Toast from 'react-native-root-toast';
+
+const RelayServerModel = types
+  .model({
+    enable: types.maybeNull(types.boolean),
+    ip: types.maybeNull(types.string),
+    port: types.maybeNull(types.integer),
+    blockStatus: types.maybeNull(types.integer),
+  })
+  .views(self => ({
+    get connectable() {
+      return self.enable && self.ip.length > 0 && self.port > 0;
+    },
+  }));
+
+const parseRelayServerModel = server => {
+  return server
+    ? RelayServerModel.create({
+        enable: server.Enable ?? false,
+        ip: server.IP ?? '',
+        port: server.Port ?? -1,
+        blockStatus: server.BlockStatus ?? 0,
+      })
+    : RelayServerModel.create({
+        enable: false,
+        ip: '',
+        port: -1,
+        blockStatus: 0,
+      });
+};
 
 const DirectServerModel = types
   .model({
@@ -60,12 +91,14 @@ const DirectServerModel = types
     date: types.string,
     hd: types.boolean,
     // interval: types.number,
-
+    haspLicense: types.string,
     // dongpt: connection status
     isLoading: types.optional(types.boolean, false),
     connectionStatus: types.optional(types.string, ''),
     error: types.maybeNull(types.string),
     needReset: types.optional(types.boolean, false),
+    relayInfo: RelayServerModel,
+    isRelay: types.boolean,
   })
   .views(self => ({
     get data() {
@@ -91,6 +124,11 @@ const DirectServerModel = types
         channelList: undefined,
         byChannel: true,
         interval: DAY_INTERVAL,
+        haspLicense: self.haspLicense,
+        relayConnectable: self.relayInfo.connectable,
+        relayIp: self.relayInfo.ip,
+        relayPort: self.relayInfo.port,
+        isRelay: self.isRelay,
       };
     },
     get channels() {
@@ -128,7 +166,7 @@ const DirectServerModel = types
     },
   }));
 
-const parseDirectServer = (server /*, channelNo, isLive*/) => {
+const parseDirectServer = (server, type /*, channelNo, isLive*/) => {
   return DirectServerModel.create({
     serverIP: server.ServerIP ?? '',
     publicIP: server.ServerIP ?? '',
@@ -142,6 +180,9 @@ const parseDirectServer = (server /*, channelNo, isLive*/) => {
     searchMode: false,
     date: '',
     hd: false,
+    haspLicense: server.HaspLicense,
+    isRelay: type === CLOUD_TYPE.RS,
+    relayInfo: parseRelayServerModel(server.RelayServerInfo),
   });
 };
 
@@ -411,10 +452,14 @@ export const VideoModel = types
   }))
   .views(self => ({
     get isCloud() {
-      return self.cloudType > CLOUD_TYPE.DIRECTION;
+      return self.cloudType === CLOUD_TYPE.HLS;
     },
     get activeChannels() {
-      if (self.cloudType == CLOUD_TYPE.DIRECTION) return self.allChannels;
+      if (
+        self.cloudType == CLOUD_TYPE.DIRECTION ||
+        self.cloudType == CLOUD_TYPE.RS
+      )
+        return self.allChannels;
       const res = self.allChannels.filter(ch => ch.isActive);
       return res; // res.map(ch => ch.data);
     },
@@ -426,7 +471,8 @@ export const VideoModel = types
         self.isAlertPlay ||
         !self.isLive ||
         self.cloudType == CLOUD_TYPE.DIRECTION ||
-        self.cloudType == CLOUD_TYPE.DEFAULT
+        self.cloudType == CLOUD_TYPE.DEFAULT ||
+        self.cloudType == CLOUD_TYPE.RS
       )
         return self.allChannels;
       return self.activeChannels;
@@ -441,7 +487,8 @@ export const VideoModel = types
         self.authenticationState != AUTHENTICATION_STATES.ON_AUTHENICATING
       );
       // return (
-      //   //self.cloudType == CLOUD_TYPE.DIRECTION ||
+      //   //self.cloudType == CLOUD_TYPE.DIRECTION || ||
+      // self.cloudType == CLOUD_TYPE.RS
       //   // self.cloudType == CLOUD_TYPE.DEFAULT) &&
       //   !self.isAuthenticated &&
       //   ((self.nvrUser && self.nvrUser.length == 0) ||
@@ -451,6 +498,7 @@ export const VideoModel = types
     get canDisplayChannels() {
       return (
         (self.cloudType != CLOUD_TYPE.DIRECTION &&
+          self.cloudType != CLOUD_TYPE.RS &&
           self.cloudType != CLOUD_TYPE.DEFAULT) ||
         // self.isAuthenticated
         self.authenticationState != AUTHENTICATION_STATES.AUTHENTICATED
@@ -493,6 +541,7 @@ export const VideoModel = types
       switch (self.cloudType) {
         case CLOUD_TYPE.DEFAULT:
         case CLOUD_TYPE.DIRECTION:
+        case CLOUD_TYPE.RS:
           const server = self.directStreams.find(
             s => s.channelNo == self.selectedChannel
           );
@@ -522,6 +571,7 @@ export const VideoModel = types
       switch (self.cloudType) {
         case CLOUD_TYPE.DEFAULT:
         case CLOUD_TYPE.DIRECTION:
+        case CLOUD_TYPE.RS:
           return self.directStreams;
         case CLOUD_TYPE.HLS:
           return self.hlsStreams;
@@ -559,7 +609,8 @@ export const VideoModel = types
       if (
         !self.isLive ||
         self.cloudType == CLOUD_TYPE.DIRECTION ||
-        self.cloudType == CLOUD_TYPE.DEFAULT
+        self.cloudType == CLOUD_TYPE.DEFAULT ||
+        self.cloudType == CLOUD_TYPE.RS
       )
         return self.filteredChannels;
       return self.filteredActiveChannels;
@@ -568,7 +619,8 @@ export const VideoModel = types
       if (
         !self.isLive ||
         self.cloudType == CLOUD_TYPE.DIRECTION ||
-        self.cloudType == CLOUD_TYPE.DEFAULT
+        self.cloudType == CLOUD_TYPE.DEFAULT ||
+        self.cloudType == CLOUD_TYPE.RS
       )
         return (
           'self.filteredChannels self.isLive = ' +
@@ -601,6 +653,7 @@ export const VideoModel = types
     get hoursOfDay() {
       if (
         self.cloudType == CLOUD_TYPE.DIRECTION ||
+        self.cloudType == CLOUD_TYPE.RS ||
         (self.cloudType == CLOUD_TYPE.DEFAULT && self.staticHoursOfDay)
       )
         return self.staticHoursOfDay;
@@ -627,7 +680,8 @@ export const VideoModel = types
       }
       // if (
       //   self.cloudType == CLOUD_TYPE.DEFAULT ||
-      //   self.cloudType == CLOUD_TYPE.DIRECTION
+      //   self.cloudType == CLOUD_TYPE.DIRECTION ||
+      // self.cloudType == CLOUD_TYPE.RS
       // ) {
       //   return searchDate.setZone('utc', {keepLocalTime: true}).toSeconds();
       // } else {
@@ -721,6 +775,7 @@ export const VideoModel = types
       switch (self.cloudType) {
         case CLOUD_TYPE.DEFAULT:
         case CLOUD_TYPE.DIRECTION:
+        case CLOUD_TYPE.RS:
           return self.directData;
         case CLOUD_TYPE.HLS:
           return self.hlsData;
@@ -1061,6 +1116,7 @@ export const VideoModel = types
           switch (self.cloudType) {
             case CLOUD_TYPE.DEFAULT:
             case CLOUD_TYPE.DIRECTION:
+            case CLOUD_TYPE.RS:
               break;
             case CLOUD_TYPE.HLS:
               // create stream first for showing in player
@@ -1090,6 +1146,7 @@ export const VideoModel = types
           switch (self.cloudType) {
             case CLOUD_TYPE.DEFAULT:
             case CLOUD_TYPE.DIRECTION:
+            case CLOUD_TYPE.RS:
               // console.log(
               //   '### GOND this is unbelievable, how can this case happen, no direct stream found while channel existed!!!'
               // );
@@ -1191,6 +1248,7 @@ export const VideoModel = types
             switch (self.cloudType) {
               case CLOUD_TYPE.DEFAULT:
               case CLOUD_TYPE.DIRECTION:
+              case CLOUD_TYPE.RS:
                 break;
               case CLOUD_TYPE.HLS:
                 if (self.selectedChannel && self.selectedStream)
@@ -1350,6 +1408,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
+          case CLOUD_TYPE.RS:
             self.getDirectInfos(self.selectedChannel ?? undefined);
             break;
           case CLOUD_TYPE.HLS:
@@ -1391,7 +1450,8 @@ export const VideoModel = types
         // let timeToCheck = value;
         // if (
         //   self.cloudType == CLOUD_TYPE.DEFAULT ||
-        //   self.cloudType == CLOUD_TYPE.DIRECTION
+        //   self.cloudType == CLOUD_TYPE.DIRECTION ||
+        // self.cloudType == CLOUD_TYPE.RS
         // ) {
         //   timeToCheck = DateTime.fromSeconds(timeToCheck, {zone: self.timezone})
         //     .setZone('utc', {keepLocalTime: true})
@@ -1572,7 +1632,8 @@ export const VideoModel = types
         // __DEV__ && console.log('GOND onAuthenSubmit 2');
         self.setNVRLoginInfo(username, password);
         self.displayAuthen(false);
-        // if (self.cloudType == CLOUD_TYPE.DIRECTION)
+        // if (self.cloudType == CLOUD_TYPE.DIRECTION ||
+        // self.cloudType == CLOUD_TYPE.RS)
         // self.shouldLinkNVRUser = true;
         // else
         self.saveLoginInfo();
@@ -1596,7 +1657,8 @@ export const VideoModel = types
         if (!nextIsLive) {
           // dongpt: handle different timezone when switching from Live to Search mode
           if (
-            self.cloudType == CLOUD_TYPE.DIRECTION &&
+            (self.cloudType == CLOUD_TYPE.DIRECTION ||
+              self.cloudType == CLOUD_TYPE.RS) &&
             lastValue === true &&
             self.frameTimeString &&
             self.frameTimeString.length > 0
@@ -1775,7 +1837,8 @@ export const VideoModel = types
           }
         } else if (
           self.cloudType == CLOUD_TYPE.DIRECTION ||
-          self.cloudType == CLOUD_TYPE.DEFAULT
+          self.cloudType == CLOUD_TYPE.DEFAULT ||
+          self.cloudType == CLOUD_TYPE.RS
         ) {
           self.directStreams.forEach(s => {
             if (s.isLoading || s.connectionStatus != STREAM_STATUS.DONE)
@@ -1905,6 +1968,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
+          case CLOUD_TYPE.RS:
             return self.buildDirectData();
           case CLOUD_TYPE.HLS:
             return self.buildHLSData();
@@ -2071,6 +2135,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
+          case CLOUD_TYPE.RS:
             // self.directStreams = self.directStreams.reduce(updateFn, []);
             self.directStreams = self.directStreams.filter(currentItem =>
               newList.find(ch => ch.channelNo == currentItem.channelNo)
@@ -2211,7 +2276,8 @@ export const VideoModel = types
         let res = null;
         if (
           self.cloudType == CLOUD_TYPE.DIRECTION ||
-          self.cloudType == CLOUD_TYPE.DEFAULT
+          self.cloudType == CLOUD_TYPE.DEFAULT ||
+          self.cloudType == CLOUD_TYPE.RS
         ) {
           res = yield self.getDvrChannels();
         } else {
@@ -2248,9 +2314,19 @@ export const VideoModel = types
             }
           );
           __DEV__ && console.log('GOND direct connect infos: ', res);
-          self.directConnection = parseDirectServer(res);
+          self.directConnection = parseDirectServer(res, self.cloudType);
           // __DEV__ && console.log('GOND direct setChannel 3');
-
+          if (
+            self.directConnection.isRelay &&
+            !self.directConnection.relayInfo.connectable
+          ) {
+            snackbarUtil.showToast(
+              VIDEO_TXT.WRONG_RELAY_SERVER_INFO,
+              cmscolors.Danger,
+              Toast.durations.LONG,
+              Toast.positions.BOTTOM
+            );
+          }
           // if (util.isNullOrUndef(channelNo)) {
           //   self.currentGridPage = 0;
           //   // self.directConnection.setChannels(
@@ -3384,6 +3460,7 @@ export const VideoModel = types
             switch (self.cloudType) {
               case CLOUD_TYPE.DEFAULT:
               case CLOUD_TYPE.DIRECTION:
+              case CLOUD_TYPE.RS:
                 self.directStreams = [];
                 break;
               case CLOUD_TYPE.HLS:
@@ -3462,6 +3539,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
+          case CLOUD_TYPE.RS:
           // getInfoPromise = self.getDirectInfos(channelNo);
           // break;
           // if (self.needAuthen) {
@@ -3496,6 +3574,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
+          case CLOUD_TYPE.RS:
             self.onHLSInfoResponse(streamInfo, cmd);
             console.log(
               'GOND Warning: direct connection not receive stream info through notification'
@@ -3826,6 +3905,7 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
+          case CLOUD_TYPE.RS:
             self.directStreams.forEach(s => s.reset());
             self.directStreams = [];
             self.directConnection && self.directConnection.reset();

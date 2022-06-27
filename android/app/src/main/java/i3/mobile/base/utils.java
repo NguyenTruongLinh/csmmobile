@@ -297,6 +297,17 @@ public class utils {
         result[3] = (byte) (_value);
         return result;
     }
+
+    public static byte[] IntToByteArrayReversed(int _value)
+    {
+        byte[] result = new byte[4];
+        result[3] = (byte) (_value >> 24);
+        result[2] = (byte) (_value >> 16);
+        result[1] = (byte) (_value >> 8);
+        result[0] = (byte) (_value);
+        return result;
+    }
+
     public byte[] CharToByteArray(char _value)
     {
         byte[] result = new byte[2];

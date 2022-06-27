@@ -241,6 +241,7 @@ class LiveChannelsView extends React.Component {
           switch (videoStore.cloudType) {
             case CLOUD_TYPE.DEFAULT:
             case CLOUD_TYPE.DIRECTION:
+            case CLOUD_TYPE.RS:
               this.playerRefs.forEach(p => p && p.reconnect());
               break;
             case CLOUD_TYPE.HLS:
@@ -650,6 +651,7 @@ class LiveChannelsView extends React.Component {
     switch (videoStore.cloudType) {
       case CLOUD_TYPE.DEFAULT:
       case CLOUD_TYPE.DIRECTION:
+      case CLOUD_TYPE.RS:
         player = (
           //<DirectVideoView
           <DirectChannelView

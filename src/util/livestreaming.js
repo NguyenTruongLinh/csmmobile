@@ -7,6 +7,7 @@ import CMSColors from '../styles/cmscolors';
 //   switch (cloudType) {
 //     case CLOUD_TYPE.DEFAULT:
 //     case CLOUD_TYPE.DIRECTION:
+// case CLOUD_TYPE.RS:
 //       Actions[ROUTERS.LIVEVIDEOIOS](propsObj);
 //       break;
 //     case CLOUD_TYPE.HLS:

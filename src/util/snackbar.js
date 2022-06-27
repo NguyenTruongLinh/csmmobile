@@ -10,7 +10,8 @@ let lastMessage = null;
 const showToast = (
   message,
   backgroundColor,
-  duration = Toast.durations.LONG
+  duration = Toast.durations.LONG,
+  position = Toast.positions.TOP
 ) => {
   // __DEV__ && console.log(`showToast showToast `);
   if (lastToast && lastMessage == message) Toast.hide(lastToast);
@@ -24,7 +25,7 @@ const showToast = (
       marginTop: variables.isPhoneX ? 40 : 0,
     },
     duration: duration,
-    position: Toast.positions.TOP, //BOTTOM, //
+    position: position, //
     shadow: true,
     animation: true,
     hideOnPress: true,
