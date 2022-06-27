@@ -194,6 +194,12 @@ const DirectStreamModel = types
     get channels() {
       return self.channel ? String(self.channel.channelNo) : '';
     },
+    get canLive() {
+      return self.channel ? self.channel.canLive : false;
+    },
+    get canSearch() {
+      return self.channel ? self.channel.canSearch : false;
+    },
     get streamStatus() {
       const {isLoading, connectionStatus, error} = self.server;
       return {
@@ -408,6 +414,7 @@ export const VideoModel = types
     beginSearchTime: null, // luxon DateTime
     shouldLinkNVRUser: false, // enable when input login form
     isAuthenCanceled: false,
+    onPostAuthentication: null, // (channelNo, isLive) => {}
   }))
   .views(self => ({
     get isCloud() {
@@ -438,7 +445,7 @@ export const VideoModel = types
       __DEV__ && console.log('GOND needAuthen: ', self.authenticationState); //self.nvrUser, self.nvrPassword);
       return (
         self.authenticationState < AUTHENTICATION_STATES.AUTHENTICATED &&
-        self.authenticationState != AUTHENTICATION_STATES.ON_AUTHENICATING
+        self.authenticationState != AUTHENTICATION_STATES.ON_AUTHENTICATING
       );
       // return (
       //   //self.cloudType == CLOUD_TYPE.DIRECTION ||
@@ -644,6 +651,9 @@ export const VideoModel = types
         ? self.allChannels[0].channelNo
         : 0;
     },
+    get channelsSnapshot() {
+      return self.allChannels.map(ch => getSnapshot(ch));
+    },
     get searchPlayTimeLuxon() {
       // __DEV__ &&
       //   console.log(
@@ -805,6 +815,12 @@ export const VideoModel = types
     get isAuthenticated() {
       return self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED;
     },
+    // get notYetAuthen() {
+    //   return self.authenticationState == AUTHENTICATION_STATES.NOT_AUTHEN;
+    // },
+    get isUserNotLinked() {
+      return self.authenticationState == AUTHENTICATION_STATES.NOT_LINKED;
+    },
     get canLoadStream() {
       return (
         !self.isAPIPermissionSupported ||
@@ -813,15 +829,49 @@ export const VideoModel = types
     },
     // #region permission's computed values
     canPlaySelectedChannel(isLive) {
-      const _isLive = isLive === undefined ? self.isLive : isLive;
-      if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE)
+      // const _isLive = isLive === undefined ? self.isLive : isLive;
+      if (
+        self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE ||
+        !self.selectedChannelData
+      )
         return false;
       if (self.isAPIPermissionSupported)
-        return self.selectedChannelData
-          ? _isLive
-            ? self.selectedChannelData.canLive
-            : self.selectedChannelData.canSearch
-          : false;
+        return isLive == undefined
+          ? self.selectedChannelData.canLive ||
+              self.selectedChannelData.canSearch
+          : isLive
+          ? self.selectedChannelData.canLive
+          : self.selectedChannelData.canSearch;
+      return true;
+    },
+    canEnterChannel(channelNo, isLive) {
+      // const _isLive = isLive === undefined ? self.isLive : isLive;
+      if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE) {
+        __DEV__ && console.log('GOND canEnterChannel no permission!');
+        return false;
+      }
+      if (
+        self.authenticationState == AUTHENTICATION_STATES.NOT_LINKED ||
+        self.authenticationState == AUTHENTICATION_STATES.NOT_AUTHEN
+      ) {
+        return true;
+      }
+      const foundChannel = self.allChannels.find(
+        ch => ch.channelNo == channelNo
+      );
+      if (!foundChannel) {
+        __DEV__ && console.log('GOND canEnterChannel not found!');
+        return false;
+      }
+
+      __DEV__ &&
+        console.log('GOND canEnterChannel: ', getSnapshot(foundChannel));
+      if (self.isAPIPermissionSupported)
+        return isLive === undefined
+          ? foundChannel.canLive || foundChannel.canSearch
+          : isLive
+          ? foundChannel.canLive
+          : foundChannel.canSearch;
       return true;
     },
     get canLiveSelectedChannel() {
@@ -854,7 +904,7 @@ export const VideoModel = types
       return self.isAPIPermissionSupported
         ? self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED &&
             self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE
-        : true;
+        : false;
     },
     // #endregion permission's computed values
   }))
@@ -1496,6 +1546,7 @@ export const VideoModel = types
         self.forceDstHour = value;
       },
       displayAuthen(value, force = false) {
+        // __DEV__ && console.trace('GOND displaying Login form: ', value);
         if (value == true) {
           // __DEV__ && console.trace('GOND displaying Login form: ', value);
           if (!force && self.isAuthenCanceled == true) return;
@@ -1511,11 +1562,11 @@ export const VideoModel = types
         //   );
         if (!forceReset && self.isAuthenticated) return;
 
-        __DEV__ && console.log('GOND resetNVRAuthentication reset...');
+        __DEV__ && console.trace('GOND resetNVRAuthentication reset...');
         if (self.nvrUser && self.nvrUser.length > 0)
           self.setNVRLoginInfo('', '');
         if (self.isAuthenCanceled == true) self.isAuthenCanceled = false;
-        self.authenticationState = AUTHENTICATION_STATES.NOT_AUTHEN;
+        self.authenticationState = AUTHENTICATION_STATES.HAS_RESET;
         self.displayAuthen(true);
       },
       saveLoginInfo: flow(function* () {
@@ -1543,7 +1594,7 @@ export const VideoModel = types
           res.NVRUser.length > 0
         ) {
           // self.isAuthenticated = true;
-          self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
+          // self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
           yield self.getDVRPermission();
           return true;
         } else {
@@ -1558,12 +1609,10 @@ export const VideoModel = types
       }),
 
       onLoginSuccess() {
+        // dongpt: no need to save anymore, already save in onAuthenSubmit
         // if (!self.isAuthenticated) self.isAuthenticated = true;
-        if (!self.isAuthenticated)
-          self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
-
         // dongpt: post login info to CMS
-        if (self.shouldLinkNVRUser) self.saveLoginInfo();
+        // if (self.shouldLinkNVRUser) self.saveLoginInfo();
       },
 
       onAuthenSubmit({username, password}) {
@@ -1578,6 +1627,7 @@ export const VideoModel = types
         self.saveLoginInfo();
       },
       onAuthenCancel() {
+        // __DEV__ && console.log('GOND onAuthenCancel');
         self.isAuthenCanceled = true;
         self.displayAuthen(false);
       },
@@ -2116,7 +2166,7 @@ export const VideoModel = types
         __DEV__ &&
           console.log(
             'GOND refreshChannelsList: ',
-            self.allChannels.map(ch => getSnapshot(ch)),
+            self.channelsSnapshot,
             newChannels.map(ch => getSnapshot(ch))
           );
 
@@ -2207,7 +2257,7 @@ export const VideoModel = types
         self.isLoading = false;
         return true;
       }),
-      getDisplayingChannels: flow(function* () {
+      getDisplayingChannels: flow(function* (shouldGetPermission = true) {
         let res = null;
         if (
           self.cloudType == CLOUD_TYPE.DIRECTION ||
@@ -2217,7 +2267,7 @@ export const VideoModel = types
         } else {
           res = yield self.getActiveChannels();
         }
-        if (res) {
+        if (res && shouldGetPermission) {
           // updating permission
           yield self.getDVRPermission();
         }
@@ -2342,11 +2392,7 @@ export const VideoModel = types
       }),
       // #endregion direct connection
       // #region HLS streaming
-      sendVSCCommand: flow(function* getStreamInfo(
-        mode,
-        channelNo,
-        params = {}
-      ) {
+      sendVSCCommand: flow(function* (mode, channelNo, params = {}) {
         if (mode < VSCCommand.LIVE || mode > VSCCommand.STOP) {
           __DEV__ && console.log('GOND mode is not valid: ', mode);
           return;
@@ -2371,7 +2417,7 @@ export const VideoModel = types
               sid,
             }
           );
-          __DEV__ && console.log(`GOND get DVR info mode ${mode}:`, res);
+          __DEV__ && console.trace(`GOND get DVR info mode ${mode}:`, res);
         } catch (ex) {
           console.log(`Could not get mode ${mode}: ${ex}`);
           return false;
@@ -2745,6 +2791,7 @@ export const VideoModel = types
         } else {
           // dongpt: get stream on multi division mode
           // dongpt: ONLY LIVE MODE =======
+          // __DEV__ && console.log('GOND getHLSInfos channel multi division');
           if (self.activeChannels.length <= 0) {
             __DEV__ && console.log(`GOND get multi HLS URL: No active channel`);
             return false;
@@ -2763,14 +2810,27 @@ export const VideoModel = types
               isLive: self.isLive,
             });
             newConnection.setOnErrorCallback(self.onHLSError);
+            // __DEV__ &&
+            //   console.log('GOND getHLSInfos channel init calive: ', ch.canLive);
             ch.canLive &&
               newConnection.startWaitingForStream(newConnection.targetUrl.sid);
 
             return newConnection;
           });
+          // __DEV__ &&
+          //   console.log(
+          //     'GOND getHLSInfos channel multi division 1 ',
+          //     self.hlsStreams
+          //   );
           self.isLoading = false;
 
           requestParams = self.hlsStreams.reduce((result, s) => {
+            // __DEV__ &&
+            //   console.log(
+            //     'GOND getHLSInfos channel init param: ',
+            //     s.canLive,
+            //     s
+            //   );
             if (s.canLive) {
               result.push({
                 ID: apiService.configToken.devId,
@@ -2784,7 +2844,11 @@ export const VideoModel = types
             return result;
           }, []);
         }
-
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND getHLSInfos channel multi division 2',
+        //     requestParams
+        //   );
         if (requestParams.length > 0) {
           try {
             let res = yield apiService.post(
@@ -3639,7 +3703,7 @@ export const VideoModel = types
             );
           return;
         }
-        self.authenticationState = AUTHENTICATION_STATES.ON_AUTHENICATING;
+        self.authenticationState = AUTHENTICATION_STATES.ON_AUTHENTICATING;
         try {
           const res = yield apiService.get(
             SiteRoute.controller,
@@ -3661,6 +3725,7 @@ export const VideoModel = types
             // CMSAPI not support yet, let pass the authentication for now
             self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
             self.isAPIPermissionSupported = false;
+            self.onAuthenticated();
             return;
           }
           self.isAPIPermissionSupported = true;
@@ -3688,10 +3753,8 @@ export const VideoModel = types
             currentObject.ChannelControlStatus ==
             CHANNEL_CONTROL_STATUS.NOT_LINK
           ) {
-            self.authenticationState = AUTHENTICATION_STATES.NOT_AUTHEN;
+            self.authenticationState = AUTHENTICATION_STATES.NOT_LINK;
             self.displayAuthen(true);
-            // self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
-            // self.isAPIPermissionSupported = false;
             return;
           }
 
@@ -3703,7 +3766,7 @@ export const VideoModel = types
           ) {
             // dongpt: no permission or channel list is empty
             self.authenticationState = AUTHENTICATION_STATES.NO_PRIVILEGE;
-            if (!isSilent) snackbarUtil.onMessage(STREAM_STATUS.NO_PERMISSION);
+            if (!isSilent) snackbarUtil.onWarning(VIDEO_TXT.NO_NVR_PERMISSION);
 
             return;
           }
@@ -3715,7 +3778,7 @@ export const VideoModel = types
             currentObject.ChannelControlStatus ==
             CHANNEL_CONTROL_STATUS.HAVE_PRO_CONFIG
               ? AUTHENTICATION_STATES.AUTHENTICATED
-              : AUTHENTICATION_STATES.NOT_AUTHEN;
+              : AUTHENTICATION_STATES.NOT_LINKED;
           if (!self.isAuthenticated) {
             // if not authenticated yet, will be back to check live/search permission
             //   after logged in
@@ -3733,19 +3796,20 @@ export const VideoModel = types
           //   currentArray = currentArray.Sites;
           // }
           if (self.allChannels.length == 0) {
-            console.log(
-              'GOND getDVRPermission should be call after getDisplayingChannels: '
-              // self.allChannels
-            );
+            __DEV__ &&
+              console.log(
+                'GOND getDVRPermission should be call after getDisplayingChannels: '
+                // self.allChannels
+              );
             //
-            // const res = yield self.getDisplayingChannels();
+            const resChannels = yield self.getDisplayingChannels(false);
             // if (res === false) {
             //   console.log(
             //     'GOND getDVRPermission interupted because cannot get channels data'
             //   );
             //   return currentArray;
             // }
-            return currentArray;
+            // return currentArray;
           }
           if (
             currentArray &&
@@ -3797,18 +3861,59 @@ export const VideoModel = types
                 self.allChannels.map(ch => getSnapshot(ch))
               );
             self.authenticationState = AUTHENTICATION_STATES.PRIVILEGE_LOADED;
+
+            self.onAuthenticated();
           } else {
+            __DEV__ &&
+              console.log(
+                'GOND getDVRPermission no permission or channel: ',
+                currentArray,
+                currentArray.length > 0,
+                self.allChannels.length
+              );
+
+            self.authenticationState = AUTHENTICATION_STATES.NO_PRIVILEGE;
           }
         } catch (ex) {
           console.log('GOND getDVRPermission failed: ', ex);
           if (
-            self.authenticationState == AUTHENTICATION_STATES.ON_AUTHENICATING
+            self.authenticationState == AUTHENTICATION_STATES.ON_AUTHENTICATING
           ) {
             self.authenticationState = AUTHENTICATION_STATES.AUTHEN_FAILED;
           }
           return;
         }
       }),
+      onAuthenticated() {
+        if (
+          self.onPostAuthentication &&
+          typeof self.onPostAuthentication == 'function'
+        ) {
+          __DEV__ && console.log('GOND postAuthenticationCheck call delayed!');
+          self.onPostAuthentication();
+          self.onPostAuthentication = null;
+        }
+      },
+      postAuthenticationCheck(callback) {
+        if (!callback || typeof callback != 'function') {
+          __DEV__ &&
+            console.log('GOND postAuthenticationCheck not a callable!');
+          return;
+        }
+        if (
+          self.authenticationState == AUTHENTICATION_STATES.ON_AUTHENTICATING
+        ) {
+          __DEV__ &&
+            console.log(
+              'GOND postAuthenticationCheck not ready will call later!',
+              self.authenticationState
+            );
+          self.onPostAuthentication = callback;
+          return;
+        }
+        __DEV__ && console.log('GOND postAuthenticationCheck call now!');
+        callback();
+      },
       // #endregion Permission
       releaseHLSStreams() {
         self.hlsStreams.forEach(s => {

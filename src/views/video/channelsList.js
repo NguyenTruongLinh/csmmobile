@@ -128,13 +128,8 @@ class ChannelsListView extends React.Component {
 
   setHeader = enableSettingButton => {
     if (!this._isMounted) return;
-    const {
-      navigation,
-      videoStore,
-      healthStore,
-      sitesStore,
-      userStore,
-    } = this.props;
+    const {navigation, videoStore, healthStore, sitesStore, userStore} =
+      this.props;
     const {isListView} = this.state;
 
     const searchButton = this.searchbarRef
@@ -399,7 +394,7 @@ class ChannelsListView extends React.Component {
             ? VIDEO_TXT.NO_CHANNEL
             : userStore.hasPermission(MODULE_PERMISSIONS.VSC)
             ? STREAM_STATUS.NO_PERMISSION
-            : VIDEO_TXT.NO_PERMISSION}
+            : VIDEO_TXT.NO_VSC_PERMISSION}
         </Text>
       </View>
     );

@@ -24,9 +24,14 @@ import FlagWeightModal from './FlagWeightModal';
 import TransactionBillView from './transactionBill';
 import LoadingOverlay from '../../components/common/loadingOverlay';
 
+import snackbarUtil from '../../util/snackbar';
+
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
-import {SMARTER as SMARTER_TXT} from '../../localization/texts';
+import {
+  SMARTER as SMARTER_TXT,
+  VIDEO as VIDEO_TXT,
+} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
 
 import Orientation from 'react-native-orientation-locker';
@@ -225,10 +230,26 @@ class TransactionDetailView extends Component {
         console.log('GOND transaction video: not valid dvr: ', transaction);
       return;
     }
-    videoStore.onAlertPlay(false, transaction);
-    setTimeout(() => {
-      navigation.push(ROUTERS.VIDEO_PLAYER);
-    }, 200);
+    // videoStore.onAlertPlay(false, transaction);
+    // setTimeout(() => {
+    //   navigation.push(ROUTERS.VIDEO_PLAYER);
+    // }, 200);
+
+    videoStore.postAuthenticationCheck(() => {
+      const canPlay = videoStore.canEnterChannel(parseInt(transaction.camName));
+      __DEV__ && console.log('GOND transaction canPlay: ', canPlay);
+      if (videoStore.isUserNotLinked || canPlay) {
+        videoStore.onAlertPlay(false, transaction);
+        // }
+        setTimeout(() => {
+          navigation.push(ROUTERS.VIDEO_PLAYER);
+          this.setState({isLoading: false});
+        }, 100);
+      } else {
+        snackbarUtil.onWarning(VIDEO_TXT.NO_NVR_PERMISSION);
+      }
+      // });
+    });
   };
 
   renderActionButton = () => {

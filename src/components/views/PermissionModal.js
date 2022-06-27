@@ -4,7 +4,8 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 import {inject, observer} from 'mobx-react';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from './CMSModal';
 
 import CMSColors from '../../styles/cmscolors';
 import ROUTERS from '../../consts/routes';
@@ -13,10 +14,16 @@ import Button from '../../components/controls/Button';
 import {Warning_Img} from '../../consts/images';
 
 class PermissionModal extends React.Component {
+  static defaultProps = {
+    hideOnDefault: false,
+  };
+
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      showed: !props.hideOnDefault,
+    };
     this._isMounted = false;
   }
 
@@ -30,8 +37,17 @@ class PermissionModal extends React.Component {
     this._isMounted = false;
   }
 
+  show = isShowed => {
+    this.setState({showed: isShowed});
+  };
+
   onOK = () => {
-    this.props.appStore.naviService.goBack();
+    const {hideOnDefault, appStore} = this.props;
+    if (hideOnDefault) this.setState({showed: false});
+    else {
+      this.setState({showed: false}, () => appStore.naviService.goBack());
+      // appStore.naviService.goBack();
+    }
   };
 
   render() {
@@ -46,10 +62,12 @@ class PermissionModal extends React.Component {
       );
     return (
       <Modal
-        isVisible={videoStore.isNoPermission}
+        isVisible={videoStore.isNoPermission && this.state.showed}
         onBackdropPress={() => this.onOK()}
         onBackButtonPress={() => this.onOK()}
         backdropOpacity={0.1}
+        key="permissionModal"
+        name="permissionModal"
         style={styles.containerModal}>
         <View style={styles.containerContent}>
           <Image

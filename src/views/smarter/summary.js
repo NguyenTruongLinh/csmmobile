@@ -16,7 +16,8 @@ import {inject, observer} from 'mobx-react';
 import {HorizontalBarChart} from 'react-native-charts-wrapper';
 import Accordion from 'react-native-collapsible/Accordion';
 // import * as Animatable from 'react-native-animatable';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from '../../components/views/CMSModal';
 
 import CMSRipple from '../../components/controls/CMSRipple';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
@@ -201,6 +202,8 @@ class DashboardView extends React.Component {
         // onSwipeOut={() => this.setState({showSortModal: false})}
         onBackButtonPress={() => this.setState({showSortModal: false})}
         backdropOpacity={0.5}
+        key="summaryModal"
+        name="summaryModal"
         style={[
           styles.sortModal,
           {

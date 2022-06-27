@@ -16,8 +16,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
 import {CalendarList} from 'react-native-calendars';
-// import Modal, {SlideAnimation} from 'react-native-modals';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
 import Orientation from 'react-native-orientation-locker';
 import TimePicker from 'react-native-24h-timepicker';
 import {DateTime} from 'luxon';
@@ -782,11 +781,8 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {
-      selectedStream,
-      isAuthenticated,
-      isAPIPermissionSupported,
-    } = videoStore;
+    const {selectedStream, isAuthenticated, isAPIPermissionSupported} =
+      videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
@@ -802,6 +798,8 @@ class VideoPlayerView extends Component {
       // !isAPIPermissionSupported ||
       !isAuthenticated
     ) {
+      // if (selectedStream && !isAuthenticated && this.authenRef)
+      //   this.authenRef.forceUpdate();
       return (
         <TouchableWithoutFeedback onPress={this.onShowControlButtons}>
           <Image
@@ -813,13 +811,9 @@ class VideoPlayerView extends Component {
       );
     }
 
-    if (
-      isAPIPermissionSupported &&
-      !videoStore.canPlaySelectedChannel()
-      // (selectedStream.channel && videoStore.isLive
-      //   ? !selectedStream.channel.canLive
-      //   : !selectedStream.channel.canSearch)
-    ) {
+    const canPlay = videoStore.canPlaySelectedChannel(videoStore.isLive);
+    __DEV__ && console.log('GOND render player canPlay: ', canPlay);
+    if (!canPlay) {
       __DEV__ && console.log('GOND renderVid player NO PERMISSION');
       return (
         <ImageBackground

@@ -14,8 +14,7 @@ import {
 import BackgroundTimer from 'react-native-background-timer';
 import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
-// import {BottomModal, ModalContent} from 'react-native-modals';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 import DirectVideoView from './direct';
@@ -23,6 +22,7 @@ import HLSStreamingView from './hls';
 import RTCStreamingView from './rtc';
 import DirectChannelView from './directChannel';
 // import AuthenModal from '../../components/common/AuthenModal';
+import Modal from '../../components/views/CMSModal';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 // import InputTextIcon from '../../components/controls/InputTextIcon';
@@ -538,6 +538,8 @@ class LiveChannelsView extends React.Component {
         // onSwipeOut={() => this.setState({showFilterModal: false})}
         onBackButtonPress={() => this.setState({showLayoutSelection: false})}
         backdropOpacity={0.1}
+        key="divisionModal"
+        name="divisionModal"
         style={{
           ...styles.layoutModalContainer,
           marginBottom: 0,
@@ -739,7 +741,7 @@ class LiveChannelsView extends React.Component {
         <Text>
           {userStore.hasPermission(MODULE_PERMISSIONS.VSC)
             ? STREAM_STATUS.NO_PERMISSION
-            : VIDEO_TXT.NO_PERMISSION}
+            : VIDEO_TXT.NO_VSC_PERMISSION}
         </Text>
       </View>
     );

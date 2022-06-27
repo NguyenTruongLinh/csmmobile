@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 import {View, ScrollView, Text, FlatList, Dimensions} from 'react-native';
 import PropTypes from 'prop-types';
 
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from '../../components/views/CMSModal';
 
 import {IconCustom} from '../../components/CMSStyleSheet';
 import commonStyles from '../../styles/commons.style';
@@ -98,6 +99,8 @@ class FlagWeightModal extends Component {
         onBackButtonPress={onDismiss}
         onBackdropPress={onDismiss}
         backdropOpacity={0.1}
+        key="flagWeightModal"
+        name="flagWeightModal"
         style={[
           commonStyles.modalContainer,
           {

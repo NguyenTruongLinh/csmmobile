@@ -3,7 +3,7 @@ import {
   View,
   Text,
   FlatList,
-  Modal as ModalBase,
+  // Modal as ModalBase,
   Platform,
   Dimensions,
   StyleSheet,
@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 // import Ripple from 'react-native-material-ripple';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
+import Modal from '../../components/views/CMSModal';
 import {DateTime} from 'luxon';
 
 import CMSRipple from '../../components/controls/CMSRipple';
@@ -51,7 +52,7 @@ class AlarmsSearchView extends Component {
     const {filterParams} = props.alarmStore;
 
     this.state = {
-      showFilterModal: true,
+      showFilterModal: true, // __DEV__ ? false : true,
       from: filterParams
         ? DateTime.fromFormat(filterParams.sdate, DateFormat.QuerryDateTime)
         : DateTime.now().minus({days: 1}),
@@ -80,6 +81,7 @@ class AlarmsSearchView extends Component {
     if (!alarmStore.rateConfig || alarmStore.rateConfig.length == 0) {
       alarmStore.getConfigs();
     }
+    // setTimeout(() => this.showFilter(true), 1500);
   }
 
   componentWillUnmount() {
@@ -98,6 +100,9 @@ class AlarmsSearchView extends Component {
         <View style={commonStyles.headerContainer}>{searchButton}</View>
       ),
     });
+  };
+  showFilter = isShowed => {
+    this.setState({showFilterModal: isShowed});
   };
 
   buildSearchParam = () => {
@@ -164,7 +169,7 @@ class AlarmsSearchView extends Component {
       );
     }
 
-    this.setState({showFilterModal: false});
+    this.showFilter(false);
   };
 
   refreshData = () => {
@@ -187,6 +192,7 @@ class AlarmsSearchView extends Component {
   };
 
   onDateChange = ({from, to}) => {
+    __DEV__ && console.log('GOND Alarm search onDateChange: ', from, to);
     this.setState({from, to});
   };
 
@@ -199,6 +205,8 @@ class AlarmsSearchView extends Component {
   };
 
   onAddMoreParams = (data, filterType) => {
+    // __DEV__ &&
+    //   console.log('GOND Alarm search onAddMoreParams: ', data, filterType);
     const {params} = this.state;
     let newParams;
 
@@ -220,61 +228,74 @@ class AlarmsSearchView extends Component {
         break;
       }
       case FilterMore.Time: {
-        if (!params) {
-          let timeNe;
-          if (data.type == 'stime')
-            timeNe = {
-              stime: data.time,
-              etime: 23,
-            };
-          else
-            timeNe = {
-              stime: 0,
-              etime: data.time,
-            };
+        if (!params || !params.time) {
+          // let timeNe;
+          // if (data.type == 'stime')
+          //   timeNe = {
+          //     stime: data.time,
+          //     etime: 23,
+          //   };
+          // else
+          //   timeNe = {
+          //     stime: 0,
+          //     etime: data.time,
+          //   };
           newParams = {
             ...params,
-            time: timeNe,
+            // time: timeNe,
+            time: {
+              stime: data.type == 'stime' ? data.time : 0,
+              etime: data.type == 'etime' ? data.time : 23,
+            },
           };
         } else {
           let {time} = params;
-          if (!time) {
-            let timeN;
-            if (data.type == 'stime')
-              timeN = {
-                stime: data.time,
-                etime: 23,
-              };
-            else
-              timeN = {
-                stime: 0,
-                etime: data.time,
-              };
-            newParams = {
-              ...params,
-              time: timeN,
-            };
-          } else {
-            let timeU;
-            if (data.type == 'stime') {
-              timeU = {
-                stime: data.time,
-                etime: time.etime < data.time ? data.time : time.etime,
-              };
-            } else {
-              timeU = {
-                stime: time.stime > data.time ? data.time : time.stime,
-                etime: data.time,
-              };
-            }
-            newParams = {
-              ...params,
-              time: timeU,
-            };
-          }
+          // if (!time) {
+          // let timeN;
+          // if (data.type == 'stime')
+          //   timeN = {
+          //     stime: data.time,
+          //     etime: 23,
+          //   };
+          // else
+          //   timeN = {
+          //     stime: 0,
+          //     etime: data.time,
+          //   };
+          // newParams = {
+          //   ...params,
+          // time: timeN,
+          // };
+          // } else {
+          // let timeU;
+          // if (data.type == 'stime') {
+          //   timeU = {
+          //     stime: data.time,
+          //     etime: time.etime < data.time ? data.time : time.etime,
+          //   };
+          // } else {
+          //   timeU = {
+          //     stime: time.stime > data.time ? data.time : time.stime,
+          //     etime: data.time,
+          //   };
+          // }
+          newParams = {
+            ...params,
+            // time: timeU,
+            time: {
+              stime: data.type == 'stime' ? data.time : time.stime,
+              etime: data.type == 'etime' ? data.time : time.etime,
+            },
+          };
+          // }
         }
 
-        this.setState({params: newParams});
+        __DEV__ &&
+          console.log('GOND Alarm search onAddMoreParams result: ', newParams);
+        this.setState(
+          {params: newParams}
+          // () => this.filterRef && this.filterRef.forceUpdate()
+        );
         break;
       }
       case FilterMore.AlertType: {
@@ -397,13 +418,16 @@ class AlarmsSearchView extends Component {
   modalContent = () => {
     const {alarmStore, sitesStore} = this.props;
     const {from, to, params} = this.state;
-    // __DEV__ &&
-    //   console.log(
-    //     `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
-    //   );
+    __DEV__ &&
+      console.log(
+        // `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
+        'GOND modalContent =',
+        params
+      );
     return (
       <View style={{flex: 75}}>
         <AlarmFilter
+          ref={r => (this.filterRef = r)}
           dateFrom={from}
           dateTo={to}
           params={params}
@@ -430,14 +454,18 @@ class AlarmsSearchView extends Component {
   };
 
   renderFilterModal = () => {
+    __DEV__ &&
+      console.log('GOND renderFilterModal: ', this.state.showFilterModal);
     return (
       <Modal
         isVisible={this.state.showFilterModal}
-        onBackdropPress={() => this.setState({showFilterModal: false})}
-        // onSwipeOut={() => this.setState({showFilterModal: false})}
-        onBackButtonPress={() => this.setState({showFilterModal: false})}
-        panResponderThreshold={10}
+        onBackdropPress={() => this.showFilter(false)}
+        // onSwipeOut={() => this.showFilter(false)}
+        onBackButtonPress={() => this.showFilter(false)}
+        // panResponderThreshold={10}
         backdropOpacity={0.3}
+        key="alarmFilterModal"
+        name="alarmFilterModal"
         style={{
           marginBottom: 0,
           marginTop: '10%',
@@ -475,7 +503,7 @@ class AlarmsSearchView extends Component {
       <View style={commonStyles.floatingActionButton}>
         <CMSTouchableIcon
           iconCustom="search_solid_advancedfind"
-          onPress={() => this.setState({showFilterModal: true})}
+          onPress={() => this.showFilter(true)}
           size={28}
           color={CMSColors.White}
         />

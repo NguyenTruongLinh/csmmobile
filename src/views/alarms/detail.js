@@ -9,9 +9,9 @@ import {
   Animated,
   LogBox,
 } from 'react-native';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
-import BigNumber from 'bignumber.js';
+// import BigNumber from 'bignumber.js';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 import {AirbnbRating} from 'react-native-ratings';
@@ -22,9 +22,10 @@ import TransThumb from '../../components/views/TransThumb';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import LoadingOverlay from '../../components/common/loadingOverlay';
+// import LoadingOverlay from '../../components/common/loadingOverlay';
 
 import util from '../../util/general';
+import snackbarUtil from '../../util/snackbar';
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
 import variable from '../../styles/variables';
@@ -32,6 +33,7 @@ import {
   Comps as ComponentTxt,
   Settings as SettingsTxt,
   ALARM as ALARM_TXT,
+  VIDEO as VIDEO_TXT,
 } from '../../localization/texts';
 import {
   DateFormat,
@@ -98,7 +100,13 @@ class AlarmDetailView extends Component {
     let res = await videoStore.getDVRPermission(alarmStore.selectedAlarm.kDVR);
 
     // Preload video streaming: Live mode
-    res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm, true);
+    __DEV__ && console.log('GOND alarm detail: ', alarmStore.selectedAlarm);
+    if (
+      videoStore.isAuthenticated &&
+      videoStore.isCloud &&
+      videoStore.canEnterChannel(alarmStore.selectedAlarm.channelNo, true)
+    )
+      res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm, true);
     videoStore.enterVideoView(true);
     // const snapShots = getSnapshot(alarmStore.selectedAlarm.snapshot);
     // __DEV__ && console.log(` snapShots = `, snapShots);
@@ -303,19 +311,24 @@ class AlarmDetailView extends Component {
     // videoStore.setLiveMode(isLive);
     // if (!isLive) {
 
-    __DEV__ &&
-      console.log(
-        'GOND Alarm-gotoVideo: ',
-        videoStore.needAuthen,
-        videoStore.showAuthenModal
+    __DEV__ && console.log('GOND Alarm-gotoVideo: ', alarmStore.selectedAlarm);
+    videoStore.postAuthenticationCheck(() => {
+      const canPlay = videoStore.canEnterChannel(
+        alarmStore.selectedAlarm.channelNo
       );
-    videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm, true);
-    // }
-    setTimeout(() => {
-      navigation.push(ROUTERS.VIDEO_PLAYER);
-      this.setState({isLoading: false});
-    }, 200);
-    // });
+      __DEV__ && console.log('GOND alarm canPlay: ', canPlay);
+      if (videoStore.isUserNotLinked || canPlay) {
+        videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm, true);
+        // }
+        setTimeout(() => {
+          navigation.push(ROUTERS.VIDEO_PLAYER);
+          this.setState({isLoading: false});
+        }, 100);
+      } else {
+        snackbarUtil.onWarning(VIDEO_TXT.NO_NVR_PERMISSION);
+      }
+      // });
+    });
   };
 
   renderViolationGroup = (imgSize, coordinateList) => {
@@ -675,10 +688,6 @@ class AlarmDetailView extends Component {
 
   renderVideoButtons = () => {
     const {isLoading} = this.state;
-    const {
-      canLiveSelectedChannel,
-      canSearchSelectedChannel,
-    } = this.props.videoStore;
 
     return (
       <View

@@ -50,12 +50,14 @@ export default class AlarmFilter extends Component {
       reload: false,
       numberSelectStatus: 0,
       sitesData: this.props.sitesData,
-      contentheight: this.props.initheight,
+      // contentheight: this.props.initheight,
       isSortAZ: true,
       panel: Panels.DateSelect,
       filterMore: filters,
       authmodal: false,
       dateRange: CMSCalendarRange.createDateRange(dateFrom, dateTo),
+      lastFrom: null,
+      lastTo: null,
     };
   }
 
@@ -118,12 +120,23 @@ export default class AlarmFilter extends Component {
   }
   */
 
-  static getDerivedStateFromProps(nextProps) {
+  static getDerivedStateFromProps(nextProps, prevState) {
     let {dateFrom, dateTo} = nextProps;
-    return {
-      dateRange: CMSCalendarRange.createDateRange(dateFrom, dateTo),
-    };
+    const {lastFrom, lastTo} = prevState;
+    __DEV__ &&
+      console.log('GOND AlarmFilter getDerivedStateFromProps: ', nextProps);
+    if (lastFrom != dateFrom || lastTo != dateTo)
+      return {
+        dateRange: CMSCalendarRange.createDateRange(dateFrom, dateTo),
+        lastFrom: dateFrom,
+        lastTo: dateTo,
+      };
+    return {};
   }
+  // shouldComponentUpdate = (nextProps, nextState) => {
+  //   __DEV__ && console.log('GOND AlarmFilter getDerivedStateFromProps: ');
+  //   return true;
+  // };
 
   convertParamSelected = props => {
     //{sdate, edate, sty, aty, ara,ano, sta, sid, vty, aid, avaid} = params;
@@ -153,167 +166,6 @@ export default class AlarmFilter extends Component {
 
     return filterMore;
   };
-
-  // onSelectionChange = (value, prevValue, selectedRange) => {
-  //   //if(!prevValue) return;
-  //   //if(value == prevValue) return;
-  //   let from, to;
-  //   if (selectedRange.selectTo) {
-  //     from = selectedRange.selectFrom;
-  //     to = selectedRange.selectTo;
-  //     // this.setState({dateFrom: selectedRange.selectFrom,
-  //     //               dateTo: selectedRange.selectTo});
-  //   } else {
-  //     from = selectedRange.selectFrom;
-  //     to = selectedRange.selectFrom;
-
-  //     // this.setState({dateFrom: selectedRange.selectFrom,
-  //     //   dateTo: selectedRange.selectFrom});
-  //   }
-  //   if (this.props.onDateChange) {
-  //     this.props.onDateChange({from: from, to: to});
-  //   }
-  // };
-
-  /*
-  onDayPress = ({day, dateString, month, timestamp, year}) => {
-    const {dateFrom, dateTo} = this.props;
-    __DEV__ &&
-      console.log(
-        'GOND AlarmFilter day pressed: ',
-        {
-          day,
-          dateString,
-          month,
-          timestamp,
-          year,
-        },
-        'from = ',
-        dateFrom,
-        ' to = ',
-        dateTo
-      );
-    const selectedDate = DateTime.fromISO(dateString);
-    // Disable future selection
-    if (selectedDate > DateTime.now()) return;
-
-    if (
-      dateFrom.startOf('day').toSeconds() == dateTo.startOf('day').toSeconds()
-    ) {
-      __DEV__ && console.log('GOND AlarmFilter day pressed date from == to ');
-      this.props.onDateChange({
-        from: dateFrom,
-        to: selectedDate,
-      });
-    } else {
-      __DEV__ && console.log('GOND AlarmFilter day pressed diff from != to ');
-      this.props.onDateChange({
-        from: selectedDate,
-        to: selectedDate,
-      });
-    }
-  };
-
-  renderDate = () => {
-    // let calendar;
-    // if (isFirst == true) {
-    //   isFirst = false;
-    //   // console.log(new Date());
-    //   calendar = (
-    //     <Calendar
-    //       markingType={'period'}
-    //       selectFrom={this.props.dateFrom}
-    //       bodyBackColor={CMSColors.DividerColor24}
-    //       dayCommonBackColor={CMSColors.transparent}
-    //       dayDisabledBackColor={CMSColors.transparent}
-    //       selectTo={this.props.dateTo}
-    //       startDate={new Date()}
-    //       onSelectionChange={this.onSelectionChange}
-    //       isFutureDate={false}
-    //       dayInRangeBackColor="#C7D3DD"
-    //       daySelectedBackColor="rgb(0, 74, 124)"
-    //     />
-    //   );
-    // } else {
-    //   calendar = (
-    //     <Calendar
-    //       bodyBackColor={CMSColors.DividerColor24}
-    //       dayCommonBackColor={CMSColors.transparent}
-    //       dayDisabledBackColor={CMSColors.transparent}
-    //       startDate={new Date()}
-    //       onSelectionChange={this.onSelectionChange}
-    //       isFutureDate={false}
-    //       dayInRangeBackColor="#C7D3DD"
-    //       daySelectedBackColor="rgb(0, 74, 124)"
-    //     />
-    //   );
-    // }
-    // return calendar;
-    // const {dateFrom, dateTo} = this.props;
-    // const dateRangeObj = {};
-    // if (dateFrom.toFormat('yyyyMMdd') == dateTo.toFormat('yyyyMMdd')) {
-    //   dateRangeObj[dateTo.toFormat(DateFormat.CalendarDate)] = {
-    //     color: CMSColors.BlueSky,
-    //     selected: true,
-    //     marked: true,
-    //   };
-    // } else {
-    //   dateRangeObj[dateFrom.toFormat(DateFormat.CalendarDate)] = {
-    //     startingDay: true,
-    //     endingDay: true,
-    //     textColor: CMSColors.White,
-    //     color: CMSColors.BlueSky,
-    //   };
-    //   dateRangeObj[dateTo.toFormat(DateFormat.CalendarDate)] = {
-    //     startingDay: true,
-    //     endingDay: true,
-    //     color: CMSColors.BlueSky,
-    //     textColor: CMSColors.White,
-    //     // selected: true,
-    //   };
-    // }
-    const today = DateTime.now();
-    let markedData = {};
-    markedData[today.toFormat(DateFormat.CalendarDate)] = {
-      marked: true,
-      textColor: CMSColors.ColorText,
-      dotColor: 'red',
-    };
-    let futureDay = today.plus({days: 1});
-    while (futureDay.month == today.month) {
-      markedData[futureDay.toFormat(DateFormat.CalendarDate)] = {
-        textColor: CMSColors.InactiveText,
-      };
-      futureDay = futureDay.plus({days: 1});
-    }
-
-    markedData = {...markedData, ...this.state.dateRange};
-    // __DEV__ && console.log('GOND today marked: ', markedData);
-    return (
-      <CalendarList
-        markingType={'period'}
-        onDayPress={this.onDayPress}
-        markedDates={markedData}
-        // markedDates={this.state.dateRange}
-        hideExtraDays={true}
-        futureScrollRange={0}
-      />
-    );
-  };
-  */
-
-  // onDimensionChange = event => {
-  //   const {width, height} = event.window;
-  //   console.log('GOND AlarmFilter on rotating, inith =', this.props.initheight, ', initw =', this.props.initwidth)
-  //   if (height < width) {
-  //     let init_height = Math.min(this.props.initheight, this.props.initwidth);
-  //     this.setState({contentheight: init_height - session_header_height});
-  //   } else {
-  //     let init_height = Math.max(this.props.initheight, this.props.initwidth);
-  //     this.setState({contentheight: init_height - session_header_height});
-  //   }
-  //   //console.log( event.nativeEvent.layout);
-  // };
 
   renderDate = () => {
     const {dateFrom, dateTo, onDateChange} = this.props;
@@ -551,6 +403,7 @@ export default class AlarmFilter extends Component {
   //   }
 
   setParamStartTime = time => {
+    __DEV__ && console.log('GOND AlarmFilter setParamStartTime: ', time);
     let timeN = {
       type: 'stime',
       time: time,
@@ -560,6 +413,7 @@ export default class AlarmFilter extends Component {
   };
 
   setParamEndTime = time => {
+    __DEV__ && console.log('GOND AlarmFilter setParamEndTime: ', time);
     let timeN = {
       type: 'etime',
       time: time,
@@ -570,16 +424,19 @@ export default class AlarmFilter extends Component {
 
   getTimeData = type => {
     let {params} = this.props;
+    __DEV__ && console.log('GOND AlarmFilter getTimeData 0: ', params);
     if (util.isNullOrUndef(params)) return type == 'stime' ? 0 : 23;
     let {time} = params;
     if (util.isNullOrUndef(time)) return type == 'stime' ? 0 : 23;
     let {stime, etime} = time;
+    __DEV__ && console.log('GOND AlarmFilter getTimeData: ', params, time);
     return type == 'stime' ? stime : etime;
   };
 
-  renderTimePicker = (title, _filterMore, from, to) => {
+  renderTimePicker = (title, _filterMore) => {
     let stime = this.getTimeData('stime');
     let etime = this.getTimeData('etime');
+    __DEV__ && console.log('GOND AlarmFilter renderTimePicker: ', stime, etime);
     let renderContentCustom = (
       <View style={styles.rowListFilter}>
         <CMSTouchableIcon
@@ -652,7 +509,7 @@ export default class AlarmFilter extends Component {
         coverScreen={true}
         visible={this.state.authmodal}
         onRequestClose={() => {
-          this.setState({authmodal: false});
+          this.setState({authmodal: false}, () => this.forceUpdate());
         }}>
         <View opacity={1} style={[styles.modalcontainer]}>
           <TouchableOpacity
@@ -788,6 +645,7 @@ export default class AlarmFilter extends Component {
   };
 
   renderListFilter = () => {
+    __DEV__ && console.log('GOND AlarmFilter renderListFilter: ');
     if (!this.state.filterMore || this.state.filterMore.length == 0) return;
 
     return (
@@ -803,6 +661,7 @@ export default class AlarmFilter extends Component {
   };
 
   render() {
+    __DEV__ && console.log('GOND AlarmFilter rerender: ', this.props);
     let contentHeader = (
       <View style={styles.contentHeader}>
         <View style={styles.dateTab}>
