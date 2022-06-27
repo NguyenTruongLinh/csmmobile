@@ -118,23 +118,47 @@ class HLSStreamingView extends React.Component {
       // this.setState({isFilterShown: !this.state.isFilterShown});
     });
 
-    // this.panGesture = Gesture.Pan()
-    //   .onUpdate(e => {
-    //     //e.translationX
-    //     __DEV__ &&
-    //       console.log(
-    //         `Gesture.Race panGesture onUpdate e = `,
-    //         JSON.stringify(e)
-    //       );
-    //   })
-    //   .onEnd(e => {
-    //     let translateX = this.state.translateX + e.translationX;
-    //     let translateY = this.state.translateY + e.translationX;
-    //     this.setState({
-    //       translateX,
-    //       translateY,
-    //     });
-    //   });
+    const panGesture = Gesture.Pan()
+      .onStart(e => {
+        this.curTranslationX = this.state.translateX;
+        this.curTranslationY = this.state.translateY;
+      })
+      .onUpdate(e => {
+        let translateX = this.curTranslationX + e.translationX;
+        let translateY = this.curTranslationY + e.translationY;
+        if (
+          translateX <= (this.props.width * (this.state.zoom - 1)) / 2 &&
+          translateX >= (this.props.width * (1 - this.state.zoom)) / 2
+        )
+          this.setState({
+            translateX,
+          });
+        if (
+          translateY <= (this.props.height * (this.state.zoom - 1)) / 2 &&
+          translateY >= (this.props.height * (1 - this.state.zoom)) / 2
+        )
+          this.setState({
+            translateY,
+          });
+      })
+      .onEnd(e => {
+        let translateX = this.curTranslationX + e.translationX;
+        let translateY = this.curTranslationY + e.translationY;
+        if (
+          translateX <= (this.props.width * (this.state.zoom - 1)) / 2 &&
+          translateX >= (this.props.width * (1 - this.state.zoom)) / 2
+        )
+          this.setState({
+            translateX,
+          });
+        if (
+          translateY <= (this.props.height * (this.state.zoom - 1)) / 2 &&
+          translateY >= (this.props.height * (1 - this.state.zoom)) / 2
+        )
+          this.setState({
+            translateY,
+          });
+      });
 
     const rightFlingGesture = Gesture.Fling()
       .direction(Directions.RIGHT)
@@ -192,12 +216,14 @@ class HLSStreamingView extends React.Component {
         }
       });
 
-    this.composed = Gesture.Race(
+    this.composed = (
+      Platform.OS == 'android' ? Gesture.Exclusive : Gesture.Race
+    )(
       pinchGesture,
-      tapGesture,
-      rightFlingGesture,
-      leftFlingGesture
-      // this.panGesture
+      panGesture,
+      tapGesture
+      // rightFlingGesture,
+      // leftFlingGesture
     );
   }
   computeOriginFocal(zoomedFocal, translate, axisSize) {

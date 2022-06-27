@@ -88,6 +88,49 @@ class DirectVideoView extends React.Component {
     this.dateChanged = false;
     this.loginTimeout = null;
     this.oldFrameSkipped = 0;
+
+    const panGesture = Gesture.Pan()
+      .onStart(e => {
+        this.curTranslationX = this.state.translateX;
+        this.curTranslationY = this.state.translateY;
+      })
+      .onUpdate(e => {
+        let translateX = this.curTranslationX + e.translationX;
+        let translateY = this.curTranslationY + e.translationY;
+        if (
+          translateX <= 0 &&
+          this.state.zoom * this.state.width + translateX >= this.state.width
+        )
+          this.setState({
+            translateX,
+          });
+        if (
+          translateY <= 0 &&
+          this.state.zoom * this.state.height + translateY >= this.state.height
+        )
+          this.setState({
+            translateY,
+          });
+      })
+      .onEnd(e => {
+        let translateX = this.curTranslationX + e.translationX;
+        let translateY = this.curTranslationY + e.translationY;
+        if (
+          translateX <= 0 &&
+          this.state.zoom * this.state.width + translateX >= this.state.width
+        )
+          this.setState({
+            translateX,
+          });
+        if (
+          translateY <= 0 &&
+          this.state.zoom * this.state.height + translateY >= this.state.height
+        )
+          this.setState({
+            translateY,
+          });
+      });
+
     const tapGesture = Gesture.Tap().onStart(_e => {
       __DEV__ &&
         console.log(
@@ -144,12 +187,14 @@ class DirectVideoView extends React.Component {
         }
       });
 
-    this.composed = Gesture.Race(
+    this.composed = (
+      Platform.OS === 'android' ? Gesture.Exclusive : Gesture.Race
+    )(
       pinchGesture,
-      tapGesture,
-      rightFlingGesture,
-      leftFlingGesture
-      // this.panGesture
+      panGesture,
+      tapGesture
+      // rightFlingGesture,
+      // leftFlingGesture
     );
   }
 
