@@ -12,6 +12,7 @@ import {stringtoBase64, isValidHttpUrl} from '../util/general';
 import snackbarUtil from '../util/snackbar';
 
 import {File as FileRoute} from '../consts/apiRoutes';
+import {Domain} from '../consts/misc';
 
 // const _get = 'GET';
 // const _Post = 'POST';
@@ -195,7 +196,24 @@ class Api {
   //   header.set('Authorization', '3rd-auth ' + token);
   //   return header;
   // }
+  async _submitForgotPassword(_domain, _email, _username) {
+    this.config.url = _domain;
+    let header = this._defaultHeader(this.config.appId);
+    let url = this._baseUrl('Account/0/SubmitForgotPassword');
+    let body = JSON.stringify({
+      Email: _email,
+      UserName: _username,
+    });
 
+    __DEV__ && console.log('_submitForgotPassword body = ', body);
+    let response = await fetch(url, {
+      method: Methods.Post,
+      headers: header,
+      timeout: 30000,
+      body: body,
+    });
+    return response;
+  }
   _generateToken(appid, method, url, content = '') {
     //console.log(url);
     let url_enc = encodeURIComponent(url).toLocaleLowerCase();
@@ -434,6 +452,18 @@ class Api {
       // } else {
       //   return res;
       // }
+    } catch (ex) {
+      __DEV__ && console.log('GOND LOGIN Exception: ', ex);
+      return {status: undefined, Result: undefined};
+    }
+  }
+
+  async submitForgotPassword(domain, email, username) {
+    try {
+      let res = await this._submitForgotPassword(domain, email, username);
+
+      let rs = await res.json();
+      return {status: res.status, Result: rs};
     } catch (ex) {
       __DEV__ && console.log('GOND LOGIN Exception: ', ex);
       return {status: undefined, Result: undefined};

@@ -11,6 +11,7 @@ import CMSStyleSheet from '../CMSStyleSheet';
 
 const Icon = CMSStyleSheet.Icon;
 const IconCustom = CMSStyleSheet.IconCustom;
+const MaterialIcons = CMSStyleSheet.MaterialIcons;
 const LABEL_FONT_SIZE = 13;
 
 export default class InputTextIcon extends PureComponent {
@@ -52,6 +53,7 @@ export default class InputTextIcon extends PureComponent {
 
     icon: PropTypes.string,
     iconCustom: PropTypes.string,
+    iconMaterial: PropTypes.string,
     label: PropTypes.string.isRequired,
     title: PropTypes.string,
 
@@ -209,6 +211,7 @@ export default class InputTextIcon extends PureComponent {
       style,
       icon,
       iconCustom,
+      iconMaterial,
       label,
       maxLength,
       title,
@@ -320,6 +323,18 @@ export default class InputTextIcon extends PureComponent {
         // onPress={() =>  __DEV__ && console.log('GOND icon customed name: ', iconCustom)}
       />
     ) : null;
+    let CIconMaterial = iconMaterial ? (
+      <MaterialIcons
+        name={iconMaterial}
+        size={variable.fix_fontSize_Icon}
+        style={[
+          {color: iconColor || baseColor},
+          styles.icon,
+          label ? {} : {paddingTop: 28},
+          iconStyle || {},
+        ]}
+      />
+    ) : null;
     const showFishEye =
       secureTextEntry && revealable && iconPosition != 'right';
     const revealIconStyle = this.state.revealHidden
@@ -334,6 +349,7 @@ export default class InputTextIcon extends PureComponent {
         }}>
         {iconPosition == 'left' && CIcon}
         {iconPosition == 'left' && CIconCustom}
+        {iconPosition == 'left' && CIconMaterial}
         <View
           onStartShouldSetResponder={() => true}
           onResponderRelease={this.focus}
@@ -444,6 +460,7 @@ export default class InputTextIcon extends PureComponent {
         ) : null}
         {iconPosition == 'right' && CIcon}
         {iconPosition == 'right' && CIconCustom}
+        {iconPosition == 'right' && CIconMaterial}
       </View>
     );
   }

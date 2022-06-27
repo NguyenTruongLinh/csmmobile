@@ -5,7 +5,7 @@ const NVR_Play_VideoLoss_img = require('../assets/images/common/CMS-video-losss.
 const non_employee_16_9 = require('../assets/images/common/non_employee_16_9.png');
 const i3_logo = require('../assets/images/common/I3-logo.png');
 const cmsLogo = require('../assets/images/common/logo.png');
-// const submited_img = require('../assets/images/common/submited.png');
+const submited_img = require('../assets/images/common/submited.png');
 const warning_img = require('../assets/images/common/warning.png');
 
 const _Intro_Begin = require('../assets/images/intro/intro.png');
@@ -37,7 +37,7 @@ export const NVR_Play_VideoLoss_Img = NVR_Play_VideoLoss_img;
 export const Nonemployee_16_9 = non_employee_16_9;
 export const I3_Logo = i3_logo;
 export const CMS_Logo = cmsLogo;
-// export const Submited_Img = submited_img;
+export const Submited_Img = submited_img;
 export const Warning_Img = warning_img;
 
 export const Intro_Begin = _Intro_Begin;

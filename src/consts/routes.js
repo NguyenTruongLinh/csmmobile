@@ -15,6 +15,8 @@ const ROUTERS = {
   LOGIN: 'login',
   PASSWORD_EXPIRED: 'passwordexpired',
   ACCOUNT_LOCKED: 'accountlocked',
+  FORGOT_PASSWORD: 'forgotpassword',
+  SUBMITED: 'submited',
 
   HOME_TAB: 'hometab',
   HOME_NAVIGATOR: 'homenavi',

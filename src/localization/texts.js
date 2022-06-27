@@ -49,6 +49,7 @@ export const Login = {
   forgotPasswordTitle: 'Forgot Password',
   submitedForgotPassword:
     'An email include your password was sent to your email, please go to your mailbox to get the password.',
+  forgotPasswordErrorTitle: 'Submit forgot password failed',
   email: 'Email *',
   username: 'Username *',
   copyRight:
