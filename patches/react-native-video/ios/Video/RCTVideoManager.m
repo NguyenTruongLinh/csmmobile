@@ -84,6 +84,18 @@ RCT_REMAP_METHOD(takeScreenShot,
         }
     }];
 };
+RCT_REMAP_METHOD(stopDataUsageTimer,
+                 reactTag1:(nonnull NSNumber *)reactTag1)
+{
+    [self.bridge.uiManager prependUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTVideo *> *viewRegistry) {
+        RCTVideo *view = viewRegistry[reactTag1];
+        if (![view isKindOfClass:[RCTVideo class]]) {
+            RCTLogError(@"Invalid view returned from registry, expecting RCTVideo, got: %@", view);
+        } else {
+            [view stopDataUsageTimer];
+        }
+    }];
+};
 RCT_REMAP_METHOD(save,
         options:(NSDictionary *)options
         reactTag:(nonnull NSNumber *)reactTag

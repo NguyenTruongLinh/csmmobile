@@ -36,8 +36,6 @@ static int const RCTVideoUnset = -1;
   NSURL *_videoURL;
   BOOL _requestingCertificate;
   BOOL _requestingCertificateErrored;
-    
-    BOOL _screeenShotFlag;
   
   /* DRM */
   NSDictionary *_drm;
@@ -94,6 +92,8 @@ static int const RCTVideoUnset = -1;
   void (^__strong _Nonnull _restoreUserInterfaceForPIPStopCompletionHandler)(BOOL);
   AVPictureInPictureController *_pipController;
 #endif
+  NSTimer *_dataUsageTimer;
+  long _lastDataUsage;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -123,7 +123,7 @@ static int const RCTVideoUnset = -1;
     _pictureInPicture = false;
     _ignoreSilentSwitch = @"inherit"; // inherit, ignore, obey
     _mixWithOthers = @"inherit"; // inherit, mix, duck
-    _screeenShotFlag = false;
+    _lastDataUsage = 0;
 #if TARGET_OS_IOS
     _restoreUserInterfaceForPIPStopCompletionHandler = NULL;
 #endif
@@ -223,6 +223,11 @@ static int const RCTVideoUnset = -1;
   [self removePlayerItemObservers];
   [_player removeObserver:self forKeyPath:playbackRate context:nil];
   [_player removeObserver:self forKeyPath:externalPlaybackActive context: nil];
+    if(_dataUsageTimer) {
+        [_dataUsageTimer invalidate];
+        _dataUsageTimer = nil;
+        NSLog(@"GOND _dataUsageTimer dealloc");
+    }
 }
 
 #pragma mark - App lifecycle handlers
@@ -384,6 +389,16 @@ static int const RCTVideoUnset = -1;
     }
 }
  
+-(void) stopDataUsageTimer
+{
+    NSLog(@"_dataUsageTimer stopDataUsageTimer");
+    if(_dataUsageTimer) {
+    [_dataUsageTimer invalidate];
+    _dataUsageTimer = nil;
+    }
+    [self notifyUpdateDataUsage];
+}
+
 - (void)setSrc:(NSDictionary *)source
 {
   _source = source;
@@ -835,13 +850,26 @@ static int const RCTVideoUnset = -1;
 }
 
 - (void)handleAVPlayerAccess:(NSNotification *)notification {
-  AVPlayerItemAccessLog *accessLog = [((AVPlayerItem *)notification.object) accessLog];
-  AVPlayerItemAccessLogEvent *lastEvent = accessLog.events.lastObject;
-  
-  /* TODO: get this working */
    if (self.onBandwidthUpdate) {
-   self.onBandwidthUpdate(@{@"bitrate": [NSNumber numberWithFloat:lastEvent.observedBitrate]});
+       if(_dataUsageTimer)
+           [_dataUsageTimer invalidate];
+       _dataUsageTimer = [NSTimer scheduledTimerWithTimeInterval:10.0  target:self selector:@selector(notifyUpdateDataUsage) userInfo:nil repeats:YES];
+       NSLog(@"GOND actionTimer handleAVPlayerAccess init _dataUsageTimer %p", &_dataUsageTimer);
    }
+}
+
+-(void) notifyUpdateDataUsage
+{
+    if (self->_playerItem) {
+        AVPlayerItemAccessLog *accessLog = [self->_playerItem accessLog];
+        AVPlayerItemAccessLogEvent *lastEvent = accessLog.events.lastObject;
+        
+        float load = lastEvent.numberOfBytesTransferred - _lastDataUsage;
+        if(load > 0)
+            self.onBandwidthUpdate(@{@"bitrate": [NSNumber numberWithFloat:load]});
+        _lastDataUsage = lastEvent.numberOfBytesTransferred;
+        NSLog(@"GOND _dataUsageTimer notifyUpdateDataUsage load = %f", load);
+      }
 }
 
 - (void)didFailToFinishPlaying:(NSNotification *)notification {
@@ -866,6 +894,7 @@ static int const RCTVideoUnset = -1;
 {
   if(self.onVideoEnd) {
     self.onVideoEnd(@{@"target": self.reactTag});
+      
   }
   
   if (_repeat) {
@@ -875,6 +904,11 @@ static int const RCTVideoUnset = -1;
   } else {
     [self removePlayerTimeObserver];
   }
+    
+  NSLog(@"GOND actionTimer playerItemDidReachEnd");
+  NSLog(@"GOND actionTimer playerItemDidReachEnd _dataUsageTimer %p", &_dataUsageTimer);
+    [_dataUsageTimer invalidate];
+    _dataUsageTimer = nil;
 }
 
 #pragma mark - Prop setters
