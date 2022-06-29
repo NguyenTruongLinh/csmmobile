@@ -91,7 +91,7 @@ target 'CMSApp' do
   pod 'DoubleConversion', :podspec => '../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec'
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec'
-  pod 'RNCharts', :path => '../node_modules/react-native-charts-wrapper'
+  pod 'react-native-charts-wrapper', :path => '../node_modules/react-native-charts-wrapper'
 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'

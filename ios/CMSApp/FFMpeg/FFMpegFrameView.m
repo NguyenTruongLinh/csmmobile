@@ -403,7 +403,7 @@ const uint32_t numLayers = 24;
     // [self setIsHD:isHD];
     
     if(isSearch == YES){
-	  NSLog(@"GOND setStartplayback SEARCH");
+      NSLog(@"GOND setStartplayback SEARCH");
       [self resetParam];
       [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
       
@@ -413,20 +413,23 @@ const uint32_t numLayers = 24;
     } else {
       [self addSubview:videoView];
       BOOL found = NO;
-      for (ImcConnectedServer* server in connectedServerList)
+      if (_isSeacrh == isSearch)
       {
-        // NSLog(@"GOND setStartplayback compare server: %@ vs %@, %ld vs %ld, %@ vs %@, %@ vs %@", server.server_address, selectedServer.server_address, (long)server.server_port, (long)selectedServer.server_port, server.username, selectedServer.username, server.password, selectedServer.password);
-        if ([server isEqual:selectedServer])
+        for (ImcConnectedServer* server in connectedServerList)
         {
-          selectedServer = server;
-          found = YES;
-          NSLog(@"GOND setStartplayback found server: %s", server.connected ? "YES" : "NO");
-        }
-        if (!found) {
-          [self resetParam];
-          [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
+          // NSLog(@"GOND setStartplayback compare server: %@ vs %@, %ld vs %ld, %@ vs %@, %@ vs %@", server.server_address, selectedServer.server_address, (long)server.server_port, (long)selectedServer.server_port, server.username, selectedServer.username, server.password, selectedServer.password);
+          if ([server isEqual:selectedServer])
+          {
+            selectedServer = server;
+            found = YES;
+            NSLog(@"GOND setStartplayback found server: %s", server.connected ? "YES" : "NO");
+          }
         }
       }
+//      if (!found) {
+//        [self resetParam];
+//        [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
+//      }
     }
 //    m_channel = channel;
     [self setIsHD:isHD];
@@ -2681,8 +2684,9 @@ const uint32_t numLayers = 24;
 //          time = [[formatTimeDST dateFromString:sDate] timeIntervalSince1970];
 //        }
         
-        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeTextLabel, _channels];
+        NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%ld\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeTextLabel, _channels];
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
+        NSLog(@"GOND add Search frame: %ld", time);
         
         //@autoreleasepool
         {
@@ -3105,8 +3109,9 @@ const uint32_t numLayers = 24;
 //
 //            }
             
-            NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%d\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, _channels];
+            NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%ld\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, _channels];
             NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
+            NSLog(@"GOND add Search frame: %ld", time);
             
             // NSLog(@"GOND send time frame to JS %@", str_min);
             [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
