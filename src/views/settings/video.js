@@ -47,13 +47,13 @@ const CloudSettingData = [
     icon: Setting_Video_Cloud, // 'cloud',
     value: CLOUD_TYPE.HLS,
   },
-  {
-    id: 'relay',
-    name: SettingsTxt.videoRelayServer,
-    description: SettingsTxt.videoRelayDesc,
-    icon: Setting_Video_Relay, // 'relay',
-    value: CLOUD_TYPE.RS,
-  },
+  // {
+  //   id: 'relay',
+  //   name: SettingsTxt.videoRelayServer,
+  //   description: SettingsTxt.videoRelayDesc,
+  //   icon: Setting_Video_Relay, // 'relay',
+  //   value: CLOUD_TYPE.RS,
+  // },
 ];
 
 class VideosettingView extends Component {
