@@ -688,14 +688,17 @@ class VideoPlayerView extends Component {
     const [hour, minute, second] = time.split(':');
 
     if (!isLive) {
-      if (Platform.OS == 'ios') this.timePickerRef && this.timePickerRef.open();
-      else {
-        this.setState({
+      this.setState(
+        {
           showTimerPicker: true,
           selectedTime: {hour, minute, second},
           timePickerDatetime: this.props.videoStore.getSafeSearchDate(),
-        });
-      }
+        },
+        () => {
+          if (Platform.OS == 'ios')
+            this.timePickerRef && this.timePickerRef.open();
+        }
+      );
     }
   };
 
@@ -771,6 +774,7 @@ class VideoPlayerView extends Component {
         onBackdropPress={() => this.setState({showCalendar: false})}
         onBackButtonPress={() => this.setState({showCalendar: false})}
         markedDates={videoStore.recordingDates}
+        isFullscreen={isFullscreen}
         date={displayDate}
         onSubmit={this.onSelectDate}
         onDismiss={() => this.setState({showCalendar: false})}
@@ -1385,6 +1389,7 @@ class VideoPlayerView extends Component {
           this.timePickerRef = ref;
         }}
         onCancel={() => this.timePickerRef && this.timePickerRef.close()}
+        selectedTime={this.state.selectedTime}
         onConfirm={this.onSetSearchTime}
         datetime={this.props.videoStore.getSafeSearchDate()}
         // datetime={this.state.timePickerDatetime}

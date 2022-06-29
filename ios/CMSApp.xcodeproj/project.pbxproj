@@ -76,12 +76,12 @@
 		18D3E57B26663845006AEE48 /* libReact-RCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55C26663843006AEE48 /* libReact-RCTText.a */; };
 		18D3E57C26663845006AEE48 /* libReact-RCTVibration.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55D26663843006AEE48 /* libReact-RCTVibration.a */; };
 		18D3E57D26663845006AEE48 /* libReactCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55E26663843006AEE48 /* libReactCommon.a */; };
-		18D3E57E26663845006AEE48 /* libRNCharts.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E55F26663843006AEE48 /* libRNCharts.a */; };
 		18D3E58026663846006AEE48 /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E56126663843006AEE48 /* libRNVectorIcons.a */; };
 		18D3E58126663846006AEE48 /* libSwiftyJSON.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E56226663843006AEE48 /* libSwiftyJSON.a */; };
 		18D3E58226663846006AEE48 /* libYoga.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D3E56326663843006AEE48 /* libYoga.a */; };
 		277DAF5754C314C4FA7FF098 /* libPods-CMSApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E05560B870450A0C1B6CE /* libPods-CMSApp.a */; };
 		2C44C33BEF156945DFBC2F3B /* libPods-CMSAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F79323A7EC5FD6D74182C25F /* libPods-CMSAppTests.a */; };
+		F5203E062869D2E8003964A4 /* libreact-native-charts-wrapper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F5203E052869D2E8003964A4 /* libreact-native-charts-wrapper.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -230,6 +230,7 @@
 		EE8126AB088B4CBB9D34FF6C /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		F01EC674CC4F4773179369E9 /* Pods-CMSApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CMSApp.debug.xcconfig"; path = "Target Support Files/Pods-CMSApp/Pods-CMSApp.debug.xcconfig"; sourceTree = "<group>"; };
 		F391BCF5673449B8AA528107 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
+		F5203E052869D2E8003964A4 /* libreact-native-charts-wrapper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libreact-native-charts-wrapper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F79323A7EC5FD6D74182C25F /* libPods-CMSAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CMSAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -246,6 +247,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5203E062869D2E8003964A4 /* libreact-native-charts-wrapper.a in Frameworks */,
 				184BD9012680AEF0003F7FDE /* libavfilter.a in Frameworks */,
 				184BD8FE2680AEEF003F7FDE /* libavdevice.a in Frameworks */,
 				1822C9782666102F00BEF572 /* libswiftWebKit.tbd in Frameworks */,
@@ -255,7 +257,6 @@
 				18D3E56B26663844006AEE48 /* libRCT-Folly.a in Frameworks */,
 				18D3E57326663844006AEE48 /* libReact-perflogger.a in Frameworks */,
 				184BD9072680AFB7003F7FDE /* libiconv.tbd in Frameworks */,
-				18D3E57E26663845006AEE48 /* libRNCharts.a in Frameworks */,
 				184BD8FB2680AEEF003F7FDE /* libavcodec.a in Frameworks */,
 				18D3E57026663844006AEE48 /* libReact-jsi.a in Frameworks */,
 				18D3E57726663844006AEE48 /* libReact-RCTLinking.a in Frameworks */,
@@ -402,6 +403,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F5203E052869D2E8003964A4 /* libreact-native-charts-wrapper.a */,
 				184BD9042680AF73003F7FDE /* libiconv.tbd */,
 				184BD8F42680AEEE003F7FDE /* libavcodec.a */,
 				184BD8F72680AEEE003F7FDE /* libavdevice.a */,
@@ -860,7 +862,7 @@
 				CODE_SIGN_ENTITLEMENTS = CMSApp/CMSApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = SCBSNP7VE9;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
@@ -945,7 +947,7 @@
 				CODE_SIGN_ENTITLEMENTS = CMSApp/CMSApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = SCBSNP7VE9;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (

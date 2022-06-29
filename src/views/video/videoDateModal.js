@@ -126,7 +126,11 @@ export default class VideoDateModal extends Component {
         key="videoDateModal"
         name="videoDateModal"
         style={styles.modal}>
-        <View style={[commonStyles.modalContainer, {marginTop: '25%'}]}>
+        <View
+          style={[
+            commonStyles.modalContainer,
+            {marginTop: this.props.isFullscreen ? '5%' : '25%'},
+          ]}>
           {this.renderHeader()}
           {this.renderContent()}
           {this.renderFooter()}
