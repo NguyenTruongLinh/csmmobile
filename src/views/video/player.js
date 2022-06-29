@@ -771,6 +771,7 @@ class VideoPlayerView extends Component {
         onBackdropPress={() => this.setState({showCalendar: false})}
         onBackButtonPress={() => this.setState({showCalendar: false})}
         markedDates={videoStore.recordingDates}
+        isFullscreen={isFullscreen}
         date={displayDate}
         onSubmit={this.onSelectDate}
         onDismiss={() => this.setState({showCalendar: false})}
