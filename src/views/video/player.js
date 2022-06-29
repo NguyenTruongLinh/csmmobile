@@ -1389,6 +1389,7 @@ class VideoPlayerView extends Component {
           this.timePickerRef = ref;
         }}
         onCancel={() => this.timePickerRef && this.timePickerRef.close()}
+        selectedTime={this.state.selectedTime}
         onConfirm={this.onSetSearchTime}
         datetime={this.props.videoStore.getSafeSearchDate()}
         // datetime={this.state.timePickerDatetime}
