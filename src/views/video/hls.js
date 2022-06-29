@@ -291,6 +291,14 @@ class HLSStreamingView extends React.Component {
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
+    if (
+      Platform.OS === 'ios' &&
+      this.player &&
+      this.player.stopDataUsageTimer
+    ) {
+      __DEV__ && console.log('stopDataUsageTimer');
+      this.player.stopDataUsageTimer();
+    }
   }
 
   computeTime = secs => {

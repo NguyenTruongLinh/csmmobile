@@ -65,5 +65,6 @@ typedef NS_ENUM(NSInteger, RCTVideoError) {
 - (void)setLicenseResult:(NSString * )license;
 - (BOOL)setLicenseResultError:(NSString * )error;
 - (void) getAVPlayerScreenshot;
-
+- (void) notifyUpdateDataUsage;
+- (void) stopDataUsageTimer;
 @end

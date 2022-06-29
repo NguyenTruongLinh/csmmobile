@@ -38,6 +38,7 @@ import {STREAM_STATUS, COMMON} from '../../localization/texts';
 import CMSColors from '../../styles/cmscolors';
 import {DateTime} from 'luxon';
 import {DateFormat, NVRPlayerConfig} from '../../consts/misc';
+import {Platform} from 'react-native';
 
 // export const V3_1_BITRATE_USAGE = true;
 const MAX_RETRY = 7;
@@ -117,17 +118,21 @@ const HLSURLModel = types
       error != undefined && (self.error = error);
     },
     resetBitrateInfo() {
-      __DEV__ &&
-        console.log(`updateBitrate resetBitrateInfo >>>>>>>>>>>>>>>>>>>>>`);
-      self.bitrateRecordTimePoint = DateTime.now().toSeconds();
-      self.currentBitrate = 0;
-      self.accumulatedDataUsage = 0;
+      if (Platform.OS === 'android') {
+        __DEV__ &&
+          console.log(`updateBitrate resetBitrateInfo >>>>>>>>>>>>>>>>>>>>>`);
+        self.bitrateRecordTimePoint = DateTime.now().toSeconds();
+        self.currentBitrate = 0;
+        self.accumulatedDataUsage = 0;
+      }
       self.dataUsageSentTimePoint = DateTime.now().toSeconds();
     },
-    updateBitrateRecordTimePoint() {
-      self.bitrateRecordTimePoint = DateTime.now().toSeconds();
+    updateBitrateByURL(loadInfo, timezone, videoInfo, debug) {
+      (Platform.OS === 'android'
+        ? self.updateBirateByURLAndroid
+        : self.updateBirateByURLiOS)(loadInfo, timezone, videoInfo, debug);
     },
-    updateBitrateByURL: flow(function* (bitrate, timezone, videoInfo, debug) {
+    updateBirateByURLAndroid(bitrate, timezone, videoInfo, debug) {
       __DEV__ &&
         console.log(
           `updateBitrate bitrate = `,
@@ -140,141 +145,93 @@ const HLSURLModel = types
       if (bitrate !== FORCE_SENT_DATA_USAGE) self.videoInfo = {...videoInfo};
       let params =
         bitrate != FORCE_SENT_DATA_USAGE ? {...videoInfo} : {...self.videoInfo};
-      if (Platform.OS == 'android') {
-        let newBitrateRecordTimePoint = DateTime.now().toSeconds();
-        let segmentLoad =
-          self.currentBitrate == FORCE_SENT_DATA_USAGE
-            ? 0
-            : self.currentBitrate *
-              (newBitrateRecordTimePoint - self.bitrateRecordTimePoint);
-        __DEV__ &&
-          console.log(
-            `updateBitrate 0428 newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
-            newBitrateRecordTimePoint - self.dataUsageSentTimePoint
-          );
+      let newBitrateRecordTimePoint = DateTime.now().toSeconds();
+      let segmentLoad =
+        self.currentBitrate == FORCE_SENT_DATA_USAGE
+          ? 0
+          : self.currentBitrate *
+            (newBitrateRecordTimePoint - self.bitrateRecordTimePoint);
+      __DEV__ &&
+        console.log(
+          `updateBitrate 0428 newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
+          newBitrateRecordTimePoint - self.dataUsageSentTimePoint
+        );
 
-        self.accumulatedDataUsage += segmentLoad;
+      self.accumulatedDataUsage += segmentLoad;
+      __DEV__ &&
+        console.log(
+          `updateBitrate self.accumulatedDataUsage = `,
+          self.accumulatedDataUsage,
+          ' debug = ',
+          debug
+        );
+      if (
+        bitrate == FORCE_SENT_DATA_USAGE ||
+        (newBitrateRecordTimePoint - self.dataUsageSentTimePoint >= 10 &&
+          self.accumulatedDataUsage > 0)
+      ) {
+        params.StartTime = DateTime.fromSeconds(
+          self.dataUsageSentTimePoint,
+          {}
+        ).toFormat(DateFormat.VideoDataUsageDate);
+        params.EndTime = DateTime.fromSeconds(
+          newBitrateRecordTimePoint,
+          {}
+        ).toFormat(DateFormat.VideoDataUsageDate);
+        params.BytesUsed = Math.floor(self.accumulatedDataUsage / 8);
+        // callAPI(params)
+        apiService.post(
+          VSC.controller,
+          1,
+          VSC.SetDataUsageActivityLogs,
+          params
+        );
         __DEV__ &&
           console.log(
-            `updateBitrate self.accumulatedDataUsage = `,
+            `updateBitrate callAPI self.accumulatedDataUsage = `,
             self.accumulatedDataUsage,
-            ' debug = ',
-            debug
+            bitrate == FORCE_SENT_DATA_USAGE
+              ? 'STREAM STOPPED'
+              : 'AFTER 10 SECS',
+            ' ************************************** '
           );
-        if (
-          bitrate == FORCE_SENT_DATA_USAGE ||
-          (newBitrateRecordTimePoint - self.dataUsageSentTimePoint >= 10 &&
-            self.accumulatedDataUsage > 0)
-        ) {
-          params.StartTime = DateTime.fromSeconds(self.dataUsageSentTimePoint, {
-            // zone: timezone,
-          }).toFormat(DateFormat.VideoDataUsageDate);
-          params.EndTime = DateTime.fromSeconds(newBitrateRecordTimePoint, {
-            // zone: timezone,
-          }).toFormat(DateFormat.VideoDataUsageDate);
-          params.BytesUsed = Math.floor(self.accumulatedDataUsage / 8);
-          // callAPI(params)
-          apiService.post(
-            VSC.controller,
-            1,
-            VSC.SetDataUsageActivityLogs,
-            params
+        __DEV__ &&
+          console.log(
+            `updateBitrate 0428 callAPI params `,
+            JSON.stringify(params)
           );
-          __DEV__ &&
-            console.log(
-              `updateBitrate callAPI self.accumulatedDataUsage = `,
-              self.accumulatedDataUsage,
-              bitrate == FORCE_SENT_DATA_USAGE
-                ? 'STREAM STOPPED'
-                : 'AFTER 10 SECS',
-              ' ************************************** '
-            );
-          __DEV__ &&
-            console.log(
-              `updateBitrate 0428 callAPI params `,
-              JSON.stringify(params)
-            );
-          self.resetBitrateInfo();
-        }
-        self.currentBitrate = bitrate;
-        self.bitrateRecordTimePoint = newBitrateRecordTimePoint;
-      } else {
-        if (bitrate != FORCE_SENT_DATA_USAGE) {
-          self.currentBitrate = bitrate;
-          if (self.currentBitrate > 0) {
-            self.iOSDataUsageInterval = setInterval(() => {
-              if (self.currentBitrate > 0) {
-                params.StartTime = DateTime.fromSeconds(
-                  self.bitrateRecordTimePoint,
-                  {
-                    // zone: timezone,
-                  }
-                ).toFormat(DateFormat.VideoDataUsageDate);
-                params.EndTime = DateTime.fromSeconds(
-                  self.bitrateRecordTimePoint + 10,
-                  {
-                    // zone: timezone,
-                  }
-                ).toFormat(DateFormat.VideoDataUsageDate);
-                params.BytesUsed = (self.currentBitrate * 10) / 8;
-
-                apiService.post(
-                  VSC.controller,
-                  1,
-                  VSC.SetDataUsageActivityLogs,
-                  params
-                );
-                __DEV__ &&
-                  console.log(
-                    `updateBitrate callAPI params AFTER 10 SECS`,
-                    JSON.stringify(params)
-                  );
-
-                self.updateBitrateRecordTimePoint();
-              } else {
-                clearInterval(self.iOSDataUsageInterval);
-              }
-            }, 10 * 1000);
-          }
-        } else {
-          __DEV__ &&
-            console.log(
-              `updateBitrate ELSE 1 self.currentBitrate = `,
-              self.currentBitrate
-            );
-          clearInterval(self.iOSDataUsageInterval);
-          if (self.currentBitrate > 0) {
-            let dataSentTimePoint = DateTime.now().toSeconds();
-            params.StartTime = DateTime.fromSeconds(
-              self.bitrateRecordTimePoint,
-              {
-                // zone: timezone,
-              }
-            ).toFormat(DateFormat.VideoDataUsageDate);
-            params.EndTime = DateTime.fromSeconds(dataSentTimePoint, {
-              // zone: timezone,
-            }).toFormat(DateFormat.VideoDataUsageDate);
-            params.BytesUsed =
-              (self.currentBitrate *
-                (dataSentTimePoint - self.bitrateRecordTimePoint)) /
-              8;
-            __DEV__ &&
-              console.log(
-                `updateBitrate ELSE callAPI params STREAM STOPPED`,
-                JSON.stringify(params)
-              );
-
-            //callAPI(load);
-            apiService.post(
-              VSC.controller,
-              1,
-              VSC.SetDataUsageActivityLogs,
-              params
-            );
-          }
-        }
+        self.resetBitrateInfo();
       }
-    }),
+      self.currentBitrate = bitrate;
+      self.bitrateRecordTimePoint = newBitrateRecordTimePoint;
+    },
+    updateBirateByURLiOS(bytesUsed, timezone, videoInfo, debug) {
+      if (bytesUsed > 0) {
+        let params = {...videoInfo};
+        params.StartTime = DateTime.fromSeconds(
+          self.dataUsageSentTimePoint,
+          {}
+        ).toFormat(DateFormat.VideoDataUsageDate);
+        self.dataUsageSentTimePoint = DateTime.now().toSeconds();
+        params.EndTime = DateTime.fromSeconds(
+          self.dataUsageSentTimePoint,
+          {}
+        ).toFormat(DateFormat.VideoDataUsageDate);
+        params.BytesUsed = bytesUsed;
+
+        apiService.post(
+          VSC.controller,
+          1,
+          VSC.SetDataUsageActivityLogs,
+          params
+        );
+        __DEV__ &&
+          console.log(
+            `updateBitrate IOS callAPI params = `,
+            JSON.stringify(params)
+          );
+      }
+    },
   }));
 
 // const HLSURLModel = types
@@ -1023,7 +980,7 @@ export default HLSStreamModel = types
         {
           KChannel: self.channel.kChannel,
           ViewMode: self.isLive ? 0 : 1,
-          Source: 'MP4_CMSMobile_' + source,
+          Source: 'MP4_CMSMobile_' + source + '_NEW_' + Platform.OS,
         },
         debug
       );
@@ -1051,7 +1008,8 @@ export default HLSStreamModel = types
     //   self.streamTimeout && clearTimeout(self.streamTimeout);
     // },
     onExitSinglePlayer() {
-      self.updateBitrate(FORCE_SENT_DATA_USAGE, 'onExitSinglePlayer');
+      if (Platform.OS === 'android')
+        self.updateBitrate(FORCE_SENT_DATA_USAGE, 'onExitSinglePlayer');
       self.targetUrl.getUrlRetries = 0;
       self.targetUrl.clearStreamTimeout();
       self.targetUrl.isFailed = false;
@@ -1065,7 +1023,8 @@ export default HLSStreamModel = types
     release() {
       // self.isDead = true;
       // self.clearStreamTimeout();
-      self.updateBitrate(FORCE_SENT_DATA_USAGE, 'release');
+      if (Platform.OS === 'android')
+        self.updateBitrate(FORCE_SENT_DATA_USAGE, 'release');
       self.updateStreamsStatus(false);
     },
   }));
