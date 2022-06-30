@@ -115,6 +115,7 @@ typedef enum
 @property(nonatomic, assign) BOOL disconnect;
 @property (nonatomic, copy) RCTDirectEventBlock onFFMPegFrameChange;
 
+- (UIImage*)geScaledSearchImage;
 - (instancetype)initWithEventDispatcher: (RCTEventDispatcher *)eventDispatcher NS_DESIGNATED_INITIALIZER;
 - (NSInteger)handleResponseMessage:(IMC_MSG_BASE)messageId fromView:(UIView *)sender withData:(NSObject *)responseData;
 - (void)orientationChanged;

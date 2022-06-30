@@ -53,7 +53,6 @@ class RegionsView extends Component {
     this.getRegionsList();
     this.initReactions();
     this.setHeader();
-    userStore.setActivites(clientLogID.VIDEO);
   }
 
   initReactions = () => {

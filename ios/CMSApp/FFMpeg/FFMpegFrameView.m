@@ -271,7 +271,7 @@ const uint32_t numLayers = 24;
   if([scale floatValue] != mainDisplayVideo.scaleXY){
     mainDisplayVideo.scaleXY = [scale floatValue];
     [self reactSetFrame:self.frame];
-    [self setNeedsLayout];
+    [self.layer setNeedsDisplay];
   }
 }
 
@@ -279,7 +279,7 @@ const uint32_t numLayers = 24;
   if([translatex intValue] != mainDisplayVideo.translateX){
     mainDisplayVideo.translateX = [translatex intValue];
     [self reactSetFrame:self.frame];
-    [self setNeedsLayout];
+    [self.layer setNeedsDisplay];
   }
 }
 
@@ -287,7 +287,7 @@ const uint32_t numLayers = 24;
   if([translatey intValue] != mainDisplayVideo.translateY){
     mainDisplayVideo.translateY = [translatey intValue];
     [self reactSetFrame:self.frame];
-    [self setNeedsLayout];
+    [self.layer setNeedsDisplay];
   }
 }
 
@@ -2598,17 +2598,44 @@ const uint32_t numLayers = 24;
   return 1;
 }
 
+//-(UIImage*)getScaledImage
+-(UIImage*)geScaledSearchImage
+{
+  float scaleXY = mainDisplayVideo.scaleXY;
+  int translateX = mainDisplayVideo.translateX;
+  int translateY = mainDisplayVideo.translateY;
+  int playerWidth = mainDisplayVideo.playerWidth;
+  int playerHeight = mainDisplayVideo.playerHeight;
+  
+  CGRect fullScaled = CGRectMake(0, 0, searchFrameImage.size.width, searchFrameImage.size.height);
+  
+  //apply zoom
+  CGRect cropScaled = CGRectInset(fullScaled, searchFrameImage.size.width/2 - searchFrameImage.size.width/scaleXY/2, searchFrameImage.size.height/2 - searchFrameImage.size.height/scaleXY/2);
+  
+  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
+  
+  //apply translate
+  cropScaled.origin.x = -translateX*searchFrameImage.size.width/scaleXY/playerWidth;
+  cropScaled.origin.y = -translateY*searchFrameImage.size.height/scaleXY/playerHeight;
+  
+  CGImageRef drawImg = CGImageCreateWithImageInRect(searchFrameImage.CGImage, cropScaled);
+  
+  UIImage *imageOut = [UIImage imageWithCGImage:drawImg];
+  return imageOut;
+}
+
 -(void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx
 {
+  NSLog(@"GOND drawLayer -1");
   //NSLog(@"Shark drawLayer Search searchFrameImage");
   UIGraphicsPushContext(ctx);
   if (searchFrameImage && (searchFrameImage.CIImage || searchFrameImage.CGImage) )
   {
-    [searchFrameImage drawInRect:videoView.bounds];
+//    [searchFrameImage drawInRect:videoView.bounds];
+    UIImage *scaledImage = [self geScaledSearchImage];
+    [scaledImage drawInRect:videoView.bounds];
   }
   UIGraphicsPopContext();
-  
-  
 }
 
 //lvxt note: double check the synchronization of video frame fetching and display
