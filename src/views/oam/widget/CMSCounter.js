@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {View, StyleSheet, Text, Dimensions} from 'react-native';
+import {View, StyleSheet, Text, Dimensions, Platform} from 'react-native';
 import CMSStyleSheet from '../../../components/CMSStyleSheet';
 import {normalize} from '../../../util/general';
 import CMSColors from '../../../styles/cmscolors';
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   counter: {
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: -12,
+    marginTop: Platform.OS === 'android' ? -12 : -7,
     marginLeft: 20,
   },
 });

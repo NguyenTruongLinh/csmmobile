@@ -103,6 +103,8 @@ class SitesView extends Component {
     if (isHealthRoute) {
       userStore.resetWidgetCount(WIDGET_COUNTS.HEALTH);
       userStore.setActivites(clientLogID.HEALTH);
+    } else {
+      userStore.setActivites(clientLogID.VIDEO);
     }
   }
 
