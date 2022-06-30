@@ -372,11 +372,12 @@ class SitesView extends Component {
 
   render() {
     const {sitesStore, healthStore} = this.props;
-    const {isHealthRoute} = this.state;
+    const {isHealthRoute, isLoadingRegardlessStep, refreshOnResume} =
+      this.state;
     const siteData = isHealthRoute
       ? healthStore.filteredSites
       : sitesStore.filteredSites;
-    const noData = !this.state.isLoadingRegardlessStep && siteData == 0;
+    const noData = !isLoadingRegardlessStep && siteData == 0;
     __DEV__ &&
       console.log(
         ` healthStore.selectedSite = `,
@@ -418,9 +419,9 @@ class SitesView extends Component {
             keyExtractor={item => item.key ?? item.id}
             data={siteData}
             onRefresh={this.getData}
-            refreshing={this.state.isLoadingRegardlessStep}
+            refreshing={isLoadingRegardlessStep}
             ListEmptyComponent={noData && this.renderNoData()}
-            extraData={this.state.refreshOnResume}
+            extraData={refreshOnResume}
           />
         </View>
         <AlertDismissModal

@@ -84,7 +84,8 @@ class HealthDetailView extends Component {
         }
       ),
       reaction(
-        () => healthStore.selectedSite.siteName,
+        () =>
+          healthStore.selectedSite ? healthStore.selectedSite.siteName : '',
         newSiteName => {
           navigation.setOptions({
             headerTitle: newSiteName || healthStore.currentSiteName,
@@ -142,6 +143,7 @@ class HealthDetailView extends Component {
   };
 
   renderItem = ({item}) => {
+    __DEV__ && console.log('GOND healthDetail renderItem ', item);
     if (
       (item.computedTotalFromChildren != null &&
         item.computedTotalFromChildren <= 0) ||

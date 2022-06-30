@@ -92,6 +92,8 @@ public class CommunicationSocket implements Runnable {
     protected Handler handler;
     protected BufferedOutputStream OutPut;
     protected  BufferedInputStream InPut;
+    private VideoSocket video_handler = null;
+
     public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel){
         //this.message = message;
         //this.hostAddress = address;
@@ -156,7 +158,7 @@ public class CommunicationSocket implements Runnable {
     public void run(){
         running = true;
         Thread thread_Video_socket = null;
-        VideoSocket video_handler = null;
+        // VideoSocket video_handler = null;
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_PLAY;
         OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_CONNECTTING, null );
         socket = InitSocket(this.ServerInfo);
@@ -1223,11 +1225,13 @@ public class CommunicationSocket implements Runnable {
     }
     public  void ChangePlay( boolean islive, boolean reload, String channel)
     {
-        // Log.d("GOND", "ChangePlay: " + channel + ", old: " + str_Channel);
+        Log.d("GOND", "ChangePlay: " + channel + ", old: " + str_Channel);
         if( str_Channel != channel)
         {
             // Log.d("GOND", "ChangePlay channel changed");
             str_Channel = channel;
+            if (this.video_handler != null) 
+                this.video_handler.changeChannel(channel);
             String[] chs = channel.split(",");
             Channel = new int[chs.length];
             for(int i = 0; i < chs.length; i++)
@@ -1243,8 +1247,8 @@ public class CommunicationSocket implements Runnable {
         this.HDMode = mainstream;
 
         // dongpt: remove these line, why do not allow switch channel when playing live?
-        // if( ServerInfo.getisLive() == islive && PlaybackStatus == Constant.EnumPlaybackSatus.VIDEO_PLAY)
-        //     return;
+        if( ServerInfo.getisLive() == islive && PlaybackStatus == Constant.EnumPlaybackSatus.VIDEO_PLAY)
+            return;
 
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_PLAY;
         //int[] v_index = this.Channel;

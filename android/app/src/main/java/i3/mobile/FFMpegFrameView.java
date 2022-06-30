@@ -38,6 +38,7 @@ import com.facebook.react.views.imagehelper.ImageSource;
 import org.joda.time.DateTime;
 import org.json.JSONObject;
 
+// import java.lang.System;
 import java.lang.reflect.Array;
 import java.io.ByteArrayOutputStream;
 import javax.annotation.Nullable;
@@ -556,11 +557,12 @@ public class FFMpegFrameView extends View {
 
             String buffer = Base64.encodeToString(byteArray, Base64.DEFAULT);
             // Log.e("GOND", "UpdateFrame scaled bitmap 2: " + buffer.length());
-            bitmap.recycle();
-            bmp.recycle();
+            // bitmap.recycle();
+            // bmp.recycle();
             bitmap = null;
             OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_JS_FRAME_DATA, buffer, channel);
             byteArray = null;
+            // byteArrayOutputStream = null;
         }
     }
 
@@ -681,7 +683,7 @@ public class FFMpegFrameView extends View {
     }
     public void ViewHD( boolean HDMode)
     {
-        Log.i("GOND", "View HD " + (HDMode == true ? "true" : "false"));
+        // Log.d("GOND", "View HD " + (HDMode == true ? "true" : "false"));
         socket_handler.ChangetoHD(HDMode);
     }
 
