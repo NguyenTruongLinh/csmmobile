@@ -317,6 +317,10 @@ public class VideoSocket extends CommunicationSocket {
         // }
     }
 
+    void changeChannel(String newChannel) {
+        this.str_Channel = newChannel;
+    }
+
     void  onFrameTimeEvent(long time, TimeZone tz, long last_frame_time){
         if( time == last_frame_time)
             return;

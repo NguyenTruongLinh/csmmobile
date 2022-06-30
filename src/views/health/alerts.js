@@ -66,7 +66,8 @@ class AlertsView extends Component {
 
     this.reactions = [
       reaction(
-        () => healthStore.selectedSite.siteName,
+        () =>
+          healthStore.selectedSite ? healthStore.selectedSite.siteName : '',
         newSiteName => {
           __DEV__ && console.log('reaction newSiteName = ', newSiteName);
           this.setHeader();
@@ -166,7 +167,8 @@ class AlertsView extends Component {
 
   onRowOpen = data => {
     const rowId = data.id ?? 0;
-    __DEV__ && console.log('GOND Health onRowOpen ... ', this.lastOpenRowId);
+    __DEV__ &&
+      console.log('GOND Health onRowOpen ... ', data, this.lastOpenRowId);
 
     if (
       this.lastOpenRowId &&
@@ -354,6 +356,7 @@ class AlertsView extends Component {
 
   renderAlertItemWithSnapshot = item => {
     const {healthStore} = this.props;
+    __DEV__ && console.log('GOND renderAlertItemWithSnapshot: ', item);
 
     return (
       <SwipeRow
@@ -394,6 +397,7 @@ class AlertsView extends Component {
     const {width} = Dimensions.get('window');
     // const itemPadding = 10;
     const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
+    __DEV__ && console.log('GOND renderAlertItemWithSnapshot: ', item);
 
     return (
       <CMSRipple
@@ -481,6 +485,8 @@ class AlertsView extends Component {
     const {healthStore, navigation} = this.props;
     const {/*showDismissModal,*/ isListView, selectedAlertForDismiss} =
       this.state;
+    __DEV__ && console.log('GOND alerts: render  ', healthStore.selectedSite);
+    if (!healthStore.selectedSite) return null;
 
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
@@ -506,7 +512,9 @@ class AlertsView extends Component {
           <FlatList
             key={isListView ? 'list' : 'grid'}
             renderItem={this.renderItem}
-            keyExtractor={item => (isListView ? 'list_' : 'grid_') + item.id}
+            keyExtractor={item =>
+              (isListView ? 'list_' : 'grid_') + item ? item.id : 'unk'
+            }
             data={healthStore.filteredAlerts}
             numColumns={isListView ? 1 : ALERTS_GRID_LAYOUT}
             onRefresh={this.getData}

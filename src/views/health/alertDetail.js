@@ -94,7 +94,8 @@ class AlertDetailView extends Component {
         }
       ),
       reaction(
-        () => healthStore.selectedSite.siteName,
+        () =>
+          healthStore.selectedSite ? healthStore.selectedSite.siteName : '',
         newSiteName => {
           this.setHeader();
         }

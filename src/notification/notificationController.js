@@ -243,6 +243,7 @@ class NotificationController extends React.Component {
       messageId: messageId,
       userInfo: Platform.OS == 'ios' ? data : JSON.stringify(data),
       invokeApp: true,
+      number: 1,
       // for android:
       channelId: CHANNEL_ID,
       largeIcon: 'noti_icon',

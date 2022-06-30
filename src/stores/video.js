@@ -1547,10 +1547,10 @@ export const VideoModel = types
       },
       displayAuthen(value, force = false) {
         // __DEV__ && console.trace('GOND displaying Login form: ', value);
-        if (value == true) {
-          // __DEV__ && console.trace('GOND displaying Login form: ', value);
-          if (!force && self.isAuthenCanceled == true) return;
-        }
+        // if (value == true) {
+        //   // __DEV__ && console.trace('GOND displaying Login form: ', value);
+        //   if (!force && self.isAuthenCanceled == true) return;
+        // }
         self.showAuthenModal = value;
       },
       resetNVRAuthentication(forceReset = false) {
@@ -1562,12 +1562,17 @@ export const VideoModel = types
         //   );
         if (!forceReset && self.isAuthenticated) return;
 
-        __DEV__ && console.trace('GOND resetNVRAuthentication reset...');
+        __DEV__ && console.log('GOND resetNVRAuthentication reset...');
         if (self.nvrUser && self.nvrUser.length > 0)
           self.setNVRLoginInfo('', '');
-        if (self.isAuthenCanceled == true) self.isAuthenCanceled = false;
+        if (self.isAuthenCanceled == true) {
+          // __DEV__ &&
+          //   console.log('GOND resetNVRAuthentication from canceled authen');
+          self.displayAuthen(true);
+          self.isAuthenCanceled = false;
+        }
         self.authenticationState = AUTHENTICATION_STATES.HAS_RESET;
-        self.displayAuthen(true);
+        // self.displayAuthen(true);
       },
       saveLoginInfo: flow(function* () {
         if (!self.kDVR) return false;
@@ -1810,15 +1815,18 @@ export const VideoModel = types
             zone: self.timezone,
           });
         } else {
-          console.log(
-            'GOND - WARN! setBeginSearchTime VALUE IS NOT DATETIME NOR STRING'
-          );
+          __DEV__ &&
+            console.log(
+              'GOND - WARN! setBeginSearchTime VALUE IS NOT DATETIME NOR STRING'
+            );
           return;
         }
-        console.log('GOND setBeginSearchTime ', self.beginSearchTime);
+        __DEV__ &&
+          console.log('GOND setBeginSearchTime ', self.beginSearchTime);
       },
       onExitSinglePlayer(currentRoute) {
         // self.isSingleMode = false;
+        __DEV__ && console.log('GOND onExitSinglePlayer ', currentRoute);
         if (self.cloudType == CLOUD_TYPE.HLS) {
           if (self.selectedStream) {
             self.selectedStream.onExitSinglePlayer();
@@ -1835,7 +1843,7 @@ export const VideoModel = types
               });
           });
         }
-        self.isAuthenCanceled = false;
+        // self.isAuthenCanceled = false;
         if (self.isAlertPlay == true || self.isHealthPlay == true) {
           self.resetNVRAuthentication();
         } else {
