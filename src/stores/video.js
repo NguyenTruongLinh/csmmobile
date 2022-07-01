@@ -1093,6 +1093,11 @@ export const VideoModel = types
             self.selectedStream.setLive(true);
             self.selectedStream.setHD(false);
             self.selectedStream.select(false);
+            if (!fromMulti)
+              self.selectedStream.updateDataUsage(
+                FORCE_SENT_DATA_USAGE,
+                'select from single player'
+              );
           }
         }
 
@@ -1124,8 +1129,6 @@ export const VideoModel = types
                 foundStream.setHD(self.hdMode);
                 if (autoStart)
                   self.getHLSInfos({channelNo: value, timeline: !self.isLive});
-              } else {
-                foundStream.targetUrl.resetBitrateInfo();
               }
               break;
             case CLOUD_TYPE.RTC:
@@ -1183,16 +1186,14 @@ export const VideoModel = types
         }
         self.selectedChannel = foundChannel.channelNo;
 
-        // __DEV__ &&
-        //   console.log(
-        //     `FORCE_SENT_DATA_USAGE self.selectedStream.id = `,
-        //     self.selectedStream.id
-        //   );
         if (fromMulti)
           for (let i = 0; i < self.hlsStreams.length; i++) {
             let s = self.hlsStreams[i];
             if (s.id != self.selectedStream.id) {
-              s.updateBitrate(FORCE_SENT_DATA_USAGE, 'fromMulti');
+              s.updateDataUsage(
+                FORCE_SENT_DATA_USAGE,
+                'select from multi channel'
+              );
             }
           }
         return true;
@@ -2634,7 +2635,6 @@ export const VideoModel = types
         const targetStream = self.hlsStreams.find(
           s => s.channelNo == channelNo
         );
-        targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
         if (
           !forceStop &&
           !self.isAlertPlay &&

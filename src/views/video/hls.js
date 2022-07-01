@@ -39,6 +39,7 @@ import {
   STREAM_STATUS,
   VIDEO,
 } from '../../localization/texts';
+import {FORCE_SENT_DATA_USAGE} from '../../stores/types/hls';
 
 // import {V3_1_BITRATE_USAGE} from '../../stores/types/hls';
 
@@ -291,7 +292,7 @@ class HLSStreamingView extends React.Component {
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
-    streamData.updateBitrate(FORCE_SENT_DATA_USAGE, 'componentWillUnmount');
+    streamData.updateDataUsage(FORCE_SENT_DATA_USAGE, 'componentWillUnmount');
     if (
       Platform.OS === 'ios' &&
       this.player &&
@@ -739,30 +740,37 @@ class HLSStreamingView extends React.Component {
   };
 
   onBandwidthUpdate = data => {
-    // if (!V3_1_BITRATE_USAGE) return;
     const {videoStore, streamData, singlePlayer} = this.props;
     if (
       !videoStore.selectedStream ||
       !videoStore.selectedStream.id ||
       (streamData.id == videoStore.selectedStream.id && singlePlayer)
     ) {
-      __DEV__ &&
-        console.log(
-          'GOND onBandwidthUpdate COUNTED streamData.id = ',
-          streamData.id
-        ); //.bitrate
-      streamData.updateBitrate(
+      // _DEV_ &&
+      //   console.log(
+      //     'GOND onBandwidthUpdate COUNTED streamData.id = ',
+      //     streamData.id,
+      //     'videoStore.selectedStream.id = ',
+      //     videoStore.selectedStream && videoStore.selectedStream.id,
+      //     'singlePlayer =',
+      //     singlePlayer
+      //   );
+      streamData.updateDataUsage(
         data.bitrate,
         this.trackingVideoSource,
         videoStore.timezone,
         'onBandwidthUpdate'
       );
     } else {
-      __DEV__ &&
-        console.log(
-          'GOND onBandwidthUpdate NOT COUNTED streamData.id = ',
-          streamData.id
-        ); //.bitrate
+      // _DEV_ &&
+      //   console.log(
+      //     'GOND onBandwidthUpdate NOT COUNTED streamData.id = ',
+      //     streamData.id,
+      //     'videoStore.selectedStream.id = ',
+      //     videoStore.selectedStream && videoStore.selectedStream.id,
+      //     'singlePlayer =',
+      //     singlePlayer
+      //   );
     }
   };
 

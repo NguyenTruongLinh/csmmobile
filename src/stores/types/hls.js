@@ -45,7 +45,7 @@ const MAX_RETRY = 7;
 const KEEP_ALIVE_TIMEOUT = 60000;
 const REST_TIME = 2000;
 export const FORCE_SENT_DATA_USAGE = -999;
-
+const DATA_USAGE_SENDING_INTERVAL = 15;
 const HLSURLModel = types
   .model({
     url: types.maybeNull(types.string),
@@ -118,25 +118,13 @@ const HLSURLModel = types
       error != undefined && (self.error = error);
     },
     resetBitrateInfo() {
-      if (Platform.OS === 'android') {
-        __DEV__ &&
-          console.log(`updateBitrate resetBitrateInfo >>>>>>>>>>>>>>>>>>>>>`);
-        self.bitrateRecordTimePoint = DateTime.now().toSeconds();
-        self.currentBitrate = 0;
-        self.accumulatedDataUsage = 0;
-      }
+      self.accumulatedDataUsage = 0;
       self.dataUsageSentTimePoint = DateTime.now().toSeconds();
     },
-    updateBitrateByURL(segmentLoad, timezone, videoInfo, debug) {
-      //   __DEV__ && console.log(`updateBitrate self.sid = `, self.sid);
-      //   (Platform.OS === 'android'
-      //     ? self.updateBirateByURLAndroid
-      //     : self.updateBirateByURLiOS)(loadInfo, timezone, videoInfo, debug);
-      // },
-      // updateBirateByURLAndroid(segmentLoad, timezone, videoInfo, debug) {
+    updateDataUsageByURL(segmentLoad, timezone, videoInfo, debug) {
       __DEV__ &&
         console.log(
-          `updateBitrate segmentLoad = `,
+          `updateDataUsage segmentLoad = `,
           segmentLoad,
           ' debug = ',
           debug,
@@ -157,7 +145,7 @@ const HLSURLModel = types
       // //       (newBitrateRecordTimePoint - self.bitrateRecordTimePoint);
       // // __DEV__ &&
       // //   console.log(
-      // //     `updateBitrate 0428 newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
+      // //     `updateDataUsage 0428 newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
       // //     newBitrateRecordTimePoint - self.dataUsageSentTimePoint
       // //   );
 
@@ -166,14 +154,15 @@ const HLSURLModel = types
 
       __DEV__ &&
         console.log(
-          `updateBitrate self.accumulatedDataUsage = `,
+          `updateDataUsage self.accumulatedDataUsage = `,
           self.accumulatedDataUsage,
           ' debug = ',
           debug
         );
       if (
         segmentLoad == FORCE_SENT_DATA_USAGE ||
-        (newLoadRecordTimePoint - self.dataUsageSentTimePoint >= 10 &&
+        (newLoadRecordTimePoint - self.dataUsageSentTimePoint >=
+          DATA_USAGE_SENDING_INTERVAL &&
           self.accumulatedDataUsage > 0)
       ) {
         params.StartTime = DateTime.fromSeconds(
@@ -193,11 +182,11 @@ const HLSURLModel = types
         );
         __DEV__ &&
           console.log(
-            `updateBitrate 0428 callAPI params `,
+            `updateDataUsage callAPI params `,
             JSON.stringify(params),
             segmentLoad == FORCE_SENT_DATA_USAGE
               ? 'STREAM STOPPED'
-              : 'AFTER 10 SECS',
+              : 'AFTER 15 SECS',
             ' ************************************** '
           );
         self.resetBitrateInfo();
@@ -227,7 +216,7 @@ const HLSURLModel = types
         );
         __DEV__ &&
           console.log(
-            `updateBitrate IOS callAPI params = `,
+            `updateDataUsage IOS callAPI params = `,
             JSON.stringify(params)
           );
       }
@@ -437,15 +426,23 @@ export default HLSStreamModel = types
     },
     setLive(isLive) {
       if (self.isLive != isLive) {
+        self.targetUrl.updateDataUsageByURL(
+          FORCE_SENT_DATA_USAGE,
+          'switch live-search'
+        );
         self.isLive = isLive;
         self.noIncomingVideoCount = 0;
-        self.targetUrl.resetBitrateInfo();
       }
     },
     setHD(isHD) {
-      self.isHD = isHD;
-      self.noIncomingVideoCount = 0;
-      self.targetUrl.resetBitrateInfo();
+      if (self.isHD != isHD) {
+        self.targetUrl.updateDataUsageByURL(
+          FORCE_SENT_DATA_USAGE,
+          'switch HD-nonHD'
+        );
+        self.isHD = isHD;
+        self.noIncomingVideoCount = 0;
+      }
     },
     select(isSelected) {
       self.isSelected = isSelected;
@@ -571,11 +568,6 @@ export default HLSStreamModel = types
         // console.log('GOND --- set HLS Ready --- ', isReady);
         // console.trace();
       }
-      if (Platform.OS === 'android' && !isReady)
-        self.targetUrl.updateBitrateByURL(
-          FORCE_SENT_DATA_USAGE,
-          'setStreamReady false'
-        );
     },
     // setReconnectStatus(value) {
     //   self.isWaitingReconnect = value;
@@ -973,8 +965,8 @@ export default HLSStreamModel = types
       __DEV__ && console.log(`GOND on updateStream stopped: `, isStopped, sid);
       apiService.post(VSC.controller, sid, VSC.updateStream, isStopped);
     },
-    updateBitrate(bitrate, source, timezone, debug) {
-      self.targetUrl.updateBitrateByURL(
+    updateDataUsage(bitrate, source, timezone, debug) {
+      self.targetUrl.updateDataUsageByURL(
         bitrate,
         timezone,
         {
