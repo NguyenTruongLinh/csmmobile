@@ -130,7 +130,7 @@ class LiveChannelsView extends React.Component {
     videoStore.selectDVR(sitesStore.selectedDVR);
     videoStore.switchLiveSearch(true);
     videoStore.enterVideoView(true);
-
+    videoStore.loadLocalData();
     // dongpt test:
     // videoStore.saveLoginInfo();
 
