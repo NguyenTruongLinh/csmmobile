@@ -44,7 +44,7 @@ import {Platform} from 'react-native';
 const MAX_RETRY = 7;
 const KEEP_ALIVE_TIMEOUT = 60000;
 const REST_TIME = 2000;
-export const FORCE_SENT_DATA_USAGE = -1;
+export const FORCE_SENT_DATA_USAGE = -999;
 
 const HLSURLModel = types
   .model({
@@ -127,37 +127,43 @@ const HLSURLModel = types
       }
       self.dataUsageSentTimePoint = DateTime.now().toSeconds();
     },
-    updateBitrateByURL(loadInfo, timezone, videoInfo, debug) {
-      (Platform.OS === 'android'
-        ? self.updateBirateByURLAndroid
-        : self.updateBirateByURLiOS)(loadInfo, timezone, videoInfo, debug);
-    },
-    updateBirateByURLAndroid(bitrate, timezone, videoInfo, debug) {
+    updateBitrateByURL(segmentLoad, timezone, videoInfo, debug) {
+      //   __DEV__ && console.log(`updateBitrate self.sid = `, self.sid);
+      //   (Platform.OS === 'android'
+      //     ? self.updateBirateByURLAndroid
+      //     : self.updateBirateByURLiOS)(loadInfo, timezone, videoInfo, debug);
+      // },
+      // updateBirateByURLAndroid(segmentLoad, timezone, videoInfo, debug) {
       __DEV__ &&
         console.log(
-          `updateBitrate bitrate = `,
-          bitrate,
+          `updateBitrate segmentLoad = `,
+          segmentLoad,
           ' debug = ',
           debug,
           ' self.bitrateRecordTimePoint = ',
           self.bitrateRecordTimePoint
         );
-      if (bitrate !== FORCE_SENT_DATA_USAGE) self.videoInfo = {...videoInfo};
+      if (segmentLoad !== FORCE_SENT_DATA_USAGE)
+        self.videoInfo = {...videoInfo};
       let params =
-        bitrate != FORCE_SENT_DATA_USAGE ? {...videoInfo} : {...self.videoInfo};
-      let newBitrateRecordTimePoint = DateTime.now().toSeconds();
-      let segmentLoad =
-        self.currentBitrate == FORCE_SENT_DATA_USAGE
-          ? 0
-          : self.currentBitrate *
-            (newBitrateRecordTimePoint - self.bitrateRecordTimePoint);
-      __DEV__ &&
-        console.log(
-          `updateBitrate 0428 newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
-          newBitrateRecordTimePoint - self.dataUsageSentTimePoint
-        );
+        segmentLoad != FORCE_SENT_DATA_USAGE
+          ? {...videoInfo}
+          : {...self.videoInfo};
+      let newLoadRecordTimePoint = DateTime.now().toSeconds();
+      // // let segmentLoad =
+      // //   self.currentBitrate == FORCE_SENT_DATA_USAGE
+      // //     ? 0
+      // //     : self.currentBitrate *
+      // //       (newBitrateRecordTimePoint - self.bitrateRecordTimePoint);
+      // // __DEV__ &&
+      // //   console.log(
+      // //     `updateBitrate 0428 newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
+      // //     newBitrateRecordTimePoint - self.dataUsageSentTimePoint
+      // //   );
 
-      self.accumulatedDataUsage += segmentLoad;
+      if (segmentLoad !== FORCE_SENT_DATA_USAGE)
+        self.accumulatedDataUsage += segmentLoad;
+
       __DEV__ &&
         console.log(
           `updateBitrate self.accumulatedDataUsage = `,
@@ -166,8 +172,8 @@ const HLSURLModel = types
           debug
         );
       if (
-        bitrate == FORCE_SENT_DATA_USAGE ||
-        (newBitrateRecordTimePoint - self.dataUsageSentTimePoint >= 10 &&
+        segmentLoad == FORCE_SENT_DATA_USAGE ||
+        (newLoadRecordTimePoint - self.dataUsageSentTimePoint >= 10 &&
           self.accumulatedDataUsage > 0)
       ) {
         params.StartTime = DateTime.fromSeconds(
@@ -175,11 +181,10 @@ const HLSURLModel = types
           {}
         ).toFormat(DateFormat.VideoDataUsageDate);
         params.EndTime = DateTime.fromSeconds(
-          newBitrateRecordTimePoint,
+          newLoadRecordTimePoint,
           {}
         ).toFormat(DateFormat.VideoDataUsageDate);
-        params.BytesUsed = Math.floor(self.accumulatedDataUsage / 8);
-        // callAPI(params)
+        params.BytesUsed = self.accumulatedDataUsage;
         apiService.post(
           VSC.controller,
           1,
@@ -188,22 +193,17 @@ const HLSURLModel = types
         );
         __DEV__ &&
           console.log(
-            `updateBitrate callAPI self.accumulatedDataUsage = `,
-            self.accumulatedDataUsage,
-            bitrate == FORCE_SENT_DATA_USAGE
+            `updateBitrate 0428 callAPI params `,
+            JSON.stringify(params),
+            segmentLoad == FORCE_SENT_DATA_USAGE
               ? 'STREAM STOPPED'
               : 'AFTER 10 SECS',
             ' ************************************** '
           );
-        __DEV__ &&
-          console.log(
-            `updateBitrate 0428 callAPI params `,
-            JSON.stringify(params)
-          );
         self.resetBitrateInfo();
       }
-      self.currentBitrate = bitrate;
-      self.bitrateRecordTimePoint = newBitrateRecordTimePoint;
+      // self.currentBitrate = bitrate;
+      // self.bitrateRecordTimePoint = newBitrateRecordTimePoint;
     },
     updateBirateByURLiOS(bytesUsed, timezone, videoInfo, debug) {
       if (bytesUsed > 0) {
@@ -571,7 +571,7 @@ export default HLSStreamModel = types
         // console.log('GOND --- set HLS Ready --- ', isReady);
         // console.trace();
       }
-      if (!isReady)
+      if (Platform.OS === 'android' && !isReady)
         self.targetUrl.updateBitrateByURL(
           FORCE_SENT_DATA_USAGE,
           'setStreamReady false'
@@ -980,7 +980,7 @@ export default HLSStreamModel = types
         {
           KChannel: self.channel.kChannel,
           ViewMode: self.isLive ? 0 : 1,
-          Source: 'MP4_CMSMobile_' + source + '_NEW_' + Platform.OS,
+          Source: 'MP4_CMSMobile_' + source, // + '_NEW_' + Platform.OS,
         },
         debug
       );
@@ -1008,8 +1008,6 @@ export default HLSStreamModel = types
     //   self.streamTimeout && clearTimeout(self.streamTimeout);
     // },
     onExitSinglePlayer() {
-      if (Platform.OS === 'android')
-        self.updateBitrate(FORCE_SENT_DATA_USAGE, 'onExitSinglePlayer');
       self.targetUrl.getUrlRetries = 0;
       self.targetUrl.clearStreamTimeout();
       self.targetUrl.isFailed = false;
@@ -1023,8 +1021,6 @@ export default HLSStreamModel = types
     release() {
       // self.isDead = true;
       // self.clearStreamTimeout();
-      if (Platform.OS === 'android')
-        self.updateBitrate(FORCE_SENT_DATA_USAGE, 'release');
       self.updateStreamsStatus(false);
     },
   }));

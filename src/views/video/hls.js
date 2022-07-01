@@ -291,6 +291,7 @@ class HLSStreamingView extends React.Component {
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
+    streamData.updateBitrate(FORCE_SENT_DATA_USAGE, 'componentWillUnmount');
     if (
       Platform.OS === 'ios' &&
       this.player &&
@@ -739,14 +740,30 @@ class HLSStreamingView extends React.Component {
 
   onBandwidthUpdate = data => {
     // if (!V3_1_BITRATE_USAGE) return;
-    const {videoStore, streamData, appStore} = this.props;
-    __DEV__ && console.log('GOND onBandwidthUpdate: ', data); //.bitrate
-    streamData.updateBitrate(
-      data.bitrate,
-      this.trackingVideoSource,
-      videoStore.timezone,
-      'onBandwidthUpdate'
-    );
+    const {videoStore, streamData, singlePlayer} = this.props;
+    if (
+      !videoStore.selectedStream ||
+      !videoStore.selectedStream.id ||
+      (streamData.id == videoStore.selectedStream.id && singlePlayer)
+    ) {
+      __DEV__ &&
+        console.log(
+          'GOND onBandwidthUpdate COUNTED streamData.id = ',
+          streamData.id
+        ); //.bitrate
+      streamData.updateBitrate(
+        data.bitrate,
+        this.trackingVideoSource,
+        videoStore.timezone,
+        'onBandwidthUpdate'
+      );
+    } else {
+      __DEV__ &&
+        console.log(
+          'GOND onBandwidthUpdate NOT COUNTED streamData.id = ',
+          streamData.id
+        ); //.bitrate
+    }
   };
 
   onReady = event => {

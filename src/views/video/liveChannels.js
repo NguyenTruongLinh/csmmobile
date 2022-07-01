@@ -392,11 +392,25 @@ class LiveChannelsView extends React.Component {
 
   onChannelSelect = value => {
     const {videoStore} = this.props;
-    __DEV__ && console.log('GOND select channel: ', value);
+    __DEV__ &&
+      console.log(
+        'GOND select channel: 111',
+        value,
+        ' videoStore.selectedChannel = ',
+        videoStore.selectedChannel
+      );
     if (!value || Object.keys(value) == 0 || videoStore.selectedChannel) return;
-
+    __DEV__ &&
+      console.log(
+        'GOND select channel: 222 ',
+        value,
+        ' videoStore.selectedChannel = ',
+        videoStore.selectedChannel
+      );
     videoStore.selectChannel(
-      value.channelNo // ?? value.channel.channelNo
+      value.channelNo,
+      true,
+      true // ?? value.channel.channelNo
     );
 
     if (

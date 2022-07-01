@@ -1016,6 +1016,7 @@ export const VideoModel = types
             self.gridItemsPerPage
           );
         let changed = false;
+        let previousGridPage = self.currentGridPage;
         if (isNext && self.currentGridPage < totalPage - 1) {
           self.currentGridPage++;
           changed = true;
@@ -1045,7 +1046,7 @@ export const VideoModel = types
         streamReadyCallback = fn;
       },
       */
-      selectChannel(value, autoStart = true) {
+      selectChannel(value, autoStart = true, fromMulti = false) {
         let key =
           typeof value == 'number'
             ? 'channelNo'
@@ -1181,6 +1182,19 @@ export const VideoModel = types
           }
         }
         self.selectedChannel = foundChannel.channelNo;
+
+        // __DEV__ &&
+        //   console.log(
+        //     `FORCE_SENT_DATA_USAGE self.selectedStream.id = `,
+        //     self.selectedStream.id
+        //   );
+        if (fromMulti)
+          for (let i = 0; i < self.hlsStreams.length; i++) {
+            let s = self.hlsStreams[i];
+            if (s.id != self.selectedStream.id) {
+              s.updateBitrate(FORCE_SENT_DATA_USAGE, 'fromMulti');
+            }
+          }
         return true;
       },
       setFrameTime(value, fromZone) {
@@ -2620,8 +2634,7 @@ export const VideoModel = types
         const targetStream = self.hlsStreams.find(
           s => s.channelNo == channelNo
         );
-        if (Platform.OS === 'android')
-          targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
+        targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
         if (
           !forceStop &&
           !self.isAlertPlay &&

@@ -853,7 +853,7 @@ static int const RCTVideoUnset = -1;
    if (self.onBandwidthUpdate) {
        if(_dataUsageTimer)
            [_dataUsageTimer invalidate];
-       _dataUsageTimer = [NSTimer scheduledTimerWithTimeInterval:10.0  target:self selector:@selector(notifyUpdateDataUsage) userInfo:nil repeats:YES];
+       _dataUsageTimer = [NSTimer scheduledTimerWithTimeInterval:2.0  target:self selector:@selector(notifyUpdateDataUsage) userInfo:nil repeats:YES];
        NSLog(@"GOND actionTimer handleAVPlayerAccess init _dataUsageTimer %p", &_dataUsageTimer);
    }
 }
