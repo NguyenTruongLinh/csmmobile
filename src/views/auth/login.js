@@ -139,7 +139,14 @@ class LoginView extends Component {
     this._refs.username && this._refs.username.focus();
   };
 
-  onTypingUsername = text => {};
+  onTyping = (text, name) => {
+    __DEV__ && console.log('LoginView onTyping ', name, text ?? 'no text');
+    if (name) {
+      if (text != this.state[name]) {
+        this.setState({[name]: text});
+      }
+    }
+  };
 
   onSubmitUserName = () => {
     this._refs.password && this._refs.password.focus();
@@ -205,12 +212,12 @@ class LoginView extends Component {
 
     domain = this.removeSpecificPort(domain);
 
-    if (this.props.userStore) {
-      this.props.userStore.login(domain, username, password);
-    } else {
-      __DEV__ &&
-        console.log('GOND Login failed, no userStore available!', this.props);
-    }
+    // if (this.props.userStore) {
+    this.props.userStore.login(domain, username, password);
+    // } else {
+    //   __DEV__ &&
+    //     console.log('GOND Login failed, no userStore available!', this.props);
+    // }
   };
 
   onBack = () => {
@@ -301,7 +308,7 @@ class LoginView extends Component {
               enablesReturnKeyAutomatically={true}
               onEndEditing={this.onEndEditing}
               onFocus={this.onFocus}
-              onChangeText={this.onTypingUsername}
+              onChangeText={this.onTyping}
               onSubmitEditing={this.onSubmitUserName}
               returnKeyType="next"
               autoCapitalize={'none'}
@@ -327,6 +334,7 @@ class LoginView extends Component {
               enablesReturnKeyAutomatically={true}
               onEndEditing={this.onEndEditing}
               onFocus={this.onFocus}
+              onChangeText={this.onTyping}
               returnKeyType="next"
               iconCustom="locked-padlock"
               label={LoginTxt.password}
