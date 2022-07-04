@@ -117,7 +117,7 @@ const HLSURLModel = types
       needReset != undefined && (self.needReset = needReset);
       error != undefined && (self.error = error);
     },
-    resetBitrateInfo() {
+    resetDataUsageInfo() {
       self.accumulatedDataUsage = 0;
       self.dataUsageSentTimePoint = DateTime.now().toSeconds();
     },
@@ -189,7 +189,7 @@ const HLSURLModel = types
               : 'AFTER 15 SECS',
             ' ************************************** '
           );
-        self.resetBitrateInfo();
+        self.resetDataUsageInfo();
       }
       // self.currentBitrate = bitrate;
       // self.bitrateRecordTimePoint = newBitrateRecordTimePoint;

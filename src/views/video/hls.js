@@ -40,6 +40,7 @@ import {
   VIDEO,
 } from '../../localization/texts';
 import {FORCE_SENT_DATA_USAGE} from '../../stores/types/hls';
+import ROUTERS from '../../consts/routes';
 
 // import {V3_1_BITRATE_USAGE} from '../../stores/types/hls';
 
@@ -267,6 +268,7 @@ class HLSStreamingView extends React.Component {
   }
 
   componentWillUnmount() {
+    const {appStore, videoStore, isLive} = this.props;
     __DEV__ && console.log('HLSStreamingView componentWillUnmount');
     this._isMounted = false;
     // if (this.checkStreamTO) {
@@ -301,6 +303,9 @@ class HLSStreamingView extends React.Component {
       __DEV__ && console.log('stopDataUsageTimer');
       this.player.stopDataUsageTimer();
     }
+    let previousScreen = appStore.naviService.getPreviousRouteName();
+    if (previousScreen === ROUTERS.VIDEO_CHANNELS)
+      videoStore.resetAllStreamsDataUsageInfo();
   }
 
   computeTime = secs => {

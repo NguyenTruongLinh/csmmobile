@@ -1130,6 +1130,7 @@ export const VideoModel = types
                 if (autoStart)
                   self.getHLSInfos({channelNo: value, timeline: !self.isLive});
               }
+              if (!fromMulti) foundStream.targetURL.resetDataUsageInfo();
               break;
             case CLOUD_TYPE.RTC:
               break;
@@ -1197,6 +1198,14 @@ export const VideoModel = types
             }
           }
         return true;
+      },
+      resetAllStreamsDataUsageInfo() {
+        for (let i = 0; i < self.hlsStreams.length; i++) {
+          let s = self.hlsStreams[i];
+          if (!self.selectedStream || s.id != self.selectedStream.id) {
+            s.targetURL.resetDataUsageInfo();
+          }
+        }
       },
       setFrameTime(value, fromZone) {
         // __DEV__ && console.log('GOND setFrameTime ', value);
