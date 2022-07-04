@@ -65,3 +65,27 @@
 ```cmd
 \<path_to>\androidsdk\build-tools\<build_tool_version>\apksigner sign --ks <keyfile.jks> <input.apk>
 ```
+
+# CODING CONVENTIONS:
+
+## Component class structure:
+
+Please follow below order when coding a new component class:
+
+- constructor
+- react life cycle: componentDidMount, componentWillUnmount, componentDidUpdate, getDerivedStateFromProps, ...
+- events handlers (ex: onShowPopup, onGotoVideo, onButtonClick, ...)
+- utilities methods
+- render methods
+- main render
+
+## Importing structure
+
+Please follow below order when importing libraries in a file:
+
+- react, react-natives
+- 3rd party libs
+- custom components
+- utils
+- styles
+- constant

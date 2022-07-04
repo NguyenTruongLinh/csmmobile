@@ -79,10 +79,13 @@ class App extends React.Component {
     const {appStore} = this.props;
     __DEV__ && console.log('GOND APP did mount');
     LogBox.ignoreLogs(['Trying to load empty source.']);
+
     this.appStateEvtListener = AppState.addEventListener(
       'change',
       this._handleAppStateChange
     );
+    // __DEV__ &&
+    //   console.log('GOND APP appStateListener: ', this.appStateEventListener);
     this.keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       this.keyboardDidShow
@@ -93,8 +96,8 @@ class App extends React.Component {
     );
     this.allowRotation = await this.getAutoRotateState();
     // this.props.publishRotationState(this.allowRotation);
-    if (Platform.OS === 'android')
-      this.checkAutoRotateTimer = setInterval(this.onCheckAutoRotateState, 100);
+    // if (Platform.OS === 'android')
+    //   this.checkAutoRotateTimer = setInterval(this.onCheckAutoRotateState, 100);
 
     Orientation.addDeviceOrientationListener(this._orientationDidChange);
     Orientation.lockToPortrait();
@@ -244,45 +247,6 @@ class App extends React.Component {
     }
   };
 
-  closeModal = () => {
-    this.modal.close();
-  };
-
-  // inforSearch = data => {
-  //   this.modal.close();
-  //   // this.modal.Open = true;
-  //   let sites = store.getState().sites;
-
-  //   if (!sites || sites.length <= 0) {
-  //     return;
-  //   }
-
-  //   let selected = _.filter(sites, i => {
-  //     return _.includes(data.SitesSelected, i.Key);
-  //   });
-  //   selectedSite = selected;
-  //   this.props.applyFilter(data);
-  // };
-
-  // renderRightButton = () => {
-  //   let {user} = this.props;
-  //   if (user && user.isAuth) {
-  //     if (Actions.currentScene === ROUTERS.POS) {
-  //       return (
-  //         <CMSTouchableIcon
-  //           size={20}
-  //           color={CMSColors.ButtonRight}
-  //           styles={styles.contentIcon_filter}
-  //           onPress={this.onFilter.bind(this)}
-  //           iconCustom="searching-magnifying-glass"
-  //         />
-  //       );
-  //     } else {
-  //       return <View />;
-  //     }
-  //   }
-  // };
-
   onCheckAutoRotateState = async event => {
     return;
     if (
@@ -336,14 +300,20 @@ class App extends React.Component {
     */
   };
 
-  _handleAppStateChange = async nextAppState => {
-    if (this.appState) {
-      let {userStore} = this.props;
+  _handleAppStateChange = nextAppState => {
+    let {userStore, appStore} = this.props;
+
+    // if (this.appState) {
+    if (appStore.appState) {
       __DEV__ &&
         console.log('GOND _handleAppStateChange nextAppState: ', nextAppState);
       if (nextAppState === 'active') {
-        if (this.appState.match(/inactive|background/)) {
+        // if (this.appState.match(/inactive|background/)) {
+        if (appStore.appState.match(/inactive|background/)) {
           console.log('App has come to the foreground!');
+          if (userStore.isLoggedIn) {
+            NotificationController.resetBadgeCount();
+          }
         } else {
           console.log('App launch');
         }
@@ -352,7 +322,8 @@ class App extends React.Component {
         userStore.setActivites(clientLogID.APP_TO_BACKGROUND);
       }
     }
-    this.appState = nextAppState;
+    // this.appState = nextAppState;
+    appStore.setCurrentAppState(nextAppState);
   };
 
   keyboardDidShow = () => {
@@ -388,6 +359,7 @@ class App extends React.Component {
     const isStreamingAvailable = userStore.hasPermission(
       MODULE_PERMISSIONS.VSC
     );
+    NotificationController.resetBadgeCount();
     videoStore.getCloudSetting(isStreamingAvailable);
     if (userStore.settings.alertTypes.length > 0)
       healthStore.saveAlertTypesConfig(userStore.settings.alertTypes);

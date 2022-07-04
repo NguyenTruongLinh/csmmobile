@@ -609,12 +609,12 @@ class DirectVideoView extends React.Component {
       selectedChannel,
     } = this.props;
     // const serverInfo = videoStore.directConnection;
-    __DEV__ &&
-      console.trace(
-        'GOND direct setNativePlayback: ',
-        serverInfo,
-        videoStore.selectedChannel
-      );
+    // __DEV__ &&
+    //   console.trace(
+    //     'GOND direct setNativePlayback: ',
+    //     serverInfo,
+    //     videoStore.selectedChannel
+    //   );
     if (
       // !serverInfo /*.server*/ ||
       // serverInfo.channels.length <= 0
