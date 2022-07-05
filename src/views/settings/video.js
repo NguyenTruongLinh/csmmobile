@@ -139,8 +139,9 @@ class VideosettingView extends Component {
   };
 
   updateCloudSetting = async () => {
+    // dongpt: remove !! when applying relay server option here
     const res = await this.props.videoStore.updateCloudSetting(
-      this.state.selectedValue // ? 1 : 0
+      !!this.state.selectedValue // ? 1 : 0
     );
     // console.log('GOND save cloud setting response: ', response)
     // if (res) {
