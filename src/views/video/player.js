@@ -66,6 +66,7 @@ import CMSColors from '../../styles/cmscolors';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 
 import videoStyles from '../../styles/scenes/videoPlayer.style';
+import ROUTERS from '../../consts/routes';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
 const IconSize = normalize(28);
@@ -139,8 +140,41 @@ class VideoPlayerView extends Component {
     navigation.setOptions({
       headerShown: !videoStore.isFullscreen,
       headerTitle: videoStore.isLive ? 'Live' : 'Search',
+      // headerLeft: this.getPlayerBackButton,
     });
   };
+
+  // getPlayerBackButton = () => {
+  //   const {appStore, videoStore, icon, color} = this.props;
+  //   return (
+  //     <Ripple
+  //       rippleCentered={true}
+  //       style={styles.left}
+  //       onPress={() => {
+  //         // __DEV__ && console.log('GOND BackButton onPress!!!');
+  //         if (navigator && navigator.canGoBack()) {
+  //           navigator.goBack();
+  //           let previous = appStore.naviService.getPreviousRouteName();
+  //           if (previous === ROUTERS.VIDEO_CHANNELS) {
+  //             videoStore.setDataUsageMode();
+  //           }
+  //           __DEV__ && console.log(`getPlayerBackButton previous = `, previous);
+  //         }
+  //       }}>
+  //       <View style={styles.icon}>
+  //         <CMSTouchableIcon
+  //           size={20}
+  //           color={color}
+  //           styles={[
+  //             styles.contentIcon,
+  //             {position: 'relative', paddingBottom: 14},
+  //           ]}
+  //           iconCustom={icon}
+  //         />
+  //       </View>
+  //     </Ripple>
+  //   );
+  // };
 
   componentWillUnmount() {
     this._isMounted = false;
@@ -1628,6 +1662,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingLeft: 20,
   },
+  left: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginLeft: 10,
+    // marginTop: 2,
+    alignItems: 'center',
+  },
+  icon: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 5,
+    ...Platform.select({
+      android: {
+        marginTop: 10,
+      },
+    }),
+  },
+  contentIcon: {
+    paddingTop: 2,
+  },
+  title: {
+    marginLeft: 5,
+  },
 });
 
-export default inject('videoStore')(observer(VideoPlayerView));
+export default inject('videoStore', 'appStore')(observer(VideoPlayerView));

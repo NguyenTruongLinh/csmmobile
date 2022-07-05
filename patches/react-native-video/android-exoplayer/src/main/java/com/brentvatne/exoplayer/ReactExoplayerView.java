@@ -285,6 +285,7 @@ class ReactExoplayerView extends FrameLayout implements
     //BandwidthMeter.EventListener implementation
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        //Log.d("GOND", "onBandwidthSample: bytes = " + bytes + " @: "+ this);
         if (mReportBandwidth) {
             if (player == null) {
                 eventEmitter.bandwidthReport(bitrate, 0, 0, "-1");
@@ -293,7 +294,7 @@ class ReactExoplayerView extends FrameLayout implements
                 int width = videoFormat != null ? videoFormat.width : 0;
                 int height = videoFormat != null ? videoFormat.height : 0;
                 String trackId = videoFormat != null ? videoFormat.id : "-1";
-                eventEmitter.bandwidthReport(bitrate, height, width, trackId);
+                eventEmitter.bandwidthReport(bytes, height, width, trackId);
             }
         }
     }

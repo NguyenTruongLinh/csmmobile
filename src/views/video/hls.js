@@ -39,6 +39,8 @@ import {
   STREAM_STATUS,
   VIDEO,
 } from '../../localization/texts';
+import {FORCE_SENT_DATA_USAGE} from '../../stores/types/hls';
+import ROUTERS from '../../consts/routes';
 
 // import {V3_1_BITRATE_USAGE} from '../../stores/types/hls';
 
@@ -245,7 +247,7 @@ class HLSStreamingView extends React.Component {
     __DEV__ &&
       console.log('HLSStreamingView componentDidMount', this.props.streamData);
     this._isMounted = true;
-    const {appStore, videoStore, isLive} = this.props;
+    const {appStore, videoStore, isLive, singlePlayer} = this.props;
 
     this.initReactions();
     this.setStreamStatus({
@@ -260,12 +262,14 @@ class HLSStreamingView extends React.Component {
     //   this.shouldResume = true;
     // }
 
-    this.trackingVideoSource = util.extractModuleNameFromScreenName(
-      appStore.naviService.getPreviousRouteName()
-    );
+    this.trackingVideoSource =
+      util.extractModuleNameFromScreenName(
+        appStore.naviService.getPreviousRouteName()
+      ) + (Platform.OS == 'ios' ? (singlePlayer ? '_single' : '_multi') : '');
   }
 
   componentWillUnmount() {
+    const {appStore, videoStore, isLive} = this.props;
     __DEV__ && console.log('HLSStreamingView componentWillUnmount');
     this._isMounted = false;
     // if (this.checkStreamTO) {
@@ -291,6 +295,7 @@ class HLSStreamingView extends React.Component {
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
+    streamData.updateDataUsage(FORCE_SENT_DATA_USAGE, 'componentWillUnmount');
     if (
       Platform.OS === 'ios' &&
       this.player &&
@@ -299,6 +304,10 @@ class HLSStreamingView extends React.Component {
       __DEV__ && console.log('stopDataUsageTimer');
       this.player.stopDataUsageTimer();
     }
+    // let previousScreen = appStore.naviService.getCurrentRouteName();
+    // __DEV__ && console.log('previousScreen = ', previousScreen);
+    // if (previousScreen === ROUTERS.VIDEO_CHANNELS)
+    //   videoStore.resetAllStreamsDataUsageInfo();
   }
 
   computeTime = secs => {
@@ -738,11 +747,19 @@ class HLSStreamingView extends React.Component {
   };
 
   onBandwidthUpdate = data => {
-    // if (!V3_1_BITRATE_USAGE) return;
-    const {videoStore, streamData, appStore} = this.props;
-    __DEV__ && console.log('GOND onBandwidthUpdate: ', data); //.bitrate
-    streamData.updateBitrate(
-      data.bitrate,
+    (Platform.OS === 'ios'
+      ? this.onBandwidthUpdateIOS
+      : this.onBandwidthUpdateAndroid)(data.bitrate);
+  };
+
+  onBandwidthUpdateAndroid = bytes => {
+    const {videoStore, streamData, singlePlayer} = this.props;
+  };
+
+  onBandwidthUpdateIOS = bytes => {
+    const {videoStore, streamData} = this.props;
+    streamData.updateDataUsage(
+      bytes,
       this.trackingVideoSource,
       videoStore.timezone,
       'onBandwidthUpdate'
@@ -769,6 +786,9 @@ class HLSStreamingView extends React.Component {
     //     connectionStatus: STREAM_STATUS.DONE,
     //   });
     // }
+    if (Platform.OS === 'android') {
+      videoStore.switchRecordingStreamIdAndroid(streamData);
+    }
   };
 
   onBuffer = event => {

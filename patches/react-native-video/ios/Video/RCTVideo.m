@@ -658,6 +658,14 @@ static int const RCTVideoUnset = -1;
   if([keyPath isEqualToString:readyForDisplayKeyPath] && [change objectForKey:NSKeyValueChangeNewKey] && self.onReadyForDisplay) {
     self.onReadyForDisplay(@{@"target": self.reactTag});
       NSLog(@"0530 onReadyForDisplay");
+      
+      if (self.onBandwidthUpdate) {
+          if(_dataUsageTimer)
+              [_dataUsageTimer invalidate];
+          _dataUsageTimer = [NSTimer scheduledTimerWithTimeInterval:3.0  target:self selector:@selector(notifyUpdateDataUsage) userInfo:nil repeats:YES];
+          NSLog(@"GOND observeValueForKeyPath init _dataUsageTimer %p", &_dataUsageTimer);
+      }
+      
       if(_playerOutput == NULL){
         NSDictionary* settings = @{ (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA) };
         _playerOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:settings];
@@ -850,12 +858,13 @@ static int const RCTVideoUnset = -1;
 }
 
 - (void)handleAVPlayerAccess:(NSNotification *)notification {
-   if (self.onBandwidthUpdate) {
-       if(_dataUsageTimer)
-           [_dataUsageTimer invalidate];
-       _dataUsageTimer = [NSTimer scheduledTimerWithTimeInterval:10.0  target:self selector:@selector(notifyUpdateDataUsage) userInfo:nil repeats:YES];
-       NSLog(@"GOND actionTimer handleAVPlayerAccess init _dataUsageTimer %p", &_dataUsageTimer);
-   }
+    NSLog(@"GOND init _dataUsageTimer 1 %p", &self);
+//   if (self.onBandwidthUpdate) {
+//       if(_dataUsageTimer)
+//           [_dataUsageTimer invalidate];
+//       _dataUsageTimer = [NSTimer scheduledTimerWithTimeInterval:3.0  target:self selector:@selector(notifyUpdateDataUsage) userInfo:nil repeats:YES];
+//       NSLog(@"GOND init _dataUsageTimer 2 %p", &self);
+//   }
 }
 
 -(void) notifyUpdateDataUsage
@@ -868,7 +877,7 @@ static int const RCTVideoUnset = -1;
         if(load > 0)
             self.onBandwidthUpdate(@{@"bitrate": [NSNumber numberWithFloat:load]});
         _lastDataUsage = lastEvent.numberOfBytesTransferred;
-        NSLog(@"GOND _dataUsageTimer notifyUpdateDataUsage load = %f", load);
+        NSLog(@"GOND _dataUsageTimer notifyUpdateDataUsage load = %f player = %p", load, &self);
       }
 }
 

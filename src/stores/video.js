@@ -415,6 +415,7 @@ export const VideoModel = types
     shouldLinkNVRUser: false, // enable when input login form
     isAuthenCanceled: false,
     onPostAuthentication: null, // (channelNo, isLive) => {}
+    androidRecordingStream: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -1016,6 +1017,7 @@ export const VideoModel = types
             self.gridItemsPerPage
           );
         let changed = false;
+        let previousGridPage = self.currentGridPage;
         if (isNext && self.currentGridPage < totalPage - 1) {
           self.currentGridPage++;
           changed = true;
@@ -1045,7 +1047,7 @@ export const VideoModel = types
         streamReadyCallback = fn;
       },
       */
-      selectChannel(value, autoStart = true) {
+      selectChannel(value, autoStart = true, fromMulti = false) {
         let key =
           typeof value == 'number'
             ? 'channelNo'
@@ -1092,6 +1094,11 @@ export const VideoModel = types
             self.selectedStream.setLive(true);
             self.selectedStream.setHD(false);
             self.selectedStream.select(false);
+            // if (!fromMulti)
+            //   self.selectedStream.updateDataUsage(
+            //     FORCE_SENT_DATA_USAGE,
+            //     'select from single player'
+            //   );
           }
         }
 
@@ -1123,9 +1130,9 @@ export const VideoModel = types
                 foundStream.setHD(self.hdMode);
                 if (autoStart)
                   self.getHLSInfos({channelNo: value, timeline: !self.isLive});
-              } else {
-                foundStream.targetUrl.resetBitrateInfo();
               }
+              if (!fromMulti && foundStream.targetUrl)
+                foundStream.targetUrl.resetDataUsageInfo();
               break;
             case CLOUD_TYPE.RTC:
               break;
@@ -1181,7 +1188,38 @@ export const VideoModel = types
           }
         }
         self.selectedChannel = foundChannel.channelNo;
+
+        // if (fromMulti)
+        //   for (let i = 0; i < self.hlsStreams.length; i++) {
+        //     let s = self.hlsStreams[i];
+        //     if (s.id != self.selectedStream.id) {
+        //       s.updateDataUsage(
+        //         FORCE_SENT_DATA_USAGE,
+        //         'select from multi channel'
+        //       );
+        //     }
+        //   }
         return true;
+      },
+      resetAllStreamsDataUsageInfo() {
+        __DEV__ &&
+          console.log(
+            `resetAllStreamsDataUsageInfo self.hlsStreams.length = `,
+            self.hlsStreams.length
+          );
+        for (let i = 0; i < self.hlsStreams.length; i++) {
+          let s = self.hlsStreams[i];
+          if (
+            s.targetUrl &&
+            (!self.selectedStream || s.id != self.selectedStream.id)
+          ) {
+            __DEV__ &&
+              console.log(
+                `resetAllStreamsDataUsageInfo s.targetUrl.resetDataUsageInfo = `
+              );
+            s.targetUrl.resetDataUsageInfo();
+          }
+        }
       },
       setFrameTime(value, fromZone) {
         // __DEV__ && console.log('GOND setFrameTime ', value);
@@ -2628,8 +2666,6 @@ export const VideoModel = types
         const targetStream = self.hlsStreams.find(
           s => s.channelNo == channelNo
         );
-        if (Platform.OS === 'android')
-          targetStream.updateBitrate(FORCE_SENT_DATA_USAGE, 'stopHLSStream');
         if (
           !forceStop &&
           !self.isAlertPlay &&
@@ -3922,6 +3958,9 @@ export const VideoModel = types
         }
         __DEV__ && console.log('GOND postAuthenticationCheck call now!');
         callback();
+      },
+      switchRecordingStreamIdAndroid(stream) {
+        self.androidRecordingStream = stream;
       },
       // #endregion Permission
       releaseHLSStreams() {
