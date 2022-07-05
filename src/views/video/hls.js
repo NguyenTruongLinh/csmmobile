@@ -746,38 +746,23 @@ class HLSStreamingView extends React.Component {
   };
 
   onBandwidthUpdate = data => {
+    (Platform.OS === 'ios' ? onBandwidthUpdateIOS : onBandwidthUpdateAndroid)(
+      data.bitrate
+    );
+  };
+
+  onBandwidthUpdateAndroid = bytes => {
     const {videoStore, streamData, singlePlayer} = this.props;
-    if (
-      !videoStore.selectedStream ||
-      !videoStore.selectedStream.id ||
-      (streamData.id == videoStore.selectedStream.id && singlePlayer)
-    ) {
-      // _DEV_ &&
-      //   console.log(
-      //     'GOND onBandwidthUpdate COUNTED streamData.id = ',
-      //     streamData.id,
-      //     'videoStore.selectedStream.id = ',
-      //     videoStore.selectedStream && videoStore.selectedStream.id,
-      //     'singlePlayer =',
-      //     singlePlayer
-      //   );
-      streamData.updateDataUsage(
-        data.bitrate,
-        this.trackingVideoSource,
-        videoStore.timezone,
-        'onBandwidthUpdate'
-      );
-    } else {
-      // _DEV_ &&
-      //   console.log(
-      //     'GOND onBandwidthUpdate NOT COUNTED streamData.id = ',
-      //     streamData.id,
-      //     'videoStore.selectedStream.id = ',
-      //     videoStore.selectedStream && videoStore.selectedStream.id,
-      //     'singlePlayer =',
-      //     singlePlayer
-      //   );
-    }
+  };
+
+  onBandwidthUpdateIOS = bytes => {
+    const {videoStore, streamData} = this.props;
+    streamData.updateDataUsage(
+      bytes,
+      this.trackingVideoSource,
+      videoStore.timezone,
+      'onBandwidthUpdate'
+    );
   };
 
   onReady = event => {
@@ -800,6 +785,9 @@ class HLSStreamingView extends React.Component {
     //     connectionStatus: STREAM_STATUS.DONE,
     //   });
     // }
+    if (Platform.OS === 'android') {
+      videoStore.switchRecordingStreamIdAndroid(streamData);
+    }
   };
 
   onBuffer = event => {

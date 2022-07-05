@@ -415,6 +415,7 @@ export const VideoModel = types
     shouldLinkNVRUser: false, // enable when input login form
     isAuthenCanceled: false,
     onPostAuthentication: null, // (channelNo, isLive) => {}
+    androidRecordingStream: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -1093,11 +1094,11 @@ export const VideoModel = types
             self.selectedStream.setLive(true);
             self.selectedStream.setHD(false);
             self.selectedStream.select(false);
-            if (!fromMulti)
-              self.selectedStream.updateDataUsage(
-                FORCE_SENT_DATA_USAGE,
-                'select from single player'
-              );
+            // if (!fromMulti)
+            //   self.selectedStream.updateDataUsage(
+            //     FORCE_SENT_DATA_USAGE,
+            //     'select from single player'
+            //   );
           }
         }
 
@@ -1188,16 +1189,16 @@ export const VideoModel = types
         }
         self.selectedChannel = foundChannel.channelNo;
 
-        if (fromMulti)
-          for (let i = 0; i < self.hlsStreams.length; i++) {
-            let s = self.hlsStreams[i];
-            if (s.id != self.selectedStream.id) {
-              s.updateDataUsage(
-                FORCE_SENT_DATA_USAGE,
-                'select from multi channel'
-              );
-            }
-          }
+        // if (fromMulti)
+        //   for (let i = 0; i < self.hlsStreams.length; i++) {
+        //     let s = self.hlsStreams[i];
+        //     if (s.id != self.selectedStream.id) {
+        //       s.updateDataUsage(
+        //         FORCE_SENT_DATA_USAGE,
+        //         'select from multi channel'
+        //       );
+        //     }
+        //   }
         return true;
       },
       resetAllStreamsDataUsageInfo() {
@@ -3949,6 +3950,9 @@ export const VideoModel = types
         }
         __DEV__ && console.log('GOND postAuthenticationCheck call now!');
         callback();
+      },
+      switchRecordingStreamIdAndroid(stream) {
+        self.androidRecordingStream = stream;
       },
       // #endregion Permission
       releaseHLSStreams() {

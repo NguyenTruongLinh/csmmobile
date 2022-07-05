@@ -382,20 +382,20 @@ export default HLSStreamModel = types
     },
     setLive(isLive) {
       if (self.isLive != isLive) {
-        self.targetUrl.updateDataUsageByURL(
-          FORCE_SENT_DATA_USAGE,
-          'switch live-search'
-        );
+        // self.targetUrl.updateDataUsageByURL(
+        //   FORCE_SENT_DATA_USAGE,
+        //   'switch live-search'
+        // );
         self.isLive = isLive;
         self.noIncomingVideoCount = 0;
       }
     },
     setHD(isHD) {
       if (self.isHD != isHD) {
-        self.targetUrl.updateDataUsageByURL(
-          FORCE_SENT_DATA_USAGE,
-          'switch HD-nonHD'
-        );
+        // self.targetUrl.updateDataUsageByURL(
+        //   FORCE_SENT_DATA_USAGE,
+        //   'switch HD-nonHD'
+        // );
         self.isHD = isHD;
         self.noIncomingVideoCount = 0;
       }
