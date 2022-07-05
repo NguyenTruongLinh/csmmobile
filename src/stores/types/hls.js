@@ -61,11 +61,8 @@ const HLSURLModel = types
   .volatile(self => ({
     getUrlRetries: 0,
     checkStreamTimeout: null,
-    bitrateRecordTimePoint: DateTime.now().toSeconds(),
-    currentBitrate: 0,
     accumulatedDataUsage: 0,
     dataUsageSentTimePoint: DateTime.now().toSeconds(),
-    iOSDataUsageInterval: null,
     videoInfo: {},
   }))
   .actions(self => ({
@@ -126,10 +123,8 @@ const HLSURLModel = types
         console.log(
           `updateDataUsage segmentLoad = `,
           segmentLoad,
-          ' debug = ',
-          debug,
-          ' self.bitrateRecordTimePoint = ',
-          self.bitrateRecordTimePoint
+          ' videoInfo = ',
+          videoInfo
         );
       if (segmentLoad !== FORCE_SENT_DATA_USAGE)
         self.videoInfo = {...videoInfo};
@@ -138,16 +133,6 @@ const HLSURLModel = types
           ? {...videoInfo}
           : {...self.videoInfo};
       let newLoadRecordTimePoint = DateTime.now().toSeconds();
-      // // let segmentLoad =
-      // //   self.currentBitrate == FORCE_SENT_DATA_USAGE
-      // //     ? 0
-      // //     : self.currentBitrate *
-      // //       (newBitrateRecordTimePoint - self.bitrateRecordTimePoint);
-      // // __DEV__ &&
-      // //   console.log(
-      // //     `updateDataUsage 0428 newBitrateRecordTimePoint - self.dataUsageSentTimePoint = `,
-      // //     newBitrateRecordTimePoint - self.dataUsageSentTimePoint
-      // //   );
 
       if (segmentLoad !== FORCE_SENT_DATA_USAGE)
         self.accumulatedDataUsage += segmentLoad;
@@ -160,10 +145,10 @@ const HLSURLModel = types
           debug
         );
       if (
-        segmentLoad == FORCE_SENT_DATA_USAGE ||
-        (newLoadRecordTimePoint - self.dataUsageSentTimePoint >=
-          DATA_USAGE_SENDING_INTERVAL &&
-          self.accumulatedDataUsage > 0)
+        (segmentLoad == FORCE_SENT_DATA_USAGE ||
+          newLoadRecordTimePoint - self.dataUsageSentTimePoint >=
+            DATA_USAGE_SENDING_INTERVAL) &&
+        self.accumulatedDataUsage > 0
       ) {
         params.StartTime = DateTime.fromSeconds(
           self.dataUsageSentTimePoint,
@@ -190,35 +175,6 @@ const HLSURLModel = types
             ' ************************************** '
           );
         self.resetDataUsageInfo();
-      }
-      // self.currentBitrate = bitrate;
-      // self.bitrateRecordTimePoint = newBitrateRecordTimePoint;
-    },
-    updateBirateByURLiOS(bytesUsed, timezone, videoInfo, debug) {
-      if (bytesUsed > 0) {
-        let params = {...videoInfo};
-        params.StartTime = DateTime.fromSeconds(
-          self.dataUsageSentTimePoint,
-          {}
-        ).toFormat(DateFormat.VideoDataUsageDate);
-        self.dataUsageSentTimePoint = DateTime.now().toSeconds();
-        params.EndTime = DateTime.fromSeconds(
-          self.dataUsageSentTimePoint,
-          {}
-        ).toFormat(DateFormat.VideoDataUsageDate);
-        params.BytesUsed = bytesUsed;
-
-        apiService.post(
-          VSC.controller,
-          1,
-          VSC.SetDataUsageActivityLogs,
-          params
-        );
-        __DEV__ &&
-          console.log(
-            `updateDataUsage IOS callAPI params = `,
-            JSON.stringify(params)
-          );
       }
     },
   }));
