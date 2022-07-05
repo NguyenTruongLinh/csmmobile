@@ -709,8 +709,8 @@ exports.extractModuleNameFromScreenName = screenName => {
       typeof screenName
     );
   if (screenName.includes('oam')) return 'OAM';
-  if (screenName.includes('health')) return 'health';
-  if (screenName.includes('alarm')) return 'alarm';
-  if (screenName.includes('video')) return 'video';
-  if (screenName.includes('pos')) return 'smartER';
+  if (screenName.includes('health')) return 'Health';
+  if (screenName.includes('alarm')) return 'Alarm';
+  if (screenName.includes('video')) return 'Video';
+  if (screenName.includes('pos')) return 'SmartER';
 };
