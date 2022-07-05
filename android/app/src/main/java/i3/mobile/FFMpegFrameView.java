@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -498,12 +499,14 @@ public class FFMpegFrameView extends View {
         }
     }
 
-    public  void  UpdateFrame(Bitmap bmp)
+    public void UpdateFrame(Bitmap bmp)
     {
         UpdateFrame(bmp, -1);
     }
 
-    public  void  UpdateFrame(Bitmap bmp, int channel)
+
+
+    public void UpdateFrame(Bitmap bmp, int channel)
     {
         // TODO: single channel
         if (this.singlePlayer == true)
@@ -515,6 +518,13 @@ public class FFMpegFrameView extends View {
         } 
         else if(bmp != null)
         {
+            if (_width > 0 && _height > 0)
+            {
+                new FrameEncodeTask(this, channel, _width, _height).execute(bmp);
+            }
+
+            /*
+            //
             Long currentMs = System.currentTimeMillis();
             Long lastMs = lastFrameTimeByChannel.get(channel);
             if (lastMs == null)
@@ -563,6 +573,7 @@ public class FFMpegFrameView extends View {
             OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_JS_FRAME_DATA, buffer, channel);
             byteArray = null;
             // byteArrayOutputStream = null;
+            */
         }
     }
 
@@ -700,6 +711,50 @@ public class FFMpegFrameView extends View {
     public void setTranslateY(int translateY) {
         this._translateY = this.dip2px((ReactContext)getContext(), translateY);
         this.invalidate();
+    }
+
+    protected class FrameEncodeTask extends AsyncTask<Bitmap, Integer, String> 
+    {
+        private FFMpegFrameView mViewer;
+        private int mChannel;
+        private int mWidth;
+        private int mHeight;
+
+        protected FrameEncodeTask(FFMpegFrameView uiView, int channel, double w, double h) {
+            mViewer = uiView;
+            mChannel = channel;
+            mWidth = (int)w;
+            mHeight = (int)h;
+        }
+
+        @Override
+        protected String doInBackground(Bitmap... bmp)
+        {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            Bitmap bitmap = null;
+            bitmap = Bitmap.createScaledBitmap(bmp[0], mWidth, mHeight, false);
+            
+            boolean compressResult = bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            if (!compressResult)
+            {
+                bitmap.recycle();
+                bmp[0].recycle();
+                return null;
+            }
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            // Log.e("GOND", "UpdateFrame scaled bitmap 1: " + byteArray.length);
+
+            String buffer = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+            return buffer;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            if (result != null)
+                mViewer.OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_JS_FRAME_DATA, result, mChannel);
+        }
     }
 
 }
