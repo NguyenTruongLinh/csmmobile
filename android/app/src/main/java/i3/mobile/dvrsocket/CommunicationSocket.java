@@ -94,6 +94,9 @@ public class CommunicationSocket implements Runnable {
     protected  BufferedInputStream InPut;
     private VideoSocket video_handler = null;
 
+    private int width = 0;
+    private int height = 0;
+
     public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel){
         //this.message = message;
         //this.hostAddress = address;
@@ -152,6 +155,27 @@ public class CommunicationSocket implements Runnable {
             }
         }
         return  socket;
+    }
+
+    public void setViewDimensions(int w, int h)
+    {
+        if (video_handler != null)
+        {
+            video_handler.setViewDimensions(w, h);
+        }
+        else
+        {
+            width = w;
+            height = h;
+        }
+    }
+
+    public void rest(boolean value)
+    {
+        if (video_handler != null)
+        {
+            video_handler.rest(value);
+        }
     }
 
     @Override
@@ -247,6 +271,8 @@ public class CommunicationSocket implements Runnable {
                             if( cmd_id == Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO)
                             {
                                 video_handler = new VideoSocket( handler, this.ServerInfo,this.str_Channel, this.Search, this.PlaybyChannel);
+                                if (width > 0 && height > 0)
+                                    video_handler.setViewDimensions(width, height);
                                 thread_Video_socket = new Thread( video_handler);
                                 thread_Video_socket.start();
                             }
