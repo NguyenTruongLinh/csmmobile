@@ -339,8 +339,8 @@ public class CommunicationSocket implements Runnable {
         //     if (buff[i] != (byte)0)
         //         return  count;
         // }
-        return 0;
-        // return  count;
+        // return 0;
+        return  count;
     }
     protected int SelectCommand(BufferedInputStream in, CommandState  state)
     {
