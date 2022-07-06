@@ -157,10 +157,12 @@ public class VideoSocket extends CommunicationSocket {
     //                             char cmdid = dataframe.getCommand();
     //                             int width = header.resolutionX;
     //                             int height = header.resolutionY;
-                                try {
+                                try
+                                {
                                     VideoEncodeData(dataframe, last_frame_time);
                                     last_frame_time = dataframe.getHeader().time;
-                                }catch (Exception ex){}
+                                }
+                                catch (Exception ex){}
 
                                 dataframe.Reset();
                                 remain_len = FrameData.Command_Header_Length;//need to read command first
@@ -187,8 +189,10 @@ public class VideoSocket extends CommunicationSocket {
                     if (offset == 0)
                         Arrays.fill(buff, (byte)0);
                 }
-            }//end while
+            } //end while
             this.CloseSocket();
+            buff = null;
+            dataframe = null;
         }
         running = false;
     }
