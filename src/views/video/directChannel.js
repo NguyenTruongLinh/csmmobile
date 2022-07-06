@@ -118,12 +118,12 @@ class DirectChannelView extends React.Component {
     const {connectionStatus /*, isLoading*/, videoFrame} = serverInfo;
     const {nextFrame} = this.state;
     const isLoading = !noVideo && (!videoFrame || videoFrame.length == 0);
-    __DEV__ &&
-      console.log(
-        'GOND direct render channel: ',
-        serverInfo.channelName,
-        videoFrame ? videoFrame.length : 'null'
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND direct render channel: ',
+    //     serverInfo.channelName,
+    //     videoFrame ? videoFrame.length : 'null'
+    //   );
 
     return (
       <Fragment>

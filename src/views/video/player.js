@@ -1375,6 +1375,7 @@ class VideoPlayerView extends Component {
       isFullscreen,
       isLive,
       isAuthenticated,
+      canEnterChannel,
     } = this.props.videoStore;
     // console.log('GOND renderChannelsList: ', isFullscreen);
     const itemWidth = this.state.sWidth / NUM_CHANNELS_ON_SCREEN;
@@ -1382,7 +1383,7 @@ class VideoPlayerView extends Component {
 
     return isFullscreen ? null : (
       <View style={styles.channelsListContainer}>
-        {isAuthenticated && (
+        {isAuthenticated && canEnterChannel(selectedChannel) && (
           <FlatList
             ref={r => (this.channelsScrollView = r)}
             style={{flex: 1}}

@@ -12,6 +12,7 @@ import java.io.BufferedOutputStream;
 // import java.io.ByteArrayOutputStream;
 import java.net.SocketException;
 import java.util.TimeZone;
+import java.util.Arrays;
 
 import i3.mobile.base.Constant;
 import i3.mobile.base.FrameData;
@@ -35,7 +36,12 @@ public class VideoSocket extends CommunicationSocket {
     static final int VIDEO_SOCKET_BUFFER = 1024 * 80;
     public  static  final  int Resolution_Width = 720;
     public  static  final  int Resolution_Height = 480;
+    private int mWidth = 0;
+    private int mHeight = 0;
     FFMPEGDecoder ffmpeg;
+    private boolean takeANap = false;
+    // private static byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
+    // private static FrameData dataframe = new FrameData(0);
 
     public  VideoSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel)
     {
@@ -45,6 +51,16 @@ public class VideoSocket extends CommunicationSocket {
         ffmpeg.LoadLib();
     }
 
+    public void setViewDimensions(int w, int h)
+    {
+        mWidth = w;
+        mHeight = h;
+    }
+
+    public void rest(boolean value)
+    {
+        takeANap = value;
+    }
 
     @Override
     public void run() {
@@ -71,7 +87,9 @@ public class VideoSocket extends CommunicationSocket {
 
             //int max_len = 1024 * 80;
             byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
+            // Arrays.fill(buff, (byte)0);
             FrameData dataframe = new FrameData(0);
+            // dataframe.Reset();
             int remain_len = FrameData.Command_Header_Length;//need to read command first
             int read_len = 0;
             int offset = 0;
@@ -80,94 +98,112 @@ public class VideoSocket extends CommunicationSocket {
                 socket.setSoTimeout(Constant.socketReadTimeOut);
             }catch (SocketException ex){}
             catch (IllegalArgumentException iex){}
-            while (!Thread.currentThread().isInterrupted() && running){
-             try
-             {
-                 read_len = ReadBlock(InPut, remain_len ,buff, offset);//utils.ReadBlock(input, remain_len ,buff, offset);
-                 if( read_len == -1 && running)//socket failed
-                 {
-                     OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
-                     break;
-                 }
-                 if( read_len == 0)
-                     continue;
-                 offset += read_len;
-                 switch (dataframe.getState())
-                 {
-                     case Constant.EnumBufferState.COMMAND_GET:
-                         if( offset >= dataframe.getReadSize()) {
-                             GetCommnad(buff, dataframe);
-                             remain_len = dataframe.getReadSize();
-                             offset = 0;
-                         }
-                         else
-                         {
-                             remain_len = dataframe.getReadSize() - offset;
-                         }
-                         break;
-                     case Constant.EnumBufferState.COMMAND_HEADER:
-                         if( offset >= dataframe.getReadSize()) {
-                             FrameHeader(buff, dataframe);
-                             if( dataframe.getHeader() != null) {
-                                 remain_len = dataframe.getHeader().length;
-                                 offset = 0;
-                             }
-                             else
-                             {
-                                 dataframe.Reset();
-                                 remain_len = FrameData.Command_Header_Length;//need to read command first
-                                 offset = 0;
-                             }
-                         }
-                         else {
-                             remain_len = dataframe.getReadSize() - offset;
-                         }
-                         break;
-                     case Constant.EnumBufferState.COMMAND_DATA:
-                         dataframe.AppendBuffer( buff, 0, read_len);
+            while (!Thread.currentThread().isInterrupted() && running)
+            {
+                try
+                {
+                    read_len = ReadBlock(InPut, remain_len ,buff, offset);//utils.ReadBlock(input, remain_len ,buff, offset);
+                    if( read_len == -1 && running)//socket failed
+                    {
+                        OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
+                        break;
+                    }
+                    if( read_len == 0)
+                        continue;
+                    
+                    offset += read_len;
+                    if(takeANap)
+                    {
+                        Log.e("GOND","VideoSocket is taking nap, please comeback later!");
+                        continue;
+                    }
+                    switch (dataframe.getState())
+                    {
+                        case Constant.EnumBufferState.COMMAND_GET:
+                            if( offset >= dataframe.getReadSize()) {
+                                GetCommnad(buff, dataframe);
+                                remain_len = dataframe.getReadSize();
+                                offset = 0;
+                            }
+                            else
+                            {
+                                remain_len = dataframe.getReadSize() - offset;
+                            }
+                            break;
+                        case Constant.EnumBufferState.COMMAND_HEADER:
+                            if( offset >= dataframe.getReadSize()) {
+                                FrameHeader(buff, dataframe);
+                                if( dataframe.getHeader() != null) {
+                                    remain_len = dataframe.getHeader().length;
+                                    offset = 0;
+                                }
+                                else
+                                {
+                                    dataframe.Reset();
+                                    remain_len = FrameData.Command_Header_Length;//need to read command first
+                                    offset = 0;
+                                }
+                            }
+                            else {
+                                remain_len = dataframe.getReadSize() - offset;
+                            }
+                            break;
+                        case Constant.EnumBufferState.COMMAND_DATA:
+                            dataframe.AppendBuffer( buff, 0, read_len);
 
-                         if(  dataframe.getRemainLen() == 0) {
+                            if(  dataframe.getRemainLen() == 0) {
 
-//                             FrameHeader header = dataframe.getHeader();
-//                             char cmdid = dataframe.getCommand();
-//                             int width = header.resolutionX;
-//                             int height = header.resolutionY;
-                             try {
-                                 VideoEncodeData(dataframe, last_frame_time);
-                                 last_frame_time = dataframe.getHeader().time;
-                             }catch (Exception ex){}
+    //                             FrameHeader header = dataframe.getHeader();
+    //                             char cmdid = dataframe.getCommand();
+    //                             int width = header.resolutionX;
+    //                             int height = header.resolutionY;
+                                try {
+                                    VideoEncodeData(dataframe, last_frame_time);
+                                    last_frame_time = dataframe.getHeader().time;
+                                }catch (Exception ex){}
 
-                             dataframe.Reset();
-                             remain_len = FrameData.Command_Header_Length;//need to read command first
-                             offset = 0;
-                         }
-                         else
-                         {
-                             remain_len = dataframe.getRemainLen();
-                             offset = 0;
-                         }
+                                dataframe.Reset();
+                                remain_len = FrameData.Command_Header_Length;//need to read command first
+                                offset = 0;
+                            }
+                            else
+                            {
+                                remain_len = dataframe.getRemainLen();
+                                offset = 0;
+                            }
 
-                         break;
-                 }
+                            break;
+                    }
 
-             }
-             catch (Exception e){
-                //System.out.print(e.getMessage());
-             }
+                }
+                catch (Exception e)
+                {
+                    //System.out.print(e.getMessage());
+                    // dongpt: should we reset offset to 0?
+                    offset = 0;
+                }
+                finally
+                {
+                    if (offset == 0)
+                        Arrays.fill(buff, (byte)0);
+                }
             }//end while
             this.CloseSocket();
         }
         running = false;
-
-
-
     }
+
     void  VideoEncodeData( FrameData dataframe, long last_frame_time){
         FrameHeader header = dataframe.getHeader();
         char cmdid = dataframe.getCommand();
         int width = header.resolutionX;
         int height = header.resolutionY;
-        if( width == 0)
+        if (mWidth > 0 && mHeight > 0)
+        {
+            width = mWidth;
+            height = mHeight;
+        }
+        else if( width == 0)
         {
             width = header.originResolutionX;
             height = header.originResolutionY;

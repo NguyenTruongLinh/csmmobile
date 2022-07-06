@@ -1,6 +1,7 @@
 package i3.mobile;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -15,6 +16,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.util.Base64;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -74,18 +77,30 @@ public class FFMpegFrameView extends View {
     boolean valid_first_frame = false;
     HashMap<Integer, Long> lastFrameTimeByChannel = new HashMap<Integer, Long>();
     static MobileSystemInfo mobileSystemInfo = null;
+    boolean isTakeANap = false;
+
     public static MobileSystemInfo getMobileSystemInfo(){
                 return  mobileSystemInfo;
         }
     public void SetWidth(double _w)
     {
         if( _width != _w)
+        {
             _width = _w ;
+            if (socket_handler != null)
+                socket_handler.setViewDimensions((int)_width, (int)_height);
+        }
 
     }
     public void SetHeight(double _h)
     {
-        if(_height != _h) _height = _h;
+        if(_height != _h)
+        {
+            _height = _h;
+            if (socket_handler != null)
+                socket_handler.setViewDimensions((int)_width, (int)_height);
+        }
+        
     }
 
     int img_width;
@@ -113,6 +128,7 @@ public class FFMpegFrameView extends View {
     //volatile  boolean is_fullscreen = false;
     ReactContext reactContext;
     int  mLastRotation;
+
     public FFMpegFrameView(Context context, AttributeSet attrs) {
         super(context, attrs);
         reactContext = (ReactContext)getContext();
@@ -498,12 +514,14 @@ public class FFMpegFrameView extends View {
         }
     }
 
-    public  void  UpdateFrame(Bitmap bmp)
+    public void UpdateFrame(Bitmap bmp)
     {
         UpdateFrame(bmp, -1);
     }
 
-    public  void  UpdateFrame(Bitmap bmp, int channel)
+
+
+    public void UpdateFrame(Bitmap bmp, int channel)
     {
         // TODO: single channel
         if (this.singlePlayer == true)
@@ -515,6 +533,20 @@ public class FFMpegFrameView extends View {
         } 
         else if(bmp != null)
         {
+            if (this.isTakeANap)
+            {
+                Log.d("GOND", "CMSApp is taking a nap, comeback later!");
+                return;
+            }
+            if (_width > 0 && _height > 0)
+            {
+                this.invalidate();
+                new FrameEncodeTask(this, channel, _width, _height).execute(bmp);
+            }
+
+
+            /*
+            //
             Long currentMs = System.currentTimeMillis();
             Long lastMs = lastFrameTimeByChannel.get(channel);
             if (lastMs == null)
@@ -563,6 +595,7 @@ public class FFMpegFrameView extends View {
             OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_JS_FRAME_DATA, buffer, channel);
             byteArray = null;
             // byteArrayOutputStream = null;
+            */
         }
     }
 
@@ -610,7 +643,7 @@ public class FFMpegFrameView extends View {
             this.Server.setLive(false);
             this.Server.setSearchTime(search);
             socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, true, this.ByChannel);
-            // socket_handler.setViewDimensions(_width, _height);
+            socket_handler.setViewDimensions((int)_width, (int)_height);
             socket_handler.setHDMode( HD);
             video_thread = new Thread(socket_handler);
             video_thread.start();
@@ -644,7 +677,7 @@ public class FFMpegFrameView extends View {
         if( video_thread == null || socket_handler == null || socket_handler.running == false) {
             this.Server.setLive(true);
             socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, false, this.ByChannel);
-            // socket_handler.setViewDimensions(_width, _height);
+            socket_handler.setViewDimensions((int)_width, (int)_height);
             socket_handler.setHDMode(HD);
             video_thread = new Thread(socket_handler);
             video_thread.start();
@@ -700,6 +733,83 @@ public class FFMpegFrameView extends View {
     public void setTranslateY(int translateY) {
         this._translateY = this.dip2px((ReactContext)getContext(), translateY);
         this.invalidate();
+    }
+
+    public void rest(boolean value) {
+        this.isTakeANap = value;
+        if(socket_handler != null)
+        {
+            socket_handler.rest(value);
+        }
+    }
+
+    protected class FrameEncodeTask extends AsyncTask<Bitmap, Integer, String> 
+    {
+        private FFMpegFrameView mViewer;
+        private int mChannel;
+        private int mWidth;
+        private int mHeight;
+
+        protected FrameEncodeTask(FFMpegFrameView uiView, int channel, double w, double h) {
+            mViewer = uiView;
+            mChannel = channel;
+            mWidth = (int)w;
+            mHeight = (int)h;
+        }
+
+        private ActivityManager.MemoryInfo getAvailableMemory() {
+            ActivityManager activityManager = (ActivityManager) mViewer.getContext().getSystemService(Context.ACTIVITY_SERVICE);
+            ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+            activityManager.getMemoryInfo(memoryInfo);
+            return memoryInfo;
+        }
+
+        @Override
+        protected String doInBackground(Bitmap... bmp)
+        {
+            ActivityManager.MemoryInfo memoryInfo = getAvailableMemory();
+
+            if (memoryInfo.lowMemory) {
+                Log.d("GOND", "on Low memory on background!");
+                System.gc();
+                mViewer.rest(true);
+                SystemClock.sleep(500);
+                mViewer.rest(false);
+                return null;
+            }
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            // Bitmap bitmap = null;
+            // if (bmp[0].getHeight() > mHeight && bmp[0].getWidth() > mWidth)
+            //     bitmap = Bitmap.createScaledBitmap(bmp[0], mWidth, mHeight, false);
+            // else
+            //     bitmap = bmp[0];
+            Bitmap bitmap = bmp[0];
+            
+            boolean compressResult = bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            if (!compressResult)
+            {
+                bitmap.recycle();
+                return null;
+            }
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            // Log.e("GOND", "UpdateFrame scaled bitmap 1: " + byteArray.length);
+
+            String buffer = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+            bitmap.recycle();
+            bmp[0].recycle();
+            return buffer;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            if (result != null)
+            {
+                mViewer.OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_JS_FRAME_DATA, result, mChannel);
+            }
+        }
     }
 
 }

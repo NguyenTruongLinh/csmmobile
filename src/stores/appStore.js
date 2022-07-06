@@ -52,6 +52,7 @@ const appStore = types
   .volatile(self => ({
     naviService: new NavigationService(),
     modalRef: null,
+    appState: null, // 'active',
   }))
   .views(self => ({
     get getDeviceInfo() {
@@ -77,6 +78,15 @@ const appStore = types
     },
     setModalRef(value) {
       self.modalRef = value;
+    },
+    setCurrentAppState(value) {
+      if (
+        (!value && typeof value != 'string') ||
+        !value.match(/active|inactive|background/)
+      ) {
+        __DEV__ && console.log('GOND invalid appState: ', value);
+      }
+      self.appState = value;
     },
     loadLocalData: flow(function* loadLocalData() {
       try {

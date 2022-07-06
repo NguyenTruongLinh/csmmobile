@@ -80,6 +80,18 @@ class NotificationController extends React.Component {
     PushNotificationIOS.removeEventListener('registrationError');
   }
 
+  static resetBadgeCount = () => {
+    // __DEV__ && console.log('GOND on reset badge count ...');
+    // if (Platform.OS === 'ios') {
+    //   PushNotificationIOS.setApplicationIconBadgeNumber(0);
+    // } else {
+    //   PushNotification.setApplicationIconBadgeNumber(0);
+    // }
+    PushNotification.getApplicationIconBadgeNumber(
+      count => __DEV__ && console.log('GOND on reset badge count: ', count)
+    );
+  };
+
   checkPermission = async () => {
     let enabled = await messaging().hasPermission();
     console.log('GOND checkPermission notif:', enabled);
@@ -100,7 +112,7 @@ class NotificationController extends React.Component {
   };
 
   requestPermission = async () => {
-    const authStatus = await messaging().requestPermission();
+    const authStatus = await messaging().requestPermission({badge: true});
     console.log('GOND Authorization status:', authStatus);
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
@@ -231,7 +243,10 @@ class NotificationController extends React.Component {
     PushNotification.cancelAllLocalNotifications();
   };
 
-  static displayLocalNotification = ({id, title, body, messageId, data}) => {
+  static displayLocalNotification = (
+    appStore,
+    {id, title, body, messageId, data}
+  ) => {
     let idNumber = typeof id == 'number' ? id : parseInt(id, 16);
     idNumber = isNaN(idNumber) ? undefined : idNumber;
     // if (idNumber) PushNotification.cancelLocalNotification(idNumber);
@@ -243,7 +258,7 @@ class NotificationController extends React.Component {
       messageId: messageId,
       userInfo: Platform.OS == 'ios' ? data : JSON.stringify(data),
       invokeApp: true,
-      number: 1,
+      // number: 1,
       // for android:
       channelId: CHANNEL_ID,
       largeIcon: 'noti_icon',
@@ -255,10 +270,15 @@ class NotificationController extends React.Component {
     };
     // __DEV__ &&
     //   console.log('GOND displayLocalNotification: ', notificationRequest);
-
     Platform.OS === 'ios'
       ? PushNotification.localNotification(notificationRequest)
       : PushNotification.presentLocalNotification(notificationRequest);
+
+    // if (!appStore || appStore.appState != 'active') {
+    PushNotification.getApplicationIconBadgeNumber(badgeCount => {
+      PushNotification.setApplicationIconBadgeNumber(badgeCount + 1);
+    });
+    // }
   };
 
   static onNotificationReceived = async props => {
@@ -410,7 +430,8 @@ class NotificationController extends React.Component {
       type,
       action,
       content,
-      userStore
+      userStore,
+      appStore
     );
   };
 
@@ -421,7 +442,8 @@ class NotificationController extends React.Component {
     type,
     action,
     content,
-    userStore
+    userStore,
+    appStore
   ) => {
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
@@ -430,7 +452,7 @@ class NotificationController extends React.Component {
         if (typeof content !== 'string') content = JSON.stringify(content);
         content = content.replace(/null/g, '""'); // content.split('null').join('');
       }
-      NotificationController.displayLocalNotification({
+      NotificationController.displayLocalNotification(appStore, {
         ...notif,
         messageId,
         id: data.msg_id,
@@ -499,16 +521,16 @@ class NotificationController extends React.Component {
       case NOTIFY_TYPE.EXCEPTION:
         onOpenExceptionEvent({exceptionStore, naviService, action, content});
         // testing only
-        __DEV__ &&
-          setTimeout(
-            () =>
-              NotificationController.displayLocalNotification({
-                ...message,
-                body: message.message || 'POS again',
-                id: DateTime.now().toSeconds(),
-              }),
-            1000
-          );
+        // __DEV__ &&
+        //   setTimeout(
+        //     () =>
+        //       NotificationController.displayLocalNotification({
+        //         ...message,
+        //         body: message.message || 'POS again',
+        //         id: DateTime.now().toSeconds(),
+        //       }),
+        //     1000
+        //   );
         break;
       case NOTIFY_TYPE.PVM:
         onOpenPVMEvent(oamStore, naviService, action, content);
