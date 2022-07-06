@@ -12,6 +12,7 @@ import java.io.BufferedOutputStream;
 // import java.io.ByteArrayOutputStream;
 import java.net.SocketException;
 import java.util.TimeZone;
+import java.util.Arrays;
 
 import i3.mobile.base.Constant;
 import i3.mobile.base.FrameData;
@@ -39,6 +40,8 @@ public class VideoSocket extends CommunicationSocket {
     private int mHeight = 0;
     FFMPEGDecoder ffmpeg;
     private boolean takeANap = false;
+    // private static byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
+    // private static FrameData dataframe = new FrameData(0);
 
     public  VideoSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel)
     {
@@ -84,7 +87,9 @@ public class VideoSocket extends CommunicationSocket {
 
             //int max_len = 1024 * 80;
             byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
+            // Arrays.fill(buff, (byte)0);
             FrameData dataframe = new FrameData(0);
+            // dataframe.Reset();
             int remain_len = FrameData.Command_Header_Length;//need to read command first
             int read_len = 0;
             int offset = 0;
@@ -171,8 +176,16 @@ public class VideoSocket extends CommunicationSocket {
                     }
 
                 }
-                catch (Exception e){
+                catch (Exception e)
+                {
                     //System.out.print(e.getMessage());
+                    // dongpt: should we reset offset to 0?
+                    offset = 0;
+                }
+                finally
+                {
+                    if (offset == 0)
+                        Arrays.fill(buff, (byte)0);
                 }
             }//end while
             this.CloseSocket();

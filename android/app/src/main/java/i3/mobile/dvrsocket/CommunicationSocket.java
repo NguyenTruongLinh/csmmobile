@@ -315,10 +315,12 @@ public class CommunicationSocket implements Runnable {
     {
         int count = 0;
         try {
-            if(_length < buff.length -offset)
+            if(_length < buff.length - offset)
                 count = _is.read(buff, offset, _length);
             else
-                count = _is.read(buff, offset, buff.length -offset);
+                count = _is.read(buff, offset, buff.length - offset);
+
+            
         }
         catch (SocketTimeoutException tm)
         {
@@ -328,13 +330,17 @@ public class CommunicationSocket implements Runnable {
         {
             return count;
         }
-        catch (IOException e) {
-
-
+        catch (IOException e)
+        {
             count = -1;// socket failed
-
         }
-        return  count;
+        // for (int i = offset; i < count; i ++)
+        // {
+        //     if (buff[i] != (byte)0)
+        //         return  count;
+        // }
+        return 0;
+        // return  count;
     }
     protected int SelectCommand(BufferedInputStream in, CommandState  state)
     {
