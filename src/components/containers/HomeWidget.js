@@ -30,15 +30,8 @@ export default class HomeWidget extends React.Component {
   // }
 
   render() {
-    const {
-      icon,
-      iconSize,
-      title,
-      titleStyle,
-      alertCount,
-      onPress,
-      isDisable,
-    } = this.props;
+    const {icon, iconSize, title, titleStyle, alertCount, onPress, isDisable} =
+      this.props;
 
     return (
       <TouchableOpacity
@@ -63,7 +56,11 @@ export default class HomeWidget extends React.Component {
                 justifyContent: 'center',
                 paddingHorizontal: 5,
               }}>
-              <Text style={{textAlign: 'center', color: CMSColors.White}}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  color: CMSColors.White,
+                }}>
                 {alertCount}
               </Text>
             </View>
@@ -89,7 +86,7 @@ export default class HomeWidget extends React.Component {
           />
           <Text
             style={[
-              {marginTop: 25},
+              // {marginBottom: 100},
               titleStyle,
               isDisable ? {color: CMSColors.DisableItemColor} : {},
             ]}>
