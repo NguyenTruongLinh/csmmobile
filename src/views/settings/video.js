@@ -39,6 +39,7 @@ const CloudSettingData = [
     description: SettingsTxt.videoDirecDesc,
     icon: Setting_Video_Direct, // 'desktop',
     value: CLOUD_TYPE.DIRECTION,
+    visible: true,
   },
   {
     id: 'stream',
@@ -46,6 +47,7 @@ const CloudSettingData = [
     description: SettingsTxt.videoStreamDesc,
     icon: Setting_Video_Cloud, // 'cloud',
     value: CLOUD_TYPE.HLS,
+    visible: true,
   },
   {
     id: 'relay',
@@ -53,6 +55,7 @@ const CloudSettingData = [
     description: SettingsTxt.videoRelayDesc,
     icon: Setting_Video_Relay, // 'relay',
     value: CLOUD_TYPE.RS,
+    visible: true,
   },
 ];
 
@@ -139,8 +142,15 @@ class VideosettingView extends Component {
   };
 
   updateCloudSetting = async () => {
+    let value =
+      this.state.selectedValue > 1
+        ? this.state.selectedValue
+        : this.state.selectedValue == 1
+        ? true
+        : false;
     const res = await this.props.videoStore.updateCloudSetting(
-      this.state.selectedValue // ? 1 : 0
+      value
+      //this.state.selectedValue // ? 1 : 0
     );
     // console.log('GOND save cloud setting response: ', response)
     // if (res) {
@@ -166,11 +176,11 @@ class VideosettingView extends Component {
       MODULE_PERMISSIONS.VSC
     );
     const {selectedValue} = this.state;
-    const {isLoading} = this.props.videoStore;
+    const {isLoading, apiVersion} = this.props.videoStore;
     const isChecked =
       (selectedValue == item.value && item.value && isStreamingAvailable) ||
       (!item.value && !selectedValue);
-
+    item.visible = item.id === 'relay' && apiVersion == '' ? false : true;
     const checkBox = (
       <MaterialIcons
         style={{marginTop: 15, marginRight: 8}}
@@ -184,20 +194,21 @@ class VideosettingView extends Component {
       />
     );
     return (
-      <Ripple
-        rippleOpacity={0.87}
-        onPress={() => {
-          if (
-            selectedValue != item.value &&
-            !isLoading &&
-            (isStreamingAvailable || selectedValue)
-          ) {
-            this.setState({selectedValue: item.value});
-          }
-        }}>
-        <View style={styles.rowList}>
-          <View style={styles.rowButton_contain_icon}>
-            {/* <CMSTouchableIcon
+      item.visible && (
+        <Ripple
+          rippleOpacity={0.87}
+          onPress={() => {
+            if (
+              selectedValue != item.value &&
+              !isLoading &&
+              (isStreamingAvailable || selectedValue)
+            ) {
+              this.setState({selectedValue: item.value});
+            }
+          }}>
+          <View style={styles.rowList}>
+            <View style={styles.rowButton_contain_icon}>
+              {/* <CMSTouchableIcon
               size={24}
               styles={[
                 styles.rowButton_icon,
@@ -209,40 +220,41 @@ class VideosettingView extends Component {
               color={isChecked ? CMSColors.White : CMSColors.RowOptions}
               icon={item.icon}
             /> */}
-            <Image
-              source={item.icon}
-              style={[
-                styles.rowButton_icon,
-                item.value && !isStreamingAvailable
-                  ? {tintColor: CMSColors.DisableItemColor}
-                  : {},
-              ]}
-              resizeMode="contain"
-            />
+              <Image
+                source={item.icon}
+                style={[
+                  styles.rowButton_icon,
+                  item.value && !isStreamingAvailable
+                    ? {tintColor: CMSColors.DisableItemColor}
+                    : {},
+                ]}
+                resizeMode="contain"
+              />
+            </View>
+            <View style={styles.rowButton_contain_name}>
+              <Text
+                style={[
+                  styles.rowButton_name,
+                  item.value && !isStreamingAvailable
+                    ? {color: CMSColors.DisableItemColor}
+                    : {},
+                ]}>
+                {item.name}
+              </Text>
+              <Text
+                style={[
+                  styles.rowButton_desc,
+                  item.value && !isStreamingAvailable
+                    ? {color: CMSColors.DisableItemColor}
+                    : {},
+                ]}>
+                {item.description}
+              </Text>
+            </View>
+            {checkBox}
           </View>
-          <View style={styles.rowButton_contain_name}>
-            <Text
-              style={[
-                styles.rowButton_name,
-                item.value && !isStreamingAvailable
-                  ? {color: CMSColors.DisableItemColor}
-                  : {},
-              ]}>
-              {item.name}
-            </Text>
-            <Text
-              style={[
-                styles.rowButton_desc,
-                item.value && !isStreamingAvailable
-                  ? {color: CMSColors.DisableItemColor}
-                  : {},
-              ]}>
-              {item.description}
-            </Text>
-          </View>
-          {checkBox}
-        </View>
-      </Ripple>
+        </Ripple>
+      )
     );
   };
 
