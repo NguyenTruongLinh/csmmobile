@@ -415,7 +415,7 @@ export const VideoModel = types
     shouldLinkNVRUser: false, // enable when input login form
     isAuthenCanceled: false,
     onPostAuthentication: null, // (channelNo, isLive) => {}
-    androidRecordingStream: null,
+    androidDataUsageStream: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -1199,6 +1199,7 @@ export const VideoModel = types
         //       );
         //     }
         //   }
+        self.notifySwitchDataUsageStreamAndroid(self.selectedStream);
         return true;
       },
       resetAllStreamsDataUsageInfo() {
@@ -3959,8 +3960,21 @@ export const VideoModel = types
         __DEV__ && console.log('GOND postAuthenticationCheck call now!');
         callback();
       },
-      switchRecordingStreamIdAndroid(stream) {
-        self.androidRecordingStream = stream;
+      notifySwitchDataUsageStreamAndroid(stream) {
+        __DEV__ &&
+          console.log(
+            '0507 switchRecordingStreamIdAndroid stream = ',
+            stream.id,
+            ' self.androidDataUsageStream = ',
+            self.androidDataUsageStream && self.androidDataUsageStream.id
+          );
+        if (
+          !self.androidDataUsageStream ||
+          self.androidDataUsageStream.id != stream.id
+        ) {
+          stream.targetUrl.resetDataUsageInfo();
+          self.androidDataUsageStream = stream;
+        }
       },
       // #endregion Permission
       releaseHLSStreams() {

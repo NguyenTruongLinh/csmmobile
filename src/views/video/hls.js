@@ -106,6 +106,7 @@ class HLSStreamingView extends React.Component {
     this.retryCount = 0;
     this.reInitCount = 0;
     this.firstBuffer = true;
+    this.firstReady = true;
     // this.errorList = [];
     this.errorTimeout = null;
     this.forceResume = false;
@@ -295,7 +296,12 @@ class HLSStreamingView extends React.Component {
     // if (Platform.OS === 'ios') {
     //   this.appStateEventListener.remove();
     // }
-    streamData.updateDataUsage(FORCE_SENT_DATA_USAGE, 'componentWillUnmount');
+    streamData.updateDataUsage(
+      FORCE_SENT_DATA_USAGE,
+      'N/A',
+      videoStore.timezone,
+      'componentWillUnmount'
+    );
     if (
       Platform.OS === 'ios' &&
       this.player &&
@@ -747,23 +753,20 @@ class HLSStreamingView extends React.Component {
   };
 
   onBandwidthUpdate = data => {
-    (Platform.OS === 'ios'
-      ? this.onBandwidthUpdateIOS
-      : this.onBandwidthUpdateAndroid)(data.bitrate);
-  };
-
-  onBandwidthUpdateAndroid = bytes => {
-    const {videoStore, streamData, singlePlayer} = this.props;
-  };
-
-  onBandwidthUpdateIOS = bytes => {
-    const {videoStore, streamData} = this.props;
-    streamData.updateDataUsage(
-      bytes,
-      this.trackingVideoSource,
-      videoStore.timezone,
-      'onBandwidthUpdate'
-    );
+    const {streamData, videoStore, singlePlayer} = this.props;
+    if (
+      Platform.OS === 'ios' ||
+      (streamData === videoStore.androidDataUsageStream &&
+        ((videoStore.selectedStream && singlePlayer) ||
+          !videoStore.selectedStream))
+    ) {
+      streamData.updateDataUsage(
+        data.bitrate,
+        this.trackingVideoSource,
+        videoStore.timezone,
+        'onBandwidthUpdate'
+      );
+    }
   };
 
   onReady = event => {
@@ -787,7 +790,22 @@ class HLSStreamingView extends React.Component {
     //   });
     // }
     if (Platform.OS === 'android') {
-      videoStore.switchRecordingStreamIdAndroid(streamData);
+      if (this.firstReady) {
+        __DEV__ && console.log('0507 onReady streamData.id = ', streamData.id);
+        if (
+          videoStore.androidDataUsageStream &&
+          videoStore.androidDataUsageStream.id != streamData.id
+        ) {
+          videoStore.androidDataUsageStream.updateDataUsage(
+            FORCE_SENT_DATA_USAGE,
+            'N/A',
+            videoStore.timezone,
+            'notifySwitchDataUsageStreamAndroid'
+          );
+        }
+        videoStore.notifySwitchDataUsageStreamAndroid(streamData);
+      }
+      this.firstReady = false;
     }
   };
 
