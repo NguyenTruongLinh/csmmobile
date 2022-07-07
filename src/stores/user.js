@@ -314,6 +314,7 @@ export const UserStoreModel = types
     widgetCounts: types.maybeNull(WidgeCountsModel),
     //
     moduleUpdatedFlag: types.boolean,
+    isSubmitForgotPassLoading: types.maybeNull(types.boolean),
   })
   .volatile(self => ({
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
@@ -654,7 +655,8 @@ export const UserStoreModel = types
           ) {
             self.moduleUpdatedFlag = false;
             const prevDisableTabIndexes = self.getDisableTabIndexes();
-            const prevDisableHomeWidgetIndexes = self.getDisableHomeWidgetIndexes();
+            const prevDisableHomeWidgetIndexes =
+              self.getDisableHomeWidgetIndexes();
             self.modules = res.map(item => parseModule(item));
             self.moduleUpdatedFlag =
               JSON.stringify(prevDisableTabIndexes) !=
@@ -726,6 +728,37 @@ export const UserStoreModel = types
       }
       // }
       // return false;
+    }),
+    submitForgotPassword: flow(function* (domain, email, username) {
+      // if (self.user && self.user.userId) {
+      self.isSubmitForgotPassLoading = true;
+      try {
+        const res = yield apiService.submitForgotPassword(
+          domain + Route,
+          email,
+          username
+        );
+        __DEV__ && console.log('GOND user submitForgotPassword: ', res);
+        if (res && res.status == 200 && res.Result && !res.Result.error) {
+          appStore.naviService.navigate(ROUTERS.SUBMITED);
+          self.isSubmitForgotPassLoading = false;
+          return true;
+        } else if (
+          res &&
+          res.status == 200 &&
+          res.Result &&
+          res.Result.message &&
+          res.Result.error
+        ) {
+          Alert.alert(LoginTxt.forgotPasswordErrorTitle, res.Result.message);
+          self.isSubmitForgotPassLoading = false;
+          return false;
+        }
+      } catch (err) {
+        __DEV__ && console.log('GOND user changePassword failed: ', err);
+        return false;
+      }
+      self.isSubmitForgotPassLoading = false;
     }),
     getWidgetCounts: flow(function* () {
       if (self.user && self.user.userId) {
@@ -1171,6 +1204,7 @@ const userStore = UserStoreModel.create({
   }),
   widgetCounts: null,
   moduleUpdatedFlag: false,
+  isSubmitForgotPassLoading: false,
 });
 
 export default userStore;

@@ -30,7 +30,7 @@ import CMSColors from '../../styles/cmscolors';
 import {I3_Logo} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
-
+import ROUTERS from '../../consts/routes';
 // const backgroundImg = require('../../assets/images/intro/welcome.png');
 // const launchscreenLogo = require('../../assets/images/CMS-logo-white.png');
 
@@ -226,6 +226,10 @@ class LoginView extends Component {
     this.props.appStore.naviService.back();
   };
 
+  onForgotPasswordPress = () => {
+    this.props.appStore.naviService.navigate(ROUTERS.FORGOT_PASSWORD);
+  };
+
   render() {
     const {width} = Dimensions.get('window');
     const {domain, username, password, errors, domainErrorFlag} = this.state;
@@ -371,16 +375,11 @@ class LoginView extends Component {
                 // !this.props.appStore.isLoading
               }
             />
-            {/* <Button
-              style={styles.buttonPassword}
-              caption="FORGOT PASSWORD?"
-              type="flat"
-              captionStyle={{}}
-              onPress={() => {
-                Linking.openURL(APP_INFO.ContactUrl);
-              }}
-              enable={true}
-            /> */}
+            <Text
+              style={styles.forgotPasswordLink}
+              onPress={this.onForgotPasswordPress}>
+              {LoginTxt.forgotPassword}
+            </Text>
             <View style={{height: 50}}></View>
           </View>
         </View>
@@ -447,6 +446,12 @@ const styles = StyleSheet.create({
   inputsContainer: {
     // alignItems: 'center',
   },
+  forgotPasswordLink: {
+    marginTop: 30,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: CMSColors.PrimaryActive,
+  },
   buttonsContainer: {
     alignItems: 'center',
     flexDirection: 'column',
@@ -456,7 +461,9 @@ const styles = StyleSheet.create({
   },
   buttonPassword: {
     width: '100%',
-    // height: 40,
+    height: 50,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   content: {
     maxWidth: variable.deviceWidth,

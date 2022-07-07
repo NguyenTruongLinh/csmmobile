@@ -10,7 +10,8 @@ import CMSTabbar from './tabbar';
 import CMSIntroView from '../views/intro/cmsIntro';
 import WelcomeView from '../views/intro/welcome';
 import LoginView from '../views/auth/login';
-
+import ForgotPasswordView from '../views/auth/forgotPassword';
+import SubmitedView from '../views/auth/submited';
 import HomeView from '../views/home/home';
 
 // import DashboardView from '../views/smarter/summary';
@@ -315,20 +316,64 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
       ) : (
         <WelcomeStack.Navigator
           initialRouteName={ROUTERS.LOGIN}
-          headerMode="none">
+          headerMode="screen">
           {/* <WelcomeStack.Screen
             name={ROUTERS.INTRO_WELCOME}
             component={WelcomeView}
           /> */}
-          <WelcomeStack.Screen name={ROUTERS.LOGIN} component={LoginView} />
+          <WelcomeStack.Screen
+            options={() => ({
+              headerStyle: {
+                height: 0,
+              },
+              headerMode: 'none',
+              headerTitle: '',
+            })}
+            name={ROUTERS.LOGIN}
+            component={LoginView}
+          />
 
           <WelcomeStack.Screen
+            options={() => ({
+              headerStyle: {
+                height: 0,
+              },
+              headerMode: 'none',
+              headerTitle: '',
+            })}
             name={ROUTERS.PASSWORD_EXPIRED}
             component={passwordExpired}
           />
           <WelcomeStack.Screen
+            options={() => ({
+              headerStyle: {
+                height: 0,
+              },
+              headerMode: 'none',
+              headerTitle: '',
+            })}
             name={ROUTERS.ACCOUNT_LOCKED}
             component={AccountLocked}
+          />
+          <WelcomeStack.Screen
+            options={() => ({
+              headerShown: false,
+              headerStyle: {
+                height: 0,
+              },
+              headerMode: 'none',
+              headerTitle: '',
+            })}
+            name={ROUTERS.SUBMITED}
+            component={SubmitedView}
+          />
+          <WelcomeStack.Screen
+            options={() => ({
+              headerMode: 'screen',
+              headerTitle: '',
+            })}
+            name={ROUTERS.FORGOT_PASSWORD}
+            component={ForgotPasswordView}
           />
         </WelcomeStack.Navigator>
       )}

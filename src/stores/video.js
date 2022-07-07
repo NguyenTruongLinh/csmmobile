@@ -11,11 +11,13 @@ import RTCStreamModel from './types/webrtc';
 import HLSStreamModel, {FORCE_SENT_DATA_USAGE} from './types/hls';
 
 import apiService from '../services/api';
+import dbService from '../services/localdb';
 
 import snackbarUtil from '../util/snackbar';
 import {VSC, DVR, Site as SiteRoute} from '../consts/apiRoutes';
 import util from '../util/general';
 import {numberValue} from '../util/types';
+
 import {
   default24H,
   CLOUD_TYPE,
@@ -40,6 +42,7 @@ import {
   SITE_TREE_UNIT_TYPE,
 } from '../consts/misc';
 import {TIMEZONE_MAP} from '../consts/timezonesmap';
+import {LocalDBName} from '../consts/misc';
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../localization/texts';
 
 const DirectServerModel = types
@@ -984,6 +987,7 @@ export const VideoModel = types
               .map(s => s.channelNo)
               .filter((_, index) => index < self.gridItemsPerPage)
           );
+        self.saveLocal();
       },
       updateCurrentDirectChannel() {
         // console.log(
@@ -1613,6 +1617,42 @@ export const VideoModel = types
         self.authenticationState = AUTHENTICATION_STATES.HAS_RESET;
         // self.displayAuthen(true);
       },
+      saveLocal: flow(function* () {
+        try {
+          let currentDivision = self.gridLayout;
+          let division = yield dbService.getFirstData(LocalDBName.division);
+          let data = {
+            division: currentDivision,
+          };
+          if (!division) {
+            yield dbService.add(LocalDBName.division, data);
+          } else {
+            yield dbService.update(LocalDBName.division, data, {
+              _id: 1,
+            });
+          }
+          return true;
+        } catch (err) {
+          __DEV__ && console.log('GOND save data local failed: ', err);
+          snackbarUtil.handleSaveLocalDataFailed(err);
+          return false;
+        }
+      }),
+      loadLocalData: flow(function* () {
+        let data = yield dbService.getFirstData(LocalDBName.division);
+        __DEV__ && console.log('GOND load video division: ', data);
+        if (data) {
+          try {
+            self.gridLayout = data.division;
+          } catch (err) {
+            __DEV__ && console.log('GOND load video division failed: ', err);
+            snackbarUtil.handleReadLocalDataFailed(err);
+            return false;
+          }
+          return true;
+        }
+        return false;
+      }),
       saveLoginInfo: flow(function* () {
         if (!self.kDVR) return false;
 

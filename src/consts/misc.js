@@ -12,6 +12,7 @@ export const LocalDBName = {
   user: 'users',
   alertConfig: 'alertconfigs',
   device: 'deviceid',
+  division: 'division',
 };
 
 export const AlarmStatus = {

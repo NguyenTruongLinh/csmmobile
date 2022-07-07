@@ -11,6 +11,7 @@ class LocalDB {
   constructor() {
     new RNDBModel.create_db(LocalDBName.user);
     new RNDBModel.create_db(LocalDBName.device);
+    new RNDBModel.create_db(LocalDBName.division);
     // new RNDBModel.create_db(LocalDBName.alertConfig);
   }
 
