@@ -753,6 +753,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onBandwidthUpdate = data => {
+    const {streamData, videoStore, singlePlayer} = this.props;
     if (
       Platform.OS === 'ios' ||
       (streamData === videoStore.androidDataUsageStream &&
@@ -790,22 +791,21 @@ class HLSStreamingView extends React.Component {
     // }
     if (Platform.OS === 'android') {
       if (this.firstReady) {
-          __DEV__ && console.log('0507 onReady streamData.id = ', streamData.id);
-          if (
-            videoStore.androidDataUsageStream &&
-            videoStore.androidDataUsageStream.id != streamData.id
-          ) {
-            videoStore.androidDataUsageStream.updateDataUsage(
-              FORCE_SENT_DATA_USAGE,
-              'N/A',
-              videoStore.timezone,
-              'notifySwitchDataUsageStreamAndroid'
-            );
-          }
-          videoStore.notifySwitchDataUsageStreamAndroid(streamData);
+        __DEV__ && console.log('0507 onReady streamData.id = ', streamData.id);
+        if (
+          videoStore.androidDataUsageStream &&
+          videoStore.androidDataUsageStream.id != streamData.id
+        ) {
+          videoStore.androidDataUsageStream.updateDataUsage(
+            FORCE_SENT_DATA_USAGE,
+            'N/A',
+            videoStore.timezone,
+            'notifySwitchDataUsageStreamAndroid'
+          );
         }
-        this.firstReady = false;
+        videoStore.notifySwitchDataUsageStreamAndroid(streamData);
       }
+      this.firstReady = false;
     }
   };
 
