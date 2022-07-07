@@ -167,12 +167,14 @@ const HLSURLModel = types
         );
         __DEV__ &&
           console.log(
-            `updateDataUsage callAPI params `,
+            `0507 updateDataUsage callAPI params `,
             JSON.stringify(params),
             segmentLoad == FORCE_SENT_DATA_USAGE
               ? 'STREAM STOPPED'
               : 'AFTER 15 SECS',
-            ' ************************************** '
+            ' ************************************** ',
+            'debug: ',
+            debug
           );
         self.resetDataUsageInfo();
       }
@@ -926,7 +928,7 @@ export default HLSStreamModel = types
         bitrate,
         timezone,
         {
-          KChannel: self.channel.kChannel,
+          KChannel: self.kChannel,
           ViewMode: self.isLive ? 0 : 1,
           Source: 'MP4_CMSMobile_' + source, // + '_NEW_' + Platform.OS,
         },
