@@ -159,23 +159,28 @@ class AlarmDetailView extends Component {
       channelName: 'Channel ' + (selectedAlarm.channelNo + 1),
     };
 
-    /* __DEV__ &&
-      console.log(
-        'GOND canSave: note ',
-        currentSnapshot,
-        ',  a.note: ',
-        selectedAlarm.note,
-        ' > ',
-        note != selectedAlarm.note,
-        '\n rating: ',
-        rating,
-        ', a.rate: ',
-        selectedAlarm.rate,
-        ' > ',
-        rating.rateId != selectedAlarm.rate
-      );*/
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND canSave: note ',
+    //     currentSnapshot,
+    //     ',  a.note: ',
+    //     selectedAlarm.note,
+    //     ' > ',
+    //     note != selectedAlarm.note,
+    //     '\n rating: ',
+    //     rating,
+    //     ', a.rate: ',
+    //     selectedAlarm.rate,
+    //     ' > ',
+    //     rating.rateId != selectedAlarm.rate
+    //   );
 
-    // __DEV__ && console.log('GOND AlarmDetail setHeader: ', selectedAlarm);
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND AlarmDetail currentSnapshot: ',
+    //     currentSnapshot,
+    //     selectedAlarm.snapshot
+    //   );
     const siteName =
       selectedAlarm.siteName && selectedAlarm.siteName.length > 0
         ? selectedAlarm.siteName
@@ -263,8 +268,8 @@ class AlarmDetailView extends Component {
   onVisibleImageChanged = ({viewableItems}) => {
     __DEV__ && console.log('GOND onSnapshot item changed: ', viewableItems);
     for (let i = 0; i < viewableItems.length; i++) {
-      if (viewableItems.isViewable)
-        this.setState({activeIndex: viewableItems.index}, () =>
+      if (viewableItems[i].isViewable)
+        this.setState({activeIndex: viewableItems[i].index}, () =>
           this.setHeader()
         );
     }
@@ -794,12 +799,11 @@ class AlarmDetailView extends Component {
               pagingEnabled={true}
               style={{flex: 1}}
               initialScrollIndex={this.state.activeIndex}
+              viewabilityConfig={{
+                minimumViewTime: 300,
+                viewAreaCoveragePercentThreshold: 80,
+              }}
               onViewableItemsChanged={this.onVisibleImageChanged}
-              // onScroll={Animated.event(
-              //   // Animated.event returns a function that takes an array where the first element...
-              //   [{nativeEvent: {contentOffset: {x: this.scrollX}}}],
-              //   {useNativeDriver: false}
-              // )} // in this case we are mapping the value of nativeEvent.contentOffset.x to this.scrollX
               horizontal={true}
               getItemLayout={(data, index) => ({
                 length: imgSize.width,

@@ -19,9 +19,13 @@ import {
   onOpenAlertSetting,
 } from './alert';
 import {onExceptionEvent, onOpenExceptionEvent} from './exception';
+
+import {getNotificationsLimit} from '../util/general';
+
 import {NOTIFY_TYPE} from '../consts/misc';
 
 const CHANNEL_ID = 'CMS_Channel';
+// const LIMIT = await getNotificationsLimit();
 
 class NotificationController extends React.Component {
   // static notification = 'N/A';
@@ -35,8 +39,8 @@ class NotificationController extends React.Component {
   }
 
   async componentDidMount() {
-    __DEV__ &&
-      console.log('GOND Notification controller did mount: ', this.props);
+    // __DEV__ &&
+    //   console.log('GOND Notification controller did mount: ', this.props);
     let isAllowed = await this.checkPermission();
 
     if (!isAllowed) {
@@ -243,8 +247,24 @@ class NotificationController extends React.Component {
     PushNotification.cancelAllLocalNotifications();
   };
 
-  static displayLocalNotification = (
-    appStore,
+  static getCurrentNotifications = async () => {
+    return new Promise(resolve => {
+      PushNotification.getDeliveredNotifications(deliveredNotifs => {
+        __DEV__ &&
+          console.log('GOND deliveredNotifications: ', deliveredNotifs);
+        if (deliveredNotifs == null || deliveredNotifs == undefined)
+          return resolve([]);
+        if (Array.isArray(deliveredNotifs)) {
+          deliveredNotifs.sort((a, b) => (a.postTime ?? 0) - (b.postTime ?? 0));
+          return resolve(deliveredNotifs);
+        }
+        return resolve([deliveredNotifs]);
+      });
+    });
+  };
+
+  static displayLocalNotification = async (
+    // appStore,
     {id, title, body, messageId, data}
   ) => {
     let idNumber = typeof id == 'number' ? id : parseInt(id, 16);
@@ -270,9 +290,36 @@ class NotificationController extends React.Component {
     };
     // __DEV__ &&
     //   console.log('GOND displayLocalNotification: ', notificationRequest);
-    Platform.OS === 'ios'
-      ? PushNotification.localNotification(notificationRequest)
-      : PushNotification.presentLocalNotification(notificationRequest);
+
+    // const currentNotifs = await this.getCurrentNotifications();
+    if (Platform.OS == 'android') {
+      const currentNotifs = await this.getCurrentNotifications();
+      const LIMIT = await getNotificationsLimit();
+      const dismissCount =
+        currentNotifs.length > 0 ? currentNotifs.length - (LIMIT - 1) : 0;
+
+      if (dismissCount > 0) {
+        // const oldestNotifs = currentNotifs.reduce((result, notif) => {
+        //   if (!result || !notif.postTime || notif.postTime < result.postTime)
+        //     return notif;
+        //   return result;
+        // }, null);
+        const oldestNotifIds = currentNotifs.reduce((result, notif, index) => {
+          if (index < dismissCount) return [...result, notif.identifier];
+          return result;
+        }, []);
+
+        __DEV__ && console.log('GOND oldest notif: ', oldestNotifIds);
+        // PushNotification.removeDeliveredNotifications([oldestNotif.identifier]);
+        PushNotification.removeDeliveredNotifications(oldestNotifIds);
+      }
+      PushNotification.presentLocalNotification(notificationRequest);
+    } else {
+      PushNotification.localNotification(notificationRequest);
+    }
+    // Platform.OS === 'ios'
+    //   ? PushNotification.localNotification(notificationRequest)
+    //   : PushNotification.presentLocalNotification(notificationRequest);
 
     // if (!appStore || appStore.appState != 'active') {
     PushNotification.getApplicationIconBadgeNumber(badgeCount => {
@@ -297,8 +344,8 @@ class NotificationController extends React.Component {
     const {data, messageId} = message;
     // const {videoStore, alarmStore, appStore} = this.props;
 
-    // __DEV__ &&
-    //   console.log(`onNotificationReceived message = `, JSON.stringify(message));
+    __DEV__ &&
+      console.log(`onNotificationReceived message = `, JSON.stringify(message));
 
     const naviService = appStore ? appStore.naviService : null;
 
@@ -343,7 +390,7 @@ class NotificationController extends React.Component {
           id: data.msg_id,
           data: {type, action, content},
         };
-        if (userStore)
+        if (userStore) {
           notif = onUserEvent(
             notifExtraData,
             appStore,
@@ -351,25 +398,43 @@ class NotificationController extends React.Component {
             action,
             content
           );
-        else {
-          let notifPromise = onUserEventAsync(
+        } else {
+          let notif = await onUserEventAsync(
             notifExtraData,
             appStore,
             userStore,
             action,
             content
           );
-          notifPromise.then(notif =>
-            NotificationController.onNotifReady(
-              notif,
-              messageId,
-              data,
-              type,
-              action,
-              content,
-              userStore
-            )
+          NotificationController.onNotifReady(
+            notif,
+            messageId,
+            data,
+            type,
+            action,
+            content,
+            userStore
           );
+
+          // let notifPromise = onUserEventAsync(
+          //   notifExtraData,
+          //   appStore,
+          //   userStore,
+          //   action,
+          //   content
+          // );
+          // notifPromise.then(notif =>
+          //   NotificationController.onNotifReady(
+          //     notif,
+          //     messageId,
+          //     data,
+          //     type,
+          //     action,
+          //     content,
+          //     userStore
+          //   )
+          // );
+          return;
         }
         break;
       case NOTIFY_TYPE.ALERT_TYPE:
@@ -423,6 +488,7 @@ class NotificationController extends React.Component {
     //   });
     //   userStore && userStore.getWidgetCounts();
     // }
+    __DEV__ && console.log('GOND pre onNotifReady: ', notif);
     NotificationController.onNotifReady(
       notif,
       messageId,
@@ -442,22 +508,25 @@ class NotificationController extends React.Component {
     type,
     action,
     content,
-    userStore,
-    appStore
+    userStore
+    // appStore
   ) => {
     const enabled = await messaging().hasPermission();
     if (enabled && notif) {
-      // __DEV__ && console.log('GOND show local notify, content: ', content);
+      __DEV__ && console.log('GOND show local notify, content: ', content);
       if (Platform.OS === 'ios' && content) {
         if (typeof content !== 'string') content = JSON.stringify(content);
         content = content.replace(/null/g, '""'); // content.split('null').join('');
       }
-      NotificationController.displayLocalNotification(appStore, {
-        ...notif,
-        messageId,
-        id: data.msg_id,
-        data: {type, action, content}, //content
-      });
+      NotificationController.displayLocalNotification(
+        // appStore,
+        {
+          ...notif,
+          messageId,
+          id: data.msg_id,
+          data: {type, action, content}, //content
+        }
+      );
       userStore && userStore.getWidgetCounts();
     }
   };

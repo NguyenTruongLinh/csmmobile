@@ -569,7 +569,8 @@ export const UserStoreModel = types
         __DEV__ &&
           console.log(
             'refreshUserFromNotif',
-            `notifExtraData=${JSON.stringify(notifExtraData)}`
+            `notifExtraData=${JSON.stringify(notifExtraData)}`,
+            noti
           );
         if (self.moduleUpdatedFlag)
           notifExtraData.data.action = NOTIFY_ACTION.USER_PERMISSION_REFRESH;

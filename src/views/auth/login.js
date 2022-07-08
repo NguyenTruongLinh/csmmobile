@@ -375,11 +375,12 @@ class LoginView extends Component {
                 // !this.props.appStore.isLoading
               }
             />
-            <Text
+            {/* dongpt: temporarily remove for 3.1 release */}
+            {/* <Text
               style={styles.forgotPasswordLink}
               onPress={this.onForgotPasswordPress}>
               {LoginTxt.forgotPassword}
-            </Text>
+            </Text> */}
             <View style={{height: 50}}></View>
           </View>
         </View>

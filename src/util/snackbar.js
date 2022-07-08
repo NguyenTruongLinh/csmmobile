@@ -13,6 +13,8 @@ const showToast = (
   duration = Toast.durations.LONG
 ) => {
   // __DEV__ && console.log(`showToast showToast `);
+  // if (__DEV__ && message == 'Connecting...')
+  //   console.trace('GOND toast connecting ...');
   if (lastToast && lastMessage == message) Toast.hide(lastToast);
   lastToast = Toast.show(message, {
     containerStyle: {
@@ -80,7 +82,7 @@ exports.dismiss = () => {
 const onMessage = (msg, backcolor) => {
   // if (__DEV__ && msg == 'Connecting...')
   //   console.trace('GOND toast connecting ...');
-  showToast(msg, backcolor ?? CMSColors.Success);
+  showToast(msg, backcolor ?? CMSColors.Success, Toast.durations.SHORT);
 };
 
 exports.dismiss = () => {
