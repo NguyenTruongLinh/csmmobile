@@ -51,7 +51,7 @@ class GlobalModal extends Component {
 
   render() {
     const {modalProps} = this.state;
-    const props = {...modalProps, children: undefined};
+    const props = {...modalProps};
 
     return (
       <Modal
@@ -61,7 +61,7 @@ class GlobalModal extends Component {
         animationOut="slideOutDown"
         animationIn="slideInUp"
         animationOutTiming={300}>
-        {modalProps.children}
+        {modalProps.children ?? <View />}
       </Modal>
     );
   }

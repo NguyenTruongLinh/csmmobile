@@ -1,8 +1,11 @@
+import {Dimensions, PixelRatio, Platform} from 'react-native';
+
+import Orientation from 'react-native-orientation-locker';
+import {getApiLevel} from 'react-native-device-info';
+
 import base64 from 'base64-js';
 import AES from 'crypto-js/aes';
 import CryptoJS from 'crypto-js';
-import {Dimensions, PixelRatio, Platform} from 'react-native';
-import Orientation from 'react-native-orientation-locker';
 import {DateTime} from 'luxon';
 import uuid from 'react-native-uuid';
 
@@ -713,4 +716,16 @@ exports.extractModuleNameFromScreenName = screenName => {
   if (screenName.includes('alarm')) return 'Alarm';
   if (screenName.includes('video')) return 'Video';
   if (screenName.includes('pos')) return 'SmartER';
+};
+
+exports.getNotificationsLimit = async () => {
+  if (Platform.OS != 'android') return 64;
+
+  const apiVersion = await getApiLevel();
+
+  if (apiVersion >= 30) {
+    return 24;
+  }
+
+  return 50;
 };
