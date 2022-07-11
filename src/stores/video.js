@@ -350,6 +350,8 @@ export const VideoModel = types
     maxReadyChannels: types.number,
     // streaming type of video
     cloudType: types.number,
+    // API version
+    apiVersion: types.string,
     // authenData: types.array(AuthenModel),
     //
     rtcConnection: types.maybeNull(RTCStreamModel),
@@ -2137,7 +2139,10 @@ export const VideoModel = types
 
         let result = true;
         __DEV__ && console.log('GOND get cloud type res = ', res);
-        if (typeof res === 'boolean') {
+        if (typeof res === 'object') {
+          self.cloudType = res.Type;
+          self.apiVersion = res.APIVersion == null ? '' : res.APIVersion;
+        } else if (typeof res === 'boolean') {
           self.cloudType = res === true ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
         } else if (
           typeof res === 'number' &&
@@ -4168,6 +4173,7 @@ const storeDefault = {
   // activeChannels: [],
   maxReadyChannels: 0,
   cloudType: CLOUD_TYPE.UNKNOWN,
+  apiVersion: '',
   // authenData: [],
 
   // rtcStreams: [],
