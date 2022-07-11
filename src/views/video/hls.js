@@ -310,10 +310,6 @@ class HLSStreamingView extends React.Component {
       __DEV__ && console.log('stopDataUsageTimer');
       this.player.stopDataUsageTimer();
     }
-    // let previousScreen = appStore.naviService.getCurrentRouteName();
-    // __DEV__ && console.log('previousScreen = ', previousScreen);
-    // if (previousScreen === ROUTERS.VIDEO_CHANNELS)
-    //   videoStore.resetAllStreamsDataUsageInfo();
   }
 
   computeTime = secs => {
