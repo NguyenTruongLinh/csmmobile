@@ -16,6 +16,8 @@ import App from './app';
 import NotificationController from './notification/notificationController';
 import {Platform} from 'react-native';
 
+let popInitialNotificationFlagIOS = false;
+
 const Main = () => {
   // console.log('GOND userStore: ', userStore);
   let naviCheckInterval = null;
@@ -23,8 +25,8 @@ const Main = () => {
     requestPermissions: true,
     onNotification: notification => {
       __DEV__ && console.log('GOND onNotification evt: ', notification);
-      const {userInteraction} = notification;
-      if (userInteraction) {
+      const {userInteraction, action} = notification;
+      if (userInteraction && action) {
         __DEV__ &&
           console.log(
             'GOND PN onNotification interation: ',
@@ -60,26 +62,37 @@ const Main = () => {
       // }
       // __DEV__ &&
       //   console.log('GOND PN onNotification interation: ', appStore.naviService);
-      naviCheckIntervalInitialForIOS = setInterval(() => {
-        if (
-          appStore.naviService.isReadyForPushShowing &&
-          naviCheckIntervalInitialForIOS
-        ) {
-          clearInterval(naviCheckIntervalInitialForIOS);
-          naviCheckIntervalInitialForIOS = null;
-          NotificationController.onNotificationOpened({
-            appStore,
-            alarmStore,
-            userStore,
-            exceptionStore,
-            oamStore,
-            sitesStore,
-            healthStore,
-            message: notification,
-            debug: 'popInitialNotification',
-          });
-        }
-      }, 500);
+      if (
+        notification &&
+        !popInitialNotificationFlagIOS &&
+        !(
+          !notification.foreground &&
+          notification.userInteraction &&
+          !notification.action
+        )
+      ) {
+        naviCheckIntervalInitialForIOS = setInterval(() => {
+          if (
+            appStore.naviService.isReadyForPushShowing &&
+            naviCheckIntervalInitialForIOS
+          ) {
+            clearInterval(naviCheckIntervalInitialForIOS);
+            naviCheckIntervalInitialForIOS = null;
+            NotificationController.onNotificationOpened({
+              appStore,
+              alarmStore,
+              userStore,
+              exceptionStore,
+              oamStore,
+              sitesStore,
+              healthStore,
+              message: notification,
+              debug: 'popInitialNotification',
+            });
+          }
+        }, 500);
+        popInitialNotificationFlagIOS = true;
+      }
     });
   }
   return (
