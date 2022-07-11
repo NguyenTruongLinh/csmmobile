@@ -114,6 +114,8 @@ export const VIDEO = {
   WRONG_CLOUD_TYPE: 'Cloud type config is incorrect, please contact support.',
   SNAPSHOT_TAKEN: 'The snapshot has been moved to photo folder.',
   NO_NVR_PERMISSION: "You don't have permission",
+  WRONG_RELAY_SERVER_INFO:
+    'Relay server info is incorrect, please contact support.',
 };
 
 export const STREAM_STATUS = {

@@ -43,10 +43,10 @@ public class VideoSocket extends CommunicationSocket {
     // private static byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
     // private static FrameData dataframe = new FrameData(0);
 
-    public  VideoSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel)
+    public  VideoSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIP)
     {
 
-        super( hwnd, serverinfo, channel, search, bychannel);
+        super( hwnd, serverinfo, channel, search, bychannel, clientIP);
         ffmpeg = new FFMPEGDecoder();
         ffmpeg.LoadLib();
     }
