@@ -64,6 +64,8 @@ const HLSURLModel = types
     accumulatedDataUsage: 0,
     dataUsageSentTimePoint: DateTime.now().toSeconds(),
     videoInfo: {},
+    // dataUsageLogs: [],
+    // recordNo: 0,
   }))
   .actions(self => ({
     beforeDestroy() {
@@ -117,6 +119,8 @@ const HLSURLModel = types
     resetDataUsageInfo() {
       self.accumulatedDataUsage = 0;
       self.dataUsageSentTimePoint = DateTime.now().toSeconds();
+      // self.dataUsageLogs = [];
+      // self.recordNo = 0;
     },
     updateDataUsageByURL(segmentLoad, timezone, videoInfo, debug) {
       __DEV__ &&
@@ -136,6 +140,16 @@ const HLSURLModel = types
 
       if (segmentLoad !== FORCE_SENT_DATA_USAGE)
         self.accumulatedDataUsage += segmentLoad;
+
+      // self.dataUsageLogs.push({
+      //   time:
+      //     DateTime.fromSeconds(newLoadRecordTimePoint, {}).toFormat(
+      //       DateFormat.VideoDataUsageDate
+      //     ) +
+      //     ':' +
+      //     (DateTime.now().toMillis() % 1000),
+      //   load: segmentLoad,
+      // });
 
       __DEV__ &&
         console.log(
@@ -176,6 +190,13 @@ const HLSURLModel = types
             'debug: ',
             debug
           );
+        // for (let i = 0; i < self.dataUsageLogs.length; i++) {
+        //   __DEV__ &&
+        //     console.log(
+        //       `0507 updateDataUsage callAPI params dataUsageLogs = `,
+        //       self.dataUsageLogs[i]
+        //     );
+        // }
         self.resetDataUsageInfo();
       }
     },

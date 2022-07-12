@@ -1098,11 +1098,13 @@ export const VideoModel = types
             self.selectedStream.setLive(true);
             self.selectedStream.setHD(false);
             self.selectedStream.select(false);
-            // if (!fromMulti)
-            //   self.selectedStream.updateDataUsage(
-            //     FORCE_SENT_DATA_USAGE,
-            //     'select from single player'
-            //   );
+            if (!fromMulti)
+              self.selectedStream.updateDataUsage(
+                FORCE_SENT_DATA_USAGE,
+                'N/A',
+                self.timezone,
+                'select from single player'
+              );
           }
         }
 
@@ -1203,28 +1205,9 @@ export const VideoModel = types
         //       );
         //     }
         //   }
-        self.notifySwitchDataUsageStreamAndroid(self.selectedStream);
+        if (Platform.OS === 'android' && self.cloudType == CLOUD_TYPE.HLS)
+          self.notifySwitchDataUsageStreamAndroid(self.selectedStream);
         return true;
-      },
-      resetAllStreamsDataUsageInfo() {
-        __DEV__ &&
-          console.log(
-            `resetAllStreamsDataUsageInfo self.hlsStreams.length = `,
-            self.hlsStreams.length
-          );
-        for (let i = 0; i < self.hlsStreams.length; i++) {
-          let s = self.hlsStreams[i];
-          if (
-            s.targetUrl &&
-            (!self.selectedStream || s.id != self.selectedStream.id)
-          ) {
-            __DEV__ &&
-              console.log(
-                `resetAllStreamsDataUsageInfo s.targetUrl.resetDataUsageInfo = `
-              );
-            s.targetUrl.resetDataUsageInfo();
-          }
-        }
       },
       setFrameTime(value, fromZone) {
         // __DEV__ && console.log('GOND setFrameTime ', value);
