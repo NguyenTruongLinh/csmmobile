@@ -358,7 +358,7 @@ export default class ExceptionSearchModal extends Component {
 
     let sortedSites = filteredSites.slice(0, filteredSites.length);
     sortedSites.sort(
-      (a, b) => (isSortAZ ? 1 : -1) * compareStrings(a.name, b.name)
+      (a, b) => (isSortAZ ? 1 : -1) * compareStrings(a.name, b.name, false)
     );
 
     return (
@@ -428,7 +428,7 @@ export default class ExceptionSearchModal extends Component {
               <Text style={styles.siteNameText}>All</Text>
             </View>
           </Ripple>
-          <View style={{height: '100%'}}>
+          <View style={{height: contentHeight * 0.7}}>
             <FlatList
               data={sortedSites}
               keyExtractor={item => 'site_' + item.key}
@@ -439,7 +439,7 @@ export default class ExceptionSearchModal extends Component {
               //   offset: 40 * index,
               //   index,
               // })}
-              removeClippedSubviews={false}
+              // removeClippedSubviews={false}
             />
           </View>
         </View>
