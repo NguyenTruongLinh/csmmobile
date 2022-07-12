@@ -459,32 +459,13 @@ export const VideoModel = types
       //     (self.nvrPassword && self.nvrPassword.length == 0))
       // );
     },
-    get canDisplayChannels() {
-      return (
-        (self.cloudType != CLOUD_TYPE.DIRECTION &&
-          self.cloudType != CLOUD_TYPE.DEFAULT) ||
-        // self.isAuthenticated
-        self.authenticationState != AUTHENTICATION_STATES.AUTHENTICATED
-      );
-    },
-    // get directStreams() {
-    //   return self.allChannels
-    //     .filter(ch =>
-    //       ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
-    //     )
-    //     .map(ch => ({
-    //       ...self.directConnection,
-    //       channelNo: ch.channelNo,
-    //       channels: '' + ch.channelNo,
-    //       channelName: ch.name,
-    //       kChannel: ch.kChannel,
-    //       byChannel: true,
-    //       interval: DAY_INTERVAL,
-    //       // seekpos: self.isLive || !self.timelinePos ? undefined : {
-    //       //   pos: self.timelinePos,
-    //       //   HD: self.hdMode,
-    //       // }
-    //     }));
+    // get canDisplayChannels() {
+    //   return (
+    //     (self.cloudType != CLOUD_TYPE.DIRECTION &&
+    //       self.cloudType != CLOUD_TYPE.DEFAULT) ||
+    //     // self.isAuthenticated
+    //     self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED
+    //   );
     // },
     get selectedChannelIndex() {
       // return self.allChannels
@@ -856,13 +837,20 @@ export const VideoModel = types
       }
       if (
         self.authenticationState == AUTHENTICATION_STATES.NOT_LINKED ||
-        self.authenticationState == AUTHENTICATION_STATES.NOT_AUTHEN
+        self.authenticationState == AUTHENTICATION_STATES.NOT_AUTHEN ||
+        !self.isAPIPermissionSupported
       ) {
         return true;
       }
       const foundChannel = self.allChannels.find(
         ch => ch.channelNo == channelNo
       );
+      // __DEV__ &&
+      //   console.log(
+      //     'GOND canEnterChannel: ',
+      //     channelNo,
+      //     self.allChannels.map(ch => getSnapshot(ch))
+      //   );
       if (!foundChannel) {
         __DEV__ && console.log('GOND canEnterChannel not found!');
         return false;
@@ -3789,6 +3777,7 @@ export const VideoModel = types
             );
           return;
         }
+        // __DEV__ && console.trace('GOND getDVRPermission 0: ', self.allChannels);
         self.authenticationState = AUTHENTICATION_STATES.ON_AUTHENTICATING;
         try {
           const res = yield apiService.get(
@@ -3810,6 +3799,9 @@ export const VideoModel = types
               );
             // CMSAPI not support yet, let pass the authentication for now
             self.authenticationState = AUTHENTICATION_STATES.AUTHENTICATED;
+            self.allChannels.forEach(ch =>
+              ch.setLiveSearchPermission(true, true)
+            );
             self.isAPIPermissionSupported = false;
             self.onAuthenticated();
             return;
@@ -4001,6 +3993,7 @@ export const VideoModel = types
         callback();
       },
       notifySwitchDataUsageStreamAndroid(stream) {
+        if (!stream || self.cloudType == CLOUD_TYPE.DIRECTION) return;
         __DEV__ &&
           console.log(
             '0507 switchRecordingStreamIdAndroid stream = ',
