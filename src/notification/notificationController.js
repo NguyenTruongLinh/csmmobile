@@ -59,12 +59,6 @@ class NotificationController extends React.Component {
     );
     this.createNotificationListeners();
 
-    PushNotification.getApplicationIconBadgeNumber(badgeCount => {
-      __DEV__ &&
-        console.log('GOND getApplicationIconBadgeNumber: ', badgeCount);
-      NotificationController.getCurrentNotifications();
-      // PushNotification.setApplicationIconBadgeNumber(badgeCount);
-    });
     // Testing:
     // const {naviService} = this.props.appStore;
     // const this.testItv = setInterval(() => {
