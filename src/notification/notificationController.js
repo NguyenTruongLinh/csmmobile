@@ -84,16 +84,18 @@ class NotificationController extends React.Component {
     PushNotificationIOS.removeEventListener('registrationError');
   }
 
-  static resetBadgeCount = () => {
+  static resetBadgeCount = async () => {
     // __DEV__ && console.log('GOND on reset badge count ...');
-    // if (Platform.OS === 'ios') {
-    //   PushNotificationIOS.setApplicationIconBadgeNumber(0);
-    // } else {
+    if (Platform.OS === 'ios') {
+      const notifs = await this.getCurrentNotifications();
+      __DEV__ && console.log('GOND on reset badge count ...', notifs.length);
+      PushNotificationIOS.setApplicationIconBadgeNumber(notifs.length);
+    } // else {
     //   PushNotification.setApplicationIconBadgeNumber(0);
     // }
-    PushNotification.getApplicationIconBadgeNumber(
-      count => __DEV__ && console.log('GOND on reset badge count: ', count)
-    );
+    // PushNotification.getApplicationIconBadgeNumber(
+    //   count => __DEV__ && console.log('GOND on reset badge count: ', count)
+    // );
   };
 
   checkPermission = async () => {
@@ -310,11 +312,14 @@ class NotificationController extends React.Component {
         }, []);
 
         __DEV__ && console.log('GOND oldest notif: ', oldestNotifIds);
-        // PushNotification.removeDeliveredNotifications([oldestNotif.identifier]);
         PushNotification.removeDeliveredNotifications(oldestNotifIds);
       }
       PushNotification.presentLocalNotification(notificationRequest);
     } else {
+      const currentNotifs = await this.getCurrentNotifications();
+      __DEV__ &&
+        console.log('GOND displayLocalNotification 2: ', currentNotifs);
+
       PushNotification.localNotification(notificationRequest);
     }
     // Platform.OS === 'ios'
@@ -323,6 +328,7 @@ class NotificationController extends React.Component {
 
     // if (!appStore || appStore.appState != 'active') {
     PushNotification.getApplicationIconBadgeNumber(badgeCount => {
+      __DEV__ && console.log('GOND displayLocalNotification 3: ', badgeCount);
       PushNotification.setApplicationIconBadgeNumber(badgeCount + 1);
     });
     // }
