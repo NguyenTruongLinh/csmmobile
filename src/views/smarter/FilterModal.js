@@ -73,7 +73,7 @@ export default class ExceptionSearchModal extends Component {
       dateFrom: props.dateFrom,
       dateTo: props.dateTo,
       selectedSites: props.sites.map(s => s.key),
-      contentHeight: 460,
+      contentHeight: Dimensions.get('window').height * 0.57, // 460,
       waitForSiteData: true,
     };
 
@@ -428,7 +428,7 @@ export default class ExceptionSearchModal extends Component {
               <Text style={styles.siteNameText}>All</Text>
             </View>
           </Ripple>
-          <View style={{height: contentHeight * 0.7}}>
+          <View style={{height: contentHeight * 0.68}}>
             <FlatList
               data={sortedSites}
               keyExtractor={item => 'site_' + item.key}
