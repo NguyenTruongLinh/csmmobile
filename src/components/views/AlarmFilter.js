@@ -436,6 +436,7 @@ export default class AlarmFilter extends Component {
   renderTimePicker = (title, _filterMore) => {
     let stime = this.getTimeData('stime');
     let etime = this.getTimeData('etime');
+    const {dateFrom, dateTo} = this.props;
     __DEV__ && console.log('GOND AlarmFilter renderTimePicker: ', stime, etime);
     let renderContentCustom = (
       <View style={styles.rowListFilter}>
@@ -484,19 +485,25 @@ export default class AlarmFilter extends Component {
 
     let header = (
       <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-        <Text style={{color: CMSColors.PrimaryText, fontWeight: 'bold'}}>
-          {stime + ':00:00'}
-        </Text>
-        <View style={{justifyContent: 'center', marginLeft: 5, marginRight: 5}}>
+        <View style={styles.timeContainer}>
+          <Text style={styles.timeText}>{stime + ':00:00'}</Text>
+          <Text style={styles.dateText}>
+            {dateFrom.toFormat(DateFormat.POS_Filter_Date)}
+          </Text>
+        </View>
+        <View style={styles.timeContainer}>
           <IconCustom
             name="arrow-to"
             size={20}
             color={CMSColors.SecondaryText}
           />
         </View>
-        <Text style={{color: CMSColors.PrimaryText, fontWeight: 'bold'}}>
-          {etime + ':59:59'}
-        </Text>
+        <View style={styles.timeContainer}>
+          <Text style={styles.timeText}>{etime + ':59:59'}</Text>
+          <Text style={styles.dateText}>
+            {dateTo.toFormat(DateFormat.POS_Filter_Date)}
+          </Text>
+        </View>
       </View>
     );
 
@@ -892,4 +899,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eee',
   },
+  timeContainer: {
+    justifyContent: 'center',
+    marginLeft: 5,
+    marginRight: 5,
+    flexDirection: 'column',
+  },
+  timeText: {color: CMSColors.PrimaryText, fontWeight: 'bold'},
+  dateText: {color: CMSColors.SecondaryText, fontSize: 12},
 });
