@@ -100,6 +100,7 @@ public class CommunicationSocket implements Runnable {
     private int width = 0;
     private int height = 0;
     protected boolean needRelayHandshake;
+    protected boolean isRelayHandshakeDone;
     protected String clientIp;
 
     public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
@@ -119,6 +120,7 @@ public class CommunicationSocket implements Runnable {
         Search = search;
         this.PlaybyChannel = bychannel;
         this.needRelayHandshake = serverinfo.isRelay && serverinfo.relayConnectable;
+        this.isRelayHandshakeDone = false;
         this.clientIp = clientIp;
         Log.d("GOND", "relay CommunicationSocket constructor");
     }
@@ -210,46 +212,93 @@ public class CommunicationSocket implements Runnable {
     }
 
     private byte[] composeRelayHandshakeRequest(byte[] json) {
-        byte[] header = new byte[68];
-        String appName = "CMSMobile";
+        if(needRelayHandshake) {
+            byte[] header = new byte[68];
+            String appName = "CMSMobile";
 //        String IPAddress = this.clientIp;
-        int contentLen = json.length + header.length;
-        byte[] contentLenBytes = utils.IntToByteArrayReversed(contentLen);
+            int contentLen = json.length + header.length;
+            byte[] contentLenBytes = utils.IntToByteArrayReversed(contentLen);
 
-        Log.d("GOND", "relay contentLen = " + contentLen);
+            Log.d("GOND", "relay contentLen = " + contentLen);
 
-        byte[] appNameBytes = appName.getBytes(StandardCharsets.UTF_8);
-        byte[] IPAddressBytes = this.clientIp.getBytes(StandardCharsets.UTF_8);
+            byte[] appNameBytes = appName.getBytes(StandardCharsets.UTF_8);
+            byte[] IPAddressBytes = this.clientIp.getBytes(StandardCharsets.UTF_8);
 
-        int reversed = utils.ByteArrayOfCToIntJava( contentLenBytes,0);
+            int reversed = utils.ByteArrayOfCToIntJava(contentLenBytes, 0);
 
-        Log.d("GOND", "relay reversed = " + reversed);
+            Log.d("GOND", "relay reversed = " + reversed);
 
-        System.arraycopy(contentLenBytes, 0, header, 0, contentLenBytes.length);
-        System.arraycopy(appNameBytes, 0, header, 4, appNameBytes.length);
-        System.arraycopy(IPAddressBytes, 0, header, 24, IPAddressBytes.length);
+            System.arraycopy(contentLenBytes, 0, header, 0, contentLenBytes.length);
+            System.arraycopy(appNameBytes, 0, header, 4, appNameBytes.length);
+            System.arraycopy(IPAddressBytes, 0, header, 24, IPAddressBytes.length);
 
-        byte result[] = new byte[header.length + json.length];
+            byte result[] = new byte[header.length + json.length];
 
-        System.arraycopy(header, 0, result, 0, header.length);
-        System.arraycopy(json, 0, result, header.length, json.length);
-        return result;
+            System.arraycopy(header, 0, result, 0, header.length);
+            System.arraycopy(json, 0, result, header.length, json.length);
+            return result;
+        }else{
+            return json;
+        }
     }
 
-    private static final int HEADER_LEN = 68;
+    private static final int RELAY_HEADER_LEN = 68;
+
+//    private byte[] parseRelayResponse() {
+//        JSONObject result = null;
+//        byte[] headerBytes = new byte[RELAY_HEADER_LEN];
+//        ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0);
+//
+//        int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
+//        Log.d("GOND", "relay parseRelayHandshakeResponse totalLen = " + totalLen);
+//
+//        byte[] jsonBytes = new byte[totalLen - RELAY_HEADER_LEN];
+//        ReadBlock(InPut, totalLen - RELAY_HEADER_LEN, jsonBytes, 0);
+////        String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
+////        Log.d("GOND", "relay parseRelayHandshakeResponse jsonString = " + jsonString);
+//        return jsonBytes;
+//    }
+
     private JSONObject parseRelayHandshakeResponse() {
         JSONObject result = null;
-        byte[] headerBytes = new byte[HEADER_LEN];
-        ReadBlock(InPut, HEADER_LEN, headerBytes, 0);
+        byte[] headerBytes = new byte[RELAY_HEADER_LEN];
+        ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0);
 
         int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
         Log.d("GOND", "relay parseRelayHandshakeResponse totalLen = " + totalLen);
 
-        byte[] jsonBytes = new byte[totalLen - HEADER_LEN];
-        ReadBlock(InPut, totalLen - HEADER_LEN, jsonBytes, 0);
+        byte[] jsonBytes = new byte[totalLen - RELAY_HEADER_LEN];
+        ReadBlock(InPut, totalLen - RELAY_HEADER_LEN, jsonBytes, 0);
+//        String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
+//        Log.d("GOND", "relay parseRelayHandshakeResponse jsonString = " + jsonString);
+//        return jsonBytes;
+//        byte[] jsonBytes = parseRelayResponse();
         String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
         Log.d("GOND", "relay parseRelayHandshakeResponse jsonString = " + jsonString);
-        return result;
+        isRelayHandshakeDone = jsonString.contains("session_id");
+        return null;
+    }
+
+    void notifyMakeRelayHandshake(String service) {
+        Log.d("GOND", "relay notifyMakeRelayHandshake service = " + service);
+        if(this.needRelayHandshake) {
+            JSONObject json = new JSONObject();
+
+            try {
+                json.put("command", "connect");
+                json.put("id", ServerInfo.serverID);//"nghia!@#"
+                json.put("service", "com.i3.srx_pro.mobile." + service);//video//control
+                json.put("serial_number", ServerInfo.haspLicense);//"nghia-a");
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return;
+            }
+
+            byte[] jsonBytes = json.toString().getBytes(StandardCharsets.UTF_8);
+            WriteSocketData(jsonBytes);//composeRelayHandshakeRequest()
+            Log.d("GOND", "relay request content = " + json.toString());
+            parseRelayHandshakeResponse();
+        }
     }
 
     @Override
@@ -268,23 +317,23 @@ public class CommunicationSocket implements Runnable {
                 InPut = new BufferedInputStream(socket.getInputStream());
                 OutPut = new BufferedOutputStream(socket.getOutputStream());
 
-                if(this.needRelayHandshake) {
-                    JSONObject json = new JSONObject();
-                    json.put("command", "connect");
-                    json.put("id", ServerInfo.serverID);//"nghia!@#"
-                    json.put("service", "com.i3.srx_pro.mobile.control");//video
-                    json.put("serial_number", ServerInfo.haspLicense);//"nghia-a");
-
-                    byte[] jsonBytes = json.toString().getBytes(StandardCharsets.UTF_8);
-
-                    WriteSocketData(composeRelayHandshakeRequest(jsonBytes));
-
-                    Log.d("GOND", "relay request content = " + json.toString());
-
-                    parseRelayHandshakeResponse();
-
+                Log.d("GOND", "relay notifyMakeRelayHandshake service 0000");
+                try {
+                    notifyMakeRelayHandshake("control");
+                }catch (Exception e) {
+                    Log.d("GOND", "relay notifyMakeRelayHandshake Exception e = " + e);
                 }
-                ServerInfo.serverVersion = this.ReadServerVersion(InPut);
+                Log.d("GOND", "relay notifyMakeRelayHandshake service 1111");
+
+                try {
+                    ServerInfo.serverVersion = this.ReadServerVersion(InPut);
+                    Log.d("GOND", "relay ServerInfo.serverVersion = " + ServerInfo.serverVersion);
+                }catch (Exception e) {
+                    Log.d("GOND", "relay ReadServerVersion Exception e = " + e);
+                }
+
+                Log.d("GOND", "relay notifyMakeRelayHandshake service 2222");
+
                 if (ServerInfo.serverVersion < 0)//
                 {
                     OnHandlerMessage(Constant.EnumVideoPlaybackSatus.SVR_REJECT_ACCEPT, null);
@@ -320,7 +369,7 @@ public class CommunicationSocket implements Runnable {
                 while (!Thread.currentThread().isInterrupted() && running) {
                     //socket.setSoTimeout(Constant.socketReadTimeOut);
                     //rcv_len = utils.ReadBlock( input, cmdsate.remain_len, rcv, rcv_offset);
-                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset);
+                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, needRelayHandshake);
                     if (rcv_len == 0)
                         continue;
                     rcv_offset += rcv_len;
@@ -374,8 +423,6 @@ public class CommunicationSocket implements Runnable {
                 }
             }catch (IOException ioe){
                 Log.e("GOND", "relay IOException" + ioe.toString());
-            }catch (JSONException je){
-                Log.e("GOND", "relay JSONException" + je.toString());
             }
             finally {
                 CloseSocket();
@@ -396,6 +443,17 @@ public class CommunicationSocket implements Runnable {
         }
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_STOP;
         running = false;
+    }
+
+    protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader)
+    {
+        if(hasRelayHeader) {
+            byte[] headerBytes = new byte[RELAY_HEADER_LEN];
+            ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0);
+            int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
+            Log.d("GOND", "relay ReadServerVersion totalLen = " + totalLen);
+        }
+        return ReadBlock(_is, _length, buff, offset);
     }
 
     protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset)
@@ -1268,13 +1326,14 @@ public class CommunicationSocket implements Runnable {
 
     private int ReadServerVersion( BufferedInputStream input)
     {
+        Log.d("GOND", "relay ReadServerVersion needRelayHandshake = " + needRelayHandshake);
         byte[] header = new byte[ Integer.BYTES];
-       int len =  utils.ReadBlock( input, Integer.BYTES, header,0 );
+       int len =  ReadBlock( input, Integer.BYTES, header,0 , needRelayHandshake);
        if( len != Integer.BYTES)
            return -1;
         int msg_len = utils.ByteArrayOfCToIntJava( header,0);
         byte[] buffer = new byte[msg_len];
-        len = utils.ReadBlock(input, msg_len, buffer, 0);
+        len = ReadBlock(input, msg_len, buffer, 0);
         if( len != msg_len)
             return -1;
 
@@ -1289,18 +1348,22 @@ public class CommunicationSocket implements Runnable {
                 return  -1;
 
             int result = Integer.parseInt(strSvrVersion);
+
+            Log.d("GOND", "relay strSvrVersion = " + result);
             return  result;
         }
         catch ( Exception e) {
-            System.out.println(e.getMessage());
+            Log.d("GOND", "relay ReadServerVersion Exception e = " + e);
             return -1;
         }
     }
+
      synchronized protected int WriteSocketData(byte[] buff){
 
 
-           return  utils.WriteBlock( this.OutPut, buff);
+           return  utils.WriteBlock( this.OutPut, composeRelayHandshakeRequest(buff));
     }
+
     public void PauseVideo()
     {
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_PAUSE;
