@@ -2519,6 +2519,7 @@ export const VideoModel = types
           return true;
         }
         self.sendVSCCommand(VSCCommand.TIMEZONE, channelNo, {sid});
+        self.waitForTimezone = true;
       }),
       getDVRTimezoneDirectly: flow(function* (sid) {
         if (self.isInVideoView && self.waitForTimezone) {
