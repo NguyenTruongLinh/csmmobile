@@ -219,14 +219,14 @@ public class CommunicationSocket implements Runnable {
             int contentLen = json.length + header.length;
             byte[] contentLenBytes = utils.IntToByteArrayReversed(contentLen);
 
-            Log.d("GOND", "relay contentLen = " + contentLen);
+//            Log.d("GOND", "relay contentLen = " + contentLen);
 
             byte[] appNameBytes = appName.getBytes(StandardCharsets.UTF_8);
             byte[] IPAddressBytes = this.clientIp.getBytes(StandardCharsets.UTF_8);
 
             int reversed = utils.ByteArrayOfCToIntJava(contentLenBytes, 0);
 
-            Log.d("GOND", "relay reversed = " + reversed);
+//            Log.d("GOND", "relay reversed = " + reversed);
 
             System.arraycopy(contentLenBytes, 0, header, 0, contentLenBytes.length);
             System.arraycopy(appNameBytes, 0, header, 4, appNameBytes.length);
@@ -280,7 +280,7 @@ public class CommunicationSocket implements Runnable {
     }
 
     void notifyMakeRelayHandshake(String service) {
-        Log.d("GOND", "relay notifyMakeRelayHandshake service = " + service);
+        Log.d("GOND", "relay notifyMakeRelayHandshake service = " + service + " this.needRelayHandshake = " + this.needRelayHandshake);
         if(this.needRelayHandshake) {
             JSONObject json = new JSONObject();
 
@@ -295,7 +295,7 @@ public class CommunicationSocket implements Runnable {
             }
 
             byte[] jsonBytes = json.toString().getBytes(StandardCharsets.UTF_8);
-            WriteSocketData(jsonBytes);//composeRelayHandshakeRequest()
+            WriteSocketData(jsonBytes, "notifyMakeRelayHandshake");//composeRelayHandshakeRequest()
             Log.d("GOND", "relay request content = " + json.toString());
             parseRelayHandshakeResponse();
         }
@@ -317,22 +317,14 @@ public class CommunicationSocket implements Runnable {
                 InPut = new BufferedInputStream(socket.getInputStream());
                 OutPut = new BufferedOutputStream(socket.getOutputStream());
 
-                Log.d("GOND", "relay notifyMakeRelayHandshake service 0000");
                 try {
                     notifyMakeRelayHandshake("control");
                 }catch (Exception e) {
-                    Log.d("GOND", "relay notifyMakeRelayHandshake Exception e = " + e);
-                }
-                Log.d("GOND", "relay notifyMakeRelayHandshake service 1111");
-
-                try {
-                    ServerInfo.serverVersion = this.ReadServerVersion(InPut);
-                    Log.d("GOND", "relay ServerInfo.serverVersion = " + ServerInfo.serverVersion);
-                }catch (Exception e) {
-                    Log.d("GOND", "relay ReadServerVersion Exception e = " + e);
+                    Log.e("GOND", "relay notifyMakeRelayHandshake Exception e = " + e);
                 }
 
-                Log.d("GOND", "relay notifyMakeRelayHandshake service 2222");
+                ServerInfo.serverVersion = this.ReadServerVersion(InPut);
+                Log.d("GOND", "relay ServerInfo.serverVersion = " + ServerInfo.serverVersion);
 
                 if (ServerInfo.serverVersion < 0)//
                 {
@@ -369,13 +361,14 @@ public class CommunicationSocket implements Runnable {
                 while (!Thread.currentThread().isInterrupted() && running) {
                     //socket.setSoTimeout(Constant.socketReadTimeOut);
                     //rcv_len = utils.ReadBlock( input, cmdsate.remain_len, rcv, rcv_offset);
-                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, needRelayHandshake);
+                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, needRelayHandshake, "rcv_len");
                     if (rcv_len == 0)
                         continue;
                     rcv_offset += rcv_len;
                     switch (cmdsate.state) {
                         case Constant.EnumBufferState.COMMAND_GET:
                             cmd_id = utils.ByteArrayCToChar(rcv, 0);
+                            Log.d("GOND", "relay cmdsate.state = COMMAND_GET cmd_id = " + (int) cmd_id);
                             rcv_offset = 0;
                             cmdsate.cmdid = cmd_id;
                             SelectCommand(InPut, cmdsate);
@@ -383,6 +376,7 @@ public class CommunicationSocket implements Runnable {
                             break;
                         case Constant.EnumBufferState.COMMAND_HEADER:
                             cmdsate.msg_len = utils.ByteArrayOfCToIntJava(rcv, 0);
+                            Log.d("GOND", "relay cmdsate.state = COMMAND_HEADER cmdsate.msg_len = " + cmdsate.msg_len);
                             rcv_offset = 0;
                             if (cmdsate.msg_len <= 0) {
                                 cmdsate.ResetState();
@@ -396,29 +390,30 @@ public class CommunicationSocket implements Runnable {
                             }
                             break;
                         case Constant.EnumBufferState.COMMAND_DATA:
-                        if( rcv_offset >= cmdsate.msg_len)//complete
-                        {
-                            //remain = Character.BYTES;
-                            //state = Constant.EnumBufferState.COMMAND_GET;
-
-                            this.ProcessCommand(InPut, cmd_id, rcv, cmdsate.msg_len, 0);
-
-                            if( cmd_id == Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO)
+                            Log.d("GOND", "relay cmdsate.state = COMMAND_DATA");
+                            if( rcv_offset >= cmdsate.msg_len)//complete
                             {
-                                video_handler = new VideoSocket( handler, this.ServerInfo,this.str_Channel, this.Search, this.PlaybyChannel, this.clientIp);
-                                if (width > 0 && height > 0)
-                                    video_handler.setViewDimensions(width, height);
-                                thread_Video_socket = new Thread( video_handler);
-                                thread_Video_socket.start();
+                                //remain = Character.BYTES;
+                                //state = Constant.EnumBufferState.COMMAND_GET;
+
+                                this.ProcessCommand(InPut, cmd_id, rcv, cmdsate.msg_len, 0);
+
+                                if( cmd_id == Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO)
+                                {
+                                    video_handler = new VideoSocket( handler, this.ServerInfo,this.str_Channel, this.Search, this.PlaybyChannel, this.clientIp);
+                                    if (width > 0 && height > 0)
+                                        video_handler.setViewDimensions(width, height);
+                                    thread_Video_socket = new Thread( video_handler);
+                                    thread_Video_socket.start();
+                                }
+                                rcv_offset = 0;
+                                cmdsate.ResetState();
                             }
-                            rcv_offset = 0;
-                            cmdsate.ResetState();
-                        }
-                        else
-                        {
-                            cmdsate.remain_len = cmdsate.msg_len - rcv_offset;
-                        }
-                        break;
+                            else
+                            {
+                                cmdsate.remain_len = cmdsate.msg_len - rcv_offset;
+                            }
+                            break;
                     }
                 }
             }catch (IOException ioe){
@@ -445,14 +440,16 @@ public class CommunicationSocket implements Runnable {
         running = false;
     }
 
-    protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader)
+    protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader, String debug)
     {
+
         if(hasRelayHeader) {
             byte[] headerBytes = new byte[RELAY_HEADER_LEN];
             ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0);
             int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
-            Log.d("GOND", "relay ReadServerVersion totalLen = " + totalLen);
-        }
+            Log.d("GOND", "relay ReadBlock hasRelayHeader totalLen = " + totalLen + " debug = " + debug);
+        }else
+            Log.d("GOND", "relay ReadBlock NoRelayHeader debug = " + debug);
         return ReadBlock(_is, _length, buff, offset);
     }
 
@@ -498,69 +495,69 @@ public class CommunicationSocket implements Runnable {
         switch (cmd_id)
         {
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_EXIT:
+            case Constant.EnumCmdMsg.MOBILE_MSG_EXIT: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_EXIT:");
                 state.ResetState();
                 running = false;
                 Log.d("GOND", "MOBILE_CANNOT_CONNECT_SERVER: received exit message");
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_CANNOT_CONNECT_SERVER, null );
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_VIDEO_SOCKET_ERROR:
+            case Constant.EnumCmdMsg.MOBILE_MSG_VIDEO_SOCKET_ERROR: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_VIDEO_SOCKET_ERROR:");
                 state.ResetState();
                 //this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
                 //running = false;
                 break;
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_KEEP_ALIVE:
+            case Constant.EnumCmdMsg.MOBILE_MSG_KEEP_ALIVE: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_KEEP_ALIVE:");
                 state.ResetState();
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_CURRENT_USER:
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_CURRENT_USER: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_CURRENT_USER:");
                 state.ResetState();
                 running = false;
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SERVER_CHANGED_CURRENT_USER, null );
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_SERVER_INFO:
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_SERVER_INFO: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_SERVER_INFO:");
                 state.ResetState();
                 running = false;
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SERVER_CHANGED_SERVER_INFO, null );
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_PORTS:
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_PORTS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_PORTS:");
                 state.ResetState();
                 running = false;
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SERVER_CHANGED_PORTS, null );
                 break;
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_MOBILE_SEND_SETTINGS:
+            case Constant.EnumCmdMsg.MOBILE_MSG_MOBILE_SEND_SETTINGS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_MOBILE_SEND_SETTINGS:");
                 state.state = Constant.EnumBufferState.COMMAND_DATA;
                 state.msg_len = Byte.BYTES;
                 state.remain_len = Byte.BYTES;
                 break;
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO:
+            case Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO:");
                 state.state = Constant.EnumBufferState.COMMAND_DATA;
                 state.msg_len = Integer.BYTES;
                 state.remain_len = Integer.BYTES;
                 break;
-            case  Constant.EnumCmdMsg.MOBILE_MSG_LOGIN:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEND_CAMERA_LIST:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_DAY_LIST:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS: {
+            case  Constant.EnumCmdMsg.MOBILE_MSG_LOGIN: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_LOGIN:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEND_CAMERA_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEND_CAMERA_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_DAY_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_DAY_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS: { Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS: {");
                 state.state = Constant.EnumBufferState.COMMAND_HEADER;
                 state.remain_len = Integer.BYTES;
                 state.msg_len = Integer.BYTES;
                 break;
             }
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEND_ALARM_LIST:
-            case Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_LIST:
-            case Constant.EnumCmdMsg.MOBILE_MSG_PREVIOUS_ALARM_LIST:
-                    byte status = utils.readByte( in );
-                    if( status == -1)//socket failed
-                    {
-                        ret = -1;
-                        break;
-                    }
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEND_ALARM_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEND_ALARM_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_PREVIOUS_ALARM_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_PREVIOUS_ALARM_LIST:");
+                byte status = utils.readByte( in );
+                if( status == -1)//socket failed
+                {
+                    ret = -1;
+                    break;
+                }
                 if(status == Constant.EnumStatusMsg.MOBILE_MSG_SUCCESS)
                 {
                     status = utils.readByte( in );
@@ -571,28 +568,28 @@ public class CommunicationSocket implements Runnable {
                     state.ResetState();
 
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_SETPOS:
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_SETPOS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_SETPOS:");
                 state.ResetState();
                 break;
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_RECORDING_ONLY_CANT_PLAY_VIDEO:
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_RECORDING_ONLY_CANT_PLAY_VIDEO: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_RECORDING_ONLY_CANT_PLAY_VIDEO:");
                 state.ResetState();
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SERVER_RECORDING_ONLY, null);
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_NEW_ALARM_DETECTED:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SNAPSHOT:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_PLAY_FW:
+            case Constant.EnumCmdMsg.MOBILE_MSG_NEW_ALARM_DETECTED: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEW_ALARM_DETECTED:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SNAPSHOT: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SNAPSHOT:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_PLAY_FW: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_PLAY_FW:");
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_BW:
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STOP:
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_BW: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_BW:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STOP: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STOP:");
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_VIEW_ALARM_IMAGES:
-            case Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_IMAGE:
+            case Constant.EnumCmdMsg.MOBILE_MSG_VIEW_ALARM_IMAGES: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_VIEW_ALARM_IMAGES:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_IMAGE: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_IMAGE:");
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_ADD_IP_CAMERAS:
-            case Constant.EnumCmdMsg.MOBILE_MSG_REMOVE_IP_CAMERAS:
+            case Constant.EnumCmdMsg.MOBILE_MSG_ADD_IP_CAMERAS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_ADD_IP_CAMERAS:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_REMOVE_IP_CAMERAS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_REMOVE_IP_CAMERAS:");
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_FW:
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_FW: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_FW:");
                 state.ResetState();
                 break;
 
@@ -629,9 +626,9 @@ public class CommunicationSocket implements Runnable {
 
                                 this.ServerInfo.ConnectionIndex = Integer.parseInt(strConnectionIndex);
                                 //utils.WriteBlock(out, utils.IntToByteArrayOfC(this.ServerInfo.ConnectionIndex));
-                                WriteSocketData(utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS, null));
+                                WriteSocketData(utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS, null), "MOBILE_MSG_SERVER_SEND_SETTINGS");
                                 //WriteSocketData(utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SEND_CAMERA_LIST, null));
-                                WriteSocketData(utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG, null));
+                                WriteSocketData(utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG, null), "MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG");
                                /*
                                 if( ServerInfo.getisLive() == true ) {
                                     if (this.PlaybyChannel)
@@ -718,7 +715,7 @@ public class CommunicationSocket implements Runnable {
             }
             case  Constant.EnumCmdMsg.MOBILE_MSG_MOBILE_SEND_SETTINGS:
                 if (ServerInfo.getisLive() == true)
-                WriteSocketData(utils.MsgBuffer( Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO, null ));
+                WriteSocketData(utils.MsgBuffer( Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO, null ), "MOBILE_MSG_START_SEND_VIDEO");
                 break;
             case  Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO:
                 ServerInfo.serverVideoPort = utils.ByteArrayOfCToIntJava( buffer,0);
@@ -728,13 +725,13 @@ public class CommunicationSocket implements Runnable {
                 this.ServerInfo.setVideoInput(this.ParserChannel(s));
                 if (ServerInfo.getisLive() == false)
                 {
-                    WriteSocketData(utils.MsgBuffer( Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO, null )); //duck marked
+                    WriteSocketData(utils.MsgBuffer( Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO, null ), "MOBILE_MSG_START_SEND_VIDEO"); //duck marked
                 }
                 if (ServerInfo.getisLive() == true) {
-                    WriteSocketData( utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE, null));
+                    WriteSocketData( utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE, null), "MOBILE_MSG_SERVER_SEND_TIMEZONE");
 
                 } else {
-                    WriteSocketData( utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE, null));
+                    WriteSocketData( utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE, null), "MOBILE_MSG_SERVER_SEND_TIMEZONE");
                 }
                 //
             }
@@ -958,15 +955,15 @@ public class CommunicationSocket implements Runnable {
                     byte[] send_data = new byte[msg_buffer.length+msg_stop.length];
                     System.arraycopy(msg_buffer,0,send_data,0,msg_buffer.length);
                     System.arraycopy(msg_stop,0,send_data,msg_buffer.length,msg_stop.length);
-                    WriteSocketData(send_data);
+                    WriteSocketData(send_data, "MOBILE_MSG_PAUSE_SEND_VIDEO OTHERS");
                     //WriteSocketData(utils.MsgBuffer( Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO, null )); //duck marked
-                    WriteSocketData(MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, timezone.getTimeZone(), channels, this.HDMode));
+                    WriteSocketData(MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, timezone.getTimeZone(), channels, this.HDMode), "MSG_SEARCH_REQUEST_DAY_LIST");
                 }
                 else
                 {
                     int[] v_index = this.VideoSourceIndex();
                     byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(v_index,this.HDMode);
-                    WriteSocketData( msg_buffer);
+                    WriteSocketData( msg_buffer, "MOBILE_MSG_MOBILE_SEND_SETTINGS");
                 }
             }
                 break;
@@ -1007,7 +1004,7 @@ public class CommunicationSocket implements Runnable {
                         msg_buff = MsgCommandItem.MSG_SEARCH_REQUEST_TIME_INTERVAL(this.ServerInfo, channels);
                         //String str = new String( msg_buff, 6, msg_buff.length - 6);
                         //System.out.println( str);
-                        WriteSocketData(  msg_buff);
+                        WriteSocketData(  msg_buff, "MSG_SEARCH_REQUEST_TIME_INTERVAL");
 
                     }
                     else
@@ -1065,14 +1062,14 @@ public class CommunicationSocket implements Runnable {
 //                byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(v_index);
 //                utils.WriteBlock(out, msg_buffer);
 
-               WriteSocketData( utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null));
+               WriteSocketData( utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null), "MOBILE_MSG_PAUSE_SEND_VIDEO");
                 //byte[]   msg_buffer = MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, v_index);
 
                 byte[]  msg_buffer = MsgCommandItem.MSG_SEARCH_REQUEST_SETPOS(this.ServerInfo, v_channel, 0, this.HDMode);
-                WriteSocketData(  msg_buffer);
+                WriteSocketData(  msg_buffer, "MSG_SEARCH_REQUEST_SETPOS");
 
                 msg_buffer = MsgCommandItem.MSG_SEARCH_REQUEST_PLAY_FW(this.ServerInfo, v_channel,0, this.HDMode);
-                WriteSocketData( msg_buffer);
+                WriteSocketData( msg_buffer, "MSG_SEARCH_REQUEST_PLAY_FW");
 
 
 
@@ -1241,7 +1238,7 @@ public class CommunicationSocket implements Runnable {
                     );
             //out.write(loginBuff);
             //out.flush();
-            WriteSocketData(loginBuff);
+            WriteSocketData(loginBuff, "SendLogin");
             return 1;
         }
         catch (Exception ex)
@@ -1328,7 +1325,7 @@ public class CommunicationSocket implements Runnable {
     {
         Log.d("GOND", "relay ReadServerVersion needRelayHandshake = " + needRelayHandshake);
         byte[] header = new byte[ Integer.BYTES];
-       int len =  ReadBlock( input, Integer.BYTES, header,0 , needRelayHandshake);
+       int len =  ReadBlock( input, Integer.BYTES, header,0 , needRelayHandshake, "ReadServerVersion");
        if( len != Integer.BYTES)
            return -1;
         int msg_len = utils.ByteArrayOfCToIntJava( header,0);
@@ -1358,8 +1355,9 @@ public class CommunicationSocket implements Runnable {
         }
     }
 
-     synchronized protected int WriteSocketData(byte[] buff){
+     synchronized protected int WriteSocketData(byte[] buff, String debug){
 
+         Log.d("GOND", "relay WriteSocketData debug = " + debug);
 
            return  utils.WriteBlock( this.OutPut, composeRelayHandshakeRequest(buff));
     }
@@ -1626,6 +1624,8 @@ public class CommunicationSocket implements Runnable {
         protected Integer doInBackground(byte[]... buff){
 
             int ret = utils.WriteBlock( this.writer, buff[0]);
+
+            Log.d("GOND", "relay WriteBlock SendBufferTask");
             return  Integer.valueOf(ret);
         }
     }
