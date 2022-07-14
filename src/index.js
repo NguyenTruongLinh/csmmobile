@@ -26,7 +26,7 @@ const Main = () => {
     onNotification: notification => {
       __DEV__ && console.log('GOND onNotification evt: ', notification);
       const {userInteraction, action} = notification;
-      if (userInteraction && action) {
+      if (userInteraction && (Platform.OS != 'ios' || action)) {
         __DEV__ &&
           console.log(
             'GOND PN onNotification interation: ',
