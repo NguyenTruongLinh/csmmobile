@@ -34,7 +34,15 @@ class CMSModal extends Component {
 
   componentWillUnmount() {
     this._isMounted = false;
-    if (this.state.isVisible && modalRef) {
+    const {modalRef} = this.props.appStore;
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND CMSModal willUnmount: ',
+    //     modalRef,
+    //     this.props.isVisible
+    //   );
+    if (this.props.isVisible && modalRef) {
+      __DEV__ && console.log('GOND CMSModal willUnmount: 1');
       const {onDismiss} = this.props;
       modalRef.updateProps({isVisible: false});
       if (onDismiss && typeof onDismiss == 'function') onDismiss();

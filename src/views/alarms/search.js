@@ -115,7 +115,7 @@ class AlarmsSearchView extends Component {
       };
     } else {
       //return params.aty ? {...params} : {...params, aty: AlertType_Support };
-
+      // __DEV__ && console.log('GOND ALARM params: ', params);
       if (params.vty) {
         let baty;
         if (params.aty) {
