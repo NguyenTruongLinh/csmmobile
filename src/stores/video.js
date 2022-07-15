@@ -2043,7 +2043,7 @@ export const VideoModel = types
         }
 
         let result = true;
-        __DEV__ && console.log('GOND get cloud type res = ', res);
+        __DEV__ && console.log('GOND get cloud type res = ', res, res.Type);
         if (typeof res === 'boolean') {
           self.cloudType = res === true ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
         } else if (
@@ -2052,12 +2052,22 @@ export const VideoModel = types
           res > CLOUD_TYPE.DEFAULT
         ) {
           self.cloudType = res;
+        } else if (typeof res === 'object') {
+          self.cloudType =
+            !util.isNullOrUndef(res.Type) &&
+            res.Type < CLOUD_TYPE.TOTAL &&
+            res.Type > CLOUD_TYPE.DEFAULT
+              ? parseInt(res.Type)
+              : CLOUD_TYPE.HLS;
+
+          __DEV__ && console.log('GOND get cloud type obj: ', self.cloudType);
         } else {
           __DEV__ &&
             console.log('GOND get cloud type return wrong value, res = ', res);
           //dongpt: temporarily set default values for wrong settings:
-          self.cloudType =
-            res >= CLOUD_TYPE.TOTAL ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
+          self.cloudType = CLOUD_TYPE.HLS;
+          // self.cloudType =
+          //   res >= CLOUD_TYPE.TOTAL ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
           // result = false;
         }
         self.isLoading = false;
