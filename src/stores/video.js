@@ -2046,12 +2046,13 @@ export const VideoModel = types
         __DEV__ && console.log('GOND get cloud type res = ', res, res.Type);
         if (typeof res === 'boolean') {
           self.cloudType = res === true ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
-        } else if (
-          typeof res === 'number' &&
-          res < CLOUD_TYPE.TOTAL &&
-          res > CLOUD_TYPE.DEFAULT
-        ) {
-          self.cloudType = res;
+        } else if (typeof res === 'number') {
+          self.cloudType =
+            res >= CLOUD_TYPE.TOTAL
+              ? CLOUD_TYPE.HLS
+              : res < CLOUD_TYPE.DIRECTION
+              ? CLOUD_TYPE.DIRECTION
+              : res;
         } else if (typeof res === 'object') {
           self.cloudType =
             !util.isNullOrUndef(res.Type) &&
