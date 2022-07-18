@@ -4096,7 +4096,7 @@ export const VideoModel = types
           !self.androidDataUsageStream ||
           self.androidDataUsageStream.id != stream.id
         ) {
-          stream.targetUrl.resetDataUsageInfo();
+          if (stream.targetUrl) stream.targetUrl.resetDataUsageInfo();
           self.androidDataUsageStream = stream;
         }
       },
