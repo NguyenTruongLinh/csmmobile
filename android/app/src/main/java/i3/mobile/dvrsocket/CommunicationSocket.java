@@ -357,13 +357,21 @@ public class CommunicationSocket implements Runnable {
                 } catch (SocketException ex) {
                 } catch (IllegalArgumentException iex) {
                 }
-
+                int MAX_LOOP = 20;
+                int loop = 0;
                 while (!Thread.currentThread().isInterrupted() && running) {
+                    if(loop >= MAX_LOOP) break;
+                    loop++;
+                    Log.d("GOND", "relay loop = " + loop + " ------------------------------------------------- ");
                     //socket.setSoTimeout(Constant.socketReadTimeOut);
                     //rcv_len = utils.ReadBlock( input, cmdsate.remain_len, rcv, rcv_offset);
                     rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, needRelayHandshake, "rcv_len");
-                    if (rcv_len == 0)
+                    if (rcv_len == 0) {
+                        Log.d("GOND", "relay rcv_len == 0 continue");
                         continue;
+                    }else{
+
+                    }
                     rcv_offset += rcv_len;
                     switch (cmdsate.state) {
                         case Constant.EnumBufferState.COMMAND_GET:
@@ -447,9 +455,9 @@ public class CommunicationSocket implements Runnable {
             byte[] headerBytes = new byte[RELAY_HEADER_LEN];
             ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0);
             int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
-            Log.d("GOND", "relay ReadBlock hasRelayHeader totalLen = " + totalLen + " debug = " + debug);
+            Log.d("GOND", "relay ReadBlock hasRelayHeader _length = " + _length + " totalLen = " + totalLen + " debug = " + debug);
         }else
-            Log.d("GOND", "relay ReadBlock NoRelayHeader debug = " + debug);
+            Log.d("GOND", "relay ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
         return ReadBlock(_is, _length, buff, offset);
     }
 
@@ -963,7 +971,7 @@ public class CommunicationSocket implements Runnable {
                 {
                     int[] v_index = this.VideoSourceIndex();
                     byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(v_index,this.HDMode);
-                    WriteSocketData( msg_buffer, "MOBILE_MSG_MOBILE_SEND_SETTINGS");
+                    WriteSocketData( msg_buffer, "ProcessCommand MOBILE_MSG_MOBILE_SEND_SETTINGS");
                 }
             }
                 break;
