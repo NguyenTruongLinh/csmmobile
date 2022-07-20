@@ -103,6 +103,9 @@ public class CommunicationSocket implements Runnable {
     protected boolean isRelayHandshakeDone;
     protected String clientIp;
 
+    protected boolean withRelayHeader = false;
+    protected int relayHeaderBlockRemainLen = 0;
+    
     public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
         //this.message = message;
         //this.hostAddress = address;
@@ -122,7 +125,7 @@ public class CommunicationSocket implements Runnable {
         this.needRelayHandshake = serverinfo.isRelay && serverinfo.relayConnectable;
         this.isRelayHandshakeDone = false;
         this.clientIp = clientIp;
-        Log.d("GOND", "relay CommunicationSocket constructor");
+        Log.d("GOND", "relay CommunicationSocket constructor this.needRelayHandshake = " + this.needRelayHandshake);
     }
 
 
@@ -130,8 +133,8 @@ public class CommunicationSocket implements Runnable {
     {
         try {
             Socket socket = new Socket();
-            SocketAddress sockAdd = new InetSocketAddress(ip, port);
             Log.d("GOND", "relay InetSocketAddress ip = " + ip + " port = " + port);
+            SocketAddress sockAdd = new InetSocketAddress(ip, port);
             socket.connect(sockAdd, Socket_Time_Out);
             Log.d("GOND", "relay socket.connect sockAdd = " + sockAdd + " socket = " + socket);
             return socket;
@@ -195,7 +198,7 @@ public class CommunicationSocket implements Runnable {
         }
     }
 
-    private Socket InitRelaySocket()
+    protected Socket InitRelaySocket()
     {
         if(ServerInfo == null)
             return null;
@@ -262,13 +265,13 @@ public class CommunicationSocket implements Runnable {
     private JSONObject parseRelayHandshakeResponse() {
         JSONObject result = null;
         byte[] headerBytes = new byte[RELAY_HEADER_LEN];
-        ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0);
+        ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0, "parseRelayHandshakeResponse");
 
         int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
         Log.d("GOND", "relay parseRelayHandshakeResponse totalLen = " + totalLen);
 
         byte[] jsonBytes = new byte[totalLen - RELAY_HEADER_LEN];
-        ReadBlock(InPut, totalLen - RELAY_HEADER_LEN, jsonBytes, 0);
+        ReadBlock(InPut, totalLen - RELAY_HEADER_LEN, jsonBytes, 0, "parseRelayHandshakeResponse");
 //        String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
 //        Log.d("GOND", "relay parseRelayHandshakeResponse jsonString = " + jsonString);
 //        return jsonBytes;
@@ -355,17 +358,18 @@ public class CommunicationSocket implements Runnable {
                 try {
                     socket.setSoTimeout(Constant.socketReadTimeOut);
                 } catch (SocketException ex) {
+                    Log.e("GOND", "relay SocketException = " + ex);
                 } catch (IllegalArgumentException iex) {
+                    Log.e("GOND", "relay IllegalArgumentException = " + iex);
                 }
-                int MAX_LOOP = 20;
-                int loop = 0;
+                withRelayHeader = true;
+                relayHeaderBlockRemainLen = cmdsate.remain_len;
                 while (!Thread.currentThread().isInterrupted() && running) {
-                    if(loop >= MAX_LOOP) break;
-                    loop++;
-                    Log.d("GOND", "relay loop = " + loop + " ------------------------------------------------- ");
+                    Log.d("GOND", "relay loop = " + " ------------------------------------------------- ");
                     //socket.setSoTimeout(Constant.socketReadTimeOut);
                     //rcv_len = utils.ReadBlock( input, cmdsate.remain_len, rcv, rcv_offset);
-                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, needRelayHandshake, "rcv_len");
+                    relayHeaderBlockRemainLen -= cmdsate.remain_len;
+                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, needRelayHandshake && relayHeaderBlockRemainLen <= 0, "rcv_len");
                     if (rcv_len == 0) {
                         Log.d("GOND", "relay rcv_len == 0 continue");
                         continue;
@@ -447,21 +451,23 @@ public class CommunicationSocket implements Runnable {
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_STOP;
         running = false;
     }
-
+    int relayHeaderBlockCount = 0;
     protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader, String debug)
     {
-
         if(hasRelayHeader) {
             byte[] headerBytes = new byte[RELAY_HEADER_LEN];
-            ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0);
+            int readHeaderCount = ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0, debug);
             int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
-            Log.d("GOND", "relay ReadBlock hasRelayHeader _length = " + _length + " totalLen = " + totalLen + " debug = " + debug);
+            Log.d("GOND", "relay ReadBlock hasRelayHeader  _length = " + _length +
+                    " relayHeaderBlockCount = " + relayHeaderBlockCount + " totalLen = " + totalLen + " debug = " + debug);
+            relayHeaderBlockRemainLen = totalLen - RELAY_HEADER_LEN;
+            relayHeaderBlockCount++;
         }else
             Log.d("GOND", "relay ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
-        return ReadBlock(_is, _length, buff, offset);
+        return ReadBlock(_is, _length, buff, offset, debug);
     }
 
-    protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset)
+    protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, String debug)
     {
         int count = 0;
         try {
@@ -474,15 +480,18 @@ public class CommunicationSocket implements Runnable {
         }
         catch (SocketTimeoutException tm)
         {
+            Log.e("GOND", "relay ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
             return  0;
         }
         catch (IndexOutOfBoundsException outex)
         {
+            Log.e("GOND", "relay ReadBlock IndexOutOfBoundsException outex = " + outex + " debug = " + debug);
             return count;
         }
         catch (IOException e)
         {
             count = -1;// socket failed
+            Log.e("GOND", "relay ReadBlock IOException e = " + e + " debug = " + debug);
         }
         // for (int i = offset; i < count; i ++)
         // {
@@ -682,6 +691,7 @@ public class CommunicationSocket implements Runnable {
                 }
                 catch (Exception ex)
                 {
+                    Log.e("GOND", "relay Exception 1 ex = " + ex);
                     ret = 0;
                 }
                 break;
@@ -710,7 +720,7 @@ public class CommunicationSocket implements Runnable {
                     }
                 }
                 catch (Exception ex){
-
+                    Log.e("GOND", "relay Exception 2 ex = " + ex);
                 }
 
                 break;
@@ -1229,7 +1239,7 @@ public class CommunicationSocket implements Runnable {
         }
         catch (Exception e)
         {
-
+            Log.e("GOND", "relay Exception 3 e = " + e);
         }
         return hmap;
     }
@@ -1254,6 +1264,7 @@ public class CommunicationSocket implements Runnable {
             String msg = ex.getMessage();
             Log.d("sendlogin:", msg);
 
+            Log.e("GOND", "relay Exception 3 ex = " + ex);
             return  -1;
         }
     }
@@ -1338,7 +1349,7 @@ public class CommunicationSocket implements Runnable {
            return -1;
         int msg_len = utils.ByteArrayOfCToIntJava( header,0);
         byte[] buffer = new byte[msg_len];
-        len = ReadBlock(input, msg_len, buffer, 0);
+        len = ReadBlock(input, msg_len, buffer, 0, "ReadServerVersion");
         if( len != msg_len)
             return -1;
 
@@ -1598,6 +1609,7 @@ public class CommunicationSocket implements Runnable {
         } catch (Exception e) {
 
             //throw e;
+            Log.e("GOND", "relay Exception 4 e = " + e);
 
         }
 
@@ -1605,20 +1617,27 @@ public class CommunicationSocket implements Runnable {
 
     protected void CloseSocket()
     {
+        Log.d("GOND", "relay CloseSocket");
         if( socket == null)
             return;
         try {
             InPut.close();
             //socket.shutdownInput();
-        }catch (IOException ioe){}
+        }catch (IOException ioe){
+            Log.e("GOND", "relay Exception 5 ioe = " + ioe);
+        }
         try {
             OutPut.close();
             //socket.shutdownOutput();
-        }catch (IOException ioe){}
+        }catch (IOException ioe){
+            Log.e("GOND", "relay Exception 6 ioe = " + ioe);
+        }
         try {
             socket.close();
             socket = null;
-        }catch (IOException ioe){}
+        }catch (IOException ioe){
+            Log.e("GOND", "relay Exception 7 ioe = " + ioe);
+        }
     }
 
     protected class SendBufferTask extends AsyncTask<byte[],Integer,Integer>

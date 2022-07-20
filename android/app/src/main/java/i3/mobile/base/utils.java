@@ -1,5 +1,7 @@
 package i3.mobile.base;
 
+import android.util.Log;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -517,6 +519,7 @@ public class utils {
         }
         catch (IOException ioe)
         {
+            Log.d("GOND", "relay WriteBlock IOException ioe = " + ioe);
             return  -1;
         }
     }

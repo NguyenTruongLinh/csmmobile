@@ -66,7 +66,7 @@ public class VideoSocket extends CommunicationSocket {
     public void run() {
         this.running = true;
         try {
-            this.socket = super.InitSocket(ServerInfo.conntectingIp, ServerInfo.serverVideoPort);
+            this.socket = this.needRelayHandshake ? super.InitRelaySocket() : super.InitSocket(ServerInfo.conntectingIp, ServerInfo.serverVideoPort);
             if( socket.isConnected() == false )
                 OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
         }catch (Exception e)
@@ -107,7 +107,8 @@ public class VideoSocket extends CommunicationSocket {
             {
                 try
                 {
-                    read_len = ReadBlock(InPut, remain_len ,buff, offset, needRelayHandshake, "videoSocket");//utils.ReadBlock(input, remain_len ,buff, offset);
+                    relayHeaderBlockRemainLen -= remain_len;
+                    read_len = ReadBlock(InPut, remain_len ,buff, offset, needRelayHandshake && relayHeaderBlockRemainLen <= 0, "videoSocket");//utils.ReadBlock(input, remain_len ,buff, offset);
                     if( read_len == -1 && running)//socket failed
                     {
                         OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
