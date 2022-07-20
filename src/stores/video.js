@@ -2462,12 +2462,15 @@ export const VideoModel = types
             self.directConnection.isRelay &&
             !self.directConnection.relayInfo.connectable
           ) {
-            snackbarUtil.showToast(
-              VIDEO_TXT.WRONG_RELAY_SERVER_INFO,
-              cmscolors.Danger,
-              Toast.durations.LONG,
-              Toast.positions.BOTTOM
+            setTimeout(
+              () =>
+                snackbarUtil.showToast(
+                  VIDEO_TXT.WRONG_RELAY_SERVER_INFO,
+                  cmscolors.Danger
+                ),
+              1000
             );
+            return false;
           }
           // if (util.isNullOrUndef(channelNo)) {
           //   self.currentGridPage = 0;
