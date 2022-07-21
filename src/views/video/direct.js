@@ -1099,6 +1099,12 @@ class DirectVideoView extends React.Component {
           );
         setTimeout(() => this.reconnect(false), 1000);
         break;
+      case NATIVE_MESSAGE.RELAY_HANDSHAKE_FAILED:
+        snackbarUtil.showToast(
+          STREAM_STATUS.RELAY_HANDSHAKE_FAILED,
+          cmscolors.Danger
+        );
+        break;
       case NATIVE_MESSAGE.SERVER_DISCONNECTED:
       default:
         break;
