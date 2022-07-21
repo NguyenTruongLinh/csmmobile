@@ -14,7 +14,7 @@ import apiService from '../services/api';
 import dbService from '../services/localdb';
 
 import snackbarUtil from '../util/snackbar';
-import {VSC, DVR, Site as SiteRoute} from '../consts/apiRoutes';
+import {VSC, DVR, Site as SiteRoute, Server} from '../consts/apiRoutes';
 import util from '../util/general';
 import {numberValue} from '../util/types';
 
@@ -2023,6 +2023,20 @@ export const VideoModel = types
       },
       // #endregion Build data
       // #region settings
+
+      getAPIVersion: flow(function* () {
+        try {
+          res = yield apiService.get(
+            Server.controller,
+            apiService.configToken.devId,
+            Server.version
+          );
+          self.apiVersion = res != null ? res.Version : '';
+        } catch (err) {
+          __DEV__ && console.log('GOND get api version failed, error: ', err);
+          self.apiVersion = '';
+        }
+      }),
       getCloudSetting: flow(function* (hasVSCPermission = true) {
         let res = undefined;
         if (!hasVSCPermission) {
@@ -2082,6 +2096,7 @@ export const VideoModel = types
             VSC.setting,
             value
           );
+          self.getAPIVersion();
           self.getCloudSetting();
         } catch (err) {
           __DEV__ && console.log('GOND save setting error: ', err);

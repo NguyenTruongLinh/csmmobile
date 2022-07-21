@@ -75,6 +75,7 @@ class VideosettingView extends Component {
 
     this.refreshSaveButton();
     // console.log('GOND comDidMount videoStore: ', this.props.videoStore);
+    this.getAPIVersion();
     this.getCloudSetting();
 
     this.reactions = [
@@ -120,6 +121,9 @@ class VideosettingView extends Component {
         />
       ),
     });
+  };
+  getAPIVersion = async () => {
+    const res = await this.props.videoStore.getAPIVersion();
   };
 
   getCloudSetting = async () => {
