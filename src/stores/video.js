@@ -2455,7 +2455,7 @@ export const VideoModel = types
               channelno: channelNo ?? self.allChannels[0].channelNo,
             }
           );
-          __DEV__ && console.log('GOND direct connect infos: ', res);
+          __DEV__ && console.log('GOND relay direct connect infos: ', res);
           self.directConnection = parseDirectServer(res, self.cloudType);
           // __DEV__ && console.log('GOND direct setChannel 3');
           if (

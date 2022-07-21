@@ -99,13 +99,12 @@ public class CommunicationSocket implements Runnable {
 
     private int width = 0;
     private int height = 0;
-    protected boolean needRelayHandshake;
-    protected boolean isRelayHandshakeDone;
+    protected boolean isRelay;
     protected String clientIp;
 
     protected boolean withRelayHeader = false;
     protected int relayHeaderBlockRemainLen = 0;
-    
+
     public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
         //this.message = message;
         //this.hostAddress = address;
@@ -122,10 +121,9 @@ public class CommunicationSocket implements Runnable {
 
         Search = search;
         this.PlaybyChannel = bychannel;
-        this.needRelayHandshake = serverinfo.isRelay && serverinfo.relayConnectable;
-        this.isRelayHandshakeDone = false;
+        this.isRelay = serverinfo.isRelay && serverinfo.relayConnectable;
         this.clientIp = clientIp;
-        Log.d("GOND", "relay CommunicationSocket constructor this.needRelayHandshake = " + this.needRelayHandshake);
+        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " CommunicationSocket constructor this.isRelay = " + this.isRelay);
     }
 
 
@@ -133,26 +131,26 @@ public class CommunicationSocket implements Runnable {
     {
         try {
             Socket socket = new Socket();
-            Log.d("GOND", "relay InetSocketAddress ip = " + ip + " port = " + port);
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " InetSocketAddress ip = " + ip + " port = " + port);
             SocketAddress sockAdd = new InetSocketAddress(ip, port);
             socket.connect(sockAdd, Socket_Time_Out);
-            Log.d("GOND", "relay socket.connect sockAdd = " + sockAdd + " socket = " + socket);
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " socket.connect sockAdd = " + sockAdd + " socket = " + socket);
             return socket;
         }
         catch (IllegalArgumentException ilex){
-            Log.e("GOND", "relay InitDirectSocket catch ilex: ", ilex);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " InitDirectSocket catch ilex: ", ilex);
         }
         catch (SocketException skex) {
-            Log.e("GOND", "relay InitDirectSocket catch skex: ", skex);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " InitDirectSocket catch skex: ", skex);
         }
         catch (UnsupportedOperationException un_ex) {
-            Log.e("GOND", "relay InitDirectSocket catch un_ex: ", un_ex);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " InitDirectSocket catch un_ex: ", un_ex);
         }
         catch (IOException ioEx) {
-            Log.e("GOND", "relay InitDirectSocket catch ioEx: ", ioEx);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " InitDirectSocket catch ioEx: ", ioEx);
         }
         catch (Exception ex) {
-            Log.e("GOND", "relay InitDirectSocket catch ex: ", ex);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " InitDirectSocket catch ex: ", ex);
         }
         return null;
     }
@@ -203,64 +201,18 @@ public class CommunicationSocket implements Runnable {
         if(ServerInfo == null)
             return null;
         try {
-            Log.d("GOND", "relay InitRelaySocket try ");
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " InitRelaySocket try ");
             Socket socket = InitSocket(ServerInfo.relayIp, ServerInfo.relayPort);//19901);//relay1.i3international.com//test-relay.i3international.com//192.168.20.202
 //            ServerInfo.conntectingIp = ServerInfo.relayIp;//"192.168.20.158";//""192.168.20.202";//"relay1.i3international.com";
             return  socket;
         }
         catch (Exception ex) {
-            Log.e("GOND", "relay InitRelaySocket catch ex: ", ex);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " InitRelaySocket catch ex: ", ex);
             return  null;
         }
     }
 
-    private byte[] composeRelayHandshakeRequest(byte[] json) {
-        if(needRelayHandshake) {
-            byte[] header = new byte[68];
-            String appName = "CMSMobile";
-//        String IPAddress = this.clientIp;
-            int contentLen = json.length + header.length;
-            byte[] contentLenBytes = utils.IntToByteArrayReversed(contentLen);
-
-//            Log.d("GOND", "relay contentLen = " + contentLen);
-
-            byte[] appNameBytes = appName.getBytes(StandardCharsets.UTF_8);
-            byte[] IPAddressBytes = this.clientIp.getBytes(StandardCharsets.UTF_8);
-
-            int reversed = utils.ByteArrayOfCToIntJava(contentLenBytes, 0);
-
-//            Log.d("GOND", "relay reversed = " + reversed);
-
-            System.arraycopy(contentLenBytes, 0, header, 0, contentLenBytes.length);
-            System.arraycopy(appNameBytes, 0, header, 4, appNameBytes.length);
-            System.arraycopy(IPAddressBytes, 0, header, 24, IPAddressBytes.length);
-
-            byte result[] = new byte[header.length + json.length];
-
-            System.arraycopy(header, 0, result, 0, header.length);
-            System.arraycopy(json, 0, result, header.length, json.length);
-            return result;
-        }else{
-            return json;
-        }
-    }
-
     private static final int RELAY_HEADER_LEN = 68;
-
-//    private byte[] parseRelayResponse() {
-//        JSONObject result = null;
-//        byte[] headerBytes = new byte[RELAY_HEADER_LEN];
-//        ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0);
-//
-//        int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
-//        Log.d("GOND", "relay parseRelayHandshakeResponse totalLen = " + totalLen);
-//
-//        byte[] jsonBytes = new byte[totalLen - RELAY_HEADER_LEN];
-//        ReadBlock(InPut, totalLen - RELAY_HEADER_LEN, jsonBytes, 0);
-////        String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
-////        Log.d("GOND", "relay parseRelayHandshakeResponse jsonString = " + jsonString);
-//        return jsonBytes;
-//    }
 
     private JSONObject parseRelayHandshakeResponse() {
         JSONObject result = null;
@@ -268,23 +220,26 @@ public class CommunicationSocket implements Runnable {
         ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0, "parseRelayHandshakeResponse");
 
         int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
-        Log.d("GOND", "relay parseRelayHandshakeResponse totalLen = " + totalLen);
+        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " parseRelayHandshakeResponse totalLen = " + totalLen);
 
         byte[] jsonBytes = new byte[totalLen - RELAY_HEADER_LEN];
         ReadBlock(InPut, totalLen - RELAY_HEADER_LEN, jsonBytes, 0, "parseRelayHandshakeResponse");
 //        String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
-//        Log.d("GOND", "relay parseRelayHandshakeResponse jsonString = " + jsonString);
+//        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " parseRelayHandshakeResponse jsonString = " + jsonString);
 //        return jsonBytes;
 //        byte[] jsonBytes = parseRelayResponse();
         String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
-        Log.d("GOND", "relay parseRelayHandshakeResponse jsonString = " + jsonString);
-        isRelayHandshakeDone = jsonString.contains("session_id");
+        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " parseRelayHandshakeResponse jsonString = " + jsonString);
+
+        if(!jsonString.contains("session_id")){
+            OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_HANDSHAKE_FAILED, null);
+        }
         return null;
     }
 
     void notifyMakeRelayHandshake(String service) {
-        Log.d("GOND", "relay notifyMakeRelayHandshake service = " + service + " this.needRelayHandshake = " + this.needRelayHandshake);
-        if(this.needRelayHandshake) {
+        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " notifyMakeRelayHandshake service = " + service + " this.isRelay = " + this.isRelay);
+        if(this.isRelay) {
             JSONObject json = new JSONObject();
 
             try {
@@ -298,12 +253,12 @@ public class CommunicationSocket implements Runnable {
             }
 
             byte[] jsonBytes = json.toString().getBytes(StandardCharsets.UTF_8);
-            WriteSocketData(jsonBytes, "notifyMakeRelayHandshake");//composeRelayHandshakeRequest()
-            Log.d("GOND", "relay request content = " + json.toString());
+            WriteSocketData(jsonBytes, "notifyMakeRelayHandshake");
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " request content = " + json.toString());
             parseRelayHandshakeResponse();
         }
     }
-
+    boolean lastIsLive = true;
     @Override
     public void run(){
         running = true;
@@ -311,7 +266,7 @@ public class CommunicationSocket implements Runnable {
         // VideoSocket video_handler = null;
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_PLAY;
         OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_CONNECTTING, null );
-        socket = this.needRelayHandshake ? InitRelaySocket() : InitDirectSocket();
+        socket = this.isRelay ? InitRelaySocket() : InitDirectSocket();
         if( socket != null)
         {
             //BufferedInputStream input = null;
@@ -323,11 +278,11 @@ public class CommunicationSocket implements Runnable {
                 try {
                     notifyMakeRelayHandshake("control");
                 }catch (Exception e) {
-                    Log.e("GOND", "relay notifyMakeRelayHandshake Exception e = " + e);
+                    Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " notifyMakeRelayHandshake Exception e = " + e);
                 }
 
                 ServerInfo.serverVersion = this.ReadServerVersion(InPut);
-                Log.d("GOND", "relay ServerInfo.serverVersion = " + ServerInfo.serverVersion);
+                Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ServerInfo.serverVersion = " + ServerInfo.serverVersion);
 
                 if (ServerInfo.serverVersion < 0)//
                 {
@@ -358,20 +313,19 @@ public class CommunicationSocket implements Runnable {
                 try {
                     socket.setSoTimeout(Constant.socketReadTimeOut);
                 } catch (SocketException ex) {
-                    Log.e("GOND", "relay SocketException = " + ex);
+                    Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " SocketException = " + ex);
                 } catch (IllegalArgumentException iex) {
-                    Log.e("GOND", "relay IllegalArgumentException = " + iex);
+                    Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " IllegalArgumentException = " + iex);
                 }
                 withRelayHeader = true;
                 relayHeaderBlockRemainLen = cmdsate.remain_len;
                 while (!Thread.currentThread().isInterrupted() && running) {
-                    Log.d("GOND", "relay loop = " + " ------------------------------------------------- ");
                     //socket.setSoTimeout(Constant.socketReadTimeOut);
                     //rcv_len = utils.ReadBlock( input, cmdsate.remain_len, rcv, rcv_offset);
                     relayHeaderBlockRemainLen -= cmdsate.remain_len;
-                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, needRelayHandshake && relayHeaderBlockRemainLen <= 0, "rcv_len");
+                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, isRelay && relayHeaderBlockRemainLen <= 0, "rcv_len");
                     if (rcv_len == 0) {
-                        Log.d("GOND", "relay rcv_len == 0 continue");
+                        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " rcv_len == 0 continue");
                         continue;
                     }else{
 
@@ -380,7 +334,7 @@ public class CommunicationSocket implements Runnable {
                     switch (cmdsate.state) {
                         case Constant.EnumBufferState.COMMAND_GET:
                             cmd_id = utils.ByteArrayCToChar(rcv, 0);
-                            Log.d("GOND", "relay cmdsate.state = COMMAND_GET cmd_id = " + (int) cmd_id);
+                            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " cmdsate.state = COMMAND_GET cmd_id = " + (int) cmd_id);
                             rcv_offset = 0;
                             cmdsate.cmdid = cmd_id;
                             SelectCommand(InPut, cmdsate);
@@ -388,7 +342,7 @@ public class CommunicationSocket implements Runnable {
                             break;
                         case Constant.EnumBufferState.COMMAND_HEADER:
                             cmdsate.msg_len = utils.ByteArrayOfCToIntJava(rcv, 0);
-                            Log.d("GOND", "relay cmdsate.state = COMMAND_HEADER cmdsate.msg_len = " + cmdsate.msg_len);
+                            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " cmdsate.state = COMMAND_HEADER cmdsate.msg_len = " + cmdsate.msg_len);
                             rcv_offset = 0;
                             if (cmdsate.msg_len <= 0) {
                                 cmdsate.ResetState();
@@ -402,7 +356,7 @@ public class CommunicationSocket implements Runnable {
                             }
                             break;
                         case Constant.EnumBufferState.COMMAND_DATA:
-                            Log.d("GOND", "relay cmdsate.state = COMMAND_DATA");
+                            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " cmdsate.state = COMMAND_DATA");
                             if( rcv_offset >= cmdsate.msg_len)//complete
                             {
                                 //remain = Character.BYTES;
@@ -429,7 +383,7 @@ public class CommunicationSocket implements Runnable {
                     }
                 }
             }catch (IOException ioe){
-                Log.e("GOND", "relay IOException" + ioe.toString());
+                Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " IOException" + ioe.toString());
             }
             finally {
                 CloseSocket();
@@ -458,12 +412,12 @@ public class CommunicationSocket implements Runnable {
             byte[] headerBytes = new byte[RELAY_HEADER_LEN];
             int readHeaderCount = ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0, debug);
             int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
-            Log.d("GOND", "relay ReadBlock hasRelayHeader  _length = " + _length +
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock hasRelayHeader  _length = " + _length +
                     " relayHeaderBlockCount = " + relayHeaderBlockCount + " totalLen = " + totalLen + " debug = " + debug);
             relayHeaderBlockRemainLen = totalLen - RELAY_HEADER_LEN;
             relayHeaderBlockCount++;
         }else
-            Log.d("GOND", "relay ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
         return ReadBlock(_is, _length, buff, offset, debug);
     }
 
@@ -476,22 +430,22 @@ public class CommunicationSocket implements Runnable {
             else
                 count = _is.read(buff, offset, buff.length - offset);
 
-            
+
         }
         catch (SocketTimeoutException tm)
         {
-            Log.e("GOND", "relay ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
+//            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
             return  0;
         }
         catch (IndexOutOfBoundsException outex)
         {
-            Log.e("GOND", "relay ReadBlock IndexOutOfBoundsException outex = " + outex + " debug = " + debug);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock IndexOutOfBoundsException outex = " + outex + " debug = " + debug);
             return count;
         }
         catch (IOException e)
         {
             count = -1;// socket failed
-            Log.e("GOND", "relay ReadBlock IOException e = " + e + " debug = " + debug);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock IOException e = " + e + " debug = " + debug);
         }
         // for (int i = offset; i < count; i ++)
         // {
@@ -512,63 +466,87 @@ public class CommunicationSocket implements Runnable {
         switch (cmd_id)
         {
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_EXIT: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_EXIT:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_EXIT:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_EXIT:");
                 state.ResetState();
                 running = false;
                 Log.d("GOND", "MOBILE_CANNOT_CONNECT_SERVER: received exit message");
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_CANNOT_CONNECT_SERVER, null );
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_VIDEO_SOCKET_ERROR: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_VIDEO_SOCKET_ERROR:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_VIDEO_SOCKET_ERROR:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_VIDEO_SOCKET_ERROR:");
                 state.ResetState();
                 //this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
                 //running = false;
                 break;
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_KEEP_ALIVE: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_KEEP_ALIVE:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_KEEP_ALIVE:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_KEEP_ALIVE:");
                 state.ResetState();
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_CURRENT_USER: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_CURRENT_USER:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_CURRENT_USER:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_CURRENT_USER:");
                 state.ResetState();
                 running = false;
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SERVER_CHANGED_CURRENT_USER, null );
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_SERVER_INFO: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_SERVER_INFO:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_SERVER_INFO:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_SERVER_INFO:");
                 state.ResetState();
                 running = false;
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SERVER_CHANGED_SERVER_INFO, null );
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_PORTS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_PORTS:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_PORTS:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_CHANGED_PORTS:");
                 state.ResetState();
                 running = false;
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SERVER_CHANGED_PORTS, null );
                 break;
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_MOBILE_SEND_SETTINGS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_MOBILE_SEND_SETTINGS:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_MOBILE_SEND_SETTINGS:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_MOBILE_SEND_SETTINGS:");
                 state.state = Constant.EnumBufferState.COMMAND_DATA;
                 state.msg_len = Byte.BYTES;
                 state.remain_len = Byte.BYTES;
                 break;
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO:");
                 state.state = Constant.EnumBufferState.COMMAND_DATA;
                 state.msg_len = Integer.BYTES;
                 state.remain_len = Integer.BYTES;
                 break;
-            case  Constant.EnumCmdMsg.MOBILE_MSG_LOGIN: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_LOGIN:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEND_CAMERA_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEND_CAMERA_LIST:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_DAY_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_DAY_LIST:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS: { Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS: {");
+            case  Constant.EnumCmdMsg.MOBILE_MSG_LOGIN:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_LOGIN:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_TIMEZONE:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEND_CAMERA_LIST:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEND_CAMERA_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_DAY_LIST:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_DAY_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS: {
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_SETTINGS: {");
                 state.state = Constant.EnumBufferState.COMMAND_HEADER;
                 state.remain_len = Integer.BYTES;
                 state.msg_len = Integer.BYTES;
                 break;
             }
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEND_ALARM_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEND_ALARM_LIST:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_LIST:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_PREVIOUS_ALARM_LIST: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_PREVIOUS_ALARM_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL:
+            {
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL:");
+                state.state = Constant.EnumBufferState.COMMAND_HEADER;
+                state.remain_len = Integer.BYTES;
+                state.msg_len = Integer.BYTES;
+                break;
+            }
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEND_ALARM_LIST:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEND_ALARM_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_LIST:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_LIST:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_PREVIOUS_ALARM_LIST:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_PREVIOUS_ALARM_LIST:");
                 byte status = utils.readByte( in );
                 if( status == -1)//socket failed
                 {
@@ -585,28 +563,40 @@ public class CommunicationSocket implements Runnable {
                     state.ResetState();
 
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_SETPOS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_SETPOS:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_SETPOS:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_SETPOS:");
                 state.ResetState();
                 break;
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_RECORDING_ONLY_CANT_PLAY_VIDEO: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_RECORDING_ONLY_CANT_PLAY_VIDEO:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SERVER_RECORDING_ONLY_CANT_PLAY_VIDEO:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SERVER_RECORDING_ONLY_CANT_PLAY_VIDEO:");
                 state.ResetState();
                 this.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SERVER_RECORDING_ONLY, null);
                 break;
-            case Constant.EnumCmdMsg.MOBILE_MSG_NEW_ALARM_DETECTED: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEW_ALARM_DETECTED:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SNAPSHOT: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SNAPSHOT:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_PLAY_FW: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_PLAY_FW:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_NEW_ALARM_DETECTED:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEW_ALARM_DETECTED:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SNAPSHOT:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SNAPSHOT:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_PLAY_FW:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_PLAY_FW:");
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_BW: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_BW:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STOP: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STOP:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_BW:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_BW:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STOP:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STOP:");
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_VIEW_ALARM_IMAGES: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_VIEW_ALARM_IMAGES:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_IMAGE: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_IMAGE:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_VIEW_ALARM_IMAGES:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_VIEW_ALARM_IMAGES:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_IMAGE:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_NEXT_ALARM_IMAGE:");
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_ADD_IP_CAMERAS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_ADD_IP_CAMERAS:");
-            case Constant.EnumCmdMsg.MOBILE_MSG_REMOVE_IP_CAMERAS: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_REMOVE_IP_CAMERAS:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_ADD_IP_CAMERAS:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_ADD_IP_CAMERAS:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_REMOVE_IP_CAMERAS:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_REMOVE_IP_CAMERAS:");
 
-            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_FW: Log.v("GOND", "relay SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_FW:");
+            case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_FW:
+                Log.v("GOND", "relay isLive = " + ServerInfo.getisLive() + " SelectCommand Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_STEP_FW:");
                 state.ResetState();
                 break;
 
@@ -691,7 +681,7 @@ public class CommunicationSocket implements Runnable {
                 }
                 catch (Exception ex)
                 {
-                    Log.e("GOND", "relay Exception 1 ex = " + ex);
+                    Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " Exception 1 ex = " + ex);
                     ret = 0;
                 }
                 break;
@@ -720,7 +710,7 @@ public class CommunicationSocket implements Runnable {
                     }
                 }
                 catch (Exception ex){
-                    Log.e("GOND", "relay Exception 2 ex = " + ex);
+                    Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " isLive = " + ServerInfo.getisLive() + "Exception 2 ex = " + ex);
                 }
 
                 break;
@@ -1036,17 +1026,21 @@ public class CommunicationSocket implements Runnable {
             break;
             case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL:
             {
+                Log.d("0720", "relay isLive = " + ServerInfo.getisLive() + " ProcessCommand case MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL 1");
                 TimeZone currentServerTimeZone = ServerInfo.getTimeZone().getTimeZone();
                 byte[] msg_buff = new byte[len];
                 System.arraycopy(buffer,offset, msg_buff,0, len);
+                Log.d("0720", "relay isLive = " + ServerInfo.getisLive() + " ProcessCommand case MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL 2");
                 SearchAllDayInterval searchAllDayInterval = new SearchAllDayInterval();
                 FFMPEGDecoder.getSearchInformation(msg_buff, searchAllDayInterval);
                // OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RESPONSE_TIMEINTERVAL,searchAllDayInterval);
                 int[] v_channel = this.ChannelNo(this.ServerInfo.getisLive() ); //this.Channel;
+                Log.d("0720", "relay isLive = " + ServerInfo.getisLive() + " ProcessCommand case MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL 3");
                 SearchDayInterval di = searchAllDayInterval.getSearchDayOfChannel(v_channel[0]);
                 ArrayList<SearchTimeInterval> arr = di == null? new ArrayList<SearchTimeInterval>(): di.gets();
                 String s = arr.toString();
                 String TimeArr[]= new String[arr.size()];
+                Log.d("0720", "relay isLive = " + ServerInfo.getisLive() + " ProcessCommand MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL arr.size() = " + arr.size());
                 String astr_app = "{\"id\":%d, \"begin\":%d,\"end\":%d,\"time\":%d,\"type\":%d,\"timezone\":%d}";
                 for(int i = 0;i<arr.size();i++)
                 {
@@ -1239,7 +1233,7 @@ public class CommunicationSocket implements Runnable {
         }
         catch (Exception e)
         {
-            Log.e("GOND", "relay Exception 3 e = " + e);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " Exception 3 e = " + e);
         }
         return hmap;
     }
@@ -1264,7 +1258,7 @@ public class CommunicationSocket implements Runnable {
             String msg = ex.getMessage();
             Log.d("sendlogin:", msg);
 
-            Log.e("GOND", "relay Exception 3 ex = " + ex);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " Exception 3 ex = " + ex);
             return  -1;
         }
     }
@@ -1342,9 +1336,9 @@ public class CommunicationSocket implements Runnable {
 
     private int ReadServerVersion( BufferedInputStream input)
     {
-        Log.d("GOND", "relay ReadServerVersion needRelayHandshake = " + needRelayHandshake);
+        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadServerVersion isRelay = " + isRelay);
         byte[] header = new byte[ Integer.BYTES];
-       int len =  ReadBlock( input, Integer.BYTES, header,0 , needRelayHandshake, "ReadServerVersion");
+       int len =  ReadBlock( input, Integer.BYTES, header,0 , isRelay, "ReadServerVersion");
        if( len != Integer.BYTES)
            return -1;
         int msg_len = utils.ByteArrayOfCToIntJava( header,0);
@@ -1365,20 +1359,20 @@ public class CommunicationSocket implements Runnable {
 
             int result = Integer.parseInt(strSvrVersion);
 
-            Log.d("GOND", "relay strSvrVersion = " + result);
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " strSvrVersion = " + result);
             return  result;
         }
         catch ( Exception e) {
-            Log.d("GOND", "relay ReadServerVersion Exception e = " + e);
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadServerVersion Exception e = " + e);
             return -1;
         }
     }
 
      synchronized protected int WriteSocketData(byte[] buff, String debug){
 
-         Log.d("GOND", "relay WriteSocketData debug = " + debug);
+         Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " WriteSocketData debug = " + debug);
 
-           return  utils.WriteBlock( this.OutPut, composeRelayHandshakeRequest(buff));
+         return  utils.WriteBlock( this.OutPut, utils.notifyAddRelayHeader(buff, isRelay, this.clientIp));
     }
 
     public void PauseVideo()
@@ -1392,11 +1386,11 @@ public class CommunicationSocket implements Runnable {
             if (ChannelNo == null || ChannelNo.length == 0)
                 return;
             byte[] msg_stop = MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
-            new SendBufferTask(this.OutPut).execute(msg_stop);
+            new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute(msg_stop);
         }
         else{
             byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
-            new SendBufferTask(this.OutPut).execute( msg_stop);
+            new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg_stop);
         }
 
     }
@@ -1410,7 +1404,7 @@ public class CommunicationSocket implements Runnable {
             byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(this.VideoSourceIndex(),HDMode);
             byte[] msg = new byte[msg_buffer.length];
             System.arraycopy( msg_buffer, 0, msg, 0, msg_buffer.length );
-            new SendBufferTask(this.OutPut).execute( msg);
+            new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg);
         }
         else
         {
@@ -1418,7 +1412,7 @@ public class CommunicationSocket implements Runnable {
             byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
             byte[]buff = new byte[buff_daylist.length];
             System.arraycopy(buff_daylist,0, buff,0, buff_daylist.length );
-            new SendBufferTask(this.OutPut).execute( buff);
+            new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
         }
 
     }
@@ -1429,7 +1423,7 @@ public class CommunicationSocket implements Runnable {
         {
             // Log.d("GOND", "ChangePlay channel changed");
             str_Channel = channel;
-            if (this.video_handler != null) 
+            if (this.video_handler != null)
                 this.video_handler.changeChannel(channel);
             String[] chs = channel.split(",");
             Channel = new int[chs.length];
@@ -1461,14 +1455,14 @@ public class CommunicationSocket implements Runnable {
             OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_PERMISSION_CHANNEL_DISABLE, islive? 0 : 1);
             if( islive == false){
                 byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
-                new SendBufferTask(this.OutPut).execute( msg_stop);
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg_stop);
 
             }
             else
             {
                 if(this.ServerInfo != null && this.ServerInfo.getSearchTime() != null && this.ServerInfo.getisLive() == false) {
                     byte[] msg_stop = MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNoWithoutPermission());
-                    new SendBufferTask(this.OutPut).execute(msg_stop);
+                    new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute(msg_stop);
                 }
             }
             ServerInfo.setLive( islive);
@@ -1489,7 +1483,7 @@ public class CommunicationSocket implements Runnable {
                 byte[] msg = new byte[msg_buffer.length + msg_stop.length];
                 System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
                 System.arraycopy( msg_buffer, 0, msg, msg_stop.length, msg_buffer.length );
-                new SendBufferTask(this.OutPut).execute( msg);
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg);
             }
             else{
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
@@ -1497,7 +1491,7 @@ public class CommunicationSocket implements Runnable {
                 byte[] msg = new byte[msg_hw.length + msg_stop.length];
                 System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
                 System.arraycopy( msg_hw, 0, msg, msg_stop.length, msg_hw.length );
-                new SendBufferTask(this.OutPut).execute( msg);
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg);
             }
 
         }
@@ -1540,7 +1534,7 @@ public class CommunicationSocket implements Runnable {
                 //System.arraycopy(msg_fw,0, buff,msg_set_pos.length + msg_stop.length, msg_fw.length );
 
 
-                new SendBufferTask(this.OutPut).execute( buff);
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
             }
             else{
                 //int[] channels = this.ChannelNo();  //this.getChannel();
@@ -1550,7 +1544,7 @@ public class CommunicationSocket implements Runnable {
                 System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
 
                 System.arraycopy(buff_daylist,0, buff, msg_stop.length , buff_daylist.length );
-                new SendBufferTask(this.OutPut).execute( buff);
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
             }
 
         }
@@ -1558,7 +1552,7 @@ public class CommunicationSocket implements Runnable {
     public  void Stop(){
         if( running == true) {
             byte[] msg = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_DISCONNECT, null);
-            new SendBufferTask(this.OutPut).execute(msg);
+            new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute(msg);
         }
     }
     public  void  SeekPOS(int val, boolean HD, boolean firstRun)
@@ -1594,7 +1588,7 @@ public class CommunicationSocket implements Runnable {
             }
 
             this.HDMode = HD;
-            //new SendBufferTask(this.OutPut).execute( buff);
+            //new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
             byte[]  msg_stop = MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, v_index);
             //WriteSocketData(  msg_buffer);
             byte[] msg_set_pos = MsgCommandItem.MSG_SEARCH_REQUEST_SETPOS(this.ServerInfo, v_index, val, this.HDMode);
@@ -1605,11 +1599,11 @@ public class CommunicationSocket implements Runnable {
             System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
             System.arraycopy(msg_set_pos,0, buff,msg_stop.length , msg_set_pos.length );
             System.arraycopy(msg_fw,0, buff,msg_set_pos.length + msg_stop.length, msg_fw.length );
-            new SendBufferTask(this.OutPut).execute( buff);
+            new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
         } catch (Exception e) {
 
             //throw e;
-            Log.e("GOND", "relay Exception 4 e = " + e);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " Exception 4 e = " + e);
 
         }
 
@@ -1617,42 +1611,46 @@ public class CommunicationSocket implements Runnable {
 
     protected void CloseSocket()
     {
-        Log.d("GOND", "relay CloseSocket");
+        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " CloseSocket");
         if( socket == null)
             return;
         try {
             InPut.close();
             //socket.shutdownInput();
         }catch (IOException ioe){
-            Log.e("GOND", "relay Exception 5 ioe = " + ioe);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " Exception 5 ioe = " + ioe);
         }
         try {
             OutPut.close();
             //socket.shutdownOutput();
         }catch (IOException ioe){
-            Log.e("GOND", "relay Exception 6 ioe = " + ioe);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " Exception 6 ioe = " + ioe);
         }
         try {
             socket.close();
             socket = null;
         }catch (IOException ioe){
-            Log.e("GOND", "relay Exception 7 ioe = " + ioe);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " Exception 7 ioe = " + ioe);
         }
     }
 
     protected class SendBufferTask extends AsyncTask<byte[],Integer,Integer>
     {
         BufferedOutputStream writer;
-        protected SendBufferTask(BufferedOutputStream output)
+        boolean isRelay;
+        String clientIp;
+        protected SendBufferTask(BufferedOutputStream output, boolean _isRelay, String _clientIp)
         {
             writer = output;
+            isRelay = _isRelay;
+            clientIp = _clientIp;
         }
         @Override
         protected Integer doInBackground(byte[]... buff){
 
-            int ret = utils.WriteBlock( this.writer, buff[0]);
+            int ret = utils.WriteBlock( this.writer, utils.notifyAddRelayHeader(buff[0], isRelay, clientIp));
 
-            Log.d("GOND", "relay WriteBlock SendBufferTask");
+            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " WriteBlock SendBufferTask");
             return  Integer.valueOf(ret);
         }
     }

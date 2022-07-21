@@ -121,6 +121,7 @@ export const NATIVE_MESSAGE = {
   SERVER_MESSAGE: 25,
   SHOULD_RECONNECT: 26,
   SERVER_DISCONNECTED: 27,
+  RELAY_HANDSHAKE_FAILED: 28,
 };
 
 export const arrayof24HTime = [
