@@ -184,7 +184,7 @@ class VideosettingView extends Component {
     const isChecked =
       (selectedValue == item.value && item.value && isStreamingAvailable) ||
       (!item.value && !selectedValue);
-    item.visible = item.id === 'relay' && apiVersion == '' ? false : true;
+    item.visible = true; //item.id === 'relay' && apiVersion == '' ? false : true;
     const checkBox = (
       <MaterialIcons
         style={{marginTop: 15, marginRight: 8}}
