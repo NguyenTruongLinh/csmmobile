@@ -96,6 +96,10 @@ export const VSC = {
   linkNVRUser: 'LinkNVRUserToCMS',
   SetDataUsageActivityLogs: 'SetDataUsageActivityLogs',
 };
+export const Server = {
+  controller: 'Server',
+  version: 'Version',
+};
 
 export const OAM = {
   controller: 'PVM',
