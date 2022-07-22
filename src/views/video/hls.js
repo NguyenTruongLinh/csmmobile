@@ -315,7 +315,7 @@ class HLSStreamingView extends React.Component {
       'componentWillUnmount'
     );
     if (
-      // Platform.OS === 'ios' &&
+      Platform.OS === 'ios' &&
       this.player &&
       this.player.stopDataUsageTimer
     ) {
@@ -1551,11 +1551,11 @@ class HLSStreamingView extends React.Component {
                     ]}
                     poster={poster}
                     posterResizeMode="cover"
-                    textTracks={[
-                      {
-                        title: channel.name ?? 'Unknown',
-                      },
-                    ]}
+                    // textTracks={[
+                    //   {
+                    //     title: channel.name ?? 'Unknown',
+                    //   },
+                    // ]}
                   />
                 )
                 // ) : null
