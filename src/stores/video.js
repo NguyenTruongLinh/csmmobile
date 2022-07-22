@@ -2068,11 +2068,9 @@ export const VideoModel = types
           self.cloudType = res === true ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
         } else if (typeof res === 'number') {
           self.cloudType =
-            res >= CLOUD_TYPE.TOTAL
-              ? CLOUD_TYPE.HLS
-              : res < CLOUD_TYPE.DIRECTION
-              ? CLOUD_TYPE.DIRECTION
-              : res;
+            res >= res.Type < CLOUD_TYPE.TOTAL && res.Type > CLOUD_TYPE.DEFAULT
+              ? res
+              : CLOUD_TYPE.HLS;
         } else if (typeof res === 'object') {
           self.cloudType =
             !util.isNullOrUndef(res.Type) &&
@@ -2090,6 +2088,11 @@ export const VideoModel = types
           // self.cloudType =
           //   res >= CLOUD_TYPE.TOTAL ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
           // result = false;
+        }
+
+        // dongpt: temporarily disable relay server setting and make it use HLS instead
+        if (self.cloudType == CLOUD_TYPE.RS) {
+          self.cloudType = CLOUD_TYPE.HLS;
         }
         self.isLoading = false;
         return result;
