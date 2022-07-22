@@ -70,11 +70,15 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
+import com.google.android.exoplayer2.source.LoadEventInfo;
+import com.google.android.exoplayer2.source.MediaLoadData;
 import com.google.android.exoplayer2.util.Util;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.UUID;
@@ -135,6 +139,12 @@ class ReactExoplayerView extends FrameLayout implements
     private int bufferForPlaybackAfterRebufferMs = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS;
 
     private Handler mainHandler;
+
+    // dongpt: debug
+    private long totalBytesData = 0;
+    private long lastEventTime = 0;
+    private String videoTitle = "";
+    // dongpt end
 
     // Props from React
     private Uri srcUri;
@@ -285,18 +295,19 @@ class ReactExoplayerView extends FrameLayout implements
     //BandwidthMeter.EventListener implementation
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        //Log.d("GOND", "onBandwidthSample: bytes = " + bytes + " @: "+ this);
-        if (mReportBandwidth) {
-            if (player == null) {
-                eventEmitter.bandwidthReport(bitrate, 0, 0, "-1");
-            } else {
-                Format videoFormat = player.getVideoFormat();
-                int width = videoFormat != null ? videoFormat.width : 0;
-                int height = videoFormat != null ? videoFormat.height : 0;
-                String trackId = videoFormat != null ? videoFormat.id : "-1";
-                eventEmitter.bandwidthReport(bytes, height, width, trackId);
-            }
-        }
+        Log.d("GOND", "**EXO*** onBandwidthSample: bytes = " + bytes + " elapsedMs: "+ elapsedMs);
+        // if (mReportBandwidth) {
+        //     if (player == null) {
+        //         Log.d("GOND", "**EXO*** onBandwidthSample: no player");
+        //         eventEmitter.bandwidthReport(bitrate, 0, 0, "-1");
+        //     } else {
+        //         Format videoFormat = player.getVideoFormat();
+        //         int width = videoFormat != null ? videoFormat.width : 0;
+        //         int height = videoFormat != null ? videoFormat.height : 0;
+        //         String trackId = videoFormat != null ? videoFormat.id : "-1";
+        //         eventEmitter.bandwidthReport(bytes, height, width, trackId);
+        //     }
+        // }
     }
 
     // Internal methods
@@ -366,6 +377,30 @@ class ReactExoplayerView extends FrameLayout implements
             }
         };
         player.addListener(eventListener);
+
+        // dongpt: add AnalyticListener
+        player.addAnalyticsListener(new AnalyticsListener() {
+            // @Override
+            // public void onLoadStarted(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+            //     Log.e("GOND", "**EXO*** onLoadStarted <<<, eventTime: " + eventTime.realtimeMs + ", bytes: " + loadEventInfo.bytesLoaded + ", elapse: " + 	loadEventInfo.elapsedRealtimeMs);
+            // }
+
+            @Override
+            public void onLoadCompleted​(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+                Log.d("GOND", "**EXO*** onLoadCompleted​ >>>, eventTime: " + eventTime.realtimeMs + ", bytes: " + loadEventInfo.bytesLoaded + ", elapse: " + 	loadEventInfo.elapsedRealtimeMs);
+                if (player != null && lastEventTime != eventTime.realtimeMs) {
+                    Format videoFormat = player.getVideoFormat();
+                    int width = videoFormat != null ? videoFormat.width : 0;
+                    int height = videoFormat != null ? videoFormat.height : 0;
+                    String trackId = videoFormat != null ? videoFormat.id : "-1";
+                    eventEmitter.bandwidthReport(loadEventInfo.bytesLoaded, height, width, trackId);
+
+                    totalBytesData += loadEventInfo.bytesLoaded;
+                    lastEventTime = eventTime.realtimeMs;
+                    Log.e("GOND", "**EXO*** onLoadCompleted​ >>>, total bytes: " + totalBytesData + ", title: " + videoTitle);
+                }
+            }
+        });
     }
 
     /**
@@ -556,6 +591,8 @@ class ReactExoplayerView extends FrameLayout implements
             String language = textTrack.getString("language");
             String title = textTrack.hasKey("title")
                     ? textTrack.getString("title") : language + " " + i;
+            videoTitle = title;
+            if (!textTrack.hasKey("uri")) return textSources;
             Uri uri = Uri.parse(textTrack.getString("uri"));
             MediaSource textSource = buildTextSource(title, uri, textTrack.getString("type"),
                     language);

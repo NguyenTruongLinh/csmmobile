@@ -77,6 +77,9 @@ const ChannelConnectionModel = types
     get isReady() {
       return true;
     },
+    get isMenuReady() {
+      return true;
+    },
     get snapshot() {
       return self.channel ? self.channel.snapshot : null;
     },

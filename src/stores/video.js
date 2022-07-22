@@ -152,6 +152,7 @@ const DirectStreamModel = types
   .model({
     server: types.reference(DirectServerModel),
     channel: types.reference(ChannelModel),
+    isMenuReady: types.optional(types.boolean, false),
   })
   .views(self => ({
     get playData() {
@@ -235,6 +236,9 @@ const DirectStreamModel = types
   .actions(self => ({
     setPlay(value) {
       self.playing = value;
+    },
+    enableMenu(value) {
+      self.isMenuReady = value == undefined ? true : value;
     },
     setSearchDate(value) {
       self.server.date = value;
@@ -418,7 +422,7 @@ export const VideoModel = types
     shouldLinkNVRUser: false, // enable when input login form
     isAuthenCanceled: false,
     onPostAuthentication: null, // (channelNo, isLive) => {}
-    androidDataUsageStream: null,
+    // androidDataUsageStream: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -1193,8 +1197,8 @@ export const VideoModel = types
         //       );
         //     }
         //   }
-        if (Platform.OS === 'android' && self.cloudType == CLOUD_TYPE.HLS)
-          self.notifySwitchDataUsageStreamAndroid(self.selectedStream);
+        // if (Platform.OS === 'android' && self.cloudType == CLOUD_TYPE.HLS)
+        //   self.notifySwitchDataUsageStreamAndroid(self.selectedStream);
         return true;
       },
       setFrameTime(value, fromZone) {
@@ -1540,7 +1544,8 @@ export const VideoModel = types
         } else {
           if (
             self.beginSearchTime &&
-            !self.checkTimeOnTimeline(self.beginSearchTime.toSeconds())
+            !self.checkTimeOnTimeline(self.beginSearchTime.toSeconds()) &&
+            self.cloudType == CLOUD_TYPE.HLS
           ) {
             self.selectedStream.setNoVideo(true);
             self.selectedStream.stopWaitingForStream();
@@ -1885,6 +1890,7 @@ export const VideoModel = types
           self.cloudType == CLOUD_TYPE.DIRECTION ||
           self.cloudType == CLOUD_TYPE.DEFAULT
         ) {
+          self.selectedStream && self.selectedStream.enableMenu(false);
           self.directStreams.forEach(s => {
             if (s.isLoading || s.connectionStatus != STREAM_STATUS.DONE)
               s.setStreamStatus({
@@ -3987,23 +3993,23 @@ export const VideoModel = types
         __DEV__ && console.log('GOND postAuthenticationCheck call now!');
         callback();
       },
-      notifySwitchDataUsageStreamAndroid(stream) {
-        if (!stream || self.cloudType == CLOUD_TYPE.DIRECTION) return;
-        __DEV__ &&
-          console.log(
-            '0507 switchRecordingStreamIdAndroid stream = ',
-            stream.id,
-            ' self.androidDataUsageStream = ',
-            self.androidDataUsageStream && self.androidDataUsageStream.id
-          );
-        if (
-          !self.androidDataUsageStream ||
-          self.androidDataUsageStream.id != stream.id
-        ) {
-          stream.targetUrl.resetDataUsageInfo();
-          self.androidDataUsageStream = stream;
-        }
-      },
+      // notifySwitchDataUsageStreamAndroid(stream) {
+      //   if (!stream || self.cloudType == CLOUD_TYPE.DIRECTION) return;
+      //   __DEV__ &&
+      //     console.log(
+      //       '0507 switchRecordingStreamIdAndroid stream = ',
+      //       stream.id,
+      //       ' self.androidDataUsageStream = ',
+      //       self.androidDataUsageStream && self.androidDataUsageStream.id
+      //     );
+      //   if (
+      //     !self.androidDataUsageStream ||
+      //     self.androidDataUsageStream.id != stream.id
+      //   ) {
+      //     stream.targetUrl.resetDataUsageInfo();
+      //     self.androidDataUsageStream = stream;
+      //   }
+      // },
       // #endregion Permission
       releaseHLSStreams() {
         self.hlsStreams.forEach(s => {

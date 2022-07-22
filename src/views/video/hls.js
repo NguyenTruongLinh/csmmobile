@@ -266,7 +266,10 @@ class HLSStreamingView extends React.Component {
     this.trackingVideoSource =
       util.extractModuleNameFromScreenName(
         appStore.naviService.getPreviousRouteName()
-      ) + (Platform.OS == 'ios' ? (singlePlayer ? '_single' : '_multi') : '');
+        // ) + (Platform.OS == 'ios' ? (singlePlayer ? '_single' : '_multi') : '');
+      ) + singlePlayer
+        ? '_single'
+        : '_multi';
   }
 
   componentWillUnmount() {
@@ -303,7 +306,7 @@ class HLSStreamingView extends React.Component {
       'componentWillUnmount'
     );
     if (
-      Platform.OS === 'ios' &&
+      // Platform.OS === 'ios' &&
       this.player &&
       this.player.stopDataUsageTimer
     ) {
@@ -750,19 +753,19 @@ class HLSStreamingView extends React.Component {
 
   onBandwidthUpdate = data => {
     const {streamData, videoStore, singlePlayer} = this.props;
-    if (
-      Platform.OS === 'ios' ||
-      (streamData === videoStore.androidDataUsageStream &&
-        ((videoStore.selectedStream && singlePlayer) ||
-          !videoStore.selectedStream))
-    ) {
-      streamData.updateDataUsage(
-        data.bitrate,
-        this.trackingVideoSource,
-        videoStore.timezone,
-        'onBandwidthUpdate'
-      );
-    }
+    // if (
+    //   Platform.OS === 'ios' ||
+    //   (streamData === videoStore.androidDataUsageStream &&
+    //     ((videoStore.selectedStream && singlePlayer) ||
+    //       !videoStore.selectedStream))
+    // ) {
+    streamData.updateDataUsage(
+      data.bitrate,
+      this.trackingVideoSource,
+      videoStore.timezone,
+      'onBandwidthUpdate'
+    );
+    // }
   };
 
   onReady = event => {
@@ -785,24 +788,24 @@ class HLSStreamingView extends React.Component {
     //     connectionStatus: STREAM_STATUS.DONE,
     //   });
     // }
-    if (Platform.OS === 'android') {
-      if (this.firstReady) {
-        __DEV__ && console.log('0507 onReady streamData.id = ', streamData.id);
-        if (
-          videoStore.androidDataUsageStream &&
-          videoStore.androidDataUsageStream.id != streamData.id
-        ) {
-          videoStore.androidDataUsageStream.updateDataUsage(
-            FORCE_SENT_DATA_USAGE,
-            'N/A',
-            videoStore.timezone,
-            'notifySwitchDataUsageStreamAndroid'
-          );
-        }
-        videoStore.notifySwitchDataUsageStreamAndroid(streamData);
-      }
-      this.firstReady = false;
-    }
+    // if (Platform.OS === 'android') {
+    //   if (this.firstReady) {
+    //     __DEV__ && console.log('0507 onReady streamData.id = ', streamData.id);
+    //     if (
+    //       videoStore.androidDataUsageStream &&
+    //       videoStore.androidDataUsageStream.id != streamData.id
+    //     ) {
+    //       videoStore.androidDataUsageStream.updateDataUsage(
+    //         FORCE_SENT_DATA_USAGE,
+    //         'N/A',
+    //         videoStore.timezone,
+    //         'notifySwitchDataUsageStreamAndroid'
+    //       );
+    //     }
+    //     videoStore.notifySwitchDataUsageStreamAndroid(streamData);
+    //   }
+    //   this.firstReady = false;
+    // }
   };
 
   onBuffer = event => {
@@ -1539,6 +1542,11 @@ class HLSStreamingView extends React.Component {
                     ]}
                     poster={poster}
                     posterResizeMode="cover"
+                    textTracks={[
+                      {
+                        title: channel.name ?? 'Unknown',
+                      },
+                    ]}
                   />
                 )
                 // ) : null

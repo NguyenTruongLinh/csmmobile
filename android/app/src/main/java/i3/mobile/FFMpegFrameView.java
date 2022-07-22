@@ -113,12 +113,19 @@ public class FFMpegFrameView extends View {
     Handler handler = null;
     public  ServerSite getServer(){ return Server;}
     public  void  setServer(ServerSite value){ 
+        // Log.d("GOND", "**DIRECT** setServer: " + value.serverID);
         if (value != null && (this.Server == null || !this.Server.EqualWith(value)))
+        {
+            // Log.d("GOND", "**DIRECT** setServer: will set.....");
             this.Server = value; 
+        }
     }
 
     public String getChannels(){ return  this.Channels;}
-    public  void  setChannels(String value){ this.Channels = value;}
+    public  void  setChannels(String value){ 
+        // Log.d("GOND", "**DIRECT** setChannel: " + value);
+        this.Channels = value;
+    }
 
     public  boolean getByChannels(){ return  this.ByChannel;}
     public  void setByChannels(boolean value){ this.ByChannel = value;}
@@ -347,6 +354,7 @@ public class FFMpegFrameView extends View {
     protected void onDraw(Canvas canvas) {
         if (!this.singlePlayer)
         {
+            Log.d("GOND", "**DIRECT** onDraw not single player");
             return;
         }
         //canvas.drawColor(Color.TRANSPARENT);
@@ -357,9 +365,12 @@ public class FFMpegFrameView extends View {
         canvas.scale((float) this._scaleXY, (float) this._scaleXY);
         if(DrawBitmap != null)
         {
+            // Log.d("GOND", "**DIRECT** onDraw draw bitmap");
             Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
-            if(DrawBitmap != null) {
-                if (!DrawBitmap.sameAs(emptyBitmap)) {
+            // if(DrawBitmap != null) {
+                if (!DrawBitmap.sameAs(emptyBitmap))
+                {
+                    // Log.d("GOND", "**DIRECT** onDraw bitmap not empty");
                     preDrawBitmap = DrawBitmap;
                     valid_first_frame = true;
                     //Bitmap bmp = i3Global.resizeImage(preDrawBitmap, (int)this._width, (int)this._height, true );
@@ -370,22 +381,27 @@ public class FFMpegFrameView extends View {
                     //bmp = null;
                     //Rect dest = new Rect(0, 0, getWidth(), getHeight());
                     //canvas.drawBitmap(preDrawBitmap,null, img_rect, mPaint);
-                }else
+                }
+                else
                 {
                     if(preDrawBitmap != null && !preDrawBitmap.sameAs(emptyBitmap)) {
+                        // Log.d("GOND", "**DIRECT** onDraw bmp is empty 2");
 //                        Rect dest = new Rect(0, 0, getWidth(), getHeight());
 //                        canvas.drawBitmap(preDrawBitmap,null, dest, mPaint);
                         //Rect src = new Rect(0,0,DrawBitmap.getWidth(), DrawBitmap.getHeight());
                         Rect dest = new Rect(0,0,   this.img_width, this.img_height);
                         canvas.drawBitmap(preDrawBitmap, null, dest, mPaint);
+                    } else {
+                        Log.d("GOND", "**DIRECT** onDraw not draw 1");
                     }
                 }
-            }
+            // }
         }
         else
         {
+            // Log.d("GOND", "**DIRECT** onDraw draw null bmp");
             if( src != null){
-
+                // Log.d("GOND", "**DIRECT** onDraw draw null 1");
                 Rect dest = new Rect(0, 0, getWidth(), getHeight());
                 canvas.drawBitmap(src,null, dest, mPaint);
             }
@@ -637,6 +653,15 @@ public class FFMpegFrameView extends View {
         min = date.getMinuteOfHour();
         sec = date.getSecondOfMinute();
         SearchTimeData search = new SearchTimeData(year, month, day, hour, min, sec, interval);
+        // if (socket_handler != null && socket_handler.getHDMode() == true && HD == false)
+        // {
+        //     if( video_thread != null)
+        //     {
+        //         video_thread.interrupt();
+        //         video_thread = null;
+        //     }
+        //     valid_first_frame = false;
+        // }
 
         valid_first_frame = false;
         if(video_thread == null || socket_handler == null || socket_handler.running == false) {
@@ -660,6 +685,7 @@ public class FFMpegFrameView extends View {
             socket_handler.ChangePlay(false, re_init, Channels);
         }
     }
+    
     public void setSource(@Nullable ReadableArray sources) {
         if (sources != null && sources.size() != 0) {
             ReadableMap source = sources.getMap(0);

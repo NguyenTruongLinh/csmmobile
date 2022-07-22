@@ -1121,11 +1121,15 @@ class VideoPlayerView extends Component {
   };
 
   renderFeatureButtons = () => {
-    const {videoStore, isLive} = this.props;
+    const {videoStore, isLive, selectedStream} = this.props;
     // const {sWidth, sHeight} = this.state;
     const {showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
-    __DEV__ && console.log('GOND renderFeatureButtons', showController);
+    const isMenuReady = videoStore.selectedStream
+      ? videoStore.selectedStream.isMenuReady ?? true
+      : false;
+    // __DEV__ &&
+    //   console.log('GOND renderFeatureButtons', isMenuReady, selectedStream);
 
     return (
       <View
@@ -1170,7 +1174,7 @@ class VideoPlayerView extends Component {
               color={CMSColors.White}
               size={IconSize}
               onPress={this.takeSnapshot}
-              disabled={!this.viewShot}
+              disabled={!this.viewShot || !isMenuReady}
             />
           </View>
         )}
@@ -1190,7 +1194,8 @@ class VideoPlayerView extends Component {
               disabled={
                 !videoStore.selectedStream ||
                 // videoStore.selectedStream.isLoading ||
-                !this.playerRef
+                !this.playerRef ||
+                !isMenuReady
               }
             />
           </View>
