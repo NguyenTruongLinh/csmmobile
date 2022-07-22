@@ -31,11 +31,11 @@ public class ServerSite
     public  int ConnectionIndex;
     public  int serverVideoPort;
     boolean isLive = true;
-    ServerTimeZone TimeZone;
+    ServerTimeZone TimeZone = null;
     SearchTimeData SearchTime;
     public SearchTimeData getSearchTime(){ return SearchTime;}
     public void  setSearchTime(SearchTimeData val){ SearchTime = val;}
-    public ServerTimeZone getTimeZone(){ return  TimeZone;}
+    public ServerTimeZone getTimeZone() {return  TimeZone;}
     public  void  setTimeZone(ServerTimeZone val){ TimeZone = val;}
     public  boolean getisLive(){ return  isLive;}
     public  void  setLive(boolean val){ isLive = val;}

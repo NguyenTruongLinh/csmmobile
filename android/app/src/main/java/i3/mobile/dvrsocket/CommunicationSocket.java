@@ -829,7 +829,7 @@ public class CommunicationSocket implements Runnable {
                 byte[] msg_buff = new byte[len];
                 System.arraycopy(buffer,offset, msg_buff,0, len);
                 long []daylist = FFMPEGDecoder.getSearchDaylist( msg_buff);
-                if( daylist != null){
+                if( daylist != null && ServerInfo.getTimeZone() != null) {
                     TimeZone currentServerTimeZone = ServerInfo.getTimeZone().getTimeZone();
                     int numberOfSize = daylist.length;
                     long beginTime = numberOfSize > 0 ? daylist[0] : 0;
@@ -876,6 +876,11 @@ public class CommunicationSocket implements Runnable {
             break;
             case Constant.EnumCmdMsg.MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL:
             {
+                if (ServerInfo.getTimeZone() == null)
+                {
+                    Log.d("GOND", "**DIRECT** Search time interval: no timezone");
+                    break;
+                }
                 TimeZone currentServerTimeZone = ServerInfo.getTimeZone().getTimeZone();
                 byte[] msg_buff = new byte[len];
                 System.arraycopy(buffer,offset, msg_buff,0, len);
@@ -1247,6 +1252,11 @@ public class CommunicationSocket implements Runnable {
         }
         else
         {
+            if (this.ServerInfo.getTimeZone() == null) 
+            {
+                Log.d("GOND", "**DIRECT** ChangePlay no timezone");
+                return;
+            }
             ServerInfo.setLive( islive);
             byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
             byte[]buff = new byte[buff_daylist.length];
@@ -1257,10 +1267,11 @@ public class CommunicationSocket implements Runnable {
     }
     public  void ChangePlay( boolean islive, boolean reload, String channel)
     {
-        Log.d("GOND", "ChangePlay: " + channel + ", old: " + str_Channel);
+        // Log.d("GOND", "**DIRECT** ChangePlay: " + channel + ", old: " + str_Channel);
+        boolean isReset = reload;
         if( str_Channel != channel)
         {
-            // Log.d("GOND", "ChangePlay channel changed");
+            // Log.d("GOND", "**DIRECT** ChangePlay channel changed");
             str_Channel = channel;
             if (this.video_handler != null) 
                 this.video_handler.changeChannel(channel);
@@ -1270,27 +1281,39 @@ public class CommunicationSocket implements Runnable {
             {
                 Channel[i] = Integer.parseInt(chs[i]);
             }
+            // if (islive == false)
+            // {
+            //     isReset = true;
+            // }
+            this.ChangePlayInternal(islive,  isReset, false, true);
         }
-        this.ChangePlay(  islive,  reload, false);
-
+        else 
+        {
+            this.ChangePlayInternal(islive,  isReset, false, false);
+        }
     }
-    private  void ChangePlay( boolean islive, boolean reload, Boolean mainstream )
+
+    private  void ChangePlayInternal( boolean islive, boolean reload, Boolean mainstream, Boolean forceChange)
     {
         this.HDMode = mainstream;
 
+        // Log.d("GOND", "**DIRECT** ChangePlay 2: " + forceChange + ", HD: " + this.HDMode + ", reload: " + reload);
         // dongpt: remove these line, why do not allow switch channel when playing live?
-        if( ServerInfo.getisLive() == islive && PlaybackStatus == Constant.EnumPlaybackSatus.VIDEO_PLAY)
+        if(forceChange == false && ServerInfo.getisLive() == islive && PlaybackStatus == Constant.EnumPlaybackSatus.VIDEO_PLAY)
+        {
+            Log.d("GOND", "**DIRECT** ChangePlay: not start play");
             return;
+        }
 
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_PLAY;
         //int[] v_index = this.Channel;
         //if( this.PlaybyChannel == false)
         // v_index = GetChannelforIndex(this.getChannel());//this.GetVideoSourceIndex(this.Channel);
         int [] ChannelNo = this.ChannelNo(islive);
-        // Log.d("GOND", "ChangePlay get live: " + ChannelNo);
+        // Log.d("GOND", "**DIRECT** ChangePlay with channels: " + Arrays.toString(ChannelNo));
         if( ChannelNo == null || ChannelNo.length == 0)
         {
-
+            // Log.d("GOND", "**DIRECT** ChangePlay: case 1");
             OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_PERMISSION_CHANNEL_DISABLE, islive? 0 : 1);
             if( islive == false){
                 byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
@@ -1309,6 +1332,7 @@ public class CommunicationSocket implements Runnable {
         }
         if(islive == true)//change search to live
         {
+            // Log.d("GOND", "**DIRECT** ChangePlay: case 2");
             // Log.d("GOND", "ChangePlay channel 111");
             boolean need_stop_search = this.ServerInfo.getSearchTime() == null? false : true;
             if(ServerInfo.getisLive() == false )
@@ -1337,14 +1361,22 @@ public class CommunicationSocket implements Runnable {
         else// switch from Live => search
         {
             // Log.d("GOND", "ChangePlay channel 222");
-              boolean _islive = ServerInfo.getisLive();
+            // Log.d("GOND", "**DIRECT** ChangePlay: case 3");
+            boolean _islive = ServerInfo.getisLive();
             ServerInfo.setLive( islive);
 
             if( reload == true ){
+                // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload");
                 //int[] channel_no = this.ChannelNo();
                 byte[]buff = null;
                 byte[] msg_stop = null;
                 if( _islive == true){
+                    // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload live");
+                    if (this.ServerInfo.getTimeZone() == null)
+                    {
+                        Log.d("GOND", "**DIRECT** ChangePlay 2: no timezone");
+                        return;
+                    }
                     msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                     byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
                     buff = new byte[buff_daylist.length + msg_stop.length ];
@@ -1353,6 +1385,7 @@ public class CommunicationSocket implements Runnable {
                     System.arraycopy(buff_daylist,0, buff, msg_stop.length , buff_daylist.length );
                 }
                 else {
+                    // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload search");
                     int[] v_index = this.ChannelNo(false);
                     msg_stop = MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, v_index);
                     byte[] msg_timeinterval = MsgCommandItem.MSG_SEARCH_REQUEST_TIME_INTERVAL(this.ServerInfo, ChannelNo);
@@ -1376,7 +1409,13 @@ public class CommunicationSocket implements Runnable {
                 new SendBufferTask(this.OutPut).execute( buff);
             }
             else{
+                // Log.d("GOND", "**DIRECT** ChangePlay: case 3 not reload !!!");
                 //int[] channels = this.ChannelNo();  //this.getChannel();
+                if (this.ServerInfo.getTimeZone() == null)
+                {
+                    Log.d("GOND", "**DIRECT** ChangePlay 3 no timezone");
+                    return;
+                }
                 byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                 byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
                 byte[]buff = new byte[ msg_stop.length + buff_daylist.length];
@@ -1388,12 +1427,14 @@ public class CommunicationSocket implements Runnable {
 
         }
     }
+
     public  void Stop(){
         if( running == true) {
             byte[] msg = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_DISCONNECT, null);
             new SendBufferTask(this.OutPut).execute(msg);
         }
     }
+
     public  void  SeekPOS(int val, boolean HD, boolean firstRun)
     {
         try {
@@ -1403,16 +1444,9 @@ public class CommunicationSocket implements Runnable {
             PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_PLAY;
             int[] v_index = this.ChannelNo(false);
             //int send_len = this.SendLogin(this.ServerInfo);
+            // Log.d("GOND", "**DIRECT** SeekPOS GetChannel: " + Arrays.toString(v_index));
             if(firstRun){
                 TimeZone currentServerTimeZone = ServerInfo.getTimeZone().getTimeZone();
-//            boolean isBeginOfDST = Utilities.dayBeginOfDST(
-//                    ServerInfo.getSearchTime().getYear(),
-//                    ServerInfo.getSearchTime().getMonth(),
-//                    ServerInfo.getSearchTime().getDay(), currentServerTimeZone,st);
-//            boolean isEndOfDST = Utilities.dayEndOfDST(
-//                    ServerInfo.getSearchTime().getYear(),
-//                    ServerInfo.getSearchTime().getMonth(),
-//                    ServerInfo.getSearchTime().getDay(), currentServerTimeZone,st);
 
                 if(daylight.isBeginOfDST() && val > (daylight.getTimeStartDST() * 3600)){
                     val -= 3600;

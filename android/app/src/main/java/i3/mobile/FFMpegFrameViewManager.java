@@ -191,13 +191,14 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         boolean HD = false;
         if( source.hasKey("hd"))
         {
-            try {
+            try
+            {
                 HD = source.getBoolean("hd");
             }
-            catch(Exception ex){
-                HD= false;
+            catch(Exception ex)
+            {
+                HD = false;
             }
-
         }
         if(view.socket_handler == null || view.video_thread == null || view.socket_handler.running == false) {
             view.setServer(s);
