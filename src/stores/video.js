@@ -2068,7 +2068,7 @@ export const VideoModel = types
           self.cloudType = res === true ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
         } else if (typeof res === 'number') {
           self.cloudType =
-            res >= res.Type < CLOUD_TYPE.TOTAL && res.Type > CLOUD_TYPE.DEFAULT
+            res < CLOUD_TYPE.TOTAL && res > CLOUD_TYPE.DEFAULT
               ? res
               : CLOUD_TYPE.HLS;
         } else if (typeof res === 'object') {
