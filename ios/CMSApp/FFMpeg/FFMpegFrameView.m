@@ -403,7 +403,7 @@ const uint32_t numLayers = 24;
     // [self setIsHD:isHD];
     
     if(isSearch == YES){
-      NSLog(@"GOND setStartplayback SEARCH");
+      NSLog(@"GOND **DIRECT** setStartplayback switch to SEARCH");
       [self resetParam];
       [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
       
@@ -411,10 +411,11 @@ const uint32_t numLayers = 24;
       [self setDateTimeRulerDST:dateTimeSearchDST];
       [self setInterval: interval];
     } else {
+      NSLog(@"GOND **DIRECT** setStartplayback  switch to LIVE");
       [self addSubview:videoView];
       BOOL found = NO;
-      if (_isSeacrh == isSearch)
-      {
+//      if (_isSeacrh == isSearch)
+//      {
         for (ImcConnectedServer* server in connectedServerList)
         {
           // NSLog(@"GOND setStartplayback compare server: %@ vs %@, %ld vs %ld, %@ vs %@, %@ vs %@", server.server_address, selectedServer.server_address, (long)server.server_port, (long)selectedServer.server_port, server.username, selectedServer.username, server.password, selectedServer.password);
@@ -425,7 +426,7 @@ const uint32_t numLayers = 24;
             NSLog(@"GOND setStartplayback found server: %s", server.connected ? "YES" : "NO");
           }
         }
-      }
+//      }
 //      if (!found) {
 //        [self resetParam];
 //        [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
@@ -438,8 +439,9 @@ const uint32_t numLayers = 24;
     {
 //      isConnecting = YES;
 //      NSArray* buttonList = [NSArray arrayWithObjects:@"View channel list", @"Disconnect", nil];
-      NSLog(@"GOND setStartplayback 2 server connected: updating channels list");
+      NSLog(@"GOND **DIRECT** setStartplayback 2 server connected: updating channels list");
       [self setChannels:channel];
+      [self setIsSearch:isSearch];
       if (![_channels isEqualToString:previousChannel] && previousChannel != nil)
       {
 //        [controllerThread updateServerDisplayMask:selectedServer.server_address :selectedServer.server_port :[self getChannelMask]];
@@ -448,7 +450,7 @@ const uint32_t numLayers = 24;
     }
     else // if (connectedServers.count < MAX_SERVER_CONNECTION)
     {
-      NSLog(@"GOND setStartplayback 2 start connection : %d", connectedServers.count);
+      NSLog(@"GOND **DIRECT** setStartplayback 2 start connection : %d", connectedServers.count);
       [connectedServerList addObject:selectedServer];
 //      NSString* previousChannel = _channels;
       [self setChannels:channel];
