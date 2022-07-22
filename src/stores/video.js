@@ -2070,6 +2070,8 @@ export const VideoModel = types
           self.cloudType =
             res < CLOUD_TYPE.TOTAL && res > CLOUD_TYPE.DEFAULT
               ? res
+              : res <= CLOUD_TYPE.DEFAULT
+              ? CLOUD_TYPE.DIRECTION
               : CLOUD_TYPE.HLS;
         } else if (typeof res === 'object') {
           self.cloudType =
@@ -2077,6 +2079,8 @@ export const VideoModel = types
             res.Type < CLOUD_TYPE.TOTAL &&
             res.Type > CLOUD_TYPE.DEFAULT
               ? parseInt(res.Type)
+              : parseInt(res.Type) <= CLOUD_TYPE.DEFAULT
+              ? CLOUD_TYPE.DIRECTION
               : CLOUD_TYPE.HLS;
 
           __DEV__ && console.log('GOND get cloud type obj: ', self.cloudType);
