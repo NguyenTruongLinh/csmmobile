@@ -828,7 +828,8 @@ class LiveChannelsView extends React.Component {
         onSwipe={(direction, state) => this.onSwipe(direction, state)}
         config={{
           velocityThreshold: 0.2,
-          directionalOffsetThreshold: 25,
+          directionalOffsetThreshold: 80,
+          // gestureIsClickThreshold: 3,
         }}
         style={{
           flex: 1,

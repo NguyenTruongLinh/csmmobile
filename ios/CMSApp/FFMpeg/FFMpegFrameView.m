@@ -414,8 +414,8 @@ const uint32_t numLayers = 24;
       NSLog(@"GOND **DIRECT** setStartplayback  switch to LIVE");
       [self addSubview:videoView];
       BOOL found = NO;
-//      if (_isSeacrh == isSearch)
-//      {
+     if (_isSeacrh == isSearch)
+     {
         for (ImcConnectedServer* server in connectedServerList)
         {
           // NSLog(@"GOND setStartplayback compare server: %@ vs %@, %ld vs %ld, %@ vs %@, %@ vs %@", server.server_address, selectedServer.server_address, (long)server.server_port, (long)selectedServer.server_port, server.username, selectedServer.username, server.password, selectedServer.password);
@@ -426,7 +426,7 @@ const uint32_t numLayers = 24;
             NSLog(@"GOND setStartplayback found server: %s", server.connected ? "YES" : "NO");
           }
         }
-//      }
+     }
 //      if (!found) {
 //        [self resetParam];
 //        [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
