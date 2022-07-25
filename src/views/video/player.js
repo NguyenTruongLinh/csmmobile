@@ -1510,8 +1510,8 @@ const styles = StyleSheet.create({
     flex: 44,
     justifyContent: 'flex-end',
     // alignContent: 'center',
-    borderWidth: 2,
-    borderColor: 'green',
+    // borderWidth: 2,
+    // borderColor: 'green',
   },
   controlsContainer: {
     position: 'absolute',
