@@ -89,9 +89,10 @@ class VideoPlayerView extends Component {
       // pause: false,
       seekpos: {},
       sWidth: width,
-      sHeight: height,
+      sHeight: this.getVideoHeight(width, height),
       selectedTime: {hour: 0, minute: 0, second: 0},
       timePickerDatetime: props.videoStore.getSafeSearchDate(),
+      buttonBoxHeight: 0,
     };
 
     this.timelineAutoScroll = true;
@@ -236,6 +237,10 @@ class VideoPlayerView extends Component {
         }
       ),
     ];
+  };
+
+  getVideoHeight = (width, height) => {
+    return this.props.videoStore.isFullscreen ? height : (width * 9) / 16;
   };
 
   //#region Event handlers
@@ -388,7 +393,7 @@ class VideoPlayerView extends Component {
   onDimensionsChange = ({window}) => {
     const {width, height} = window;
     __DEV__ && console.log('GOND onDimensionsChange: ', window);
-    this.setState({sWidth: width, sHeight: height});
+    this.setState({sWidth: width, sHeight: this.getVideoHeight(width, height)});
   };
 
   onFullscreenPress = (isFullscreen, manually) => {
@@ -790,7 +795,7 @@ class VideoPlayerView extends Component {
       videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
-    const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
+    const height = sHeight; // videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
     __DEV__ &&
       console.log(
         'GOND renderVid player: ',
@@ -1002,7 +1007,7 @@ class VideoPlayerView extends Component {
       cloudType,
       isFullscreen,
     } = videoStore;
-    const {sHeight, showController} = this.state;
+    const {sHeight, buttonBoxHeight, showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
 
     let showPlayPauseButton =
@@ -1019,11 +1024,18 @@ class VideoPlayerView extends Component {
     //     -IconViewSize / 2 +
     //     (isFullscreen ? 0 : Platform.OS === 'android' ? 12 : 48),
     // };
+    const bottomPos = (sHeight - buttonBoxHeight) / 2;
 
     return (
       <Fragment>
         {showController && selectedChannelIndex > 0 && (
-          <View style={[styles.controlButtonContainer]}>
+          <View
+            style={[styles.controlButtonContainer]}
+            onLayout={evt => {
+              // __DEV__ &&
+              //   console.log('GOND controlButtonContainer onLayout: ', evt);
+              this.setState({buttonBoxHeight: evt.nativeEvent.layout.height});
+            }}>
             <IconCustom
               name="keyboard-left-arrow-button"
               size={IconSize}
@@ -1032,6 +1044,7 @@ class VideoPlayerView extends Component {
                 styles.controlButton,
                 {
                   justifyContent: 'flex-start',
+                  bottom: bottomPos,
                 },
               ]}
             />
@@ -1042,7 +1055,7 @@ class VideoPlayerView extends Component {
             style={[
               styles.controlButtonContainer,
               // verticalPos,
-              {left: '45%'},
+              {left: '45%', bottom: bottomPos},
             ]}>
             <IconCustom
               name={paused ? 'play' : 'pause'}
@@ -1061,7 +1074,10 @@ class VideoPlayerView extends Component {
             style={[
               styles.controlButtonContainer,
               // verticalPos,
-              {right: 0},
+              {
+                right: 0,
+                bottom: bottomPos,
+              },
             ]}>
             <IconCustom
               name="keyboard-right-arrow-button"
@@ -1509,7 +1525,6 @@ const styles = StyleSheet.create({
   playerContainer: {
     flex: 44,
     justifyContent: 'flex-end',
-    // alignContent: 'center',
     // borderWidth: 2,
     // borderColor: 'green',
   },
@@ -1529,7 +1544,7 @@ const styles = StyleSheet.create({
     height: '20%', // IconViewSize,
     justifyContent: 'center',
     alignItems: 'center',
-    top: '42%',
+    // top: '42%',
     // borderWidth: 1,
     // borderColor: 'red',
   },
