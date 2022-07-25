@@ -1014,16 +1014,16 @@ class VideoPlayerView extends Component {
     if (cloudType == CLOUD_TYPE.HLS) {
       showPlayPauseButton = showPlayPauseButton && selectedStream.streamUrl;
     }
-    let verticalPos = {
-      marginTop:
-        -IconViewSize / 2 +
-        (isFullscreen ? 0 : Platform.OS === 'android' ? 12 : 48),
-    };
+    // let verticalPos = {
+    //   marginTop:
+    //     -IconViewSize / 2 +
+    //     (isFullscreen ? 0 : Platform.OS === 'android' ? 12 : 48),
+    // };
 
     return (
       <Fragment>
         {showController && selectedChannelIndex > 0 && (
-          <View style={[styles.controlButtonContainer, verticalPos]}>
+          <View style={[styles.controlButtonContainer]}>
             <IconCustom
               name="keyboard-left-arrow-button"
               size={IconSize}
@@ -1041,8 +1041,8 @@ class VideoPlayerView extends Component {
           <View
             style={[
               styles.controlButtonContainer,
-              verticalPos,
-              {left: '50%', marginLeft: -IconViewSize / 2},
+              // verticalPos,
+              {left: '45%'},
             ]}>
             <IconCustom
               name={paused ? 'play' : 'pause'}
@@ -1058,7 +1058,11 @@ class VideoPlayerView extends Component {
         )}
         {showController && selectedChannelIndex < displayChannels.length - 1 && (
           <View
-            style={[styles.controlButtonContainer, verticalPos, {right: 0}]}>
+            style={[
+              styles.controlButtonContainer,
+              // verticalPos,
+              {right: 0},
+            ]}>
             <IconCustom
               name="keyboard-right-arrow-button"
               size={IconSize}
@@ -1067,6 +1071,7 @@ class VideoPlayerView extends Component {
                 styles.controlButton,
                 {
                   justifyContent: 'flex-end',
+                  paddingRight: 5,
                 },
               ]}
             />
@@ -1505,6 +1510,8 @@ const styles = StyleSheet.create({
     flex: 44,
     justifyContent: 'flex-end',
     // alignContent: 'center',
+    borderWidth: 2,
+    borderColor: 'green',
   },
   controlsContainer: {
     position: 'absolute',
@@ -1518,14 +1525,13 @@ const styles = StyleSheet.create({
   },
   controlButtonContainer: {
     position: 'absolute',
-    width: IconViewSize,
-    height: IconViewSize,
+    width: '10%', // IconViewSize,
+    height: '20%', // IconViewSize,
     justifyContent: 'center',
     alignItems: 'center',
-    top: '50%',
-    // marginTop: -IconViewSize / 2 + 12,
-    // marginTop: -IconViewSize / 2,
-    // backgroundColor: '#00ff0088',
+    top: '42%',
+    // borderWidth: 1,
+    // borderColor: 'red',
   },
   controlButton: {
     color: CMSColors.White,
