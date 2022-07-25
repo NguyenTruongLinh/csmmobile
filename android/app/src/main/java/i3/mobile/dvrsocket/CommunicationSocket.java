@@ -415,12 +415,13 @@ public class CommunicationSocket implements Runnable {
                 Log.d("GOND","relay isLive = " + ServerInfo.getisLive() + " ReadBlock hasRelayHeader  _length = " + _length +
                         " relayHeaderBlockCount = " + relayHeaderBlockCount + " debug = " + debug + " readHeaderCount = " + readHeaderCount + "RETURN !!!!!!!!");
                 return 0;
+            }else {
+                int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
+                Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock hasRelayHeader  _length = " + _length +
+                        " relayHeaderBlockCount = " + relayHeaderBlockCount + " totalLen = " + totalLen + " debug = " + debug + " readHeaderCount = " + readHeaderCount);
+                relayHeaderBlockRemainLen = totalLen - RELAY_HEADER_LEN;
+                relayHeaderBlockCount++;
             }
-            int totalLen = utils.ByteArrayOfCToIntJava( headerBytes,0);
-            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock hasRelayHeader  _length = " + _length +
-                    " relayHeaderBlockCount = " + relayHeaderBlockCount + " totalLen = " + totalLen + " debug = " + debug + " readHeaderCount = " + readHeaderCount);
-            relayHeaderBlockRemainLen = totalLen - RELAY_HEADER_LEN;
-            relayHeaderBlockCount++;
         }else
             Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
         return ReadBlock(_is, _length, buff, offset, debug);
