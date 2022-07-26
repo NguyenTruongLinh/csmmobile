@@ -1437,7 +1437,7 @@ class HLSStreamingView extends React.Component {
             style={[
               styles.channelInfo,
               {
-                top: videoStore.isFullscreen ? '10%' : 0,
+                top: singlePlayer ? '11%' : 0, // videoStore.isFullscreen ? '10%' : 0,
               },
             ]}>
             {channel.name ?? 'Unknown'}

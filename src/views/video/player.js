@@ -708,6 +708,11 @@ class VideoPlayerView extends Component {
     }
   };
 
+  onControlButtonLayout = evt => {
+    if (this.state.buttonBoxHeight != evt.nativeEvent.layout.height)
+      this.setState({buttonBoxHeight: evt.nativeEvent.layout.height});
+  };
+
   //#endregion Event handlers
 
   /**
@@ -1031,11 +1036,7 @@ class VideoPlayerView extends Component {
         {showController && selectedChannelIndex > 0 && (
           <View
             style={[styles.controlButtonContainer]}
-            onLayout={evt => {
-              // __DEV__ &&
-              //   console.log('GOND controlButtonContainer onLayout: ', evt);
-              this.setState({buttonBoxHeight: evt.nativeEvent.layout.height});
-            }}>
+            onLayout={this.onControlButtonLayout}>
             <IconCustom
               name="keyboard-left-arrow-button"
               size={IconSize}
@@ -1056,14 +1057,13 @@ class VideoPlayerView extends Component {
               styles.controlButtonContainer,
               // verticalPos,
               {left: '45%', bottom: bottomPos},
-            ]}>
+            ]}
+            onLayout={this.onControlButtonLayout}>
             <IconCustom
               name={paused ? 'play' : 'pause'}
               size={IconSize + 4}
               style={styles.pauseButton}
               onPress={() => {
-                // const willPause = paused;
-                // this.setState({pause: willPause});
                 this.playerRef && this.playerRef.pause(!paused);
               }}
             />
@@ -1078,7 +1078,8 @@ class VideoPlayerView extends Component {
                 right: 0,
                 bottom: bottomPos,
               },
-            ]}>
+            ]}
+            onLayout={this.onControlButtonLayout}>
             <IconCustom
               name="keyboard-right-arrow-button"
               size={IconSize}
