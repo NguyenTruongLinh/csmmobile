@@ -390,6 +390,10 @@ export const VideoModel = types
     isFullscreen: types.boolean,
     // is hd mode on or off
     hdMode: types.boolean,
+    // is stretched or original
+    stretch: types.boolean,
+    // enable stretch button
+    enableStretch: types.boolean,
     // unused yet?!?
     canSwitchMode: types.boolean,
     // is video paused
@@ -1020,6 +1024,9 @@ export const VideoModel = types
       },
       setLoading(value) {
         self.isLoading = value;
+      },
+      setEnableStretch(value) {
+        self.enableStretch = value;
       },
       setShouldShowVideoMessage(value) {
         self.shouldShowSnackbar = value ? true : false;
@@ -1870,6 +1877,9 @@ export const VideoModel = types
           self.getHLSInfos({channelNo: self.selectedChannel});
         }
       },
+      switchStretch(value) {
+        self.stretch = util.isNullOrUndef(value) ? !self.stretch : value;
+      },
       switchFullscreen(value) {
         self.isFullscreen = util.isNullOrUndef(value)
           ? !self.isFullscreen
@@ -2004,6 +2014,8 @@ export const VideoModel = types
         self.isLoading = false;
         self.isFullscreen = false;
         self.hdMode = false;
+        self.stretch = true;
+        self.enableStretch = false;
         self.paused = false;
         self.recordingDates = {};
         self.timeline = [];
@@ -4084,6 +4096,28 @@ export const VideoModel = types
         __DEV__ && console.log('GOND postAuthenticationCheck call now!');
         callback();
       },
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+      // notifySwitchDataUsageStreamAndroid(stream) {
+      //   if (!stream || self.cloudType == CLOUD_TYPE.DIRECTION) return;
+      //   __DEV__ &&
+      //     console.log(
+      //       '0507 switchRecordingStreamIdAndroid stream = ',
+      //       stream.id,
+      //       ' self.androidDataUsageStream = ',
+      //       self.androidDataUsageStream && self.androidDataUsageStream.id
+      //     );
+      //   if (
+      //     !self.androidDataUsageStream ||
+      //     self.androidDataUsageStream.id != stream.id
+      //   ) {
+      //     stream.targetUrl.resetDataUsageInfo();
+      //     self.androidDataUsageStream = stream;
+      //   }
+      // },
+=======
+>>>>>>> Stashed changes
       notifySwitchDataUsageStreamAndroid(stream) {
         __DEV__ &&
           console.log(
@@ -4096,10 +4130,19 @@ export const VideoModel = types
           !self.androidDataUsageStream ||
           self.androidDataUsageStream.id != stream.id
         ) {
+<<<<<<< Updated upstream
           stream.targetUrl.resetDataUsageInfo();
           self.androidDataUsageStream = stream;
         }
       },
+=======
+          __DEV__ && console.log('GOND stream.targetUrl:', stream.targetUrl);
+          if (stream.targetUrl != null) stream.targetUrl.resetDataUsageInfo();
+          self.androidDataUsageStream = stream;
+        }
+      },
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
       // #endregion Permission
       releaseHLSStreams() {
         self.hlsStreams.forEach(s => {
@@ -4191,6 +4234,8 @@ const storeDefault = {
   isFullscreen: false,
   canSwitchMode: false,
   hdMode: false,
+  stretch: true,
+  enableStretch: false,
   // paused: false,
   showAuthenModal: false,
   // isSingleMode: false,

@@ -439,6 +439,11 @@ class VideoPlayerView extends Component {
     this.props.videoStore.switchHD();
   };
 
+  onStretch = () => {
+    this.playerRef && this.playerRef.onStretch(!this.props.videoStore.stretch);
+    this.props.videoStore.switchStretch();
+  };
+
   handleChannelsScroll = event => {};
 
   onSelectDate = dateString => {
@@ -848,6 +853,7 @@ class VideoPlayerView extends Component {
       width: width,
       height: height,
       hdMode: videoStore.hdMode,
+      stretch: videoStore.stretch,
       isLive: videoStore.isLive,
       noVideo: videoStore.isLive ? false : videoStore.noVideo, // this.isNoDataSearch,
       // searchDate: videoStore.searchDate,
@@ -1129,6 +1135,11 @@ class VideoPlayerView extends Component {
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
     __DEV__ && console.log('GOND renderFeatureButtons', showController);
 
+    const isMenuReady = videoStore.selectedStream
+      ? videoStore.selectedStream.isMenuReady ?? true
+      : false;
+    // __DEV__ &&
+    //   console.log('GOND renderFeatureButtons', isMenuReady, selectedStream);
     return (
       <View
         style={
@@ -1162,6 +1173,21 @@ class VideoPlayerView extends Component {
                   ? !videoStore.canSearchSelectedChannel
                   : !videoStore.canLiveSelectedChannel
               }
+            />
+          </View>
+        )}
+        {showController && (
+          <View style={styles.buttonWrap}>
+            <CMSTouchableIcon
+              iconCustom="stretch-01"
+              color={
+                videoStore.stretch == true
+                  ? CMSColors.PrimaryActive
+                  : CMSColors.White
+              }
+              size={IconSize}
+              onPress={this.onStretch}
+              disabled={!videoStore.enableStretch}
             />
           </View>
         )}
