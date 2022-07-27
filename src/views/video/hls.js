@@ -267,6 +267,11 @@ class HLSStreamingView extends React.Component {
       util.extractModuleNameFromScreenName(
         appStore.naviService.getPreviousRouteName()
       ) + (Platform.OS == 'ios' ? (singlePlayer ? '_single' : '_multi') : '');
+
+    __DEV__ &&
+      console.log(
+        `hls this.trackingVideoSource =  ` + this.trackingVideoSource
+      );
   }
 
   componentWillUnmount() {

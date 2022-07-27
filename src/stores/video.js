@@ -8,7 +8,10 @@ import {LocalZone, DateTime} from 'luxon';
 
 import ChannelModel, {parseChannel} from './types/channel';
 import RTCStreamModel from './types/webrtc';
-import HLSStreamModel, {FORCE_SENT_DATA_USAGE} from './types/hls';
+import HLSStreamModel, {
+  DATA_USAGE_SENDING_INTERVAL,
+  FORCE_SENT_DATA_USAGE,
+} from './types/hls';
 
 import apiService from '../services/api';
 import dbService from '../services/localdb';
@@ -40,6 +43,7 @@ import {
   NVRPlayerConfig,
   CALENDAR_DATE_FORMAT,
   SITE_TREE_UNIT_TYPE,
+  DateFormat,
 } from '../consts/misc';
 import {TIMEZONE_MAP} from '../consts/timezonesmap';
 import {LocalDBName} from '../consts/misc';
@@ -138,6 +142,13 @@ const DirectServerModel = types
       return self.channelList.join(',');
     },
   }))
+  .volatile(self => ({
+    accumulatedDataUsage: 0,
+    dataUsageSentTimePoint: DateTime.now().toSeconds(),
+    videoInfo: {},
+    // dataUsageLogs: [],
+    // recordNo: 0,
+  }))
   .actions(self => ({
     setLoginInfo(userName, password) {
       __DEV__ && console.log('GOND setLoginInfo for ', self.serverID);
@@ -166,6 +177,90 @@ const DirectServerModel = types
       isLoading != undefined && (self.isLoading = isLoading);
       needReset != undefined && (self.needReset = needReset);
       error != undefined && (self.error = error);
+    },
+    resetDataUsageInfoRelay() {
+      self.accumulatedDataUsage = 0;
+      self.dataUsageSentTimePoint = DateTime.now().toSeconds();
+      // self.dataUsageLogs = [];
+      // self.recordNo = 0;
+    },
+    updateDataUsageRelay(segmentLoad, timezone, videoInfo, debug) {
+      __DEV__ &&
+        console.log(
+          `updateDataUsage segmentLoad = `,
+          segmentLoad,
+          ' videoInfo = ',
+          videoInfo
+        );
+      if (segmentLoad !== FORCE_SENT_DATA_USAGE)
+        self.videoInfo = {...videoInfo};
+      let params =
+        segmentLoad != FORCE_SENT_DATA_USAGE
+          ? {...videoInfo}
+          : {...self.videoInfo};
+      let newLoadRecordTimePoint = DateTime.now().toSeconds();
+
+      if (segmentLoad !== FORCE_SENT_DATA_USAGE)
+        self.accumulatedDataUsage += segmentLoad;
+
+      // self.dataUsageLogs.push({
+      //   time:
+      //     DateTime.fromSeconds(newLoadRecordTimePoint, {}).toFormat(
+      //       DateFormat.VideoDataUsageDate
+      //     ) +
+      //     ':' +
+      //     (DateTime.now().toMillis() % 1000),
+      //   load: segmentLoad,
+      // });
+
+      __DEV__ &&
+        console.log(
+          `updateDataUsage self.accumulatedDataUsage = `,
+          self.accumulatedDataUsage,
+          ' debug = ',
+          debug
+        );
+      if (
+        (segmentLoad == FORCE_SENT_DATA_USAGE ||
+          newLoadRecordTimePoint - self.dataUsageSentTimePoint >=
+            DATA_USAGE_SENDING_INTERVAL) &&
+        self.accumulatedDataUsage > 0
+      ) {
+        params.StartTime = DateTime.fromSeconds(
+          self.dataUsageSentTimePoint,
+          {}
+        ).toFormat(DateFormat.VideoDataUsageDate);
+        params.EndTime = DateTime.fromSeconds(
+          newLoadRecordTimePoint,
+          {}
+        ).toFormat(DateFormat.VideoDataUsageDate);
+        params.BytesUsed = self.accumulatedDataUsage;
+        apiService.post(
+          VSC.controller,
+          1,
+          VSC.SetDataUsageActivityLogs,
+          params
+        );
+        __DEV__ &&
+          console.log(
+            `0507 updateDataUsage callAPI params `,
+            JSON.stringify(params),
+            segmentLoad == FORCE_SENT_DATA_USAGE
+              ? 'STREAM STOPPED'
+              : 'AFTER 15 SECS',
+            ' ************************************** ',
+            'debug: ',
+            debug
+          );
+        // for (let i = 0; i < self.dataUsageLogs.length; i++) {
+        //   __DEV__ &&
+        //     console.log(
+        //       `0507 updateDataUsage callAPI params dataUsageLogs = `,
+        //       self.dataUsageLogs[i]
+        //     );
+        // }
+        self.resetDataUsageInfoRelay();
+      }
     },
   }));
 
@@ -462,6 +557,8 @@ export const VideoModel = types
     isAuthenCanceled: false,
     onPostAuthentication: null, // (channelNo, isLive) => {}
     androidDataUsageStream: null,
+
+    relayReconnectInterval: null,
   }))
   .views(self => ({
     get isCloud() {
@@ -1022,6 +1119,8 @@ export const VideoModel = types
       },
       beforeDestroy() {
         self.reactions && self.reactions.forEach(unsubscribe => unsubscribe());
+        if (self.relayReconnectInterval)
+          clearInterval(self.relayReconnectInterval);
       },
       // #region setters
       setNVRLoginInfo(username, password) {
@@ -1232,6 +1331,7 @@ export const VideoModel = types
               // console.log(
               //   '### GOND this is unbelievable, how can this case happen, no direct stream found while channel existed!!!'
               // );
+              __DEV__ && console.log(`0725 getDirectInfos selectChannel`);
               self.getDirectInfos(foundChannel.channelNo);
               break;
             case CLOUD_TYPE.HLS:
@@ -1499,11 +1599,20 @@ export const VideoModel = types
 
         self.onTimezoneAcquired();
       },
+      getDirectInfosInterval() {
+        if (self.relayReconnectInterval)
+          clearInterval(self.relayReconnectInterval);
+        self.relayReconnectInterval = setInterval(() => {
+          __DEV__ && console.log(` 2507 getDirectInfosInterval`);
+          self.getDirectInfos(self.selectedChannel ?? undefined, true);
+        }, 15000);
+      },
       onTimezoneAcquired() {
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
           case CLOUD_TYPE.RS:
+            __DEV__ && console.log(`0725 getDirectInfos onTimezoneAcquired`);
             self.getDirectInfos(self.selectedChannel ?? undefined);
             break;
           case CLOUD_TYPE.HLS:
@@ -2464,7 +2573,7 @@ export const VideoModel = types
       }),
       // #endregion get channels
       // #region direct connection
-      getDirectInfos: flow(function* (channelNo) {
+      getDirectInfos: flow(function* (channelNo, isInterval) {
         self.isLoading = true;
         self.directStreams = [];
         // if (!self.allChannels || self.allChannels.length <= 0) {
@@ -2487,21 +2596,32 @@ export const VideoModel = types
             }
           );
           __DEV__ && console.log('GOND relay direct connect infos: ', res);
+
+          let previousRelayStatus =
+            self.directConnection &&
+            self.directConnection.isRelay &&
+            self.directConnection.relayInfo &&
+            self.directConnection.relayInfo.connectable;
+
           self.directConnection = parseDirectServer(res, self.cloudType);
           // __DEV__ && console.log('GOND direct setChannel 3');
-          if (
-            self.directConnection.isRelay &&
-            !self.directConnection.relayInfo.connectable
-          ) {
-            setTimeout(
-              () =>
-                snackbarUtil.showToast(
-                  VIDEO_TXT.WRONG_RELAY_SERVER_INFO,
-                  cmscolors.Danger
-                ),
-              1000
-            );
-            return false;
+          if (self.directConnection.isRelay) {
+            if (!self.directConnection.relayInfo.connectable) {
+              setTimeout(
+                () =>
+                  snackbarUtil.showToast(
+                    VIDEO_TXT.WRONG_RELAY_SERVER_INFO,
+                    cmscolors.Danger
+                  ),
+                1000
+              );
+              return false;
+            } else if (!previousRelayStatus) {
+              if (isInterval && self.relayReconnectInterval) {
+                clearInterval(self.relayReconnectInterval);
+                self.relayReconnectInterval = null;
+              }
+            }
           }
           // if (util.isNullOrUndef(channelNo)) {
           //   self.currentGridPage = 0;

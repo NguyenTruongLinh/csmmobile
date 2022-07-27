@@ -258,7 +258,9 @@ public class CommunicationSocket implements Runnable {
             parseRelayHandshakeResponse();
         }
     }
+
     boolean lastIsLive = true;
+    Thread mainThread = null;
     @Override
     public void run(){
         running = true;
@@ -371,6 +373,7 @@ public class CommunicationSocket implements Runnable {
                                         video_handler.setViewDimensions(width, height);
                                     thread_Video_socket = new Thread( video_handler);
                                     thread_Video_socket.start();
+
                                 }
                                 rcv_offset = 0;
                                 cmdsate.ResetState();
@@ -405,6 +408,22 @@ public class CommunicationSocket implements Runnable {
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_STOP;
         running = false;
     }
+
+    int dataUsage = 0;
+    long lastDataUsageSentTimePoint = System.currentTimeMillis();
+    private void notifyUpdateDataUsage(int newBlockLen, String debug){
+        if(this.isRelay) {
+            dataUsage += newBlockLen;
+            long newTimePoint = System.currentTimeMillis();
+            long deltaTime = newTimePoint - lastDataUsageSentTimePoint;
+            if (deltaTime >= 3 * 1000) {
+                lastDataUsageSentTimePoint = newTimePoint;
+                OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_UPDATE_DATA_USAGE, dataUsage);
+                dataUsage = 0;
+            }
+        }
+    }
+
     int relayHeaderBlockCount = 0;
     protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader, String debug)
     {
@@ -435,12 +454,11 @@ public class CommunicationSocket implements Runnable {
                 count = _is.read(buff, offset, _length);
             else
                 count = _is.read(buff, offset, buff.length - offset);
-
-
+            notifyUpdateDataUsage(count, debug);
         }
         catch (SocketTimeoutException tm)
         {
-//            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
             return  0;
         }
         catch (IndexOutOfBoundsException outex)
@@ -1615,7 +1633,7 @@ public class CommunicationSocket implements Runnable {
 
     }
 
-    protected void CloseSocket()
+    public void CloseSocket()
     {
         Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " CloseSocket");
         if( socket == null)

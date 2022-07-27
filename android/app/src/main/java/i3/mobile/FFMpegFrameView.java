@@ -164,7 +164,7 @@ public class FFMpegFrameView extends View {
         clientIp = String.format("%d.%d.%d.%d", (ipAddress & 0xff),(ipAddress >> 8 & 0xff),
                 (ipAddress >> 16 & 0xff),(ipAddress >> 24 & 0xff));
 
-        Log.v("DEBUG_TAG", "relay FFMpegFrameView constructor clientIp = " + clientIp);
+        Log.v("DEBUG_TAG", "relay 2507 FFMpegFrameView constructor this = " + this);
     }
 
     public void  setOrientation( int orient ){
@@ -677,9 +677,32 @@ public class FFMpegFrameView extends View {
         }
 
     }
+    private boolean mockDisFlag = false;
+    private void mockDisconnect() {
+        final Handler handler2 = new Handler(Looper.getMainLooper());
+        final Handler mainHandler = this.handler;
+        handler2.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("2507", "mockDisconnect");
+                if(mainHandler != null)
+                    mainHandler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_DISCONNECTED, null ).sendToTarget();
+                if(socket_handler != null)
+                    socket_handler.CloseSocket();
+                if( video_thread != null && socket_handler != null)
+                {
+                    socket_handler.running = false;
+                    video_thread.interrupt();
+                    socket_handler = null;
+                    video_thread = null;
+                }
+            }
+        }, 8*1000);
+    }
     //public  void  StartLive(int KDVR, String ip, String WanIp, String Name, int port, String serverID, String UserName, String Password, String channel, boolean bychanel)
     public  void  StartLive( boolean HD )
     {
+        Log.d("2507", "StartLive");
         //this.Stop();
         valid_first_frame = false;
         if( video_thread == null || socket_handler == null || socket_handler.running == false) {
@@ -689,6 +712,10 @@ public class FFMpegFrameView extends View {
             socket_handler.setHDMode(HD);
             video_thread = new Thread(socket_handler);
             video_thread.start();
+            if(!mockDisFlag) {
+//                mockDisconnect();
+                mockDisFlag = true;
+            }
         }
         else
         {

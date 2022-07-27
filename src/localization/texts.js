@@ -140,6 +140,7 @@ export const STREAM_STATUS = {
   PORT_ERROR: 'Video port error.',
   CONNECTION_ERROR: 'Connection Failed.',
   RELAY_HANDSHAKE_FAILED: 'Relay server could not find Pro server.',
+  RELAY_DISCONNECTED: 'Pro is unassigned from relay server.',
 };
 
 export const ALARM = {
