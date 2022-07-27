@@ -422,6 +422,7 @@ export const VideoModel = types
     shouldLinkNVRUser: false, // enable when input login form
     isAuthenCanceled: false,
     onPostAuthentication: null, // (channelNo, isLive) => {}
+    searchDateChangedByLive: false,
     // androidDataUsageStream: null,
   }))
   .views(self => ({
@@ -1043,6 +1044,9 @@ export const VideoModel = types
         streamReadyCallback = fn;
       },
       */
+      turnOffSearchDateChangedByLive() {
+        self.searchDateChangedByLive = false;
+      },
       selectChannel(value, autoStart = true, fromMulti = false) {
         let key =
           typeof value == 'number'
@@ -1418,7 +1422,8 @@ export const VideoModel = types
         switch (self.cloudType) {
           case CLOUD_TYPE.DEFAULT:
           case CLOUD_TYPE.DIRECTION:
-            self.getDirectInfos(self.selectedChannel ?? undefined);
+            if (!self.selectedChannel)
+              self.getDirectInfos(self.selectedChannel ?? undefined);
             break;
           case CLOUD_TYPE.HLS:
             __DEV__ && console.log(`GOND on HLS get HLS info after build TZ`);
@@ -1724,6 +1729,7 @@ export const VideoModel = types
                 NVRPlayerConfig.QueryStringUTCDateFormat
               )
             ) {
+              self.searchDateChangedByLive = true;
               self.searchDate = lastFrameDate.startOf('day');
             }
           }
@@ -1754,6 +1760,12 @@ export const VideoModel = types
         }
       },
       onDefaultSearchTime() {
+        __DEV__ &&
+          console.log(
+            'GOND @@@ onDefaultSearchTime ',
+            self.isAlertPlay,
+            self.getSafeSearchDate().toFormat(NVRPlayerConfig.FrameFormat)
+          );
         if (self.isAlertPlay) return;
         let targetTime =
           DateTime.now().toSeconds() - DEFAULT_SEARCH_OFFSET_IN_SECONDS;
@@ -2394,7 +2406,7 @@ export const VideoModel = types
               channelno: channelNo ?? self.allChannels[0].channelNo,
             }
           );
-          __DEV__ && console.log('GOND direct connect infos: ', res);
+          __DEV__ && console.trace('GOND direct connect infos: ', res);
           self.directConnection = parseDirectServer(res);
           // __DEV__ && console.log('GOND direct setChannel 3');
 

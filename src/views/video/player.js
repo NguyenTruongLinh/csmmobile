@@ -564,6 +564,8 @@ class VideoPlayerView extends Component {
 
   onTimelineScrollBegin = () => {
     const {videoStore} = this.props;
+    __DEV__ && console.log(`GOND onTimelineScrollBegin `);
+
     this.timelineAutoScroll = false;
     if (videoStore.timeline.length > 0 && videoStore.noVideo == true) {
       videoStore.setNoVideo(false);
@@ -631,10 +633,7 @@ class VideoPlayerView extends Component {
       // this.playerRef && this.playerRef.stop();
       __DEV__ && console.log('GOND onTimeline sliding end: AAAAAAAA');
 
-      // setTimeout(() => {
       videoStore.setNoVideo(true, false);
-      // snackbar.onMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
-      // }, 200);
       return;
     } // else if (videoStore.noVideo) {
     //   videoStore.setNoVideo(false, false);
@@ -801,12 +800,12 @@ class VideoPlayerView extends Component {
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = sHeight; // videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
-    __DEV__ &&
-      console.log(
-        'GOND renderVid player: ',
-        selectedStream,
-        isAPIPermissionSupported
-      );
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND renderVid player: ',
+    //     selectedStream,
+    //     isAPIPermissionSupported
+    //   );
     if (
       !selectedStream ||
       !selectedStream.channel ||
@@ -827,7 +826,7 @@ class VideoPlayerView extends Component {
     }
 
     const canPlay = videoStore.canPlaySelectedChannel(videoStore.isLive);
-    __DEV__ && console.log('GOND render player canPlay: ', canPlay);
+    // __DEV__ && console.log('GOND render player canPlay: ', canPlay);
     if (!canPlay) {
       __DEV__ && console.log('GOND renderVid player NO PERMISSION');
       return (
@@ -1259,11 +1258,18 @@ class VideoPlayerView extends Component {
             markerPosition="absolute"
             timeData={videoStore.timeline}
             currentTime={videoStore.frameTime}
-            onBeginScroll={this.onTimelineScrollBegin}
+            // onBeginScroll={this.onTimelineScrollBegin}
             onScrolling={this.onDraggingTimeRuler}
-            onPauseVideoScrolling={() =>
-              this.playerRef && this.playerRef.onBeginDraggingTimeline()
-            }
+            onPauseVideoScrolling={() => {
+              __DEV__ && console.log(`GOND onPauseVideoScrolling `);
+              this.playerRef && this.playerRef.onBeginDraggingTimeline();
+              if (
+                videoStore.timeline.length > 0 &&
+                videoStore.noVideo == true
+              ) {
+                videoStore.setNoVideo(false);
+              }
+            }}
             setShowHideTimeOnTimeRule={value => {
               this.timeOnTimeline && this.timeOnTimeline.setShowHide(value);
             }}
