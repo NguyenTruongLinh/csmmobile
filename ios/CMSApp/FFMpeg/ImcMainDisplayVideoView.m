@@ -12,6 +12,7 @@
 #import "ImcServerSetting.h"
 #import "ImcImageView.h"
 #import "AppDelegate.h"
+#import "FFMpegFrameView.h"
 
 const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen will display logo image
 
@@ -91,6 +92,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     screenString = nil;
     serverAddressInfo = nil;
     frameRate = nil;
+    _stretch = true;
     channelConfigBuffer = [NSMutableDictionary dictionary];
     
   }
@@ -689,10 +691,26 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
               imageSize.height *= 2;
             displayRect = [self callDisplayRect:view.frame :imageSize :FALSE];
           }
-          else // STRETCH Mode
+          else if(_stretch) // STRETCH Mode
+          {
             displayRect = view.frame;
-
-          if (screen.displayImage.CGImage) {
+            _responseResolution = true;
+          }
+          else
+          {
+              int fullwidth = view.frame.size.width;
+              int width = view.frame.size.height / screen.resolutionHeight * screen.resolutionWidth;
+              int left = (fullwidth - width)/2;
+              displayRect = CGRectMake(left, 0, width + 1, view.frame.size.height);
+              if(_responseResolution && screen.resolutionWidth >0 && screen.resolutionHeight > 0)
+              {
+                  NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:screen.resolutionWidth], [NSNumber numberWithInt:screen.resolutionHeight],nil];
+                  [self.delegate1 responseResolution : resolution];
+                  _responseResolution = false;
+              }
+          }
+          if (screen.displayImage.CGImage) 
+          {
             // NSLog(@"GOND draw frame in fullscreen: %f x %f", displayRect.size.width, displayRect.size.height);
             // NSLog(@"GOND draw frame in rect fullscreen");
             sublayer.contents = (__bridge id)([screen getScaledImage:playerWidth:playerHeight:scaleXY:translateX:translateY].CGImage); // (screen.displayImage.CGImage);
