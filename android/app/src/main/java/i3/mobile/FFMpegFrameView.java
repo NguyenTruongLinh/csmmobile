@@ -374,16 +374,6 @@ public class FFMpegFrameView extends View {
         if(DrawBitmap != null)
         {
             Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
-<<<<<<< Updated upstream
-            if(DrawBitmap != null) {
-                if (!DrawBitmap.sameAs(emptyBitmap)) {
-=======
-<<<<<<< Updated upstream
-            // if(DrawBitmap != null) {
-                if (!DrawBitmap.sameAs(emptyBitmap))
-                {
-                    // Log.d("GOND", "**DIRECT** onDraw bitmap not empty");
-=======
             if(DrawBitmap != null) {
                 int bitmap_width = DrawBitmap.getWidth();
                 int bitmap_height = DrawBitmap.getHeight();
@@ -400,15 +390,13 @@ public class FFMpegFrameView extends View {
                         int[] resolution = new int[] {bitmap_width, bitmap_height};
                         OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_RESPONSE_RESOLUTION, resolution);
                         responseResolution = false;
-                    }+
+                    }
                 }
                 else
                 {
                     responseResolution = true;
                 }
                 if (!DrawBitmap.sameAs(emptyBitmap)) {
->>>>>>> Stashed changes
->>>>>>> Stashed changes
                     preDrawBitmap = DrawBitmap;
                     valid_first_frame = true;
                     //Bitmap bmp = i3Global.resizeImage(preDrawBitmap, (int)this._width, (int)this._height, true );
