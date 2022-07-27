@@ -4096,28 +4096,6 @@ export const VideoModel = types
         __DEV__ && console.log('GOND postAuthenticationCheck call now!');
         callback();
       },
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-      // notifySwitchDataUsageStreamAndroid(stream) {
-      //   if (!stream || self.cloudType == CLOUD_TYPE.DIRECTION) return;
-      //   __DEV__ &&
-      //     console.log(
-      //       '0507 switchRecordingStreamIdAndroid stream = ',
-      //       stream.id,
-      //       ' self.androidDataUsageStream = ',
-      //       self.androidDataUsageStream && self.androidDataUsageStream.id
-      //     );
-      //   if (
-      //     !self.androidDataUsageStream ||
-      //     self.androidDataUsageStream.id != stream.id
-      //   ) {
-      //     stream.targetUrl.resetDataUsageInfo();
-      //     self.androidDataUsageStream = stream;
-      //   }
-      // },
-=======
->>>>>>> Stashed changes
       notifySwitchDataUsageStreamAndroid(stream) {
         __DEV__ &&
           console.log(
@@ -4130,19 +4108,11 @@ export const VideoModel = types
           !self.androidDataUsageStream ||
           self.androidDataUsageStream.id != stream.id
         ) {
-<<<<<<< Updated upstream
-          stream.targetUrl.resetDataUsageInfo();
-          self.androidDataUsageStream = stream;
-        }
-      },
-=======
           __DEV__ && console.log('GOND stream.targetUrl:', stream.targetUrl);
           if (stream.targetUrl != null) stream.targetUrl.resetDataUsageInfo();
           self.androidDataUsageStream = stream;
         }
       },
->>>>>>> Stashed changes
->>>>>>> Stashed changes
       // #endregion Permission
       releaseHLSStreams() {
         self.hlsStreams.forEach(s => {
