@@ -1,6 +1,8 @@
 import {flow, types /*, onSnapshot*/, applySnapshot} from 'mobx-state-tree';
 import apiService from '../services/api';
 import BigNumber from 'bignumber.js';
+import {DateTime} from 'luxon';
+
 import snackbarUtil from '../util/snackbar';
 import util from '../util/general';
 
@@ -10,6 +12,7 @@ import {ACConfig, Alert, AlertType, CommonActions} from '../consts/apiRoutes';
 
 const ID_Canned_Message = 5;
 export const PAGE_LENGTH = 20;
+const ALARM_REFRESH_INTERVAL = 10; // seconds
 
 const AlarmRate = types.model({
   rateId: types.identifierNumber,
@@ -446,6 +449,8 @@ export const AlarmModel = types
   })
   .volatile(self => ({
     lastParams: {aty: AlertType_Support},
+    lastRefreshTimestamp: 0,
+    refreshScheduler: null,
   }))
   .views(self => ({
     get filteredLiveData() {
@@ -536,6 +541,27 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND get getVAConfigs error: ', err);
       }
     }),
+    refreshOnSchedule() {
+      self.lastRefreshTimestamp = DateTime.now().toSeconds();
+      self.getAlarms(params, false);
+      if (self.refreshScheduler != null) {
+        clearTimeout(self.refreshScheduler);
+        self.refreshScheduler = null;
+      }
+    },
+    refreshAlarms(params) {
+      const lastRefreshOffset =
+        DateTime.now().toSeconds() - self.lastRefreshTimestamp;
+      if (lastRefreshOffset >= ALARM_REFRESH_INTERVAL) {
+        self.lastRefreshTimestamp = DateTime.now().toSeconds();
+        return self.getAlarms(params, false);
+      } else if (self.refreshSceduler == null) {
+        setTimeout(() => {
+          self.refreshOnSchedule();
+        }, ALARM_REFRESH_INTERVAL - lastRefreshOffset);
+      }
+      return Promise.resolve();
+    },
     getAlarms: flow(function* (params, isSearch, debug = 'fromList') {
       __DEV__ && console.log(`getAlarms debug = `, debug);
       if (params) self.lastParams = params;
@@ -602,9 +628,8 @@ export const AlarmModel = types
         let currentPage = self.isSearch
           ? self.searchCurrentPage
           : self.liveCurrentPage;
-        let rawPageData = (self.isSearch
-          ? self.searchRawAlarms
-          : self.liveRawAlarms
+        let rawPageData = (
+          self.isSearch ? self.searchRawAlarms : self.liveRawAlarms
         ).slice(currentPage * PAGE_LENGTH, (currentPage + 1) * PAGE_LENGTH);
         const pageData = rawPageData.map((item, index) => {
           makeItemSnapshot(item);
