@@ -12,7 +12,7 @@ import {ACConfig, Alert, AlertType, CommonActions} from '../consts/apiRoutes';
 
 const ID_Canned_Message = 5;
 export const PAGE_LENGTH = 20;
-const ALARM_REFRESH_INTERVAL = 10; // seconds
+const ALARM_REFRESH_INTERVAL = 5; // seconds
 
 const AlarmRate = types.model({
   rateId: types.identifierNumber,
