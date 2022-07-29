@@ -702,6 +702,16 @@ class DirectVideoView extends React.Component {
     }
   };
 
+  getTimeToResume = () => {
+    if (this.lastFrameTime != null) {
+      return (
+        this.lastFrameTime.toSeconds() -
+        this.lastFrameTime.startOf('day').toSeconds()
+      );
+    }
+    return 0;
+  };
+
   onNativeMessage = event => {
     let {msgid, value, channel} = event; //.nativeEvent;
     // __DEV__ &&
@@ -730,6 +740,7 @@ class DirectVideoView extends React.Component {
       isLive,
       singlePlayer,
       // index,
+      hdMode,
     } = this.props;
     // __DEV__ &&
     //   msgid != NATIVE_MESSAGE.FRAME_DATA &&
@@ -1089,6 +1100,17 @@ class DirectVideoView extends React.Component {
         setTimeout(() => this.reconnect(false), 1000);
         break;
       case NATIVE_MESSAGE.SERVER_DISCONNECTED:
+        // dongpt: todo?
+        break;
+      case NATIVE_MESSAGE.VIDEO_STOPPED: // dongpt: this event currently only available on iOS
+        __DEV__ && console.log('GOND Video stopped from native');
+        if (this.shouldReumeIfStopped && (isLive || !videoStore.paused)) {
+          this.shouldReumeIfStopped = false;
+          this.setNativePlayback({
+            seekpos: {pos: this.getTimeToResume(), hd: hdMode},
+          });
+        }
+        break;
       default:
         break;
     }
@@ -1121,6 +1143,7 @@ class DirectVideoView extends React.Component {
     // if (!this.props.videoStore.paused) {
     //   this.setNative({pause: true});
     // }
+    if (!isLive) this.shouldReumeIfStopped = true;
   };
 
   onChangeChannel = channelNo => {
@@ -1128,14 +1151,6 @@ class DirectVideoView extends React.Component {
     this.newSeekPos = 0;
     this.oldPos = 0;
     if (!videoStore.paused) {
-      // this.setNative({pause: true});
-      // this.playAt(
-      //   this.lastFrameTime.toSeconds() -
-      //     this.lastFrameTime.startOf('day').toSeconds()
-      // );
-      // this.savedPos =
-      //   this.lastFrameTime.toSeconds() -
-      //   this.lastFrameTime.startOf('day').toSeconds();
       videoStore.setBeginSearchTime(this.lastFrameTime);
     }
   };
@@ -1152,10 +1167,7 @@ class DirectVideoView extends React.Component {
     if (this.props.isLive) {
       this.setNative({hdmode: isHD});
     } else {
-      const timeOffset = this.lastFrameTime
-        ? this.lastFrameTime.toSeconds() -
-          this.lastFrameTime.startOf('day').toSeconds()
-        : 0;
+      const timeOffset = this.getTimeToResume();
 
       this.setNative({seekpos: {pos: timeOffset, hd: isHD}});
 
@@ -1282,16 +1294,13 @@ class DirectVideoView extends React.Component {
         videoStore.pause(false);
         if (this.savedPos && !isLive) {
           this.playAt(this.savedPos);
-          this.newSeekPos = 0;
-          this.oldPos = 0;
+          // this.newSeekPos = 0;
+          // this.oldPos = 0;
           this.savedPos = null;
         } else if (this.lastFrameTime && !isLive) {
-          this.playAt(
-            this.lastFrameTime.toSeconds() -
-              this.lastFrameTime.startOf('day').toSeconds()
-          );
-          this.newSeekPos = 0;
-          this.oldPos = 0;
+          this.playAt(this.getTimeToResume());
+          // this.newSeekPos = 0;
+          // this.oldPos = 0;
         } else {
           this.setNative({
             startplayback: {
@@ -1338,6 +1347,9 @@ class DirectVideoView extends React.Component {
         });
       }
       this.newSeekPos = value;
+      this.lastFrameTime = videoStore
+        .getSafeSearchDate()
+        .plus({seconds: value});
       this.lastTimestamp = 0;
     }
   };

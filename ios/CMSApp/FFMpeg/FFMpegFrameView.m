@@ -1876,7 +1876,7 @@ const uint32_t numLayers = 24;
     return;
   }
   
-  if (channelIndex >= 0 && channelIndex < IMC_MAX_CHANNEL)
+  if (channelIndex >= 0 && channelIndex < IMC_MAX_CHANNEL && self.mainDisplayVideo.fullscreenView >=0 )
   {
     if(chosenDay!=nil)
     {
@@ -2467,10 +2467,10 @@ const uint32_t numLayers = 24;
       [self updateDataDateList:(NSTimeZone*)updatedServer.serverTimezone];
       /* Display the error to the user. */
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:20],
-                                                                              @"value":[NSArray arrayWithArray:self.dataDateList],
-                                                                              @"target": self.reactTag
-                                                                              }];
+                                                  @"msgid": [NSNumber numberWithUnsignedInteger:20],
+                                                  @"value":[NSArray arrayWithArray:self.dataDateList],
+                                                  @"target": self.reactTag
+                                                  }];
       //do something
     }
       break;
@@ -2485,8 +2485,13 @@ const uint32_t numLayers = 24;
     {
       ImcRemoteConnection* server = (ImcRemoteConnection*)parameter;
       if ([server.serverInfo.server_address isEqualToString:self.currentServer.server_address]) {
+        NSLog(@"GOND **DIRECT** Stop: %d", videoPlayerStatus);
         if (videoPlayerStatus == STATE_PLAY) {
           //do something
+          [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                      @"msgid": [NSNumber numberWithUnsignedInteger:28],
+                                                      @"target": self.reactTag
+                                                      }];
         }
       }
     }
