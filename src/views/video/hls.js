@@ -634,6 +634,7 @@ class HLSStreamingView extends React.Component {
   onLayout = event => {
     if (event == null || event.nativeEvent == null || !this._isMounted) return;
     __DEV__ && console.log('GOND HLS onlayout: ', event.nativeEvent.layout);
+    this.setMarginLeft();
     // let {width, height} = event.nativeEvent.layout;
     // setTimeout(() => {
     //   if (width <= height) {
@@ -1205,13 +1206,14 @@ class HLSStreamingView extends React.Component {
   };
 
   onLoad = event => {
-    __DEV__ && console.log('GOND HLS onLoad: ', event);
+    const {videoStore} = this.props;
+    videoStore.setEnableStretch(true);
     this.naturalSize = event.naturalSize;
     this.setMarginLeft();
   };
   setMarginLeft = () => {
     const {width, height} = this.props;
-    if (this.naturalSize || width || height) return;
+    if (this.naturalSize == null || this.naturalSize.height == null) return;
     let marginleft =
       (width - (height / this.naturalSize.height) * this.naturalSize.width) / 2;
     this.setState({marginLeft: marginleft});
