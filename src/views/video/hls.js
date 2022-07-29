@@ -121,6 +121,29 @@ class HLSStreamingView extends React.Component {
       // this.setState({isFilterShown: !this.state.isFilterShown});
     });
 
+    const onPanUpdateOrEnd = e => {
+      if (this.state.zoom > 1.1) {
+        let translateX = this.curTranslationX + e.translationX;
+        let translateY = this.curTranslationY + e.translationY;
+        const thresholdX = (this.props.width * (this.state.zoom - 1)) / 2;
+        const thresholdY = (this.props.height * (this.state.zoom - 1)) / 2;
+        this.setState({
+          translateX:
+            translateX > thresholdX
+              ? thresholdX
+              : translateX < -thresholdX
+              ? -thresholdX
+              : translateX,
+          translateY:
+            translateY > thresholdY
+              ? thresholdY
+              : translateY < -thresholdY
+              ? -thresholdY
+              : translateY,
+        });
+      }
+    };
+
     const panGesture = Gesture.Pan()
       .onStart(e => {
         if (this.state.zoom > 1.1) {
@@ -131,46 +154,8 @@ class HLSStreamingView extends React.Component {
           if (e.velocityX <= -300) props.onSwipeLeft();
         }
       })
-      .onUpdate(e => {
-        if (this.state.zoom > 1.1) {
-          let translateX = this.curTranslationX + e.translationX;
-          let translateY = this.curTranslationY + e.translationY;
-          if (
-            translateX <= (this.props.width * (this.state.zoom - 1)) / 2 &&
-            translateX >= (this.props.width * (1 - this.state.zoom)) / 2
-          )
-            this.setState({
-              translateX,
-            });
-          if (
-            translateY <= (this.props.height * (this.state.zoom - 1)) / 2 &&
-            translateY >= (this.props.height * (1 - this.state.zoom)) / 2
-          )
-            this.setState({
-              translateY,
-            });
-        }
-      })
-      .onEnd(e => {
-        if (this.state.zoom > 1.1) {
-          let translateX = this.curTranslationX + e.translationX;
-          let translateY = this.curTranslationY + e.translationY;
-          if (
-            translateX <= (this.props.width * (this.state.zoom - 1)) / 2 &&
-            translateX >= (this.props.width * (1 - this.state.zoom)) / 2
-          )
-            this.setState({
-              translateX,
-            });
-          if (
-            translateY <= (this.props.height * (this.state.zoom - 1)) / 2 &&
-            translateY >= (this.props.height * (1 - this.state.zoom)) / 2
-          )
-            this.setState({
-              translateY,
-            });
-        }
-      });
+      .onUpdate(onPanUpdateOrEnd)
+      .onEnd(onPanUpdateOrEnd);
 
     const rightFlingGesture = Gesture.Fling()
       .direction(Directions.RIGHT)

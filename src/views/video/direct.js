@@ -89,6 +89,29 @@ class DirectVideoView extends React.Component {
     this.loginTimeout = null;
     this.oldFrameSkipped = 0;
 
+    const onPanUpdateOrEnd = e => {
+      if (this.state.zoom > 1.1) {
+        let translateX = this.curTranslationX + e.translationX;
+        let translateY = this.curTranslationY + e.translationY;
+        const thresholdX = this.state.width * (1 - this.state.zoom);
+        const thresholdY = this.state.height * (1 - this.state.zoom);
+        this.setState({
+          translateX:
+            translateX > 0
+              ? 0
+              : translateX < thresholdX
+              ? thresholdX
+              : translateX,
+          translateY:
+            translateY > 0
+              ? 0
+              : translateY < thresholdY
+              ? thresholdY
+              : translateY,
+        });
+      }
+    };
+
     const panGesture = Gesture.Pan()
       .onStart(e => {
         if (this.state.zoom > 1.1) {
@@ -99,48 +122,8 @@ class DirectVideoView extends React.Component {
           if (e.velocityX <= -300) props.onSwipeLeft();
         }
       })
-      .onUpdate(e => {
-        if (this.state.zoom > 1.1) {
-          let translateX = this.curTranslationX + e.translationX;
-          let translateY = this.curTranslationY + e.translationY;
-          if (
-            translateX <= 0 &&
-            this.state.zoom * this.state.width + translateX >= this.state.width
-          )
-            this.setState({
-              translateX,
-            });
-          if (
-            translateY <= 0 &&
-            this.state.zoom * this.state.height + translateY >=
-              this.state.height
-          )
-            this.setState({
-              translateY,
-            });
-        }
-      })
-      .onEnd(e => {
-        if (this.state.zoom > 1.1) {
-          let translateX = this.curTranslationX + e.translationX;
-          let translateY = this.curTranslationY + e.translationY;
-          if (
-            translateX <= 0 &&
-            this.state.zoom * this.state.width + translateX >= this.state.width
-          )
-            this.setState({
-              translateX,
-            });
-          if (
-            translateY <= 0 &&
-            this.state.zoom * this.state.height + translateY >=
-              this.state.height
-          )
-            this.setState({
-              translateY,
-            });
-        }
-      });
+      .onUpdate(onPanUpdateOrEnd)
+      .onEnd(onPanUpdateOrEnd);
 
     const tapGesture = Gesture.Tap().onStart(_e => {
       __DEV__ &&
