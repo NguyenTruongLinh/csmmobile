@@ -821,7 +821,7 @@ public class FFMpegFrameView extends View {
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             // Log.e("GOND", "UpdateFrame scaled bitmap 1: " + byteArray.length);
 
-            String buffer = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            String buffer = Base64.encodeToString(byteArray, Base64.NO_WRAP);
 
             bitmap.recycle();
             bmp[0].recycle();
