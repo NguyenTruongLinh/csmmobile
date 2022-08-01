@@ -68,6 +68,8 @@ public class FFMpegFrameView extends View {
     double _scaleXY = 1;
     int _translateX = 0;
     int _translateY = 0;
+    boolean responseResolution = false;
+    boolean stretch = true;
     boolean firstRunAlarm;
     boolean singlePlayer = false;
     int index = 0;
@@ -326,12 +328,18 @@ public class FFMpegFrameView extends View {
                         }
                         event.putArray("value", array);
                     }
+                    else if(value instanceof int[])
+                       {
+                        int[] c_value = (int[])value;
+                        WritableArray array = Arguments.createArray();
+                        for(int i = 0 ; i< c_value.length; i++)
+                        {
+                            array.pushInt(c_value[i]);
+                        }
+                        event.putArray("value", array);
+                       }
                     else
-//                        if(value instanceof SearchAllDayInterval)
-//                        {
-//                            JSONObject.wrap()
-//                        }
-                    event.putInt("value", (int) value);
+                        event.putInt("value", (int) value);
             }
             }
 
@@ -375,14 +383,33 @@ public class FFMpegFrameView extends View {
         {
             // Log.d("GOND", "**DIRECT** onDraw draw bitmap");
             Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
-            // if(DrawBitmap != null) {
-                if (!DrawBitmap.sameAs(emptyBitmap))
+            if(DrawBitmap != null) {
+                int bitmap_width = DrawBitmap.getWidth();
+                int bitmap_height = DrawBitmap.getHeight();
+                int width = getWidth();
+                int prewidth = width;
+                int height = getHeight() + 1;
+                int left = 0;
+                if(!stretch)
                 {
-                    // Log.d("GOND", "**DIRECT** onDraw bitmap not empty");
+                    width = height == 0 ? width : bitmap_width * height/bitmap_height;
+                    left = (prewidth - width) / 2;
+                    if(responseResolution && bitmap_width >0 && bitmap_height > 0)
+                    {
+                        int[] resolution = new int[] {bitmap_width, bitmap_height};
+                        OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_RESPONSE_RESOLUTION, resolution);
+                        responseResolution = false;
+                    }
+                }
+                else
+                {
+                    responseResolution = true;
+                }
+                if (!DrawBitmap.sameAs(emptyBitmap)) {
                     preDrawBitmap = DrawBitmap;
                     valid_first_frame = true;
                     //Bitmap bmp = i3Global.resizeImage(preDrawBitmap, (int)this._width, (int)this._height, true );
-                    Rect src =   new Rect(0, 0, getWidth(), getHeight());//new Rect(0,0,DrawBitmap.getWidth()-1, DrawBitmap.getHeight()-1);
+                    Rect src =   new Rect(left, 0, width + left, height);//new Rect(0,0,DrawBitmap.getWidth()-1, DrawBitmap.getHeight()-1);
                     //Rect dest = new Rect(0,0, (int)this.img_width, (int)this.img_height);
                     canvas.drawBitmap(preDrawBitmap, null, src, mPaint);
                     //bmp.recycle();
@@ -397,7 +424,7 @@ public class FFMpegFrameView extends View {
 //                        Rect dest = new Rect(0, 0, getWidth(), getHeight());
 //                        canvas.drawBitmap(preDrawBitmap,null, dest, mPaint);
                         //Rect src = new Rect(0,0,DrawBitmap.getWidth(), DrawBitmap.getHeight());
-                        Rect dest = new Rect(0,0,   this.img_width, this.img_height);
+                        Rect dest = new Rect(left, 0, width + left, height);
                         canvas.drawBitmap(preDrawBitmap, null, dest, mPaint);
                     } else {
                         Log.d("GOND", "**DIRECT** onDraw not draw 1");
@@ -779,6 +806,12 @@ public class FFMpegFrameView extends View {
     {
         // Log.d("GOND", "View HD " + (HDMode == true ? "true" : "false"));
         socket_handler.ChangetoHD(HDMode);
+    }
+    public void ViewStretch( boolean isStretch)
+    {
+        Log.i("GOND", "View Stretch " + (isStretch == true ? "true" : "false"));
+        this.stretch = isStretch;
+        this.invalidate();
     }
 
     public void setScaleXY(double scaleXY) {

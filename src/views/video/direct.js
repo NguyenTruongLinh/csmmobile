@@ -66,6 +66,7 @@ class DirectVideoView extends React.Component {
       zoom: 1,
       translateX: 0,
       translateY: 0,
+      marginLeft: 0,
       // isFilterShown: false,
     };
 
@@ -1173,6 +1174,14 @@ class DirectVideoView extends React.Component {
         break;
       case NATIVE_MESSAGE.RELAY_DATA_USAGE:
         this.onDataUsageUpdate(value);
+      case NATIVE_MESSAGE.RESPONSE_RESOLUTION:
+        if (value != null) {
+          let width = value[0];
+          let height = value[1];
+          let fixWidth = (this.state.height / height) * width;
+          let left = (this.state.width - fixWidth) / 2;
+          this.setState({marginLeft: left});
+        }
         break;
       case NATIVE_MESSAGE.SERVER_DISCONNECTED:
       default:
@@ -1309,6 +1318,11 @@ class DirectVideoView extends React.Component {
       //     }, 2000);
       //   }
     }
+  };
+
+  onStretch = isStretch => {
+    this.setNative({stretch: isStretch});
+    __DEV__ && console.log('GOND Set native stretch : ', isStretch);
   };
 
   setPlayStatus = params => {
@@ -1461,6 +1475,7 @@ class DirectVideoView extends React.Component {
       return;
     }
 
+    videoStore.setEnableStretch(true);
     this.lastTimestamp = timestamp;
 
     if (value) {
@@ -1594,8 +1609,8 @@ class DirectVideoView extends React.Component {
     } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
-    // __DEV__ &&
-    //   console.log('GOND direct render channel: ', serverInfo.channelName);
+    __DEV__ &&
+      console.log('GOND with height: ', this.state.width, this.state.height);
 
     return singlePlayer ? (
       <GestureDetector gesture={this.composed}>
@@ -1611,7 +1626,10 @@ class DirectVideoView extends React.Component {
             isBackground={true}
             dataSource={serverInfo.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
-            resizeMode="cover"
+            visible={!videoStore.enableStretch}
+            resizeMode={
+              !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
+            }
             styleImage={{width: width, height: height}}
             dataCompleteHandler={(param, data) =>
               serverInfo.channel && serverInfo.channel.saveSnapshot(data)
@@ -1626,13 +1644,28 @@ class DirectVideoView extends React.Component {
                 styles.channelInfo,
                 {
                   top: videoStore.isFullscreen ? '10%' : 0,
+                  marginLeft:
+                    !videoStore.stretch && singlePlayer
+                      ? this.state.marginLeft
+                      : 0,
                 },
               ]}>
               {serverInfo.channelName ?? 'Unknown'}
             </Text>
             <View style={styles.statusView}>
               <View style={styles.textContainer}>
-                <Text style={[styles.textMessage]}>{connectionStatus}</Text>
+                <Text
+                  style={[
+                    styles.textMessage,
+                    {
+                      marginLeft:
+                        !videoStore.stretch && singlePlayer
+                          ? this.state.marginLeft
+                          : 0,
+                    },
+                  ]}>
+                  {connectionStatus}
+                </Text>
               </View>
               {isLoading && (
                 <ActivityIndicator
@@ -1673,6 +1706,7 @@ class DirectVideoView extends React.Component {
                       // translateX={50}
                       // translateY={50}
                       scaleXY={this.state.zoom}
+                      stretch={this.state.stretch}
                       translateX={this.state.translateX}
                       translateY={this.state.translateY}
                     />

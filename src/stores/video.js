@@ -489,6 +489,10 @@ export const VideoModel = types
     isFullscreen: types.boolean,
     // is hd mode on or off
     hdMode: types.boolean,
+    // is stretched or original
+    stretch: types.boolean,
+    // enable stretch button
+    enableStretch: types.boolean,
     // unused yet?!?
     canSwitchMode: types.boolean,
     // is video paused
@@ -1139,6 +1143,9 @@ export const VideoModel = types
       },
       setLoading(value) {
         self.isLoading = value;
+      },
+      setEnableStretch(value) {
+        self.enableStretch = value;
       },
       setShouldShowVideoMessage(value) {
         self.shouldShowSnackbar = value ? true : false;
@@ -1983,6 +1990,9 @@ export const VideoModel = types
           self.getHLSInfos({channelNo: self.selectedChannel});
         }
       },
+      switchStretch(value) {
+        self.stretch = util.isNullOrUndef(value) ? !self.stretch : value;
+      },
       switchFullscreen(value) {
         self.isFullscreen = util.isNullOrUndef(value)
           ? !self.isFullscreen
@@ -2118,6 +2128,8 @@ export const VideoModel = types
         self.isLoading = false;
         self.isFullscreen = false;
         self.hdMode = false;
+        self.stretch = true;
+        self.enableStretch = false;
         self.paused = false;
         self.recordingDates = {};
         self.timeline = [];
@@ -4359,6 +4371,8 @@ const storeDefault = {
   isFullscreen: false,
   canSwitchMode: false,
   hdMode: false,
+  stretch: true,
+  enableStretch: false,
   // paused: false,
   showAuthenModal: false,
   // isSingleMode: false,

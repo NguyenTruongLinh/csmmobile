@@ -653,7 +653,7 @@ class LiveChannelsView extends React.Component {
     const {videoStore, userStore} = this.props;
 
     let playerProps = {
-      with: videoWindow.width,
+      width: videoWindow.width,
       height: videoWindow.height,
       isLive: true,
       hdMode: false,

@@ -76,7 +76,6 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         if(heightScreen >= 0)
             view.SetHeight( heightScreen);
     }
-
     @ReactProp(name = "pause")
     public void setPause(FFMpegFrameView view, @Nullable boolean pause){
         view.PauseVideo();
@@ -235,6 +234,12 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         Log.i("GOND", "setHDMode enter");
         if(HDMode != null)
             view.ViewHD(HDMode);
+    }
+
+    @ReactProp(name = "stretch")
+    public void setStretch(FFMpegFrameView view,@Nullable Boolean isStretch){
+        Log.i("GOND", "setStretch enter");
+        view.ViewStretch(isStretch);
     }
     
     @ReactProp(name = "scaleXY")
