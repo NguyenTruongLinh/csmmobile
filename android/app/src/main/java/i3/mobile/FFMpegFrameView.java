@@ -430,7 +430,7 @@ public class FFMpegFrameView extends View {
                         Log.d("GOND", "**DIRECT** onDraw not draw 1");
                     }
                 }
-            // }
+             }
         }
         else
         {
