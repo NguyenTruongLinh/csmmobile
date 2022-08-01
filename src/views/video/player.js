@@ -1133,9 +1133,9 @@ class VideoPlayerView extends Component {
     // const {sWidth, sHeight} = this.state;
     const {showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
-    const isMenuReady = videoStore.selectedStream
-      ? videoStore.selectedStream.isMenuReady ?? true
-      : false;
+    // const isMenuReady = videoStore.selectedStream
+    //   ? videoStore.selectedStream.isMenuReady ?? true
+    //   : false;
     // __DEV__ &&
     //   console.log('GOND renderFeatureButtons', isMenuReady, selectedStream);
 
