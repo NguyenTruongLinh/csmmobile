@@ -45,7 +45,7 @@ const MAX_RETRY = 7;
 const KEEP_ALIVE_TIMEOUT = 60000;
 const REST_TIME = 2000;
 export const FORCE_SENT_DATA_USAGE = -999;
-const DATA_USAGE_SENDING_INTERVAL = 15;
+export const DATA_USAGE_SENDING_INTERVAL = 15;
 const HLSURLModel = types
   .model({
     url: types.maybeNull(types.string),

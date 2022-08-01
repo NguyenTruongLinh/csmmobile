@@ -258,6 +258,7 @@ class VideoPlayerView extends Component {
           switch (videoStore.cloudType) {
             case CLOUD_TYPE.DEFAULT:
             case CLOUD_TYPE.DIRECTION:
+            case CLOUD_TYPE.RS:
               this.playerRef.reconnect();
               break;
             case CLOUD_TYPE.HLS:
@@ -860,6 +861,7 @@ class VideoPlayerView extends Component {
     switch (videoStore.cloudType) {
       case CLOUD_TYPE.DEFAULT:
       case CLOUD_TYPE.DIRECTION:
+      case CLOUD_TYPE.RS:
         player = (
           <DirectVideoView
             {...playerProps}

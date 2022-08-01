@@ -47,6 +47,7 @@ import {
   DIRECT_MAX_OLD_FRAME_SKIP,
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
+import {FORCE_SENT_DATA_USAGE} from '../../stores/types/hls';
 const MAX_ZOOM = 10;
 
 class DirectVideoView extends React.Component {
@@ -234,7 +235,7 @@ class DirectVideoView extends React.Component {
         this.onNativeMessage
       );
     }
-    const {serverInfo, videoStore} = this.props;
+    const {serverInfo, appStore, videoStore} = this.props;
     // __DEV__ && console.log('DirectStreamingView: ', videoStore.selectedChannel);
 
     if (videoStore.isAuthenticated) {
@@ -263,6 +264,21 @@ class DirectVideoView extends React.Component {
           {...serverInfo}
         );
     }
+    try {
+      this.trackingVideoSource = //'Relay';
+        util.extractModuleNameFromScreenName(
+          appStore.naviService.getPreviousRouteName()
+        ) +
+        '_Relay' +
+        (Platform.OS == 'ios' ? (singlePlayer ? '_single' : '_multi') : '');
+    } catch (e) {
+      __DEV__ && console.log(`direct this.trackingVideoSource e = `, e);
+      this.trackingVideoSource = 'Video_Relay';
+    }
+    __DEV__ &&
+      console.log(
+        `direct this.trackingVideoSource =  ` + this.trackingVideoSource
+      );
 
     // reactions:
     this.initReactions();
@@ -277,7 +293,7 @@ class DirectVideoView extends React.Component {
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }
-    const {serverInfo, singlePlayer} = this.props;
+    const {serverInfo, videoStore, singlePlayer} = this.props;
     if (singlePlayer && isAlive(serverInfo)) {
       serverInfo.setStreamStatus({
         isLoading: false,
@@ -289,6 +305,21 @@ class DirectVideoView extends React.Component {
     this.stop(true);
     this._isMounted = false;
     this.reactions.forEach(unsubsribe => unsubsribe());
+    __DEV__ &&
+      console.log(
+        `0727 componentWillUnmount videoStore.directConnection.isRelay = `,
+        videoStore.directConnection.isRelay
+      );
+    if (videoStore.directConnection.isRelay) {
+      __DEV__ &&
+        console.log(`0727 componentWillUnmount FORCE_SENT_DATA_USAGE `);
+      videoStore.directConnection.updateDataUsageRelay(
+        FORCE_SENT_DATA_USAGE,
+        videoStore.timezone,
+        {},
+        'componentWillUnmount'
+      );
+    }
   }
 
   refreshVideo = () => {
@@ -533,6 +564,20 @@ class DirectVideoView extends React.Component {
             }
           }
         ),
+        // reaction(
+        //   () => self.directConnection.relayInfo,
+        //   (relayInfo, previousValue) => {
+        //     __DEV__ &&
+        //       console.log(
+        //         '2507 DirectStreamingView relayInfo connectable changed: ',
+        //         relayInfo,
+        //         ' previousValue = ',
+        //         previousValue
+        //       );
+        //     if (relayInfo && previousValue)
+        //       setTimeout(() => this.setNativePlayback(), 500);
+        //   }
+        // ),
       ];
     }
 
@@ -1113,10 +1158,51 @@ class DirectVideoView extends React.Component {
           );
         setTimeout(() => this.reconnect(false), 1000);
         break;
+      case NATIVE_MESSAGE.RELAY_HANDSHAKE_FAILED:
+        snackbarUtil.showToast(
+          STREAM_STATUS.RELAY_HANDSHAKE_FAILED,
+          cmscolors.Danger
+        );
+        break;
+      case NATIVE_MESSAGE.RELAY_DISCONNECTED:
+        snackbarUtil.showToast(
+          STREAM_STATUS.RELAY_DISCONNECTED,
+          cmscolors.Danger
+        );
+        videoStore.getDirectInfosInterval();
+        break;
+      case NATIVE_MESSAGE.RELAY_DATA_USAGE:
+        this.onDataUsageUpdate(value);
+        break;
       case NATIVE_MESSAGE.SERVER_DISCONNECTED:
       default:
         break;
     }
+  };
+
+  onDataUsageUpdate = segmentLoad => {
+    const {streamData, videoStore, singlePlayer} = this.props;
+    __DEV__ && console.log(`onDataUsageUpdate segmentLoad = `, segmentLoad);
+    videoStore.directConnection.updateDataUsageRelay(
+      segmentLoad,
+      videoStore.timezone,
+      {
+        KChannel: 'N/A',
+        ViewMode: videoStore.isLive ? 0 : 1,
+        Source: 'MP4_CMSMobile_' + this.trackingVideoSource, // + '_NEW_' + Platform.OS,
+      },
+      'onDataUsageUpdate'
+    );
+    //   self.targetUrl.updateDataUsageByURL(
+    //     bitrate,
+    //     timezone,
+    //     {
+    //       KChannel: self.kChannel,
+    //       ViewMode: self.isLive ? 0 : 1,
+    //       Source: 'MP4_CMSMobile_' + source, // + '_NEW_' + Platform.OS,
+    //     },
+    //     debug
+    //   );
   };
 
   onChangeSearchDate = () => {
@@ -1664,4 +1750,4 @@ const controlStyles = StyleSheet.create({
     height: '100%',
   },
 });
-export default inject('videoStore')(observer(DirectVideoView));
+export default inject('videoStore', 'appStore')(observer(DirectVideoView));
