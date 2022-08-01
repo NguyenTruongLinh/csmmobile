@@ -1034,7 +1034,7 @@ class VideoPlayerView extends Component {
       <Fragment>
         {showController && selectedChannelIndex > 0 && (
           <View
-            style={[styles.controlButtonContainer]}
+            style={[styles.controlButtonContainer, {bottom: bottomPos}]}
             onLayout={this.onControlButtonLayout}>
             <IconCustom
               name="keyboard-left-arrow-button"
@@ -1044,7 +1044,6 @@ class VideoPlayerView extends Component {
                 styles.controlButton,
                 {
                   justifyContent: 'flex-start',
-                  bottom: bottomPos,
                 },
               ]}
             />
@@ -1054,7 +1053,6 @@ class VideoPlayerView extends Component {
           <View
             style={[
               styles.controlButtonContainer,
-              // verticalPos,
               {left: '45%', bottom: bottomPos},
             ]}
             onLayout={this.onControlButtonLayout}>
