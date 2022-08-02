@@ -2314,9 +2314,9 @@ export const VideoModel = types
         }
 
         // dongpt: temporarily disable relay server setting and make it use HLS instead
-        if (self.cloudType == CLOUD_TYPE.RS) {
-          self.cloudType = CLOUD_TYPE.HLS;
-        }
+        // if (self.cloudType == CLOUD_TYPE.RS) {
+        //   self.cloudType = CLOUD_TYPE.HLS;
+        // }
         self.isLoading = false;
         return result;
       }),
