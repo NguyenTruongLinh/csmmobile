@@ -359,6 +359,13 @@ const uint32_t numLayers = 24;
                                                                           }];
 }
 
+-(void)resetSearchParams {
+  _dateTimeSearch = nil;
+  chosenDay = nil;
+  lastFrameInterval = 0;
+//  firstRunAlarm = NO;
+}
+
 -(void)setStartplayback:(NSDictionary *)startplayback {
 //  [self resetParam];
 //  [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
@@ -421,7 +428,7 @@ const uint32_t numLayers = 24;
 //      controllerThread.decoderThread = decoderThread;
 //      [controllerThread startThread];
 //    }
-    
+    [self resetSearchParams];
     [self setDateTimeSearch:dateTimeSearch];
     [self setDateTimeRulerDST:dateTimeSearchDST];
     [self setInterval: interval];
@@ -753,9 +760,10 @@ const uint32_t numLayers = 24;
   else {
     NSNumber* interval = [self get_obj:seekpos for_key:@"pos"];
     BOOL isHD = NO;
-    if([self get_obj:seekpos for_key:@"HD"]){
+    if([self get_obj:seekpos for_key:@"hdmode"]){
       @try{
-        isHD = [[self get_obj:seekpos for_key:@"HD"] boolValue];
+        isHD = [[self get_obj:seekpos for_key:@"hdmode"] boolValue];
+        NSLog(@"GOND: **DIRECT** seek, hdmode: %s", isHD ? "YES" : "NO");
       }
       @catch (NSException* exception){
         isHD = NO;
@@ -783,7 +791,8 @@ const uint32_t numLayers = 24;
     [calendaComp setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
     NSDateComponents* dateSearchComponents = [calendaComp components:NSCalendarUnitHour|NSCalendarUnitMinute fromDate:dateSearch];
     
-    __block uint64_t channelMask = 0x00;
+    // dongpt: use current channel mask instead
+    __block uint64_t channelMask = [self getChannelMask]; // 0x00;
     uint64_t mainStreamMask = 0;
     
     // CMS fix out of bound crash
@@ -799,13 +808,13 @@ const uint32_t numLayers = 24;
     }
     ImcScreenDisplay* screen = [[self.mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
     
-    [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-      if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
-      {
-        channelMask |= ((uint64_t)1 << idx);
-      }
-      
-    }];
+//    [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//      if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//      {
+//        channelMask |= ((uint64_t)1 << idx);
+//      }
+//      
+//    }];
     
     if (!(chosenChannelIndex >= 0 && chosenChannelIndex < dateIntervalList.count)) {
       return;
