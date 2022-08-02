@@ -551,6 +551,14 @@ export const AlarmModel = types
       return res;
     }),
     refreshAlarms: flow(function* (params) {
+      if (self.refreshScheduler != null) {
+        __DEV__ &&
+          console.log(
+            'GOND refresh alarm already scheduled: ',
+            self.refreshScheduler
+          );
+        return Promise.resolve();
+      }
       const lastRefreshOffset =
         DateTime.now().toSeconds() - self.lastRefreshTimestamp;
       if (lastRefreshOffset >= ALARM_REFRESH_INTERVAL) {
@@ -563,13 +571,14 @@ export const AlarmModel = types
         const res = yield self.getAlarms(params, false);
         self.lastRefreshTimestamp = DateTime.now().toSeconds();
         return res;
-      } else if (self.refreshScheduler == null) {
+      } else {
         const timeToWait = (ALARM_REFRESH_INTERVAL - lastRefreshOffset) * 1000;
         // __DEV__ &&
         //   console.log(
         //     'GOND refresh alarm delayed to: ',
         //     timeToWait,
-        //     DateTime.now().toFormat('MM/dd HH:mm:ss')
+        //     DateTime.now().toFormat('MM/dd HH:mm:ss'),
+        //     self.lastRefreshTimestamp
         //   );
         self.refreshScheduler = setTimeout(() => {
           self.refreshOnSchedule(params);
