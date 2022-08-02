@@ -197,7 +197,7 @@ const AlarmData = types
         case AlertTypes.DVR_VA_detection:
           const desc = self.description;
           try {
-            __DEV__ && console.log('GOND custom desciption VA: ', desc);
+            // __DEV__ && console.log('GOND custom desciption VA: ', desc);
             // version old
             if (desc.includes(':')) {
               let lst = desc.split(' ');
@@ -541,29 +541,48 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND get getVAConfigs error: ', err);
       }
     }),
-    refreshOnSchedule() {
+    refreshOnSchedule: flow(function* (params) {
+      const res = yield self.getAlarms(params, false);
       self.lastRefreshTimestamp = DateTime.now().toSeconds();
-      self.getAlarms(params, false);
       if (self.refreshScheduler != null) {
         clearTimeout(self.refreshScheduler);
         self.refreshScheduler = null;
       }
-    },
-    refreshAlarms(params) {
+      return res;
+    }),
+    refreshAlarms: flow(function* (params) {
       const lastRefreshOffset =
         DateTime.now().toSeconds() - self.lastRefreshTimestamp;
       if (lastRefreshOffset >= ALARM_REFRESH_INTERVAL) {
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND refresh alarm immediately: ',
+        //     self.lastRefreshTimestamp,
+        //     lastRefreshOffset
+        //   );
+        const res = yield self.getAlarms(params, false);
         self.lastRefreshTimestamp = DateTime.now().toSeconds();
-        return self.getAlarms(params, false);
-      } else if (self.refreshSceduler == null) {
-        setTimeout(() => {
-          self.refreshOnSchedule();
-        }, ALARM_REFRESH_INTERVAL - lastRefreshOffset);
+        return res;
+      } else if (self.refreshScheduler == null) {
+        const timeToWait = (ALARM_REFRESH_INTERVAL - lastRefreshOffset) * 1000;
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND refresh alarm delayed to: ',
+        //     timeToWait,
+        //     DateTime.now().toFormat('MM/dd HH:mm:ss')
+        //   );
+        self.refreshScheduler = setTimeout(() => {
+          self.refreshOnSchedule(params);
+        }, timeToWait);
       }
       return Promise.resolve();
-    },
+    }),
     getAlarms: flow(function* (params, isSearch, debug = 'fromList') {
-      __DEV__ && console.log(`getAlarms debug = `, debug);
+      // __DEV__ &&
+      //   console.trace(
+      //     'GOND getAlarms at: ',
+      //     DateTime.now().toFormat('MM/dd HH:mm:ss')
+      //   );
       if (params) self.lastParams = params;
       self.isSearch = isSearch ?? self.isSearch;
       const isSearchAlarms = self.isSearch;
