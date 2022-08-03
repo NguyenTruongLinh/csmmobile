@@ -74,7 +74,7 @@
   //apply zoom
   CGRect cropScaled = CGRectInset(fullScaled, displayImage.size.width/2 - displayImage.size.width/scaleXY/2, displayImage.size.height/2 - displayImage.size.height/scaleXY/2);
   
-  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
+//  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
   
   //apply translate
   cropScaled.origin.x = -translateX*displayImage.size.width/scaleXY/playerWidth;

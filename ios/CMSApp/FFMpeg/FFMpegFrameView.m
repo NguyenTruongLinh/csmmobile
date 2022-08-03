@@ -396,9 +396,9 @@ const uint32_t numLayers = 24;
   NSDate*  dateTimeSearchDST = [formatTimeDST dateFromString:dt];
   BOOL isHD = NO;
   BOOL isConnecting = NO;
-  if([self get_obj:startplayback for_key:@"hd"]){
+  if([self get_obj:startplayback for_key:@"hdmode"]){
     @try{
-      isHD = [[self get_obj:startplayback for_key:@"hd"] boolValue];
+      isHD = [[self get_obj:startplayback for_key:@"hdmode"] boolValue];
     }
     @catch (NSException* exception){
       isHD = NO;
@@ -786,10 +786,10 @@ const uint32_t numLayers = 24;
     ImcTimeInterval* lastTi = [chosenDayInterval.timeInterval lastObject];
     NSDateComponents* beginLastComponents = [calendar components:NSCalendarUnitHour|NSCalendarUnitMinute fromDate:[NSDate dateWithTimeIntervalSince1970:lastTi.end]];
     [beginLastComponents setHour:beginLastComponents.hour + [currentServer.serverTimezone secondsFromGMT]/3600];
-    NSDate* dateSearch = [NSDate dateWithTimeIntervalSince1970:[interval integerValue]];
-    NSCalendar* calendaComp = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    [calendaComp setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-    NSDateComponents* dateSearchComponents = [calendaComp components:NSCalendarUnitHour|NSCalendarUnitMinute fromDate:dateSearch];
+//    NSDate* dateSearch = [NSDate dateWithTimeIntervalSince1970:[interval integerValue]];
+//    NSCalendar* calendaComp = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+//    [calendaComp setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+//    NSDateComponents* dateSearchComponents = [calendaComp components:NSCalendarUnitHour|NSCalendarUnitMinute fromDate:dateSearch];
     
     // dongpt: use current channel mask instead
     __block uint64_t channelMask = [self getChannelMask]; // 0x00;
@@ -815,6 +815,15 @@ const uint32_t numLayers = 24;
 //      }
 //      
 //    }];
+    
+    for (NSInteger idx = 0; idx < currentServer.channelConfigs.count; idx++) {
+      ChannelSetting* obj = currentServer.channelConfigs[idx];
+      if([obj isSearchable] && obj.channelID == screen.channelIndex)
+      {
+        channelMask |= ((uint64_t)1 << idx);
+      }
+    }
+    // NSLog(@"GOND channelMask 1: %llu", channelMask);
     
     if (!(chosenChannelIndex >= 0 && chosenChannelIndex < dateIntervalList.count)) {
       return;
@@ -1266,6 +1275,7 @@ const uint32_t numLayers = 24;
         
         if([(ImcConnectedServer*)object hasAvailableSearchChannels])
         {
+          // NSLog(@"GOND MainViewToLiveView hasSearchMode");
           hasSearchMode = TRUE;
           *stop = YES;
         }
@@ -1296,6 +1306,7 @@ const uint32_t numLayers = 24;
                  server.server_port == resumeDataInfo.playbackInfo.selectedSvrPort )
               {
                 found_server = server;
+                // NSLog(@"GOND MainViewToLiveView found sv: %s", server.server_address);
                 *stop = true;
               }
             }];
@@ -1472,6 +1483,7 @@ const uint32_t numLayers = 24;
           message = MOBILE_MSG_SEARCH_REQUEST_MAIN_SUB;
         }
         
+        // NSLog(@"GOND IMC_MSG_SEARCH_REQUEST_MAIN_SUB :%lld, %ld", mainStreamMask, timeInterVal);
         [controllerThread sendSearchCommonMessageToServer:server message:message forTimeInterval:timeInterVal andChannelMask:channelMask withMainStreamMask:mainStreamMask];
       }
     }
@@ -1500,16 +1512,26 @@ const uint32_t numLayers = 24;
       
       chosenDay = [serverCalendar dateFromComponents:chosenDayComponents];
       
-      __block uint64_t channelMask = 0x00;
+      __block uint64_t channelMask = [self getChannelMask]; // 0x00;
       ImcViewDisplay* view = [[self.mainDisplayVideo getDisplayView] objectAtIndex:self.mainDisplayVideo.fullscreenView];
       ImcScreenDisplay* screen = [[self.mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
       
-      [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//      [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//        if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//        {
+//          channelMask |= ((uint64_t)1 << idx);
+//        }
+//      }];
+      
+      for (NSInteger idx = 0; idx < currentServer.channelConfigs.count; idx++) {
+        ChannelSetting* obj = currentServer.channelConfigs[idx];
+        if([obj isSearchable] && obj.channelID == screen.channelIndex)
         {
           channelMask |= ((uint64_t)1 << idx);
         }
-      }];
+      }
+      
+      NSLog(@"GOND channelMask 2: %llu", channelMask);
       
       NSArray* data = [NSArray arrayWithObjects:currentServer, chosenDay, @(channelMask), nil];
       
@@ -1812,6 +1834,7 @@ const uint32_t numLayers = 24;
             if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
             {
               [self fullScreenSearchMode:screen.channelIndex];
+              // NSLog(@"GOND fullscreenSearchMod %ld", screen.channelIndex);
               displayFullscreen = YES;
               *stop = TRUE;
             }
@@ -1889,16 +1912,26 @@ const uint32_t numLayers = 24;
   {
     if(chosenDay!=nil)
     {
-      __block uint64_t channelMask = 0x00;
+      __block uint64_t channelMask = [self getChannelMask]; // 0x00;
       ImcViewDisplay* view = [[self.mainDisplayVideo getDisplayView] objectAtIndex:self.mainDisplayVideo.fullscreenView];
       ImcScreenDisplay* screen = [[self.mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
       
-      [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//      [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//        if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//        {
+//          channelMask |= ((uint64_t)1 << idx);
+//        }
+//      }];
+      
+      for (NSInteger idx = 0; idx < currentServer.channelConfigs.count; idx++) {
+        ChannelSetting* obj = currentServer.channelConfigs[idx];
+        if([obj isSearchable] && obj.channelID == screen.channelIndex)
         {
           channelMask |= ((uint64_t)1 << idx);
         }
-      }];
+      }
+      
+      // NSLog(@"GOND channelMask 3: %llu", channelMask);
       
       NSArray* data = [NSArray arrayWithObjects:currentServer, chosenDay, @(channelMask), nil];
       [self handleResponseMessage:IMC_MSG_SEARCH_REQUEST_TIME_INTERVAL fromView:self withData:data];
@@ -2663,7 +2696,7 @@ const uint32_t numLayers = 24;
   //apply zoom
   CGRect cropScaled = CGRectInset(fullScaled, searchFrameImage.size.width/2 - searchFrameImage.size.width/scaleXY/2, searchFrameImage.size.height/2 - searchFrameImage.size.height/scaleXY/2);
   
-  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
+//  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
   
   //apply translate
   cropScaled.origin.x = -translateX*searchFrameImage.size.width/scaleXY/playerWidth;
@@ -2764,7 +2797,7 @@ const uint32_t numLayers = 24;
         
         NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%ld\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeTextLabel, _channels];
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
-        NSLog(@"GOND add Search frame: %ld", time);
+//        NSLog(@"GOND add Search frame: %ld", time);
         
         //@autoreleasepool
         {
@@ -2818,7 +2851,7 @@ const uint32_t numLayers = 24;
         ImcDateInterval* dateInterval = (ImcDateInterval*)obj;
         if (dateInterval.channelIndex >= 0 && dateInterval.channelIndex == currentSelectedFullScreenChannel) {
           chosenChannelIndex = idx;
-          NSLog(@"GOND chosenChannelIndex+- 3 %d", chosenChannelIndex);
+          // NSLog(@"GOND chosenChannelIndex+- 3 %ld", (long)chosenChannelIndex);
           *stop = YES;
         }
       }];
@@ -3190,7 +3223,7 @@ const uint32_t numLayers = 24;
             
             NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%ld\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, _channels];
             NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
-            NSLog(@"GOND add Search frame: %ld", time);
+//            NSLog(@"GOND add Search frame: %ld", time);
             
             // NSLog(@"GOND send time frame to JS %@", str_min);
             [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
