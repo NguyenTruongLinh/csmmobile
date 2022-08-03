@@ -106,8 +106,14 @@ function onOpenPVMEvent(
   switch (action) {
     case NOTIFY_ACTION.WARNING:
     case NOTIFY_ACTION.DIMISS:
-      let title = content.DVRName + ' - ' + content.SiteName;
-      title = title.replace('null - ', '').replace(' - null', '');
+      let title =
+        content.DVRName && content.SiteName
+          ? content.DVRName + ' - ' + content.SiteName
+          : content.DVRName + content.SiteName;
+      title = title
+        .replace('null - ', '')
+        .replace(' - null', '')
+        .replace('null', '');
       oamStore.setTitle(title);
       oamStore.setKdvr(content.KDVR);
       navigator.navigate(ROUTERS.HOME_NAVIGATOR, {
