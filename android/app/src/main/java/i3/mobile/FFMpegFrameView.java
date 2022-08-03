@@ -743,7 +743,14 @@ public class FFMpegFrameView extends View {
     public void ViewHD( boolean HDMode)
     {
         // Log.d("GOND", "View HD " + (HDMode == true ? "true" : "false"));
-        socket_handler.ChangetoHD(HDMode);
+        if( video_thread == null || socket_handler== null )
+            return;
+        try {
+            // socket_handler.PauseVideo();
+            socket_handler.ChangetoHD(HDMode);
+        } catch (Exception e) {
+            Log.e("GOND", "Change HD failed! " + e.getMessage());
+        }
     }
 
     public void setScaleXY(double scaleXY) {
@@ -821,7 +828,7 @@ public class FFMpegFrameView extends View {
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             // Log.e("GOND", "UpdateFrame scaled bitmap 1: " + byteArray.length);
 
-            String buffer = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            String buffer = Base64.encodeToString(byteArray, Base64.NO_WRAP);
 
             bitmap.recycle();
             bmp[0].recycle();

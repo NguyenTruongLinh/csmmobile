@@ -136,9 +136,9 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         // do nothing
         int pos = source.getInt("pos");
         boolean HD = false;
-        if( source.hasKey("hd")) {
+        if( source.hasKey("hdmode")) {
             try {
-                HD = source.getBoolean("hd");
+                HD = source.getBoolean("hdmode");
             }
             catch (Exception ex){
                 HD = false;
@@ -189,11 +189,11 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         /*boolean*/ isSearch = source.getBoolean("searchMode");
         // Log.i("GOND", "setStart 4");
         boolean HD = false;
-        if( source.hasKey("hd"))
+        if( source.hasKey("hdmode"))
         {
             try
             {
-                HD = source.getBoolean("hd");
+                HD = source.getBoolean("hdmode");
             }
             catch(Exception ex)
             {

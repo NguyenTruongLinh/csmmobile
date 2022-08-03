@@ -661,9 +661,10 @@ export const POSModel = types
         emprisk: 'emprisk',
         page: 1,
         pSize: __DEV__ ? 5 : 20,
-        sDate: __DEV__
-          ? '20210901000000'
-          : yesterday.startOf('day').toFormat(DateFormat.QuerryDateTime),
+        // __DEV__
+        sDate:
+          // ? '20210901000000' :
+          yesterday.startOf('day').toFormat(DateFormat.QuerryDateTime),
         eDate: yesterday.endOf('day').toFormat(DateFormat.QuerryDateTime),
 
         // siteKey: '', // add later?

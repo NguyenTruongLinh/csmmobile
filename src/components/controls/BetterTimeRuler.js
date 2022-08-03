@@ -205,7 +205,7 @@ export default class TimeRuler extends PureComponent {
     let sec = currentTime - searchDate;
     // const secsPerHour = SECONDS_PER_MINUTE * MINUTE_PER_HOUR;
     let secWidth = this.state.dwidth / SECONDS_PER_HOUR;
-    __DEV__ && console.log('GOND auto update timeline: ', currentTime, sec);
+    // __DEV__ && console.log('GOND auto update timeline: ', currentTime, sec);
 
     let secToAdd = 0;
     let hourIndex = 0;
@@ -889,13 +889,8 @@ export default class TimeRuler extends PureComponent {
   };
 
   render() {
-    const {
-      is24hour,
-      hourBuildRuler,
-      hourSpecial,
-      rulerDST,
-      timeData,
-    } = this.props;
+    const {is24hour, hourBuildRuler, hourSpecial, rulerDST, timeData} =
+      this.props;
     // console.log('GOND TimeRuler hourBuildRuler: ', hourBuildRuler);
     let _data =
       hourBuildRuler != default24H

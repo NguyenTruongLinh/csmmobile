@@ -251,7 +251,7 @@ class DashboardView extends React.Component {
 
   renderSite = ({item}) => {
     //(data, index, isActive) => {
-    __DEV__ && console.log(`renderSite item = `, JSON.stringify(item));
+    // __DEV__ && console.log(`renderSite item = `, JSON.stringify(item));
     if (!item) return;
     const {exceptionStore} = this.props;
 

@@ -46,5 +46,10 @@ module.exports = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  playerView: {position: 'absolute', width: '100%', height: '100%'},
+  playerView: {
+    flexDirection: 'column-reverse',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
 });

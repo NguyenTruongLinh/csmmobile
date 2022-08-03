@@ -121,6 +121,29 @@ class HLSStreamingView extends React.Component {
       // this.setState({isFilterShown: !this.state.isFilterShown});
     });
 
+    const onPanUpdateOrEnd = e => {
+      if (this.state.zoom > 1.1) {
+        let translateX = this.curTranslationX + e.translationX;
+        let translateY = this.curTranslationY + e.translationY;
+        const thresholdX = (this.props.width * (this.state.zoom - 1)) / 2;
+        const thresholdY = (this.props.height * (this.state.zoom - 1)) / 2;
+        this.setState({
+          translateX:
+            translateX > thresholdX
+              ? thresholdX
+              : translateX < -thresholdX
+              ? -thresholdX
+              : translateX,
+          translateY:
+            translateY > thresholdY
+              ? thresholdY
+              : translateY < -thresholdY
+              ? -thresholdY
+              : translateY,
+        });
+      }
+    };
+
     const panGesture = Gesture.Pan()
       .onStart(e => {
         if (this.state.zoom > 1.1) {
@@ -131,46 +154,8 @@ class HLSStreamingView extends React.Component {
           if (e.velocityX <= -300) props.onSwipeLeft();
         }
       })
-      .onUpdate(e => {
-        if (this.state.zoom > 1.1) {
-          let translateX = this.curTranslationX + e.translationX;
-          let translateY = this.curTranslationY + e.translationY;
-          if (
-            translateX <= (this.props.width * (this.state.zoom - 1)) / 2 &&
-            translateX >= (this.props.width * (1 - this.state.zoom)) / 2
-          )
-            this.setState({
-              translateX,
-            });
-          if (
-            translateY <= (this.props.height * (this.state.zoom - 1)) / 2 &&
-            translateY >= (this.props.height * (1 - this.state.zoom)) / 2
-          )
-            this.setState({
-              translateY,
-            });
-        }
-      })
-      .onEnd(e => {
-        if (this.state.zoom > 1.1) {
-          let translateX = this.curTranslationX + e.translationX;
-          let translateY = this.curTranslationY + e.translationY;
-          if (
-            translateX <= (this.props.width * (this.state.zoom - 1)) / 2 &&
-            translateX >= (this.props.width * (1 - this.state.zoom)) / 2
-          )
-            this.setState({
-              translateX,
-            });
-          if (
-            translateY <= (this.props.height * (this.state.zoom - 1)) / 2 &&
-            translateY >= (this.props.height * (1 - this.state.zoom)) / 2
-          )
-            this.setState({
-              translateY,
-            });
-        }
-      });
+      .onUpdate(onPanUpdateOrEnd)
+      .onEnd(onPanUpdateOrEnd);
 
     const rightFlingGesture = Gesture.Fling()
       .direction(Directions.RIGHT)
@@ -315,7 +300,7 @@ class HLSStreamingView extends React.Component {
       'componentWillUnmount'
     );
     if (
-      // Platform.OS === 'ios' &&
+      Platform.OS === 'ios' &&
       this.player &&
       this.player.stopDataUsageTimer
     ) {
@@ -1426,143 +1411,116 @@ class HLSStreamingView extends React.Component {
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
-        // videoStore.paused,
-        // ', status: ',
-        playbackUrl
-        // 'width: ',
-        // width,
-        // 'height: ',
-        // height
-        // streamData.snapshot
+        streamData.channelName,
+        streamData.snapshot
       );
 
     return (
       <GestureDetector gesture={this.composed}>
         <View onLayout={this.onLayout}>
-          {/* <ImageBackground
-            source={NVR_Play_NoVideo_Image}
-            style={{width: width, height: height}}
-            resizeMode="cover"> */}
-          <CMSImage
-            isBackground={true}
-            dataSource={streamData.snapshot}
-            defaultImage={NVR_Play_NoVideo_Image}
-            resizeMode="cover"
-            showLoading={false}
-            styleImage={{width: width, height: height}}
-            dataCompleteHandler={(param, data) =>
-              streamData.channel && streamData.channel.saveSnapshot(data)
-            }
-            domain={{
-              controller: 'channel',
-              action: 'image',
-              id: streamData.kChannel,
-            }}>
-            <Text
-              style={[
-                styles.channelInfo,
-                {
-                  top: videoStore.isFullscreen ? '10%' : 0,
-                },
-              ]}>
-              {channel.name ?? 'Unknown'}
-            </Text>
-            <View style={styles.statusView}>
-              <View style={styles.textContainer}>
-                <Text style={styles.textMessage}>{connectionStatus}</Text>
-              </View>
-              {(isLoading || internalLoading) && (
-                <ActivityIndicator
-                  style={styles.loadingIndicator}
-                  size="large"
-                  color="white"
-                />
-              )}
-            </View>
-            <View style={styles.playerView}>
+          <Text
+            style={[
+              styles.channelInfo,
               {
-                playbackUrl && (
-                  <Video
-                    key={`${streamData.channelName}${
-                      singlePlayer ? '_single' : ''
-                    }_${refreshCount}`}
-                    style={[
-                      {
-                        width: width,
-                        height: height,
-                        // transform: [{scaleX: 2}, {scaleY: 2}],
-                      },
-                    ]}
-                    hls={true}
-                    resizeMode={'stretch'}
-                    source={{uri: playbackUrl ?? '', type: 'm3u8'}}
-                    paused={
-                      singlePlayer && !videoStore.isLive
-                        ? videoStore.paused
-                        : false
-                    }
-                    ref={ref => {
-                      this.player = ref;
-                    }}
-                    progressUpdateInterval={1000} // 1 seconds per onProgress called
-                    onReadyForDisplay={this.onReady}
-                    onBuffer={this.onBuffer}
-                    onError={this.onError}
-                    onPlaybackStalled={this.onPlaybackStalled}
-                    onPlaybackResume={this.onPlaybackResume}
-                    onBandwidthUpdate={this.onBandwidthUpdate}
-                    onSnapshotSuccess={this.onSnapshotSuccess}
-                    onProgress={this.onProgress}
-                    onLoad={this.onLoad}
-                    onSeek={event =>
-                      __DEV__ && console.log('GOND HLS onSeek: ', event)
-                    }
-                    onTimedMetadata={event => {
-                      __DEV__ && console.log('GOND HLS onTimedMetadata', event);
-                    }}
-                    onPlaybackRateChange={data => {
-                      __DEV__ &&
-                        console.log('GOND HLS onPlaybackRateChange: ', data);
-                    }}
-                    muted={true}
-                    volume={0}
-                    selectedAudioTrack={{type: 'disabled'}}
-                    selectedTextTrack={{type: 'disabled'}}
-                    rate={1.0}
-                    automaticallyWaitsToMinimizeStalling={false}
-                    preferredForwardBufferDuration={5}
-                    playInBackground={true}
-                    playWhenInactive={true}
-                    useTextureView={singlePlayer}
-                    disableFocus={true}
-                    bufferConfig={{
-                      minBufferMs: 3500,
-                      maxBufferMs: 15000,
-                      bufferForPlaybackMs: 2500,
-                      bufferForPlaybackAfterRebufferMs: 2500,
-                    }}
-                    maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
-                    reportBandwidth={true}
-                    transform={[
-                      {translateX: this.state.translateX},
-                      {translateY: this.state.translateY},
-                      {scaleX: this.state.zoom},
-                      {scaleY: this.state.zoom},
-                    ]}
-                    poster={poster}
-                    posterResizeMode="cover"
-                    textTracks={[
-                      {
-                        title: channel.name ?? 'Unknown',
-                      },
-                    ]}
-                  />
-                )
-                // ) : null
-              }
+                top: singlePlayer ? '11%' : 0, // videoStore.isFullscreen ? '10%' : 0,
+              },
+            ]}>
+            {channel.name ?? 'Unknown'}
+          </Text>
+          <View style={styles.statusView}>
+            <View style={styles.textContainer}>
+              <Text style={styles.textMessage}>{connectionStatus}</Text>
             </View>
-          </CMSImage>
-          {/* </ImageBackground> */}
+            {(isLoading || internalLoading) && (
+              <ActivityIndicator
+                style={styles.loadingIndicator}
+                size="large"
+                color="white"
+              />
+            )}
+          </View>
+          <View style={styles.playerView}>
+            {
+              playbackUrl && (
+                <Video
+                  key={`${streamData.channelName}${
+                    singlePlayer ? '_single' : ''
+                  }_${refreshCount}`}
+                  style={[
+                    {
+                      width: width,
+                      height: height,
+                      // transform: [{scaleX: 2}, {scaleY: 2}],
+                    },
+                  ]}
+                  hls={true}
+                  resizeMode={'stretch'}
+                  source={{uri: playbackUrl ?? '', type: 'm3u8'}}
+                  paused={
+                    singlePlayer && !videoStore.isLive
+                      ? videoStore.paused
+                      : false
+                  }
+                  ref={ref => {
+                    this.player = ref;
+                  }}
+                  progressUpdateInterval={1000} // 1 seconds per onProgress called
+                  onReadyForDisplay={this.onReady}
+                  onBuffer={this.onBuffer}
+                  onError={this.onError}
+                  onPlaybackStalled={this.onPlaybackStalled}
+                  onPlaybackResume={this.onPlaybackResume}
+                  onBandwidthUpdate={this.onBandwidthUpdate}
+                  onSnapshotSuccess={this.onSnapshotSuccess}
+                  onProgress={this.onProgress}
+                  onLoad={this.onLoad}
+                  onSeek={event =>
+                    __DEV__ && console.log('GOND HLS onSeek: ', event)
+                  }
+                  onTimedMetadata={event => {
+                    __DEV__ && console.log('GOND HLS onTimedMetadata', event);
+                  }}
+                  onPlaybackRateChange={data => {
+                    __DEV__ &&
+                      console.log('GOND HLS onPlaybackRateChange: ', data);
+                  }}
+                  muted={true}
+                  volume={0}
+                  selectedAudioTrack={{type: 'disabled'}}
+                  selectedTextTrack={{type: 'disabled'}}
+                  rate={1.0}
+                  automaticallyWaitsToMinimizeStalling={false}
+                  preferredForwardBufferDuration={5}
+                  playInBackground={true}
+                  playWhenInactive={true}
+                  useTextureView={singlePlayer}
+                  disableFocus={true}
+                  bufferConfig={{
+                    minBufferMs: 3500,
+                    maxBufferMs: 15000,
+                    bufferForPlaybackMs: 2500,
+                    bufferForPlaybackAfterRebufferMs: 2500,
+                  }}
+                  maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
+                  reportBandwidth={true}
+                  transform={[
+                    {translateX: this.state.translateX},
+                    {translateY: this.state.translateY},
+                    {scaleX: this.state.zoom},
+                    {scaleY: this.state.zoom},
+                  ]}
+                  poster={poster}
+                  posterResizeMode="cover"
+                  // textTracks={[
+                  //   {
+                  //     title: channel.name ?? 'Unknown',
+                  //   },
+                  // ]}
+                />
+              )
+              // ) : null
+            }
+          </View>
           {
             /*this.state.isFilterShown*/ filterShown && (
               <View

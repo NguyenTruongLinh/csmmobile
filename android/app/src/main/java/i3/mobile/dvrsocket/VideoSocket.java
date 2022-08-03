@@ -199,20 +199,31 @@ public class VideoSocket extends CommunicationSocket {
 
     void  VideoEncodeData( FrameData dataframe, long last_frame_time){
         FrameHeader header = dataframe.getHeader();
-        char cmdid = dataframe.getCommand();
+        int cmdid = dataframe.getCommand();
         int width = header.resolutionX;
         int height = header.resolutionY;
+        // int width = header.resolutionX > header.resolutionY ? header.resolutionX : header.resolutionY;
+        // int height = (header.resolutionX + header.resolutionY) - width;
         if (mWidth > 0 && mHeight > 0)
         {
+            Log.d("GOND", "**DIRECT** - VideoSocket use viewRes: " + mWidth + ", " + mHeight);
             width = mWidth;
             height = mHeight;
         }
         else if( width == 0)
         {
+            Log.d("GOND", "**DIRECT** - VideoSocket use originalRes: " + header.originResolutionX + ", " + header.originResolutionY);
             width = header.originResolutionX;
             height = header.originResolutionY;
         }
-        onFrameTimeEvent( header.time, ServerInfo.getTimeZone().getTimeZone() ,last_frame_time);
+        else
+        {
+            Log.d("GOND", "**DIRECT** - VideoSocket use res: " + width + ", " + height);
+        }
+        Log.d("GOND", "**DIRECT** - VideoSocket cmdid: " + cmdid + ", mainSub = " + header.mainSubStream);
+
+        if (ServerInfo.getTimeZone() != null)
+            onFrameTimeEvent( header.time, ServerInfo.getTimeZone().getTimeZone() ,last_frame_time);
         switch ( cmdid)
         {
             case Constant.EnumCmdMsg.MOBILE_MSG_SEND_NEXT_FRAME:
@@ -263,18 +274,26 @@ public class VideoSocket extends CommunicationSocket {
 //                    onFrameTimeEvent( header.time, ServerInfo.getTimeZone().getTimeZone(),last_frame_time);
 //                }
                 //onFrameTimeEvent( header.time, ServerInfo.getTimeZone().getTimeZone(),last_frame_time);
-                if(header.codecType >= Constant.EnumImageCodecType.MOBILE_ENCODE)
+                Log.d("GOND", "**DIRECT** - VideoSocket MOBILE_ENCODE: " + header.codecType + ", len = " + dataframe.getBuffer().length + ", sIndex = " + header.sourceIndex + ", idx = " + header.index);
+                if(header.codecType >= Constant.EnumImageCodecType.MOBILE_ENCODE) // && header.mainSubStream == 0)
                 {
                     try {
 
                         Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                         boolean result = ffmpeg.naDecodeImage(bmp, width, height, dataframe.getBuffer(), header.sourceIndex, false, header.index, false);
+                        // Bitmap emptyBitmap = Bitmap.createBitmap(width, height, bmp.getConfig());
+                        
+                        // if (bmp.sameAs(emptyBitmap)) {
+                        //     Log.d("GOND", "**DIRECT** - VideoSocket decoded empty, try BMP...");
+                        //     byte[] b = dataframe.getBuffer();
+                        //     bmp = null;
+                        //     bmp = BitmapFactory.decodeByteArray(b, 0, b.length);
+                        // }
+
                         if( result == true) {
                             // CMS TODO: on single player
-                            // Log.e("GOND", "Native send frame 2" );
-                            // if (true) {
-                            //     Log.e("GOND", "Native send frame 2 - a" );
-                                this.sendFrameBuffer(bmp , header.sourceIndex);
+                            Log.e("GOND", "Native send frame 2" );
+                            this.sendFrameBuffer(bmp , header.sourceIndex);
                             // } else {
                             //     Message completeMessage = handler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER, bmp);
                             //     completeMessage.sendToTarget();
@@ -285,6 +304,7 @@ public class VideoSocket extends CommunicationSocket {
                 }
                 else
                 {
+                    Log.d("GOND", "**DIRECT** - VideoSocket decoded mainstream...");
                     byte[]b = dataframe.getBuffer();
 
                     Bitmap bmp = BitmapFactory.decodeByteArray(b, 0, b.length);
@@ -297,6 +317,12 @@ public class VideoSocket extends CommunicationSocket {
                     //     Message completeMessage = handler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER, bmp);
                     //     completeMessage.sendToTarget();
                     // }
+
+                    // dongpt: send black frame instead of null
+                    if (bmp == null)
+                    {
+                        this.sendFrameBuffer(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888), header.sourceIndex);
+                    }
                 }
                 break;
             }

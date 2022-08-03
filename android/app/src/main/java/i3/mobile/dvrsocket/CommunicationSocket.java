@@ -183,6 +183,7 @@ public class CommunicationSocket implements Runnable {
         running = true;
         Thread thread_Video_socket = null;
         // VideoSocket video_handler = null;
+        video_handler = null;
         PlaybackStatus = Constant.EnumPlaybackSatus.VIDEO_PLAY;
         OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_CONNECTTING, null );
         socket = InitSocket(this.ServerInfo);
@@ -1245,6 +1246,7 @@ public class CommunicationSocket implements Runnable {
         this.HDMode = HDMode;
         if(islive)
         {
+            // Log.d("GOND", "**DIRECT** ChangetoHD srcIdx: " + Arrays.toString(this.VideoSourceIndex()) + ", channel: " + Arrays.toString(ChannelNo));
             byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(this.VideoSourceIndex(),HDMode);
             byte[] msg = new byte[msg_buffer.length];
             System.arraycopy( msg_buffer, 0, msg, 0, msg_buffer.length );
@@ -1254,7 +1256,7 @@ public class CommunicationSocket implements Runnable {
         {
             if (this.ServerInfo.getTimeZone() == null) 
             {
-                Log.d("GOND", "**DIRECT** ChangePlay no timezone");
+                Log.d("GOND", "**DIRECT** ChangetoHD no timezone");
                 return;
             }
             ServerInfo.setLive( islive);
@@ -1295,9 +1297,9 @@ public class CommunicationSocket implements Runnable {
 
     private  void ChangePlayInternal( boolean islive, boolean reload, Boolean mainstream, Boolean forceChange)
     {
-        this.HDMode = mainstream;
+        // this.HDMode = mainstream;
 
-        // Log.d("GOND", "**DIRECT** ChangePlay 2: " + forceChange + ", HD: " + this.HDMode + ", reload: " + reload);
+        Log.d("GOND", "**DIRECT** ChangePlayInternal: " + forceChange + ", HD: " + this.HDMode + ", reload: " + reload);
         // dongpt: remove these line, why do not allow switch channel when playing live?
         if(forceChange == false && ServerInfo.getisLive() == islive && PlaybackStatus == Constant.EnumPlaybackSatus.VIDEO_PLAY)
         {
@@ -1342,7 +1344,7 @@ public class CommunicationSocket implements Runnable {
             if( this.ServerInfo.getTimeZone()  != null) {
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
                 int[] vindex = this.VideoSourceIndex();
-                byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS( vindex,mainstream);
+                byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS( vindex, this.HDMode);
                 byte[] msg = new byte[msg_buffer.length + msg_stop.length];
                 System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
                 System.arraycopy( msg_buffer, 0, msg, msg_stop.length, msg_buffer.length );

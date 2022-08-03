@@ -1,6 +1,8 @@
 import {flow, types /*, onSnapshot*/, applySnapshot} from 'mobx-state-tree';
 import apiService from '../services/api';
 import BigNumber from 'bignumber.js';
+import {DateTime} from 'luxon';
+
 import snackbarUtil from '../util/snackbar';
 import util from '../util/general';
 
@@ -10,6 +12,7 @@ import {ACConfig, Alert, AlertType, CommonActions} from '../consts/apiRoutes';
 
 const ID_Canned_Message = 5;
 export const PAGE_LENGTH = 20;
+const ALARM_REFRESH_INTERVAL = 5; // seconds
 
 const AlarmRate = types.model({
   rateId: types.identifierNumber,
@@ -194,7 +197,7 @@ const AlarmData = types
         case AlertTypes.DVR_VA_detection:
           const desc = self.description;
           try {
-            __DEV__ && console.log('GOND custom desciption VA: ', desc);
+            // __DEV__ && console.log('GOND custom desciption VA: ', desc);
             // version old
             if (desc.includes(':')) {
               let lst = desc.split(' ');
@@ -446,6 +449,8 @@ export const AlarmModel = types
   })
   .volatile(self => ({
     lastParams: {aty: AlertType_Support},
+    lastRefreshTimestamp: 0,
+    refreshScheduler: null,
   }))
   .views(self => ({
     get filteredLiveData() {
@@ -536,8 +541,57 @@ export const AlarmModel = types
         __DEV__ && console.log('GOND get getVAConfigs error: ', err);
       }
     }),
+    refreshOnSchedule: flow(function* (params) {
+      const res = yield self.getAlarms(params, false);
+      self.lastRefreshTimestamp = DateTime.now().toSeconds();
+      if (self.refreshScheduler != null) {
+        clearTimeout(self.refreshScheduler);
+        self.refreshScheduler = null;
+      }
+      return res;
+    }),
+    refreshAlarms: flow(function* (params) {
+      if (self.refreshScheduler != null) {
+        __DEV__ &&
+          console.log(
+            'GOND refresh alarm already scheduled: ',
+            self.refreshScheduler
+          );
+        return Promise.resolve();
+      }
+      const lastRefreshOffset =
+        DateTime.now().toSeconds() - self.lastRefreshTimestamp;
+      if (lastRefreshOffset >= ALARM_REFRESH_INTERVAL) {
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND refresh alarm immediately: ',
+        //     self.lastRefreshTimestamp,
+        //     lastRefreshOffset
+        //   );
+        const res = yield self.getAlarms(params, false);
+        self.lastRefreshTimestamp = DateTime.now().toSeconds();
+        return res;
+      } else {
+        const timeToWait = (ALARM_REFRESH_INTERVAL - lastRefreshOffset) * 1000;
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND refresh alarm delayed to: ',
+        //     timeToWait,
+        //     DateTime.now().toFormat('MM/dd HH:mm:ss'),
+        //     self.lastRefreshTimestamp
+        //   );
+        self.refreshScheduler = setTimeout(() => {
+          self.refreshOnSchedule(params);
+        }, timeToWait);
+      }
+      return Promise.resolve();
+    }),
     getAlarms: flow(function* (params, isSearch, debug = 'fromList') {
-      __DEV__ && console.log(`getAlarms debug = `, debug);
+      // __DEV__ &&
+      //   console.trace(
+      //     'GOND getAlarms at: ',
+      //     DateTime.now().toFormat('MM/dd HH:mm:ss')
+      //   );
       if (params) self.lastParams = params;
       self.isSearch = isSearch ?? self.isSearch;
       const isSearchAlarms = self.isSearch;
@@ -602,9 +656,8 @@ export const AlarmModel = types
         let currentPage = self.isSearch
           ? self.searchCurrentPage
           : self.liveCurrentPage;
-        let rawPageData = (self.isSearch
-          ? self.searchRawAlarms
-          : self.liveRawAlarms
+        let rawPageData = (
+          self.isSearch ? self.searchRawAlarms : self.liveRawAlarms
         ).slice(currentPage * PAGE_LENGTH, (currentPage + 1) * PAGE_LENGTH);
         const pageData = rawPageData.map((item, index) => {
           makeItemSnapshot(item);

@@ -28,8 +28,8 @@ class GlobalModal extends Component {
 
   updateProps(values) {
     const {modalProps} = this.state;
-    __DEV__ &&
-      console.log('GOND GlobalModal updateProps: ', modalProps.name, values);
+    // __DEV__ &&
+    //   console.log('GOND GlobalModal updateProps: ', modalProps.name, values);
     if (
       values.name != modalProps.name &&
       modalProps.isVisible &&

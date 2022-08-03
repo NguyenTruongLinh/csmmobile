@@ -21,7 +21,7 @@ export function onAlarmEvent({alarmStore, naviService, action, content}) {
   switch (action) {
     case NOTIFY_ACTION.ADD:
       if (currentRoute == ROUTERS.ALARM_LIVE) {
-        alarmStore && alarmStore.getAlarms({aty: AlertType_Support});
+        alarmStore && alarmStore.refreshAlarms({aty: AlertType_Support});
       } else {
         let strAlertType = String(alert.KAlertType);
         const msg = AlertNames[strAlertType]
@@ -46,7 +46,7 @@ export function onAlarmEvent({alarmStore, naviService, action, content}) {
     case NOTIFY_ACTION.REFRESH:
       if (currentRoute == ROUTERS.ALARM_LIVE) {
         __DEV__ && console.log('GOND Parse alarm notification refresh...');
-        alarmStore && alarmStore.getAlarms({aty: AlertType_Support});
+        alarmStore && alarmStore.refreshAlarms({aty: AlertType_Support});
       } // else {
       //   // TEST
       //   let strAlertType = String(alert.KAlertType);
@@ -89,7 +89,7 @@ const onOpenAlarmEvent = async props => {
       case NOTIFY_ACTION.REFRESH:
       case NOTIFY_ACTION.ADD:
         // __DEV__ && console.log('GOND onOpenAlarmEvent: ', alarm);
-        // await alarmStore.getAlarms({aty: AlertType_Support});
+        // await alarmStore.refreshAlarms({aty: AlertType_Support});
         // const alarmData = parseAlarmData(alarm);
 
         naviService.navigate(ROUTERS.ALARM_STACK, {

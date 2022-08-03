@@ -89,9 +89,10 @@ class VideoPlayerView extends Component {
       // pause: false,
       seekpos: {},
       sWidth: width,
-      sHeight: height,
+      sHeight: this.getVideoHeight(width, height),
       selectedTime: {hour: 0, minute: 0, second: 0},
       timePickerDatetime: props.videoStore.getSafeSearchDate(),
+      buttonBoxHeight: 0,
     };
 
     this.timelineAutoScroll = true;
@@ -236,6 +237,10 @@ class VideoPlayerView extends Component {
         }
       ),
     ];
+  };
+
+  getVideoHeight = (width, height) => {
+    return this.props.videoStore.isFullscreen ? height : (width * 9) / 16;
   };
 
   //#region Event handlers
@@ -388,7 +393,7 @@ class VideoPlayerView extends Component {
   onDimensionsChange = ({window}) => {
     const {width, height} = window;
     __DEV__ && console.log('GOND onDimensionsChange: ', window);
-    this.setState({sWidth: width, sHeight: height});
+    this.setState({sWidth: width, sHeight: this.getVideoHeight(width, height)});
   };
 
   onFullscreenPress = (isFullscreen, manually) => {
@@ -559,6 +564,8 @@ class VideoPlayerView extends Component {
 
   onTimelineScrollBegin = () => {
     const {videoStore} = this.props;
+    __DEV__ && console.log(`GOND onTimelineScrollBegin `);
+
     this.timelineAutoScroll = false;
     if (videoStore.timeline.length > 0 && videoStore.noVideo == true) {
       videoStore.setNoVideo(false);
@@ -626,10 +633,7 @@ class VideoPlayerView extends Component {
       // this.playerRef && this.playerRef.stop();
       __DEV__ && console.log('GOND onTimeline sliding end: AAAAAAAA');
 
-      // setTimeout(() => {
       videoStore.setNoVideo(true, false);
-      // snackbar.onMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
-      // }, 200);
       return;
     } // else if (videoStore.noVideo) {
     //   videoStore.setNoVideo(false, false);
@@ -701,6 +705,11 @@ class VideoPlayerView extends Component {
         }
       );
     }
+  };
+
+  onControlButtonLayout = evt => {
+    if (this.state.buttonBoxHeight != evt.nativeEvent.layout.height)
+      this.setState({buttonBoxHeight: evt.nativeEvent.layout.height});
   };
 
   //#endregion Event handlers
@@ -790,13 +799,13 @@ class VideoPlayerView extends Component {
       videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
-    const height = videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
-    __DEV__ &&
-      console.log(
-        'GOND renderVid player: ',
-        selectedStream,
-        isAPIPermissionSupported
-      );
+    const height = sHeight; // videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND renderVid player: ',
+    //     selectedStream,
+    //     isAPIPermissionSupported
+    //   );
     if (
       !selectedStream ||
       !selectedStream.channel ||
@@ -817,7 +826,7 @@ class VideoPlayerView extends Component {
     }
 
     const canPlay = videoStore.canPlaySelectedChannel(videoStore.isLive);
-    __DEV__ && console.log('GOND render player canPlay: ', canPlay);
+    // __DEV__ && console.log('GOND render player canPlay: ', canPlay);
     if (!canPlay) {
       __DEV__ && console.log('GOND renderVid player NO PERMISSION');
       return (
@@ -1002,7 +1011,7 @@ class VideoPlayerView extends Component {
       cloudType,
       isFullscreen,
     } = videoStore;
-    const {sHeight, showController} = this.state;
+    const {sHeight, buttonBoxHeight, showController} = this.state;
     // const IconSize = normalize(28); // normalize(sHeight * 0.035);
 
     let showPlayPauseButton =
@@ -1014,16 +1023,19 @@ class VideoPlayerView extends Component {
     if (cloudType == CLOUD_TYPE.HLS) {
       showPlayPauseButton = showPlayPauseButton && selectedStream.streamUrl;
     }
-    let verticalPos = {
-      marginTop:
-        -IconViewSize / 2 +
-        (isFullscreen ? 0 : Platform.OS === 'android' ? 12 : 48),
-    };
+    // let verticalPos = {
+    //   marginTop:
+    //     -IconViewSize / 2 +
+    //     (isFullscreen ? 0 : Platform.OS === 'android' ? 12 : 48),
+    // };
+    const bottomPos = (sHeight - buttonBoxHeight) / 2;
 
     return (
       <Fragment>
         {showController && selectedChannelIndex > 0 && (
-          <View style={[styles.controlButtonContainer, verticalPos]}>
+          <View
+            style={[styles.controlButtonContainer, {bottom: bottomPos}]}
+            onLayout={this.onControlButtonLayout}>
             <IconCustom
               name="keyboard-left-arrow-button"
               size={IconSize}
@@ -1041,16 +1053,14 @@ class VideoPlayerView extends Component {
           <View
             style={[
               styles.controlButtonContainer,
-              verticalPos,
-              {left: '50%', marginLeft: -IconViewSize / 2},
-            ]}>
+              {left: '45%', bottom: bottomPos},
+            ]}
+            onLayout={this.onControlButtonLayout}>
             <IconCustom
               name={paused ? 'play' : 'pause'}
               size={IconSize + 4}
               style={styles.pauseButton}
               onPress={() => {
-                // const willPause = paused;
-                // this.setState({pause: willPause});
                 this.playerRef && this.playerRef.pause(!paused);
               }}
             />
@@ -1058,7 +1068,15 @@ class VideoPlayerView extends Component {
         )}
         {showController && selectedChannelIndex < displayChannels.length - 1 && (
           <View
-            style={[styles.controlButtonContainer, verticalPos, {right: 0}]}>
+            style={[
+              styles.controlButtonContainer,
+              // verticalPos,
+              {
+                right: 0,
+                bottom: bottomPos,
+              },
+            ]}
+            onLayout={this.onControlButtonLayout}>
             <IconCustom
               name="keyboard-right-arrow-button"
               size={IconSize}
@@ -1067,6 +1085,7 @@ class VideoPlayerView extends Component {
                 styles.controlButton,
                 {
                   justifyContent: 'flex-end',
+                  paddingRight: 5,
                 },
               ]}
             />
@@ -1237,11 +1256,18 @@ class VideoPlayerView extends Component {
             markerPosition="absolute"
             timeData={videoStore.timeline}
             currentTime={videoStore.frameTime}
-            onBeginScroll={this.onTimelineScrollBegin}
+            // onBeginScroll={this.onTimelineScrollBegin}
             onScrolling={this.onDraggingTimeRuler}
-            onPauseVideoScrolling={() =>
-              this.playerRef && this.playerRef.onBeginDraggingTimeline()
-            }
+            onPauseVideoScrolling={() => {
+              __DEV__ && console.log(`GOND onPauseVideoScrolling `);
+              this.playerRef && this.playerRef.onBeginDraggingTimeline();
+              if (
+                videoStore.timeline.length > 0 &&
+                videoStore.noVideo == true
+              ) {
+                videoStore.setNoVideo(false);
+              }
+            }}
             setShowHideTimeOnTimeRule={value => {
               this.timeOnTimeline && this.timeOnTimeline.setShowHide(value);
             }}
@@ -1504,7 +1530,8 @@ const styles = StyleSheet.create({
   playerContainer: {
     flex: 44,
     justifyContent: 'flex-end',
-    // alignContent: 'center',
+    // borderWidth: 2,
+    // borderColor: 'green',
   },
   controlsContainer: {
     position: 'absolute',
@@ -1518,14 +1545,13 @@ const styles = StyleSheet.create({
   },
   controlButtonContainer: {
     position: 'absolute',
-    width: IconViewSize,
-    height: IconViewSize,
+    width: '10%', // IconViewSize,
+    height: '20%', // IconViewSize,
     justifyContent: 'center',
     alignItems: 'center',
-    top: '50%',
-    // marginTop: -IconViewSize / 2 + 12,
-    // marginTop: -IconViewSize / 2,
-    // backgroundColor: '#00ff0088',
+    // top: '42%',
+    // borderWidth: 1,
+    // borderColor: 'red',
   },
   controlButton: {
     color: CMSColors.White,

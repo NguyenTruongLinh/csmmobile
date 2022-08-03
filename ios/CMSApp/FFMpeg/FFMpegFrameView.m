@@ -359,6 +359,13 @@ const uint32_t numLayers = 24;
                                                                           }];
 }
 
+-(void)resetSearchParams {
+  _dateTimeSearch = nil;
+  chosenDay = nil;
+  lastFrameInterval = 0;
+//  firstRunAlarm = NO;
+}
+
 -(void)setStartplayback:(NSDictionary *)startplayback {
 //  [self resetParam];
 //  [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
@@ -366,56 +373,72 @@ const uint32_t numLayers = 24;
     // NSLog(@"GOND qqqqqqqqqq setStartplayback failed 1");
     return;
   }
-  else {
-    NSDateFormatter* formatTime = [[NSDateFormatter alloc] init];
-    [formatTime setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
-    
-    //Time for ruler DST
-    NSDateFormatter* formatTimeDST = [[NSDateFormatter alloc] init];
-    [formatTimeDST setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
-    [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-    
-    ImcConnectedServer* selectedServer = [self setConnectionServer:startplayback];
+  
+  NSDateFormatter* formatTime = [[NSDateFormatter alloc] init];
+  [formatTime setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
+  
+  //Time for ruler DST
+  NSDateFormatter* formatTimeDST = [[NSDateFormatter alloc] init];
+  [formatTimeDST setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
+  [formatTimeDST setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+  
+  ImcConnectedServer* selectedServer = [self setConnectionServer:startplayback];
 //    NSLog(@"GOND setStartplayback: %d, %d", connectedServerList.count, connectedServers.count);
-    
-    NSString* channel = [self get_obj:startplayback for_key:@"channels"];
+  
+  NSString* channel = [self get_obj:startplayback for_key:@"channels"];
 //    m_channel = channel;
-    NSString* previousChannel = _channels;
-    BOOL by_channel = [[self get_obj:startplayback for_key:@"byChannel"] boolValue];
-    BOOL isSearch = [[self get_obj: startplayback for_key:@"searchMode"] boolValue];
-    NSNumber* interval = [self get_obj:startplayback for_key:@"interval"];
-    NSString* dt = [self get_obj:startplayback for_key:@"date"];
-    NSDate*  dateTimeSearch = [formatTime dateFromString:dt];
-    NSDate*  dateTimeSearchDST = [formatTimeDST dateFromString:dt];
-    BOOL isHD = NO;
-    BOOL isConnecting = NO;
-    if([self get_obj:startplayback for_key:@"hd"]){
-      @try{
-        isHD = [[self get_obj:startplayback for_key:@"hd"] boolValue];
-      }
-      @catch (NSException* exception){
-        isHD = NO;
-      }
-      @finally{
-        
-      }
+  NSString* previousChannel = _channels;
+  BOOL by_channel = [[self get_obj:startplayback for_key:@"byChannel"] boolValue];
+  BOOL isSearch = [[self get_obj: startplayback for_key:@"searchMode"] boolValue];
+  NSNumber* interval = [self get_obj:startplayback for_key:@"interval"];
+  NSString* dt = [self get_obj:startplayback for_key:@"date"];
+  NSDate*  dateTimeSearch = [formatTime dateFromString:dt];
+  NSDate*  dateTimeSearchDST = [formatTimeDST dateFromString:dt];
+  BOOL isHD = NO;
+  BOOL isConnecting = NO;
+  if([self get_obj:startplayback for_key:@"hdmode"]){
+    @try{
+      isHD = [[self get_obj:startplayback for_key:@"hdmode"] boolValue];
     }
-    // [self setIsHD:isHD];
-    
-    if(isSearch == YES){
-      NSLog(@"GOND **DIRECT** setStartplayback switch to SEARCH");
-      [self resetParam];
-      [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
+    @catch (NSException* exception){
+      isHD = NO;
+    }
+    @finally{
       
-      [self setDateTimeSearch:dateTimeSearch];
-      [self setDateTimeRulerDST:dateTimeSearchDST];
-      [self setInterval: interval];
-    } else {
-      NSLog(@"GOND **DIRECT** setStartplayback  switch to LIVE");
-      [self addSubview:videoView];
-      BOOL found = NO;
-//      if (_isSeacrh == isSearch)
+    }
+  }
+  // [self setIsHD:isHD];
+  
+  if(isSearch == YES){
+    NSLog(@"GOND **DIRECT** setStartplayback switch to SEARCH");
+//     [self resetParam];
+//     [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
+//    if (controllerThread == nil)
+//    {
+//      [self initWithEventDispatcher:_eventDisplatcher];
+//      controllerThread = [[ImcControllerThread alloc] init];
+//      controllerThread.delegate = self;
+//      if (decoderThread == nil)
 //      {
+//        decoderThread = [[ImcDecodeThread alloc] init];
+//        decoderThread.delegate = self;
+//        [decoderThread startThread];
+//      }
+//      // init controller thread
+//      controllerThread.decoderThread = decoderThread;
+//      [controllerThread startThread];
+//    }
+    [self resetSearchParams];
+    [self setDateTimeSearch:dateTimeSearch];
+    [self setDateTimeRulerDST:dateTimeSearchDST];
+    [self setInterval: interval];
+  } else {
+    NSLog(@"GOND **DIRECT** setStartplayback  switch to LIVE");
+//    [self addSubview:videoView];
+    
+    BOOL found = NO;
+    if (_isSeacrh == isSearch)
+    {
         for (ImcConnectedServer* server in connectedServerList)
         {
           // NSLog(@"GOND setStartplayback compare server: %@ vs %@, %ld vs %ld, %@ vs %@, %@ vs %@", server.server_address, selectedServer.server_address, (long)server.server_port, (long)selectedServer.server_port, server.username, selectedServer.username, server.password, selectedServer.password);
@@ -423,54 +446,55 @@ const uint32_t numLayers = 24;
           {
             selectedServer = server;
             found = YES;
-            NSLog(@"GOND setStartplayback found server: %s", server.connected ? "YES" : "NO");
+            break;
+            NSLog(@"GOND **DIRECT** setStartplayback found server: %s", server.connected ? "YES" : "NO");
           }
         }
-//      }
-//      if (!found) {
-//        [self resetParam];
-//        [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
-//      }
     }
+//      if (!found) {
+// //       [self resetParam];
+// //       [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
+//        [self addSubview:videoView];
+//        [self handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:self withData:nil];
+//      }
+  }
+
 //    m_channel = channel;
-    [self setIsHD:isHD];
-    
-    if( selectedServer.connected )
-    {
+//  [self addSubview:videoView];
+  [self setIsHD:isHD];
+  
+  if( selectedServer.connected )
+  {
 //      isConnecting = YES;
 //      NSArray* buttonList = [NSArray arrayWithObjects:@"View channel list", @"Disconnect", nil];
-      NSLog(@"GOND **DIRECT** setStartplayback 2 server connected: updating channels list");
-      [self setChannels:channel];
-      [self setIsSearch:isSearch];
-      if (![_channels isEqualToString:previousChannel] && previousChannel != nil)
-      {
-//        [controllerThread updateServerDisplayMask:selectedServer.server_address :selectedServer.server_port :[self getChannelMask]];
-        [self handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:self withData:nil];
-      }
-    }
-    else // if (connectedServers.count < MAX_SERVER_CONNECTION)
+    NSLog(@"GOND **DIRECT** setStartplayback 2 server connected: updating channels list");
+    [self setChannels:channel];
+    [self setIsSearch:isSearch];
+    if (previousChannel != nil && ![_channels isEqualToString:previousChannel])
     {
-      NSLog(@"GOND **DIRECT** setStartplayback 2 start connection : %d", connectedServers.count);
-      [connectedServerList addObject:selectedServer];
-//      NSString* previousChannel = _channels;
-      [self setChannels:channel];
-      [self setByChannel:by_channel];
-      [self setIsSearch:isSearch];
-      /* Display the error to the user. */
-      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:3],
-                                                                              @"target": self.reactTag
-                                                                              }];
-      [self handleResponseMessage:IMC_MSG_CONNECTION_CONNECT fromView:self withData:selectedServer];
+//        [controllerThread updateServerDisplayMask:selectedServer.server_address :selectedServer.server_port :[self getChannelMask]];
+      [self handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:self withData:nil];
     }
-//    else
-//    {
-//      NSLog(@"GOND qqqqqqqqqq setStartplayback 3 server full, not handled");
-//    }
-    videoPlayerStatus = STATE_PLAY;
-    
-    [self checkIsSearch];
   }
+  else // if (connectedServers.count < MAX_SERVER_CONNECTION)
+  {
+    NSLog(@"GOND **DIRECT** setStartplayback 2 start connection : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
+    [connectedServerList addObject:selectedServer];
+    NSLog(@"GOND **DIRECT** setStartplayback 2 : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
+//      NSString* previousChannel = _channels;
+    [self setChannels:channel];
+    [self setByChannel:by_channel];
+    [self setIsSearch:isSearch];
+    /* Display the error to the user. */
+    [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                            @"msgid": [NSNumber numberWithUnsignedInteger:3],
+                                                                            @"target": self.reactTag
+                                                                            }];
+    [self handleResponseMessage:IMC_MSG_CONNECTION_CONNECT fromView:self withData:selectedServer];
+  }
+
+  videoPlayerStatus = STATE_PLAY;
+  [self checkIsSearch];
 }
 
 -(ImcConnectionServer *)setConnectionServer: (NSDictionary *)server{
@@ -635,6 +659,8 @@ const uint32_t numLayers = 24;
   // NSLog(@"GOND: ******* on disconnect: %d", disconnect);
   // if(disconnect){
   NSLog(@"GOND: ******* on disconnect ******");
+  
+  // disconnect
   videoPlayerStatus = STATE_STOP;
   [controllerThread disconnectAllServers];
     
@@ -694,6 +720,18 @@ const uint32_t numLayers = 24;
 
 -(void)setStop:(BOOL)stop{
   if(stop){
+    // additional reset params
+    // self.layer.contents = nil;
+    // [videoView removeFromSuperview];
+    // currentSelectedFullScreenChannel = -1;
+    // lastFrameInterval = 0;
+    // firstRunAlarm = NO;
+    // searchFrameImage = defaultImg;
+    _dateTimeSearch = nil;
+    chosenDay = nil;
+    // _isHD = NO;
+    
+    // stop connection
     videoPlayerStatus = STATE_STOP;
     if(connectedServerList.count > 0)
     {
@@ -710,7 +748,7 @@ const uint32_t numLayers = 24;
       [connectedServerList removeAllObjects];
     }
     
-    [mainDisplayVideo remoteAllLayers];
+//    [mainDisplayVideo remoteAllLayers];
     [mainDisplayVideo resetDisplayMapping];
   }
 }
@@ -722,9 +760,10 @@ const uint32_t numLayers = 24;
   else {
     NSNumber* interval = [self get_obj:seekpos for_key:@"pos"];
     BOOL isHD = NO;
-    if([self get_obj:seekpos for_key:@"HD"]){
+    if([self get_obj:seekpos for_key:@"hdmode"]){
       @try{
-        isHD = [[self get_obj:seekpos for_key:@"HD"] boolValue];
+        isHD = [[self get_obj:seekpos for_key:@"hdmode"] boolValue];
+        NSLog(@"GOND: **DIRECT** seek, hdmode: %s", isHD ? "YES" : "NO");
       }
       @catch (NSException* exception){
         isHD = NO;
@@ -747,12 +786,13 @@ const uint32_t numLayers = 24;
     ImcTimeInterval* lastTi = [chosenDayInterval.timeInterval lastObject];
     NSDateComponents* beginLastComponents = [calendar components:NSCalendarUnitHour|NSCalendarUnitMinute fromDate:[NSDate dateWithTimeIntervalSince1970:lastTi.end]];
     [beginLastComponents setHour:beginLastComponents.hour + [currentServer.serverTimezone secondsFromGMT]/3600];
-    NSDate* dateSearch = [NSDate dateWithTimeIntervalSince1970:[interval integerValue]];
-    NSCalendar* calendaComp = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    [calendaComp setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-    NSDateComponents* dateSearchComponents = [calendaComp components:NSCalendarUnitHour|NSCalendarUnitMinute fromDate:dateSearch];
+//    NSDate* dateSearch = [NSDate dateWithTimeIntervalSince1970:[interval integerValue]];
+//    NSCalendar* calendaComp = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+//    [calendaComp setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+//    NSDateComponents* dateSearchComponents = [calendaComp components:NSCalendarUnitHour|NSCalendarUnitMinute fromDate:dateSearch];
     
-    __block uint64_t channelMask = 0x00;
+    // dongpt: use current channel mask instead
+    __block uint64_t channelMask = [self getChannelMask]; // 0x00;
     uint64_t mainStreamMask = 0;
     
     // CMS fix out of bound crash
@@ -768,13 +808,22 @@ const uint32_t numLayers = 24;
     }
     ImcScreenDisplay* screen = [[self.mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
     
-    [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-      if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//    [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//      if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//      {
+//        channelMask |= ((uint64_t)1 << idx);
+//      }
+//      
+//    }];
+    
+    for (NSInteger idx = 0; idx < currentServer.channelConfigs.count; idx++) {
+      ChannelSetting* obj = currentServer.channelConfigs[idx];
+      if([obj isSearchable] && obj.channelID == screen.channelIndex)
       {
         channelMask |= ((uint64_t)1 << idx);
       }
-      
-    }];
+    }
+    // NSLog(@"GOND channelMask 1: %llu", channelMask);
     
     if (!(chosenChannelIndex >= 0 && chosenChannelIndex < dateIntervalList.count)) {
       return;
@@ -1226,6 +1275,7 @@ const uint32_t numLayers = 24;
         
         if([(ImcConnectedServer*)object hasAvailableSearchChannels])
         {
+          // NSLog(@"GOND MainViewToLiveView hasSearchMode");
           hasSearchMode = TRUE;
           *stop = YES;
         }
@@ -1256,6 +1306,7 @@ const uint32_t numLayers = 24;
                  server.server_port == resumeDataInfo.playbackInfo.selectedSvrPort )
               {
                 found_server = server;
+                // NSLog(@"GOND MainViewToLiveView found sv: %s", server.server_address);
                 *stop = true;
               }
             }];
@@ -1432,6 +1483,7 @@ const uint32_t numLayers = 24;
           message = MOBILE_MSG_SEARCH_REQUEST_MAIN_SUB;
         }
         
+        // NSLog(@"GOND IMC_MSG_SEARCH_REQUEST_MAIN_SUB :%lld, %ld", mainStreamMask, timeInterVal);
         [controllerThread sendSearchCommonMessageToServer:server message:message forTimeInterval:timeInterVal andChannelMask:channelMask withMainStreamMask:mainStreamMask];
       }
     }
@@ -1460,16 +1512,26 @@ const uint32_t numLayers = 24;
       
       chosenDay = [serverCalendar dateFromComponents:chosenDayComponents];
       
-      __block uint64_t channelMask = 0x00;
+      __block uint64_t channelMask = [self getChannelMask]; // 0x00;
       ImcViewDisplay* view = [[self.mainDisplayVideo getDisplayView] objectAtIndex:self.mainDisplayVideo.fullscreenView];
       ImcScreenDisplay* screen = [[self.mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
       
-      [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//      [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//        if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//        {
+//          channelMask |= ((uint64_t)1 << idx);
+//        }
+//      }];
+      
+      for (NSInteger idx = 0; idx < currentServer.channelConfigs.count; idx++) {
+        ChannelSetting* obj = currentServer.channelConfigs[idx];
+        if([obj isSearchable] && obj.channelID == screen.channelIndex)
         {
           channelMask |= ((uint64_t)1 << idx);
         }
-      }];
+      }
+      
+      NSLog(@"GOND channelMask 2: %llu", channelMask);
       
       NSArray* data = [NSArray arrayWithObjects:currentServer, chosenDay, @(channelMask), nil];
       
@@ -1584,6 +1646,7 @@ const uint32_t numLayers = 24;
     if (dateInterval.channelIndex == currentSelectedFullScreenChannel && currentSelectedFullScreenChannel >= 0 && chosenChannelIndex < IMC_MAX_CHANNEL)
     {
       chosenChannelIndex = [dateIntervalList indexOfObject:dateInterval];
+      NSLog(@"GOND chosenChannelIndex+- 2 %d", chosenChannelIndex);
       return;
     }
   }
@@ -1603,7 +1666,8 @@ const uint32_t numLayers = 24;
   if (currentSelectedFullScreenChannel != -1)
   {
     chosenChannelIndex = 0;
-    for (ImcDateInterval* di in dateIntervalList) {
+    for (ImcDateInterval* di in dateIntervalList)
+    {
       if (di.channelIndex == currentSelectedFullScreenChannel) {
         ImcTimeInterval* ti = [di.timeInterval lastObject];
         if (ti.end > 0 ) {
@@ -1629,7 +1693,9 @@ const uint32_t numLayers = 24;
         }
         break;
       }
-      chosenChannelIndex++;
+      // dongpt: removed, cause crash, maybe wrong coding
+//      chosenChannelIndex++;
+      NSLog(@"GOND chosenChannelIndex+- 1 %d", chosenChannelIndex);
     }
   }
   else if (dateIntervalList.count > 0)
@@ -1768,6 +1834,7 @@ const uint32_t numLayers = 24;
             if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
             {
               [self fullScreenSearchMode:screen.channelIndex];
+              // NSLog(@"GOND fullscreenSearchMod %ld", screen.channelIndex);
               displayFullscreen = YES;
               *stop = TRUE;
             }
@@ -1841,20 +1908,30 @@ const uint32_t numLayers = 24;
     return;
   }
   
-  if (channelIndex >= 0 && channelIndex < IMC_MAX_CHANNEL)
+  if (channelIndex >= 0 && channelIndex < IMC_MAX_CHANNEL && self.mainDisplayVideo.fullscreenView >=0 )
   {
     if(chosenDay!=nil)
     {
-      __block uint64_t channelMask = 0x00;
+      __block uint64_t channelMask = [self getChannelMask]; // 0x00;
       ImcViewDisplay* view = [[self.mainDisplayVideo getDisplayView] objectAtIndex:self.mainDisplayVideo.fullscreenView];
       ImcScreenDisplay* screen = [[self.mainDisplayVideo getDisplayScreens] objectAtIndex:view.screenIndex];
       
-      [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//      [currentServer.channelConfigs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//        if([(ChannelSetting*)obj isSearchable] && ((ChannelSetting*)obj).channelID == screen.channelIndex)
+//        {
+//          channelMask |= ((uint64_t)1 << idx);
+//        }
+//      }];
+      
+      for (NSInteger idx = 0; idx < currentServer.channelConfigs.count; idx++) {
+        ChannelSetting* obj = currentServer.channelConfigs[idx];
+        if([obj isSearchable] && obj.channelID == screen.channelIndex)
         {
           channelMask |= ((uint64_t)1 << idx);
         }
-      }];
+      }
+      
+      // NSLog(@"GOND channelMask 3: %llu", channelMask);
       
       NSArray* data = [NSArray arrayWithObjects:currentServer, chosenDay, @(channelMask), nil];
       [self handleResponseMessage:IMC_MSG_SEARCH_REQUEST_TIME_INTERVAL fromView:self withData:data];
@@ -2432,10 +2509,10 @@ const uint32_t numLayers = 24;
       [self updateDataDateList:(NSTimeZone*)updatedServer.serverTimezone];
       /* Display the error to the user. */
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:20],
-                                                                              @"value":[NSArray arrayWithArray:self.dataDateList],
-                                                                              @"target": self.reactTag
-                                                                              }];
+                                                  @"msgid": [NSNumber numberWithUnsignedInteger:20],
+                                                  @"value":[NSArray arrayWithArray:self.dataDateList],
+                                                  @"target": self.reactTag
+                                                  }];
       //do something
     }
       break;
@@ -2450,8 +2527,13 @@ const uint32_t numLayers = 24;
     {
       ImcRemoteConnection* server = (ImcRemoteConnection*)parameter;
       if ([server.serverInfo.server_address isEqualToString:self.currentServer.server_address]) {
+        NSLog(@"GOND **DIRECT** Stop: %d", videoPlayerStatus);
         if (videoPlayerStatus == STATE_PLAY) {
           //do something
+          [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                      @"msgid": [NSNumber numberWithUnsignedInteger:28],
+                                                      @"target": self.reactTag
+                                                      }];
         }
       }
     }
@@ -2614,7 +2696,7 @@ const uint32_t numLayers = 24;
   //apply zoom
   CGRect cropScaled = CGRectInset(fullScaled, searchFrameImage.size.width/2 - searchFrameImage.size.width/scaleXY/2, searchFrameImage.size.height/2 - searchFrameImage.size.height/scaleXY/2);
   
-  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
+//  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
   
   //apply translate
   cropScaled.origin.x = -translateX*searchFrameImage.size.width/scaleXY/playerWidth;
@@ -2628,7 +2710,7 @@ const uint32_t numLayers = 24;
 
 -(void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx
 {
-  NSLog(@"GOND drawLayer -1");
+  // NSLog(@"GOND **DIRECT** drawLayer -1");
   //NSLog(@"Shark drawLayer Search searchFrameImage");
   UIGraphicsPushContext(ctx);
   if (searchFrameImage && (searchFrameImage.CIImage || searchFrameImage.CGImage) )
@@ -2715,7 +2797,7 @@ const uint32_t numLayers = 24;
         
         NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%ld\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeTextLabel, _channels];
         NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
-        NSLog(@"GOND add Search frame: %ld", time);
+//        NSLog(@"GOND add Search frame: %ld", time);
         
         //@autoreleasepool
         {
@@ -2769,6 +2851,7 @@ const uint32_t numLayers = 24;
         ImcDateInterval* dateInterval = (ImcDateInterval*)obj;
         if (dateInterval.channelIndex >= 0 && dateInterval.channelIndex == currentSelectedFullScreenChannel) {
           chosenChannelIndex = idx;
+          // NSLog(@"GOND chosenChannelIndex+- 3 %ld", (long)chosenChannelIndex);
           *stop = YES;
         }
       }];
@@ -2975,8 +3058,8 @@ const uint32_t numLayers = 24;
 
 //Build interval 1 day
 -(void)buildRulerDST: (NSDate* )chosenDay {
-  NSLog(@"GOND buildRulerDST ");
-  if([dateIntervalList count] > 0){
+  NSLog(@"GOND buildRulerDST %d", chosenChannelIndex);
+  if([dateIntervalList count] > 0 && chosenChannelIndex < [dateIntervalList count]){
     ImcDateInterval* chosenDayInterval = [dateIntervalList objectAtIndex:chosenChannelIndex];
     NSDate* selectedDate = [NSDate dateWithTimeIntervalSince1970:chosenDayInterval.time];
     NSDate* nextDaylight = [currentServer.serverTimezone nextDaylightSavingTimeTransitionAfterDate:selectedDate];
@@ -3140,7 +3223,7 @@ const uint32_t numLayers = 24;
             
             NSString* str_min = [NSString stringWithFormat:@"{\"timestamp\":\"%ld\",\"value\":\"%@\",\"channel\":\"%@\"}", time, timeText, _channels];
             NSString* res = [NSString stringWithFormat:@"[%@]",str_min];
-            NSLog(@"GOND add Search frame: %ld", time);
+//            NSLog(@"GOND add Search frame: %ld", time);
             
             // NSLog(@"GOND send time frame to JS %@", str_min);
             [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
