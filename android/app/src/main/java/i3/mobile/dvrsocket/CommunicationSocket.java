@@ -95,8 +95,7 @@ public class CommunicationSocket implements Runnable {
     protected Handler handler;
     protected BufferedOutputStream OutPut;
     protected  BufferedInputStream InPut;
-    private VideoSocket video_handler = null;
-
+    public VideoSocket video_handler = null;
     private int width = 0;
     private int height = 0;
     protected boolean isRelay;

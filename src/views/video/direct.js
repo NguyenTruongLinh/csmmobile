@@ -1178,9 +1178,14 @@ class DirectVideoView extends React.Component {
         if (value != null) {
           let width = value[0];
           let height = value[1];
-          let fixWidth = (this.state.height / height) * width;
-          let left = (this.state.width - fixWidth) / 2;
-          this.setState({marginLeft: left});
+          let containerWidth = this.state.width;
+          let containerHeight = this.state.height;
+          let scale =
+            height < containerHeight
+              ? height / containerHeight
+              : containerHeight / height;
+          let left = (containerWidth - width * scale) / 2;
+          if (left > 0) this.setState({marginLeft: left});
         }
         break;
       case NATIVE_MESSAGE.SERVER_DISCONNECTED:

@@ -383,20 +383,24 @@ public class FFMpegFrameView extends View {
         {
             // Log.d("GOND", "**DIRECT** onDraw draw bitmap");
             Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
-            if(DrawBitmap != null) {
-                int bitmap_width = DrawBitmap.getWidth();
-                int bitmap_height = DrawBitmap.getHeight();
+                int originResolutionWidth = DrawBitmap.getWidth();
+                int originResolutionHeight = DrawBitmap.getHeight();    
+                if(socket_handler != null && socket_handler.video_handler != null)
+                {
+                    originResolutionWidth = socket_handler.video_handler.originResolutionX;
+                    originResolutionHeight = socket_handler.video_handler.originResolutionY;
+                }
                 int width = getWidth();
                 int prewidth = width;
                 int height = getHeight() + 1;
                 int left = 0;
                 if(!stretch)
                 {
-                    width = height == 0 ? width : bitmap_width * height/bitmap_height;
+                    width = height == 0 ? width : originResolutionWidth * height/originResolutionHeight;
                     left = (prewidth - width) / 2;
-                    if(responseResolution && bitmap_width >0 && bitmap_height > 0)
+                    if(responseResolution && originResolutionWidth >0 && originResolutionHeight > 0)
                     {
-                        int[] resolution = new int[] {bitmap_width, bitmap_height};
+                        int[] resolution = new int[] {originResolutionWidth, originResolutionHeight};
                         OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_RESPONSE_RESOLUTION, resolution);
                         responseResolution = false;
                     }
@@ -430,7 +434,6 @@ public class FFMpegFrameView extends View {
                         Log.d("GOND", "**DIRECT** onDraw not draw 1");
                     }
                 }
-             }
         }
         else
         {

@@ -38,6 +38,8 @@ public class VideoSocket extends CommunicationSocket {
     public  static  final  int Resolution_Height = 480;
     private int mWidth = 0;
     private int mHeight = 0;
+    public int originResolutionX = 0;
+    public int originResolutionY = 0;
     FFMPEGDecoder ffmpeg;
     private boolean takeANap = false;
     // private static byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
@@ -207,6 +209,8 @@ public class VideoSocket extends CommunicationSocket {
         char cmdid = dataframe.getCommand();
         int width = header.resolutionX;
         int height = header.resolutionY;
+        originResolutionX = header.originResolutionX;
+        originResolutionY = header.originResolutionY;
         if (mWidth > 0 && mHeight > 0)
         {
             width = mWidth;
