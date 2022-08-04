@@ -206,7 +206,7 @@ public class VideoSocket extends CommunicationSocket {
         int height = header.resolutionY;
         // int width = header.resolutionX > header.resolutionY ? header.resolutionX : header.resolutionY;
         // int height = (header.resolutionX + header.resolutionY) - width;
-        if (mWidth > 0 && mHeight > 0)
+        if (header.mainSubStream == 0 && mWidth > 0 && mHeight > 0)
         {
             Log.d("GOND", "**DIRECT** - VideoSocket use viewRes: " + mWidth + ", " + mHeight);
             width = mWidth;
