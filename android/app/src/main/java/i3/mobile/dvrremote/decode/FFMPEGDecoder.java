@@ -62,7 +62,7 @@ public class FFMPEGDecoder {
 	// public static native long getTime(byte[] dataEncode);
 	// public static native int  getFrameIndex(byte[] dataEncode);
 	// public /*static*/ native void getArgument(byte[] dataEncode,DecodeArgument argument); 
-	// public static native void destroyFFMEGContext(int videoSource); 
+	public native void destroyFFMEGContext(int videoSource); 
 	// public static native int getDecodeStatus(int videoSource);
 	// public /*static*/ native void getSearchInformation(byte[] dataChannel,SearchAllDayInterval searchInfo);
 	// public static native long[] getSearchDaylist(byte[] dataDaylist);
