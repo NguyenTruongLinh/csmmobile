@@ -48,7 +48,7 @@ public class MsgCommandItem
 			if( mainstream)
 			{
 				for ( int it: videosource) {
-					if(it <= Constant.MAX_SERVER_CHANNEL)
+					if(it < Constant.MAX_SERVER_CHANNEL)
 						continue;
 					main_sub[it - Constant.MAX_SERVER_CHANNEL] = 1;
 
