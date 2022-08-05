@@ -329,10 +329,10 @@ public class VideoSocket extends CommunicationSocket {
                     // }
 
                     // dongpt: send black frame instead of null
-                    if (bmp == null)
-                    {
-                        this.sendFrameBuffer(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888), header.sourceIndex);
-                    }
+                    // if (bmp == null)
+                    // {
+                    //     this.sendFrameBuffer(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888), header.sourceIndex);
+                    // }
                 }
                 break;
             }
@@ -356,6 +356,22 @@ public class VideoSocket extends CommunicationSocket {
 
                         // CMS TODO: on single player
                         Log.e("GOND", "Native send frame 4" );
+                        Bitmap emptyBitmap = Bitmap.createBitmap(width, height, bmp.getConfig());
+                        
+                        if (bmp.sameAs(emptyBitmap)) {
+                            Log.d("GOND", "**DIRECT** - VideoSocket decoded empty, try BMP...");
+                            // byte[] b = dataframe.getBuffer();
+                            // bmp = null;
+                            // bmp = BitmapFactory.decodeByteArray(b, 0, b.length);
+                            if (invalidFrameCount < MAX_INVALID_FRAMES) {
+                                invalidFrameCount++;
+                            } else {
+                                ffmpeg.destroyFFMEGContext(header.sourceIndex);
+                                ffmpeg = new FFMPEGDecoder();
+                                invalidFrameCount = 0;
+                            }
+                            return;
+                        }
                         // if (true) {
                         //     Log.e("GOND", "Native send frame 4 - a" );
                             this.sendFrameBuffer(bmp , header.sourceIndex);
