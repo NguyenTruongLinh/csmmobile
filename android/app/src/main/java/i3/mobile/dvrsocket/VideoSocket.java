@@ -34,12 +34,14 @@ public class VideoSocket extends CommunicationSocket {
 
     static  final  int MAX_FRAME_LENGTH = 1024 *256;//256Kb
     static final int VIDEO_SOCKET_BUFFER = 1024 * 80;
+    static final int MAX_INVALID_FRAMES = 4;
     public  static  final  int Resolution_Width = 720;
     public  static  final  int Resolution_Height = 480;
     private int mWidth = 0;
     private int mHeight = 0;
     FFMPEGDecoder ffmpeg;
     private boolean takeANap = false;
+    private int invalidFrameCount = 0;
     // private static byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
     // private static FrameData dataframe = new FrameData(0);
 
@@ -204,7 +206,7 @@ public class VideoSocket extends CommunicationSocket {
         int height = header.resolutionY;
         // int width = header.resolutionX > header.resolutionY ? header.resolutionX : header.resolutionY;
         // int height = (header.resolutionX + header.resolutionY) - width;
-        if (mWidth > 0 && mHeight > 0)
+        if (header.mainSubStream == 0 && mWidth > 0 && mHeight > 0)
         {
             Log.d("GOND", "**DIRECT** - VideoSocket use viewRes: " + mWidth + ", " + mHeight);
             width = mWidth;
@@ -281,14 +283,22 @@ public class VideoSocket extends CommunicationSocket {
 
                         Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                         boolean result = ffmpeg.naDecodeImage(bmp, width, height, dataframe.getBuffer(), header.sourceIndex, false, header.index, false);
-                        // Bitmap emptyBitmap = Bitmap.createBitmap(width, height, bmp.getConfig());
+                        Bitmap emptyBitmap = Bitmap.createBitmap(width, height, bmp.getConfig());
                         
-                        // if (bmp.sameAs(emptyBitmap)) {
-                        //     Log.d("GOND", "**DIRECT** - VideoSocket decoded empty, try BMP...");
-                        //     byte[] b = dataframe.getBuffer();
-                        //     bmp = null;
-                        //     bmp = BitmapFactory.decodeByteArray(b, 0, b.length);
-                        // }
+                        if (bmp.sameAs(emptyBitmap)) {
+                            Log.d("GOND", "**DIRECT** - VideoSocket decoded empty, try BMP...");
+                            // byte[] b = dataframe.getBuffer();
+                            // bmp = null;
+                            // bmp = BitmapFactory.decodeByteArray(b, 0, b.length);
+                            if (invalidFrameCount < MAX_INVALID_FRAMES) {
+                                invalidFrameCount++;
+                            } else {
+                                ffmpeg.destroyFFMEGContext(header.sourceIndex);
+                                ffmpeg = new FFMPEGDecoder();
+                                invalidFrameCount = 0;
+                            }
+                            return;
+                        }
 
                         if( result == true) {
                             // CMS TODO: on single player
