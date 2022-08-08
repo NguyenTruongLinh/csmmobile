@@ -39,16 +39,18 @@ public class VideoSocket extends CommunicationSocket {
     public  static  final  int Resolution_Height = 480;
     private int mWidth = 0;
     private int mHeight = 0;
+    public int originResolutionX = 0;
+    public int originResolutionY = 0;
     FFMPEGDecoder ffmpeg;
     private boolean takeANap = false;
     private int invalidFrameCount = 0;
     // private static byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
     // private static FrameData dataframe = new FrameData(0);
 
-    public  VideoSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel)
+    public  VideoSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIP)
     {
 
-        super( hwnd, serverinfo, channel, search, bychannel);
+        super( hwnd, serverinfo, channel, search, bychannel, clientIP);
         ffmpeg = new FFMPEGDecoder();
         ffmpeg.LoadLib();
     }
@@ -68,7 +70,7 @@ public class VideoSocket extends CommunicationSocket {
     public void run() {
         this.running = true;
         try {
-            this.socket = super.InitSocket(ServerInfo.conntectingIp, ServerInfo.serverVideoPort);
+            this.socket = this.isRelay ? super.InitRelaySocket() : super.InitSocket(ServerInfo.conntectingIp, ServerInfo.serverVideoPort);
             if( socket.isConnected() == false )
                 OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
         }catch (Exception e)
@@ -77,15 +79,19 @@ public class VideoSocket extends CommunicationSocket {
         }
         if( socket != null && socket.isConnected())
         {
-            //BufferedInputStream input = null;
-            //BufferedOutputStream output = null;
+
             try {
                 this.InPut = new BufferedInputStream(socket.getInputStream());
                 this.OutPut = new BufferedOutputStream(socket.getOutputStream());
             }
-            catch (Exception e){}
+            catch (Exception e){
+
+            }
+
+            notifyMakeRelayHandshake("video");
+
             //utils.WriteBlock( output, utils.IntToByteArrayOfC( ServerInfo.ConnectionIndex ));
-            this.WriteSocketData(utils.IntToByteArrayOfC( ServerInfo.ConnectionIndex ));
+            this.WriteSocketData(utils.IntToByteArrayOfC( ServerInfo.ConnectionIndex ), "VideoSocket");
 
             //int max_len = 1024 * 80;
             byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
@@ -104,7 +110,8 @@ public class VideoSocket extends CommunicationSocket {
             {
                 try
                 {
-                    read_len = ReadBlock(InPut, remain_len ,buff, offset);//utils.ReadBlock(input, remain_len ,buff, offset);
+                    relayHeaderBlockRemainLen -= remain_len;
+                    read_len = ReadBlock(InPut, remain_len ,buff, offset, isRelay && relayHeaderBlockRemainLen <= 0, "videoSocket");//utils.ReadBlock(input, remain_len ,buff, offset);
                     if( read_len == -1 && running)//socket failed
                     {
                         OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
@@ -204,8 +211,9 @@ public class VideoSocket extends CommunicationSocket {
         int cmdid = dataframe.getCommand();
         int width = header.resolutionX;
         int height = header.resolutionY;
-        // int width = header.resolutionX > header.resolutionY ? header.resolutionX : header.resolutionY;
-        // int height = (header.resolutionX + header.resolutionY) - width;
+        
+        originResolutionX = header.originResolutionX;
+        originResolutionY = header.originResolutionY;
         if (header.mainSubStream == 0 && mWidth > 0 && mHeight > 0)
         {
             Log.d("GOND", "**DIRECT** - VideoSocket use viewRes: " + mWidth + ", " + mHeight);
@@ -214,9 +222,9 @@ public class VideoSocket extends CommunicationSocket {
         }
         else if( width == 0)
         {
-            Log.d("GOND", "**DIRECT** - VideoSocket use originalRes: " + header.originResolutionX + ", " + header.originResolutionY);
-            width = header.originResolutionX;
-            height = header.originResolutionY;
+            Log.d("GOND", "**DIRECT** - VideoSocket use originalRes: " + originResolutionX + ", " + originResolutionY);
+            width = originResolutionX;
+            height = originResolutionY;
         }
         else
         {
@@ -432,6 +440,7 @@ public class VideoSocket extends CommunicationSocket {
         super.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME, "[" + res + "]");
 
     }
+
     void FrameHeader(byte[] buff, FrameData frame)
     {
 

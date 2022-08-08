@@ -12,6 +12,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.SensorManager;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -67,6 +68,8 @@ public class FFMpegFrameView extends View {
     double _scaleXY = 1;
     int _translateX = 0;
     int _translateY = 0;
+    boolean responseResolution = false;
+    boolean stretch = true;
     boolean firstRunAlarm;
     boolean singlePlayer = false;
     int index = 0;
@@ -135,7 +138,7 @@ public class FFMpegFrameView extends View {
     //volatile  boolean is_fullscreen = false;
     ReactContext reactContext;
     int  mLastRotation;
-
+    String clientIp;
     public FFMpegFrameView(Context context, AttributeSet attrs) {
         super(context, attrs);
         reactContext = (ReactContext)getContext();
@@ -164,6 +167,13 @@ public class FFMpegFrameView extends View {
                     }
                 }
         );
+
+        WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        int ipAddress = wm.getConnectionInfo().getIpAddress();
+        clientIp = String.format("%d.%d.%d.%d", (ipAddress & 0xff),(ipAddress >> 8 & 0xff),
+                (ipAddress >> 16 & 0xff),(ipAddress >> 24 & 0xff));
+
+        Log.v("DEBUG_TAG", "relay 2507 FFMpegFrameView constructor this = " + this);
     }
 
     public void  setOrientation( int orient ){
@@ -318,12 +328,18 @@ public class FFMpegFrameView extends View {
                         }
                         event.putArray("value", array);
                     }
+                    else if(value instanceof int[])
+                       {
+                        int[] c_value = (int[])value;
+                        WritableArray array = Arguments.createArray();
+                        for(int i = 0 ; i< c_value.length; i++)
+                        {
+                            array.pushInt(c_value[i]);
+                        }
+                        event.putArray("value", array);
+                       }
                     else
-//                        if(value instanceof SearchAllDayInterval)
-//                        {
-//                            JSONObject.wrap()
-//                        }
-                    event.putInt("value", (int) value);
+                        event.putInt("value", (int) value);
             }
             }
 
@@ -367,14 +383,37 @@ public class FFMpegFrameView extends View {
         {
             // Log.d("GOND", "**DIRECT** onDraw draw bitmap");
             Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
-            // if(DrawBitmap != null) {
-                if (!DrawBitmap.sameAs(emptyBitmap))
+                int originResolutionWidth = DrawBitmap.getWidth();
+                int originResolutionHeight = DrawBitmap.getHeight();    
+                if(socket_handler != null && socket_handler.video_handler != null)
                 {
-                    // Log.d("GOND", "**DIRECT** onDraw bitmap not empty");
+                    originResolutionWidth = socket_handler.video_handler.originResolutionX;
+                    originResolutionHeight = socket_handler.video_handler.originResolutionY;
+                }
+                int width = getWidth();
+                int prewidth = width;
+                int height = getHeight() + 1;
+                int left = 0;
+                if(!stretch)
+                {
+                    width = height == 0 ? width : originResolutionWidth * height/originResolutionHeight;
+                    left = (prewidth - width) / 2;
+                    if(responseResolution && originResolutionWidth >0 && originResolutionHeight > 0)
+                    {
+                        int[] resolution = new int[] {originResolutionWidth, originResolutionHeight};
+                        OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_RESPONSE_RESOLUTION, resolution);
+                        responseResolution = false;
+                    }
+                }
+                else
+                {
+                    responseResolution = true;
+                }
+                if (!DrawBitmap.sameAs(emptyBitmap)) {
                     preDrawBitmap = DrawBitmap;
                     valid_first_frame = true;
                     //Bitmap bmp = i3Global.resizeImage(preDrawBitmap, (int)this._width, (int)this._height, true );
-                    Rect src =   new Rect(0, 0, getWidth(), getHeight());//new Rect(0,0,DrawBitmap.getWidth()-1, DrawBitmap.getHeight()-1);
+                    Rect src =   new Rect(left, 0, width + left, height);//new Rect(0,0,DrawBitmap.getWidth()-1, DrawBitmap.getHeight()-1);
                     //Rect dest = new Rect(0,0, (int)this.img_width, (int)this.img_height);
                     canvas.drawBitmap(preDrawBitmap, null, src, mPaint);
                     //bmp.recycle();
@@ -389,13 +428,12 @@ public class FFMpegFrameView extends View {
 //                        Rect dest = new Rect(0, 0, getWidth(), getHeight());
 //                        canvas.drawBitmap(preDrawBitmap,null, dest, mPaint);
                         //Rect src = new Rect(0,0,DrawBitmap.getWidth(), DrawBitmap.getHeight());
-                        Rect dest = new Rect(0,0,   this.img_width, this.img_height);
+                        Rect dest = new Rect(left, 0, width + left, height);
                         canvas.drawBitmap(preDrawBitmap, null, dest, mPaint);
                     } else {
                         Log.d("GOND", "**DIRECT** onDraw not draw 1");
                     }
                 }
-            // }
         }
         else
         {
@@ -667,7 +705,7 @@ public class FFMpegFrameView extends View {
         if(video_thread == null || socket_handler == null || socket_handler.running == false) {
             this.Server.setLive(false);
             this.Server.setSearchTime(search);
-            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, true, this.ByChannel);
+            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, true, this.ByChannel, this.clientIp);
             socket_handler.setViewDimensions((int)_width, (int)_height);
             socket_handler.setHDMode( HD);
             video_thread = new Thread(socket_handler);
@@ -695,18 +733,45 @@ public class FFMpegFrameView extends View {
         }
 
     }
+    private boolean mockDisFlag = false;
+    private void mockDisconnect() {
+        final Handler handler2 = new Handler(Looper.getMainLooper());
+        final Handler mainHandler = this.handler;
+        handler2.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("2507", "mockDisconnect");
+                if(mainHandler != null)
+                    mainHandler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_DISCONNECTED, null ).sendToTarget();
+                if(socket_handler != null)
+                    socket_handler.CloseSocket();
+                if( video_thread != null && socket_handler != null)
+                {
+                    socket_handler.running = false;
+                    video_thread.interrupt();
+                    socket_handler = null;
+                    video_thread = null;
+                }
+            }
+        }, 8*1000);
+    }
     //public  void  StartLive(int KDVR, String ip, String WanIp, String Name, int port, String serverID, String UserName, String Password, String channel, boolean bychanel)
     public  void  StartLive( boolean HD )
     {
+        Log.d("2507", "StartLive");
         //this.Stop();
         valid_first_frame = false;
         if( video_thread == null || socket_handler == null || socket_handler.running == false) {
             this.Server.setLive(true);
-            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, false, this.ByChannel);
+            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, false, this.ByChannel, this.clientIp);
             socket_handler.setViewDimensions((int)_width, (int)_height);
             socket_handler.setHDMode(HD);
             video_thread = new Thread(socket_handler);
             video_thread.start();
+            if(!mockDisFlag) {
+//                mockDisconnect();
+                mockDisFlag = true;
+            }
         }
         else
         {
@@ -751,6 +816,12 @@ public class FFMpegFrameView extends View {
         } catch (Exception e) {
             Log.e("GOND", "Change HD failed! " + e.getMessage());
         }
+    }
+    public void ViewStretch( boolean isStretch)
+    {
+        Log.i("GOND", "View Stretch " + (isStretch == true ? "true" : "false"));
+        this.stretch = isStretch;
+        this.invalidate();
     }
 
     public void setScaleXY(double scaleXY) {

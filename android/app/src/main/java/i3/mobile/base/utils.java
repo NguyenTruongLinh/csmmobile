@@ -1,5 +1,7 @@
 package i3.mobile.base;
 
+import android.util.Log;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -21,6 +23,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -297,6 +300,17 @@ public class utils {
         result[3] = (byte) (_value);
         return result;
     }
+
+    public static byte[] IntToByteArrayReversed(int _value)
+    {
+        byte[] result = new byte[4];
+        result[3] = (byte) (_value >> 24);
+        result[2] = (byte) (_value >> 16);
+        result[1] = (byte) (_value >> 8);
+        result[0] = (byte) (_value);
+        return result;
+    }
+
     public byte[] CharToByteArray(char _value)
     {
         byte[] result = new byte[2];
@@ -506,6 +520,7 @@ public class utils {
         }
         catch (IOException ioe)
         {
+            Log.d("GOND", "relay WriteBlock IOException ioe = " + ioe);
             return  -1;
         }
     }
@@ -549,5 +564,36 @@ public class utils {
             System.arraycopy(data, 0, buff, Character.BYTES + Integer.BYTES, data.length);
         }
         return buff;
+    }
+
+    public static byte[] notifyAddRelayHeader(byte[] json, boolean needRelayHandshake, String clientIp) {
+        if(needRelayHandshake) {
+            byte[] header = new byte[68];
+            String appName = "CMSMobile";
+//        String IPAddress = this.clientIp;
+            int contentLen = json.length + header.length;
+            byte[] contentLenBytes = utils.IntToByteArrayReversed(contentLen);
+
+//            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " contentLen = " + contentLen);
+
+            byte[] appNameBytes = appName.getBytes(StandardCharsets.UTF_8);
+            byte[] IPAddressBytes = clientIp.getBytes(StandardCharsets.UTF_8);
+
+//            int reversed = utils.ByteArrayOfCToIntJava(contentLenBytes, 0);
+
+//            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " reversed = " + reversed);
+
+            System.arraycopy(contentLenBytes, 0, header, 0, contentLenBytes.length);
+            System.arraycopy(appNameBytes, 0, header, 4, appNameBytes.length);
+            System.arraycopy(IPAddressBytes, 0, header, 24, IPAddressBytes.length);
+
+            byte result[] = new byte[header.length + json.length];
+
+            System.arraycopy(header, 0, result, 0, header.length);
+            System.arraycopy(json, 0, result, header.length, json.length);
+            return result;
+        }else{
+            return json;
+        }
     }
 }

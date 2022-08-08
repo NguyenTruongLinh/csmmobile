@@ -63,6 +63,7 @@ const uint32_t numLayers = 24;
   BOOL _isFullScreen;
   BOOL _rotate;
   BOOL _isHD;
+  BOOL stretch;
   BOOL seekToZeroBeforePlay;
   BOOL onChangeDateSearch;
   int _oldSeekpos;
@@ -92,6 +93,7 @@ const uint32_t numLayers = 24;
     zoomLevel = ZOOM_LEVEL_24H;
     channelsMapping = [NSMutableArray array];
     mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
+    mainDisplayVideo.delegate1 = self;
     // mainDisplayVideo.fullscreenView = 0;
     connectedServerList = [[NSMutableArray alloc] init];
     viewMaskLock = [[NSCondition alloc] init];
@@ -266,7 +268,11 @@ const uint32_t numLayers = 24;
 
 #pragma mark - Native Props
 
-
+-(void)setStretch:(BOOL)value{
+    mainDisplayVideo.stretch = value;
+    [self reactSetFrame:self.frame];
+    [self setNeedsLayout];  
+}
 -(void)setScaleXY:(NSNumber *) scale {
   if([scale floatValue] != mainDisplayVideo.scaleXY){
     mainDisplayVideo.scaleXY = [scale floatValue];
@@ -344,6 +350,7 @@ const uint32_t numLayers = 24;
   chosenDay = nil;
   lastFrameInterval = 0;
   _isHD = NO;
+  stretch= YES;
   firstRunAlarm = NO;
   searchFrameImage = defaultImg;
   
@@ -3418,7 +3425,14 @@ const uint32_t numLayers = 24;
 {
   return self.calendar;
 }
-
+-(void) responseResolution: (NSArray* ) data
+{
+  [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                                  @"msgid": [NSNumber numberWithUnsignedInteger:31],
+                                                                                  @"value": [NSArray arrayWithArray:(data)],
+                                                                                  @"target": self.reactTag
+                                                                                  }];
+}
 @end
 
 #pragma mark - Private Method

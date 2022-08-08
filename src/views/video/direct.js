@@ -47,6 +47,7 @@ import {
   DIRECT_MAX_OLD_FRAME_SKIP,
 } from '../../consts/video';
 import {STREAM_STATUS} from '../../localization/texts';
+import {FORCE_SENT_DATA_USAGE} from '../../stores/types/hls';
 const MAX_ZOOM = 10;
 
 class DirectVideoView extends React.Component {
@@ -66,6 +67,7 @@ class DirectVideoView extends React.Component {
       zoom: 1,
       translateX: 0,
       translateY: 0,
+      marginLeft: 0,
       // isFilterShown: false,
     };
 
@@ -220,7 +222,7 @@ class DirectVideoView extends React.Component {
         this.onNativeMessage
       );
     }
-    const {serverInfo, videoStore} = this.props;
+    const {serverInfo, appStore, videoStore} = this.props;
     // __DEV__ && console.log('DirectStreamingView: ', videoStore.selectedChannel);
 
     if (videoStore.isAuthenticated) {
@@ -249,6 +251,21 @@ class DirectVideoView extends React.Component {
           {...serverInfo}
         );
     }
+    try {
+      this.trackingVideoSource = //'Relay';
+        util.extractModuleNameFromScreenName(
+          appStore.naviService.getPreviousRouteName()
+        ) +
+        '_Relay' +
+        (Platform.OS == 'ios' ? (singlePlayer ? '_single' : '_multi') : '');
+    } catch (e) {
+      __DEV__ && console.log(`direct this.trackingVideoSource e = `, e);
+      this.trackingVideoSource = 'Video_Relay';
+    }
+    __DEV__ &&
+      console.log(
+        `direct this.trackingVideoSource =  ` + this.trackingVideoSource
+      );
 
     // reactions:
     this.initReactions();
@@ -263,7 +280,7 @@ class DirectVideoView extends React.Component {
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }
-    const {serverInfo, singlePlayer} = this.props;
+    const {serverInfo, videoStore, singlePlayer} = this.props;
     if (singlePlayer && isAlive(serverInfo)) {
       serverInfo.setStreamStatus({
         isLoading: false,
@@ -275,6 +292,21 @@ class DirectVideoView extends React.Component {
     this.stop(true);
     this._isMounted = false;
     this.reactions.forEach(unsubsribe => unsubsribe());
+    __DEV__ &&
+      console.log(
+        `0727 componentWillUnmount videoStore.directConnection.isRelay = `,
+        videoStore.directConnection.isRelay
+      );
+    if (videoStore.directConnection.isRelay) {
+      __DEV__ &&
+        console.log(`0727 componentWillUnmount FORCE_SENT_DATA_USAGE `);
+      videoStore.directConnection.updateDataUsageRelay(
+        FORCE_SENT_DATA_USAGE,
+        videoStore.timezone,
+        {},
+        'componentWillUnmount'
+      );
+    }
   }
 
   refreshVideo = isStart => {
@@ -503,6 +535,20 @@ class DirectVideoView extends React.Component {
             }
           }
         ),
+        // reaction(
+        //   () => self.directConnection.relayInfo,
+        //   (relayInfo, previousValue) => {
+        //     __DEV__ &&
+        //       console.log(
+        //         '2507 DirectStreamingView relayInfo connectable changed: ',
+        //         relayInfo,
+        //         ' previousValue = ',
+        //         previousValue
+        //       );
+        //     if (relayInfo && previousValue)
+        //       setTimeout(() => this.setNativePlayback(), 500);
+        //   }
+        // ),
       ];
     }
 
@@ -1057,6 +1103,35 @@ class DirectVideoView extends React.Component {
           );
         setTimeout(() => this.reconnect(false), 1000);
         break;
+      case NATIVE_MESSAGE.RELAY_HANDSHAKE_FAILED:
+        snackbarUtil.showToast(
+          STREAM_STATUS.RELAY_HANDSHAKE_FAILED,
+          cmscolors.Danger
+        );
+        break;
+      case NATIVE_MESSAGE.RELAY_DISCONNECTED:
+        snackbarUtil.showToast(
+          STREAM_STATUS.RELAY_DISCONNECTED,
+          cmscolors.Danger
+        );
+        videoStore.getDirectInfosInterval();
+        break;
+      case NATIVE_MESSAGE.RELAY_DATA_USAGE:
+        this.onDataUsageUpdate(value);
+      case NATIVE_MESSAGE.RESPONSE_RESOLUTION:
+        if (value != null) {
+          let width = value[0];
+          let height = value[1];
+          let containerWidth = this.state.width;
+          let containerHeight = this.state.height;
+          let scale =
+            height < containerHeight
+              ? height / containerHeight
+              : containerHeight / height;
+          let left = (containerWidth - width * scale) / 2;
+          if (left > 0) this.setState({marginLeft: left});
+        }
+        break;
       case NATIVE_MESSAGE.SERVER_DISCONNECTED:
         // dongpt: todo?
         break;
@@ -1090,6 +1165,31 @@ class DirectVideoView extends React.Component {
       default:
         break;
     }
+  };
+
+  onDataUsageUpdate = segmentLoad => {
+    const {streamData, videoStore, singlePlayer} = this.props;
+    __DEV__ && console.log(`onDataUsageUpdate segmentLoad = `, segmentLoad);
+    videoStore.directConnection.updateDataUsageRelay(
+      segmentLoad,
+      videoStore.timezone,
+      {
+        KChannel: 'N/A',
+        ViewMode: videoStore.isLive ? 0 : 1,
+        Source: 'MP4_CMSMobile_' + this.trackingVideoSource, // + '_NEW_' + Platform.OS,
+      },
+      'onDataUsageUpdate'
+    );
+    //   self.targetUrl.updateDataUsageByURL(
+    //     bitrate,
+    //     timezone,
+    //     {
+    //       KChannel: self.kChannel,
+    //       ViewMode: self.isLive ? 0 : 1,
+    //       Source: 'MP4_CMSMobile_' + source, // + '_NEW_' + Platform.OS,
+    //     },
+    //     debug
+    //   );
   };
 
   onChangeSearchDate = () => {
@@ -1193,6 +1293,11 @@ class DirectVideoView extends React.Component {
       //     }, 2000);
       //   }
     }
+  };
+
+  onStretch = isStretch => {
+    this.setNative({stretch: isStretch});
+    __DEV__ && console.log('GOND Set native stretch : ', isStretch);
   };
 
   setPlayStatus = params => {
@@ -1358,6 +1463,7 @@ class DirectVideoView extends React.Component {
       return;
     }
 
+    videoStore.setEnableStretch(true);
     this.lastTimestamp = timestamp;
 
     if (value) {
@@ -1491,8 +1597,8 @@ class DirectVideoView extends React.Component {
     } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
-    // __DEV__ &&
-    //   console.log('GOND direct render channel: ', serverInfo.channelName);
+    __DEV__ &&
+      console.log('GOND with height: ', this.state.width, this.state.height);
 
     return singlePlayer ? (
       <GestureDetector gesture={this.composed}>
@@ -1508,7 +1614,10 @@ class DirectVideoView extends React.Component {
             isBackground={true}
             dataSource={serverInfo.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
-            resizeMode="cover"
+            visible={!videoStore.enableStretch}
+            resizeMode={
+              !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
+            }
             styleImage={{width: width, height: height}}
             dataCompleteHandler={(param, data) =>
               serverInfo.channel && serverInfo.channel.saveSnapshot(data)
@@ -1523,13 +1632,28 @@ class DirectVideoView extends React.Component {
                 styles.channelInfo,
                 {
                   top: videoStore.isFullscreen ? '10%' : 0,
+                  marginLeft:
+                    !videoStore.stretch && singlePlayer
+                      ? this.state.marginLeft
+                      : 0,
                 },
               ]}>
               {serverInfo.channelName ?? 'Unknown'}
             </Text>
             <View style={styles.statusView}>
               <View style={styles.textContainer}>
-                <Text style={[styles.textMessage]}>{connectionStatus}</Text>
+                <Text
+                  style={[
+                    styles.textMessage,
+                    {
+                      marginLeft:
+                        !videoStore.stretch && singlePlayer
+                          ? this.state.marginLeft
+                          : 0,
+                    },
+                  ]}>
+                  {connectionStatus}
+                </Text>
               </View>
               {isLoading && (
                 <ActivityIndicator
@@ -1570,6 +1694,7 @@ class DirectVideoView extends React.Component {
                       // translateX={50}
                       // translateY={50}
                       scaleXY={this.state.zoom}
+                      stretch={this.state.stretch}
                       translateX={this.state.translateX}
                       translateY={this.state.translateY}
                     />
@@ -1647,4 +1772,4 @@ const controlStyles = StyleSheet.create({
     height: '100%',
   },
 });
-export default inject('videoStore')(observer(DirectVideoView));
+export default inject('videoStore', 'appStore')(observer(DirectVideoView));

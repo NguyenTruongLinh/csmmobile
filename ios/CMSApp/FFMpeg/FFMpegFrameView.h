@@ -111,6 +111,7 @@ typedef enum
 @property(nonatomic, assign) NSDictionary *seekpos;
 @property(nonatomic, assign) NSString *src;
 @property(nonatomic, assign) BOOL hd;
+@property(nonatomic, assign) BOOL stretch;
 @property(nonatomic, assign) BOOL refresh;
 @property(nonatomic, assign) BOOL disconnect;
 @property (nonatomic, copy) RCTDirectEventBlock onFFMPegFrameChange;

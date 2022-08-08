@@ -12,6 +12,10 @@
 
 @class ImcScreenDisplay;
 
+@protocol ImcScreenDisplayDelegate <NSObject>
+-(void)responseResolution : (NSArray* ) resolution;
+@end
+
 @interface ImcMainDisplayVideoView : NSObject {
   
   int maxDisplayChannels;
@@ -47,10 +51,13 @@
 @property (readwrite) int fullscreenView;
 @property (readwrite) int playerWidth;
 @property (readwrite) int playerHeight;
+@property (readwrite) BOOL stretch;
+@property (readwrite) BOOL responseResolution;
 @property (readwrite) float scaleXY;
 @property (readwrite) int translateX;
 @property (readwrite) int translateY;
 @property (nonatomic, weak) id<i3ProcessConnectionDelegate> delegate;
+@property (nonatomic, readwrite) id <ImcScreenDisplayDelegate> delegate1;
 @property IMC_DISPLAY_MODE displayMode;
 @property (nonatomic, readwrite) CGFloat scaleValue;
 @property (readwrite) int selectedView;
