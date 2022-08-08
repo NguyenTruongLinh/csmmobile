@@ -613,44 +613,15 @@ export const VideoModel = types
       //     (self.nvrPassword && self.nvrPassword.length == 0))
       // );
     },
-    // <<<<<<< HEAD
-    //     // get canDisplayChannels() {
-    //     //   return (
-    //     //     (self.cloudType != CLOUD_TYPE.DIRECTION &&
-    //     //       self.cloudType != CLOUD_TYPE.DEFAULT) ||
-    //     //     // self.isAuthenticated
-    //     //     self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED
-    //     //   );
-    // =======
     get canDisplayChannels() {
       return (
         (self.cloudType != CLOUD_TYPE.DIRECTION &&
           self.cloudType != CLOUD_TYPE.RS &&
           self.cloudType != CLOUD_TYPE.DEFAULT) ||
         // self.isAuthenticated
-        self.authenticationState != AUTHENTICATION_STATES.AUTHENTICATED
+        self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED
       );
     },
-    // get directStreams() {
-    //   return self.allChannels
-    //     .filter(ch =>
-    //       ch.name.toLowerCase().includes(self.channelFilter.toLowerCase())
-    //     )
-    //     .map(ch => ({
-    //       ...self.directConnection,
-    //       channelNo: ch.channelNo,
-    //       channels: '' + ch.channelNo,
-    //       channelName: ch.name,
-    //       kChannel: ch.kChannel,
-    //       byChannel: true,
-    //       interval: DAY_INTERVAL,
-    //       // seekpos: self.isLive || !self.timelinePos ? undefined : {
-    //       //   pos: self.timelinePos,
-    //       //   HD: self.hdMode,
-    //       // }
-    //     }));
-    // >>>>>>> origin/hai_RS_handle_session_id
-    // },
     get selectedChannelIndex() {
       // return self.allChannels
       return self.displayChannels
@@ -2289,16 +2260,13 @@ export const VideoModel = types
         }
 
         let result = true;
-        // <<<<<<< HEAD
         __DEV__ && console.log('GOND get cloud type res = ', res, res.Type);
         if (typeof res === 'boolean') {
-          // =======
           //         __DEV__ && console.log('GOND get cloud type res = ', res);
           //         if (typeof res === 'object') {
           //           self.cloudType = res.Type;
           //           self.apiVersion = res.APIVersion == null ? '' : res.APIVersion;
           //         } else if (typeof res === 'boolean') {
-          // >>>>>>> origin/hai_RS_handle_session_id
           self.cloudType = res === true ? CLOUD_TYPE.HLS : CLOUD_TYPE.DIRECTION;
         } else if (typeof res === 'number') {
           self.cloudType =
