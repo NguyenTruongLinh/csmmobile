@@ -16,6 +16,8 @@ import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
 // import Modal from 'react-native-modal';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+import Orientation from 'react-native-orientation-locker';
+import {StatusBar} from 'react-native';
 
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
@@ -43,7 +45,7 @@ import {
   AUTHENTICATION_STATES,
 } from '../../consts/video';
 import ROUTERS from '../../consts/routes';
-import {MODULE_PERMISSIONS} from '../../consts/misc';
+import {MODULE_PERMISSIONS, OrientationType} from '../../consts/misc';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
@@ -104,6 +106,9 @@ class LiveChannelsView extends React.Component {
     // this.stopAll();
     // videoStore.setStreamReadyCallback(null);
     this.reactions && this.reactions.forEach(unsub => unsub());
+
+    Orientation.removeDeviceOrientationListener(this.onOrientationChange);
+    Orientation.lockToPortrait();
   }
 
   async componentDidMount() {
@@ -148,7 +153,54 @@ class LiveChannelsView extends React.Component {
     this.initReactions();
     this.getChannelsInfo();
     this.authenRef && this.authenRef.forceUpdate();
+
+    Orientation.getDeviceOrientation(orientation => {
+      if (orientation != OrientationType.PORTRAIT) {
+        this.onOrientationChange(orientation);
+      }
+    });
+
+    Orientation.addDeviceOrientationListener(this.onOrientationChange);
+    Orientation.unlockAllOrientations();
   }
+
+  onOrientationChange = async orientation => {
+    const {videoStore} = this.props;
+
+    let isFullscreen = false;
+    switch (orientation) {
+      case OrientationType.PORTRAIT:
+        Orientation.lockToPortrait();
+        break;
+      case OrientationType.LANDSCAPE_LEFT:
+        Orientation.lockToLandscapeLeft();
+        isFullscreen = true;
+        break;
+      case OrientationType.LANDSCAPE_RIGHT:
+        Orientation.lockToLandscapeRight();
+        isFullscreen = true;
+        break;
+      case OrientationType.LANDSCAPE:
+        Orientation.lockToLandscape();
+        isFullscreen = true;
+        break;
+      case OrientationType.PORTRAIT_UPSIDE_DOWN:
+        Orientation.lockToPortraitUpsideDown();
+        break;
+      default:
+        return;
+    }
+    this.updateHeader(isFullscreen);
+    StatusBar.setHidden(isFullscreen);
+    this.props.appStore.hideBottomTabs(isFullscreen);
+    return;
+  };
+  updateHeader = isFullscreen => {
+    const {navigation} = this.props;
+    navigation.setOptions({
+      headerShown: !isFullscreen,
+    });
+  };
 
   initReactions = () => {
     const {videoStore} = this.props;
