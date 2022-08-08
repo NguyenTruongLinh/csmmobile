@@ -522,6 +522,10 @@ public class Constant
 		public static final int  MOBILE_SERVER_MESSAGE = 25;
 		public static final int  MOBILE_SHOULD_RECONNECT = 26;
 		public static final int  MOBILE_SERVER_DISCONNECTED = 27;
+		public static final int  MOBILE_RELAY_HANDSHAKE_FAILED = 28;
+		public static final int  MOBILE_RELAY_DISCONNECTED = 29;
+		public static final int  MOBILE_RELAY_UPDATE_DATA_USAGE = 30;
+		public static final int  MOBILE_RESPONSE_RESOLUTION = 31;
 
 		public static final int MOBILE_FRAME_BUFFER		= 1000;
 		//public static final char WIFI_NOT_SUPPORTED 						= 6;

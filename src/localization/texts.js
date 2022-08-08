@@ -114,6 +114,8 @@ export const VIDEO = {
   WRONG_CLOUD_TYPE: 'Cloud type config is incorrect, please contact support.',
   SNAPSHOT_TAKEN: 'The snapshot has been moved to photo folder.',
   NO_NVR_PERMISSION: "You don't have permission",
+  WRONG_RELAY_SERVER_INFO:
+    'Relay server info is incorrect, please contact support.',
 };
 
 export const STREAM_STATUS = {
@@ -137,6 +139,8 @@ export const STREAM_STATUS = {
   WRONG_SERVER: 'Wrong server id.',
   PORT_ERROR: 'Video port error.',
   CONNECTION_ERROR: 'Connection Failed.',
+  RELAY_HANDSHAKE_FAILED: 'Relay server could not find Pro server.',
+  RELAY_DISCONNECTED: 'Pro is unassigned from relay server.',
 };
 
 export const ALARM = {

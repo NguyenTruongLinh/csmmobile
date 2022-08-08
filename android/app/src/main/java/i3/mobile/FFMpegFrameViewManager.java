@@ -76,7 +76,6 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         if(heightScreen >= 0)
             view.SetHeight( heightScreen);
     }
-
     @ReactProp(name = "pause")
     public void setPause(FFMpegFrameView view, @Nullable boolean pause){
         view.PauseVideo();
@@ -236,6 +235,12 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         if(HDMode != null)
             view.ViewHD(HDMode);
     }
+
+    @ReactProp(name = "stretch")
+    public void setStretch(FFMpegFrameView view,@Nullable Boolean isStretch){
+        Log.i("GOND", "setStretch enter");
+        view.ViewStretch(isStretch);
+    }
     
     @ReactProp(name = "scaleXY")
     public void setScaleXY(FFMpegFrameView view, double scaleXY){
@@ -282,6 +287,16 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         server.userName = args.getString("userName"); //UserName;
         server.pass = args.isNull("password") ? "" : args.getString("password"); //Password;
         server.ID = args.getInt("kDVR");// KDVR;
+        server.haspLicense = args.getString("haspLicense");
+        server.relayConnectable = args.getBoolean("relayConnectable");
+        server.relayIp = args.getString("relayIp");
+        server.relayPort = args.getInt("relayPort");
+        server.isRelay = args.getBoolean("isRelay");
+        Log.d("GOND", "GetServerInfo server.isRelay: " + server.isRelay +
+                ", server.haspLicense: " + server.haspLicense +
+                ", server.relayConnectable: " + server.relayConnectable +
+                ", server.relayIp: " + server.relayIp +
+                ", server.relayPort: " + server.relayPort);
         return server;
     }
 

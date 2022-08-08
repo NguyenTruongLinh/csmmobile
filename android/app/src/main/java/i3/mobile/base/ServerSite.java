@@ -33,6 +33,11 @@ public class ServerSite
     boolean isLive = true;
     ServerTimeZone TimeZone = null;
     SearchTimeData SearchTime;
+    public String haspLicense;
+    public boolean isRelay = false;
+    public boolean relayConnectable = false;
+    public String relayIp = "";
+    public int relayPort = -1;
     public SearchTimeData getSearchTime(){ return SearchTime;}
     public void  setSearchTime(SearchTimeData val){ SearchTime = val;}
     public ServerTimeZone getTimeZone() {return  TimeZone;}

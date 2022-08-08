@@ -20,6 +20,7 @@ const iFFMpegFrameView = {
     seekpos: PropTypes.string,
     src: PropTypes.string,
     hdmode: PropTypes.number,
+    stretch: PropTypes.boolean,
     onFFMPegFrameChange: PropTypes.func,
     scaleXY: PropTypes.number,
     scaleXYZ: PropTypes.number,
