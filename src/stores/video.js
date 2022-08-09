@@ -2319,7 +2319,7 @@ export const VideoModel = types
         }
         return true;
       }),
-      saveActiveChannels: flow(function* saveActiveChannels(channels) {
+      saveActiveChannels: flow(function* (channels) {
         if (self.kDVR == null) return false;
         if (channels.length > self.maxReadyChannels) {
           snackbarUtil.onError(
@@ -2341,7 +2341,8 @@ export const VideoModel = types
           );
           snackbarUtil.handleSaveResult(result);
           if (result && !result.error) {
-            yield self.getActiveChannels();
+            // yield self.getActiveChannels();
+            yield self.getDisplayingChannels(true);
           }
         } catch (err) {
           __DEV__ && console.log('GOND save active channels error: ', err);
