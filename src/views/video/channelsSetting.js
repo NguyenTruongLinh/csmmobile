@@ -15,7 +15,6 @@ import {reaction} from 'mobx';
 
 import CMSImage from '../../components/containers/CMSImage';
 import {Icon, IconCustom} from '../../components/CMSStyleSheet';
-import InputTextIcon from '../../components/controls/InputTextIcon';
 import Button from '../../components/controls/Button';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
@@ -58,7 +57,7 @@ class ChannelsSettingView extends Component {
     videoStore.setShouldShowVideoMessage(false);
     this.setHeader(false);
     if (!videoStore.allChannels || videoStore.allChannels.length == 0) {
-      const result = await videoStore.getDisplayingChannels();
+      const result = await videoStore.getDisplayingChannels(true);
       if (!result) return;
       this.setState({
         selectedChannels: videoStore.activeChannelNos ?? [],
@@ -334,7 +333,7 @@ class ChannelsSettingView extends Component {
             renderItem={this.renderRow}
             data={gridData}
             keyExtractor={(item, index) => 'chrow_' + index}
-            onRefresh={videoStore.getActiveChannels}
+            onRefresh={() => videoStore.getDisplayingChannels(true)}
             refreshing={loading}
           />
         </View>
