@@ -8,6 +8,7 @@ import {
   Text,
   // TouchableOpacity,
   AppState,
+  StatusBar,
   // BackHandler,
   ImageBackground,
 } from 'react-native';
@@ -17,7 +18,6 @@ import {inject, observer} from 'mobx-react';
 // import Modal from 'react-native-modal';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import Orientation from 'react-native-orientation-locker';
-import {StatusBar} from 'react-native';
 
 import DirectVideoView from './direct';
 import HLSStreamingView from './hls';
