@@ -69,6 +69,8 @@ public class FFMpegFrameView extends View {
     int _translateX = 0;
     int _translateY = 0;
     boolean responseResolution = false;
+    int oldOriginWidth = 0;
+    int oldOriginHeight = 0;
     boolean stretch = true;
     boolean firstRunAlarm;
     boolean singlePlayer = false;
@@ -398,11 +400,13 @@ public class FFMpegFrameView extends View {
                 {
                     width = height == 0 ? width : originResolutionWidth * height/originResolutionHeight;
                     left = (prewidth - width) / 2;
-                    if(responseResolution && originResolutionWidth >0 && originResolutionHeight > 0)
+                    if(responseResolution || (originResolutionWidth != oldOriginWidth && originResolutionHeight != oldOriginHeight))
                     {
                         int[] resolution = new int[] {originResolutionWidth, originResolutionHeight};
                         OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_RESPONSE_RESOLUTION, resolution);
                         responseResolution = false;
+                        oldOriginWidth = originResolutionWidth;
+                        oldOriginHeight = originResolutionHeight;
                     }
                 }
                 else

@@ -702,11 +702,13 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
               int width = view.frame.size.height / screen.resolutionHeight * screen.resolutionWidth;
               int left = (fullwidth - width)/2;
               displayRect = CGRectMake(left, 0, width + 1, view.frame.size.height);
-              if(_responseResolution && screen.resolutionWidth >0 && screen.resolutionHeight > 0)
+              if(_responseResolution || (screen.resolutionWidth != _oldOriginWidth && screen.resolutionHeight != _oldOriginHeight))
               {
                   NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:screen.resolutionWidth], [NSNumber numberWithInt:screen.resolutionHeight],nil];
                   [self.delegate1 responseResolution : resolution];
                   _responseResolution = false;
+                  _oldOriginWidth
+                  _oldOriginHeight = screen.resolutionHeight;
               }
           }
           if (screen.displayImage.CGImage) 

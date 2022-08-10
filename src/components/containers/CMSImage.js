@@ -31,6 +31,7 @@ class CMSImage extends React.Component {
     twoStepsLoading: PropTypes.bool,
     isBackground: PropTypes.bool,
     showLoading: PropTypes.bool,
+    visible: PropTypes.bool,
     // dataSource: PropTypes.string,
     // defaultImage: PropTypes.object,
   };
@@ -41,6 +42,7 @@ class CMSImage extends React.Component {
     twoStepsLoading: false,
     isBackground: false,
     showLoading: true,
+    visible: true,
     // dataSource: PropTypes.string,
     // defaultImage: PropTypes.object,
   };
@@ -193,6 +195,7 @@ class CMSImage extends React.Component {
       isBackground,
       children,
       showLoading,
+      visible,
     } = this.props;
     const {isLoading, image} = this.state;
     // __DEV__ && console.log('GOND CMSImage render: ', isLoading, image);
@@ -220,7 +223,7 @@ class CMSImage extends React.Component {
         ) : isBackground ? (
           <ImageBackground
             style={styleImage}
-            source={image}
+            source={visible ? image : null}
             resizeMode={resizeMode}
             children={children}
           />
