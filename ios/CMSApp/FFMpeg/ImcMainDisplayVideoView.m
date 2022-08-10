@@ -707,7 +707,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
                   NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:screen.resolutionWidth], [NSNumber numberWithInt:screen.resolutionHeight],nil];
                   [self.delegate1 responseResolution : resolution];
                   _responseResolution = false;
-                  _oldOriginWidth
+                  _oldOriginWidth = screen.resolutionWidth;
                   _oldOriginHeight = screen.resolutionHeight;
               }
           }
