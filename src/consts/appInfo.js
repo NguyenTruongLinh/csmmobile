@@ -1,6 +1,6 @@
 const APP_INFO = {
   Title: 'Cloud Managed Services',
-  Name: 'CMS Mobile 3.1',
+  Name: 'CMS Mobile 3.2',
   Version: '3.2.0.1',
   BuiltDate: 'August 12, 2022',
   CopyRight: 'Copyright © 2022 i3 International Inc.',
