@@ -82,6 +82,7 @@ const uint32_t numLayers = 24;
 @synthesize connectedServers, mainDisplayVideo, timer, isRotate, videoPlayerStatus, currentServer, chosenServerIndex, lastFrameInterval, mainViewRect, mainViewFullRect, currentSelectedFullScreenChannel, dateIntervalList, doesTodayHasData, chosenDay, chosenChannelIndex, channelsSearchDictionary, searchingDateInterval, channelListCollectonView, calTimezone, zoomLevel, calendar, searchFrameImage, lastResumeTime, m_dayType, hourSpecialDST, firstRunAlarm;
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher{
+	
   if((self = [super init])){
     _w = 0;
     _h = 0;
@@ -157,12 +158,14 @@ const uint32_t numLayers = 24;
 #pragma React View Management
 
 - (void)removeFromSuperview {
+	
   [super removeFromSuperview];
   [mainDisplayVideo remoteAllLayers];
   //NSLog(@"Shark mainDisplayVideo remoteAllLayers");
 }
 
 - (void)setChannels:(NSString *)value{
+	
   // NSLog(@"GOND_setter setChannels: %@", value);
   _channels = value;
   channelList = [_channels componentsSeparatedByString:@","];
@@ -183,43 +186,53 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setByChannel:(BOOL)value{
+	
   _byChannel = value;
 }
 
 -(void)setIsSearch:(BOOL)value{
+	
   _isSeacrh = value;
 }
 
 -(void)setIsHD:(BOOL)value{
+	
   _isHD = value;
 }
 
 -(void)setOnChangeDateSearch:(BOOL)value{
+	
   onChangeDateSearch = value;
 }
 
 -(void)setIsFullScreen:(BOOL)value{
+	
   _isFullScreen = value;
 }
 
 -(void)setDateTimeSearch:(NSDate* )value{
+	
   _dateTimeSearch = value;
 }
 
 -(void)setDateTimeRulerDST:(NSDate* )value{
+	
   _dateTimeRulerDST = value;
 }
 
 -(void)setInterval:(NSNumber* )value{
+	
   _interval = value;
 }
 
 -(void)checkIsSearch{
+	
   AppDelegate* appdelegate = (AppDelegate* )[[UIApplication sharedApplication] delegate];
   appdelegate._isSeacrh = _isSeacrh;
 }
 
 - (void)reactSetFrame:(CGRect)frame{
+	
   CGRect newFrame = frame;
   if(newFrame.size.height != [_h doubleValue])
     newFrame.size.height = [_h doubleValue];
@@ -237,6 +250,7 @@ const uint32_t numLayers = 24;
 
 -(CGRect)getScreenBoundsForOrientation:(UIInterfaceOrientation)_orientation
 {
+	
   UIScreen *screen = [UIScreen mainScreen];
   CGRect fullScreenRect = screen.bounds; //implicitly in Portrait orientation.
   
@@ -253,14 +267,17 @@ const uint32_t numLayers = 24;
 }
 
 - (CGRect) CGRectSetWidth:(CGRect) rect width:(CGFloat)width{
+	
   return CGRectMake(rect.origin.x, rect.origin.y, width, rect.size.height);
 }
 
 - (CGRect) CGRectSetHeight:(CGRect) rect height:(CGFloat)height{
+	
   return CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, height);
 }
 
 - (CGRect) CGRectReset:(CGRect) rect width:(CGFloat)width height:(CGFloat)height{
+	
   return CGRectMake(rect.origin.x, rect.origin.y, width, height);
 }
 
@@ -268,6 +285,7 @@ const uint32_t numLayers = 24;
 
 
 -(void)setScaleXY:(NSNumber *) scale {
+	
   if([scale floatValue] != mainDisplayVideo.scaleXY){
     mainDisplayVideo.scaleXY = [scale floatValue];
     [self reactSetFrame:self.frame];
@@ -276,6 +294,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setTranslateX:(NSNumber *)translatex {
+	
   if([translatex intValue] != mainDisplayVideo.translateX){
     mainDisplayVideo.translateX = [translatex intValue];
     [self reactSetFrame:self.frame];
@@ -284,6 +303,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setTranslateY:(NSNumber *)translatey {
+	
   if([translatey intValue] != mainDisplayVideo.translateY){
     mainDisplayVideo.translateY = [translatey intValue];
     [self reactSetFrame:self.frame];
@@ -292,6 +312,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setWidth:(NSNumber *)width {
+	
   if(width != _w){
     _w = [width copy];
     mainDisplayVideo.playerWidth = [width intValue];
@@ -301,6 +322,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setHeight:(NSNumber *)height {
+	
   if(height != _h){
     _h = [height copy];
     mainDisplayVideo.playerHeight = [height intValue];
@@ -310,6 +332,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setFirstrun:(BOOL)firstrun{
+	
   NSLog(@"firstrun: %@",firstrun ? @"YES" : @"NO");
   if(firstRunAlarm != firstrun){
     firstRunAlarm = firstrun;
@@ -317,6 +340,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setSinglePlayer:(BOOL)singlePlayer{
+	
   // NSLog(@"GOND_setter singlePlayer: %@",singlePlayer ? @"YES" : @"NO");
   if(_isSingle != singlePlayer){
     _isSingle = singlePlayer;
@@ -335,6 +359,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)resetParam{
+	
   [connectedServerList removeObject:currentServer];
   self.layer.contents = nil;
   //NSLog(@"Shark removeFromSuperview");
@@ -360,6 +385,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setStartplayback:(NSDictionary *)startplayback {
+	
 //  [self resetParam];
 //  [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
   if(startplayback.count == 0){
@@ -472,6 +498,7 @@ const uint32_t numLayers = 24;
 }
 
 -(ImcConnectionServer *)setConnectionServer: (NSDictionary *)server{
+	
   
   ImcConnectedServer* _server = [[ImcConnectedServer alloc] init];
   NSString* _server_addr = [self get_obj:server for_key:@"serverIP"];
@@ -501,11 +528,22 @@ const uint32_t numLayers = 24;
   [_server.groupNames addObject:@"All servers"];
   [_server.groupNames addObject:_server.groupName];
   
+  
+  _server.isRelay = [[self get_obj:server for_key:@"isRelay"] boolValue];
+  if(_server.isRelay) {
+    _server.haspLicense = [self get_obj:server for_key:@"haspLicense"];
+    _server.relayIp = [self get_obj:server for_key:@"relayIp"];
+    _server.relayPort = [[self get_obj:server for_key:@"relayPort"] integerValue];
+    _server.relayConnectable = [self get_obj:server for_key:@"relayConnectable"];
+    NSLog(@"0108 setConnectionServer haspLicense = %@, relayIp = %@, relayPort = %ld, isRelay = %s, relayConnectable = %s", _server.haspLicense, _server.relayIp, (long)_server.relayPort, _server.isRelay ? "T" : "F", _server.relayConnectable ? "T" : "F");
+  }
+  
   return _server;
 }
 
 -(void)invalidateIdleTimer
 {
+	
   if (timer) {
     [timer invalidate];
     timer = nil;
@@ -514,6 +552,7 @@ const uint32_t numLayers = 24;
 
 - (void)disconnectServers:(NSArray*)serverList
 {
+	
   [controllerThread disconnectServers:serverList];
   
   NSMutableArray* deletedServer = [NSMutableArray array];
@@ -542,6 +581,7 @@ const uint32_t numLayers = 24;
 
 -(void)updateServerDisconnectState:(ImcConnectedServer *)server
 {
+	
   for(ImcConnectedServer* _server in connectedServerList)
   {
     if( [server.server_address isEqualToString:_server.server_address] &&
@@ -554,6 +594,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setPause:(BOOL)pause{
+	
   //Set background video by image last frame if not set after about 5 send keepalive background return no image content
   UIGraphicsBeginImageContext(self.bounds.size);
   [self.layer renderInContext:UIGraphicsGetCurrentContext()];
@@ -630,6 +671,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setDisconnect:(BOOL)disconnect {
+	
   // NSLog(@"GOND: ******* on disconnect: %d", disconnect);
   // if(disconnect){
   NSLog(@"GOND: ******* on disconnect ******");
@@ -674,6 +716,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setRefresh:(BOOL)refresh {
+	
   if(refresh){
     // NSLog(@"GOND: $$$$$$$ on refresh: %d", refresh);
     videoPlayerStatus = STATE_PAUSE;
@@ -691,6 +734,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setStop:(BOOL)stop{
+	
   if(stop){
     videoPlayerStatus = STATE_STOP;
     if(connectedServerList.count > 0)
@@ -714,6 +758,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setSeekpos:(NSDictionary *)seekpos{
+	
   if(seekpos.count == 0){
     return;
   }
@@ -740,6 +785,7 @@ const uint32_t numLayers = 24;
 }
   
 -(void)SeekPos:(NSNumber* )interval{
+	
   if (chosenChannelIndex < dateIntervalList.count && chosenChannelIndex >= 0) {
     ImcDateInterval* chosenDayInterval = [dateIntervalList objectAtIndex:chosenChannelIndex];
     ImcTimeInterval* lastTi = [chosenDayInterval.timeInterval lastObject];
@@ -871,6 +917,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)orientationChanged{
+	
   if([[UIDevice currentDevice] orientation] != self.currentDeviceOrientation)
   {
     self.currentDeviceOrientation = [[UIDevice currentDevice] orientation];
@@ -917,6 +964,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setFullscreen:(int)fullscreen{
+	
  
   switch (fullscreen) {
     case 270:
@@ -963,6 +1011,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setHdmode:(BOOL)hdmode{
+	
   NSLog(@"GOND HDMode start");
   if (mainDisplayVideo.fullscreenView >= 0 && mainDisplayVideo.fullscreenView < [mainDisplayVideo getDisplayView].count) {
     NSLog(@"GOND HDMode entered");
@@ -1006,6 +1055,7 @@ const uint32_t numLayers = 24;
 #pragma mark - Handle delegate
 - (NSInteger)handleResponseMessage:(IMC_MSG_BASE)messageId fromView:(UIView *)sender withData:(NSObject *)responseData
 {
+	
   switch (messageId) {
     case IMC_MSG_LIVE_VIEW_START_VIDEO:
       [controllerThread startTransferingVideo];
@@ -1492,6 +1542,7 @@ const uint32_t numLayers = 24;
 
 -(void)disableResumeMode
 {
+	
   if (connectedServerList.count == 0) {
     for (ImcScreenDisplay* screen in [self.mainDisplayVideo getDisplayScreens]) {
       [self.mainDisplayVideo resetScreen:screen.screenIndex];
@@ -1523,6 +1574,7 @@ const uint32_t numLayers = 24;
 
 -(void)updateDataDateList:(NSTimeZone*)serverTimeZone
 {
+	
   if (currentServer)
   {
     m_numHoursPerDay = HoursPerDay;
@@ -1593,6 +1645,7 @@ const uint32_t numLayers = 24;
 }
 
 - (void)updateViewForViewIndex{
+	
   dispatch_async(dispatch_get_main_queue(), ^{
     //NSLog(@"Shark setNeedsDisplay on updateViewForView");
     [m_videoLayer setNeedsDisplay];
@@ -1665,6 +1718,7 @@ const uint32_t numLayers = 24;
 
 -(void)addThumbnailImage:(DisplayedVideoFrame*)videoFrame
 {
+	
   NSArray*allKeys = [channelsSearchDictionary allKeys];
   NSMutableArray* channelListNeedToDisplay = [NSMutableArray array];
   NSInteger sourceIndex = -1;
@@ -1723,6 +1777,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)SearchMode{
+	
   [controllerThread stopTransferingVideo];
   [self invalidateIdleTimer];
   [decoderThread setVideoMode:NO_VIDEO];
@@ -1796,6 +1851,7 @@ const uint32_t numLayers = 24;
 
 -(BOOL)noRecordDataDay
 {
+	
   bool noRecordedData = (currentServer == nil || currentServer.availableDataDateList.count ==0);// (dayListInterval==NULL || dayListInterval.count==0);
   if(noRecordedData)
   {
@@ -1810,6 +1866,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)onChangeSearchDate{
+	
   NSDate* chosenDay = _dateTimeSearch;
   NSCalendar* serverCalendar = [[NSCalendar currentCalendar] copy];
   
@@ -1826,6 +1883,7 @@ const uint32_t numLayers = 24;
 
 -(void)fullScreenSearchMode:(NSInteger)channelIndex
 {
+	
   if(currentSelectedFullScreenChannel == -1)
   {
     [self handleResponseMessage:IMC_MSG_SEARCH_RESET_DECODER_FOR_SEARCH fromView:self withData:nil];
@@ -1903,11 +1961,13 @@ const uint32_t numLayers = 24;
 
 -(void)startVideo
 {
+	
   [mainDisplayVideo startUpdateFrameRateTimer];
 }
 
 - (int)handleCommand:(NSInteger)command :(id)parameter
 {
+	
   switch (command) {
     case IMC_CMD_CONNECTION_CONNECT_SUCCESSFULL:
       NSLog(@"GOND IMC_CMD_CONNECTION_CONNECT_SUCCESSFULL");
@@ -2601,6 +2661,7 @@ const uint32_t numLayers = 24;
 //-(UIImage*)getScaledImage
 -(UIImage*)geScaledSearchImage
 {
+	
   float scaleXY = mainDisplayVideo.scaleXY;
   int translateX = mainDisplayVideo.translateX;
   int translateY = mainDisplayVideo.translateY;
@@ -2626,6 +2687,7 @@ const uint32_t numLayers = 24;
 
 -(void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx
 {
+	
   NSLog(@"GOND drawLayer -1");
   //NSLog(@"Shark drawLayer Search searchFrameImage");
   UIGraphicsPushContext(ctx);
@@ -2641,6 +2703,7 @@ const uint32_t numLayers = 24;
 //lvxt note: double check the synchronization of video frame fetching and display
 -(void)addSearchVideoFrame:(DisplayedVideoFrame*)frame
 {
+	
   DisplayedVideoFrame* displayFrame = (DisplayedVideoFrame*)frame;
   if (displayFrame.videoFrame && (displayFrame.videoFrame.CGImage || displayFrame.videoFrame.CIImage))
   {
@@ -2749,6 +2812,7 @@ const uint32_t numLayers = 24;
 
 -(void)updateChannelsInDate:(ImcAllDateInterval*)data
 {
+	
   ImcAllDateInterval* allDateInterVal = data;
   
   if ([currentServer.server_address isEqualToString:allDateInterVal.serverAddress]) {
@@ -2810,6 +2874,7 @@ const uint32_t numLayers = 24;
 }
 
 -(void)sendDataToReact{
+	
   if(chosenDay==nil)
     return;
   
@@ -2973,6 +3038,7 @@ const uint32_t numLayers = 24;
 
 //Build interval 1 day
 -(void)buildRulerDST: (NSDate* )chosenDay {
+	
   NSLog(@"GOND buildRulerDST ");
   if([dateIntervalList count] > 0){
     ImcDateInterval* chosenDayInterval = [dateIntervalList objectAtIndex:chosenChannelIndex];
@@ -3090,6 +3156,7 @@ const uint32_t numLayers = 24;
 
 -(void)addVideoFrame:(id)videoFrame
 {
+	
   DisplayedVideoFrame* displayFrame = (DisplayedVideoFrame*)videoFrame;
   BOOL found = NO;
   
@@ -3197,6 +3264,7 @@ const uint32_t numLayers = 24;
 
 -(void)onShowDisconnectedMsg : (ImcConnectedServer*)server
 {
+	
   self.connectedServers = connectedServerList;
   
   NSString* message = [NSString stringWithFormat:@"Disconnect from server %@",server.serverName];
@@ -3221,12 +3289,14 @@ const uint32_t numLayers = 24;
 
 - (void)responseCheckPermission:(ImcConnectedServer *)server
 {
+	
   
   [self performSelectorOnMainThread:@selector(onresponseCheckPermission:) withObject:server waitUntilDone:NO];
 }
 
 -(void)onresponseCheckPermission : (ImcConnectedServer *)server
 {
+	
     ChannelSetting* setting = (ChannelSetting*)[server.channelConfigs objectAtIndex:[_channels intValue]];
     if (_isSeacrh == YES)
     {
@@ -3254,12 +3324,14 @@ const uint32_t numLayers = 24;
 
 - (void)responseConnectingServer:(ImcConnectedServer *)server :(LOGIN_STATUS)status
 {
+	
   NSArray* data = [NSArray arrayWithObjects:@(status),server, nil];
   [self performSelectorOnMainThread:@selector(onResponseConnectingServer:) withObject:data waitUntilDone:NO];
 }
 
 -(void)onResponseConnectingServer : (NSObject*)data
 {
+	
   NSArray* inputData = (NSArray*)data;
   if (inputData && inputData.count > 1) {
     LOGIN_STATUS status = (LOGIN_STATUS)[[inputData objectAtIndex:0] integerValue];
@@ -3331,6 +3403,7 @@ const uint32_t numLayers = 24;
 
 -(NSCalendar*)AgendaCalendar
 {
+	
   return self.calendar;
 }
 
@@ -3341,6 +3414,7 @@ const uint32_t numLayers = 24;
 
 -(NSString*)get_obj:(NSDictionary *)_dic for_key:(NSString *)_key
 {
+	
   const id nul = [NSNull null];
   const NSString *blank = @"";
   id _obj = [_dic objectForKey:_key];
@@ -3352,6 +3426,7 @@ const uint32_t numLayers = 24;
 
 -(NSInteger)verifyserverInfo:(ImcConnectedServer*)newServer
 {
+	
   NSCharacterSet *invalidCharSet = [NSCharacterSet characterSetWithCharactersInString:@"%*\\+?><|/\""];
   NSArray* fieldNameList = [NSArray arrayWithObjects:@"Server name", @"Server id", @"Username", @"Password", nil];
   NSArray* fieldList = [NSArray arrayWithObjects:newServer.serverName, newServer.serverID, newServer.username, newServer.password, nil];
@@ -3421,6 +3496,7 @@ const uint32_t numLayers = 24;
 
 - (uint64_t) getChannelMask
 {
+	
   uint64_t channelDisplayMask = 0;
   NSString* channelStr = @"";
   for(NSString* ch in channelList)
@@ -3440,6 +3516,7 @@ const uint32_t numLayers = 24;
 
 -(i3DisconnectWarningInfo*)init
 {
+	
   self = [super init];
   
   if (self) {
@@ -3451,6 +3528,7 @@ const uint32_t numLayers = 24;
 
 -(void)reset
 {
+	
   if (self) {
     message = nil;
     server = nil;
@@ -3465,6 +3543,7 @@ const uint32_t numLayers = 24;
 
 -(i3ResumeDataInfo*)init
 {
+	
   self = [super init];
   
   if (self) {
@@ -3482,6 +3561,7 @@ const uint32_t numLayers = 24;
 
 -(NSArray*) getChannelMappingOfConnectedServer:(ImcConnectedServer *)server
 {
+	
   if(channelsMapping.count==0)
     return nil;
   NSMutableArray* _return = [[NSMutableArray alloc] initWithCapacity:channelsMapping.count];

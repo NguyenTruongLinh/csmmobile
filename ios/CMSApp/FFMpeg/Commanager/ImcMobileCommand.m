@@ -13,8 +13,9 @@
 
 //@synthesize cmdLength = _cmdLength;
 
-+(NSData*)constructSentPacket:(uint32_t)_cmdLength :(uint16_t)_command :(uint32_t)_version :(NSData *)_cmdContent
++(NSData*)constructSentPacket:(uint32_t)_cmdLength :(uint16_t)_command :(uint32_t)_version :(NSMutableData *)_cmdContent
 {
+	
   uint32_t packetLength = _cmdLength + 4;
   NSMutableData* packet = [[NSMutableData alloc] initWithBytes:&packetLength length:4];
   [packet appendBytes:&_cmdLength length:4];
@@ -26,6 +27,7 @@
 
 +(NSData*)constructSimpleMsgPacket:(uint16_t)_command
 {
+	
   uint32_t cmdLength = 2;
   NSMutableData* packet = [[NSMutableData alloc] initWithBytes:&cmdLength length:sizeof(cmdLength)];
   [packet appendBytes:&_command length:sizeof(_command)];
@@ -34,6 +36,7 @@
 
 +(NSData*)constructSentPacketWithCmd:(uint16_t)command Data:(void *)buffer DataLength:(uint32_t)bufferLength
 {
+	
   uint32_t dataLength = bufferLength + 2; // bufferLength + command
   NSMutableData* packet = [[NSMutableData alloc] initWithBytes:&dataLength length:4];
   [packet appendBytes:(void*)&command length:sizeof(uint16_t)];
@@ -43,6 +46,7 @@
 
 -(id)init
 {
+	
   self = [super init];
   if( self )
   {
@@ -55,6 +59,7 @@
 
 -(id)initWithData:(NSData *)data
 {
+	
   cmdContent = nil;
   self = [super init];
   if( self )
@@ -79,6 +84,7 @@
 
 -(uint16_t)getCommand
 {
+	
   
   return command;
 }
@@ -90,11 +96,13 @@
  */
 -(uint32_t)cmdLength
 {
+	
   return cmdLength;
 }
 
 - (NSData*) dataForCommandContent
 {
+	
   return contentData;
 }
 
