@@ -55,6 +55,10 @@
 @property (readonly) NSInteger serverVersion;
 @property (nonatomic, readwrite) NSInteger snapshotChannel;
 @property (nonatomic) BOOL waitForAccept;
+@property (nonatomic) BOOL waitForRelayHandshake;
+@property (nonatomic) BOOL isRelay;
+@property (nonatomic) BOOL testRelayHeaderFlag;
+@property (nonatomic, readwrite) NSString* ipAddress;
 //@property NSTimer* loginTimer;
 @property (nonatomic, weak)  NSRunLoop* streamingRL;
 @property (nonatomic, strong) dispatch_queue_t dataQueue;
@@ -68,9 +72,10 @@
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode;
 - (BOOL)processCommand;
 - (BOOL)readAcceptInfo : (NSMutableData*)data;
+- (BOOL)readRelayHandshakeInfo;
 - (BOOL)getLoginStatus : (NSMutableData*)data;
 - (NSMutableData*)constructLoginInfo;
-- (int)sendData:(NSData*)data;
+- (int)sendData:(NSData*)data:(NSString*)debug;
 - (ImcMobileCommand*)parserData:(NSData*)data;
 - (BOOL)startVideoConnection;
 - (void)disconnect;
@@ -89,7 +94,8 @@
 - (id)buildSearchCommonMessageWithTimeInterval3:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask;
 - (void)postDisconnectVideoMsg:(NSString*)serverAddress;
 - (void)onDisconnect : (id)parameter;
-
+- (NSData*)notifyAddRelayHeader : (NSData*)data;
+- (NSString *)getIPAddress;
 @end
 #endif  // _IMC_REMOTE_CONNECTION_
 

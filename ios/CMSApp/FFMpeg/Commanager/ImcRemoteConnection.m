@@ -18,6 +18,8 @@
 #import "../ImcCameraList.h"
 #import "../VideoFrame.h"
 #import "AppDelegate.h"
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 
 #define KEEP_ALIVE_CHECKING_INTERVAL 5 // 15 seconds
 #define MAX_KEEP_ALIVE_COUNTING 10
@@ -26,16 +28,21 @@
 
 // __volatile BOOL isRLRunning = NO;
 
-@synthesize delegate,deviceSetting,deviceCameraList,serverInfo,serverVersion,snapshotChannel, waitForAccept, loginTimer, dataQueue, streamingRL, remoteQueue; //, isRLRunning;
+@synthesize delegate,deviceSetting,deviceCameraList,serverInfo,serverVersion,snapshotChannel, waitForAccept, waitForRelayHandshake, loginTimer, dataQueue, streamingRL, remoteQueue, isRelay, ipAddress, testRelayHeaderFlag; //, isRLRunning;
 
 - (id)init:(ImcConnectionServer *)server
 {
+	
   self = [super init];
   if( self )
   {
     streamingRL             = nil;
     serverInfo              = [[ImcConnectionServer alloc] init];
     [serverInfo updateServerInfo:server];
+    isRelay                 = serverInfo.isRelay && serverInfo.relayConnectable;
+    testRelayHeaderFlag = true;
+    ipAddress = [self getIPAddress];
+    waitForRelayHandshake   = FALSE;
     waitForAccept           = FALSE;
     getLoginStatus          = FALSE;
     key                     = [Global generateEASKey];
@@ -66,8 +73,44 @@
   return self;
 }
 
+- (NSString *)getIPAddress {
+
+    NSString *address = @"simulator";
+    struct ifaddrs *interfaces = NULL;
+    struct ifaddrs *temp_addr = NULL;
+    int success = 0;
+    // retrieve the current interfaces - returns 0 on success
+    success = getifaddrs(&interfaces);
+    NSLog(@"0308 getIPAddress success = %d", success);
+    
+    if (success == 0) {
+        // Loop through linked list of interfaces
+        temp_addr = interfaces;
+        while(temp_addr != NULL) {
+            if(temp_addr->ifa_addr->sa_family == AF_INET) {
+              NSLog(@"0308 getIPAddress if 1");
+                // Check if interface is en0 which is the wifi connection on the iPhone
+                if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"]) {
+                  NSLog(@"0308 getIPAddress if 2");
+                    // Get NSString from C String
+                    address = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)];
+
+                }
+
+            }
+
+            temp_addr = temp_addr->ifa_next;
+        }
+    }
+    // Free memory
+    freeifaddrs(interfaces);
+    return address;
+
+}
+
 - (void)dealloc
 {
+	
   NSLog(@"---------- remote connection dealloc");
 //  [self closeStreams];
   videoConnection = nil;
@@ -81,12 +124,26 @@
 
 - (BOOL)setupConnection
 {
+	
+  
   CFStringRef address;
-  if(firstConnect)
-    address = (__bridge CFStringRef)serverInfo.server_address;
-  else
-    address = (__bridge CFStringRef)serverInfo.public_address;
-  unsigned int port = (unsigned int)serverInfo.server_port;
+  unsigned int port;
+  
+  if(serverInfo.isRelay) {
+    address = (__bridge CFStringRef)serverInfo.relayIp;
+    port = (unsigned int) serverInfo.relayPort;
+  } else
+  {
+    if(firstConnect)
+      address = (__bridge CFStringRef)serverInfo.server_address;
+    else
+      address = (__bridge CFStringRef)serverInfo.public_address;
+    port = (unsigned int) serverInfo.server_port;
+  }
+  
+  NSLog(@"0108 setupConnection expect %@/%ld", serverInfo.relayIp, (long)serverInfo.relayPort);
+  NSLog(@"0108 setupConnection reality %@/%d", address, port);
+  
   queueName = [NSString stringWithFormat:@"com.i3international.mobilesocket.%@:%d",serverInfo.server_address,port];
   keepAliveCounter = 0;
   if( address == nil || port > 65535 )
@@ -121,6 +178,7 @@
     
     if( readStream && writeStream )
     {
+      waitForRelayHandshake = isRelay;
       waitForAccept = TRUE;
       isConnected = TRUE;
       
@@ -163,6 +221,7 @@
 }
 
 - (void)startTimer {
+	
 //  dispatch_queue_t queue = dispatch_queue_create("com.i3international.cms.logintimer", DISPATCH_QUEUE_CONCURRENT);
   self->loginTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0));
   dispatch_source_set_timer(self->loginTimer, dispatch_walltime(NULL, 0), 10.0 * NSEC_PER_SEC, 0.1 * NSEC_PER_SEC);
@@ -174,6 +233,7 @@
 }
 
 - (void)stopTimer {
+	
 //  dispatch_async(dispatch_get_main_queue(), ^{
   [timerLock lock];
     if (self->loginTimer)
@@ -189,6 +249,7 @@
 
 - (void)onLoginTimeout
 {
+	
   NSLog(@"******** onLoginTimeout: %ld ******", (long)keepAliveCounter);
   if( keepAliveCounter >= MAX_KEEP_ALIVE_COUNTING )
   {
@@ -223,6 +284,7 @@
 
 - (void)onKeepAlive : (NSTimer*)targetTimer
 {
+	
   keepAliveCounter++;
   // NSLog(@"******** OnKeepAlive: %ld ******", (long)keepAliveCounter);
   if(keepAliveCounter >= MAX_KEEP_ALIVE_COUNTING)
@@ -240,6 +302,7 @@
 
 - (void)destroyTimers
 {
+	
   keepAliveCounter = 0;
 //  if( loginTimer )
 //  {
@@ -257,6 +320,7 @@
 
 - (void)closeStreams
 {
+	
   if( sentDataStream != nil)
   {
     [sentDataStream setDelegate:nil];
@@ -279,13 +343,29 @@
   }
 }
 
+- (NSData*)constructHandshakeData:(NSString *) service
+{
+  NSString* jsonString = [NSString stringWithFormat:@"{\"command\": \"connect\", \"id\": \"%@\", \"service\": \"com.i3.srx_pro.mobile.%@\", \"serial_number\": \"%@\"}", serverInfo.serverID, service, serverInfo.haspLicense];
+  NSLog(@"0108 jsonString = %@", jsonString);
+  NSData *postData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+  return postData;
+}
 
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode
 {
+	
   if( stream != receivedDataStream && stream != sentDataStream )
     return;
   switch(eventCode)
   {
+    case NSStreamEventOpenCompleted:
+    {
+      NSLog(@"0108 stream case NSStreamEventOpenCompleted %s", stream == receivedDataStream ? "stream == receivedDataStream" : stream == sentDataStream ? "stream == sentDataStream" : "other steam");
+      if(stream == sentDataStream && isRelay) {
+        [self sendData: [self constructHandshakeData: @"control"]:@"HandshakeData"];
+      }
+    }
+    break;
     case NSStreamEventHasBytesAvailable:
     {
       [connectionLock lock];
@@ -294,10 +374,13 @@
       long len = 0;
       
       len = [receivedDataStream read:buffer maxLength:MAX_RECEIVE_CONNECTION_DATA_BUFFER_SIZE];
+      
+      NSLog(@"0908 ImcRemoteConnection stream case NSStreamEventHasBytesAvailable len = %ld", len);
+      
       if( len > 0)
       {
         receivedBufferLength += len;
-        NSLog(@"*** Received Buffer Size: %d", receivedBufferLength);
+        NSLog(@"0808 *** Received Buffer Size: len = %ld receivedBufferLength = %d", len, receivedBufferLength);
         if(currentData==nil)
         {
           currentData = [NSMutableData dataWithBytes:(const void *)buffer length:len];
@@ -316,13 +399,19 @@
       
       
       receivedBuffer = (uint8_t*)[currentData bytes];
-      
+      int loopCount = 0;
       while( receivedBufferLength > 0)
       {
+        NSLog(@"0108 stream case NSStreamEventHasBytesAvailable loopCount = %d", loopCount);
+        loopCount++;
         @autoreleasepool
         {
           BOOL result = FALSE;
-          if( waitForAccept )
+          if( waitForRelayHandshake )
+          {
+            result = [self readRelayHandshakeInfo];
+          }
+          else if( waitForAccept )
           {
             getLoginStatus = FALSE;
             result = [self readAcceptInfo:nil];
@@ -333,6 +422,9 @@
           if( result == TRUE )
           {
             receivedBufferLength -= movedBytes;
+            
+            NSLog(@"0808 *** Reduce buffer length: movedBytes = %d receivedBufferLength = %d", movedBytes, receivedBufferLength);
+            
             if( receivedBufferLength == 0)
             {
               currentData = nil;
@@ -347,7 +439,6 @@
             if(currentData && ([currentData bytes] != receivedBuffer))
             {
               currentData = [NSMutableData dataWithBytes:receivedBuffer + movedBytes length:receivedBufferLength];
-              
             }
             break;
           }
@@ -359,6 +450,7 @@
       break;
     case NSStreamEventErrorOccurred:
     {
+      NSLog(@"0108 stream case NSStreamEventErrorOccurred");
       [connectionLock lock];
       if(stream!=receivedDataStream&&stream!=sentDataStream)
       {
@@ -404,6 +496,7 @@
       break;
     case NSStreamEventEndEncountered:
     {
+      NSLog(@"0108 stream case NSStreamEventEndEncountered");
       [connectionLock lock];
       if(stream==receivedDataStream||stream==sentDataStream)
       {
@@ -427,9 +520,9 @@
   }
 }
 
-
 -(ImcMobileCommand*)parserData:(NSData *)data
 {
+	
   uint8_t* bytes = (uint8_t*)[data bytes];
   uint32_t length = *((uint32_t*)(bytes+2));
   if( length + MOBILE_COMM_COMMAND_HEADER_SIZE > data.length )
@@ -439,30 +532,57 @@
   return packet;
 }
 
-- (BOOL)readAcceptInfo:(NSMutableData *)data
+- (BOOL)readRelayHandshakeInfo
 {
+  
   if( receivedBufferLength <= 4 )
     return FALSE;
-  uint32_t length = *((uint32_t*)receivedBuffer);
-  if(length + 4 <= receivedBufferLength )
+  uint32_t relayTotalLen = *((uint32_t*)receivedBuffer);
+  if(relayTotalLen <= receivedBufferLength )
   {
-    NSData* xmlData = [[NSData alloc] initWithBytes:(void*)(receivedBuffer + 4) length:length];
+    NSData* jsonData = [[NSData alloc] initWithBytes:(void*)(receivedBuffer + 68) length:relayTotalLen - 68];
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    NSLog(@"0108 readRelayHandshakeInfo jsonString = %@", jsonString);
+    if([jsonString rangeOfString:@"session_id"].location != NSNotFound) {
+      waitForRelayHandshake = FALSE;
+      movedBytes = relayTotalLen;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+- (BOOL)readAcceptInfo:(NSMutableData *)data
+{
+	
+  if( receivedBufferLength <= 4 )
+    return FALSE;
+  int relayOffset = isRelay ? 68 : 0;
+  uint32_t length = *((uint32_t*)(receivedBuffer + relayOffset));// 
+  NSLog(@"0108 ImcRemoteConnection readAcceptInfo 0 sum = %d, sub = %d", (length + 4), (receivedBufferLength - relayOffset));
+  if(length + 4 <= receivedBufferLength - relayOffset )
+  {
+    NSLog(@"0108 ImcRemoteConnection readAcceptInfo 1");
+    NSData* xmlData = [[NSData alloc] initWithBytes:(void*)(receivedBuffer + 4 + relayOffset) length:(length)];// - relayOffset
     GDataXMLDocument* doc = [[GDataXMLDocument alloc] initWithData:xmlData options:0 error:nil];
     if( doc )
     {
+      NSLog(@"0108 ImcRemoteConnection readAcceptInfo 2");
       if( [[doc.rootElement localName] isEqualToString:@"ACCEPT_INFO"] )
       {
+        NSLog(@"0108 ImcRemoteConnection readAcceptInfo 3");
         GDataXMLElement* serverVersionNode = (GDataXMLElement*)[doc.rootElement attributeForName:@"server_version"];
         serverVersion = [[serverVersionNode stringValue] integerValue];
+        NSLog(@"0108 ImcRemoteConnection (BOOL)readAcceptInfo 4 serverVersion = %ld", (long)serverVersion);
         if( serverVersion > 0 )
         {
           waitForAccept = FALSE;
           NSData* sentData = [self constructLoginInfo];
-          [self sendData:sentData];
+          [self sendData:sentData:@"LoginInfo"];
         }
       }
     }
-    movedBytes = length + 4;
+    movedBytes = length + 4 + relayOffset;
     return TRUE;
   }
   return FALSE;
@@ -470,16 +590,24 @@
 
 - (BOOL)getLoginStatus:(NSMutableData *)data
 {
+	
   return FALSE;
 }
 
 
 - (BOOL)processCommand
 {
+	
   if( receivedBufferLength < 2 )
     return FALSE;
   movedBytes = 0;
-  uint16_t cmd = *(uint16_t*)receivedBuffer;
+  int relayOffset = isRelay && testRelayHeaderFlag ? 68 : 0;
+  uint16_t cmd = *(uint16_t*)(receivedBuffer + relayOffset);
+  NSLog(@"0808 processCommand cmd = %d relayOffset = %d", cmd, relayOffset);
+//  if(cmd == 501)
+//    testRelayHeaderFlag = false;
+//  if(cmd != 1) cmd = *(uint16_t*)(receivedBuffer);
+//  NSLog(@"0808 ImcRemoteConnection 222 cmd = %d ", cmd);
   BOOL onlyCmd = FALSE;
   if( cmd == MOBILE_MSG_KEEP_ALIVE )
   {
@@ -512,7 +640,7 @@
   }
   else if( cmd == MOBILE_MSG_MOBILE_SEND_SETTINGS )
   {
-    movedBytes = 3;
+    movedBytes = 3 + relayOffset;
     NSLog(@"mobile send setting");
     return TRUE;
   }
@@ -520,18 +648,25 @@
   {
     if(receivedBufferLength >=6)
     {
-      int32_t videoPort = *(int32_t*)(receivedBuffer + 2);
+      int32_t videoPort;
+      NSString* address;
       if(videoConnection)
         [videoConnection disconnectToServer];
       videoConnection = [[ImcVideoReceiverConnection alloc] initWithConnectionIndex:connectionIndex];
-      NSString* address;
-      if(firstConnect)
-        address = serverInfo.server_address;
-      else
-        address = serverInfo.public_address;
-      [videoConnection connectToServer:address :videoPort];
+      if(serverInfo.isRelay) {
+        address = serverInfo.relayIp;
+        videoPort = (unsigned int) serverInfo.relayPort;
+      } else {
+        if(firstConnect)
+          address = serverInfo.server_address;
+        else
+          address = serverInfo.public_address;
+        videoPort = *(int32_t*)(receivedBuffer + 2);
+      }
+      NSData* videoHandshake = isRelay ? [self constructHandshakeData: @"video"] : NULL;
+      [videoConnection connectToServer:address :videoPort :videoHandshake];
       videoConnection.parent = self;
-      movedBytes = 6;
+      movedBytes = 6 + relayOffset;
       connectingVideoPort = FALSE;
       NSLog(@"Start video Port");
       return TRUE;
@@ -548,7 +683,7 @@
     NSInteger sentCmd = 0;
     if( result == MOBILE_MSG_FAIL )
     {
-      movedBytes = 3;
+      movedBytes = 3 + relayOffset;
       alarmList.alarmViewStatus = 1;
     }
     else
@@ -563,7 +698,7 @@
         {
           NSData* data = [[NSData alloc] initWithBytes:(receivedBuffer + 8) length:length];
           [alarmList parserXMLData:data];
-          movedBytes = length + 8;
+          movedBytes = length + 8 + relayOffset;
         }
         else
           return FALSE;
@@ -575,7 +710,7 @@
         {
           NSData* data = [[NSData alloc] initWithBytes:(receivedBuffer + 7) length:length];
           [alarmList parserXMLData:data];
-          movedBytes = length + 7;
+          movedBytes = length + 7 + relayOffset;
         }
         else
           return FALSE;
@@ -623,7 +758,7 @@
     NSData* data = [[NSData alloc] initWithBytes:(receivedBuffer + 6) length:length];
     
     ImcAlarmEventData* alarmEvent = [alarmList parserXMLElement:data];
-    movedBytes = length + 6;
+    movedBytes = length + 6 + relayOffset;
     [alarmList.listAlarmEvents addObject:alarmEvent];
     
     NSInteger sentCmd = IMC_CMD_NEW_ALARM_DETECTED;
@@ -703,7 +838,7 @@
                   }
                 }
               }
-              movedBytes = [newFrame getFrameBufferSizeForServerVersion:serverVersion] + 2;
+              movedBytes = [newFrame getFrameBufferSizeForServerVersion:serverVersion] + 2 + relayOffset;
               return TRUE;
               
             }
@@ -723,7 +858,7 @@
               if (frameHeader.codecType < 3) {
                 BitmapFrame* frame = [[BitmapFrame alloc] initWithHeader:frameHeader withImageBuffer:bytes length:[frameHeader getLength]];
                 [self postSnapshotImage:frame];
-                movedBytes = [frameHeader getLength] + headerSize + 2;
+                movedBytes = [frameHeader getLength] + headerSize + 2 + relayOffset;
                 return TRUE;
               }
               else
@@ -741,7 +876,7 @@
                   NSLog(@"---SnapShot Came");
                   //newFrame.header.snapshotImage = TRUE;
                   [self postSnapshotEncodedFrame:newFrame];
-                  movedBytes = [newFrame getFrameBufferSizeForServerVersion:serverVersion] + 2;
+                  movedBytes = [newFrame getFrameBufferSizeForServerVersion:serverVersion] + 2 + relayOffset;
                   return TRUE;
                 }
                 return FALSE;
@@ -752,7 +887,7 @@
             {
               BitmapFrame* frame = [[BitmapFrame alloc] initWithHeader:frameHeader withImageBuffer:bytes length:[frameHeader getLength]];
               [self postSnapshotImage:frame];
-              movedBytes = [frameHeader getLength] + headerSize + 2;
+              movedBytes = [frameHeader getLength] + headerSize + 2 + relayOffset;
               return TRUE;
             }
           }
@@ -836,7 +971,7 @@
       }
     }
     
-    movedBytes = 2 + 4 + length;
+    movedBytes = 2 + 4 + length + relayOffset;
     
     [delegate handleCommand:IMC_CMD_SEARCH_UPDATE_CHANNEL_LIST_IN_DATE :serverInfo.allDateInterval];
     return TRUE;
@@ -892,13 +1027,13 @@
       [delegate handleCommand:IMC_CMD_SEARCH_UPDATE_DATA_DATE: serverInfo];
     }
     
-    movedBytes = 6 + [data length];
+    movedBytes = 6 + [data length] + relayOffset;
     return YES;
   }
   
   if( onlyCmd )
   {
-    movedBytes = 2;
+    movedBytes = 2 + relayOffset;
     return TRUE;
   }
   
@@ -907,18 +1042,20 @@
   
   uint8_t _test[6];
   memcpy(_test, receivedBuffer, 6);
-  uint32_t cmdLength = *(uint32_t*)(receivedBuffer+2);
+  uint32_t cmdLength = *(uint32_t*)(receivedBuffer+2 + relayOffset);
   
-  NSLog(@"Data length needed %d",cmdLength + MOBILE_COMM_COMMAND_HEADER_SIZE );
+  NSLog(@"0808 cmdLength = %d const = %d receivedBufferLength = %d", cmdLength, MOBILE_COMM_COMMAND_HEADER_SIZE, receivedBufferLength);
+  
   if( cmdLength + MOBILE_COMM_COMMAND_HEADER_SIZE > receivedBufferLength )
     return FALSE;
   
-  NSData* data = [[NSData alloc] initWithBytes:receivedBuffer length:cmdLength+MOBILE_COMM_COMMAND_HEADER_SIZE];
+  NSData* data = [[NSData alloc] initWithBytes:(receivedBuffer + relayOffset) length:cmdLength+MOBILE_COMM_COMMAND_HEADER_SIZE];
   
   ImcMobileCommand* mobileCommand = [self parserData:data];
   if( mobileCommand == nil )
     return FALSE;
   
+  NSLog(@"0808 getCommand = %d", [mobileCommand getCommand]);
   switch ([mobileCommand getCommand]) {
     case MOBILE_MSG_LOGIN:
     {
@@ -933,6 +1070,9 @@
           {
             GDataXMLElement* connectionIndexNode = (GDataXMLElement*)[doc.rootElement attributeForName:@"connectionIndex"];
             connectionIndex = [[connectionIndexNode stringValue] integerValue];
+            
+            NSLog(@"1108 ERROR MOBILE_MSG_LOGIN connectionIndex = %ld", (long)connectionIndex);
+            
             serverInfo.connected = TRUE;
             
             // connect successfull
@@ -954,6 +1094,8 @@
             serverInfo.connected = FALSE;
           }
           getLoginStatus = (connectionStatus == MOBILE_LOGIN_MESSAGE_SUCCEEDED);
+          NSLog(@"0808 getLoginStatus = %d", getLoginStatus);
+          
           ImcConnectionStatus* status = [[ImcConnectionStatus alloc] initWithParam:self:(int32_t)connectionIndex :(int32_t)connectionStatus];
           if(self.delegate)
           {
@@ -1005,12 +1147,13 @@
       break;
   }
   
-  movedBytes = cmdLength + MOBILE_COMM_COMMAND_HEADER_SIZE;
+  movedBytes = cmdLength + MOBILE_COMM_COMMAND_HEADER_SIZE + relayOffset;
   return TRUE;
 }
 
 - (NSData*)constructLoginInfo
 {
+	
   NSString* xmlString = [NSString stringWithFormat:@"<LoginInfo user_name=\"%@\" password=\"%@\" server_id=\"%@\" remote_type=\"2\"/>",[self htmlEntityEncode:serverInfo.username],[self htmlEntityEncode:serverInfo.password],[self htmlEntityEncode:serverInfo.serverID]];
   
   NSData* sentData;
@@ -1034,6 +1177,7 @@
 
 -(NSString *)htmlEntityEncode:(NSString *)inputString
 {
+	
   NSString* newString = inputString;
   
   newString = [newString stringByReplacingOccurrencesOfString:@"\"" withString:@"&quot;"];
@@ -1047,19 +1191,87 @@
 
 -(BOOL)startVideoConnection
 {
+	
   
   BOOL result = FALSE;
   NSData* packet = [ImcMobileCommand constructSimpleMsgPacket:MOBILE_MSG_START_SEND_VIDEO];
   if( packet )
   {
-    result = ([self sendData:packet] == SOCKET_SEND_SUCCESS );
+    result = ([self sendData:packet:@"VideoConnection"] == SOCKET_SEND_SUCCESS );
   }
   connectingVideoPort = result;
   return result;
 }
 
-- (int)sendData:(NSData *)data
+- (NSData*)notifyAddRelayHeader : (NSData*)directData
 {
+  if(isRelay) {
+    NSLog(@"0108 notifyAddRelayHeader if directData.length = %lu ipAddress = %@", directData.length, ipAddress);
+//    NSMutableData* result;
+//      byte[] header = new byte[68];
+//      String appName = "CMSMobile";
+//      int contentLen = json.length + header.length;
+//      byte[] contentLenBytes = utils.IntToByteArrayReversed(contentLen);
+//
+//      byte[] appNameBytes = appName.getBytes(StandardCharsets.UTF_8);
+//      byte[] IPAddressBytes = clientIp.getBytes(StandardCharsets.UTF_8);
+//
+//      System.arraycopy(contentLenBytes, 0, header, 0, contentLenBytes.length);
+//      System.arraycopy(appNameBytes, 0, header, 4, appNameBytes.length);
+//      System.arraycopy(IPAddressBytes, 0, header, 24, IPAddressBytes.length);
+//
+//      byte result[] = new byte[header.length + data.length];
+//
+//      System.arraycopy(header, 0, result, 0, header.length);
+//
+//      System.arraycopy(json, 0, result, header.length, data.length);
+//      return result;
+//    [data increaseLengthBy:data.length + 68];
+//    [data replaceBytesInRange:NSMakeRange(0, 0) withBytes: (uint8_t*)[data bytes]];
+    
+    uint32_t totalLen = (uint32_t) directData.length + 68;//uint64_t
+    
+//    uint8_t* contentLenBytes = utils.IntToByteArrayReversed(contentLen);
+    
+//    result = [[NSMutableData alloc] initWithLength:(data.length + 68)];
+//    [result replaceBytesInRange:NSMakeRange(result.length - data.length, result.length - 1) withBytes: (uint8_t*)[data bytes]];
+    
+//    uint16_t msg = MOBILE_MSG_LOGIN;
+//    uint64_t cmdLength = sentData.length + MOBILE_COMM_COMMAND_HEADER_SIZE;  // cmdLength = Command + Server version + xmlString
+//    uint32_t mobileVersion = MOBILE_VERSION_CURRENT;
+//
+    NSMutableData* result = [[NSMutableData alloc] initWithBytes:&totalLen length:4];
+    
+    NSData *appNameData = [@"CMSMobile" dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [result appendData:appNameData];
+    
+    [result increaseLengthBy:(20 - appNameData.length)];
+    
+    NSData *ipAddressData = [ipAddress dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [result appendData:ipAddressData];
+    
+    [result increaseLengthBy:(44 - ipAddressData.length)];
+    
+    [result appendData:directData];
+    
+//    [result appendData:[[NSData alloc] initWithBytes:&mobileVersion length:4]];
+//    [loginStruct appendData:[[NSData alloc] initWithBytes:&msg length:2]];
+//    [loginStruct appendData:[[NSData alloc] initWithBytes:&mobileVersion length:4]];
+//    [loginStruct appendData:sentData];
+    
+      NSLog(@"0108 notifyAddRelayHeader if result.length = %lu", result.length);
+    
+    return result;
+  }else{
+    NSLog(@"0108 notifyAddRelayHeader else");
+      return directData;
+  }
+}
+- (int)sendData:(NSData *)data:(NSString*)debug
+{
+  
   UIApplicationState state = [[UIApplication sharedApplication] applicationState];
   if (state == UIApplicationStateBackground || state == UIApplicationStateInactive)
   {
@@ -1074,12 +1286,19 @@
   }
   dispatch_async(dataQueue, ^{
     int sentBytes = 0;
-    NSInteger length = data.length;
     
-    uint8_t* buffer = (uint8_t*)[data bytes];
+    NSLog(@"0108 0808 sendData length = %lu ", (unsigned long)data.length);
+    
+    NSData* modifiedData = [self notifyAddRelayHeader: data];
+    
+    NSInteger length = modifiedData.length;
+    
+    NSLog(@"0108 0808 sendData notifyAddRelayHeader modifiedData.length = %lu ", (unsigned long)modifiedData.length);
+    
+    uint8_t* buffer = (uint8_t*)[modifiedData bytes];
+    int loop = 0;
     while (sentDataStream && sentBytes < length && status == SOCKET_SEND_SUCCESS)
     {
-      
       NSInteger sentCount = -1;
       if( (sentCount = [sentDataStream write:(buffer + sentBytes) maxLength:length -sentBytes ]) <= 0)
       {
@@ -1095,6 +1314,7 @@
 
 - (void) sendCommand:(uint16_t)command :(void *)buffer :(NSInteger)bufferLength
 {
+	
   NSData* commandData = nil;
   if( buffer == nil || bufferLength == 0)
   {
@@ -1105,12 +1325,13 @@
     commandData = [ImcMobileCommand constructSentPacketWithCmd:command Data:buffer DataLength:bufferLength];
   }
   
-  [self sendData:commandData];
+  [self sendData:commandData:@"commandData"];
 
 }
 
 - (void)disconnect
 {
+	
   isConnected = FALSE;
 //   if( getLoginStatus )
   if( sentDataStream != nil && serverInfo.connected == TRUE)
@@ -1143,6 +1364,7 @@
 
 - (void)onDisconnect : (id)parameter
 {
+	
   [self destroyTimers];
   
   if(delegate)
@@ -1156,6 +1378,7 @@
 
 - (void)parseCommandData:(id)data
 {
+	
   ImcMobileCommand* command = (ImcMobileCommand*)data;
   switch ([command getCommand]) {
     case MOBILE_MSG_SERVER_SEND_SETTINGS:
@@ -1284,6 +1507,7 @@
 
 -(NSArray*)parseXMLDataForDataDateList:(NSData *)xmlData
 {
+	
   GDataXMLDocument* doc = [[GDataXMLDocument alloc] initWithData:xmlData options:0 error:NULL];
   
   if(doc)
@@ -1308,6 +1532,7 @@
 
 -(id)buildReQuestDayListMsg
 {
+	
   GDataXMLElement* rootNode = [GDataXMLNode elementWithName:@"Search_Request"];
   if( rootNode )
   {
@@ -1329,6 +1554,7 @@
 
 -(id)buildSearchCommonMessageWithTimeInterval:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask
 {
+	
   
   //NSDate* chosenDate = (NSDate*)date;
   //NSDate* destinationDate = [[NSDate alloc] initWithTimeInterval:deviceSetting.timeZoneOffset sinceDate:date];
@@ -1359,6 +1585,7 @@
 
 -(id)buildSearchCommonMessageWithTimeInterval2:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask
 {
+	
   GDataXMLElement* rootNode = [GDataXMLNode elementWithName:@"Search_Request"];
   if( rootNode )
   {
@@ -1389,6 +1616,7 @@
 
 -(id)buildSearchCommonMessageWithTimeInterval3:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask
 {
+	
   GDataXMLElement* rootNode = [GDataXMLNode elementWithName:@"Search_Request"];
   if( rootNode )
   {
@@ -1417,12 +1645,14 @@
 
 - (void)updateLayout:(uint16_t)layout
 {
+	
   deviceSetting.layout = layout;
   deviceSetting.fullscreenChannel = -1;
 }
 
 - (void)videoSocketHasDisconnected
 {
+	
   if( videoConnection )
   {
     [videoConnection disconnectToServer];
@@ -1433,6 +1663,7 @@
 
 - (BOOL)videoDisconnected
 {
+	
   if( connectingVideoPort )
     return FALSE;
   
@@ -1445,6 +1676,7 @@
 
 -(void)postVideoFrame:(BitmapFrame *)frame
 {
+	
   
   int videoSourceIndex = frame.header.sourceIndex;
   
@@ -1526,6 +1758,7 @@
 
 - (void)postSnapshotImage:(BitmapFrame *)frame
 {
+	
   //int videoSourceIndex = frame.header.sourceIndex;
   for(int index = 0; index < MAX_CHANNEL; index++ )
   {
@@ -1547,6 +1780,7 @@
 
 -(void)postSearchEncodedFrame:(EncodedFrame*)frame
 {
+	
   EncodedFrame* newFrame = frame;
   //int videoSourceIndex = frame.header.sourceIndex;
   if (newFrame.header.codecType == 3) {
@@ -1573,6 +1807,7 @@
 
 -(void)postSnapshotEncodedFrame:(EncodedFrame*)frame
 {
+	
   @autoreleasepool
   {
     EncodedFrame* newFrame = frame;
@@ -1616,6 +1851,7 @@
 
 -(void)postEncodedFrame:(EncodedFrame*)frame
 {
+	
   @autoreleasepool
   {
     EncodedFrame* newFrame = frame;
@@ -1658,6 +1894,7 @@
 
 -(void)postDisconnectVideoMsg:(NSString*)serverAddress
 {
+	
   [delegate handleCommand:IMC_CMD_DISCONNECT_VIDEO :serverAddress];
 }
 

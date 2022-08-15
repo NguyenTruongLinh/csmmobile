@@ -30,11 +30,14 @@
     get_data
   };
   enum state current_state;
+  uint16_t streamCount;
+  BOOL isRelay;
 //  __volatile BOOL isRLRunning;
 }
 
 @property (nonatomic, weak) ImcRemoteConnection* parent;
 @property (nonatomic, readonly) BOOL disconnected;
+@property (nonatomic) BOOL waitForRelayHandshake;
 @property (nonatomic, weak)  NSRunLoop* streamingRL;
 @property (nonatomic, strong) dispatch_queue_t streamQueue;
 @property NSTimer* videoTimer;
@@ -45,7 +48,7 @@
 
 - (id) initWithConnectionIndex : (NSInteger)index;
 
-- (BOOL)connectToServer : (NSString*)address : (NSInteger)port;
+- (BOOL)connectToServer : (NSString*)address : (NSInteger)port :(NSData*)handshakeRequest;
 - (BOOL)processData;
 - (void)disconnectToServer;
 -(void)startVideoTimer;

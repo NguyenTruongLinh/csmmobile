@@ -106,12 +106,15 @@ public class VideoSocket extends CommunicationSocket {
                 socket.setSoTimeout(Constant.socketReadTimeOut);
             }catch (SocketException ex){}
             catch (IllegalArgumentException iex){}
+            relayHeaderBlockRemainLen = 0;
             while (!Thread.currentThread().isInterrupted() && running)
             {
                 try
                 {
-                    relayHeaderBlockRemainLen -= remain_len;
-                    read_len = ReadBlock(InPut, remain_len ,buff, offset, isRelay && relayHeaderBlockRemainLen <= 0, "videoSocket");//utils.ReadBlock(input, remain_len ,buff, offset);
+                    read_len = ReadBlock(InPut, remain_len ,buff, offset, isRelay && (relayHeaderBlockRemainLen == 0), "videoSocket");//utils.ReadBlock(input, remain_len ,buff, offset);
+
+                    relayHeaderBlockRemainLen -= read_len;
+
                     if( read_len == -1 && running)//socket failed
                     {
                         OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );

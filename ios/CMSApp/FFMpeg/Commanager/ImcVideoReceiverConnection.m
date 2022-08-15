@@ -25,10 +25,11 @@ __volatile BOOL isRLRunning = NO;
 @end
 
 @implementation ImcVideoReceiverConnection
-@synthesize parent,disconnected, videoTimer, timerCounter, streamingRL, streamQueue;
+@synthesize parent,disconnected, videoTimer, timerCounter, streamingRL, streamQueue, waitForRelayHandshake;
 
 - (id)init
 {
+	
   self = [super init];
   if( self )
   {
@@ -58,6 +59,7 @@ __volatile BOOL isRLRunning = NO;
 
 - (id)initWithConnectionIndex:(NSInteger)index
 {
+	
   
   self = [super init];
   if( self )
@@ -80,12 +82,14 @@ __volatile BOOL isRLRunning = NO;
     current_state = get_cmd;
     streamQueue = nil;
     isRLRunning = NO;
+    streamCount = 0;
   }
   return self;
 }
 
 - (void) dealloc
 {
+	
   // NSLog(@"---------- videoReceiver dealloc 1");
   if(!disconnected)
   {
@@ -102,8 +106,9 @@ __volatile BOOL isRLRunning = NO;
   //   streamingRL = nil;
 }
 
-- (BOOL) connectToServer:(NSString *)address :(NSInteger)port
+- (BOOL) connectToServer:(NSString *)address :(NSInteger)port :(NSData*)handshakeRequest
 {
+	
   __block BOOL success = TRUE;
   serverAddress = address;
   serverPort = port;
@@ -153,8 +158,18 @@ __volatile BOOL isRLRunning = NO;
       
       self->disconnected = FALSE;
       success = TRUE;
+      if(handshakeRequest != NULL) {
+        NSData* modifiedData = [self notifyAddRelayHeader: handshakeRequest];
+        NSLog(@"0908 write handshakeRequest handshakeRequest.length = %lu", (unsigned long)handshakeRequest.length);
+        [self->sentDataStream write:(uint8_t*)[modifiedData bytes] maxLength:modifiedData.length];
+//        [self sendData:handshakeRequest];
+        self->waitForRelayHandshake = TRUE;
+        self->isRelay = TRUE;
+      }else{
+        NSLog(@"1008 write self->connectionIndex = %lu", self->connectionIndex);
+        [self->sentDataStream write:(uint8_t*)(&self->connectionIndex) maxLength:sizeof(self->connectionIndex)];//1008
+      }
       
-      [self->sentDataStream write:(uint8_t*)(&self->connectionIndex) maxLength:sizeof(self->connectionIndex)];
       isRLRunning = YES;
       while (/*isRLRunning == YES &&*/ [self->streamingRL runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]]);
 //      [self->streamingRL run];
@@ -172,8 +187,66 @@ __volatile BOOL isRLRunning = NO;
   return success;
 }
 
+- (int)sendData:(NSData *)data
+{
+  NSLog(@"1008 ImcRemoteConnection  (int)sendData:(NSData *)data");
+  UIApplicationState state = [[UIApplication sharedApplication] applicationState];
+  if (state == UIApplicationStateBackground || state == UIApplicationStateInactive)
+  {
+    return SOCKET_SEND_ERROR;
+  }
+  __block SOCKET_SEND_STATUS status =  SOCKET_SEND_SUCCESS;
+  
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+    
+    NSData* modifiedData = [self notifyAddRelayHeader: data];
+    
+    NSInteger length = modifiedData.length;
+    
+    uint8_t* buffer = (uint8_t*)[modifiedData bytes];
+    
+    [self->sentDataStream write:(buffer) maxLength:length];
+    
+    NSLog(@"1008 sendData write buffer DONE");
+  });
+  
+  return status;
+}
+
+- (NSData*)notifyAddRelayHeader : (NSData*)directData
+{
+  if(TRUE) {
+    NSLog(@"0108 notifyAddRelayHeader if directData.length = %lu ipAddress = %@", directData.length, @"ipAddress");
+    
+    uint32_t totalLen = (uint32_t) directData.length + 68;//uint64_t
+    NSMutableData* result = [[NSMutableData alloc] initWithBytes:&totalLen length:4];
+    
+    NSData *appNameData = [@"CMSMobile" dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [result appendData:appNameData];
+    
+    [result increaseLengthBy:(20 - appNameData.length)];
+    
+    NSData *ipAddressData = [@"ipAddress" dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [result appendData:ipAddressData];
+    
+    [result increaseLengthBy:(44 - ipAddressData.length)];
+    
+    [result appendData:directData];
+    
+      NSLog(@"0108 notifyAddRelayHeader if result.length = %lu", result.length);
+    
+    return result;
+  }else{
+    NSLog(@"0108 notifyAddRelayHeader else");
+      return directData;
+  }
+}
+
 -(void)onTimerChecking
 {
+	
   if (timerCounter > 0)
   {
     timerCounter = 0;
@@ -196,6 +269,7 @@ __volatile BOOL isRLRunning = NO;
 
 -(void)startVideoTimer
 {
+	
   if (!videoTimer && ![videoTimer isValid])
   {
     videoTimer = [NSTimer scheduledTimerWithTimeInterval:2.0f target:self selector:@selector(onTimerChecking) userInfo:nil repeats:YES];
@@ -204,6 +278,7 @@ __volatile BOOL isRLRunning = NO;
 
 - (void)disconnectToServer
 {
+	
   if (!serverAddress) {
     return;
   }
@@ -241,27 +316,74 @@ __volatile BOOL isRLRunning = NO;
 //  }
 }
 
+- (BOOL)readRelayHandshakeInfo: (NSInputStream *)stream
+{
+  
+  
+  uint8_t buffer[MAX_RECEIVE_CONNECTION_DATA_BUFFER_SIZE];
+  long len = 0;
+  len = [(NSInputStream *)stream read:buffer maxLength:MAX_RECEIVE_CONNECTION_DATA_BUFFER_SIZE];
+  NSLog(@"0908 ImcVideoReceiverConnection readRelayHandshakeInfo len = %ld", len);
+  uint32_t relayTotalLen = *((uint32_t*)buffer);
+  
+  NSLog(@"0908 ImcVideoReceiverConnection readRelayHandshakeInfo relayTotalLen = %d", relayTotalLen);
+//  if(relayTotalLen <= receivedBufferLength )
+  {
+    NSData* jsonData = [[NSData alloc] initWithBytes:(void*)(buffer + 68) length:relayTotalLen - 68];
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    NSLog(@"0908 ImcVideoReceiverConnection readRelayHandshakeInfo jsonString = %@", jsonString);
+    if([jsonString rangeOfString:@"session_id"].location != NSNotFound) {
+      waitForRelayHandshake = FALSE;
+      int intConId = (int) self->connectionIndex;
+      [self sendData: [NSData dataWithBytes: (uint8_t*)(&intConId) length: sizeof(intConId)]];
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode
 {
+  NSLog(@">>>>>>>>>>>>> 1008 ImcVideoReceiverConnection (void)stream streamCount = %d eventCode = %lul", streamCount++, (unsigned long)eventCode);
+
   if( stream != receivedDataStream && stream != sentDataStream )
     return;
-  
   switch(eventCode)
   {
+    case NSStreamEventOpenCompleted:
+    {
+
+    }
+    break;
     case NSStreamEventHasBytesAvailable:
     {
+      NSLog(@"1008 ImcVideoReceiverConnection case NSStreamEventHasBytesAvailable current_state = %d", current_state);
       [streamLock lock];
       if(disconnected)
       {
+        NSLog(@"1008 ImcVideoReceiverConnection SStreamEventHasBytesAvailable disconnected");
         [streamLock unlock];
         break;
       }
-      
+
+      if(waitForRelayHandshake) {
+        NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable waitForRelayHandshake");
+        [self readRelayHandshakeInfo: (NSInputStream *)stream];
+        [streamLock unlock];
+        break;
+      }
+//      if(isRelay) {
+//        uint8_t _buffer[68];
+//        sizeWillRead = 68;
+//        long len = [(NSInputStream *)stream read:(_buffer) maxLength:sizeWillRead];
+//        NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable RELAY_HEADER len = %ld", len);
+//      }
       if(current_state==get_cmd)
       {
         uint8_t _buffer[2];
         sizeWillRead = 2;
         long len = [(NSInputStream *)stream read:(_buffer) maxLength:sizeWillRead];
+        NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable get_cmd len = %ld", len);
         if( len == sizeWillRead )
         {
           currentCmd = *(uint16_t*)(_buffer);
@@ -273,8 +395,9 @@ __volatile BOOL isRLRunning = NO;
         long byteRead = sizeWillRead - receiverBufferLength;
         if(byteRead > MAX_BUFFER_SIZE)
           byteRead = MAX_BUFFER_SIZE;
-        
+
         long len = [(NSInputStream *)stream read:[receiverBuffer mutableBytes]  maxLength:byteRead];
+        NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable get_header len = %ld", len);
         if(len > 0)
         {
           NSRange range = {receiverBufferLength, len};
@@ -292,11 +415,12 @@ __volatile BOOL isRLRunning = NO;
         long byteRead = sizeWillRead - receiverBufferLength;
         if(byteRead > MAX_BUFFER_SIZE)
           byteRead = MAX_BUFFER_SIZE;
-        
+
         long len = [(NSInputStream *)stream read:[receiverBuffer mutableBytes] maxLength:byteRead];
+        NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable get_data len = %ld", len);
         if(len > 0)
         {
-          
+
           NSRange range = {receiverBufferLength, len};
           [currentData replaceBytesInRange:range withBytes:[receiverBuffer mutableBytes]];
           receiverBufferLength += len;
@@ -308,9 +432,9 @@ __volatile BOOL isRLRunning = NO;
           }
         }
       }
-      
+
       [streamLock unlock];
-      
+
     }
       break;
     case NSStreamEventErrorOccurred:
@@ -335,6 +459,7 @@ __volatile BOOL isRLRunning = NO;
 
 -(BOOL)processCmd
 {
+	
   switch( currentCmd )
   {
     case MOBILE_MSG_DISCONNECT:
@@ -381,6 +506,7 @@ __volatile BOOL isRLRunning = NO;
 
 -(BOOL)processHeader
 {
+	
   switch( currentCmd )
   {
     case MOBILE_MSG_SEND_NEXT_FRAME:
@@ -426,6 +552,7 @@ __volatile BOOL isRLRunning = NO;
 
 - (BOOL)processData
 {
+	
   switch( currentCmd )
   {
     case MOBILE_MSG_SEND_NEXT_FRAME:
@@ -504,6 +631,7 @@ __volatile BOOL isRLRunning = NO;
 #if false
 - (BOOL)processData
 {
+	
   uint16_t cmd = *(uint16_t*)receiverBuffer;
   uint32_t movedBytes = 0;
   switch( cmd )
