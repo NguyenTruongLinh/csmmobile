@@ -1118,6 +1118,7 @@ class DirectVideoView extends React.Component {
         break;
       case NATIVE_MESSAGE.RELAY_DATA_USAGE:
         this.onDataUsageUpdate(value);
+        break;
       case NATIVE_MESSAGE.RESPONSE_RESOLUTION:
         if (value != null) {
           let width = value[0];

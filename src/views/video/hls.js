@@ -279,16 +279,16 @@ class HLSStreamingView extends React.Component {
     this.clearReconnectTimeout();
     this.clearCheckTimelineInterval();
     const {streamData} = this.props;
-    if (
-      this.props.singlePlayer &&
-      isAlive(streamData) &&
-      streamData.isLoading
-    ) {
-      streamData.setStreamStatus({
-        isLoading: false,
-        connectionStatus: STREAM_STATUS.DONE,
-      });
-    }
+    // if (
+    //   this.props.singlePlayer &&
+    //   isAlive(streamData) &&
+    //   streamData.isLoading
+    // ) {
+    //   streamData.setStreamStatus({
+    //     isLoading: false,
+    //     connectionStatus: STREAM_STATUS.DONE,
+    //   });
+    // }
     snackbar.dismiss();
     // this.stop();
     // if (Platform.OS === 'ios') {
@@ -817,8 +817,13 @@ class HLSStreamingView extends React.Component {
           connectionStatus: STREAM_STATUS.BUFFERING,
           isLoading: true,
         });
+        this.videoBufferTimeout = setTimeout(
+          this.onBufferTimeout,
+          __DEV__ ? 15000 : BUFFER_TIMEOUT
+        );
         this.firstBuffer = false;
       }
+
       // this.clearErrorTimeout(); // should be here?
       // // It could cause reconnecting forever
       // if (!this.videoBufferTimeout) {
@@ -869,7 +874,7 @@ class HLSStreamingView extends React.Component {
     if (
       (error.errorString &&
         (error.errorString.includes('Unrecognized media format') || // android
-          error.errorString.include('Behind Live window'))) || // android
+          error.errorString.includes('Behind Live window'))) || // android
       error.domain == 'NSURLErrorDomain' || // iOS
       (error.localizedFailureReason &&
         error.localizedFailureReason.includes('Stream ended unexpectedly')) // iOS
