@@ -95,7 +95,7 @@
 
 @implementation ImcConnectionServer
 
-@synthesize serverID,server_address,username,password,groupName,server_port,connected,serverName,fullAddress, groupNames, serverVersion, availableDataDateList, allDateInterval,serverTimezone,public_address;
+@synthesize serverID,server_address,username,password,groupName,server_port,connected,serverName,fullAddress, groupNames, serverVersion, availableDataDateList, allDateInterval,serverTimezone,public_address, haspLicense, isRelay, relayConnectable, relayIp, relayPort;
 
 + (id)initWithServerInfo:(ImcConnectionServer *)server
 {
@@ -123,6 +123,11 @@
     availableDataDateList = [NSMutableArray array];
     allDateInterval = nil;
     serverTimezone = [[NSTimeZone alloc] init];
+    haspLicense      = @"";
+    relayIp  = @"";
+    isRelay       = FALSE;
+    relayConnectable       = FALSE;
+    relayPort     = IMC_DEFAULT_RELAY_SERVER_PORT;
   }
   return self;
 }
@@ -143,6 +148,12 @@
   availableDataDateList = server.availableDataDateList;
   serverTimezone  = server.serverTimezone;
   public_address  = server.public_address;
+  haspLicense      = server.haspLicense;
+  relayIp       = server.relayIp;
+  isRelay       = server.isRelay;
+  relayConnectable       = server.relayConnectable;
+  relayPort            = server.relayPort;
+  
 }
 
 -(BOOL)isEqual:(ImcConnectionServer *)object
@@ -232,6 +243,11 @@
   server.fullAddress      = fullAddress;
   server.groupNames       = self.groupNames;
   server.public_address   = self.public_address;
+  server.haspLicense      = haspLicense;
+  server.relayIp       = relayIp;
+  server.isRelay       = isRelay;
+  server.relayConnectable     = relayConnectable;
+  server.relayPort            = relayPort;
   return  server;
 }
 

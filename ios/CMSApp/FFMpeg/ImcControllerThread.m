@@ -24,6 +24,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(id)init
 {
+	
   self = [super init];
   if( self )
   {
@@ -41,6 +42,7 @@ const NSUInteger kMaxCommand = 50;
 
 - (void)mainThreadProc:(id)object
 {
+	
   ImcCommand* cmd = nil;
   
   while (isRunning) {
@@ -696,6 +698,7 @@ const NSUInteger kMaxCommand = 50;
 
 - (void)addCommand:(ImcCommand *)command
 {
+	
   [lockCommandList lock];
   [commandList addObject:command];
   [lockCommandList unlock];
@@ -709,6 +712,7 @@ const NSUInteger kMaxCommand = 50;
 
 - (ImcCommand*)getCurrentCommand
 {
+	
   
   ImcCommand* cmd = nil;
   [lockCommandList lock];
@@ -723,6 +727,7 @@ const NSUInteger kMaxCommand = 50;
 
 - (void)clearAllCommands
 {
+	
   [lockCommandList lock];
   [commandList removeAllObjects];
   [lockCommandList unlock];
@@ -730,6 +735,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)startThread
 {
+	
   self->isRunning = TRUE;
 //  isBusy = YES;
   [NSThread detachNewThreadSelector:@selector(mainThreadProc:) toTarget:self withObject:nil];
@@ -738,6 +744,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)stopThread
 {
+	
   [self clearAllCommands];
   self->isRunning = FALSE;
   [lockThread lock];
@@ -747,6 +754,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateLayout:(NSInteger)layout
 {
+	
   env.layout = layout;
   
   for(ImcRemoteConnection* server in env.connectedServers)
@@ -761,6 +769,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateChannelMapping:(NSArray *)viewsInfo : (bool)sendToServer
 {
+	
   env.viewsInfo = viewsInfo;
   
   for(int serverIndex = 0; serverIndex < env.connectedServers.count; serverIndex++ )
@@ -776,6 +785,7 @@ const NSUInteger kMaxCommand = 50;
 
 - (void)updateServerDisplayMask:(NSString *)serverAddress :(NSInteger)serverPort :(uint64_t)channelMask
 {
+	
   
   for(int serverIndex = 0; serverIndex < env.connectedServers.count; serverIndex++ )
   {
@@ -796,6 +806,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateFavoriteServerDisplayMask : (NSString*)serverAddress : (NSInteger)serverPort : (uint64_t)channelMask
 {
+	
 //  [lockServerList lock];
 //  AppDelegate* appDelegate = (AppDelegate*)[[UIApplication sharedApplication] delegate];
 //  for(ImcConnectedServer* serverInfo in appDelegate.connectionServerList )
@@ -823,6 +834,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateRatioView:(NSInteger)ratioView :(_Bool)sendToServer
 {
+	
   env.rationView = ratioView;
   if( sendToServer )
   {
@@ -832,11 +844,13 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateAlarmSetting:(NSString *)serverAddress :(NSInteger)serverPort :(id) alarmSetting
 {
+	
   [env.deviceAlarmSetting setAlarmSetting:alarmSetting];
 }
 
 -(void)updateVolumeLevel:(NSNumber*)volumeLevel
 {
+	
   
   [env.deviceAlarmSetting setVolumeLevel:volumeLevel];
   env.deviceAlarmSetting.volume = volumeLevel;
@@ -844,6 +858,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)playAnAlarmSound:(NSNumber*)volumeLevel
 {
+	
   
   /*
    SystemSoundID completeSound;
@@ -863,6 +878,7 @@ const NSUInteger kMaxCommand = 50;
 
 - (void)updateDisplaySize:(CGSize)smallDivSize :(CGSize)largeDivSize
 {
+	
   [lockServerList lock];
   for(int serverIndex = 0; serverIndex < env.connectedServers.count; serverIndex++ )
   {
@@ -875,6 +891,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateFullscreenChannel:(NSString *)serverAddress :(NSInteger)serverPort :(NSInteger)fullscreenChannel
 {
+	
   [lockServerList lock];
   NSLog(@"Update Full Screen");
   for(int serverIndex = 0; serverIndex < env.connectedServers.count; serverIndex++ )
@@ -894,6 +911,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateMainSubStream:(NSString *)serverAddress :(NSInteger)serverPort :(NSInteger)fullscreenChannel
 {
+	
   [lockServerList lock];
   NSLog(@"Update Full Screen");
   for(int serverIndex = 0; serverIndex < env.connectedServers.count; serverIndex++ )
@@ -912,11 +930,13 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)updateMainSubStreamResponse:(BOOL)needMainStream
 {
+	
   firstMainStreamFrame = needMainStream;
 }
 
 -(void)processAlarmListCommand:(IMC_MOBILE_COMMAND)command : (id)parameter
 {
+	
   ImcCommand* imcCmd = [[ImcCommand alloc] initWithCommand:command andData:parameter];
   
   [self addCommand:imcCmd];
@@ -924,6 +944,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(ImcServerSetting*)getMainSubStreamRequestForServer:(NSString *)serverAddress
 {
+	
   for (ImcRemoteConnection* server in env.connectedServers) {
     if ([server.serverInfo.server_address isEqualToString:serverAddress]) {
       return server.deviceSetting;
@@ -935,6 +956,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)processPtzOperation:(NSInteger)messageID :(NSObject *)parameter
 {
+	
   IMC_MOBILE_COMMAND command = 0;
   switch (messageID) {
     case IMC_MSG_LIVE_VIEW_PTZ_LEFT:
@@ -1005,6 +1027,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)processSnapshotRequest:(NSInteger)messageID :(NSObject *)parameter
 {
+	
   IMC_MOBILE_COMMAND command = 0;
   switch (messageID) {
     case IMC_MSG_LIVE_VIEW_REQUEST_SNAPSHOT:
@@ -1022,6 +1045,7 @@ const NSUInteger kMaxCommand = 50;
 
 - (void)updateSettingToServer:(ImcConnectedServer *)connectedServer
 {
+	
   [lockServerList lock];
   for(ImcRemoteConnection* remote in env.connectedServers)
   {
@@ -1045,6 +1069,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)sendRequestTimeZoneToServer:(ImcConnectionServer*)connectionServer
 {
+	
   for(ImcRemoteConnection* connection in env.connectedServers)
   {
     if ([connectionServer.server_address isEqualToString:connection.serverInfo.server_address]) {
@@ -1058,6 +1083,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)sendSearchCommonMessageToServer:(ImcConnectionServer*)connectionServer message:(MOBILE_MSG)message forTimeInterval:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask
 {
+	
   if (ti > 0 && channelMask > 0 && connectionServer)
   {
     if(message==MOBILE_MSG_SEARCH_REQUEST_MAIN_SUB)
@@ -1105,6 +1131,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)stopTransferingVideo
 {
+	
   //ImcCommand* imcCommand = [[ImcCommand alloc] initWithCommand:IMC_CMD_STOP_TRANSFER_VIDEO andData:nil];
   ImcCommand* imcCommand = [[ImcCommand alloc] initWithCommand:IMC_CMD_STOP_TRANSFER_VIDEO andData:nil];
   [self addCommand:imcCommand];
@@ -1116,6 +1143,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)startTransferingVideo
 {
+	
   ImcCommand* imcCommand = [[ImcCommand alloc] initWithCommand:IMC_CMD_START_TRANSFER_VIDEO andData:nil];
   [self addCommand:imcCommand];
   /*for(ImcRemoteConnection* connection in env.connectedServer)
@@ -1126,6 +1154,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)startTransferingVideoForServer:(NSArray*)data
 {
+	
   NSArray* dataParams = data;
   ImcCommand* imcCommand = [[ImcCommand alloc] initWithCommand:IMC_CMD_START_TRANSFER_VIDEO_FOR_SERVER andData:dataParams];
   [self addCommand:imcCommand];
@@ -1133,6 +1162,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)prepareForMinimize
 {
+	
   /*ImcCommand* imcCommand = [[ImcCommand alloc] initWithCommand:IMC_CMD_PREPARE_FOR_MINIMIZE       andData:nil];
    [self addCommand:imcCommand];*/
   [lockServerList lock];
@@ -1148,6 +1178,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)prepareForRestore
 {
+	
   ImcCommand* imcCommand = [[ImcCommand alloc] initWithCommand:IMC_CMD_PREPARE_FOR_RESTORE andData:nil];
   [self addCommand:imcCommand];
   
@@ -1159,6 +1190,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)disconnectAllServers
 {
+	
   [lockServerList lock];
   for( int index = 0; index < env.connectedServers.count; index++ )
   {
@@ -1176,6 +1208,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)disconnectServers:(NSArray*)serverList
 {
+	
   NSMutableArray* deletedservers = [NSMutableArray array];
   
   [lockServerList lock];
@@ -1203,6 +1236,7 @@ const NSUInteger kMaxCommand = 50;
 #pragma mark - handle command from server
 -(int)handleCommand:(NSInteger)command :(id)parameter
 {
+	
   switch (command) {
     case IMC_CMD_CONNECTION_CONNECT_RESPONSE:
     case IMC_CMD_SEND_CAMERA_LIST:

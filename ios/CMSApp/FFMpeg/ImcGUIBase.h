@@ -19,6 +19,7 @@
 #define IMC_MAX_CHANNEL 64
 
 #define IMC_DEFAULT_SERVER_PORT 13225
+#define IMC_DEFAULT_RELAY_SERVER_PORT 19900
 
 #define IMC_TIME_OUT_SECOND 15
 #define MAX_SERVER_CONNECTION 5
@@ -449,6 +450,11 @@ typedef NS_ENUM(NSUInteger, IMC_VIDEO_MODE)
   NSString*   password;
   NSString*   groupName;
   NSString*   fullAddress;
+  NSString* haspLicense;
+  BOOL isRelay;
+  BOOL relayConnectable;
+  NSString* relayIp;
+  NSInteger relayPort;
 }
 
 @property (nonatomic, readwrite) NSInteger server_port;
@@ -461,6 +467,12 @@ typedef NS_ENUM(NSUInteger, IMC_VIDEO_MODE)
 @property (nonatomic, retain) NSString* favoriteGroupName;
 @property (nonatomic, retain) NSString* fullAddress;
 @property (nonatomic, retain) NSString* public_address;
+@property (nonatomic, retain) NSString* haspLicense;
+@property (nonatomic, readwrite)           BOOL    isRelay;
+@property (nonatomic, readwrite)           BOOL    relayConnectable;
+@property (nonatomic, retain) NSString* relayIp;
+@property (nonatomic, readwrite) NSInteger relayPort;
+
 @property (readwrite)           BOOL    connected;
 @property NSMutableArray* groupNames;
 @property NSInteger serverVersion;
