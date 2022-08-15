@@ -320,12 +320,12 @@ public class CommunicationSocket implements Runnable {
                     Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " IllegalArgumentException = " + iex);
                 }
                 withRelayHeader = true;
-                relayHeaderBlockRemainLen = cmdsate.remain_len;
+                relayHeaderBlockRemainLen = 0;
                 while (!Thread.currentThread().isInterrupted() && running) {
-                    //socket.setSoTimeout(Constant.socketReadTimeOut);
-                    //rcv_len = utils.ReadBlock( input, cmdsate.remain_len, rcv, rcv_offset);
+                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, isRelay && (relayHeaderBlockRemainLen == 0), "rcv_len");
+
                     relayHeaderBlockRemainLen -= cmdsate.remain_len;
-                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, isRelay && relayHeaderBlockRemainLen <= 0, "rcv_len");
+
                     if (rcv_len == 0) {
                         Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " rcv_len == 0 continue");
                         continue;
@@ -427,6 +427,7 @@ public class CommunicationSocket implements Runnable {
     int relayHeaderBlockCount = 0;
     protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader, String debug)
     {
+        Log.d("GOND", "1508 hasRelayHeader = " + hasRelayHeader);
         if(hasRelayHeader) {
             byte[] headerBytes = new byte[RELAY_HEADER_LEN];
             int readHeaderCount = ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0, debug);
