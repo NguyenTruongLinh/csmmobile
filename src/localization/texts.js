@@ -139,7 +139,7 @@ export const STREAM_STATUS = {
   WRONG_SERVER: 'Wrong server id.',
   PORT_ERROR: 'Video port error.',
   CONNECTION_ERROR: 'Connection Failed.',
-  RELAY_HANDSHAKE_FAILED: 'Relay server could not find Pro server.',
+  RELAY_HANDSHAKE_FAILED: 'Relay handshake failed.',
   RELAY_DISCONNECTED: 'Pro is unassigned from relay server.',
 };
 
