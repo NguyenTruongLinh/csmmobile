@@ -88,6 +88,14 @@ class ForgotPasswordView extends Component {
     __DEV__ && console.log('ForgotPasswordView componentWillUnmount');
   }
 
+  onTyping = (text, name) => {
+    if (name) {
+      if (text != this.state[name]) {
+        this.setState({[name]: text});
+      }
+    }
+  };
+
   onTypingDomain = text => {
     let domain = text;
     if (!domain) return;
@@ -283,7 +291,7 @@ class ForgotPasswordView extends Component {
               enablesReturnKeyAutomatically={true}
               onEndEditing={this.onEndEditing}
               onFocus={this.onFocus}
-              onChangeText={this.onTypingUsername}
+              onChangeText={this.onTyping}
               onSubmitEditing={this.onSubmitUserName}
               returnKeyType="next"
               autoCapitalize={'none'}

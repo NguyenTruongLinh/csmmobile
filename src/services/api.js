@@ -465,7 +465,7 @@ class Api {
       let rs = await res.json();
       return {status: res.status, Result: rs};
     } catch (ex) {
-      __DEV__ && console.log('GOND LOGIN Exception: ', ex);
+      __DEV__ && console.log('GOND ForgotPassword Exception: ', ex);
       return {status: undefined, Result: undefined};
     }
   }

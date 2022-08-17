@@ -68,6 +68,8 @@ class DirectVideoView extends React.Component {
       translateX: 0,
       translateY: 0,
       marginLeft: 0,
+      originalWidth: 0,
+      originalHeight: 0,
       // isFilterShown: false,
     };
 
@@ -1121,16 +1123,9 @@ class DirectVideoView extends React.Component {
         break;
       case NATIVE_MESSAGE.RESPONSE_RESOLUTION:
         if (value != null) {
-          let width = value[0];
-          let height = value[1];
-          let containerWidth = this.state.width;
-          let containerHeight = this.state.height;
-          let scale =
-            height < containerHeight
-              ? height / containerHeight
-              : containerHeight / height;
-          let left = (containerWidth - width * scale) / 2;
-          if (left > 0) this.setState({marginLeft: left});
+          this.setState({originalWidth: value[0]});
+          this.setState({originalHeight: value[1]});
+          this.onSetMarginLeft();
         }
         break;
       case NATIVE_MESSAGE.SERVER_DISCONNECTED:
@@ -1166,6 +1161,16 @@ class DirectVideoView extends React.Component {
       default:
         break;
     }
+  };
+  onSetMarginLeft = () => {
+    let containerWidth = this.state.width;
+    let containerHeight = this.state.height;
+    let scale =
+      this.state.originalHeight < containerHeight
+        ? this.state.originalHeight / containerHeight
+        : containerHeight / this.state.originalHeight;
+    let left = (containerWidth - this.state.originalWidth * scale) / 2;
+    if (left > 0) this.setState({marginLeft: left});
   };
 
   onDataUsageUpdate = segmentLoad => {
@@ -1583,6 +1588,7 @@ class DirectVideoView extends React.Component {
         height: height,
         status: '',
       });
+      this.onSetMarginLeft();
     }, 100);
   };
 

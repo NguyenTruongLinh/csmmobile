@@ -744,13 +744,11 @@ export const UserStoreModel = types
           appStore.naviService.navigate(ROUTERS.SUBMITED);
           self.isSubmitForgotPassLoading = false;
           return true;
-        } else if (
-          res &&
-          res.status == 200 &&
-          res.Result &&
-          res.Result.message &&
-          res.Result.error
-        ) {
+        } else if (res.Result == undefined && res.error == undefined) {
+          Alert.alert(LoginTxt.errorLoginCantConnect);
+          self.isSubmitForgotPassLoading = false;
+          return false;
+        } else {
           Alert.alert(LoginTxt.forgotPasswordErrorTitle, res.Result.message);
           self.isSubmitForgotPassLoading = false;
           return false;
