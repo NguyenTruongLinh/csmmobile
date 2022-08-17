@@ -597,17 +597,16 @@
 
 - (BOOL)processCommand
 {
-	
-  if( receivedBufferLength < 2 )
+
+  int relayOffset = isRelay ? 68 : 0;
+  int directRreceivedBufferLength = receivedBufferLength - relayOffset;
+  uint8_t* directReceivedBuffer = receivedBuffer + relayOffset;
+  
+  if( directRreceivedBufferLength < 2)
     return FALSE;
   movedBytes = 0;
-  int relayOffset = isRelay && testRelayHeaderFlag ? 68 : 0;
-  uint16_t cmd = *(uint16_t*)(receivedBuffer + relayOffset);
-  NSLog(@"0808 processCommand cmd = %d relayOffset = %d", cmd, relayOffset);
-//  if(cmd == 501)
-//    testRelayHeaderFlag = false;
-//  if(cmd != 1) cmd = *(uint16_t*)(receivedBuffer);
-//  NSLog(@"0808 ImcRemoteConnection 222 cmd = %d ", cmd);
+  uint16_t cmd = *(uint16_t*)(directReceivedBuffer);
+  
   BOOL onlyCmd = FALSE;
   if( cmd == MOBILE_MSG_KEEP_ALIVE )
   {
@@ -646,7 +645,7 @@
   }
   else if( cmd == MOBILE_MSG_START_SEND_VIDEO )
   {
-    if(receivedBufferLength >=6)
+    if(directRreceivedBufferLength >=6)
     {
       int32_t videoPort;
       NSString* address;
@@ -661,7 +660,7 @@
           address = serverInfo.server_address;
         else
           address = serverInfo.public_address;
-        videoPort = *(int32_t*)(receivedBuffer + 2);
+        videoPort = *(int32_t*)(directReceivedBuffer + 2);
       }
       NSData* videoHandshake = isRelay ? [self constructHandshakeData: @"video"] : NULL;
       [videoConnection connectToServer:address :videoPort :videoHandshake];
@@ -676,9 +675,9 @@
           cmd == MOBILE_MSG_NEXT_ALARM_LIST ||
           cmd == MOBILE_MSG_PREVIOUS_ALARM_LIST )
   {
-    if( receivedBufferLength < 3 )
+    if( directRreceivedBufferLength < 3 )
       return FALSE;
-    uint8_t result = *(uint8_t*)(receivedBuffer+2);
+    uint8_t result = *(uint8_t*)(directReceivedBuffer+2);
     ImcAlarmEventList* alarmList = [[ImcAlarmEventList alloc] initFromServerAddress:serverInfo.server_address andPort:serverInfo.server_port];
     NSInteger sentCmd = 0;
     if( result == MOBILE_MSG_FAIL )
@@ -691,12 +690,12 @@
       uint32_t length;
       if( cmd != MOBILE_MSG_PREVIOUS_ALARM_LIST )
       {
-        uint8_t status = *(uint8_t*)(receivedBuffer + 3);
+        uint8_t status = *(uint8_t*)(directReceivedBuffer + 3);
         alarmList.alarmViewStatus = status;
-        length = *(uint32_t*)(receivedBuffer + 4);
-        if( receivedBufferLength >= length + 8 )
+        length = *(uint32_t*)(directReceivedBuffer + 4);
+        if( directRreceivedBufferLength >= length + 8 )
         {
-          NSData* data = [[NSData alloc] initWithBytes:(receivedBuffer + 8) length:length];
+          NSData* data = [[NSData alloc] initWithBytes:(directReceivedBuffer + 8) length:length];
           [alarmList parserXMLData:data];
           movedBytes = length + 8 + relayOffset;
         }
@@ -705,10 +704,10 @@
       }
       else
       {
-        length = *(uint32_t*)(receivedBuffer + 3);
-        if( receivedBufferLength >= length + 7 )
+        length = *(uint32_t*)(directReceivedBuffer + 3);
+        if( directRreceivedBufferLength >= length + 7 )
         {
-          NSData* data = [[NSData alloc] initWithBytes:(receivedBuffer + 7) length:length];
+          NSData* data = [[NSData alloc] initWithBytes:(directReceivedBuffer + 7) length:length];
           [alarmList parserXMLData:data];
           movedBytes = length + 7 + relayOffset;
         }
@@ -738,7 +737,7 @@
   {
     NSLog(@"---NEW ALRM---");
     
-    if( receivedBufferLength < 3 )
+    if( directRreceivedBufferLength < 3 )
     {
       NSLog(@"---Return FAIL 1---");
       return FALSE;
@@ -749,13 +748,13 @@
     
     uint32_t length;
     
-    length = *(uint32_t*)(receivedBuffer + 2);
+    length = *(uint32_t*)(directReceivedBuffer + 2);
     
-    if (receivedBufferLength < length) {
+    if (directRreceivedBufferLength < length) {
       return FALSE;
     }
     
-    NSData* data = [[NSData alloc] initWithBytes:(receivedBuffer + 6) length:length];
+    NSData* data = [[NSData alloc] initWithBytes:(directReceivedBuffer + 6) length:length];
     
     ImcAlarmEventData* alarmEvent = [alarmList parserXMLElement:data];
     movedBytes = length + 6 + relayOffset;
@@ -763,8 +762,8 @@
     
     NSInteger sentCmd = IMC_CMD_NEW_ALARM_DETECTED;
     
-    if (receivedBufferLength < movedBytes) {
-      movedBytes = receivedBufferLength;
+    if (directRreceivedBufferLength < movedBytes) {
+      movedBytes = directRreceivedBufferLength;
     }
     
     [delegate handleCommand:sentCmd :alarmList];
@@ -773,7 +772,7 @@
   }
   else if( cmd ==  MOBILE_MSG_SNAPSHOT )
   {
-    if (receivedBufferLength < 3) {
+    if (directRreceivedBufferLength < 3) {
       return  FALSE;
     }
     NSLog(@"---SnapShot Came");
@@ -789,10 +788,10 @@
       headerSize = FRAME_HEADER_EX_SIZE_SERVER_3_3;
     }
     
-    if( receivedBufferLength > headerSize + 2 )
+    if( directRreceivedBufferLength > headerSize + 2 )
     {
       keepAliveCounter = 0;
-      uint8_t* bytes = receivedBuffer + 2;
+      uint8_t* bytes = directReceivedBuffer + 2;
       FrameHeader* frameHeader = nil;
       if( serverVersion < VERSION_2300 )
         frameHeader = [[FrameHeader alloc] initFromBuffer:bytes :headerSize];
@@ -817,12 +816,12 @@
               headerSize = FRAME_HEADER_EX_SIZE_SERVER_3_3;
             }
           }
-          if( receivedBufferLength > headerSize + 2 )
+          if( directRreceivedBufferLength > headerSize + 2 )
           {
             EncodedFrame* newFrame = [[EncodedFrame alloc] init];
             
-            NSInteger result = [newFrame initwithRawData:receivedBuffer + 2 length:receivedBufferLength - 2 version:serverVersion];
-            if (receivedBufferLength < newFrame.header.length) {
+            NSInteger result = [newFrame initwithRawData:directReceivedBuffer + 2 length:directRreceivedBufferLength - 2 version:serverVersion];
+            if (directRreceivedBufferLength < newFrame.header.length) {
               return FALSE;
             }
             if( result != -1)
@@ -851,7 +850,7 @@
         }
         else
         {
-          if( receivedBufferLength >= [frameHeader getLength] + headerSize )
+          if( directRreceivedBufferLength >= [frameHeader getLength] + headerSize )
           {
             if (serverVersion > VERSION_3200) {
               
@@ -866,9 +865,9 @@
                 EncodedFrame* newFrame = [[EncodedFrame alloc] init];
                 
                 
-                NSInteger result = [newFrame initwithRawData:receivedBuffer + 2 length:receivedBufferLength - 2 version:serverVersion];
+                NSInteger result = [newFrame initwithRawData:directReceivedBuffer + 2 length:directRreceivedBufferLength - 2 version:serverVersion];
                 
-                if (receivedBufferLength < newFrame.header.length) {
+                if (directRreceivedBufferLength < newFrame.header.length) {
                   return FALSE;
                 }
                 if( result != -1)
@@ -933,15 +932,15 @@
   }
   else if (cmd == MOBILE_MSG_SEARCH_RESPONSE_TIME_INTERVAL)
   {
-    if( receivedBufferLength < 3 )
+    if( directRreceivedBufferLength < 3 )
       return FALSE;
-    uint32_t length = *(uint32_t*)(receivedBuffer + 2);
+    uint32_t length = *(uint32_t*)(directReceivedBuffer + 2);
     keepAliveCounter = 0;
-    if (receivedBufferLength < length ) {
+    if (directRreceivedBufferLength < length ) {
       return FALSE;
     }
     
-    NSData* data = [NSData dataWithBytes:receivedBuffer + 6 length:length];
+    NSData* data = [NSData dataWithBytes:directReceivedBuffer + 6 length:length];
     AllDayInterval* allDaysInterval = (AllDayInterval*)data.bytes;
     
     
@@ -980,18 +979,18 @@
   
   else if (cmd == MOBILE_MSG_SEARCH_RESPONSE_DAY_LIST)
   {
-    if( receivedBufferLength < 3 )
+    if( directRreceivedBufferLength < 3 )
     {
       return FALSE;
     }
     
-    uint32_t length = *(uint32_t*)(receivedBuffer+2);
+    uint32_t length = *(uint32_t*)(directReceivedBuffer + 2);
     
-    if (receivedBufferLength < length) {
+    if (directRreceivedBufferLength < length) {
       return FALSE;
     }
     
-    NSData* data = [NSData dataWithBytes:receivedBuffer + 6 length:length];
+    NSData* data = [NSData dataWithBytes:directReceivedBuffer + 6 length:length];
     
     
     [serverInfo.availableDataDateList removeAllObjects];
@@ -1037,25 +1036,22 @@
     return TRUE;
   }
   
-  if( receivedBufferLength < MOBILE_COMM_COMMAND_HEADER_SIZE )
+  if( directRreceivedBufferLength < MOBILE_COMM_COMMAND_HEADER_SIZE )
     return FALSE;
   
   uint8_t _test[6];
-  memcpy(_test, receivedBuffer, 6);
-  uint32_t cmdLength = *(uint32_t*)(receivedBuffer+2 + relayOffset);
+  memcpy(_test, directReceivedBuffer, 6);
+  uint32_t cmdLength = *(uint32_t*)(directReceivedBuffer+2);
   
-  NSLog(@"0808 cmdLength = %d const = %d receivedBufferLength = %d", cmdLength, MOBILE_COMM_COMMAND_HEADER_SIZE, receivedBufferLength);
-  
-  if( cmdLength + MOBILE_COMM_COMMAND_HEADER_SIZE > receivedBufferLength )
+  if( cmdLength + MOBILE_COMM_COMMAND_HEADER_SIZE > directRreceivedBufferLength )
     return FALSE;
   
-  NSData* data = [[NSData alloc] initWithBytes:(receivedBuffer + relayOffset) length:cmdLength+MOBILE_COMM_COMMAND_HEADER_SIZE];
+  NSData* data = [[NSData alloc] initWithBytes:(directReceivedBuffer) length:cmdLength+MOBILE_COMM_COMMAND_HEADER_SIZE];
   
   ImcMobileCommand* mobileCommand = [self parserData:data];
   if( mobileCommand == nil )
     return FALSE;
   
-  NSLog(@"0808 getCommand = %d", [mobileCommand getCommand]);
   switch ([mobileCommand getCommand]) {
     case MOBILE_MSG_LOGIN:
     {
@@ -1070,8 +1066,6 @@
           {
             GDataXMLElement* connectionIndexNode = (GDataXMLElement*)[doc.rootElement attributeForName:@"connectionIndex"];
             connectionIndex = [[connectionIndexNode stringValue] integerValue];
-            
-            NSLog(@"1108 ERROR MOBILE_MSG_LOGIN connectionIndex = %ld", (long)connectionIndex);
             
             serverInfo.connected = TRUE;
             
