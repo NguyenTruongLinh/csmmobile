@@ -396,6 +396,8 @@ public class FFMpegFrameView extends View {
                 int prewidth = width;
                 int height = getHeight() + 1;
                 int left = 0;
+                if (originResolutionWidth == 0 || originResolutionHeight == 0)
+                    return;
                 if(!stretch)
                 {
                     width = height == 0 ? width : originResolutionWidth * height/originResolutionHeight;
