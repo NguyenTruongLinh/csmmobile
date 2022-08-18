@@ -98,6 +98,7 @@ class ForgotPasswordView extends Component {
 
   onTypingDomain = text => {
     let domain = text;
+    this.setState({domain: text});
     if (!domain) return;
 
     const regexSubName = /^[A-z0-9]+$/;
@@ -120,6 +121,7 @@ class ForgotPasswordView extends Component {
 
   onTypingEmail = text => {
     let email = text;
+    this.setState({email: text});
     if (!email) return;
     const regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     let invalidMsg = '';
