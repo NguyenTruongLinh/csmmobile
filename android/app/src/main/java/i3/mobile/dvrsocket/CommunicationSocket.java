@@ -985,11 +985,9 @@ public class CommunicationSocket implements Runnable {
                     int[] v_index = this.VideoSourceIndex();
                     byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(v_index,this.HDMode);
                     byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
-                    byte[] send_data = new byte[msg_buffer.length+msg_stop.length];
-                    System.arraycopy(msg_buffer,0,send_data,0,msg_buffer.length);
-                    System.arraycopy(msg_stop,0,send_data,msg_buffer.length,msg_stop.length);
-                    WriteSocketData(send_data, "MOBILE_MSG_PAUSE_SEND_VIDEO OTHERS");
                     //WriteSocketData(utils.MsgBuffer( Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO, null )); //duck marked
+                    WriteSocketData(msg_buffer, "ProcessCommand MOBILE_MSG_MOBILE_SEND_SETTINGS");
+                    WriteSocketData(msg_stop, "ProcessCommand MOBILE_MSG_PAUSE_SEND_VIDEO");
                     WriteSocketData(MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, timezone.getTimeZone(), channels, this.HDMode), "MSG_SEARCH_REQUEST_DAY_LIST");
                 }
                 else
@@ -1529,18 +1527,14 @@ public class CommunicationSocket implements Runnable {
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
                 int[] vindex = this.VideoSourceIndex();
                 byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS( vindex, this.HDMode);
-                byte[] msg = new byte[msg_buffer.length + msg_stop.length];
-                System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
-                System.arraycopy( msg_buffer, 0, msg, msg_stop.length, msg_buffer.length );
-                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg);
+                byte[][] groupedBuff = {msg_stop, msg_buffer};
+                new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
             }
             else{
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
                 byte[] msg_hw = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG, null);
-                byte[] msg = new byte[msg_hw.length + msg_stop.length];
-                System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
-                System.arraycopy( msg_hw, 0, msg, msg_stop.length, msg_hw.length );
-                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg);
+                byte[][] groupedBuff = {msg_stop, msg_hw};
+                new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
             }
 
         }
@@ -1554,7 +1548,7 @@ public class CommunicationSocket implements Runnable {
             if( reload == true ){
                 // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload");
                 //int[] channel_no = this.ChannelNo();
-                byte[]buff = null;
+                byte[][] groupedBuff = null;
                 byte[] msg_stop = null;
                 if( _islive == true){
                     // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload live");
@@ -1565,19 +1559,18 @@ public class CommunicationSocket implements Runnable {
                     }
                     msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                     byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
-                    buff = new byte[buff_daylist.length + msg_stop.length ];
-                    System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
 
-                    System.arraycopy(buff_daylist,0, buff, msg_stop.length , buff_daylist.length );
+                    byte[][] initGroupedBuff = {msg_stop, buff_daylist};
+                    groupedBuff = initGroupedBuff;
                 }
                 else {
                     // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload search");
                     int[] v_index = this.ChannelNo(false);
                     msg_stop = MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, v_index);
                     byte[] msg_timeinterval = MsgCommandItem.MSG_SEARCH_REQUEST_TIME_INTERVAL(this.ServerInfo, ChannelNo);
-                    buff = new byte[msg_timeinterval.length + msg_stop.length ];
-                    System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
-                    System.arraycopy(msg_timeinterval,0, buff, msg_stop.length , msg_timeinterval.length );
+
+                    byte[][] initGroupedBuff = {msg_stop, msg_timeinterval};
+                    groupedBuff = initGroupedBuff;
                 }
                 //byte[] msg_timeinterval = MsgCommandItem.MSG_SEARCH_REQUEST_TIME_INTERVAL(this.ServerInfo, ChannelNo);
                 //byte[] msg_set_pos = MsgCommandItem.MSG_SEARCH_REQUEST_SETPOS(this.ServerInfo, ChannelNo, 0, this.HDMode);
@@ -1592,7 +1585,7 @@ public class CommunicationSocket implements Runnable {
                 //System.arraycopy(msg_fw,0, buff,msg_set_pos.length + msg_stop.length, msg_fw.length );
 
 
-                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
+                new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
             }
             else{
                 // Log.d("GOND", "**DIRECT** ChangePlay: case 3 not reload !!!");
@@ -1604,11 +1597,9 @@ public class CommunicationSocket implements Runnable {
                 }
                 byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                 byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
-                byte[]buff = new byte[ msg_stop.length + buff_daylist.length];
-                System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
 
-                System.arraycopy(buff_daylist,0, buff, msg_stop.length , buff_daylist.length );
-                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
+                byte[][] groupedBuff = {msg_stop, buff_daylist};
+                new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
             }
 
         }
@@ -1654,11 +1645,9 @@ public class CommunicationSocket implements Runnable {
             //WriteSocketData(  msg_buffer);
             byte[] msg_fw = MsgCommandItem.MSG_SEARCH_REQUEST_PLAY_FW(this.ServerInfo, v_index,val, this.HDMode);
             //WriteSocketData( msg_buffer);
-            byte[]buff = new byte[ msg_fw.length + msg_set_pos.length + msg_stop.length ];
-            System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
-            System.arraycopy(msg_set_pos,0, buff,msg_stop.length , msg_set_pos.length );
-            System.arraycopy(msg_fw,0, buff,msg_set_pos.length + msg_stop.length, msg_fw.length );
-            new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
+            byte[][] groupedBuff = {msg_stop, msg_set_pos, msg_fw};
+            new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
+
         } catch (Exception e) {
 
             //throw e;
@@ -1708,8 +1697,27 @@ public class CommunicationSocket implements Runnable {
         protected Integer doInBackground(byte[]... buff){
 
             int ret = utils.WriteBlock( this.writer, utils.notifyAddRelayHeader(buff[0], isRelay, clientIp));
+            return  Integer.valueOf(ret);
+        }
+    }
 
-            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " WriteBlock SendBufferTask");
+    protected class SendGroupedBufferTask extends AsyncTask<byte[][],Integer,Integer>
+    {
+        BufferedOutputStream writer;
+        boolean isRelay;
+        String clientIp;
+        protected SendGroupedBufferTask(BufferedOutputStream output, boolean _isRelay, String _clientIp)
+        {
+            writer = output;
+            isRelay = _isRelay;
+            clientIp = _clientIp;
+        }
+        @Override
+        protected Integer doInBackground(byte[][]... buff){
+            int ret = 1;
+            for(byte[] subBuff : buff[0]) {
+                ret = utils.WriteBlock( this.writer, utils.notifyAddRelayHeader(subBuff, isRelay, clientIp));
+            }
             return  Integer.valueOf(ret);
         }
     }
