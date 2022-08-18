@@ -68,8 +68,10 @@ class DirectVideoView extends React.Component {
       translateX: 0,
       translateY: 0,
       marginLeft: 0,
+      marginTop:0,
       originalWidth: 0,
       originalHeight: 0,
+      visibleBcg:true,
       // isFilterShown: false,
     };
 
@@ -1125,7 +1127,7 @@ class DirectVideoView extends React.Component {
         if (value != null) {
           this.setState({originalWidth: value[0]});
           this.setState({originalHeight: value[1]});
-          this.onSetMarginLeft();
+          this.onSetMargin();
         }
         break;
       case NATIVE_MESSAGE.SERVER_DISCONNECTED:
@@ -1162,15 +1164,26 @@ class DirectVideoView extends React.Component {
         break;
     }
   };
-  onSetMarginLeft = () => {
+  onSetMargin = () => {
     let containerWidth = this.state.width;
     let containerHeight = this.state.height;
-    let scale =
-      this.state.originalHeight < containerHeight
-        ? this.state.originalHeight / containerHeight
-        : containerHeight / this.state.originalHeight;
-    let left = (containerWidth - this.state.originalWidth * scale) / 2;
-    if (left > 0) this.setState({marginLeft: left});
+    let hRatio = (containerHeight * 100) / this.state.originalHeight;
+    let wRatio = (containerWidth * 100) / this.state.originalWidth;
+    if (hRatio > wRatio)
+    {
+        let height = ((wRatio * this.state.originalHeight) / 100);
+        let top = (containerHeight - height) /2;
+        this.setState({marginLeft: 0});
+        if (top > 0) this.setState({marginTop: top});
+    }
+    else if (hRatio < wRatio)
+    {
+        let width = ((hRatio * this.state.originalWidth) / 100);
+        let left = (containerWidth - width) / 2;
+        this.setState({marginTop: 0});
+        if (left > 0) this.setState({marginLeft: left});
+    }
+    this.setState({visibleBcg: false});
   };
 
   onDataUsageUpdate = segmentLoad => {
@@ -1237,6 +1250,7 @@ class DirectVideoView extends React.Component {
     if (!videoStore.paused) {
       videoStore.setBeginSearchTime(this.lastFrameTime);
     }
+    this.setState({visibleBcg: true});
   };
 
   onHDMode = isHD => {
@@ -1588,7 +1602,7 @@ class DirectVideoView extends React.Component {
         height: height,
         status: '',
       });
-      this.onSetMarginLeft();
+      this.onSetMargin();
     }, 100);
   };
 
@@ -1604,8 +1618,11 @@ class DirectVideoView extends React.Component {
     } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
+    const isMenuReady = videoStore.selectedStream
+      && videoStore.selectedStream.isMenuReady ? true
+      : false;
     __DEV__ &&
-      console.log('GOND with height: ', this.state.width, this.state.height);
+      console.log('GOND with height: ',isMenuReady, this.state.width, this.state.height);
 
     return singlePlayer ? (
       <GestureDetector gesture={this.composed}>
@@ -1621,7 +1638,7 @@ class DirectVideoView extends React.Component {
             isBackground={true}
             dataSource={serverInfo.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
-            visible={!videoStore.enableStretch}
+            visible={this.state.visibleBcg}
             resizeMode={
               !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
             }
@@ -1643,6 +1660,9 @@ class DirectVideoView extends React.Component {
                     !videoStore.stretch && singlePlayer
                       ? this.state.marginLeft
                       : 0,
+                  marginTop:  !videoStore.stretch && singlePlayer
+                  ? this.state.marginTop
+                  : 0,
                 },
               ]}>
               {serverInfo.channelName ?? 'Unknown'}

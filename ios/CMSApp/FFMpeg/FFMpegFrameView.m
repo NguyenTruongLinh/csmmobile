@@ -64,6 +64,9 @@ const uint32_t numLayers = 24;
   BOOL _rotate;
   BOOL _isHD;
   BOOL stretch;
+  int oldOriginalWidth;
+  int oldOriginalHeight;
+  BOOL responseResolution;
   BOOL seekToZeroBeforePlay;
   BOOL onChangeDateSearch;
   int _oldSeekpos;
@@ -287,6 +290,7 @@ const uint32_t numLayers = 24;
 
 -(void)setStretch:(BOOL)value{
     mainDisplayVideo.stretch = value;
+    _stretch = value;
     [self reactSetFrame:self.frame];
     [self setNeedsLayout];  
 }
@@ -2758,9 +2762,43 @@ const uint32_t numLayers = 24;
   int translateY = mainDisplayVideo.translateY;
   int playerWidth = mainDisplayVideo.playerWidth;
   int playerHeight = mainDisplayVideo.playerHeight;
-  
-  CGRect fullScaled = CGRectMake(0, 0, searchFrameImage.size.width, searchFrameImage.size.height);
-  
+  CGRect fullScaled =  CGRectMake(0, 0, searchFrameImage.size.width, searchFrameImage.size.height);
+  CGRect boundFrame = CGRectMake(0, 0, playerWidth, playerHeight);
+  if(!_stretch)
+  {
+    int originalWidth = searchFrameImage.size.width;
+    int originalHeigt = searchFrameImage.size.height;
+    if(originalWidth > 0 && originalHeigt > 0)
+    {
+      double hRatio = (playerHeight * 100.0) / originalHeigt;
+      double wRatio = (playerWidth * 100.0) / originalWidth;
+      if (hRatio > wRatio)
+      {
+          int height = (int)((wRatio * originalHeigt) / 100);
+          int top = (playerHeight - height) / 2;
+          boundFrame = CGRectMake(0, top, playerWidth, height);
+      }
+      else if (hRatio < wRatio)
+      {
+          int width = (int)((hRatio * originalWidth) / 100);
+          int left = (playerWidth - width) / 2;
+          boundFrame = CGRectMake(left, 0, width, playerHeight);
+      }
+      if(responseResolution || originalWidth != oldOriginalWidth || originalHeigt != oldOriginalHeight)
+      {
+        NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeigt],nil];
+        [self responseResolution :resolution];
+        oldOriginalWidth = originalWidth;
+        oldOriginalHeight =originalHeigt;
+        responseResolution = false;
+      }
+    }
+  }
+  else
+  {
+    responseResolution = true;
+  }
+  videoView.bounds = boundFrame;
   //apply zoom
   CGRect cropScaled = CGRectInset(fullScaled, searchFrameImage.size.width/2 - searchFrameImage.size.width/scaleXY/2, searchFrameImage.size.height/2 - searchFrameImage.size.height/scaleXY/2);
   

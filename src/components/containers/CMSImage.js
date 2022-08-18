@@ -228,7 +228,7 @@ class CMSImage extends React.Component {
             children={children}
           />
         ) : (
-          <Image style={styleImage} source={image} resizeMode={resizeMode} />
+          <Image style={styleImage} source={visible ? image : null} resizeMode={resizeMode} />
         )}
         {/* </Fragment> */}
       </View>
