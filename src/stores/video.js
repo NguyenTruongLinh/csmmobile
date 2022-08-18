@@ -1109,6 +1109,7 @@ export const VideoModel = types
           self.directConnection.setLoginInfo(username, password);
       },
       setChannelFilter(value) {
+        if (value == self.channelFilter) return;
         self.channelFilter = value;
         self.currentGridPage = 0;
         self.updateCurrentDirectChannel();
