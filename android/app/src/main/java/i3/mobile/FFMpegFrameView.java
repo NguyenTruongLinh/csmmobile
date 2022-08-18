@@ -385,61 +385,63 @@ public class FFMpegFrameView extends View {
         {
             // Log.d("GOND", "**DIRECT** onDraw draw bitmap");
             Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
-                int originResolutionWidth = DrawBitmap.getWidth();
-                int originResolutionHeight = DrawBitmap.getHeight();    
-                if(socket_handler != null && socket_handler.video_handler != null)
+
+            int originalWidth = DrawBitmap.getWidth();
+            int originalHeigt = DrawBitmap.getHeight();
+            if(socket_handler != null && socket_handler.video_handler != null)
+            {
+                originalWidth = socket_handler.video_handler.originResolutionX;
+                originalHeigt = socket_handler.video_handler.originResolutionY;
+            }
+            int playerWidth = getWidth();
+            int playerHeight = getHeight();
+            Rect dest = new Rect(0, 0, playerWidth, playerHeight);
+            if(!stretch)
+            {
+                if(originalWidth > 0 && originalHeigt > 0)
                 {
-                    originResolutionWidth = socket_handler.video_handler.originResolutionX;
-                    originResolutionHeight = socket_handler.video_handler.originResolutionY;
-                }
-                int width = getWidth();
-                int prewidth = width;
-                int height = getHeight() + 1;
-                int left = 0;
-                if (originResolutionWidth == 0 || originResolutionHeight == 0)
-                    return;
-                if(!stretch)
-                {
-                    width = height == 0 ? width : originResolutionWidth * height/originResolutionHeight;
-                    left = (prewidth - width) / 2;
-                    if(responseResolution || (originResolutionWidth != oldOriginWidth && originResolutionHeight != oldOriginHeight))
+                    double hRatio = (playerHeight * 100.0) / originalHeigt;
+                    double wRatio = (playerWidth * 100.0) / originalWidth;
+                    if (hRatio >= wRatio)
                     {
-                        int[] resolution = new int[] {originResolutionWidth, originResolutionHeight};
+                        int height = (int)((wRatio * originalHeigt) / 100);
+                        int top = (playerHeight - height) / 2;
+                        dest = new Rect(0, top, playerWidth, height);
+                    }
+                    else if (hRatio < wRatio)
+                    {
+                        int width = (int)((hRatio * originalWidth) / 100);
+                        int left = (playerWidth - width) / 2;
+                        dest = new Rect(left, 0, width + left, playerHeight);
+                    }
+                    if(responseResolution || originalWidth != oldOriginWidth || originalHeigt != oldOriginHeight)
+                    {
+                        int[] resolution = new int[] {originalWidth, originalHeigt};
                         OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_RESPONSE_RESOLUTION, resolution);
                         responseResolution = false;
-                        oldOriginWidth = originResolutionWidth;
-                        oldOriginHeight = originResolutionHeight;
+                        oldOriginWidth = originalWidth;
+                        oldOriginHeight = originalHeigt;
                     }
                 }
-                else
-                {
-                    responseResolution = true;
+            }
+            else
+            {
+                responseResolution = true;
+            }
+            if (!DrawBitmap.sameAs(emptyBitmap)) {
+                preDrawBitmap = DrawBitmap;
+                valid_first_frame = true;
+                canvas.drawBitmap(preDrawBitmap, null, dest, mPaint);
+            }
+            else
+            {
+                if(preDrawBitmap != null && !preDrawBitmap.sameAs(emptyBitmap)) {
+                    canvas.drawBitmap(preDrawBitmap, null, dest, mPaint);
+                } 
+                else {
+                    Log.d("GOND", "**DIRECT** onDraw not draw 1");
                 }
-                if (!DrawBitmap.sameAs(emptyBitmap)) {
-                    preDrawBitmap = DrawBitmap;
-                    valid_first_frame = true;
-                    //Bitmap bmp = i3Global.resizeImage(preDrawBitmap, (int)this._width, (int)this._height, true );
-                    Rect src =   new Rect(left, 0, width + left, height);//new Rect(0,0,DrawBitmap.getWidth()-1, DrawBitmap.getHeight()-1);
-                    //Rect dest = new Rect(0,0, (int)this.img_width, (int)this.img_height);
-                    canvas.drawBitmap(preDrawBitmap, null, src, mPaint);
-                    //bmp.recycle();
-                    //bmp = null;
-                    //Rect dest = new Rect(0, 0, getWidth(), getHeight());
-                    //canvas.drawBitmap(preDrawBitmap,null, img_rect, mPaint);
-                }
-                else
-                {
-                    if(preDrawBitmap != null && !preDrawBitmap.sameAs(emptyBitmap)) {
-                        // Log.d("GOND", "**DIRECT** onDraw bmp is empty 2");
-//                        Rect dest = new Rect(0, 0, getWidth(), getHeight());
-//                        canvas.drawBitmap(preDrawBitmap,null, dest, mPaint);
-                        //Rect src = new Rect(0,0,DrawBitmap.getWidth(), DrawBitmap.getHeight());
-                        Rect dest = new Rect(left, 0, width + left, height);
-                        canvas.drawBitmap(preDrawBitmap, null, dest, mPaint);
-                    } else {
-                        Log.d("GOND", "**DIRECT** onDraw not draw 1");
-                    }
-                }
+            }
         }
         else
         {
