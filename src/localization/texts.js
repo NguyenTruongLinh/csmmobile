@@ -29,6 +29,7 @@ export const Login = {
   errorExpiredAccount: 'This account is expired',
   loginSuccess: 'Login successfully',
   errorLoginCantConnect: 'Cannot connect to server.',
+  emailOrUsernameIncorrect: 'The email or username is incorrect.',
   accountLocked:
     'Account is disabled for %s due to reaching the maximum failed login attempts',
   phoneContactTitle: 'Contact i3 tech via phone: ',
