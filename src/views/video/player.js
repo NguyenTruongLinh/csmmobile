@@ -503,7 +503,11 @@ class VideoPlayerView extends Component {
     this.ruler && this.ruler.moveToPosition(secondsValue);
     this.playerRef && this.playerRef.onBeginDraggingTimeline();
 
-    if (videoStore.timeline.length > 0 && videoStore.noVideo == true) {
+    if (
+      videoStore.timeline &&
+      videoStore.timeline.length > 0 &&
+      videoStore.noVideo == true
+    ) {
       videoStore.setNoVideo(false);
     }
     this.onTimelineScrollEnd({
@@ -573,7 +577,11 @@ class VideoPlayerView extends Component {
     __DEV__ && console.log(`GOND onTimelineScrollBegin `);
 
     this.timelineAutoScroll = false;
-    if (videoStore.timeline.length > 0 && videoStore.noVideo == true) {
+    if (
+      videoStore.timeline &&
+      videoStore.timeline.length > 0 &&
+      videoStore.noVideo == true
+    ) {
       videoStore.setNoVideo(false);
     }
     videoStore.setTimelineDraggingStatus(true);
@@ -1290,6 +1298,7 @@ class VideoPlayerView extends Component {
               __DEV__ && console.log(`GOND onPauseVideoScrolling `);
               this.playerRef && this.playerRef.onBeginDraggingTimeline();
               if (
+                videoStore.timeline &&
                 videoStore.timeline.length > 0 &&
                 videoStore.noVideo == true
               ) {

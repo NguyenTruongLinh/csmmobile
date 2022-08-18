@@ -109,7 +109,8 @@ const HLSURLModel = types
       }
     },
     setStreamStatus({connectionStatus, error, isLoading, needReset}) {
-      // __DEV__ && console.trace('GOND hls setStatus: ', isLoading);
+      // if (__DEV__ && connectionStatus == STREAM_STATUS.NOVIDEO)
+      //   console.trace('GOND hls setStatus: ', isLoading, connectionStatus);
       connectionStatus != undefined &&
         (self.connectionStatus = connectionStatus);
       isLoading != undefined && (self.isLoading = isLoading);
@@ -382,6 +383,9 @@ export default HLSStreamModel = types
       self.clearStreamReconnectTimeout();
     },
     setNoVideo(value) {
+      if (__DEV__ && value == true) {
+        console.trace('GOND ======= Set HLS Novideo = ', value);
+      }
       self.noVideo = value;
       self.noIncomingVideoCount = 0;
       self.setStreamStatus({

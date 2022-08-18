@@ -1079,11 +1079,12 @@ export const VideoModel = types
               if (
                 self.cloudType == CLOUD_TYPE.HLS &&
                 !self.isLive &&
+                newTimeline &&
                 self.selectedStream &&
                 self.selectedStream.isWaitingForStream
               ) {
                 if (
-                  !newTimeline ||
+                  // !newTimeline ||
                   newTimeline.length == 0 ||
                   (self.beginSearchTime &&
                     self.beginSearchTime.toSeconds() >
@@ -1109,6 +1110,7 @@ export const VideoModel = types
           self.directConnection.setLoginInfo(username, password);
       },
       setChannelFilter(value) {
+        if (value == self.channelFilter) return;
         self.channelFilter = value;
         self.currentGridPage = 0;
         self.updateCurrentDirectChannel();
@@ -1234,7 +1236,7 @@ export const VideoModel = types
 
         self.setNoVideo(false);
         if (self.timeline && self.timeline.length > 0) {
-          self.timeline = [];
+          self.timeline = null;
         }
         if (self.hdMode) self.hdMode = false;
 
@@ -1452,7 +1454,7 @@ export const VideoModel = types
         if (typeof value == 'string') {
           self.setNoVideo(false);
           if (self.timeline && self.timeline.length > 0) {
-            self.timeline = [];
+            self.timeline = null;
           }
           try {
             self.searchDate = DateTime.fromFormat(
@@ -1880,7 +1882,7 @@ export const VideoModel = types
         // console.trace();
         const lastValue = self.isLive;
         if (self.timeline && self.timeline.length > 0) {
-          self.timeline = [];
+          self.timeline = null;
         }
 
         self.setNoVideo(false);
@@ -2001,7 +2003,7 @@ export const VideoModel = types
       },
       setNoVideo(value, resetTimeline = true) {
         if (value === self.noVideo) return;
-        if (__DEV__) {
+        if (__DEV__ && value == true) {
           console.trace('GOND ======= Set Novideo = ', value);
         }
         self.noVideo = value;
@@ -2114,7 +2116,7 @@ export const VideoModel = types
         self.enableStretch = false;
         self.paused = false;
         self.recordingDates = {};
-        self.timeline = [];
+        self.timeline = null;
         self.timezoneOffset = 0;
         self.noVideo = false;
         if (self.checkTimelineTimeout) {
@@ -3475,20 +3477,21 @@ export const VideoModel = types
       },
       onUpdateSearchTimePostTimeline() {
         let result = null;
-        if (!self.beginSearchTime) {
+        if (!self.beginSearchTime || !self.timeline) {
           __DEV__ &&
             console.log(
-              'GOND onUpdateSearchTimePostTimeline beginSearchTime not set!'
+              'GOND onUpdateSearchTimePostTimeline beginSearchTime not set!',
+              self.timeline
             );
           return;
         }
 
         self.shouldUpdateSearchTimeOnGetTimeline = false;
-        __DEV__ &&
-          console.log(
-            'GOND onUpdateSearchTimePostTimeline: ',
-            self.timeline.length
-          );
+        // __DEV__ &&
+        //   console.log(
+        //     'GOND onUpdateSearchTimePostTimeline: ',
+        //     self.timeline.length
+        //   );
         for (let i = self.timeline.length - 1; i >= 0; i--) {
           if (self.timeline[i].begin >= self.beginSearchTime.toSeconds()) {
             __DEV__ &&
