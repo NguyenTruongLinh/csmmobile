@@ -1630,11 +1630,12 @@ class DirectVideoView extends React.Component {
           onLayout={this.onLayout}
           // {...this.props}
         >
-          {/* <ImageBackground
-            source={NVR_Play_NoVideo_Image}
+          <ImageBackground
+            // source={NVR_Play_NoVideo_Image}
+            source={videoStore.selectedStreamSnapshot}
             style={{width: width, height: height}}
-            resizeMode="cover"> */}
-          <CMSImage
+            resizeMode="cover">
+            {/* <CMSImage
             isBackground={true}
             dataSource={serverInfo.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
@@ -1650,7 +1651,7 @@ class DirectVideoView extends React.Component {
               controller: 'channel',
               action: 'image',
               id: serverInfo.kChannel,
-            }}>
+            }}> */}
             <Text
               style={[
                 styles.channelInfo,
@@ -1729,8 +1730,8 @@ class DirectVideoView extends React.Component {
                 })}
               </View>
             )}
-          </CMSImage>
-          {/* </ImageBackground> */}
+            {/* </CMSImage> */}
+          </ImageBackground>
           {
             /*this.state.isFilterShown*/ filterShown && (
               <View

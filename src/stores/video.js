@@ -665,6 +665,11 @@ export const VideoModel = types
       }
       return null;
     },
+    get selectedStreamSnapshot() {
+      return self.selectedChannel
+        ? self.selectedStream.snapshot
+        : NVR_Play_NoVideo_Image;
+    },
     get videoStreams() {
       if (self.allChannels.length == 0) return [];
       switch (self.cloudType) {
@@ -3055,8 +3060,10 @@ export const VideoModel = types
               );
             daylist &&
               (yield self.getDaylist(channelNo, targetStream.targetUrl.sid));
-            timeline &&
-              (yield self.getTimeline(channelNo, targetStream.targetUrl.sid));
+            if (timeline) {
+              yield self.getTimeline(channelNo, targetStream.targetUrl.sid);
+              return;
+            }
 
             timeParams = {
               RequestDate: self
@@ -3656,6 +3663,10 @@ export const VideoModel = types
             connectionStatus: STREAM_STATUS.SOURCE_ERROR,
           });
           return false;
+        }
+        // dongpt:
+        if (self.selectedChannel != null) {
+          self.getHLSInfos({channelNo: self.selectedChannel});
         }
         return true;
       }),
