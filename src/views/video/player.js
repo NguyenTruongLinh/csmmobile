@@ -1218,7 +1218,7 @@ class VideoPlayerView extends Component {
               }
               size={IconSize}
               onPress={this.onStretch}
-              disabled={!videoStore.enableStretch}
+              disabled={!isMenuReady }
             />
           </View>
         )}

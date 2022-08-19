@@ -745,11 +745,17 @@ export const UserStoreModel = types
           self.isSubmitForgotPassLoading = false;
           return true;
         } else if (res.Result == undefined && res.error == undefined) {
-          Alert.alert(LoginTxt.errorLoginCantConnect);
+          Alert.alert(
+            LoginTxt.forgotPasswordErrorTitle,
+            LoginTxt.errorLoginCantConnect
+          );
           self.isSubmitForgotPassLoading = false;
           return false;
         } else {
-          Alert.alert(LoginTxt.forgotPasswordErrorTitle, res.Result.message);
+          Alert.alert(
+            LoginTxt.forgotPasswordErrorTitle,
+            LoginTxt.emailOrUsernameIncorrect
+          );
           self.isSubmitForgotPassLoading = false;
           return false;
         }

@@ -698,18 +698,34 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
           }
           else
           {
-              int fullwidth = view.frame.size.width;
-              int width = view.frame.size.height / screen.resolutionHeight * screen.resolutionWidth;
-              int left = (fullwidth - width)/2;
-              displayRect = CGRectMake(left, 0, width + 1, view.frame.size.height);
-              if(_responseResolution || (screen.resolutionWidth != _oldOriginWidth && screen.resolutionHeight != _oldOriginHeight))
+            int originalWidth = screen.resolutionWidth;
+            int originalHeigt = screen.resolutionHeight;
+            if(originalWidth > 0 && originalHeigt > 0)
+            {
+              double hRatio = (view.frame.size.height * 100.0) / originalHeigt;
+              double wRatio = (view.frame.size.width * 100.0) / originalWidth;
+              if (hRatio > wRatio)
               {
-                  NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:screen.resolutionWidth], [NSNumber numberWithInt:screen.resolutionHeight],nil];
+                  int height = (int)((wRatio * originalHeigt) / 100);
+                  int top = (view.frame.size.height - height) /2;
+                  displayRect = CGRectMake(0, top, view.frame.size.width, height);
+              }
+              else if (hRatio < wRatio)
+              {
+                  int width = (int)((hRatio * originalWidth) / 100);
+                  int left = (view.frame.size.width - width) / 2;
+                  displayRect = CGRectMake(left, 0, width, view.frame.size.height);
+              }
+                            
+              if(_responseResolution || originalWidth != _oldOriginWidth || originalHeigt != _oldOriginHeight)
+              {
+                  NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeigt],nil];
                   [self.delegate1 responseResolution : resolution];
                   _responseResolution = false;
-                  _oldOriginWidth = screen.resolutionWidth;
-                  _oldOriginHeight = screen.resolutionHeight;
+                  _oldOriginWidth = originalWidth;
+                  _oldOriginHeight = originalHeigt;
               }
+            }
           }
           if (screen.displayImage.CGImage) 
           {
