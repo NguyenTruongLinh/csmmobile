@@ -66,8 +66,6 @@ import CMSColors from '../../styles/cmscolors';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 
 import videoStyles from '../../styles/scenes/videoPlayer.style';
-import ROUTERS from '../../consts/routes';
-import {manual} from 'mkdirp';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
 const IconSize = normalize(28);
