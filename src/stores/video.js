@@ -1000,7 +1000,7 @@ export const VideoModel = types
     canEnterChannel(channelNo, isLive) {
       // const _isLive = isLive === undefined ? self.isLive : isLive;
       if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE) {
-        __DEV__ && console.log('GOND canEnterChannel no permission!');
+        // __DEV__ && console.log('GOND canEnterChannel no permission!');
         return false;
       }
       if (
@@ -1020,12 +1020,12 @@ export const VideoModel = types
       //     self.allChannels.map(ch => getSnapshot(ch))
       //   );
       if (!foundChannel) {
-        __DEV__ && console.log('GOND canEnterChannel not found!');
+        // __DEV__ && console.log('GOND canEnterChannel not found!');
         return false;
       }
 
-      __DEV__ &&
-        console.log('GOND canEnterChannel: ', getSnapshot(foundChannel));
+      // __DEV__ &&
+      //   console.log('GOND canEnterChannel: ', getSnapshot(foundChannel));
       if (self.isAPIPermissionSupported)
         return isLive === undefined
           ? foundChannel.canLive || foundChannel.canSearch
