@@ -67,6 +67,7 @@ import {NVR_Play_NoVideo_Image} from '../../consts/images';
 
 import videoStyles from '../../styles/scenes/videoPlayer.style';
 import ROUTERS from '../../consts/routes';
+import {manual} from 'mkdirp';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
 const IconSize = normalize(28);
@@ -165,6 +166,7 @@ class VideoPlayerView extends Component {
       videoStore.selectedStream.setStreamStatus({
         connectionStatus: STREAM_STATUS.DONE,
       });
+    let finalStatusfullscreen = videoStore.isFullscreen;
     videoStore.setNoVideo(false);
     if (videoStore.isFullscreen) {
       this.onFullscreenPress(false);
@@ -176,9 +178,9 @@ class VideoPlayerView extends Component {
 
     // dongpt: TODO handle Orientation
     Orientation.removeDeviceOrientationListener(this.onOrientationChange);
-    Orientation.lockToPortrait();
+    //Orientation.lockToPortrait();
     // this.unsubSearchTimeReaction();
-    StatusBar.setHidden(false);
+    StatusBar.setHidden(finalStatusfullscreen);
     this.reactions.forEach(unsubsribe => unsubsribe());
   }
 
@@ -412,6 +414,7 @@ class VideoPlayerView extends Component {
       //   500
       // );
     }
+    __DEV__ && console.log('GOND onFullscreenPress: ', isFullscreen, manually);
     StatusBar.setHidden(videoStore.isFullscreen);
     this.playerRef && this.playerRef.resetZoom();
   };
@@ -1210,7 +1213,7 @@ class VideoPlayerView extends Component {
               }
               size={IconSize}
               onPress={this.onStretch}
-              disabled={!isMenuReady }
+              disabled={!isMenuReady}
             />
           </View>
         )}
