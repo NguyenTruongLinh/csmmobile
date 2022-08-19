@@ -292,6 +292,9 @@ public class FFMpegFrameView extends View {
             case Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER:
                 UpdateFrame( (Bitmap)data, channel );
                 break;
+            case Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED:
+                this.onRemoteRelayConfigChanged();
+                break;
             default:
                 OnEvent(msgId, data, channel);
                 break;
@@ -728,7 +731,7 @@ public class FFMpegFrameView extends View {
                 re_init = true;
             }
             socket_handler.setHDMode( HD);
-            socket_handler.ChangePlay(false, re_init, Channels);
+            socket_handler.ChangePlay(false, re_init, Channels, "StartSearch");
         }
     }
     
@@ -742,31 +745,47 @@ public class FFMpegFrameView extends View {
 
     }
     private boolean mockDisFlag = false;
-    private void mockDisconnect() {
-        final Handler handler2 = new Handler(Looper.getMainLooper());
+//    private void mockDisconnect() {
+//        final Handler handler2 = new Handler(Looper.getMainLooper());
+//        final Handler mainHandler = this.handler;
+//        handler2.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.d("2507", "mockDisconnect");
+//                if(mainHandler != null)
+//                    mainHandler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_DISCONNECTED, null ).sendToTarget();
+//                if(socket_handler != null)
+//                    socket_handler.CloseSocket();
+//                if( video_thread != null && socket_handler != null)
+//                {
+//                    socket_handler.running = false;
+//                    video_thread.interrupt();
+//                    socket_handler = null;
+//                    video_thread = null;
+//                }
+//            }
+//        }, 8*1000);
+//    }
+
+    public void onRemoteRelayConfigChanged() {
         final Handler mainHandler = this.handler;
-        handler2.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("2507", "mockDisconnect");
-                if(mainHandler != null)
-                    mainHandler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_DISCONNECTED, null ).sendToTarget();
-                if(socket_handler != null)
-                    socket_handler.CloseSocket();
-                if( video_thread != null && socket_handler != null)
-                {
-                    socket_handler.running = false;
-                    video_thread.interrupt();
-                    socket_handler = null;
-                    video_thread = null;
-                }
-            }
-        }, 8*1000);
+        Log.d("2507", "mockDisconnect");
+        if(mainHandler != null)
+            mainHandler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_DISCONNECTED, null ).sendToTarget();
+        if(socket_handler != null)
+            socket_handler.CloseSocket();
+        if( video_thread != null && socket_handler != null)
+        {
+            socket_handler.running = false;
+            video_thread.interrupt();
+            socket_handler = null;
+            video_thread = null;
+        }
     }
+
     //public  void  StartLive(int KDVR, String ip, String WanIp, String Name, int port, String serverID, String UserName, String Password, String channel, boolean bychanel)
     public  void  StartLive( boolean HD )
     {
-        Log.d("2507", "StartLive");
         //this.Stop();
         valid_first_frame = false;
         if( video_thread == null || socket_handler == null || socket_handler.running == false) {
@@ -776,15 +795,11 @@ public class FFMpegFrameView extends View {
             socket_handler.setHDMode(HD);
             video_thread = new Thread(socket_handler);
             video_thread.start();
-            if(!mockDisFlag) {
-//                mockDisconnect();
-                mockDisFlag = true;
-            }
         }
         else
         {
             socket_handler.setHDMode(HD);
-            socket_handler.ChangePlay( true, false, this.Channels);
+            socket_handler.ChangePlay( true, false, this.Channels, "StartLive");
         }
     }
     public  void  PauseVideo(){
@@ -923,5 +938,4 @@ public class FFMpegFrameView extends View {
             }
         }
     }
-
 }
