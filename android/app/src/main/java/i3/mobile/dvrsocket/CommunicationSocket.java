@@ -47,6 +47,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+import i3.mobile.FFMpegFrameView;
 import i3.mobile.base.CommandState;
 import i3.mobile.base.Constant;
 import i3.mobile.base.MsgCommandItem;
@@ -103,11 +104,13 @@ public class CommunicationSocket implements Runnable {
 
     protected boolean withRelayHeader = false;
     protected int relayHeaderBlockRemainLen = 0;
+    protected FFMpegFrameView frameView;
 
-    public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
+    public CommunicationSocket(FFMpegFrameView frameView, Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
         //this.message = message;
         //this.hostAddress = address;
         //this.port = port;
+        this.frameView = frameView;
         this.handler = hwnd;
         str_Channel = channel;
         ServerInfo = serverinfo;
@@ -368,7 +371,7 @@ public class CommunicationSocket implements Runnable {
 
                                 if( cmd_id == Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO)
                                 {
-                                    video_handler = new VideoSocket( handler, this.ServerInfo,this.str_Channel, this.Search, this.PlaybyChannel, this.clientIp);
+                                    video_handler = new VideoSocket(this.frameView, handler, this.ServerInfo,this.str_Channel, this.Search, this.PlaybyChannel, this.clientIp);
                                     if (width > 0 && height > 0)
                                         video_handler.setViewDimensions(width, height);
                                     thread_Video_socket = new Thread( video_handler);
@@ -1123,6 +1126,7 @@ public class CommunicationSocket implements Runnable {
             return;
         Message completeMessage = handler.obtainMessage(msgid, data);
         completeMessage.sendToTarget();
+
     }
     protected int [] ChannelNoWithoutPermission() {
         int[] channelNo = this.getChannel();
@@ -1449,9 +1453,8 @@ public class CommunicationSocket implements Runnable {
         }
 
     }
-    public  void ChangePlay( boolean islive, boolean reload, String channel)
+    public  void ChangePlay( boolean islive, boolean reload, String channel, String debug)
     {
-        // Log.d("GOND", "**DIRECT** ChangePlay: " + channel + ", old: " + str_Channel);
         boolean isReset = reload;
         if( str_Channel != channel)
         {
@@ -1497,12 +1500,12 @@ public class CommunicationSocket implements Runnable {
         // Log.d("GOND", "**DIRECT** ChangePlay with channels: " + Arrays.toString(ChannelNo));
         if( ChannelNo == null || ChannelNo.length == 0)
         {
+            Log.d("GOND", "**DIRECT** ChangePlay: if( ChannelNo == null || ChannelNo.length == 0)");
             // Log.d("GOND", "**DIRECT** ChangePlay: case 1");
             OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_PERMISSION_CHANNEL_DISABLE, islive? 0 : 1);
             if( islive == false){
                 byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                 new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg_stop);
-
             }
             else
             {
@@ -1514,43 +1517,51 @@ public class CommunicationSocket implements Runnable {
             ServerInfo.setLive( islive);
             return;
         }
-        if(islive == true)//change search to live
+        if(islive)//change search to live
         {
-            // Log.d("GOND", "**DIRECT** ChangePlay: case 2");
+             Log.d("GOND", "**DIRECT** ChangePlay: if(islive == true)");
             // Log.d("GOND", "ChangePlay channel 111");
             boolean need_stop_search = this.ServerInfo.getSearchTime() == null? false : true;
             if(ServerInfo.getisLive() == false )
                 need_stop_search = true;
 
             ServerInfo.setLive( islive);
+
             if( this.ServerInfo.getTimeZone()  != null) {
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
                 int[] vindex = this.VideoSourceIndex();
                 byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS( vindex, this.HDMode);
-                byte[][] groupedBuff = {msg_stop, msg_buffer};
-                new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
+                byte[] msg = new byte[msg_buffer.length + msg_stop.length];
+                System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
+                System.arraycopy( msg_buffer, 0, msg, msg_stop.length, msg_buffer.length );
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg);
             }
             else{
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
                 byte[] msg_hw = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG, null);
-                byte[][] groupedBuff = {msg_stop, msg_hw};
-                new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
+                byte[] msg = new byte[msg_hw.length + msg_stop.length];
+                System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
+                System.arraycopy( msg_hw, 0, msg, msg_stop.length, msg_hw.length );
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg);
             }
 
         }
         else// switch from Live => search
         {
+            Log.d("GOND", "**DIRECT** ChangePlay: else(!islive)");
             // Log.d("GOND", "ChangePlay channel 222");
             // Log.d("GOND", "**DIRECT** ChangePlay: case 3");
             boolean _islive = ServerInfo.getisLive();
             ServerInfo.setLive( islive);
 
-            if( reload == true ){
+            if( reload ){
+                Log.d("GOND", "**DIRECT** ChangePlay: else(!islive) / if( reload )");
                 // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload");
                 //int[] channel_no = this.ChannelNo();
-                byte[][] groupedBuff = null;
+                byte[]buff = null;
                 byte[] msg_stop = null;
-                if( _islive == true){
+                if( _islive ){
+                    Log.d("GOND", "**DIRECT** ChangePlay: else(!islive) / if( reload ) / if( _islive )");
                     // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload live");
                     if (this.ServerInfo.getTimeZone() == null)
                     {
@@ -1559,18 +1570,20 @@ public class CommunicationSocket implements Runnable {
                     }
                     msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                     byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
+                    buff = new byte[buff_daylist.length + msg_stop.length ];
+                    System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
 
-                    byte[][] initGroupedBuff = {msg_stop, buff_daylist};
-                    groupedBuff = initGroupedBuff;
+                    System.arraycopy(buff_daylist,0, buff, msg_stop.length , buff_daylist.length );
                 }
                 else {
+                    Log.d("GOND", "**DIRECT** ChangePlay: else(!islive) / if( reload ) / else( !_islive )");
                     // Log.d("GOND", "**DIRECT** ChangePlay: case 3 reload search");
                     int[] v_index = this.ChannelNo(false);
                     msg_stop = MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, v_index);
                     byte[] msg_timeinterval = MsgCommandItem.MSG_SEARCH_REQUEST_TIME_INTERVAL(this.ServerInfo, ChannelNo);
-
-                    byte[][] initGroupedBuff = {msg_stop, msg_timeinterval};
-                    groupedBuff = initGroupedBuff;
+                    buff = new byte[msg_timeinterval.length + msg_stop.length ];
+                    System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
+                    System.arraycopy(msg_timeinterval,0, buff, msg_stop.length , msg_timeinterval.length );
                 }
                 //byte[] msg_timeinterval = MsgCommandItem.MSG_SEARCH_REQUEST_TIME_INTERVAL(this.ServerInfo, ChannelNo);
                 //byte[] msg_set_pos = MsgCommandItem.MSG_SEARCH_REQUEST_SETPOS(this.ServerInfo, ChannelNo, 0, this.HDMode);
@@ -1585,9 +1598,10 @@ public class CommunicationSocket implements Runnable {
                 //System.arraycopy(msg_fw,0, buff,msg_set_pos.length + msg_stop.length, msg_fw.length );
 
 
-                new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
             }
             else{
+                Log.d("GOND", "**DIRECT** ChangePlay: else(!islive) / else( !reload )");
                 // Log.d("GOND", "**DIRECT** ChangePlay: case 3 not reload !!!");
                 //int[] channels = this.ChannelNo();  //this.getChannel();
                 if (this.ServerInfo.getTimeZone() == null)
@@ -1597,9 +1611,11 @@ public class CommunicationSocket implements Runnable {
                 }
                 byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                 byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
+                byte[]buff = new byte[ msg_stop.length + buff_daylist.length];
+                System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
 
-                byte[][] groupedBuff = {msg_stop, buff_daylist};
-                new SendGroupedBufferTask(this.OutPut, isRelay, this.clientIp).execute( groupedBuff);
+                System.arraycopy(buff_daylist,0, buff, msg_stop.length , buff_daylist.length );
+                new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
             }
 
         }

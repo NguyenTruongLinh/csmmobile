@@ -711,7 +711,7 @@ public class FFMpegFrameView extends View {
         if(video_thread == null || socket_handler == null || socket_handler.running == false) {
             this.Server.setLive(false);
             this.Server.setSearchTime(search);
-            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, true, this.ByChannel, this.clientIp);
+            socket_handler = new CommunicationSocket(this, this.handler, this.Server, this.Channels, true, this.ByChannel, this.clientIp);
             socket_handler.setViewDimensions((int)_width, (int)_height);
             socket_handler.setHDMode( HD);
             video_thread = new Thread(socket_handler);
@@ -726,7 +726,7 @@ public class FFMpegFrameView extends View {
                 re_init = true;
             }
             socket_handler.setHDMode( HD);
-            socket_handler.ChangePlay(false, re_init, Channels);
+            socket_handler.ChangePlay(false, re_init, Channels, "StartSearch");
         }
     }
     
@@ -740,49 +740,61 @@ public class FFMpegFrameView extends View {
 
     }
     private boolean mockDisFlag = false;
-    private void mockDisconnect() {
-        final Handler handler2 = new Handler(Looper.getMainLooper());
+//    private void mockDisconnect() {
+//        final Handler handler2 = new Handler(Looper.getMainLooper());
+//        final Handler mainHandler = this.handler;
+//        handler2.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.d("2507", "mockDisconnect");
+//                if(mainHandler != null)
+//                    mainHandler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_DISCONNECTED, null ).sendToTarget();
+//                if(socket_handler != null)
+//                    socket_handler.CloseSocket();
+//                if( video_thread != null && socket_handler != null)
+//                {
+//                    socket_handler.running = false;
+//                    video_thread.interrupt();
+//                    socket_handler = null;
+//                    video_thread = null;
+//                }
+//            }
+//        }, 8*1000);
+//    }
+
+    public void onDisconnectedByRemoteRelayConfig() {
         final Handler mainHandler = this.handler;
-        handler2.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("2507", "mockDisconnect");
-                if(mainHandler != null)
-                    mainHandler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_DISCONNECTED, null ).sendToTarget();
-                if(socket_handler != null)
-                    socket_handler.CloseSocket();
-                if( video_thread != null && socket_handler != null)
-                {
-                    socket_handler.running = false;
-                    video_thread.interrupt();
-                    socket_handler = null;
-                    video_thread = null;
-                }
-            }
-        }, 8*1000);
+        Log.d("2507", "mockDisconnect");
+        if(mainHandler != null)
+            mainHandler.obtainMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_DISCONNECTED, null ).sendToTarget();
+        if(socket_handler != null)
+            socket_handler.CloseSocket();
+        if( video_thread != null && socket_handler != null)
+        {
+            socket_handler.running = false;
+            video_thread.interrupt();
+            socket_handler = null;
+            video_thread = null;
+        }
     }
+
     //public  void  StartLive(int KDVR, String ip, String WanIp, String Name, int port, String serverID, String UserName, String Password, String channel, boolean bychanel)
     public  void  StartLive( boolean HD )
     {
-        Log.d("2507", "StartLive");
         //this.Stop();
         valid_first_frame = false;
         if( video_thread == null || socket_handler == null || socket_handler.running == false) {
             this.Server.setLive(true);
-            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, false, this.ByChannel, this.clientIp);
+            socket_handler = new CommunicationSocket(this, this.handler, this.Server, this.Channels, false, this.ByChannel, this.clientIp);
             socket_handler.setViewDimensions((int)_width, (int)_height);
             socket_handler.setHDMode(HD);
             video_thread = new Thread(socket_handler);
             video_thread.start();
-            if(!mockDisFlag) {
-//                mockDisconnect();
-                mockDisFlag = true;
-            }
         }
         else
         {
             socket_handler.setHDMode(HD);
-            socket_handler.ChangePlay( true, false, this.Channels);
+            socket_handler.ChangePlay( true, false, this.Channels, "StartLive");
         }
     }
     public  void  PauseVideo(){
@@ -921,5 +933,4 @@ public class FFMpegFrameView extends View {
             }
         }
     }
-
 }

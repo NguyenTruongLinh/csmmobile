@@ -1099,8 +1099,6 @@ export const VideoModel = types
       },
       beforeDestroy() {
         self.reactions && self.reactions.forEach(unsubscribe => unsubscribe());
-        if (self.relayReconnectInterval)
-          clearInterval(self.relayReconnectInterval);
       },
       // #region setters
       setNVRLoginInfo(username, password) {
@@ -1592,7 +1590,13 @@ export const VideoModel = types
         self.relayReconnectInterval = setInterval(() => {
           __DEV__ && console.log(` 2507 getDirectInfosInterval`);
           self.getDirectInfos(self.selectedChannel ?? undefined, true);
-        }, 15000);
+          snackbarUtil.showToast(STREAM_STATUS.RECONNECTING, cmscolors.Warning);
+        }, 5000);
+      },
+      notifyClearDirectInfosInterval() {
+        if (self.relayReconnectInterval) {
+          clearInterval(self.relayReconnectInterval);
+        }
       },
       onTimezoneAcquired() {
         switch (self.cloudType) {
@@ -2612,14 +2616,15 @@ export const VideoModel = types
           self.directConnection = parseDirectServer(res, self.cloudType);
           if (self.directConnection.isRelay) {
             if (!self.directConnection.relayInfo.connectable) {
-              setTimeout(
-                () =>
-                  snackbarUtil.showToast(
-                    VIDEO_TXT.WRONG_RELAY_SERVER_INFO,
-                    cmscolors.Danger
-                  ),
-                1000
-              );
+              if (!isInterval)
+                setTimeout(
+                  () =>
+                    snackbarUtil.showToast(
+                      VIDEO_TXT.WRONG_RELAY_SERVER_INFO,
+                      cmscolors.Danger
+                    ),
+                  1000
+                );
               return false;
             } else if (!previousRelayStatus) {
               if (isInterval && self.relayReconnectInterval) {

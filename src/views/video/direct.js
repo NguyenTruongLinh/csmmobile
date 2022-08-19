@@ -282,7 +282,7 @@ class DirectVideoView extends React.Component {
     if (Platform.OS === 'ios') {
       this.nativeVideoEventListener.remove();
     }
-    const {serverInfo, videoStore, singlePlayer} = this.props;
+    const {serverInfo, videoStore, singlePlayer, appStore} = this.props;
     if (singlePlayer && isAlive(serverInfo)) {
       serverInfo.setStreamStatus({
         isLoading: false,
@@ -308,6 +308,25 @@ class DirectVideoView extends React.Component {
         {},
         'componentWillUnmount'
       );
+      try {
+        if (appStore.naviService.getPreviousRouteName() != 'videochannels') {
+          __DEV__ &&
+            console.log(`componentWillUnmount notifyClearDirectInfosInterval`);
+          videoStore.notifyClearDirectInfosInterval();
+        } else {
+          __DEV__ &&
+            console.log(
+              `componentWillUnmount delay notifyClearDirectInfosInterval`
+            );
+        }
+      } catch (e) {
+        __DEV__ &&
+          console.log(
+            `componentWillUnmount notifyClearDirectInfosInterval e = `,
+            e
+          );
+        videoStore.notifyClearDirectInfosInterval();
+      }
     }
   }
 
@@ -330,7 +349,7 @@ class DirectVideoView extends React.Component {
           (newChannelNo, previousValue) => {
             __DEV__ &&
               console.log(
-                'GOND direct selectedChannel reaction 1: ',
+                '1908 GOND direct selectedChannel reaction 1: ',
                 newChannelNo
               );
             if (newChannelNo == null || previousValue == null) return;
@@ -1114,7 +1133,7 @@ class DirectVideoView extends React.Component {
       case NATIVE_MESSAGE.RELAY_DISCONNECTED:
         snackbarUtil.showToast(
           STREAM_STATUS.RELAY_DISCONNECTED,
-          cmscolors.Danger
+          cmscolors.Success
         );
         videoStore.getDirectInfosInterval();
         break;
