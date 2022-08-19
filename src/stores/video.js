@@ -549,6 +549,7 @@ export const VideoModel = types
     waitForTimeline: false,
     checkTimelineTimeout: null,
     checkDaylistTimeout: null,
+    shallGetStreamPostTimeline: false,
 
     timelineRequestId: '',
 
@@ -3067,6 +3068,7 @@ export const VideoModel = types
               (yield self.getDaylist(channelNo, targetStream.targetUrl.sid));
             if (timeline) {
               yield self.getTimeline(channelNo, targetStream.targetUrl.sid);
+              self.shallGetStreamPostTimeline = true;
               return;
             }
 
@@ -3670,8 +3672,9 @@ export const VideoModel = types
           return false;
         }
         // dongpt:
-        if (self.selectedChannel != null) {
+        if (self.shallGetStreamPostTimeline && self.selectedChannel != null) {
           self.getHLSInfos({channelNo: self.selectedChannel});
+          self.shallGetStreamPostTimeline = false;
         }
         return true;
       }),
