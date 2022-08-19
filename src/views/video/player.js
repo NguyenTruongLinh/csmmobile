@@ -809,8 +809,12 @@ class VideoPlayerView extends Component {
   renderVideo = () => {
     // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {selectedStream, isAuthenticated, isAPIPermissionSupported} =
-      videoStore;
+    const {
+      selectedStream,
+      isAuthenticated,
+      isAPIPermissionSupported,
+      selectedStreamSnapshot,
+    } = videoStore;
     const {pause, sWidth, sHeight, showController} = this.state;
     const width = sWidth;
     const height = sHeight; // videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
@@ -845,7 +849,7 @@ class VideoPlayerView extends Component {
       __DEV__ && console.log('GOND renderVid player NO PERMISSION');
       return (
         <ImageBackground
-          source={selectedStream.snapshot ?? NVR_Play_NoVideo_Image}
+          source={selectedStreamSnapshot ?? NVR_Play_NoVideo_Image}
           style={{width: width, height: height}}
           resizeMode="cover">
           <TouchableWithoutFeedback onPress={this.onShowControlButtons}>
