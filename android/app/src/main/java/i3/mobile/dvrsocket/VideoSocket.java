@@ -48,10 +48,10 @@ public class VideoSocket extends CommunicationSocket {
     // private static byte[] buff = new byte[VIDEO_SOCKET_BUFFER];
     // private static FrameData dataframe = new FrameData(0);
 
-    public  VideoSocket(FFMpegFrameView frameView, Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIP)
+    public  VideoSocket( Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIP)
     {
 
-        super(frameView, hwnd, serverinfo, channel, search, bychannel, clientIP);
+        super(hwnd, serverinfo, channel, search, bychannel, clientIP);
         ffmpeg = new FFMPEGDecoder();
         ffmpeg.LoadLib();
     }
@@ -119,7 +119,8 @@ public class VideoSocket extends CommunicationSocket {
                     if( read_len == -1 && running)//socket failed
                     {
                         OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
-                        this.frameView.onDisconnectedByRemoteRelayConfig();
+                        if(isRelay)
+                            OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED, null );
                         break;
                     }
                     if( read_len == 0)

@@ -1133,7 +1133,7 @@ class DirectVideoView extends React.Component {
       case NATIVE_MESSAGE.RELAY_DISCONNECTED:
         snackbarUtil.showToast(
           STREAM_STATUS.RELAY_DISCONNECTED,
-          cmscolors.Success
+          cmscolors.Warning
         );
         videoStore.getDirectInfosInterval();
         break;

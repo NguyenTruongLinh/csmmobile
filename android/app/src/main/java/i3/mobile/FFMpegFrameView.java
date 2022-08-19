@@ -292,6 +292,9 @@ public class FFMpegFrameView extends View {
             case Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER:
                 UpdateFrame( (Bitmap)data, channel );
                 break;
+            case Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED:
+                this.onRemoteRelayConfigChanged();
+                break;
             default:
                 OnEvent(msgId, data, channel);
                 break;
@@ -711,7 +714,7 @@ public class FFMpegFrameView extends View {
         if(video_thread == null || socket_handler == null || socket_handler.running == false) {
             this.Server.setLive(false);
             this.Server.setSearchTime(search);
-            socket_handler = new CommunicationSocket(this, this.handler, this.Server, this.Channels, true, this.ByChannel, this.clientIp);
+            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, true, this.ByChannel, this.clientIp);
             socket_handler.setViewDimensions((int)_width, (int)_height);
             socket_handler.setHDMode( HD);
             video_thread = new Thread(socket_handler);
@@ -762,7 +765,7 @@ public class FFMpegFrameView extends View {
 //        }, 8*1000);
 //    }
 
-    public void onDisconnectedByRemoteRelayConfig() {
+    public void onRemoteRelayConfigChanged() {
         final Handler mainHandler = this.handler;
         Log.d("2507", "mockDisconnect");
         if(mainHandler != null)
@@ -785,7 +788,7 @@ public class FFMpegFrameView extends View {
         valid_first_frame = false;
         if( video_thread == null || socket_handler == null || socket_handler.running == false) {
             this.Server.setLive(true);
-            socket_handler = new CommunicationSocket(this, this.handler, this.Server, this.Channels, false, this.ByChannel, this.clientIp);
+            socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, false, this.ByChannel, this.clientIp);
             socket_handler.setViewDimensions((int)_width, (int)_height);
             socket_handler.setHDMode(HD);
             video_thread = new Thread(socket_handler);

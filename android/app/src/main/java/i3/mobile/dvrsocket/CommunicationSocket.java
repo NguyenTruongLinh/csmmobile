@@ -104,13 +104,11 @@ public class CommunicationSocket implements Runnable {
 
     protected boolean withRelayHeader = false;
     protected int relayHeaderBlockRemainLen = 0;
-    protected FFMpegFrameView frameView;
 
-    public CommunicationSocket(FFMpegFrameView frameView, Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
+    public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
         //this.message = message;
         //this.hostAddress = address;
         //this.port = port;
-        this.frameView = frameView;
         this.handler = hwnd;
         str_Channel = channel;
         ServerInfo = serverinfo;
@@ -371,7 +369,7 @@ public class CommunicationSocket implements Runnable {
 
                                 if( cmd_id == Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO)
                                 {
-                                    video_handler = new VideoSocket(this.frameView, handler, this.ServerInfo,this.str_Channel, this.Search, this.PlaybyChannel, this.clientIp);
+                                    video_handler = new VideoSocket(handler, this.ServerInfo,this.str_Channel, this.Search, this.PlaybyChannel, this.clientIp);
                                     if (width > 0 && height > 0)
                                         video_handler.setViewDimensions(width, height);
                                     thread_Video_socket = new Thread( video_handler);

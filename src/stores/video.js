@@ -1590,7 +1590,7 @@ export const VideoModel = types
         self.relayReconnectInterval = setInterval(() => {
           __DEV__ && console.log(` 2507 getDirectInfosInterval`);
           self.getDirectInfos(self.selectedChannel ?? undefined, true);
-          snackbarUtil.showToast(STREAM_STATUS.RECONNECTING, cmscolors.Warning);
+          snackbarUtil.showToast(STREAM_STATUS.RECONNECTING, cmscolors.Success);
         }, 5000);
       },
       notifyClearDirectInfosInterval() {
