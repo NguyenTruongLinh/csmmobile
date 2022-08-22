@@ -68,10 +68,10 @@ class DirectVideoView extends React.Component {
       translateX: 0,
       translateY: 0,
       marginLeft: 0,
-      marginTop:0,
+      marginTop: 0,
       originalWidth: 0,
       originalHeight: 0,
-      visibleBcg:true,
+      visibleBcg: true,
       // isFilterShown: false,
     };
 
@@ -1188,19 +1188,16 @@ class DirectVideoView extends React.Component {
     let containerHeight = this.state.height;
     let hRatio = (containerHeight * 100) / this.state.originalHeight;
     let wRatio = (containerWidth * 100) / this.state.originalWidth;
-    if (hRatio > wRatio)
-    {
-        let height = ((wRatio * this.state.originalHeight) / 100);
-        let top = (containerHeight - height) /2;
-        this.setState({marginLeft: 0});
-        if (top > 0) this.setState({marginTop: top});
-    }
-    else if (hRatio < wRatio)
-    {
-        let width = ((hRatio * this.state.originalWidth) / 100);
-        let left = (containerWidth - width) / 2;
-        this.setState({marginTop: 0});
-        if (left > 0) this.setState({marginLeft: left});
+    if (hRatio > wRatio) {
+      let height = (wRatio * this.state.originalHeight) / 100;
+      let top = (containerHeight - height) / 2;
+      this.setState({marginLeft: 0});
+      if (top > 0) this.setState({marginTop: top});
+    } else if (hRatio < wRatio) {
+      let width = (hRatio * this.state.originalWidth) / 100;
+      let left = (containerWidth - width) / 2;
+      this.setState({marginTop: 0});
+      if (left > 0) this.setState({marginLeft: left});
     }
     this.setState({visibleBcg: false});
   };
@@ -1637,11 +1634,17 @@ class DirectVideoView extends React.Component {
     } = this.props;
     // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
-    const isMenuReady = videoStore.selectedStream
-      && videoStore.selectedStream.isMenuReady ? true
-      : false;
+    const isMenuReady =
+      videoStore.selectedStream && videoStore.selectedStream.isMenuReady
+        ? true
+        : false;
     __DEV__ &&
-      console.log('GOND with height: ',isMenuReady, this.state.width, this.state.height);
+      console.log(
+        'GOND with height: ',
+        isMenuReady,
+        this.state.width,
+        this.state.height
+      );
 
     return singlePlayer ? (
       <GestureDetector gesture={this.composed}>
@@ -1651,9 +1654,13 @@ class DirectVideoView extends React.Component {
         >
           <ImageBackground
             // source={NVR_Play_NoVideo_Image}
-            source={videoStore.selectedStreamSnapshot}
+            source={
+              this.state.visibleBcg ? videoStore.selectedStreamSnapshot : null
+            }
             style={{width: width, height: height}}
-            resizeMode="cover">
+            resizeMode={
+              !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
+            }>
             {/* <CMSImage
             isBackground={true}
             dataSource={serverInfo.snapshot}
@@ -1680,9 +1687,10 @@ class DirectVideoView extends React.Component {
                     !videoStore.stretch && singlePlayer
                       ? this.state.marginLeft
                       : 0,
-                  marginTop:  !videoStore.stretch && singlePlayer
-                  ? this.state.marginTop
-                  : 0,
+                  marginTop:
+                    !videoStore.stretch && singlePlayer
+                      ? this.state.marginTop
+                      : 0,
                 },
               ]}>
               {serverInfo.channelName ?? 'Unknown'}
