@@ -289,6 +289,7 @@ public class CommunicationSocket implements Runnable {
 
                 if (ServerInfo.serverVersion < 0)//
                 {
+                    Log.d("2208", "SVR_REJECT_ACCEPT ServerInfo.serverVersion < 0");
                     OnHandlerMessage(Constant.EnumVideoPlaybackSatus.SVR_REJECT_ACCEPT, null);
                     running = false;
                 }
@@ -686,6 +687,7 @@ public class CommunicationSocket implements Runnable {
                             switch (loginStatus)
                             {
                                 case Constant.EnumGeneric.SVR_DONT_ACCPET_ERR:
+                                    Log.d("2208", "SVR_REJECT_ACCEPT SVR_DONT_ACCPET_ERR");
                                     OnHandlerMessage(Constant.EnumVideoPlaybackSatus.SVR_REJECT_ACCEPT, null);
                                     break;
                                 case Constant.EnumGeneric.MOBILE_LOGIN_MESSAGE_WRONG_USER_PASS:
