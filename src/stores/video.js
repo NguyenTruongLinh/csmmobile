@@ -1887,6 +1887,8 @@ export const VideoModel = types
       },
       setLiveMode(nextIsLive) {
         if (self.isLive != nextIsLive) self.isLive = nextIsLive;
+        if (self.shallGetStreamPostTimeline)
+          self.shallGetStreamPostTimeline = false;
       },
       switchLiveSearch(nextIsLive, startStream = false) {
         // console.trace();
@@ -1897,6 +1899,8 @@ export const VideoModel = types
 
         self.setNoVideo(false);
         self.clearRefreshTimelineInterval();
+        if (self.shallGetStreamPostTimeline)
+          self.shallGetStreamPostTimeline = false;
         if (!nextIsLive) {
           // dongpt: handle different timezone when switching from Live to Search mode
           if (
@@ -2091,6 +2095,7 @@ export const VideoModel = types
           if (self.selectedStream) {
             self.selectedStream.onExitSinglePlayer();
           }
+          self.shallGetStreamPostTimeline = false;
         } else if (
           self.cloudType == CLOUD_TYPE.DIRECTION ||
           self.cloudType == CLOUD_TYPE.DEFAULT ||
