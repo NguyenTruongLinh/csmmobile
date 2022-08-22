@@ -450,7 +450,6 @@
       break;
     case NSStreamEventErrorOccurred:
     {
-      NSLog(@"0108 stream case NSStreamEventErrorOccurred");
       [connectionLock lock];
       if(stream!=receivedDataStream&&stream!=sentDataStream)
       {
@@ -652,6 +651,7 @@
       if(videoConnection)
         [videoConnection disconnectToServer];
       videoConnection = [[ImcVideoReceiverConnection alloc] initWithConnectionIndex:connectionIndex];
+      videoConnection.delegate = delegate;
       if(serverInfo.isRelay) {
         address = serverInfo.relayIp;
         videoPort = (unsigned int) serverInfo.relayPort;

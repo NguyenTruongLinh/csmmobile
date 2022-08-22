@@ -141,7 +141,8 @@ export const STREAM_STATUS = {
   PORT_ERROR: 'Video port error.',
   CONNECTION_ERROR: 'Connection Failed.',
   RELAY_HANDSHAKE_FAILED: 'Relay handshake failed.',
-  RELAY_DISCONNECTED: 'Remote relay config changed, try reconnecting...',
+  RELAY_REMOTE_CONGIF_CHANGED:
+    'Remote relay config changed, try reconnecting...',
 };
 
 export const ALARM = {

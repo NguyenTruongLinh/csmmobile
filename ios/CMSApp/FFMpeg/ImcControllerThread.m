@@ -1403,6 +1403,21 @@ const NSUInteger kMaxCommand = 50;
       [delegate handleCommand:IMC_CMD_SERVER_SEND_SETTINGS_SUCCESSFUL :nil];
     }
       break;
+    case IMC_CMD_RELAY_HANDSHAKE_FAILED:
+    {
+      [delegate handleCommand:IMC_CMD_RELAY_HANDSHAKE_FAILED :nil];
+    }
+      break;
+    case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED:
+    {
+      [delegate handleCommand:IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED :nil];
+    }
+      break;
+    case IMC_CMD_RELAY_UPDATE_DATA_USAGE:
+    {
+      [delegate handleCommand:IMC_CMD_RELAY_UPDATE_DATA_USAGE :parameter];
+    }
+      break;
     default:
       break;
   }

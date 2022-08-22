@@ -2746,6 +2746,26 @@ const uint32_t numLayers = 24;
       
     }
       break;
+      
+    case IMC_CMD_RELAY_HANDSHAKE_FAILED:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:28],
+                                                                              @"target": self.reactTag
+                                                                              }];
+      break;
+    case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:29],
+                                                                              @"value": (NSNumber*) parameter
+                                                                              }];
+      break;
+    case IMC_CMD_RELAY_UPDATE_DATA_USAGE:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:30],
+                                                                              @"value": (NSNumber*) parameter
+                                                                              }];
+      break;
+      
     default:
       break;
       
