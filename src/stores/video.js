@@ -549,6 +549,7 @@ export const VideoModel = types
     waitForTimeline: false,
     checkTimelineTimeout: null,
     checkDaylistTimeout: null,
+    shallGetStreamPostTimeline: false,
 
     timelineRequestId: '',
 
@@ -999,7 +1000,7 @@ export const VideoModel = types
     canEnterChannel(channelNo, isLive) {
       // const _isLive = isLive === undefined ? self.isLive : isLive;
       if (self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE) {
-        __DEV__ && console.log('GOND canEnterChannel no permission!');
+        // __DEV__ && console.log('GOND canEnterChannel no permission!');
         return false;
       }
       if (
@@ -1019,12 +1020,12 @@ export const VideoModel = types
       //     self.allChannels.map(ch => getSnapshot(ch))
       //   );
       if (!foundChannel) {
-        __DEV__ && console.log('GOND canEnterChannel not found!');
+        // __DEV__ && console.log('GOND canEnterChannel not found!');
         return false;
       }
 
-      __DEV__ &&
-        console.log('GOND canEnterChannel: ', getSnapshot(foundChannel));
+      // __DEV__ &&
+      //   console.log('GOND canEnterChannel: ', getSnapshot(foundChannel));
       if (self.isAPIPermissionSupported)
         return isLive === undefined
           ? foundChannel.canLive || foundChannel.canSearch
@@ -1886,6 +1887,8 @@ export const VideoModel = types
       },
       setLiveMode(nextIsLive) {
         if (self.isLive != nextIsLive) self.isLive = nextIsLive;
+        if (self.shallGetStreamPostTimeline)
+          self.shallGetStreamPostTimeline = false;
       },
       switchLiveSearch(nextIsLive, startStream = false) {
         // console.trace();
@@ -1896,6 +1899,8 @@ export const VideoModel = types
 
         self.setNoVideo(false);
         self.clearRefreshTimelineInterval();
+        if (self.shallGetStreamPostTimeline)
+          self.shallGetStreamPostTimeline = false;
         if (!nextIsLive) {
           // dongpt: handle different timezone when switching from Live to Search mode
           if (
@@ -2090,6 +2095,7 @@ export const VideoModel = types
           if (self.selectedStream) {
             self.selectedStream.onExitSinglePlayer();
           }
+          self.shallGetStreamPostTimeline = false;
         } else if (
           self.cloudType == CLOUD_TYPE.DIRECTION ||
           self.cloudType == CLOUD_TYPE.DEFAULT ||
@@ -3067,6 +3073,7 @@ export const VideoModel = types
               (yield self.getDaylist(channelNo, targetStream.targetUrl.sid));
             if (timeline) {
               yield self.getTimeline(channelNo, targetStream.targetUrl.sid);
+              self.shallGetStreamPostTimeline = true;
               return;
             }
 
@@ -3670,8 +3677,9 @@ export const VideoModel = types
           return false;
         }
         // dongpt:
-        if (self.selectedChannel != null) {
+        if (self.shallGetStreamPostTimeline && self.selectedChannel != null) {
           self.getHLSInfos({channelNo: self.selectedChannel});
+          self.shallGetStreamPostTimeline = false;
         }
         return true;
       }),

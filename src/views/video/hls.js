@@ -1574,7 +1574,8 @@ class HLSStreamingView extends React.Component {
                       {scaleY: this.state.zoom},
                     ]}
                     poster={poster}
-                    posterResizeMode="cover"
+                    posterResizeMode={videoStore.stretch ? 'cover' : 'contain'}
+                    // posterResizeMode="cover"
                     // textTracks={[
                     //   {
                     //     title: channel.name ?? 'Unknown',
