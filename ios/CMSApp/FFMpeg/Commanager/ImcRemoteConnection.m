@@ -1362,11 +1362,7 @@
   
   if(delegate)
   {
-    self.serverInfo.isRelayRemoteConfigChanged = isErrorOccurred && isRelay;
-    
     [delegate handleCommand: (isErrorOccurred && isRelay ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_CONNECTION_DISCONNECT_RESPONSE) :self];
-    
-//    [delegate handleCommand: IMC_CMD_CONNECTION_DISCONNECT_RESPONSE :self];
     delegate = nil;
   }
   //disconecting = YES;

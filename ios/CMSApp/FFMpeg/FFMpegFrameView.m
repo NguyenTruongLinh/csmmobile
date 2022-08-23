@@ -2270,13 +2270,6 @@ const uint32_t numLayers = 24;
     {
       ImcConnectedServer* disconnectedServer = parameter;
       ImcConnectedServer* foundServer = nil;
-      if(disconnectedServer.isRelayRemoteConfigChanged){
-        [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
-                                                                                @"msgid": [NSNumber numberWithUnsignedInteger:29],
-                                                                                @"target": self.reactTag
-                                                                                }];
-        disconnectedServer.isRelayRemoteConfigChanged = false;
-      }
       for ( int index = 0; index < connectedServerList.count; index++ )
       {
         ImcConnectedServer* server = [connectedServerList objectAtIndex:index];
