@@ -1341,7 +1341,6 @@ const NSUInteger kMaxCommand = 50;
         ImcConnectedServer* server = [[ImcConnectedServer alloc] init];
         [server updateServerInfo: connection.serverInfo];
         
-        NSLog(@"2208 handleCommand / case IMC_CMD_CONNECTION_DISCONNECT_RESPONSE");
         [delegate handleCommand:IMC_CMD_CONNECTION_DISCONNECT_RESPONSE :server];
       }
       [lockServerList lock];

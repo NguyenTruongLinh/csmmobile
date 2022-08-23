@@ -295,7 +295,6 @@
     //[NSThread detachNewThreadSelector:@selector(onDisconnect:) toTarget:self withObject:nil];
     [self closeStreams];
     [connectionLock unlock];
-    NSLog(@"2208 onKeepAlive onDisconnect");
     [self onDisconnect:nil:FALSE];
     NSLog(@"++++++++++ OnKeepAlive reach threshole, disconected ...");
   }
@@ -483,7 +482,6 @@
           {
             [self closeStreams];
             
-            NSLog(@"5PM 2308 case NSStreamEventErrorOccurred onDisconnect");
             [self onDisconnect:nil:TRUE];
             
             NSLog(@"++++++++ NSStreamEventErrorOccurred, disconected ...");
@@ -509,7 +507,6 @@
           [self closeStreams];
           
 //          [connectionLock lock];
-          NSLog(@"2208 case NSStreamEventEndEncountered onDisconnect");
           [self onDisconnect:nil:FALSE];
 //          [connectionLock unlock];
           NSLog(@"++++++++ NSStreamEventEndEncountered, disconected ...");
@@ -1073,7 +1070,6 @@
             connectionIndex = [[connectionIndexNode stringValue] integerValue];
             
             serverInfo.connected = TRUE;
-            NSLog(@"2308 serverInfo.connected = TRUE 1");
             // connect successfull
 //            if(loginTimer)
 //            {
@@ -1091,11 +1087,8 @@
           {
             connectionIndex = -1;
             serverInfo.connected = FALSE;
-            NSLog(@"2308 serverInfo.connected = FALSE 2");
-            NSLog(@"0808 getLoginStatus = %d", getLoginStatus);
           }
           getLoginStatus = (connectionStatus == MOBILE_LOGIN_MESSAGE_SUCCEEDED);
-          NSLog(@"0808 getLoginStatus = %d", getLoginStatus);
           
           ImcConnectionStatus* status = [[ImcConnectionStatus alloc] initWithParam:self:(int32_t)connectionIndex :(int32_t)connectionStatus];
           if(self.delegate)
@@ -1369,7 +1362,6 @@
   
   if(delegate)
   {
-    NSLog(@"5PM 2308 onDisconnect / handleCommand:IMC_CMD_CONNECTION_DISCONNECT_RESPONSE isErrorOccurred = %s", isErrorOccurred ? "T" : "F");
     self.serverInfo.isRelayRemoteConfigChanged = isErrorOccurred && isRelay;
     
     [delegate handleCommand: (isErrorOccurred && isRelay ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_CONNECTION_DISCONNECT_RESPONSE) :self];

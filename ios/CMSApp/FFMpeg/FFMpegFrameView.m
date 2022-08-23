@@ -100,18 +100,14 @@ const uint32_t numLayers = 24;
 }
 
 - (void) processInit {
-  NSLog(@"2PM 2308 processInit");
   firstRunAlarm = NO;
   _oldSeekpos = -1;
   _channels = nil;
-  NSLog(@"2308 init _channels = nil");
   channelsMapping = [NSMutableArray array];
   mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
   mainDisplayVideo.delegate1 = (id <ImcScreenDisplayDelegate>) self;
   // mainDisplayVideo.fullscreenView = 0;
   connectedServerList = [[NSMutableArray alloc] init];
-  NSLog(@"2PM 2308 init connectedServerList alloc] init");
-  NSLog(@"2PM 2308 1 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
   viewMaskLock = [[NSCondition alloc] init];
   channelsSearchDictionary = [NSMutableDictionary dictionary];
   isRotate = NO;
@@ -183,7 +179,6 @@ const uint32_t numLayers = 24;
 	
   // NSLog(@"GOND_setter setChannels: %@", value);
   _channels = value;
-  NSLog(@"2308 setChannels value = %@", value);
   channelList = [_channels componentsSeparatedByString:@","];
   // NSString* channelStr = @"";
   // for(NSString* ch in channelList)
@@ -382,7 +377,6 @@ const uint32_t numLayers = 24;
 -(void)resetParam{
 	
   [connectedServerList removeObject:currentServer];
-  NSLog(@"2PM 2308 2 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
   self.layer.contents = nil;
   //NSLog(@"Shark removeFromSuperview");
   [videoView removeFromSuperview];
@@ -415,7 +409,6 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setStartplayback:(NSDictionary *)startplayback {
-    NSLog(@"2308 setStartplayback");
 //  [self resetParam];
 //  [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
   if(startplayback.count == 0){
@@ -433,8 +426,6 @@ const uint32_t numLayers = 24;
   
   ImcConnectedServer* selectedServer = [self setConnectionServer:startplayback];
 //    NSLog(@"GOND setStartplayback: %d, %d", connectedServerList.count, connectedServers.count);
-  
-  NSLog(@"2PM 2308 setConnectionServer:startplayback selectedServer.connected = %s", selectedServer.connected ? "T" : "F");
   
   NSString* channel = [self get_obj:startplayback for_key:@"channels"];
 //    m_channel = channel;
@@ -459,7 +450,6 @@ const uint32_t numLayers = 24;
     }
   }
   // [self setIsHD:isHD];
-  NSLog(@"2PM 2308 2 selectedServer.connected = %s", selectedServer.connected ? "T" : "F");
   
   if(isSearch == YES){
     NSLog(@"GOND **DIRECT** setStartplayback switch to SEARCH");
@@ -489,7 +479,6 @@ const uint32_t numLayers = 24;
 //    [self addSubview:videoView];
     
     BOOL found = NO;
-    NSLog(@"2PM 2308 21 (_isSeacrh == isSearch) = %s connectedServerList.count = %lu", _isSeacrh == isSearch ? "T" : "F", (unsigned long)connectedServerList.count);
     if (_isSeacrh == isSearch)
     {
         for (ImcConnectedServer* server in connectedServerList)
@@ -499,7 +488,6 @@ const uint32_t numLayers = 24;
           {
             selectedServer = server;
             found = YES;
-            NSLog(@"2PM 2308 21 server.connected = %s", server.connected ? "T" : "F");
             break;
           }
         }
@@ -516,7 +504,6 @@ const uint32_t numLayers = 24;
 //  [self addSubview:videoView];
   [self setIsHD:isHD];
   
-  NSLog(@"2PM 2308 3 selectedServer.connected = %s", selectedServer.connected ? "T" : "F");
   
   if( selectedServer.connected )
   {
@@ -524,33 +511,23 @@ const uint32_t numLayers = 24;
 //      NSArray* buttonList = [NSArray arrayWithObjects:@"View channel list", @"Disconnect", nil];
     NSLog(@"GOND **DIRECT** setStartplayback 2 server connected: updating channels list");
     [self setChannels:channel];
-    NSLog(@"2308 connected setChannels:channel");
     [self setIsSearch:isSearch];
-    NSLog(@"2308 connected setIsSearch:isSearch");
     
-    NSLog(@"2308 connected IF 1 %s", previousChannel != nil ? "T" : "F");
-    NSLog(@"2308 connected IF 2 %s", ![_channels isEqualToString:previousChannel] ? "T" : "F");
     if (previousChannel != nil && ![_channels isEqualToString:previousChannel])
     {
 //        [controllerThread updateServerDisplayMask:selectedServer.server_address :selectedServer.server_port :[self getChannelMask]];
       [self handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:self withData:nil];
-      NSLog(@"2308 connected handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT");
     }
   }
   else // if (connectedServers.count < MAX_SERVER_CONNECTION)
   {
 //    NSLog(@"GOND **DIRECT** setStartplayback 2 start connection : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
     [connectedServerList addObject:selectedServer];
-    NSLog(@"2PM 2308 3 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
-    NSLog(@"2PM 2308 !connected addObject:selectedServer");
 //    NSLog(@"GOND **DIRECT** setStartplayback 2 : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
 //      NSString* previousChannel = _channels;
     [self setChannels:channel];
-    NSLog(@"2308 !connected setChannels:channel");
     [self setByChannel:by_channel];
-    NSLog(@"2308 !connected setByChannel:by_channel");
     [self setIsSearch:isSearch];
-    NSLog(@"2308 !connected setIsSearch:isSearch");
     /* Display the error to the user. */
     [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                             @"msgid": [NSNumber numberWithUnsignedInteger:3],
@@ -561,7 +538,6 @@ const uint32_t numLayers = 24;
 
   videoPlayerStatus = STATE_PLAY;
   [self checkIsSearch];
-  NSLog(@"2308 self checkIsSearch");
 }
 
 -(ImcConnectionServer *)setConnectionServer: (NSDictionary *)server{
@@ -644,7 +620,6 @@ const uint32_t numLayers = 24;
   }
   
   [connectedServerList removeObjectsInArray:deletedServer];
-  NSLog(@"2PM 2308 3 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
 }
 
 -(void)updateServerDisconnectState:(ImcConnectedServer *)server
@@ -656,7 +631,6 @@ const uint32_t numLayers = 24;
        server.server_port == _server.server_port )
     {
       _server.connected = FALSE;
-      NSLog(@"2308 _server.connected = FALSE 3");
       break;
     }
   }
@@ -747,7 +721,6 @@ const uint32_t numLayers = 24;
 	
   // NSLog(@"GOND: ******* on disconnect: %d", disconnect);
   // if(disconnect){
-  NSLog(@"2PM 2308 GOND: ******* on disconnect ******");
   
   // disconnect
   videoPlayerStatus = STATE_STOP;
@@ -765,7 +738,6 @@ const uint32_t numLayers = 24;
         
         connectedServer.connected = FALSE;
       
-      NSLog(@"2308 connectedServer.connected = FALSE 4");
     }
     for (NSInteger i = 0; i < IMC_MAX_DISPLAY_SCREEN; i++)
     {
@@ -780,7 +752,6 @@ const uint32_t numLayers = 24;
       [self handleResponseMessage:IMC_MSG_CONNECTION_DISCONNECT fromView:self withData:nil];
 //    }
     [connectedServerList removeAllObjects];
-    NSLog(@"2PM 2308 4 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
   }
   [self.connectedServers removeAllObjects];
   if (disconnect)
@@ -794,71 +765,6 @@ const uint32_t numLayers = 24;
   [mainDisplayVideo resetDisplayMapping];
   // }
 }
-
-//-(void)setDisconnect2:(BOOL)disconnect {
-//
-//  // NSLog(@"GOND: ******* on disconnect: %d", disconnect);
-//  // if(disconnect){
-//  NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 1");
-//
-//  // disconnect
-//  videoPlayerStatus = STATE_STOP;
-//  NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 12");
-////  [controllerThread disconnectAllServers];
-//  NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 13");
-//
-//  NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 2");
-//  if(connectedServerList.count > 0)
-//  {
-//    for (ImcConnectedServer* connectedServer in connectedServerList)
-//    {
-//        // [self.mainDisplayVideo removeScreenForServer:connectedServer.server_address andPort:connectedServer.server_port];
-//
-//        [connectedServer resetChannelConfigs];
-//
-//        connectedServer.connected = FALSE;
-//
-//      NSLog(@"2308 connectedServer.connected = FALSE 4");
-//    }
-//    NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 3");
-//    for (NSInteger i = 0; i < IMC_MAX_DISPLAY_SCREEN; i++)
-//    {
-//      [self.mainDisplayVideo resetScreen:i];
-//    }
-//    NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 4");
-////    if (disconnect)
-////    {
-////      [self handleCommand:IMC_CMD_CONNECTION_DISCONNECT_RESPONSE :nil];
-////    }
-////    else
-////    {
-//      [self handleResponseMessage:IMC_MSG_CONNECTION_DISCONNECT fromView:self withData:nil];
-////    }
-//    [connectedServerList removeAllObjects];
-//    NSLog(@"2PM 2308 4 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
-//    NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 5");
-//  }
-//
-//  NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 6");
-//
-//  [self.connectedServers removeAllObjects];
-//
-//  NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 7");
-//
-//  if (disconnect)
-//  {
-//    [mainDisplayVideo remoteAllLayers];
-//    [controllerThread stopThread];
-//    controllerThread = nil;
-//    [decoderThread stopThread];
-//    decoderThread = nil;
-//  }
-//
-//  NSLog(@"4PM 2308 GOND: ******* on disconnect ****** 8");
-//
-//  [mainDisplayVideo resetDisplayMapping];
-//  // }
-//}
 
 -(void)setRefresh:(BOOL)refresh {
 	
@@ -907,7 +813,6 @@ const uint32_t numLayers = 24;
       
       [self handleResponseMessage:IMC_MSG_CONNECTION_DISCONNECT fromView:self withData:nil];
       [connectedServerList removeAllObjects];
-      NSLog(@"2PM 2308 6 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
     }
     
 //    [mainDisplayVideo remoteAllLayers];
@@ -1279,7 +1184,6 @@ const uint32_t numLayers = 24;
           }
           
           [connectedServerList removeObject:foundServer];
-          NSLog(@"2PM 2308 7 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
           
           if (connectedServerList.count == 0 && self.mainDisplayVideo.fullscreenView != -1)
           {
@@ -1401,17 +1305,13 @@ const uint32_t numLayers = 24;
     {
       CGSize smallSize,largeSize;
       [self.mainDisplayVideo getDisplaySize:&smallSize :&largeSize];
-      NSLog(@"2308 case IMC_MSG_DISPLAY_UPDATE_LAYOUT 1");
       [controllerThread updateDisplaySize:smallSize :largeSize];
-      NSLog(@"2308 case IMC_MSG_DISPLAY_UPDATE_LAYOUT 2");
       [controllerThread updateLayout:self.mainDisplayVideo.currentDiv];
-      NSLog(@"2308 case IMC_MSG_DISPLAY_UPDATE_LAYOUT 3");
       for( ImcConnectedServer* server in connectedServerList )
       {
         uint64_t displayChannelMask = [self getChannelMask]; // [self.mainDisplayVideo getDisplayChannelForServer:server.server_address andPort:server.server_port];
         [controllerThread updateServerDisplayMask:server.server_address :server.server_port :displayChannelMask];
       }
-      NSLog(@"2308 case IMC_MSG_DISPLAY_UPDATE_LAYOUT 4");
     }
       break;
     case IMC_MSG_LIVE_UPDATE_CHANNEL_MASK:
@@ -1454,7 +1354,6 @@ const uint32_t numLayers = 24;
         }
       }];
       
-      NSLog(@"2PM 2308 13 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
       if(!hasSearchMode)
       {
         //if live mode
@@ -1485,7 +1384,6 @@ const uint32_t numLayers = 24;
               }
             }];
             
-            NSLog(@"2PM 2308 14 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
             NSMutableArray* newServerList = [NSMutableArray array];
             for (ImcConnectedServer* server in connectedServerList) {
               if (server.serverVersion >= VERSION_3300)
@@ -2192,7 +2090,6 @@ const uint32_t numLayers = 24;
             //Update server version from parse header
             connectedServer.serverVersion = server.serverVersion;
             connectedServer.connected = TRUE;
-            NSLog(@"2PM 2308 handleCommand IMC_CMD_CONNECTION_CONNECT_RESPONSE connectedServer.connected = TRUE");
             needToAdd = FALSE;
             break;
           }
@@ -2200,9 +2097,7 @@ const uint32_t numLayers = 24;
         
         if (needToAdd) {
           [connectedServerList addObject:server];
-          NSLog(@"2PM 2308 15 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
         }
-        NSLog(@"2208 responseConnectingServer 1");
         [self responseConnectingServer:server :status.connectionStatus];
         [controllerThread sendRequestTimeZoneToServer:server];
       }
@@ -2223,7 +2118,6 @@ const uint32_t numLayers = 24;
           if ([serverAddress isEqualToString:connectedServer.server_address]) {
             
             [connectedServerList removeObject:connectedServer];
-            NSLog(@"2PM 2308 16 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
             //needToRemove = YES;
             break;
           }
@@ -2235,7 +2129,6 @@ const uint32_t numLayers = 24;
         if(server)
           [resumeDataInfo getChannelMappingOfConnectedServer:server];
         
-        NSLog(@"2208 responseConnectingServer 2");
         [self responseConnectingServer:server :status.connectionStatus];
       }
       
@@ -2377,7 +2270,6 @@ const uint32_t numLayers = 24;
     {
       ImcConnectedServer* disconnectedServer = parameter;
       ImcConnectedServer* foundServer = nil;
-      NSLog(@"3PM 2308 IMC_CMD_CONNECTION_DISCONNECT_RESPONSE disconnectedServer.isRelayRemoteConfigChanged = %s", disconnectedServer.isRelayRemoteConfigChanged ? "T":"F");
       if(disconnectedServer.isRelayRemoteConfigChanged){
         [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                                 @"msgid": [NSNumber numberWithUnsignedInteger:29],
@@ -2401,7 +2293,6 @@ const uint32_t numLayers = 24;
         
         [self.mainDisplayVideo removeScreenForServer:foundServer.server_address andPort:foundServer.server_port];
         [connectedServerList removeObject:foundServer];
-        NSLog(@"2PM 2308 17 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
         dispatch_async(dispatch_get_main_queue(), ^{
           [self onShowDisconnectedMsg:foundServer];
         });
@@ -2452,7 +2343,6 @@ const uint32_t numLayers = 24;
           
           [self.mainDisplayVideo removeScreenForServer:disconnectedServer.server_address andPort:disconnectedServer.server_port];
           [connectedServerList removeObject:disconnectedServer];
-          NSLog(@"2PM 2308 18 connectedServerList.count = %lu", (unsigned long)connectedServerList.count);
           [self onShowDisconnectedMsg:disconnectedServer];
           
           //Change to MainView Tab
@@ -2460,7 +2350,6 @@ const uint32_t numLayers = 24;
           {
             dispatch_async(dispatch_get_main_queue(), ^{
               /* Display the error to the user. */
-              NSLog(@"2208 numberWithUnsignedInteger:9 1");
               [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                                       @"msgid": [NSNumber numberWithUnsignedInteger:9],
                                                                                       @"target": self.reactTag
@@ -2495,7 +2384,6 @@ const uint32_t numLayers = 24;
         }
         else
         {
-          NSLog(@"2208 responseConnectingServer 3");
           [self responseConnectingServer:disconnectedServer :LOGIN_STATUS_CANNOT_CONNECT];
           if (connectedServerList.count == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -2884,16 +2772,12 @@ const uint32_t numLayers = 24;
                                                                               }];
       break;
     case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED:
-      NSLog(@"5PM 2308 case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED");
       [self processSetDisconnect: TRUE: FALSE];
-      NSLog(@"4PM 2308 setDisconnect2");
       [self processInit];
-      NSLog(@"4PM 2308 processInit");
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                               @"msgid": [NSNumber numberWithUnsignedInteger:29],
                                                                               @"target": self.reactTag
                                                                               }];
-      NSLog(@"4PM 2308 emitEventWithName");
       
       break;
     case IMC_CMD_RELAY_UPDATE_DATA_USAGE:
@@ -3639,7 +3523,6 @@ const uint32_t numLayers = 24;
           case LOGIN_STATUS_CANNOT_CONNECT:
             msg = [NSString stringWithFormat:@"Cannot connect to server %@", server.serverName];
             bShow = FALSE;
-            NSLog(@"2208 numberWithUnsignedInteger:9 2");
             [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                                     @"msgid": [NSNumber numberWithUnsignedInteger:9],
                                                                                     @"target": self.reactTag
