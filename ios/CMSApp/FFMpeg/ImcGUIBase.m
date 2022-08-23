@@ -128,6 +128,7 @@
     isRelay       = FALSE;
     relayConnectable       = FALSE;
     relayPort     = IMC_DEFAULT_RELAY_SERVER_PORT;
+    isRelayRemoteConfigChanged = FALSE;
   }
   return self;
 }

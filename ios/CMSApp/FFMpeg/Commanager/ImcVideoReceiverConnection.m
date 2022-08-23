@@ -258,7 +258,7 @@ __volatile BOOL isRLRunning = NO;
 //    [videoTimer invalidate];
     
     if (!disconnected) {
-      [parent onDisconnect:nil];
+      [parent onDisconnect:nil:FALSE];
       // NSLog(@"++++++++++ onTimerChecking, disconected ...");
       [self disconnectToServer];
       [parent disconnect];
