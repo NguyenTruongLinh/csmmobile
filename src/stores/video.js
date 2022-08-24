@@ -1997,14 +1997,20 @@ export const VideoModel = types
           : value;
       },
       previousChannel() {
-        if (self.selectedChannelIndex > 0) {
+        if (self.selectedChannelIndex == 0) {
+          self.selectChannel(
+            self.displayChannels[self.displayChannels.length - 1].channelNo
+          );
+        } else if (self.selectedChannelIndex > 0) {
           self.selectChannel(
             self.displayChannels[self.selectedChannelIndex - 1].channelNo
           );
         }
       },
       nextChannel() {
-        if (
+        if (self.selectedChannelIndex == self.displayChannels.length - 1) {
+          self.selectChannel(self.displayChannels[0].channelNo);
+        } else if (
           self.selectedChannelIndex < self.displayChannels.length - 1 &&
           self.selectedChannelIndex >= 0
         )

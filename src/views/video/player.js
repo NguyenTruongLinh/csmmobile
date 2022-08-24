@@ -1053,7 +1053,7 @@ class VideoPlayerView extends Component {
 
     return (
       <Fragment>
-        {showController && selectedChannelIndex > 0 && (
+        {showController && ( // && selectedChannelIndex > 0
           <View
             style={[styles.controlButtonContainer, {bottom: bottomPos}]}
             onLayout={this.onControlButtonLayout}>
@@ -1087,7 +1087,7 @@ class VideoPlayerView extends Component {
             />
           </View>
         )}
-        {showController && selectedChannelIndex < displayChannels.length - 1 && (
+        {showController && ( //&& selectedChannelIndex < displayChannels.length - 1
           <View
             style={[
               styles.controlButtonContainer,
