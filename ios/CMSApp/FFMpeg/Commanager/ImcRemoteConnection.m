@@ -30,7 +30,7 @@
 
 @synthesize delegate,deviceSetting,deviceCameraList,serverInfo,serverVersion,snapshotChannel, waitForAccept, waitForRelayHandshake, loginTimer, dataQueue, streamingRL, remoteQueue, isRelay, ipAddress, testRelayHeaderFlag; //, isRLRunning;
 
-- (id)init:(ImcConnectionServer *)server
+- (id)init:(ImcConnectionServer *)server:(BOOL)_isRelayReconnecting
 {
 	
   self = [super init];
@@ -69,6 +69,7 @@
     firstConnect            = YES;
     remoteQueue             = nil;
 //    isRLRunning             = NO;
+    isRelayReconnecting      = _isRelayReconnecting;
   }
   return self;
 }
@@ -548,6 +549,9 @@
       waitForRelayHandshake = FALSE;
       movedBytes = relayTotalLen;
       return TRUE;
+    }else{
+      NSLog(@"2408 IMC_CMD_RELAY_HANDSHAKE_FAILED comm");
+      [delegate handleCommand: isRelayReconnecting ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_RELAY_HANDSHAKE_FAILED : nil];
     }
   }
   return FALSE;
@@ -580,6 +584,9 @@
           waitForAccept = FALSE;
           NSData* sentData = [self constructLoginInfo];
           [self sendData:sentData:@"LoginInfo"];
+        }else{
+          NSLog(@"2408 IMC_CMD_SERVER_REJECT_ACCEPT comm");
+          [delegate handleCommand: isRelayReconnecting ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_SERVER_REJECT_ACCEPT : nil];
         }
       }
     }

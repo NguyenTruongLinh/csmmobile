@@ -335,8 +335,6 @@ __volatile BOOL isRLRunning = NO;
 
 - (BOOL)readRelayHandshakeInfo: (NSInputStream *)stream
 {
-  
-  
   uint8_t buffer[MAX_RECEIVE_CONNECTION_DATA_BUFFER_SIZE];
   long len = 0;
   len = [(NSInputStream *)stream read:buffer maxLength:MAX_RECEIVE_CONNECTION_DATA_BUFFER_SIZE];
@@ -354,6 +352,9 @@ __volatile BOOL isRLRunning = NO;
       int intConId = (int) self->connectionIndex;
       [self sendData: [NSData dataWithBytes: (uint8_t*)(&intConId) length: sizeof(intConId)]];
       return TRUE;
+    }else{
+      NSLog(@"2408 IMC_CMD_RELAY_HANDSHAKE_FAILED video");
+      [delegate handleCommand: IMC_CMD_RELAY_HANDSHAKE_FAILED : nil];
     }
   }
   return FALSE;

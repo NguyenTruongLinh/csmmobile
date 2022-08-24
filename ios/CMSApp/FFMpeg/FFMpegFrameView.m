@@ -93,6 +93,7 @@ const uint32_t numLayers = 24;
     RATIO = 16.0f/9.0f;
     zoomLevel = ZOOM_LEVEL_24H;
     _eventDisplatcher = eventDispatcher;
+    isReconnectingOnRelayConfigChanged = FALSE;
     [self processInit];
   }
   
@@ -138,6 +139,7 @@ const uint32_t numLayers = 24;
   // init controller thread
   controllerThread = [[ImcControllerThread alloc] init];
   controllerThread.delegate = (id<ImcCommandControllerDelegate>) self;
+  controllerThread.isRelayReconnecting = isReconnectingOnRelayConfigChanged;
   
   // init controller thread
   controllerThread.decoderThread = decoderThread;
@@ -2758,6 +2760,12 @@ const uint32_t numLayers = 24;
     }
       break;
       
+    case IMC_CMD_SERVER_REJECT_ACCEPT:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:6],
+                                                                              @"target": self.reactTag
+                                                                              }];
+      break;
     case IMC_CMD_RELAY_HANDSHAKE_FAILED:
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                               @"msgid": [NSNumber numberWithUnsignedInteger:28],
@@ -2765,8 +2773,7 @@ const uint32_t numLayers = 24;
                                                                               }];
       break;
     case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED:
-      [self processSetDisconnect: TRUE: FALSE];
-      [self processInit];
+      [self onRemoteRelayConfigChanged];
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                               @"msgid": [NSNumber numberWithUnsignedInteger:29],
                                                                               @"target": self.reactTag
@@ -2785,6 +2792,12 @@ const uint32_t numLayers = 24;
       
   }
   return 1;
+}
+
+-(void) onRemoteRelayConfigChanged {
+  isReconnectingOnRelayConfigChanged = TRUE;
+  [self processSetDisconnect: TRUE: FALSE];
+  [self processInit];
 }
 
 //-(UIImage*)getScaledImage

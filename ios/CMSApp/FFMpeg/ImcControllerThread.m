@@ -20,7 +20,7 @@
 const NSUInteger kMaxCommand = 50;
 @implementation ImcControllerThread
 
-@synthesize delegate;
+@synthesize delegate, isRelayReconnecting;
 
 -(id)init
 {
@@ -56,7 +56,7 @@ const NSUInteger kMaxCommand = 50;
         case IMC_CMD_CONNECTION_CONNECT:
         {
           ImcConnectedServer* server = (ImcConnectedServer*)[cmd getData];
-          ImcRemoteConnection*  remoteConnection = [[ImcRemoteConnection alloc] init:[server connectionServerInfo]];
+          ImcRemoteConnection*  remoteConnection = [[ImcRemoteConnection alloc] init:[server connectionServerInfo]:isRelayReconnecting];
           
           if( remoteConnection != nil )
           {
@@ -1402,6 +1402,11 @@ const NSUInteger kMaxCommand = 50;
     case IMC_CMD_SERVER_SEND_SETTINGS_SUCCESSFUL:
     {
       [delegate handleCommand:IMC_CMD_SERVER_SEND_SETTINGS_SUCCESSFUL :nil];
+    }
+      break;
+    case IMC_CMD_SERVER_REJECT_ACCEPT:
+    {
+      [delegate handleCommand:IMC_CMD_SERVER_REJECT_ACCEPT :nil];
     }
       break;
     case IMC_CMD_RELAY_HANDSHAKE_FAILED:
