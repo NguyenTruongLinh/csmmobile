@@ -2649,7 +2649,7 @@ export const VideoModel = types
                   1000
                 );
               return false;
-            } else if (!previousRelayStatus) {
+            } else {
               if (isInterval && self.relayReconnectInterval) {
                 clearInterval(self.relayReconnectInterval);
                 self.relayReconnectInterval = null;
