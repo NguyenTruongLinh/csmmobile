@@ -1190,7 +1190,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)disconnectAllServers
 {
-	
+  
   [lockServerList lock];
   for( int index = 0; index < env.connectedServers.count; index++ )
   {

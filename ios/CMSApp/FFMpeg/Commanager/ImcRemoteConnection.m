@@ -549,7 +549,6 @@
       movedBytes = relayTotalLen;
       return TRUE;
     }else{
-      NSLog(@"2408 IMC_CMD_RELAY_HANDSHAKE_FAILED comm serverInfo.isRelayReconnecting = %s", serverInfo.isRelayReconnecting ? "T" : "F");
       [delegate handleCommand: serverInfo.isRelayReconnecting ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_RELAY_HANDSHAKE_FAILED : nil];
     }
   }
@@ -584,7 +583,6 @@
           NSData* sentData = [self constructLoginInfo];
           [self sendData:sentData:@"LoginInfo"];
         }else{
-          NSLog(@"2408 IMC_CMD_SERVER_REJECT_ACCEPT comm serverInfo.isRelayReconnecting = %s", serverInfo.isRelayReconnecting ? "T" : "F");
           [delegate handleCommand: serverInfo.isRelayReconnecting ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_SERVER_REJECT_ACCEPT : nil];
         }
       }

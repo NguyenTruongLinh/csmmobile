@@ -463,6 +463,7 @@ typedef NS_ENUM(NSUInteger, IMC_VIDEO_MODE)
   BOOL relayConnectable;
   NSString* relayIp;
   NSInteger relayPort;
+  BOOL isRelayReconnecting;
 }
 
 @property (nonatomic, readwrite) NSInteger server_port;
