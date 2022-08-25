@@ -674,7 +674,7 @@ export const VideoModel = types
       return null;
     },
     get selectedStreamSnapshot() {
-      return self.selectedChannel
+      return self.selectedChannel && self.selectedStream
         ? self.selectedStream.snapshot
         : NVR_Play_NoVideo_Image;
     },
@@ -2649,7 +2649,7 @@ export const VideoModel = types
                   1000
                 );
               return false;
-            } else {
+            } else if (!previousRelayStatus) {
               if (isInterval && self.relayReconnectInterval) {
                 clearInterval(self.relayReconnectInterval);
                 self.relayReconnectInterval = null;

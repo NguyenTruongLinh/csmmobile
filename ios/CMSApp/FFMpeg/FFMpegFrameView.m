@@ -90,74 +90,80 @@ const uint32_t numLayers = 24;
   if((self = [super init])){
     _w = 0;
     _h = 0;
-    firstRunAlarm = NO;
-    _oldSeekpos = -1;
-    _channels = nil;
     RATIO = 16.0f/9.0f;
     zoomLevel = ZOOM_LEVEL_24H;
-    channelsMapping = [NSMutableArray array];
-    mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
-    mainDisplayVideo.delegate1 = self;
-    // mainDisplayVideo.fullscreenView = 0;
-    connectedServerList = [[NSMutableArray alloc] init];
-    viewMaskLock = [[NSCondition alloc] init];
-    channelsSearchDictionary = [NSMutableDictionary dictionary];
-    isRotate = NO;
-    _rotate = NO;
-    dateIntervalList = [NSMutableArray array];
-    searchingDateInterval = [NSMutableArray array];
-    currentServer = nil;
-    currentSelectedFullScreenChannel = -1;
-    videoPlayerStatus = STATE_PLAY;
-    mainViewRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
-    mainViewFullRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
-    calendar = [NSDate gregorianCalendar];
-    calTimezone = [NSTimeZone systemTimeZone];
-    m_delayPlayback = NO;
-    defaultImg = [[UIImage alloc] initWithCGImage: [UIImage imageNamed:@"CMS-video-losss.png"].CGImage];
-    searchFrameImage = defaultImg;
-    m_dayType = NORMAL;
-    oldDeviceInterfaceHandel = UIInterfaceOrientationMaskPortrait;
-    
-    for (NSInteger i = 0; i < IMC_MAX_CHANNEL; i++) {
-      viewMaskArray[i] = 0;
-    }
-    
-    decoderThread = [[ImcDecodeThread alloc] init];
-    decoderThread.delegate = self;
-    [decoderThread startThread];
-    
-    // init controller thread
-    controllerThread = [[ImcControllerThread alloc] init];
-    controllerThread.delegate = self;
-    
-    // init controller thread
-    controllerThread.decoderThread = decoderThread;
-    [controllerThread startThread];
-    
     _eventDisplatcher = eventDispatcher;
-    resumeDataInfo = [[i3ResumeDataInfo alloc] init];
-    
-    //init frame video
-    CGRect videoViewFrame = self.frame;
-    videoViewFrame.origin = CGPointZero;
-    videoView = [[UIView alloc] initWithFrame:videoViewFrame];
-    
-    [mainDisplayVideo setdisplayRect:self.bounds withRootLayer:videoView.layer];
-    mainDisplayVideo.connectedServerList = connectedServerList;
-    
-    [videoView setFrame:self.bounds];
-    [self addSubview:videoView];
-    self.layer.contents = (id)[UIImage imageNamed:@"CMS-video-losss.png"].CGImage;
-    
-    AppDelegate* appdelegate = (AppDelegate* )[[UIApplication sharedApplication] delegate];
-    appdelegate.video = self;
-    self.currentDeviceOrientation = [[UIDevice currentDevice] orientation];
-//    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChanged:) name:UIDeviceOrientationDidChangeNotification object:nil];
+    [self processInit];
   }
   
   return self;
+}
+
+- (void) processInit {
+  firstRunAlarm = NO;
+  _oldSeekpos = -1;
+  _channels = nil;
+  channelsMapping = [NSMutableArray array];
+  mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
+  mainDisplayVideo.delegate1 = (id <ImcScreenDisplayDelegate>) self;
+  // mainDisplayVideo.fullscreenView = 0;
+  connectedServerList = [[NSMutableArray alloc] init];
+  viewMaskLock = [[NSCondition alloc] init];
+  channelsSearchDictionary = [NSMutableDictionary dictionary];
+  isRotate = NO;
+  _rotate = NO;
+  dateIntervalList = [NSMutableArray array];
+  searchingDateInterval = [NSMutableArray array];
+  currentServer = nil;
+  currentSelectedFullScreenChannel = -1;
+  videoPlayerStatus = STATE_PLAY;
+  mainViewRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
+  mainViewFullRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
+  calendar = [NSDate gregorianCalendar];
+  calTimezone = [NSTimeZone systemTimeZone];
+  m_delayPlayback = NO;
+  defaultImg = [[UIImage alloc] initWithCGImage: [UIImage imageNamed:@"CMS-video-losss.png"].CGImage];
+  searchFrameImage = defaultImg;
+  m_dayType = NORMAL;
+  oldDeviceInterfaceHandel = UIInterfaceOrientationMaskPortrait;
+  
+  for (NSInteger i = 0; i < IMC_MAX_CHANNEL; i++) {
+    viewMaskArray[i] = 0;
+  }
+  
+  decoderThread = [[ImcDecodeThread alloc] init];
+  decoderThread.delegate = (id<ImcCommandControllerDelegate>) self;
+  [decoderThread startThread];
+  
+  // init controller thread
+  controllerThread = [[ImcControllerThread alloc] init];
+  controllerThread.delegate = (id<ImcCommandControllerDelegate>) self;
+  
+  // init controller thread
+  controllerThread.decoderThread = decoderThread;
+  [controllerThread startThread];
+  
+//    _eventDisplatcher = eventDispatcher;
+  resumeDataInfo = [[i3ResumeDataInfo alloc] init];
+  
+  //init frame video
+  dispatch_async(dispatch_get_main_queue(), ^{
+    CGRect videoViewFrame = self.frame;
+    videoViewFrame.origin = CGPointZero;
+    self->videoView = [[UIView alloc] initWithFrame:videoViewFrame];
+    
+    [self->mainDisplayVideo setdisplayRect:self.bounds withRootLayer:self->videoView.layer];
+    self->mainDisplayVideo.connectedServerList = self->connectedServerList;
+    [self->videoView setFrame:self.bounds];
+    [self addSubview:self->videoView];
+    self.layer.contents = (id)[UIImage imageNamed:@"CMS-video-losss.png"].CGImage;
+  });
+  
+  AppDelegate* appdelegate = (AppDelegate* )[[UIApplication sharedApplication] delegate];
+  appdelegate.video = (FFMpegFrameView *) self;
+  self.currentDeviceOrientation = [[UIDevice currentDevice] orientation];
+//    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChanged:) name:UIDeviceOrientationDidChangeNotification object:nil];
 }
 
 #pragma React View Management
@@ -403,7 +409,6 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setStartplayback:(NSDictionary *)startplayback {
-	
 //  [self resetParam];
 //  [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
   if(startplayback.count == 0){
@@ -484,7 +489,6 @@ const uint32_t numLayers = 24;
             selectedServer = server;
             found = YES;
             break;
-            NSLog(@"GOND **DIRECT** setStartplayback found server: %s", server.connected ? "YES" : "NO");
           }
         }
     }
@@ -500,6 +504,7 @@ const uint32_t numLayers = 24;
 //  [self addSubview:videoView];
   [self setIsHD:isHD];
   
+  
   if( selectedServer.connected )
   {
 //      isConnecting = YES;
@@ -507,6 +512,7 @@ const uint32_t numLayers = 24;
     NSLog(@"GOND **DIRECT** setStartplayback 2 server connected: updating channels list");
     [self setChannels:channel];
     [self setIsSearch:isSearch];
+    
     if (previousChannel != nil && ![_channels isEqualToString:previousChannel])
     {
 //        [controllerThread updateServerDisplayMask:selectedServer.server_address :selectedServer.server_port :[self getChannelMask]];
@@ -515,9 +521,9 @@ const uint32_t numLayers = 24;
   }
   else // if (connectedServers.count < MAX_SERVER_CONNECTION)
   {
-    NSLog(@"GOND **DIRECT** setStartplayback 2 start connection : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
+//    NSLog(@"GOND **DIRECT** setStartplayback 2 start connection : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
     [connectedServerList addObject:selectedServer];
-    NSLog(@"GOND **DIRECT** setStartplayback 2 : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
+//    NSLog(@"GOND **DIRECT** setStartplayback 2 : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
 //      NSString* previousChannel = _channels;
     [self setChannels:channel];
     [self setByChannel:by_channel];
@@ -572,7 +578,8 @@ const uint32_t numLayers = 24;
     _server.relayIp = [self get_obj:server for_key:@"relayIp"];
     _server.relayPort = [[self get_obj:server for_key:@"relayPort"] integerValue];
     _server.relayConnectable = [self get_obj:server for_key:@"relayConnectable"];
-    NSLog(@"0108 setConnectionServer haspLicense = %@, relayIp = %@, relayPort = %ld, isRelay = %s, relayConnectable = %s", _server.haspLicense, _server.relayIp, (long)_server.relayPort, _server.isRelay ? "T" : "F", _server.relayConnectable ? "T" : "F");
+    _server.isRelayReconnecting = [self get_obj:server for_key:@"isRelayReconnecting"];
+    NSLog(@"0108 setConnectionServer haspLicense = %@, relayIp = %@, relayPort = %ld, isRelay = %s, relayConnectable = %s  isRelayReconnecting = %s", _server.haspLicense, _server.relayIp, (long)_server.relayPort, _server.isRelay ? "T" : "F", _server.relayConnectable ? "T" : "F", _server.isRelayReconnecting ? "T" : "F");
   }
   
   return _server;
@@ -708,14 +715,19 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setDisconnect:(BOOL)disconnect {
+  [self processSetDisconnect:disconnect:TRUE];
+}
+
+-(void)processSetDisconnect:(BOOL)disconnect:(BOOL)disconnectAllServersFlag {
 	
   // NSLog(@"GOND: ******* on disconnect: %d", disconnect);
   // if(disconnect){
-  NSLog(@"GOND: ******* on disconnect ******");
   
   // disconnect
   videoPlayerStatus = STATE_STOP;
-  [controllerThread disconnectAllServers];
+  
+  if(disconnectAllServersFlag)
+    [controllerThread disconnectAllServers];
     
   if(connectedServerList.count > 0)
   {
@@ -726,6 +738,7 @@ const uint32_t numLayers = 24;
         [connectedServer resetChannelConfigs];
         
         connectedServer.connected = FALSE;
+      
     }
     for (NSInteger i = 0; i < IMC_MAX_DISPLAY_SCREEN; i++)
     {
@@ -2086,7 +2099,6 @@ const uint32_t numLayers = 24;
         if (needToAdd) {
           [connectedServerList addObject:server];
         }
-        
         [self responseConnectingServer:server :status.connectionStatus];
         [controllerThread sendRequestTimeZoneToServer:server];
       }
@@ -2746,11 +2758,44 @@ const uint32_t numLayers = 24;
       
     }
       break;
+      
+    case IMC_CMD_SERVER_REJECT_ACCEPT:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:6],
+                                                                              @"target": self.reactTag
+                                                                              }];
+      break;
+    case IMC_CMD_RELAY_HANDSHAKE_FAILED:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:28],
+                                                                              @"target": self.reactTag
+                                                                              }];
+      break;
+    case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED:
+      [self onRemoteRelayConfigChanged];
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:29],
+                                                                              @"target": self.reactTag
+                                                                              }];
+      
+      break;
+    case IMC_CMD_RELAY_UPDATE_DATA_USAGE:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:30],
+                                                                              @"value": (NSNumber*) parameter
+                                                                              }];
+      break;
+      
     default:
       break;
       
   }
   return 1;
+}
+
+-(void) onRemoteRelayConfigChanged {
+  [self processSetDisconnect: TRUE: FALSE];
+  [self processInit];
 }
 
 //-(UIImage*)getScaledImage

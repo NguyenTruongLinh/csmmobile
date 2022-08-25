@@ -25,7 +25,7 @@ __volatile BOOL isRLRunning = NO;
 @end
 
 @implementation ImcVideoReceiverConnection
-@synthesize parent,disconnected, videoTimer, timerCounter, streamingRL, streamQueue, waitForRelayHandshake;
+@synthesize delegate, parent,disconnected, videoTimer, timerCounter, streamingRL, streamQueue, waitForRelayHandshake;
 
 - (id)init
 {
@@ -83,6 +83,8 @@ __volatile BOOL isRLRunning = NO;
     streamQueue = nil;
     isRLRunning = NO;
     streamCount = 0;
+    dataUsage = 0;
+    lastDataUsageSentTimePoint = CFAbsoluteTimeGetCurrent();
   }
   return self;
 }
@@ -256,7 +258,7 @@ __volatile BOOL isRLRunning = NO;
 //    [videoTimer invalidate];
     
     if (!disconnected) {
-      [parent onDisconnect:nil];
+      [parent onDisconnect:nil:FALSE];
       // NSLog(@"++++++++++ onTimerChecking, disconected ...");
       [self disconnectToServer];
       [parent disconnect];
@@ -316,10 +318,23 @@ __volatile BOOL isRLRunning = NO;
 //  }
 }
 
+- (void)notifyUpdateDataUsage: (long) newBlockLen
+{
+  if(isRelay) {
+    dataUsage += newBlockLen;
+    long newTimePoint = CFAbsoluteTimeGetCurrent();
+    long deltaTime = newTimePoint - lastDataUsageSentTimePoint;
+    if (deltaTime >= 3) {
+      NSLog(@"1PM 1708 notifyUpdateDataUsage deltaTime = %ld", deltaTime);
+      lastDataUsageSentTimePoint = newTimePoint;
+      [delegate handleCommand: IMC_CMD_RELAY_UPDATE_DATA_USAGE : [NSNumber numberWithInteger: dataUsage]];
+      dataUsage = 0;
+    }
+  }
+}
+
 - (BOOL)readRelayHandshakeInfo: (NSInputStream *)stream
 {
-  
-  
   uint8_t buffer[MAX_RECEIVE_CONNECTION_DATA_BUFFER_SIZE];
   long len = 0;
   len = [(NSInputStream *)stream read:buffer maxLength:MAX_RECEIVE_CONNECTION_DATA_BUFFER_SIZE];
@@ -337,6 +352,9 @@ __volatile BOOL isRLRunning = NO;
       int intConId = (int) self->connectionIndex;
       [self sendData: [NSData dataWithBytes: (uint8_t*)(&intConId) length: sizeof(intConId)]];
       return TRUE;
+    }else{
+      NSLog(@"2408 IMC_CMD_RELAY_HANDSHAKE_FAILED video");
+      [delegate handleCommand: IMC_CMD_RELAY_HANDSHAKE_FAILED : nil];
     }
   }
   return FALSE;
@@ -383,6 +401,7 @@ __volatile BOOL isRLRunning = NO;
         uint8_t _buffer[2];
         sizeWillRead = 2;
         long len = [(NSInputStream *)stream read:(_buffer) maxLength:sizeWillRead];
+        [self notifyUpdateDataUsage: len];
         NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable get_cmd len = %ld", len);
         if( len == sizeWillRead )
         {
@@ -397,6 +416,7 @@ __volatile BOOL isRLRunning = NO;
           byteRead = MAX_BUFFER_SIZE;
 
         long len = [(NSInputStream *)stream read:[receiverBuffer mutableBytes]  maxLength:byteRead];
+        [self notifyUpdateDataUsage: len];
         NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable get_header len = %ld", len);
         if(len > 0)
         {
@@ -417,6 +437,7 @@ __volatile BOOL isRLRunning = NO;
           byteRead = MAX_BUFFER_SIZE;
 
         long len = [(NSInputStream *)stream read:[receiverBuffer mutableBytes] maxLength:byteRead];
+        [self notifyUpdateDataUsage: len];
         NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable get_data len = %ld", len);
         if(len > 0)
         {
@@ -440,7 +461,6 @@ __volatile BOOL isRLRunning = NO;
     case NSStreamEventErrorOccurred:
     {
       //disconnected = TRUE;
-      NSLog(@"Error: Video Strean");
       if( self )
         [self disconnectToServer];
     }
