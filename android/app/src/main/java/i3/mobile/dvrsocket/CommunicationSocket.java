@@ -124,6 +124,7 @@ public class CommunicationSocket implements Runnable {
         this.isRelay = serverinfo.isRelay && serverinfo.relayConnectable;
         this.clientIp = clientIp;
         Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " CommunicationSocket constructor this.isRelay = " + this.isRelay);
+        Log.d("2408", "CommunicationSocket serverinfo.getIsRelayReconnecting()" + serverinfo.getIsRelayReconnecting());
     }
 
 
@@ -214,8 +215,7 @@ public class CommunicationSocket implements Runnable {
 
     private static final int RELAY_HEADER_LEN = 68;
 
-    private JSONObject parseRelayHandshakeResponse() {
-        JSONObject result = null;
+    private boolean parseRelayHandshakeResponse() {
         byte[] headerBytes = new byte[RELAY_HEADER_LEN];
         ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0, "parseRelayHandshakeResponse");
 
@@ -232,12 +232,16 @@ public class CommunicationSocket implements Runnable {
         Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " parseRelayHandshakeResponse jsonString = " + jsonString);
 
         if(!jsonString.contains("session_id")){
-            OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_HANDSHAKE_FAILED, null);
+            Log.d("2508", "!jsonString.contains(\"session_id\") ServerInfo.getIsRelayReconnecting() = " + ServerInfo.getIsRelayReconnecting());
+            OnHandlerMessage(ServerInfo.getIsRelayReconnecting() ?
+                    Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
+                    Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_HANDSHAKE_FAILED, null);
+            return false;
         }
-        return null;
+        return true;
     }
 
-    void notifyMakeRelayHandshake(String service) {
+    boolean notifyMakeRelayHandshake(String service) {
         Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " notifyMakeRelayHandshake service = " + service + " this.isRelay = " + this.isRelay);
         if(this.isRelay) {
             JSONObject json = new JSONObject();
@@ -249,14 +253,15 @@ public class CommunicationSocket implements Runnable {
                 json.put("serial_number", ServerInfo.haspLicense);//"nghia-a");
             } catch (JSONException e) {
                 e.printStackTrace();
-                return;
+                return false;
             }
 
             byte[] jsonBytes = json.toString().getBytes(StandardCharsets.UTF_8);
             WriteSocketData(jsonBytes, "notifyMakeRelayHandshake");
             Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " request content = " + json.toString());
-            parseRelayHandshakeResponse();
+            return parseRelayHandshakeResponse();
         }
+        return true;
     }
 
     boolean lastIsLive = true;
@@ -278,19 +283,32 @@ public class CommunicationSocket implements Runnable {
                 InPut = new BufferedInputStream(socket.getInputStream());
                 OutPut = new BufferedOutputStream(socket.getOutputStream());
 
-                try {
-                    notifyMakeRelayHandshake("control");
-                }catch (Exception e) {
-                    Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " notifyMakeRelayHandshake Exception e = " + e);
-                }
+//                boolean isRelayHandshakePassed;
 
-                ServerInfo.serverVersion = this.ReadServerVersion(InPut);
-                Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ServerInfo.serverVersion = " + ServerInfo.serverVersion);
+//                try {
+//                    isRelayHandshakePassed = notifyMakeRelayHandshake("control");
+//                }catch (Exception e) {
+//                    Log.e("GOND", "2308 relay isLive = " + ServerInfo.getisLive() + " notifyMakeRelayHandshake Exception e = " + e);
+//
+//                    OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_RELAY_HANDSHAKE_FAILED, null);
+//                    isRelayHandshakePassed = false;
+//                }
 
-                if (ServerInfo.serverVersion < 0)//
-                {
-                    Log.d("2208", "SVR_REJECT_ACCEPT ServerInfo.serverVersion < 0");
-                    OnHandlerMessage(Constant.EnumVideoPlaybackSatus.SVR_REJECT_ACCEPT, null);
+                if(notifyMakeRelayHandshake("control")) {
+                    ServerInfo.serverVersion = this.ReadServerVersion(InPut);
+                    Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ServerInfo.serverVersion = " + ServerInfo.serverVersion);
+
+                    if (ServerInfo.serverVersion < 0)
+                    {
+                        Log.d("2208", "SVR_REJECT_ACCEPT ServerInfo.serverVersion < 0");
+
+                        Log.d("2508", "ServerInfo.serverVersion < 0 ServerInfo.getIsRelayReconnecting() = " + ServerInfo.getIsRelayReconnecting());
+                        OnHandlerMessage(ServerInfo.getIsRelayReconnecting() ?
+                                Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
+                                Constant.EnumVideoPlaybackSatus.SVR_REJECT_ACCEPT, null);
+                        running = false;
+                    }
+                }else{
                     running = false;
                 }
 
