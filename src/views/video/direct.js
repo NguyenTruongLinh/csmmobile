@@ -594,6 +594,10 @@ class DirectVideoView extends React.Component {
   };
 
   onReceivePlayerRef = ref => {
+    __DEV__ && console.log('2508 onReceivePlayerRef ref = ' + ref);
+    if (ref == null && this.ffmpegPlayer) {
+      this.stop(true);
+    }
     this.ffmpegPlayer = ref;
     if (this.ffmpegPlayer && this.pendingCommand) {
       __DEV__ &&
