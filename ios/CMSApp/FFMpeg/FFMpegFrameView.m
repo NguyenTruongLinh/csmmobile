@@ -2756,7 +2756,6 @@ const uint32_t numLayers = 24;
                                                                               }];
       break;
     case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED:
-      [self onRemoteRelayConfigChanged];
       [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
                                                                               @"msgid": [NSNumber numberWithUnsignedInteger:29],
                                                                               @"target": self.reactTag
@@ -2775,11 +2774,6 @@ const uint32_t numLayers = 24;
       
   }
   return 1;
-}
-
--(void) onRemoteRelayConfigChanged {
-//  [self processSetDisconnect: TRUE: FALSE];
-//  [self processInit];
 }
 
 -(UIImage*)geScaledSearchImage
