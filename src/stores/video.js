@@ -106,6 +106,7 @@ const DirectServerModel = types
     needReset: types.optional(types.boolean, false),
     relayInfo: RelayServerModel,
     isRelay: types.boolean,
+    isRelayReconnecting: types.boolean,
   })
   .views(self => ({
     get data() {
@@ -136,6 +137,7 @@ const DirectServerModel = types
         relayIp: self.relayInfo.ip,
         relayPort: self.relayInfo.port,
         isRelay: self.isRelay,
+        isRelayReconnecting: self.isRelayReconnecting,
       };
     },
     get channels() {
@@ -264,7 +266,11 @@ const DirectServerModel = types
     },
   }));
 
-const parseDirectServer = (server, type /*, channelNo, isLive*/) => {
+const parseDirectServer = (
+  server,
+  type,
+  isInterval /*, channelNo, isLive*/
+) => {
   return DirectServerModel.create({
     serverIP: server.ServerIP ?? '',
     publicIP: server.ServerIP ?? '',
@@ -281,6 +287,7 @@ const parseDirectServer = (server, type /*, channelNo, isLive*/) => {
     haspLicense: server.HaspLicense,
     isRelay: type === CLOUD_TYPE.RS,
     relayInfo: parseRelayServerModel(server.RelayServerInfo),
+    isRelayReconnecting: isInterval,
   });
 };
 
@@ -667,7 +674,7 @@ export const VideoModel = types
       return null;
     },
     get selectedStreamSnapshot() {
-      return self.selectedChannel
+      return self.selectedChannel && self.selectedStream
         ? self.selectedStream.snapshot
         : NVR_Play_NoVideo_Image;
     },
@@ -1323,7 +1330,7 @@ export const VideoModel = types
               //   '### GOND this is unbelievable, how can this case happen, no direct stream found while channel existed!!!'
               // );
               __DEV__ && console.log(`0725 getDirectInfos selectChannel`);
-              self.getDirectInfos(foundChannel.channelNo);
+              self.getDirectInfos(foundChannel.channelNo, false);
               break;
             case CLOUD_TYPE.HLS:
               // create stream first for showing in player
@@ -1610,7 +1617,7 @@ export const VideoModel = types
           case CLOUD_TYPE.DIRECTION:
           case CLOUD_TYPE.RS:
             // __DEV__ && console.log(`0725 getDirectInfos onTimezoneAcquired`);
-            if (!self.selectedChannel) self.getDirectInfos();
+            if (!self.selectedChannel) self.getDirectInfos(undefined, false);
             break;
           case CLOUD_TYPE.HLS:
             __DEV__ && console.log(`GOND on HLS get HLS info after build TZ`);
@@ -2602,6 +2609,7 @@ export const VideoModel = types
       // #endregion get channels
       // #region direct connection
       getDirectInfos: flow(function* (channelNo, isInterval) {
+        __DEV__ && console.log(`2508 getDirectInfos isInterval = `, isInterval);
         self.isLoading = true;
         self.directStreams = [];
         // if (!self.allChannels || self.allChannels.length <= 0) {
@@ -2631,7 +2639,11 @@ export const VideoModel = types
             self.directConnection.relayInfo &&
             self.directConnection.relayInfo.connectable;
 
-          self.directConnection = parseDirectServer(res, self.cloudType);
+          self.directConnection = parseDirectServer(
+            res,
+            self.cloudType,
+            isInterval
+          );
           if (self.directConnection.isRelay) {
             if (!self.directConnection.relayInfo.connectable) {
               if (!isInterval)
@@ -2644,7 +2656,7 @@ export const VideoModel = types
                   1000
                 );
               return false;
-            } else if (!previousRelayStatus) {
+            } else {
               if (isInterval && self.relayReconnectInterval) {
                 clearInterval(self.relayReconnectInterval);
                 self.relayReconnectInterval = null;

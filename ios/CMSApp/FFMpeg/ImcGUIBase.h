@@ -388,6 +388,13 @@ typedef NS_ENUM(NSUInteger, IMC_MOBILE_COMMAND) {
   IMC_CMD_UPDATE_SETTING_SERVER = 604,
   IMC_CMD_SEARCH_OPERATION_END = 605,
   
+  
+  IMC_CMD_RELAY_HANDSHAKE_FAILED = 700,
+  IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED = 701,
+  IMC_CMD_RELAY_UPDATE_DATA_USAGE = 702,
+  
+  IMC_CMD_SERVER_REJECT_ACCEPT = 800,
+  
 };
 
 typedef NS_ENUM(NSUInteger, ALARM_EVENT_TYPE)
@@ -456,6 +463,7 @@ typedef NS_ENUM(NSUInteger, IMC_VIDEO_MODE)
   BOOL relayConnectable;
   NSString* relayIp;
   NSInteger relayPort;
+  BOOL isRelayReconnecting;
 }
 
 @property (nonatomic, readwrite) NSInteger server_port;
@@ -471,6 +479,7 @@ typedef NS_ENUM(NSUInteger, IMC_VIDEO_MODE)
 @property (nonatomic, retain) NSString* haspLicense;
 @property (nonatomic, readwrite)           BOOL    isRelay;
 @property (nonatomic, readwrite)           BOOL    relayConnectable;
+@property (nonatomic, readwrite)           BOOL    isRelayReconnecting;
 @property (nonatomic, retain) NSString* relayIp;
 @property (nonatomic, readwrite) NSInteger relayPort;
 

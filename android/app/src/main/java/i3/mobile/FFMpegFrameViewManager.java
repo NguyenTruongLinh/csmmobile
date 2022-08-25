@@ -55,6 +55,7 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
     }
     @Override
     public FFMpegFrameView createViewInstance(ThemedReactContext context) {
+        Log.d("2508", "FFMpegFrameView createViewInstance");
         // this.mReactContext = context;
         instance = new FFMpegFrameView(context, null);
         return instance;
@@ -292,11 +293,13 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
         server.relayIp = args.getString("relayIp");
         server.relayPort = args.getInt("relayPort");
         server.isRelay = args.getBoolean("isRelay");
-        Log.d("GOND", "GetServerInfo server.isRelay: " + server.isRelay +
+        server.isRelayReconnecting = args.getBoolean("isRelayReconnecting");
+        Log.d("2508", "GetServerInfo server.isRelay: " + server.isRelay +
                 ", server.haspLicense: " + server.haspLicense +
                 ", server.relayConnectable: " + server.relayConnectable +
                 ", server.relayIp: " + server.relayIp +
-                ", server.relayPort: " + server.relayPort);
+                ", server.relayPort: " + server.relayPort +
+                ", server.isRelayReconnecting: " + server.isRelayReconnecting);
         return server;
     }
 

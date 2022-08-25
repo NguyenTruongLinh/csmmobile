@@ -95,7 +95,7 @@
 
 @implementation ImcConnectionServer
 
-@synthesize serverID,server_address,username,password,groupName,server_port,connected,serverName,fullAddress, groupNames, serverVersion, availableDataDateList, allDateInterval,serverTimezone,public_address, haspLicense, isRelay, relayConnectable, relayIp, relayPort;
+@synthesize serverID,server_address,username,password,groupName,server_port,connected,serverName,fullAddress, groupNames, serverVersion, availableDataDateList, allDateInterval,serverTimezone,public_address, haspLicense, isRelay, relayConnectable, relayIp, relayPort, isRelayReconnecting;
 
 + (id)initWithServerInfo:(ImcConnectionServer *)server
 {
@@ -128,6 +128,7 @@
     isRelay       = FALSE;
     relayConnectable       = FALSE;
     relayPort     = IMC_DEFAULT_RELAY_SERVER_PORT;
+    isRelayReconnecting = FALSE;
   }
   return self;
 }
@@ -151,9 +152,9 @@
   haspLicense      = server.haspLicense;
   relayIp       = server.relayIp;
   isRelay       = server.isRelay;
-  relayConnectable       = server.relayConnectable;
+  relayConnectable     = server.relayConnectable;
   relayPort            = server.relayPort;
-  
+  isRelayReconnecting  = server.isRelayReconnecting;
 }
 
 -(BOOL)isEqual:(ImcConnectionServer *)object
@@ -248,6 +249,7 @@
   server.isRelay       = isRelay;
   server.relayConnectable     = relayConnectable;
   server.relayPort            = relayPort;
+  server.isRelayReconnecting  = isRelayReconnecting;
   return  server;
 }
 

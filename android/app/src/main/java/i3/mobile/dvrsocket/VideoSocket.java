@@ -54,6 +54,7 @@ public class VideoSocket extends CommunicationSocket {
         super(hwnd, serverinfo, channel, search, bychannel, clientIP);
         ffmpeg = new FFMPEGDecoder();
         ffmpeg.LoadLib();
+        Log.d("2408", "VideoSocket serverinfo.getIsRelayReconnecting()" + serverinfo.getIsRelayReconnecting());
     }
 
     public void setViewDimensions(int w, int h)
@@ -73,10 +74,12 @@ public class VideoSocket extends CommunicationSocket {
         try {
             this.socket = this.isRelay ? super.InitRelaySocket() : super.InitSocket(ServerInfo.conntectingIp, ServerInfo.serverVideoPort);
             if( socket.isConnected() == false )
-                OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
+                OnHandlerMessage( isRelay? Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
+                        Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
         }catch (Exception e)
         {
-            OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
+            OnHandlerMessage( isRelay? Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
+                    Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
         }
         if( socket != null && socket.isConnected())
         {
@@ -89,7 +92,7 @@ public class VideoSocket extends CommunicationSocket {
 
             }
 
-            notifyMakeRelayHandshake("video");
+            running = notifyMakeRelayHandshake("video");
 
             //utils.WriteBlock( output, utils.IntToByteArrayOfC( ServerInfo.ConnectionIndex ));
             this.WriteSocketData(utils.IntToByteArrayOfC( ServerInfo.ConnectionIndex ), "VideoSocket");
@@ -118,9 +121,11 @@ public class VideoSocket extends CommunicationSocket {
 
                     if( read_len == -1 && running)//socket failed
                     {
-                        OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
-                        if(isRelay)
-                            OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED, null );
+                        Log.d("2408", "socket failed read_len = " + read_len + " running = " + running);
+                        OnHandlerMessage( isRelay? Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
+                                    Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
+//                        OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
+                        //in ios: only check case Error in stream callback in RemoteConnection, no need in VỉdeoConnection
                         break;
                     }
                     if( read_len == 0)

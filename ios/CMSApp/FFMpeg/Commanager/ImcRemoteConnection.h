@@ -93,7 +93,7 @@
 - (id)buildSearchCommonMessageWithTimeInterval2:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask;
 - (id)buildSearchCommonMessageWithTimeInterval3:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask;
 - (void)postDisconnectVideoMsg:(NSString*)serverAddress;
-- (void)onDisconnect : (id)parameter;
+- (void)onDisconnect : (id)parameter : (BOOL) isErrorOccurred;
 - (NSData*)notifyAddRelayHeader : (NSData*)data;
 - (NSString *)getIPAddress;
 @end

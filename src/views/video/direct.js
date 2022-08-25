@@ -594,6 +594,10 @@ class DirectVideoView extends React.Component {
   };
 
   onReceivePlayerRef = ref => {
+    __DEV__ && console.log('2508 onReceivePlayerRef ref = ' + ref);
+    if (ref == null && this.ffmpegPlayer) {
+      this.stop(true);
+    }
     this.ffmpegPlayer = ref;
     if (this.ffmpegPlayer && this.pendingCommand) {
       __DEV__ &&
@@ -1132,9 +1136,9 @@ class DirectVideoView extends React.Component {
           cmscolors.Danger
         );
         break;
-      case NATIVE_MESSAGE.RELAY_DISCONNECTED:
+      case NATIVE_MESSAGE.RELAY_REMOTE_CONFIG_CHANGED:
         snackbarUtil.showToast(
-          STREAM_STATUS.RELAY_DISCONNECTED,
+          STREAM_STATUS.RELAY_REMOTE_CONFIG_CHANGED,
           cmscolors.Warning
         );
         videoStore.getDirectInfosInterval();

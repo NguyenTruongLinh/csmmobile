@@ -295,7 +295,7 @@
     //[NSThread detachNewThreadSelector:@selector(onDisconnect:) toTarget:self withObject:nil];
     [self closeStreams];
     [connectionLock unlock];
-    [self onDisconnect:nil];
+    [self onDisconnect:nil:FALSE];
     NSLog(@"++++++++++ OnKeepAlive reach threshole, disconected ...");
   }
 }
@@ -450,7 +450,6 @@
       break;
     case NSStreamEventErrorOccurred:
     {
-      NSLog(@"0108 stream case NSStreamEventErrorOccurred");
       [connectionLock lock];
       if(stream!=receivedDataStream&&stream!=sentDataStream)
       {
@@ -482,7 +481,9 @@
           if(getLoginStatus)
           {
             [self closeStreams];
-            [self onDisconnect:nil];
+            
+            [self onDisconnect:nil:TRUE];
+            
             NSLog(@"++++++++ NSStreamEventErrorOccurred, disconected ...");
           }
           else
@@ -506,7 +507,7 @@
           [self closeStreams];
           
 //          [connectionLock lock];
-          [self onDisconnect:nil];
+          [self onDisconnect:nil:FALSE];
 //          [connectionLock unlock];
           NSLog(@"++++++++ NSStreamEventEndEncountered, disconected ...");
         }
@@ -547,6 +548,8 @@
       waitForRelayHandshake = FALSE;
       movedBytes = relayTotalLen;
       return TRUE;
+    }else{
+      [delegate handleCommand: serverInfo.isRelayReconnecting ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_RELAY_HANDSHAKE_FAILED : nil];
     }
   }
   return FALSE;
@@ -579,6 +582,8 @@
           waitForAccept = FALSE;
           NSData* sentData = [self constructLoginInfo];
           [self sendData:sentData:@"LoginInfo"];
+        }else{
+          [delegate handleCommand: serverInfo.isRelayReconnecting ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_SERVER_REJECT_ACCEPT : nil];
         }
       }
     }
@@ -652,6 +657,7 @@
       if(videoConnection)
         [videoConnection disconnectToServer];
       videoConnection = [[ImcVideoReceiverConnection alloc] initWithConnectionIndex:connectionIndex];
+      videoConnection.delegate = delegate;
       if(serverInfo.isRelay) {
         address = serverInfo.relayIp;
         videoPort = (unsigned int) serverInfo.relayPort;
@@ -1068,7 +1074,6 @@
             connectionIndex = [[connectionIndexNode stringValue] integerValue];
             
             serverInfo.connected = TRUE;
-            
             // connect successfull
 //            if(loginTimer)
 //            {
@@ -1088,7 +1093,6 @@
             serverInfo.connected = FALSE;
           }
           getLoginStatus = (connectionStatus == MOBILE_LOGIN_MESSAGE_SUCCEEDED);
-          NSLog(@"0808 getLoginStatus = %d", getLoginStatus);
           
           ImcConnectionStatus* status = [[ImcConnectionStatus alloc] initWithParam:self:(int32_t)connectionIndex :(int32_t)connectionStatus];
           if(self.delegate)
@@ -1356,14 +1360,13 @@
 }
 
 
-- (void)onDisconnect : (id)parameter
+- (void)onDisconnect : (id)parameter : (BOOL) isErrorOccurred
 {
-	
   [self destroyTimers];
   
   if(delegate)
   {
-    [delegate handleCommand:IMC_CMD_CONNECTION_DISCONNECT_RESPONSE :self];
+    [delegate handleCommand: (isErrorOccurred && isRelay ? IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED : IMC_CMD_CONNECTION_DISCONNECT_RESPONSE) :self];
     delegate = nil;
   }
   //disconecting = YES;

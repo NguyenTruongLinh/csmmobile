@@ -86,7 +86,7 @@ const uint32_t numLayers = 24;
 @synthesize connectedServers, mainDisplayVideo, timer, isRotate, videoPlayerStatus, currentServer, chosenServerIndex, lastFrameInterval, mainViewRect, mainViewFullRect, currentSelectedFullScreenChannel, dateIntervalList, doesTodayHasData, chosenDay, chosenChannelIndex, channelsSearchDictionary, searchingDateInterval, channelListCollectonView, calTimezone, zoomLevel, calendar, searchFrameImage, lastResumeTime, m_dayType, hourSpecialDST, firstRunAlarm;
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher{
-	
+  
   if((self = [super init])){
     _w = 0;
     _h = 0;
@@ -97,7 +97,6 @@ const uint32_t numLayers = 24;
     zoomLevel = ZOOM_LEVEL_24H;
     channelsMapping = [NSMutableArray array];
     mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
-    mainDisplayVideo.delegate1 = self;
     // mainDisplayVideo.fullscreenView = 0;
     connectedServerList = [[NSMutableArray alloc] init];
     viewMaskLock = [[NSCondition alloc] init];
@@ -403,7 +402,6 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setStartplayback:(NSDictionary *)startplayback {
-	
 //  [self resetParam];
 //  [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
   if(startplayback.count == 0){
@@ -484,7 +482,6 @@ const uint32_t numLayers = 24;
             selectedServer = server;
             found = YES;
             break;
-            NSLog(@"GOND **DIRECT** setStartplayback found server: %s", server.connected ? "YES" : "NO");
           }
         }
     }
@@ -500,6 +497,7 @@ const uint32_t numLayers = 24;
 //  [self addSubview:videoView];
   [self setIsHD:isHD];
   
+  
   if( selectedServer.connected )
   {
 //      isConnecting = YES;
@@ -507,6 +505,7 @@ const uint32_t numLayers = 24;
     NSLog(@"GOND **DIRECT** setStartplayback 2 server connected: updating channels list");
     [self setChannels:channel];
     [self setIsSearch:isSearch];
+    
     if (previousChannel != nil && ![_channels isEqualToString:previousChannel])
     {
 //        [controllerThread updateServerDisplayMask:selectedServer.server_address :selectedServer.server_port :[self getChannelMask]];
@@ -515,9 +514,9 @@ const uint32_t numLayers = 24;
   }
   else // if (connectedServers.count < MAX_SERVER_CONNECTION)
   {
-    NSLog(@"GOND **DIRECT** setStartplayback 2 start connection : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
+//    NSLog(@"GOND **DIRECT** setStartplayback 2 start connection : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
     [connectedServerList addObject:selectedServer];
-    NSLog(@"GOND **DIRECT** setStartplayback 2 : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
+//    NSLog(@"GOND **DIRECT** setStartplayback 2 : %d, %d", connectedServerList.count, self.mainDisplayVideo.fullscreenView);
 //      NSString* previousChannel = _channels;
     [self setChannels:channel];
     [self setByChannel:by_channel];
@@ -572,7 +571,7 @@ const uint32_t numLayers = 24;
     _server.relayIp = [self get_obj:server for_key:@"relayIp"];
     _server.relayPort = [[self get_obj:server for_key:@"relayPort"] integerValue];
     _server.relayConnectable = [self get_obj:server for_key:@"relayConnectable"];
-    NSLog(@"0108 setConnectionServer haspLicense = %@, relayIp = %@, relayPort = %ld, isRelay = %s, relayConnectable = %s", _server.haspLicense, _server.relayIp, (long)_server.relayPort, _server.isRelay ? "T" : "F", _server.relayConnectable ? "T" : "F");
+    _server.isRelayReconnecting = [[self get_obj:server for_key:@"isRelayReconnecting"] boolValue];
   }
   
   return _server;
@@ -708,12 +707,10 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setDisconnect:(BOOL)disconnect {
-	
+  
   // NSLog(@"GOND: ******* on disconnect: %d", disconnect);
   // if(disconnect){
   NSLog(@"GOND: ******* on disconnect ******");
-  
-  // disconnect
   videoPlayerStatus = STATE_STOP;
   [controllerThread disconnectAllServers];
     
@@ -2086,7 +2083,6 @@ const uint32_t numLayers = 24;
         if (needToAdd) {
           [connectedServerList addObject:server];
         }
-        
         [self responseConnectingServer:server :status.connectionStatus];
         [controllerThread sendRequestTimeZoneToServer:server];
       }
@@ -2746,6 +2742,33 @@ const uint32_t numLayers = 24;
       
     }
       break;
+      
+    case IMC_CMD_SERVER_REJECT_ACCEPT:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:6],
+                                                                              @"target": self.reactTag
+                                                                              }];
+      break;
+    case IMC_CMD_RELAY_HANDSHAKE_FAILED:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:28],
+                                                                              @"target": self.reactTag
+                                                                              }];
+      break;
+    case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:29],
+                                                                              @"target": self.reactTag
+                                                                              }];
+      
+      break;
+    case IMC_CMD_RELAY_UPDATE_DATA_USAGE:
+      [FFMpegFrameEventEmitter emitEventWithName:@"onFFMPegFrameChange" andPayload:@{
+                                                                              @"msgid": [NSNumber numberWithUnsignedInteger:30],
+                                                                              @"value": (NSNumber*) parameter
+                                                                              }];
+      break;
+      
     default:
       break;
       
@@ -2753,7 +2776,6 @@ const uint32_t numLayers = 24;
   return 1;
 }
 
-//-(UIImage*)getScaledImage
 -(UIImage*)geScaledSearchImage
 {
 	

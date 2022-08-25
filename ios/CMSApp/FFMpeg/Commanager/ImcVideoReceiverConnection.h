@@ -6,6 +6,7 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 #import "../VideoFrame.h"
+#import "../ImcGUIBase.h"
 
 @class ImcRemoteConnection;
 
@@ -32,11 +33,14 @@
   enum state current_state;
   uint16_t streamCount;
   BOOL isRelay;
+  NSInteger dataUsage;
+  long lastDataUsageSentTimePoint;
 //  __volatile BOOL isRLRunning;
 }
 
 @property (nonatomic, weak) ImcRemoteConnection* parent;
 @property (nonatomic, readonly) BOOL disconnected;
+@property (weak,nonatomic) id<ImcCommandControllerDelegate> delegate;
 @property (nonatomic) BOOL waitForRelayHandshake;
 @property (nonatomic, weak)  NSRunLoop* streamingRL;
 @property (nonatomic, strong) dispatch_queue_t streamQueue;
@@ -51,7 +55,8 @@
 - (BOOL)connectToServer : (NSString*)address : (NSInteger)port :(NSData*)handshakeRequest;
 - (BOOL)processData;
 - (void)disconnectToServer;
--(void)startVideoTimer;
+- (void)startVideoTimer;
+- (void)notifyUpdateDataUsage: (long) newBlockLen;
 
 @end
 

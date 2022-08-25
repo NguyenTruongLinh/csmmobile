@@ -31,6 +31,7 @@ public class ServerSite
     public  int ConnectionIndex;
     public  int serverVideoPort;
     boolean isLive = true;
+    public boolean isRelayReconnecting = false;
     ServerTimeZone TimeZone = null;
     SearchTimeData SearchTime;
     public String haspLicense;
@@ -44,6 +45,11 @@ public class ServerSite
     public  void  setTimeZone(ServerTimeZone val){ TimeZone = val;}
     public  boolean getisLive(){ return  isLive;}
     public  void  setLive(boolean val){ isLive = val;}
+    public  void  setIsRelayReconnecting(boolean val){
+        Log.d("2408", "setIsRelayReconnecting val = " + val);
+        isRelayReconnecting = val;
+    }
+    public  boolean getIsRelayReconnecting(){ return isRelayReconnecting;}
     HashMap<Integer, Integer> VideoInput;
     byte[]Search_privilege;
     byte[]Live_privilege;
