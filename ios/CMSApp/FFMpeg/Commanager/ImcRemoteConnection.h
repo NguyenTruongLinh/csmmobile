@@ -45,7 +45,6 @@
   BOOL connectionError;
   NSString* queueName;
   BOOL    firstConnect;
-  BOOL isRelayReconnecting;
 //  __volatile BOOL isRLRunning;
 }
 
@@ -68,7 +67,7 @@
 //@property (nonatomic) __volatile BOOL isRLRunning;
 
 - (void)dealloc;
-- (id)init :(ImcConnectionServer*)server :(BOOL) isRelayReconnecting;
+- (id)init :(ImcConnectionServer*)server;
 - (BOOL) setupConnection;
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode;
 - (BOOL)processCommand;

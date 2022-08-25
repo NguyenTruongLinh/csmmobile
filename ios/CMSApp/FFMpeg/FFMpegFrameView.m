@@ -93,7 +93,6 @@ const uint32_t numLayers = 24;
     RATIO = 16.0f/9.0f;
     zoomLevel = ZOOM_LEVEL_24H;
     _eventDisplatcher = eventDispatcher;
-    isReconnectingOnRelayConfigChanged = FALSE;
     [self processInit];
   }
   
@@ -139,7 +138,6 @@ const uint32_t numLayers = 24;
   // init controller thread
   controllerThread = [[ImcControllerThread alloc] init];
   controllerThread.delegate = (id<ImcCommandControllerDelegate>) self;
-  controllerThread.isRelayReconnecting = isReconnectingOnRelayConfigChanged;
   
   // init controller thread
   controllerThread.decoderThread = decoderThread;
@@ -580,7 +578,8 @@ const uint32_t numLayers = 24;
     _server.relayIp = [self get_obj:server for_key:@"relayIp"];
     _server.relayPort = [[self get_obj:server for_key:@"relayPort"] integerValue];
     _server.relayConnectable = [self get_obj:server for_key:@"relayConnectable"];
-    NSLog(@"0108 setConnectionServer haspLicense = %@, relayIp = %@, relayPort = %ld, isRelay = %s, relayConnectable = %s", _server.haspLicense, _server.relayIp, (long)_server.relayPort, _server.isRelay ? "T" : "F", _server.relayConnectable ? "T" : "F");
+    _server.isRelayReconnecting = [self get_obj:server for_key:@"isRelayReconnecting"];
+    NSLog(@"0108 setConnectionServer haspLicense = %@, relayIp = %@, relayPort = %ld, isRelay = %s, relayConnectable = %s  isRelayReconnecting = %s", _server.haspLicense, _server.relayIp, (long)_server.relayPort, _server.isRelay ? "T" : "F", _server.relayConnectable ? "T" : "F", _server.isRelayReconnecting ? "T" : "F");
   }
   
   return _server;
@@ -2795,7 +2794,6 @@ const uint32_t numLayers = 24;
 }
 
 -(void) onRemoteRelayConfigChanged {
-  isReconnectingOnRelayConfigChanged = TRUE;
   [self processSetDisconnect: TRUE: FALSE];
   [self processInit];
 }

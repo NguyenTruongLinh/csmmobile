@@ -34,7 +34,6 @@
 
 @property (weak,nonatomic) id<ImcCommandControllerDelegate> delegate;
 @property (nonatomic, retain) ImcDecodeThread* decoderThread;
-@property BOOL isRelayReconnecting;
 
 -(void)mainThreadProc:(id)object;
 -(void)addCommand:(ImcCommand*)command;

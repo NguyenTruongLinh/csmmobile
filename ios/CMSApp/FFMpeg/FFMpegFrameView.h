@@ -59,7 +59,6 @@ typedef enum
   CALayer* m_videoLayer;
   // CMS added
 //  NSString* m_channel;
-  BOOL isReconnectingOnRelayConfigChanged;
 }
 
 @property (nonatomic) UIDeviceOrientation currentDeviceOrientation;

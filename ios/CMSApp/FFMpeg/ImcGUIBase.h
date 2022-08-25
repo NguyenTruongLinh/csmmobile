@@ -478,6 +478,7 @@ typedef NS_ENUM(NSUInteger, IMC_VIDEO_MODE)
 @property (nonatomic, retain) NSString* haspLicense;
 @property (nonatomic, readwrite)           BOOL    isRelay;
 @property (nonatomic, readwrite)           BOOL    relayConnectable;
+@property (nonatomic, readwrite)           BOOL    isRelayReconnecting;
 @property (nonatomic, retain) NSString* relayIp;
 @property (nonatomic, readwrite) NSInteger relayPort;
 
