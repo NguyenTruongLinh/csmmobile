@@ -2001,16 +2001,23 @@ export const VideoModel = types
           self.selectChannel(
             self.displayChannels[self.selectedChannelIndex - 1].channelNo
           );
+        } else {
+          self.selectChannel(
+            self.displayChannels[self.displayChannels.length - 1].channelNo
+          );
         }
       },
       nextChannel() {
         if (
           self.selectedChannelIndex < self.displayChannels.length - 1 &&
           self.selectedChannelIndex >= 0
-        )
+        ) {
           self.selectChannel(
             self.displayChannels[self.selectedChannelIndex + 1].channelNo
           );
+        } else {
+          self.selectChannel(self.displayChannels[0].channelNo);
+        }
       },
       pause(willPause) {
         self.paused = willPause == undefined ? !self.paused : willPause;

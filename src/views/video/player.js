@@ -672,14 +672,30 @@ class VideoPlayerView extends Component {
       this.playerRef.onLoginInfoChanged(username, password);
   };
 
+  adjustChannelListPosition = () => {
+    const {videoStore} = this.props;
+    __DEV__ &&
+      console.log(
+        'GOND adjustChannelListPosition: ',
+        videoStore.selectedChannelIndex
+      );
+    this.channelsScrollView &&
+      this.channelsScrollView.scrollToIndex({
+        index: videoStore.selectedChannelIndex + 2,
+        viewPosition: 0.5,
+      });
+  };
+
   onNext = () => {
     this.props.videoStore.nextChannel();
     this.playerRef && this.playerRef.resetZoom();
+    this.adjustChannelListPosition();
   };
 
   onPrevious = () => {
     this.props.videoStore.previousChannel();
     this.playerRef && this.playerRef.resetZoom();
+    this.adjustChannelListPosition();
   };
 
   onDraggingTimeRuler = time => {
@@ -1053,23 +1069,24 @@ class VideoPlayerView extends Component {
 
     return (
       <Fragment>
-        {showController && selectedChannelIndex > 0 && (
-          <View
-            style={[styles.controlButtonContainer, {bottom: bottomPos}]}
-            onLayout={this.onControlButtonLayout}>
-            <IconCustom
-              name="keyboard-left-arrow-button"
-              size={IconSize}
-              onPress={this.onPrevious}
-              style={[
-                styles.controlButton,
-                {
-                  justifyContent: 'flex-start',
-                },
-              ]}
-            />
-          </View>
-        )}
+        {showController &&
+          displayChannels.length > 1 && ( // && selectedChannelIndex > 0
+            <View
+              style={[styles.controlButtonContainer, {bottom: bottomPos}]}
+              onLayout={this.onControlButtonLayout}>
+              <IconCustom
+                name="keyboard-left-arrow-button"
+                size={IconSize}
+                onPress={this.onPrevious}
+                style={[
+                  styles.controlButton,
+                  {
+                    justifyContent: 'flex-start',
+                  },
+                ]}
+              />
+            </View>
+          )}
         {showPlayPauseButton && (showController || paused) && (
           <View
             style={[
@@ -1087,31 +1104,32 @@ class VideoPlayerView extends Component {
             />
           </View>
         )}
-        {showController && selectedChannelIndex < displayChannels.length - 1 && (
-          <View
-            style={[
-              styles.controlButtonContainer,
-              // verticalPos,
-              {
-                right: 0,
-                bottom: bottomPos,
-              },
-            ]}
-            onLayout={this.onControlButtonLayout}>
-            <IconCustom
-              name="keyboard-right-arrow-button"
-              size={IconSize}
-              onPress={this.onNext}
+        {showController &&
+          displayChannels.length > 1 && ( //&& selectedChannelIndex < displayChannels.length - 1
+            <View
               style={[
-                styles.controlButton,
+                styles.controlButtonContainer,
+                // verticalPos,
                 {
-                  justifyContent: 'flex-end',
-                  paddingRight: 5,
+                  right: 0,
+                  bottom: bottomPos,
                 },
               ]}
-            />
-          </View>
-        )}
+              onLayout={this.onControlButtonLayout}>
+              <IconCustom
+                name="keyboard-right-arrow-button"
+                size={IconSize}
+                onPress={this.onNext}
+                style={[
+                  styles.controlButton,
+                  {
+                    justifyContent: 'flex-end',
+                    paddingRight: 5,
+                  },
+                ]}
+              />
+            </View>
+          )}
       </Fragment>
     );
   };
