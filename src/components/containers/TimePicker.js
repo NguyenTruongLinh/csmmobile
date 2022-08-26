@@ -26,7 +26,8 @@ export default class TimePicker extends Component {
       // () => {
       if (selected)
         setTimeout(() => {
-          this._scrollView.scrollToIndex({index: selected, animated: true});
+          this._scrollView &&
+            this._scrollView.scrollToIndex({index: selected, animated: true});
         }, 100);
       // }
       // );
