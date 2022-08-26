@@ -112,7 +112,7 @@ class VideoPlayerView extends Component {
     this._isMounted = true;
 
     this.eventSubscribers = [
-      Dimensions.addEventListener('change', this.onDimensionsChange),
+      // Dimensions.addEventListener('change', this.onDimensionsChange),
       AppState.addEventListener('change', this.handleAppStateChange),
     ];
     __DEV__ &&
@@ -145,7 +145,7 @@ class VideoPlayerView extends Component {
 
   componentWillUnmount() {
     this._isMounted = false;
-    Dimensions.removeEventListener('change', this.onDimensionsChange);
+    // Dimensions.removeEventListener('change', this.onDimensionsChange);
     // this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
     AppState.removeEventListener('change', this.handleAppStateChange);
     const {videoStore, route} = this.props;
@@ -391,11 +391,11 @@ class VideoPlayerView extends Component {
     return true;
   };
 
-  onDimensionsChange = ({window}) => {
-    const {width, height} = window;
-    __DEV__ && console.log('GOND onDimensionsChange: ', window);
-    this.setState({sWidth: width, sHeight: this.getVideoHeight(width, height)});
-  };
+  // onDimensionsChange = ({window}) => {
+  //   const {width, height} = window;
+  //   __DEV__ && console.log('GOND onDimensionsChange: ', window);
+  //   this.setState({sWidth: width, sHeight: this.getVideoHeight(width, height)});
+  // };
 
   onFullscreenPress = (isFullscreen, manually) => {
     const {videoStore} = this.props;
@@ -735,6 +735,17 @@ class VideoPlayerView extends Component {
             this.timePickerRef && this.timePickerRef.open();
         }
       );
+    }
+  };
+
+  onScreenLayout = evt => {
+    if (!evt.nativeEvent || !evt.nativeEvent.layout) return;
+
+    const {width, height} = evt.nativeEvent.layout;
+    const sHeight = this.getVideoHeight(width, height);
+
+    if (width != this.state.sWidth || sHeight != this.state.sHeight) {
+      this.setState({sWidth: width, sHeight});
     }
   };
 
@@ -1519,7 +1530,7 @@ class VideoPlayerView extends Component {
     // __DEV__ && console.log('GOND FUllscreen header = ', fullscreenHeader);
 
     return (
-      <View style={styles.screenContainer}>
+      <View style={styles.screenContainer} onLayout={this.onScreenLayout}>
         {fullscreenHeader}
         {fullscreenFooter}
         {calendar}

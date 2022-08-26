@@ -140,7 +140,7 @@ class LoginView extends Component {
   };
 
   onTyping = (text, name) => {
-    __DEV__ && console.log('LoginView onTyping ', name, text ?? 'no text');
+    // __DEV__ && console.log('LoginView onTyping ', name, text ?? 'no text');
     if (name) {
       if (text != this.state[name]) {
         this.setState({[name]: text});
