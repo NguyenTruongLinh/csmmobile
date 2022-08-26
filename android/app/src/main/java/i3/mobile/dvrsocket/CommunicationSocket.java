@@ -69,7 +69,7 @@ import i3.mobile.base.Utilities;
  */
 
 public class CommunicationSocket implements Runnable {
-
+    static final long WAITING_TIME_SINCE_IO_EXCEPTION_OCCURRED = 5000;
     static  int Socket_Time_Out = 10000;
     static  int Connect_Time_Out = 1000 * 30;//30 seconds
     static  int Socket_Buff_Len = 1024 *80;//80kBs
@@ -104,7 +104,7 @@ public class CommunicationSocket implements Runnable {
 
     protected boolean withRelayHeader = false;
     protected int relayHeaderBlockRemainLen = 0;
-
+    
     public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
         //this.message = message;
         //this.hostAddress = address;
@@ -266,6 +266,7 @@ public class CommunicationSocket implements Runnable {
 
     boolean lastIsLive = true;
     Thread mainThread = null;
+    long lastReadBlockSuccTimePoint = Long.MAX_VALUE;
     @Override
     public void run(){
         running = true;
@@ -346,12 +347,28 @@ public class CommunicationSocket implements Runnable {
 
                     relayHeaderBlockRemainLen -= cmdsate.remain_len;
 
-                    if (rcv_len == 0) {
-                        Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " rcv_len == 0 continue");
-                        continue;
+                    if( rcv_len == -1) {
+                        if(running) {
+                            long newTimePoint = System.currentTimeMillis();
+                            long deltaTime = newTimePoint - lastReadBlockSuccTimePoint;
+                            Log.d("relay", "video socket ioEx deltaTime = " + deltaTime);
+                            if (deltaTime > WAITING_TIME_SINCE_IO_EXCEPTION_OCCURRED) {
+                                OnHandlerMessage(isRelay ? Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
+                                        Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null);
+                                break;
+                            } else {
+                                if (lastReadBlockSuccTimePoint == Long.MAX_VALUE)
+                                    lastReadBlockSuccTimePoint = newTimePoint;
+                                continue;
+                            }
+                        }
                     }else{
-
+                        lastReadBlockSuccTimePoint = Long.MAX_VALUE;
                     }
+
+                    if (rcv_len == 0)
+                        continue;
+
                     rcv_offset += rcv_len;
                     switch (cmdsate.state) {
                         case Constant.EnumBufferState.COMMAND_GET:
@@ -447,7 +464,6 @@ public class CommunicationSocket implements Runnable {
     int relayHeaderBlockCount = 0;
     protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader, String debug)
     {
-        Log.d("GOND", "1508 hasRelayHeader = " + hasRelayHeader);
         if(hasRelayHeader) {
             byte[] headerBytes = new byte[RELAY_HEADER_LEN];
             int readHeaderCount = ReadBlock(InPut, RELAY_HEADER_LEN, headerBytes, 0, debug);
@@ -462,8 +478,9 @@ public class CommunicationSocket implements Runnable {
                 relayHeaderBlockRemainLen = totalLen - RELAY_HEADER_LEN;
                 relayHeaderBlockCount++;
             }
-        }else
+        }else {
             Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
+        }
         return ReadBlock(_is, _length, buff, offset, debug);
     }
 
@@ -479,18 +496,18 @@ public class CommunicationSocket implements Runnable {
         }
         catch (SocketTimeoutException tm)
         {
-            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
+//            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
             return  0;
         }
         catch (IndexOutOfBoundsException outex)
         {
-            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock IndexOutOfBoundsException outex = " + outex + " debug = " + debug);
+//            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock IndexOutOfBoundsException outex = " + outex + " debug = " + debug);
             return count;
         }
         catch (IOException e)
         {
             count = -1;// socket failed
-            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock IOException e = " + e + " debug = " + debug);
+            Log.e("2508", "ReadBlock count = -1 IOException e = " + e + " instanceof VideoSocket = " + (this instanceof VideoSocket));
         }
         // for (int i = offset; i < count; i ++)
         // {

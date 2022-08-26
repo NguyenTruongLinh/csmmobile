@@ -50,7 +50,8 @@ import {LocalDBName} from '../consts/misc';
 import {VIDEO as VIDEO_TXT, STREAM_STATUS} from '../localization/texts';
 import cmscolors from '../styles/cmscolors';
 import Toast from 'react-native-root-toast';
-
+const RELAY_MAX_RECONNECTING_TIME = 15 * 60 * 1000;
+const RELAY_RECONNECTING_INTERVAL = 5000;
 const RelayServerModel = types
   .model({
     enable: types.maybeNull(types.boolean),
@@ -575,6 +576,7 @@ export const VideoModel = types
     searchDateChangedByLive: false,
     // androidDataUsageStream: null,
     relayReconnectInterval: null,
+    relayReconnectCount: 0,
   }))
   .views(self => ({
     get isCloud() {
@@ -1604,7 +1606,7 @@ export const VideoModel = types
           __DEV__ && console.log(` 2507 getDirectInfosInterval`);
           self.getDirectInfos(self.selectedChannel ?? undefined, true);
           snackbarUtil.showToast(STREAM_STATUS.RECONNECTING, cmscolors.Success);
-        }, 5000);
+        }, RELAY_RECONNECTING_INTERVAL);
       },
       notifyClearDirectInfosInterval() {
         if (self.relayReconnectInterval) {
@@ -2638,8 +2640,19 @@ export const VideoModel = types
             isInterval
           );
           if (self.directConnection.isRelay) {
-            if (!self.directConnection.relayInfo.connectable) {
-              if (!isInterval)
+            if (
+              self.directConnection.relayInfo.connectable ||
+              (isInterval &&
+                self.relayReconnectCount >
+                  RELAY_MAX_RECONNECTING_TIME / RELAY_RECONNECTING_INTERVAL)
+            ) {
+              if (isInterval && self.relayReconnectInterval) {
+                clearInterval(self.relayReconnectInterval);
+                self.relayReconnectInterval = null;
+              }
+            } else if (!self.directConnection.relayInfo.connectable) {
+              if (isInterval) self.relayReconnectCount++;
+              else
                 setTimeout(
                   () =>
                     snackbarUtil.showToast(
@@ -2648,13 +2661,8 @@ export const VideoModel = types
                     ),
                   1000
                 );
-              return false;
-            } else {
-              if (isInterval && self.relayReconnectInterval) {
-                clearInterval(self.relayReconnectInterval);
-                self.relayReconnectInterval = null;
-              }
             }
+            if (!self.directConnection.relayInfo.connectable) return false;
           }
 
           // get NVR user and password from first data:
