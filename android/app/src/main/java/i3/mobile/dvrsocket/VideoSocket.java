@@ -121,21 +121,17 @@ public class VideoSocket extends CommunicationSocket {
 
                     if( read_len == -1) {
                         if(running) {
-                            long newTimePoint = System.currentTimeMillis();
-                            long deltaTime = newTimePoint - lastReadBlockSuccTimePoint;
-                            Log.d("relay", "comm socket ioEx deltaTime = " + deltaTime);
-                            if (deltaTime > MAX_READING_IO_EXCEPTION_WAITING_TIME) {
+                            long deltaTime = System.currentTimeMillis() - lastReadBlockSuccTimePoint;
+                            Log.d("relay", "video socket ioEx deltaTime = " + deltaTime);
+                            if (deltaTime > WAITING_TIME_SINCE_IO_EXCEPTION_OCCURRED) {
                                 OnHandlerMessage(isRelay ? Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
                                         Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null);
                                 break;
-                            } else {
-                                if (lastReadBlockSuccTimePoint == Long.MAX_VALUE)
-                                    lastReadBlockSuccTimePoint = newTimePoint;
+                            } else
                                 continue;
-                            }
                         }
                     }else{
-                        lastReadBlockSuccTimePoint = Long.MAX_VALUE;
+                        lastReadBlockSuccTimePoint = System.currentTimeMillis();
                     }
 
                     if( read_len == 0)
