@@ -119,15 +119,21 @@ public class VideoSocket extends CommunicationSocket {
 
                     relayHeaderBlockRemainLen -= read_len;
 
-                    if( read_len == -1 && running)//socket failed
-                    {
-                        Log.d("2408", "socket failed read_len = " + read_len + " running = " + running);
-                        OnHandlerMessage( isRelay? Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
-                                    Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
-//                        OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null );
-                        //in ios: only check case Error in stream callback in RemoteConnection, no need in VỉdeoConnection
-                        break;
+                    if( read_len == -1) {
+                        if(running) {
+                            long deltaTime = System.currentTimeMillis() - lastReadBlockSuccTimePoint;
+                            Log.d("relay", "video socket ioEx deltaTime = " + deltaTime);
+                            if (deltaTime > WAITING_TIME_SINCE_IO_EXCEPTION_OCCURRED) {
+                                OnHandlerMessage(isRelay ? Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED :
+                                        Constant.EnumVideoPlaybackSatus.MOBILE_VIDEO_PORT_ERROR, null);
+                                break;
+                            } else
+                                continue;
+                        }
+                    }else{
+                        lastReadBlockSuccTimePoint = System.currentTimeMillis();
                     }
+
                     if( read_len == 0)
                         continue;
                     
