@@ -99,7 +99,7 @@ const DirectServerModel = types
     date: types.string,
     hd: types.boolean,
     // interval: types.number,
-    haspLicense: types.string,
+    haspLicense: types.maybeNull(types.string),
     // dongpt: connection status
     isLoading: types.optional(types.boolean, false),
     connectionStatus: types.optional(types.string, ''),

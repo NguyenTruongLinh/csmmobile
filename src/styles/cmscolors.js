@@ -1,4 +1,3 @@
-const Dark_Blue = 'rgb(0, 86, 145)';
 const White = '#ffffff';
 const Vivid_Blue = '#039BE5';
 const Very_Dark_Gray = '#333';
@@ -7,7 +6,6 @@ const Very_Light_Gray = '#e5e5e5';
 const Dark_Moderate_Blue = '#436D8F';
 const Black = '#000000';
 const Bright_Red = '#E53935';
-const Very_Dark = '#042417';
 const Very_Light_Gray_Mostly_White = '#FAFAFA';
 const Dark_Gray = '#757575';
 const Dark_Gray_2 = '#444444';
@@ -16,9 +14,6 @@ module.exports = {
   // define Color CMS
   DarkPrimaryColor: '#2C5072',
   PrimaryColor: '#436D8F',
-  BlueSky: '#78A6C2',
-  LightPrimaryColor: '#C7D3DD',
-  AccentColor: '#FFD454',
   PrimaryText: '#212121',
   SecondaryText: '#757575',
   DisableItemColor: '#D8D8D8',
@@ -40,13 +35,10 @@ module.exports = {
   White: White,
   White_Smoke: '#f1f1f1',
   White_Op54: 'rgba(255,255,255,0.54)',
-  White_Op40: 'rgba(255,255,255,0.40)',
   Dark_Gray: Dark_Gray,
   Dark_Gray_2: Dark_Gray_2,
-  Dark_Gray_54: 'rgb(117,117,117)',
 
   Transparent: 'rgba(0,0,0,0)',
-  ButtonRight: White,
   OpacityButton: 'rgba(255, 255, 255, 0.1)',
   VideoOpacityLayer: 'rgba(0, 0, 0, 0.3)',
 
@@ -54,21 +46,14 @@ module.exports = {
   InactiveText: 'rgb(153,153,153)',
   DarkText: '#032250',
   LightText: 'rgb(242,242,242)',
-  CellBorder: '#EEEEEE',
-  DarkBackground: '#183E63',
   BorderColor: 'rgba(0, 0, 0, .38)',
   DarkElement: '#353535',
   DarkTheme: Black,
-
   ErrorColor: 'red',
-  IndicatorColor: 'rgb(245, 200, 10)',
-  BackgroundChart: White,
-  BackgroundModal: White,
 
   // Common
   Dark_Blue: Dark_Moderate_Blue,
   CopyRight: 'rgba(255, 255, 255, .87)',
-  BorderShadow: '#828287',
 
   //ActivityIndicator
   SpinnerColor: Vivid_Blue,
@@ -78,23 +63,14 @@ module.exports = {
   TextButtonLogin: Dark_Moderate_Blue,
 
   //SEARCH
-  TextSearch: Dark_Moderate_Blue,
   RowHeaderAccordion: 'rgba(216,216,216,0.00)',
 
   //MODAL
-  ModalHeader: Matte_Black,
-  HeaderBorder: Very_Light_Gray,
   ModalFooter: Matte_Black,
   FooterBorder: Very_Light_Gray,
   ModalTransparent: '#11111199',
 
-  //FILTER
-  BGHeaderSites: 'rgba(199,211,221,0.54)',
-
   // LISTVIEW
-  UnderlayColorRow: Very_Dark,
-  IconSiteListRow: Dark_Moderate_Blue,
-  IconUserListRow: Black,
   BtnNumberListRow: Bright_Red,
   TextNumberListRow: Very_Light_Gray_Mostly_White,
   HeaderListRow: '#F7F7F7',
@@ -120,16 +96,13 @@ module.exports = {
   Dismiss: 'rgba(239, 173, 78, 1)',
   TotalAlerts: 'rgba(217, 83, 79, 1)',
   Underlay: '#AAA',
-  ChartLine: '#FFC107',
+  // ChartLine: '#FFC107',
   HighlightedDates: 'rgba(0, 175, 255, 0.2)',
 
-  //Bottom Bar
-  BackgroundBar: '#fff',
-
   //PVM
-  LiveButton: '#DB5451',
+  // LiveButton: '#DB5451',
   Green: '#449D43',
-  Yellow: '#F9A825',
+  // Yellow: '#F9A825',
   Red: '#A72D2A',
 
   //icon

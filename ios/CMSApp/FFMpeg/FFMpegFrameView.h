@@ -59,6 +59,7 @@ typedef enum
   CALayer* m_videoLayer;
   // CMS added
 //  NSString* m_channel;
+  BOOL needToClearScreen;
 }
 
 @property (nonatomic) UIDeviceOrientation currentDeviceOrientation;
@@ -70,8 +71,8 @@ typedef enum
 @property NSTimer* timer;
 @property DAY_TYPE m_dayType;
 @property BOOL isRotate;
-@property CGRect mainViewFullRect;
-@property CGRect mainViewRect;
+//@property CGRect mainViewFullRect;
+//@property CGRect mainViewRect;
 @property ImcConnectedServer* currentServer;
 @property NSInteger chosenServerIndex;
 @property long lastFrameInterval;
@@ -82,6 +83,7 @@ typedef enum
 @property BOOL firstRunAlarm;
 @property NSMutableArray* dateIntervalList;
 @property UIImage* searchFrameImage;
+@property CGRect searchFrameRect;
 @property BOOL doesTodayHasData;
 @property NSArray* dataDateList;
 @property NSInteger chosenChannelIndex;
@@ -116,7 +118,7 @@ typedef enum
 @property(nonatomic, assign) BOOL disconnect;
 @property (nonatomic, copy) RCTDirectEventBlock onFFMPegFrameChange;
 
-- (UIImage*)geScaledSearchImage;
+- (UIImage*)getScaledSearchImage;
 - (instancetype)initWithEventDispatcher: (RCTEventDispatcher *)eventDispatcher NS_DESIGNATED_INITIALIZER;
 - (NSInteger)handleResponseMessage:(IMC_MSG_BASE)messageId fromView:(UIView *)sender withData:(NSObject *)responseData;
 - (void)orientationChanged;

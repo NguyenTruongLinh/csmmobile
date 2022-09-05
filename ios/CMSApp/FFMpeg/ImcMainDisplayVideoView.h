@@ -113,6 +113,7 @@
 - (NSInteger)screenIndexofServer : (NSString*)serverAddress withPort :(NSInteger)serverPort andChannel : (NSInteger)channelID;
 - (CGRect)ptzIconFrame;
 - (void)invalidate;
+- (void)clearScreen;
 - (UIImage*)getFullscreenImage;
 -(void)alarmPlayASound:(NSInteger) alarmType;
 -(void)onRotation:(UIInterfaceOrientation)toInterfaceOrientation;
