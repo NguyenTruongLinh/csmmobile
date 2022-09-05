@@ -284,7 +284,7 @@ const parseDirectServer = (
     searchMode: false,
     date: '',
     hd: false,
-    haspLicense: server.HaspLicense,
+    haspLicense: server.HaspLicense ?? '',
     isRelay: type === CLOUD_TYPE.RS,
     relayInfo: parseRelayServerModel(server.RelayServerInfo),
     isRelayReconnecting: isInterval,

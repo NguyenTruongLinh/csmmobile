@@ -391,40 +391,40 @@ public class FFMpegFrameView extends View {
             Bitmap emptyBitmap = Bitmap.createBitmap(DrawBitmap.getWidth(), DrawBitmap.getHeight(), DrawBitmap.getConfig());
 
             int originalWidth = DrawBitmap.getWidth();
-            int originalHeigt = DrawBitmap.getHeight();
+            int originalHeight = DrawBitmap.getHeight();
             if(socket_handler != null && socket_handler.video_handler != null)
             {
                 originalWidth = socket_handler.video_handler.originResolutionX;
-                originalHeigt = socket_handler.video_handler.originResolutionY;
+                originalHeight = socket_handler.video_handler.originResolutionY;
             }
             int playerWidth = getWidth();
             int playerHeight = getHeight();
             Rect dest = new Rect(0, 0, playerWidth, playerHeight);
             if(!stretch)
             {
-                if(originalWidth > 0 && originalHeigt > 0)
+                if(originalWidth > 0 && originalHeight > 0)
                 {
-                    double hRatio = (playerHeight * 100.0) / originalHeigt;
-                    double wRatio = (playerWidth * 100.0) / originalWidth;
+                    double hRatio = (playerHeight * 1.0) / originalHeight;
+                    double wRatio = (playerWidth * 1.0) / originalWidth;
                     if (hRatio >= wRatio)
                     {
-                        int height = (int)((wRatio * originalHeigt) / 100);
+                        int height = (int)(wRatio * originalHeight);
                         int top = (playerHeight - height) / 2;
                         dest = new Rect(0, top, playerWidth, height);
                     }
                     else if (hRatio < wRatio)
                     {
-                        int width = (int)((hRatio * originalWidth) / 100);
+                        int width = (int)(hRatio * originalWidth);
                         int left = (playerWidth - width) / 2;
                         dest = new Rect(left, 0, width + left, playerHeight);
                     }
-                    if(responseResolution || originalWidth != oldOriginWidth || originalHeigt != oldOriginHeight)
+                    if(responseResolution || originalWidth != oldOriginWidth || originalHeight != oldOriginHeight)
                     {
-                        int[] resolution = new int[] {originalWidth, originalHeigt};
+                        int[] resolution = new int[] {originalWidth, originalHeight};
                         OnEvent(Constant.EnumVideoPlaybackSatus.MOBILE_RESPONSE_RESOLUTION, resolution);
                         responseResolution = false;
                         oldOriginWidth = originalWidth;
-                        oldOriginHeight = originalHeigt;
+                        oldOriginHeight = originalHeight;
                     }
                 }
             }
