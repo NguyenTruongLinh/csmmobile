@@ -443,6 +443,10 @@ class VideoPlayerView extends Component {
   onHDMode = () => {
     this.playerRef && this.playerRef.onHDMode(!this.props.videoStore.hdMode);
     this.props.videoStore.switchHD();
+    __DEV__ &&
+      console.log(
+        'ImcVideoReceiverConnection onHDMode ====================================================================================='
+      );
   };
 
   onStretch = () => {

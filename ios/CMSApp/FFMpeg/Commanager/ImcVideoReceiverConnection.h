@@ -35,6 +35,8 @@
   BOOL isRelay;
   NSInteger dataUsage;
   long lastDataUsageSentTimePoint;
+  int loopCount;
+  long dataCount;
 //  __volatile BOOL isRLRunning;
 }
 
