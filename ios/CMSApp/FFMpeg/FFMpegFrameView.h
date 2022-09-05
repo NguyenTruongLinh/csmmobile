@@ -122,7 +122,7 @@ typedef enum
 - (void)orientationChanged;
 - (NSCalendar*)AgendaCalendar;
 - (void)updateDataDateList:(NSTimeZone*)serverTimeZone;
-- (void)fullScreenSearchMode:(NSInteger)channelIndex;
+- (void)fullScreenSearchMode:(NSInteger)channelIndex:(BOOL)checkRecordDataDayFlag;
 @end
 
 
