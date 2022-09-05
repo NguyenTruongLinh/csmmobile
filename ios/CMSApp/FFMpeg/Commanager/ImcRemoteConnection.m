@@ -402,7 +402,7 @@
       int loopCount = 0;
       while( receivedBufferLength > 0)
       {
-        NSLog(@"0108 stream case NSStreamEventHasBytesAvailable loopCount = %d", loopCount);
+//        NSLog(@"0108 stream case NSStreamEventHasBytesAvailable loopCount = %d", loopCount);
         loopCount++;
         @autoreleasepool
         {
@@ -438,7 +438,14 @@
           {
             if(currentData && ([currentData bytes] != receivedBuffer))
             {
-              currentData = [NSMutableData dataWithBytes:receivedBuffer + movedBytes length:receivedBufferLength];
+              @try
+              {
+                currentData = [NSMutableData dataWithBytes:receivedBuffer + movedBytes length:receivedBufferLength];
+              }
+              @catch (NSException *exception)
+              {
+                NSLog(@"GOND remoteConnection try to read data failed %@", exception.reason);
+              }
             }
             break;
           }

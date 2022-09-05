@@ -83,7 +83,7 @@ const uint32_t numLayers = 24;
   int _progressUpdateInterval;
 }
 
-@synthesize connectedServers, mainDisplayVideo, timer, isRotate, videoPlayerStatus, currentServer, chosenServerIndex, lastFrameInterval, mainViewRect, mainViewFullRect, currentSelectedFullScreenChannel, dateIntervalList, doesTodayHasData, chosenDay, chosenChannelIndex, channelsSearchDictionary, searchingDateInterval, channelListCollectonView, calTimezone, zoomLevel, calendar, searchFrameImage, lastResumeTime, m_dayType, hourSpecialDST, firstRunAlarm;
+@synthesize connectedServers, mainDisplayVideo, timer, isRotate, videoPlayerStatus, currentServer, chosenServerIndex, lastFrameInterval, /*mainViewRect, mainViewFullRect,*/ currentSelectedFullScreenChannel, dateIntervalList, doesTodayHasData, chosenDay, chosenChannelIndex, channelsSearchDictionary, searchingDateInterval, channelListCollectonView, calTimezone, zoomLevel, calendar, searchFrameImage, searchFrameRect, lastResumeTime, m_dayType, hourSpecialDST, firstRunAlarm;
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher{
   
@@ -108,15 +108,18 @@ const uint32_t numLayers = 24;
     currentServer = nil;
     currentSelectedFullScreenChannel = -1;
     videoPlayerStatus = STATE_PLAY;
-    mainViewRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
-    mainViewFullRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
+//    mainViewRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
+//    mainViewFullRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
     calendar = [NSDate gregorianCalendar];
     calTimezone = [NSTimeZone systemTimeZone];
     m_delayPlayback = NO;
     defaultImg = [[UIImage alloc] initWithCGImage: [UIImage imageNamed:@"CMS-video-losss.png"].CGImage];
     searchFrameImage = defaultImg;
+    searchFrameRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
     m_dayType = NORMAL;
     oldDeviceInterfaceHandel = UIInterfaceOrientationMaskPortrait;
+    needToClearScreen = false;
+    _stretch = true;
     
     for (NSInteger i = 0; i < IMC_MAX_CHANNEL; i++) {
       viewMaskArray[i] = 0;
@@ -195,12 +198,12 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setIsSearch:(BOOL)value{
-	
   _isSeacrh = value;
+  [self clearScreen];
 }
 
 -(void)setIsHD:(BOOL)value{
-	
+  [self clearScreen];
   _isHD = value;
 }
 
@@ -288,10 +291,12 @@ const uint32_t numLayers = 24;
 #pragma mark - Native Props
 
 -(void)setStretch:(BOOL)value{
-    mainDisplayVideo.stretch = value;
-    _stretch = value;
-    [self reactSetFrame:self.frame];
-    [self setNeedsLayout];  
+  mainDisplayVideo.stretch = value;
+  [self clearScreen];
+  
+  _stretch = value;
+  [self reactSetFrame:self.frame];
+  [self setNeedsLayout];
 }
 -(void)setScaleXY:(NSNumber *) scale {
 	
@@ -2776,7 +2781,7 @@ const uint32_t numLayers = 24;
   return 1;
 }
 
--(UIImage*)geScaledSearchImage
+-(UIImage*)getScaledSearchImage
 {
 	
   float scaleXY = mainDisplayVideo.scaleXY;
@@ -2789,29 +2794,38 @@ const uint32_t numLayers = 24;
   if(!_stretch)
   {
     int originalWidth = searchFrameImage.size.width;
-    int originalHeigt = searchFrameImage.size.height;
-    if(originalWidth > 0 && originalHeigt > 0)
+    int originalHeight = searchFrameImage.size.height;
+//    NSLog(@"GOND size original: %d %d, player: %d %d", originalWidth, originalHeight, playerWidth, playerHeight);
+    if(originalWidth > 0 && originalHeight > 0)
     {
-      double hRatio = (playerHeight * 100.0) / originalHeigt;
-      double wRatio = (playerWidth * 100.0) / originalWidth;
+      // dongpt: tried to fix reverted dimensions of image
+      if(((searchFrameRect.size.width - searchFrameRect.size.height) > 0) != ((originalWidth - originalHeight) > 0) && (double)searchFrameRect.size.width/searchFrameRect.size.height == (double)originalHeight/originalWidth) {
+        u_int16_t tmp = originalHeight;
+        originalHeight = originalWidth;
+        originalWidth = tmp;
+      }
+      // dongpt: end fix
+      
+      double hRatio = (double)playerHeight / originalHeight;
+      double wRatio = (double)playerWidth / originalWidth;
       if (hRatio > wRatio)
       {
-          int height = (int)((wRatio * originalHeigt) / 100);
-          int top = (playerHeight - height) / 2;
-          boundFrame = CGRectMake(0, top, playerWidth, height);
+        int height = (int)(wRatio * originalHeight);
+        int top = (playerHeight - height) / 2;
+        boundFrame = CGRectMake(0, top, playerWidth, height);
       }
-      else if (hRatio < wRatio)
+      else // if (hRatio < wRatio)
       {
-          int width = (int)((hRatio * originalWidth) / 100);
-          int left = (playerWidth - width) / 2;
-          boundFrame = CGRectMake(left, 0, width, playerHeight);
+        int width = (int)(hRatio * originalWidth);
+        int left = (playerWidth - width) / 2;
+        boundFrame = CGRectMake(left, 0, width, playerHeight);
       }
-      if(responseResolution || originalWidth != oldOriginalWidth || originalHeigt != oldOriginalHeight)
+      if(responseResolution || originalWidth != oldOriginalWidth || originalHeight != oldOriginalHeight)
       {
-        NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeigt],nil];
+        NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeight],nil];
         [self responseResolution :resolution];
         oldOriginalWidth = originalWidth;
-        oldOriginalHeight =originalHeigt;
+        oldOriginalHeight =originalHeight;
         responseResolution = false;
       }
     }
@@ -2824,7 +2838,7 @@ const uint32_t numLayers = 24;
   //apply zoom
   CGRect cropScaled = CGRectInset(fullScaled, searchFrameImage.size.width/2 - searchFrameImage.size.width/scaleXY/2, searchFrameImage.size.height/2 - searchFrameImage.size.height/scaleXY/2);
   
-//  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
+  //  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
   
   //apply translate
   cropScaled.origin.x = -translateX*searchFrameImage.size.width/scaleXY/playerWidth;
@@ -2841,13 +2855,32 @@ const uint32_t numLayers = 24;
   // NSLog(@"GOND **DIRECT** drawLayer -1");
   //NSLog(@"Shark drawLayer Search searchFrameImage");
   UIGraphicsPushContext(ctx);
+  if( needToClearScreen )
+  {
+    CGContextClearRect(ctx, layer.frame);
+    needToClearScreen = false;
+  }
   if (searchFrameImage && (searchFrameImage.CIImage || searchFrameImage.CGImage) )
   {
 //    [searchFrameImage drawInRect:videoView.bounds];
-    UIImage *scaledImage = [self geScaledSearchImage];
+    UIImage *scaledImage = [self getScaledSearchImage];
     [scaledImage drawInRect:videoView.bounds];
+    [videoView setNeedsDisplay];
   }
   UIGraphicsPopContext();
+}
+
+- (void)clearScreen
+{
+//  needToClearScreen = true;
+  if (_isSeacrh) {
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//      [self.layer setNeedsDisplay];
+//      [self->videoView setNeedsDisplay];
+//    });
+  } else {
+    [mainDisplayVideo invalidate];
+  }
 }
 
 //lvxt note: double check the synchronization of video frame fetching and display
@@ -2855,6 +2888,7 @@ const uint32_t numLayers = 24;
 {
 	
   DisplayedVideoFrame* displayFrame = (DisplayedVideoFrame*)frame;
+  NSLog(@"GOND addSearchVideoFrame %d %d", displayFrame.videoFrame.size.width, displayFrame.videoFrame.size.height);
   if (displayFrame.videoFrame && (displayFrame.videoFrame.CGImage || displayFrame.videoFrame.CIImage))
   {
     if (videoPlayerStatus == STATE_STOP)
@@ -2933,6 +2967,8 @@ const uint32_t numLayers = 24;
           dispatch_async(dispatch_get_main_queue(), ^{
             //NSLog(@"Shark setNeedsDisplay Search");
             searchFrameImage = displayFrame.videoFrame;
+            searchFrameRect = CGRectMake(0, 0, displayFrame.resolutionWidth, displayFrame.resolutionHeight);
+            
             self.layer.contents = searchFrameImage;
             [self.layer setNeedsDisplay];
             [videoView setNeedsDisplay];

@@ -699,31 +699,31 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
           else
           {
             int originalWidth = screen.resolutionWidth;
-            int originalHeigt = screen.resolutionHeight;
-            if(originalWidth > 0 && originalHeigt > 0)
+            int originalHeight = screen.resolutionHeight;
+            if(originalWidth > 0 && originalHeight > 0)
             {
-              double hRatio = (view.frame.size.height * 100.0) / originalHeigt;
-              double wRatio = (view.frame.size.width * 100.0) / originalWidth;
+              double hRatio = (double)view.frame.size.height / originalHeight;
+              double wRatio = (double)view.frame.size.width / originalWidth;
               if (hRatio > wRatio)
               {
-                  int height = (int)((wRatio * originalHeigt) / 100);
+                  int height = (int)(wRatio * originalHeight);
                   int top = (view.frame.size.height - height) /2;
                   displayRect = CGRectMake(0, top, view.frame.size.width, height);
               }
               else if (hRatio < wRatio)
               {
-                  int width = (int)((hRatio * originalWidth) / 100);
+                  int width = (int)(hRatio * originalWidth);
                   int left = (view.frame.size.width - width) / 2;
                   displayRect = CGRectMake(left, 0, width, view.frame.size.height);
               }
                             
-              if(_responseResolution || originalWidth != _oldOriginWidth || originalHeigt != _oldOriginHeight)
+              if(_responseResolution || originalWidth != _oldOriginWidth || originalHeight != _oldOriginHeight)
               {
-                  NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeigt],nil];
+                  NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeight],nil];
                   [self.delegate1 responseResolution : resolution];
                   _responseResolution = false;
                   _oldOriginWidth = originalWidth;
-                  _oldOriginHeight = originalHeigt;
+                  _oldOriginHeight = originalHeight;
               }
             }
           }
@@ -2561,6 +2561,11 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       [layer setNeedsDisplay];
     });
   }
+}
+
+- (void)clearScreen
+{
+  needToClearScreen = true;
 }
 
 - (UIImage*)getFullscreenImage
