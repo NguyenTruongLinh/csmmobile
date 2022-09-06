@@ -160,6 +160,7 @@
     GDataXMLElement* screenSize = [GDataXMLNode elementWithName:@"SCREEN_SIZE"];
     if(screenSize)
     {
+        NSLog(@"0509 exportScreenSizeToXmlData %d x %d",screenWidth, screenHigh);
         GDataXMLNode* width = [GDataXMLNode elementWithName:@"screen_width" stringValue:[NSString stringWithFormat:@"%zd",screenWidth]];
         GDataXMLNode* height = [GDataXMLNode elementWithName:@"screen_high" stringValue:[NSString stringWithFormat:@"%zd",screenHigh]];
         [screenSize addAttribute:width];

@@ -285,7 +285,7 @@ const parseDirectServer = (
     searchMode: false,
     date: '',
     hd: false,
-    haspLicense: server.HaspLicense,
+    haspLicense: server.HaspLicense ?? '',
     isRelay: type === CLOUD_TYPE.RS,
     relayInfo: parseRelayServerModel(server.RelayServerInfo),
     isRelayReconnecting: isInterval,
@@ -1225,6 +1225,10 @@ export const VideoModel = types
         self.searchDateChangedByLive = false;
       },
       selectChannel(value, autoStart = true, fromMulti = false) {
+        __DEV__ &&
+          console.log(
+            '3108 timeline 3008 2908 -------------------------------------------------------------------------'
+          );
         let key =
           typeof value == 'number'
             ? 'channelNo'
@@ -1514,7 +1518,15 @@ export const VideoModel = types
         }
       },
       setRecordingDates(value) {
-        __DEV__ && console.log('&&& GOND setRecordingDates data = ', value);
+        __DEV__ &&
+          console.log('GOND setRecordingDates data = ', JSON.stringify(value));
+        __DEV__ &&
+          console.log(
+            '3108 GOND setRecordingDates from = ',
+            value[0],
+            ' to ',
+            value[value.length - 1]
+          );
         const today = DateTime.now()
           .setZone(self.timezone)
           .toFormat(CALENDAR_DATE_FORMAT);
@@ -1722,12 +1734,21 @@ export const VideoModel = types
           self.shouldUpdateSearchTimeOnGetTimeline = false;
           return;
         }
-        __DEV__ && console.log('GOND setTimeline ', value);
+
         if (value.length == 0) {
           self.shouldUpdateSearchTimeOnGetTimeline = false;
           self.setNoVideo(true);
           return;
         }
+        __DEV__ &&
+          console.log(
+            '3108 setTimeline value.length =  ',
+            value.length,
+            ' from ',
+            JSON.stringify(value[0].begin),
+            ' to ',
+            JSON.stringify(value[value.length - 1].end)
+          );
 
         self.timeline = value
           .map(item =>
@@ -2102,7 +2123,7 @@ export const VideoModel = types
           return;
         }
         __DEV__ &&
-          console.log('GOND setBeginSearchTime ', self.beginSearchTime);
+          console.log('3108 GOND setBeginSearchTime ', self.beginSearchTime);
       },
       onExitSinglePlayer(currentRoute) {
         // self.isSingleMode = false;
