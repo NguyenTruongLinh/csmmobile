@@ -1731,8 +1731,8 @@ class DirectVideoView extends React.Component {
                 {Platform.select({
                   ios: (
                     <FFMpegFrameViewIOS
-                      width={this.state.width} // {this.state.width}
-                      height={this.state.height} // {this.state.height}
+                      width={this.state.width} //{844} //{this.state.width} // {this.state.width}//{1600} //
+                      height={this.state.height} //{390} //{this.state.height} // {this.state.height}//{900} //
                       scaleXY={this.state.zoom}
                       translateX={this.state.translateX}
                       translateY={this.state.translateY}

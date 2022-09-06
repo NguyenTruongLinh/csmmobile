@@ -13,8 +13,8 @@
 #import "ImcRemoteConnection.h"
 #import <malloc/malloc.h>
 
-#define MAX_BUFFER_SIZE (16 * MOBILE_MAX_PACKET_LENGTH)
-#define MAX_VIDEO_FRAME_BUFFER_SIZE (1024*1024)
+#define MAX_BUFFER_SIZE (16 * MOBILE_MAX_PACKET_LENGTH*4)
+#define MAX_VIDEO_FRAME_BUFFER_SIZE (1024*1024*4)
 
 __volatile BOOL isRLRunning = NO;
 
@@ -53,6 +53,8 @@ __volatile BOOL isRLRunning = NO;
     current_state = get_cmd;
     streamQueue = nil;
     isRLRunning = NO;
+    loopCount = 0;
+    dataCount = 0;
   }
   return self;
 }
@@ -287,6 +289,7 @@ __volatile BOOL isRLRunning = NO;
   
   [streamLock lock];
   disconnected = TRUE;
+  NSLog(@"0509 MOBILE_MSG_DISCONNECT 3");
   [parent postDisconnectVideoMsg:serverAddress];
 
   if( sentDataStream != nil)
@@ -320,8 +323,11 @@ __volatile BOOL isRLRunning = NO;
 
 - (void)notifyUpdateDataUsage: (long) newBlockLen
 {
-  if(isRelay) {
+//  if(isRelay) {
     dataUsage += newBlockLen;
+    dataCount += newBlockLen;
+    if(loopCount < 5000)
+      NSLog(@"0509 notifyUpdateDataUsage dataCount = %ld loopCount =%d", dataCount, loopCount++);
     long newTimePoint = CFAbsoluteTimeGetCurrent();
     long deltaTime = newTimePoint - lastDataUsageSentTimePoint;
     if (deltaTime >= 3) {
@@ -330,7 +336,7 @@ __volatile BOOL isRLRunning = NO;
       [delegate handleCommand: IMC_CMD_RELAY_UPDATE_DATA_USAGE : [NSNumber numberWithInteger: dataUsage]];
       dataUsage = 0;
     }
-  }
+//  }
 }
 
 - (BOOL)readRelayHandshakeInfo: (NSInputStream *)stream
@@ -362,7 +368,6 @@ __volatile BOOL isRLRunning = NO;
 
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode
 {
-  NSLog(@">>>>>>>>>>>>> 1008 ImcVideoReceiverConnection (void)stream streamCount = %d eventCode = %lul", streamCount++, (unsigned long)eventCode);
 
   if( stream != receivedDataStream && stream != sentDataStream )
     return;
@@ -370,22 +375,26 @@ __volatile BOOL isRLRunning = NO;
   {
     case NSStreamEventOpenCompleted:
     {
+      if(loopCount < 5000)
+        NSLog(@"0509 stream eventCode = NSStreamEventOpenCompleted");
 
     }
     break;
     case NSStreamEventHasBytesAvailable:
     {
+      if(loopCount < 5000)
+        NSLog(@"0509 NSStreamEventHasBytesAvailable-------------------------------------------------");
       NSLog(@"1008 ImcVideoReceiverConnection case NSStreamEventHasBytesAvailable current_state = %d", current_state);
       [streamLock lock];
       if(disconnected)
       {
-        NSLog(@"1008 ImcVideoReceiverConnection SStreamEventHasBytesAvailable disconnected");
+        NSLog(@"0509 disconnected BREAK!!!!!!!");
         [streamLock unlock];
         break;
       }
 
       if(waitForRelayHandshake) {
-        NSLog(@"1008 ImcVideoReceiverConnection NSStreamEventHasBytesAvailable waitForRelayHandshake");
+        NSLog(@"0509 waitForRelayHandshake BREAK!!!!!!!");
         [self readRelayHandshakeInfo: (NSInputStream *)stream];
         [streamLock unlock];
         break;
@@ -398,6 +407,8 @@ __volatile BOOL isRLRunning = NO;
 //      }
       if(current_state==get_cmd)
       {
+        if(loopCount < 5000)
+          NSLog(@"0509 get_cmd");
         uint8_t _buffer[2];
         sizeWillRead = 2;
         long len = [(NSInputStream *)stream read:(_buffer) maxLength:sizeWillRead];
@@ -411,6 +422,8 @@ __volatile BOOL isRLRunning = NO;
       }
       else if(current_state==get_header)
       {
+        if(loopCount < 5000)
+          NSLog(@"0509 get_header");
         long byteRead = sizeWillRead - receiverBufferLength;
         if(byteRead > MAX_BUFFER_SIZE)
           byteRead = MAX_BUFFER_SIZE;
@@ -432,6 +445,8 @@ __volatile BOOL isRLRunning = NO;
       }
       else if(current_state==get_data)
       {
+        if(loopCount < 5000)
+          NSLog(@"0509 get_data");
         long byteRead = sizeWillRead - receiverBufferLength;
         if(byteRead > MAX_BUFFER_SIZE)
           byteRead = MAX_BUFFER_SIZE;
@@ -484,7 +499,7 @@ __volatile BOOL isRLRunning = NO;
   {
     case MOBILE_MSG_DISCONNECT:
       disconnected = TRUE;
-      NSLog(@"Video-Disconnected");
+      NSLog(@"0509 MOBILE_MSG_DISCONNECT 1");
       sizeWillRead = 2;
       break;
     case MOBILE_MSG_MINIMIZE:
@@ -661,7 +676,7 @@ __volatile BOOL isRLRunning = NO;
       movedBytes = 2;
       disconnected = TRUE;
       //[self disconnectToServer];
-      NSLog(@"Video-Disconnected");
+      NSLog(@"0509 MOBILE_MSG_DISCONNECT 2");
       sizeWillRead = 2;
     }
       break;
