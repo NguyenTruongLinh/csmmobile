@@ -314,6 +314,7 @@ export const AlertTypes = {
   TEMPERATURE_NOT_WEAR_MASK: 114,
   TEMPERATURE_INCREASE_RATE_BY_DAY: 115,
   SOCIAL_DISTANCE: 116,
+  OAM: 117,
   //CMS web report alert.
   CMSWEB_Report_Begin: 200,
   CMSWEB_Report_Main_DashBoard: 201,

@@ -126,11 +126,17 @@ class NotifySettingView extends React.Component {
       isCheck:
         selectedAlerts && selectedAlerts.includes(C_AlertTypes.SOCIAL_DISTANCE),
     };
+    let oamAlert = {
+      id: C_AlertTypes.OAM,
+      name: 'OAM',
+      isCheck: selectedAlerts && selectedAlerts.includes(C_AlertTypes.OAM),
+    };
     result.push(posExceptions);
     result.push(temperatureAlerts);
     result.push(alertAI);
     result.push(alertSensor);
     result.push(sdAlerts);
+    result.push(oamAlert);
     // let AlertTypeFilter = AlertTypes.filter(x => (x.id != 37 && x.id != 107 && x.id != 108));
     // console.log('GOND *** AlertTypes = ', AlertTypes);
     let AlertTypeFilter = alertTypes.filter(
