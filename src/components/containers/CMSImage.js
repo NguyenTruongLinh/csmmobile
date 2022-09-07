@@ -176,7 +176,7 @@ class CMSImage extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.id != prevProps.id) {
+    if (this.props.domain.id != prevProps.domain.id) {
       if (apiService || this.props.source) {
         this.loadImage();
       } else {
@@ -228,7 +228,11 @@ class CMSImage extends React.Component {
             children={children}
           />
         ) : (
-          <Image style={styleImage} source={visible ? image : null} resizeMode={resizeMode} />
+          <Image
+            style={styleImage}
+            source={visible ? image : null}
+            resizeMode={resizeMode}
+          />
         )}
         {/* </Fragment> */}
       </View>
