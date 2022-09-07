@@ -676,7 +676,7 @@ export const VideoModel = types
       return null;
     },
     get selectedStreamSnapshot() {
-      return self.selectedChannel && self.selectedStream
+      return self.selectedChannel != null && self.selectedStream
         ? self.selectedStream.snapshot
         : NVR_Play_NoVideo_Image;
     },

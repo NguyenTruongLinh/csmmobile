@@ -200,6 +200,21 @@ public class FFMpegFrameViewManager extends SimpleViewManager<FFMpegFrameView>
                 HD = false;
             }
         }
+
+        view.setSourceIndex(-1);
+        if( source.hasKey("sourceIndex"))
+        {
+            try
+            {
+                int idx = source.getInt("sourceIndex");
+                view.setSourceIndex(idx);
+            }
+            catch(Exception ex)
+            {
+                Log.e("GOND", "setStart setSourceIndex failed!");
+            }
+        }
+
         if(view.socket_handler == null || view.video_thread == null || view.socket_handler.running == false) {
             view.setServer(s);
             view.setByChannels(by_channel);
