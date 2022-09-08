@@ -1018,7 +1018,7 @@ public class CommunicationSocket implements Runnable {
 //
 //                  WriteSocketData(data);
                     int[] v_index = this.VideoSourceIndex();
-                    byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(v_index,this.HDMode);
+                    byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(v_index,this.HDMode, isRelay);
                     byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                     //WriteSocketData(utils.MsgBuffer( Constant.EnumCmdMsg.MOBILE_MSG_START_SEND_VIDEO, null )); //duck marked
                     WriteSocketData(msg_buffer, "ProcessCommand MOBILE_MSG_MOBILE_SEND_SETTINGS");
@@ -1028,7 +1028,7 @@ public class CommunicationSocket implements Runnable {
                 else
                 {
                     int[] v_index = this.VideoSourceIndex();
-                    byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(v_index,this.HDMode);
+                    byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(v_index,this.HDMode, isRelay);
                     WriteSocketData( msg_buffer, "ProcessCommand MOBILE_MSG_MOBILE_SEND_SETTINGS");
                 }
             }
@@ -1465,7 +1465,7 @@ public class CommunicationSocket implements Runnable {
         if(islive)
         {
             // Log.d("GOND", "**DIRECT** ChangetoHD srcIdx: " + Arrays.toString(this.VideoSourceIndex()) + ", channel: " + Arrays.toString(ChannelNo));
-            byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(this.VideoSourceIndex(),HDMode);
+            byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS(this.VideoSourceIndex(),HDMode, isRelay);
             byte[] msg = new byte[msg_buffer.length];
             System.arraycopy( msg_buffer, 0, msg, 0, msg_buffer.length );
             new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg);
@@ -1562,7 +1562,7 @@ public class CommunicationSocket implements Runnable {
             if( this.ServerInfo.getTimeZone()  != null) {
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
                 int[] vindex = this.VideoSourceIndex();
-                byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS( vindex, this.HDMode);
+                byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS( vindex, this.HDMode, isRelay);
 //                byte[] msg = new byte[msg_buffer.length + msg_stop.length];
 //                System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
 //                System.arraycopy( msg_buffer, 0, msg, msg_stop.length, msg_buffer.length );
