@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -34,6 +35,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -293,6 +295,7 @@ public class utils {
 
     public static byte[] IntToByteArray(int _value)
     {
+        Log.d("0609", "IntToByteArray _value = " + _value);
         byte[] result = new byte[4];
         result[0] = (byte) (_value >> 24);
         result[1] = (byte) (_value >> 16);
@@ -303,6 +306,7 @@ public class utils {
 
     public static byte[] IntToByteArrayReversed(int _value)
     {
+        Log.d("0609", "IntToByteArrayReversed _value = " + _value);
         byte[] result = new byte[4];
         result[3] = (byte) (_value >> 24);
         result[2] = (byte) (_value >> 16);
@@ -320,6 +324,7 @@ public class utils {
     }
     public static byte[] CharToByteArrayOfC(char _value)
     {
+        Log.d("0609", "CharToByteArrayOfC _value = " + _value);
         byte[] result = new byte[2];
         result[1] = (byte) (_value >> 8);
         result[0] = (byte) (_value);
@@ -327,6 +332,7 @@ public class utils {
     }
     public static byte[] IntToByteArrayOfC(int _value)
     {
+        Log.d("0609", "IntToByteArrayOfC _value = " + _value);
         byte[] result = new byte[4];
         result[0] = (byte) (_value);
         result[1] = (byte) (_value >> 8);
@@ -465,7 +471,25 @@ public class utils {
         }
     }
 
+    public static String toString(Document doc) {
+        try {
+            StringWriter sw = new StringWriter();
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+
+            transformer.transform(new DOMSource(doc), new StreamResult(sw));
+            return sw.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error converting to String", ex);
+        }
+    }
+
     public static byte[] documentToByte(Document document) {
+        Log.d("0609", "documentToByte document = " + toString(document));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamResult result = new StreamResult(baos);
         Transformer transformer;
