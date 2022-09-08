@@ -10,6 +10,9 @@
 #import "ImcGUIBase.h"
 #import "GDataXMLNode.h"
 
+const int RELAY_RESOLUTION_X = 585;
+const int RELAY_RESOLUTION_Y = 329;
+
 @implementation ChannelSetting
 
 @synthesize videoSourceInput,isLiveViewable,isSearchable,isEnable,channelName,cameraInfo,isPtzEnable,channelID;
@@ -406,8 +409,8 @@
   {
     if( fullscreenChannel >= 0 )
     {
-      int resolutionX = isRelay ? 585 : (int)smallDivSize.width;
-      int resolutionY = isRelay ? 329 : (int)smallDivSize.height;
+      int resolutionX = isRelay ? RELAY_RESOLUTION_X : (int)smallDivSize.width;
+      int resolutionY = isRelay ? RELAY_RESOLUTION_Y : (int)smallDivSize.height;
       sourceResMask[fullscreenChannel] = true;
       GDataXMLNode* source = [GDataXMLNode elementWithName:@"source_0" stringValue:[NSString stringWithFormat:@"%zd",channelsConfig[fullscreenChannel].videoSourceInput ]];
       GDataXMLNode* res_X = [GDataXMLNode elementWithName:@"resolutionX_0" stringValue:[NSString stringWithFormat:@"%zd", resolutionX]];
