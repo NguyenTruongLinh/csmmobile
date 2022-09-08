@@ -35,7 +35,7 @@ public class MsgCommandItem
 
 	public  static byte[] MOBILE_MSG_MOBILE_SEND_SETTINGS(int[] videosource, boolean mainstream, boolean isRelay)
 	{
-		isRelay = false;
+//		isRelay = false;
 		try {
 			byte[] channels = new byte[Constant.MAX_VIDEO_INPUT];
 			Arrays.fill(channels,(byte) '0');
