@@ -75,7 +75,7 @@
 
 -(id)exportVideoQualitytoXML;
 -(id)exportFPStoXML;
--(id)exportResolutionRequestToXML;
+-(id)exportResolutionRequestToXML: (BOOL) isRelay;
 -(id)exportSourceRequestToXML;
 -(id)exportDurationAlarmListToXML;
 -(id)exportFilterAlarmToXML;

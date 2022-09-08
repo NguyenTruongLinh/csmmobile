@@ -420,7 +420,7 @@ const uint32_t numLayers = 24;
   
   ImcConnectedServer* selectedServer = [self setConnectionServer:startplayback];
 //    NSLog(@"GOND setStartplayback: %d, %d", connectedServerList.count, connectedServers.count);
-  
+  controllerThread.isRelay = selectedServer.isRelay;
   NSString* channel = [self get_obj:startplayback for_key:@"channels"];
 //    m_channel = channel;
   NSString* previousChannel = _channels;

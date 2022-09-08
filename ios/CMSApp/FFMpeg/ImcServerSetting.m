@@ -398,20 +398,25 @@
   return nil;
 }
 
--(id)exportResolutionRequestToXML
+-(id)exportResolutionRequestToXML: (BOOL) isRelay
 {
+  NSLog(@"0609 exportResolutionRequestToXML isRelay = %d", isRelay);
   GDataXMLElement* rootNode = [GDataXMLNode elementWithName:@"RESOLUTION_REQUEST"];
   if( rootNode )
   {
     if( fullscreenChannel >= 0 )
     {
+      int resolutionX = isRelay ? 585 : (int)smallDivSize.width;
+      int resolutionY = isRelay ? 329 : (int)smallDivSize.height;
       sourceResMask[fullscreenChannel] = true;
       GDataXMLNode* source = [GDataXMLNode elementWithName:@"source_0" stringValue:[NSString stringWithFormat:@"%zd",channelsConfig[fullscreenChannel].videoSourceInput ]];
-      GDataXMLNode* res_X = [GDataXMLNode elementWithName:@"resolutionX_0" stringValue:[NSString stringWithFormat:@"%zd",(int)smallDivSize.width]];
-      GDataXMLNode* res_Y = [GDataXMLNode elementWithName:@"resolutionY_0" stringValue:[NSString stringWithFormat:@"%zd",(int)smallDivSize.height]];
+      GDataXMLNode* res_X = [GDataXMLNode elementWithName:@"resolutionX_0" stringValue:[NSString stringWithFormat:@"%zd", resolutionX]];
+      GDataXMLNode* res_Y = [GDataXMLNode elementWithName:@"resolutionY_0" stringValue:[NSString stringWithFormat:@"%zd",resolutionY]];
       [rootNode addAttribute:source];
       [rootNode addAttribute:res_X];
       [rootNode addAttribute:res_Y];
+      NSLog(@"0609 exportResolutionRequestToXML if resolutionX_0 = %d", resolutionX);
+      NSLog(@"0609 exportResolutionRequestToXML if resolutionY_0 = %d", resolutionY);
     }
     else
     {
