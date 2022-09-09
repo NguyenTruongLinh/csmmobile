@@ -153,11 +153,11 @@ class LiveChannelsView extends React.Component {
     this.initReactions();
     this.getChannelsInfo();
     this.authenRef && this.authenRef.forceUpdate();
-
+    __DEV__ && console.log('Orientation.getDeviceOrientation');
     Orientation.getDeviceOrientation(orientation => {
-      if (orientation != OrientationType.PORTRAIT) {
-        this.onOrientationChange(orientation);
-      }
+      //if (orientation != OrientationType.PORTRAIT) {
+      this.onOrientationChange(orientation);
+      //}
     });
 
     Orientation.addDeviceOrientationListener(this.onOrientationChange);
@@ -554,6 +554,11 @@ class LiveChannelsView extends React.Component {
         width: width / gridLayout,
         height: height / gridLayout,
       },
+    });
+    Orientation.getDeviceOrientation(orientation => {
+      if (orientation != OrientationType.PORTRAIT) {
+        this.onOrientationChange(orientation);
+      }
     });
   };
 

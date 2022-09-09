@@ -176,9 +176,9 @@ class VideoPlayerView extends Component {
 
     // dongpt: TODO handle Orientation
     Orientation.removeDeviceOrientationListener(this.onOrientationChange);
-    //Orientation.lockToPortrait();
+    Orientation.lockToPortrait();
     // this.unsubSearchTimeReaction();
-    StatusBar.setHidden(finalStatusfullscreen);
+    //StatusBar.setHidden(finalStatusfullscreen);
     this.reactions.forEach(unsubsribe => unsubsribe());
   }
 
