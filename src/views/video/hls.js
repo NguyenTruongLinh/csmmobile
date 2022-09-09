@@ -86,6 +86,10 @@ class HLSStreamingView extends React.Component {
       translateY: 0,
       isFilterShown: false,
       marginLeft: 0,
+      marginTop: 0,
+      originalHeight: 0,
+      originalWidth: 0,
+      visibleBcg: true,
     };
     // __DEV__ &&
     //   console.log('GOND HLS set beginTime 0: ', this.state.timeBeginPlaying);
@@ -627,7 +631,7 @@ class HLSStreamingView extends React.Component {
   onLayout = event => {
     if (event == null || event.nativeEvent == null || !this._isMounted) return;
     __DEV__ && console.log('GOND HLS onlayout: ', event.nativeEvent.layout);
-    this.setMarginLeft();
+    this.onSetMargin();
     // let {width, height} = event.nativeEvent.layout;
     // setTimeout(() => {
     //   if (width <= height) {
@@ -705,14 +709,15 @@ class HLSStreamingView extends React.Component {
     this.props.streamData.setStreamReady(false);
     this.lastSeekableDuration = 0;
     this.skippedDuration = 0;
-    setTimeout(
-      () =>
-        this.setStreamStatus({
-          connectionStatus: STREAM_STATUS.CONNECTING,
-          isLoading: true,
-        }),
-      200
-    );
+    setTimeout(() => {
+      this.setStreamStatus({
+        connectionStatus: STREAM_STATUS.CONNECTING,
+        isLoading: true,
+      });
+      this.setState({visibleBcg: true});
+    }, 200);
+    const videoStore = this.props.videoStore;
+    videoStore.switchStretch(true);
   };
 
   onHDMode = isHD => {
@@ -729,7 +734,7 @@ class HLSStreamingView extends React.Component {
   };
 
   onStretch = stretch => {
-    this.setMarginLeft();
+    this.onSetMargin();
   };
 
   onPlaybackStalled = event => {
@@ -1207,14 +1212,29 @@ class HLSStreamingView extends React.Component {
     const {videoStore} = this.props;
     videoStore.setEnableStretch(true);
     this.naturalSize = event.naturalSize;
-    this.setMarginLeft();
+    this.onSetMargin();
   };
-  setMarginLeft = () => {
-    const {width, height} = this.props;
+  onSetMargin = () => {
     if (this.naturalSize == null || this.naturalSize.height == null) return;
-    let marginleft =
-      (width - (height / this.naturalSize.height) * this.naturalSize.width) / 2;
-    this.setState({marginLeft: marginleft});
+    this.setState({originalHeight: this.naturalSize.height});
+    this.setState({originalWidth: this.naturalSize.width});
+
+    let containerWidth = this.props.width;
+    let containerHeight = this.props.height;
+    let hRatio = (containerHeight * 100) / this.state.originalHeight;
+    let wRatio = (containerWidth * 100) / this.state.originalWidth;
+    if (hRatio > wRatio) {
+      let height = (wRatio * this.state.originalHeight) / 100;
+      let top = (containerHeight - height) / 2;
+      this.setState({marginLeft: 0});
+      if (top > 0) this.setState({marginTop: top});
+    } else if (hRatio < wRatio) {
+      let width = (hRatio * this.state.originalWidth) / 100;
+      let left = (containerWidth - width) / 2;
+      this.setState({marginTop: 0});
+      if (left > 0) this.setState({marginLeft: left});
+    }
+    this.setState({visibleBcg: false});
   };
 
   clearReconnectTimeout = () => {
@@ -1445,11 +1465,16 @@ class HLSStreamingView extends React.Component {
     return (
       <GestureDetector gesture={this.composed}>
         <View onLayout={this.onLayout}>
-          {/* <ImageBackground
-            source={NVR_Play_NoVideo_Image}
+          <ImageBackground
+            // source={NVR_Play_NoVideo_Image}
+            source={
+              this.state.visibleBcg ? videoStore.selectedStreamSnapshot : null
+            }
             style={{width: width, height: height}}
-            resizeMode="cover"> */}
-          <CMSImage
+            resizeMode={
+              !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
+            }>
+            {/* <CMSImage
             isBackground={true}
             dataSource={streamData.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
@@ -1466,7 +1491,7 @@ class HLSStreamingView extends React.Component {
               controller: 'channel',
               action: 'image',
               id: streamData.kChannel,
-            }}>
+            }}> */}
             <Text
               style={[
                 styles.channelInfo,
@@ -1475,6 +1500,10 @@ class HLSStreamingView extends React.Component {
                   marginLeft:
                     !videoStore.stretch && singlePlayer
                       ? this.state.marginLeft
+                      : 0,
+                  marginTop:
+                    !videoStore.stretch && singlePlayer
+                      ? this.state.marginTop
                       : 0,
                 },
               ]}>
@@ -1489,6 +1518,10 @@ class HLSStreamingView extends React.Component {
                       marginLeft:
                         !videoStore.stretch && singlePlayer
                           ? this.state.marginLeft
+                          : 0,
+                      marginTop:
+                        !videoStore.stretch && singlePlayer
+                          ? this.state.marginTop
                           : 0,
                     },
                   ]}>
@@ -1586,8 +1619,8 @@ class HLSStreamingView extends React.Component {
                 // ) : null
               }
             </View>
-          </CMSImage>
-          {/* </ImageBackground> */}
+            {/* </CMSImage> */}
+          </ImageBackground>
           {
             /*this.state.isFilterShown*/ filterShown && (
               <View
