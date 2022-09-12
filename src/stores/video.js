@@ -2018,7 +2018,7 @@ export const VideoModel = types
           self.getHLSInfos({channelNo: self.selectedChannel});
         }
       },
-      switchStretch(value) {
+      setStretch(value) {
         self.stretch = util.isNullOrUndef(value) ? !self.stretch : value;
       },
       switchFullscreen(value) {

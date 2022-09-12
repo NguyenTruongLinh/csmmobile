@@ -92,9 +92,10 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     screenString = nil;
     serverAddressInfo = nil;
     frameRate = nil;
-    _stretch = true;
+//    _stretch = true;
     channelConfigBuffer = [NSMutableDictionary dictionary];
-    
+    displayMode = IMC_DISPLAY_STRETCH;
+    _responseResolution = TRUE;
   }
   return self;
 }
@@ -145,6 +146,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     
     frame = _frame;
     rootLayer = _rootLayer;
+    displayMode = IMC_DISPLAY_STRETCH;
+    _responseResolution = TRUE;
   }
   return self;
 }
@@ -684,14 +687,16 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
           CALayer* sublayer = [CALayer layer];
           CGRect displayRect;
           
-          if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
-          {
-            CGSize imageSize = screen.displayImage.size;
-            if( imageSize.width/imageSize.height > 1.8 && imageSize.width <= 720)
-              imageSize.height *= 2;
-            displayRect = [self callDisplayRect:view.frame :imageSize :FALSE];
-          }
-          else if(_stretch) // STRETCH Mode
+//          if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
+//          {
+//            CGSize imageSize = screen.displayImage.size;
+//            if( imageSize.width/imageSize.height > 1.8 && imageSize.width <= 720)
+//              imageSize.height *= 2;
+//            displayRect = [self callDisplayRect:view.frame :imageSize :FALSE];
+//          }
+//          else if(_stretch) // STRETCH Mode
+          
+          if( displayMode == IMC_DISPLAY_STRETCH )
           {
             displayRect = view.frame;
             _responseResolution = true;
@@ -720,13 +725,15 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
               if(_responseResolution || originalWidth != _oldOriginWidth || originalHeight != _oldOriginHeight)
               {
                   NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeight],nil];
-                  [self.delegate1 responseResolution : resolution];
+//                  [self.delegate1 responseResolution : resolution];
+                  [delegate handleResponseMessage:IMC_MSG_MAIN_DISPLAY_VIDEO_UPDATE_FRAME_RESOLUTION fromView:nil withData:resolution];
                   _responseResolution = false;
                   _oldOriginWidth = originalWidth;
                   _oldOriginHeight = originalHeight;
               }
             }
           }
+
           if (screen.displayImage.CGImage) 
           {
             // NSLog(@"GOND draw frame in fullscreen: %f x %f", displayRect.size.width, displayRect.size.height);
@@ -1237,7 +1244,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     serverHeader.serverAddress = screen.serverAddress;
     serverHeader.serverPort = screen.serverPort;
     serverHeader.channelID = screen.channelIndex;
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_SHOW_PTZ_PANEL fromView:nil withData:serverHeader];
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_SHOW_PTZ_PANEL fromView:nil withData:serverHeader];
     screen.showPtzIcon = NO;
   }
 }
@@ -1264,7 +1272,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
         
         //layer.borderWidth = 0;
         [self makeViewFullscreen : fullscreenView];
-        [delegate handleResponseMessage:IMC_MSG_DISPLAY_FULLSCREEN fromView:nil withData:nil];
+        // dongpt removed
+//        [delegate handleResponseMessage:IMC_MSG_DISPLAY_FULLSCREEN fromView:nil withData:nil];
         isDisplayAlarmTrigger  = FALSE;
         
         if (selectedView != -1) {
@@ -1302,7 +1311,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     if (currentFullScreen.channelIndex >= 0 && currentFullScreen.channelIndex < IMC_MAX_CHANNEL) {
       NSArray* viewResolution = [NSArray arrayWithObjects:currentFullScreen.serverAddress,@(currentFullScreen.channelIndex) ,@(needMainStream), nil];
       
-      [delegate handleResponseMessage:IMC_MSG_MAIN_DISPLAY_VIDEO_UPDATE_FRAME_RESOLUTION fromView:nil withData:viewResolution];
+      // dongpt removed
+//      [delegate handleResponseMessage:IMC_MSG_MAIN_DISPLAY_VIDEO_UPDATE_FRAME_RESOLUTION fromView:nil withData:viewResolution];
     }
     
     currentFullScreen.showPtzIcon = YES;
@@ -1314,8 +1324,9 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     [self initDisplayRectwithDiv:currentDiv];
     
     //[self resetDisplayMapping];
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
     
     CGPoint currentViewPoint = alarmLayer.position;
     [self onSingleTap:currentViewPoint];
@@ -1338,8 +1349,9 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     needToClearScreen = true;
     [self initDisplayRectwithDiv:currentDiv];
     
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
   }
 }
 
@@ -1484,12 +1496,17 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       serverHeader.serverAddress = screenDisplay.serverAddress;
       serverHeader.serverPort = screenDisplay.serverPort;
       serverHeader.channelID = screenDisplay.channelIndex;
-      [delegate handleResponseMessage:IMC_MSG_DISPLAY_SHOW_PTZ_PANEL fromView:nil withData:serverHeader];
+      // dongpt removed
+//      [delegate handleResponseMessage:IMC_MSG_DISPLAY_SHOW_PTZ_PANEL fromView:nil withData:serverHeader];
       screenDisplay.showPtzIcon = NO;
     }
     else
-      [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_FULLSCREEN fromView:nil withData:nil];
+    {
+      // dongpt removed
+//      [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
+    }
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_FULLSCREEN fromView:nil withData:nil];
     
     //[delegate handleResponseMessage:IMC_MSG_LIVE_VIEW_CHANGE_MAINSUB_STATUS fromView:nil withData:@(screenDisplay.hasSubStream)];
     
@@ -1537,7 +1554,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       }
     }
     
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
     
   }
 }
@@ -1634,12 +1652,17 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       serverHeader.serverAddress = screenDisplay.serverAddress;
       serverHeader.serverPort = screenDisplay.serverPort;
       serverHeader.channelID = screenDisplay.channelIndex;
-      [delegate handleResponseMessage:IMC_MSG_DISPLAY_SHOW_PTZ_PANEL fromView:nil withData:serverHeader];
+      // dongpt removed
+//      [delegate handleResponseMessage:IMC_MSG_DISPLAY_SHOW_PTZ_PANEL fromView:nil withData:serverHeader];
       screenDisplay.showPtzIcon = NO;
     }
     else
-      [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_FULLSCREEN fromView:nil withData:nil];
+    {
+      // dongpt removed
+//      [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
+    }
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_FULLSCREEN fromView:nil withData:nil];
     
     
     CALayer* layer = [displayLayers objectAtIndex:fullscreenView];
@@ -1687,7 +1710,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       }
     }
     
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
   }
 }
 
@@ -1949,7 +1973,10 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       if( fullscreenView >= 0 && displayScreen.viewIndex == fullscreenView )
       {
         if( displayScreen.enablePtz )
-          [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
+        {
+          // dongpt removed
+//          [delegate handleResponseMessage:IMC_MSG_DISPLAY_HIDE_PTZ_PANEL fromView:nil withData:nil];
+        }
         
         fullscreenView = -1;
         fullscreenIndex = -1;
@@ -1957,7 +1984,8 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
         needToClearScreen = true;
         [self initDisplayRectwithDiv:currentDiv];
         [self resetDisplayMapping];
-        [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
+        // dongpt removed
+//        [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
       }
       displayScreen.enablePtz = FALSE;
       
@@ -2028,12 +2056,14 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     }
     
     [self makeViewFullscreen:fullscreenView];
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_FULLSCREEN fromView:nil withData:nil];
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_FULLSCREEN fromView:nil withData:nil];
   }
   else
   {
     [self initDisplayRectwithDiv:currentDiv];
-    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
+    // dongpt removed
+//    [delegate handleResponseMessage:IMC_MSG_DISPLAY_UPDATE_LAYOUT fromView:nil withData:nil];
   }
 }
 
@@ -3291,6 +3321,11 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
       count++;
   }];
   return count;
+}
+
+-(void)setStretchMode:(BOOL)isStretch
+{
+  self.displayMode = isStretch ? IMC_DISPLAY_STRETCH : IMC_DISPLAY_FIT;
 }
 @end
 

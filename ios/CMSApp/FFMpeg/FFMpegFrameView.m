@@ -97,6 +97,7 @@ const uint32_t numLayers = 24;
     zoomLevel = ZOOM_LEVEL_24H;
     channelsMapping = [NSMutableArray array];
     mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
+    mainDisplayVideo.delegate = self;
     // mainDisplayVideo.fullscreenView = 0;
     connectedServerList = [[NSMutableArray alloc] init];
     viewMaskLock = [[NSCondition alloc] init];
@@ -291,7 +292,8 @@ const uint32_t numLayers = 24;
 #pragma mark - Native Props
 
 -(void)setStretch:(BOOL)value{
-  mainDisplayVideo.stretch = value;
+//  mainDisplayVideo.stretch = value;
+  [self.mainDisplayVideo setStretchMode: value];
   [self clearScreen];
   
   _stretch = value;
@@ -449,6 +451,22 @@ const uint32_t numLayers = 24;
     }
   }
   // [self setIsHD:isHD];
+  int videoIndex = -1;
+  if([self get_obj:startplayback for_key:@"sourceIndex"]){
+    @try{
+      videoIndex = [[self get_obj:startplayback for_key:@"sourceIndex"] intValue];
+    }
+    @catch (NSException* exception){
+      NSLog(@"GOND **DIRECT** setStartplayback get sourceIndex failed: %d", videoIndex);
+    }
+    @finally{
+      [controllerThread setVideoSource:videoIndex];
+    }
+  }
+  if([self get_obj:startplayback for_key:@"stretch"]){
+    BOOL isStretch = [[self get_obj:startplayback for_key:@"stretch"] boolValue];
+    [mainDisplayVideo setStretchMode:isStretch];
+  }
   
   if(isSearch == YES){
     NSLog(@"GOND **DIRECT** setStartplayback switch to SEARCH");
@@ -1482,6 +1500,7 @@ const uint32_t numLayers = 24;
     case IMC_MSG_DISPLAY_UPDATE_LAYOUT:
     {
       CGSize smallSize,largeSize;
+      // [self.mainDisplayVideo setStretchMode:_stretch];
       [self.mainDisplayVideo getDisplaySize:&smallSize :&largeSize];
       [controllerThread updateDisplaySize:smallSize :largeSize];
       [controllerThread updateLayout:self.mainDisplayVideo.currentDiv];
@@ -1637,6 +1656,9 @@ const uint32_t numLayers = 24;
         resumeDataInfo.currentView = -2;
       }
     }
+      break;
+    case IMC_MSG_MAIN_DISPLAY_VIDEO_UPDATE_FRAME_RESOLUTION:
+      [self responseResolution:(NSArray*)responseData];
       break;
     case IMC_MSG_SEARCH_REQUEST_TIME_ZONE:
     {
@@ -2594,6 +2616,9 @@ const uint32_t numLayers = 24;
               //NSLog(@"Shark start search");
               [self addSearchVideoFrame:videoFrame];
             }
+          }
+          else {
+            NSLog(@"GOND search but receive Live frame");
           }
         }
         else

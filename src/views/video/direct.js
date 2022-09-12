@@ -727,6 +727,7 @@ class DirectVideoView extends React.Component {
         singlePlayer && selectedChannel != null
           ? selectedChannelData.videoSource
           : undefined,
+      stretch: videoStore.stretch,
       ...paramsObject,
     };
     // if (singlePlayer && videoStore.selectedChannel)
@@ -1153,9 +1154,10 @@ class DirectVideoView extends React.Component {
         this.onDataUsageUpdate(value);
         break;
       case NATIVE_MESSAGE.RESPONSE_RESOLUTION:
+        __DEV__ && console.log('GOND Video RESPONSE_RESOLUTION: ', value);
         if (value != null) {
-          this.setState({originalWidth: value[0]});
-          this.setState({originalHeight: value[1]});
+          __DEV__ && console.log('GOND Video RESPONSE_RESOLUTION 2: ', value);
+          this.setState({originalWidth: value[0], originalHeight: value[1]});
           this.onSetMargin();
         }
         break;
@@ -1202,13 +1204,11 @@ class DirectVideoView extends React.Component {
     if (hRatio > wRatio) {
       let height = (wRatio * this.state.originalHeight) / 100;
       let top = (containerHeight - height) / 2;
-      this.setState({marginLeft: 0});
-      if (top > 0) this.setState({marginTop: top});
+      this.setState({marginLeft: 0, marginTop: top > 0 ? top : undefined});
     } else if (hRatio < wRatio) {
       let width = (hRatio * this.state.originalWidth) / 100;
       let left = (containerWidth - width) / 2;
-      this.setState({marginTop: 0});
-      if (left > 0) this.setState({marginLeft: left});
+      this.setState({marginTop: 0, marginLeft: left > 0 ? left : undefined});
     }
   };
 
@@ -1274,6 +1274,7 @@ class DirectVideoView extends React.Component {
     this.newSeekPos = 0;
     this.oldPos = 0;
     if (!videoStore.paused) {
+      //&& !videoStore.isLive) {
       videoStore.setBeginSearchTime(this.lastFrameTime);
     }
     this.setState({visibleBcg: true});

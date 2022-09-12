@@ -280,7 +280,7 @@
                                             if( I3CODE_ERROR_FAIL == nRet )  // Thang Do, changes, Jan 11, 2013, #24685
                                             {
                                                 channelMap.decoder.needIFrame = YES;
-                                                    break;
+                                                break;
                                             }
                                             else if(I3CODE_ERROR_OK == nRet && i == vedHeader->array_size - 1 )
                                             {
@@ -306,35 +306,83 @@
                                     frame.length = vedHeader->array_item[0].size;
                                     result = [channelMap.decoder Decoder_Decode:&frame];
                                     
-                                    if (result != 0)
+                                  switch (result)
+                                  {
+                                    case I3CODE_ERROR_OK:
                                     {
-                                        if (result == I3CODE_ERROR_FAIL)
-                                        {
-                                            //Missing IFrame
-                                            NSLog(@"Missing IFrame");
-                                            channelMap.decoder.needIFrame = YES;
-                                        }
-                                        NSLog(@"Decode Error for channel: %ld", (long)encodingFrame.videoFrameInfo.channelIndex);
-                                        continue;
+                                      channelMap.decoder.lastFrameTime = vedHeader->time;
+                                      channelMap.decoder.frameIndex = vedHeader->array_item[0].time_offset;
+                                      channelMap.decoder.needIFrame = NO;
+                                      channelMap.invalidFramesCount = 0;
+                                      channelMap.decoder.lastServerAddress = encodingFrame.videoFrameInfo.serverAddress;
+                                      if ( encodingFrame.videoFrameInfo.frameMode == SNAPSHOT ||
+                                          ( videoMode == SEARCH_VIDEO &&
+                                          encodingFrame.videoFrameInfo.channelIndex == (IMC_MAX_CHANNEL-1) &&
+                                          encodingFrame.videoFrameInfo.frameMode == SEARCH_VIEW) )
+                                      {
+                                          channelMap.decoder.lastChannelIndex = vedHeader->channel_id;
+                                      }
+                                      else
+                                      {
+                                          channelMap.decoder.lastChannelIndex = encodingFrame.videoFrameInfo.channelIndex;
+                                      }
                                     }
-                                    else
+                                      break;
+                                    case I3CODE_ERROR_SKIP_FRAME:
                                     {
-                                        channelMap.decoder.lastFrameTime = vedHeader->time;
-                                        channelMap.decoder.frameIndex = vedHeader->array_item[0].time_offset;
-                                        channelMap.decoder.needIFrame = NO;
-                                        channelMap.decoder.lastServerAddress = encodingFrame.videoFrameInfo.serverAddress;
-                                        if ( encodingFrame.videoFrameInfo.frameMode == SNAPSHOT ||
-                                            ( videoMode == SEARCH_VIDEO &&
-                                            encodingFrame.videoFrameInfo.channelIndex == (IMC_MAX_CHANNEL-1) &&
-                                            encodingFrame.videoFrameInfo.frameMode == SEARCH_VIEW) )
-                                        {
-                                            channelMap.decoder.lastChannelIndex = vedHeader->channel_id;
-                                        }
-                                        else
-                                        {
-                                            channelMap.decoder.lastChannelIndex = encodingFrame.videoFrameInfo.channelIndex;
-                                        }
+                                      if (channelMap.invalidFramesCount < MAX_INVALID_FRAMES)
+                                      {
+                                        channelMap.invalidFramesCount++;
+                                      }
+                                      else
+                                      {
+                                        [channelMap.decoder Decoder_Destroy];
+                                        channelMap.decoder = nil;
+                                      }
+                                        
                                     }
+                                      break;
+                                    case I3CODE_ERROR_FAIL:
+                                    {
+                                      //Missing IFrame
+                                      NSLog(@"Missing IFrame");
+                                      channelMap.decoder.needIFrame = YES;
+                                      continue;
+                                    }
+                                      break;
+                                    default:
+                                      break;
+                                  }
+                                  
+//                                    if (result != 0)
+//                                    {
+//                                        if (result == I3CODE_ERROR_FAIL)
+//                                        {
+//                                            //Missing IFrame
+//                                            NSLog(@"Missing IFrame");
+//                                            channelMap.decoder.needIFrame = YES;
+//                                        }
+//                                        NSLog(@"Decode Error for channel: %ld, res = %ld", (long)encodingFrame.videoFrameInfo.channelIndex, result);
+//                                        continue;
+//                                    }
+//                                    else
+//                                    {
+//                                        channelMap.decoder.lastFrameTime = vedHeader->time;
+//                                        channelMap.decoder.frameIndex = vedHeader->array_item[0].time_offset;
+//                                        channelMap.decoder.needIFrame = NO;
+//                                        channelMap.decoder.lastServerAddress = encodingFrame.videoFrameInfo.serverAddress;
+//                                        if ( encodingFrame.videoFrameInfo.frameMode == SNAPSHOT ||
+//                                            ( videoMode == SEARCH_VIDEO &&
+//                                            encodingFrame.videoFrameInfo.channelIndex == (IMC_MAX_CHANNEL-1) &&
+//                                            encodingFrame.videoFrameInfo.frameMode == SEARCH_VIEW) )
+//                                        {
+//                                            channelMap.decoder.lastChannelIndex = vedHeader->channel_id;
+//                                        }
+//                                        else
+//                                        {
+//                                            channelMap.decoder.lastChannelIndex = encodingFrame.videoFrameInfo.channelIndex;
+//                                        }
+//                                    }
                                 }
                                 else if (vedHeader->array_size > 1)
                                 {
@@ -668,6 +716,7 @@
         decoderIndex = -1;
         decoder = nil;
         willDestroy = NO;
+        _invalidFramesCount = 0;
     }
     return self;
 }
