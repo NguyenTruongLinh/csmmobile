@@ -715,6 +715,7 @@ public class FFMpegFrameView extends View {
 
         valid_first_frame = false;
         if(video_thread == null || socket_handler == null || socket_handler.running == false) {
+            Log.d("0809", "StartSearch IF");
             this.Server.setLive(false);
             this.Server.setSearchTime(search);
             socket_handler = new CommunicationSocket(this.handler, this.Server, this.Channels, true, this.ByChannel, this.clientIp);
@@ -725,6 +726,7 @@ public class FFMpegFrameView extends View {
         }
         else
         {
+            Log.d("0809", "StartSearch ELSE");
             boolean re_init = false;
             SearchTimeData searchtime = this.Server.getSearchTime();
             if( searchtime == null || searchtime.getYear() != year|| searchtime.getMonth() != month || searchtime.getDay() != day) {
@@ -732,7 +734,8 @@ public class FFMpegFrameView extends View {
                 re_init = true;
             }
             socket_handler.setHDMode( HD);
-            socket_handler.ChangePlay(false, re_init, Channels, "StartSearch");
+            socket_handler.ChangePlay(false, re_init, Channels);
+            Log.d("0809", "**DIRECT** ChangePlay: StartSearch");
         }
     }
     
@@ -774,7 +777,8 @@ public class FFMpegFrameView extends View {
         else
         {
             socket_handler.setHDMode(HD);
-            socket_handler.ChangePlay( true, false, this.Channels, "StartLive");
+            socket_handler.ChangePlay( true, false, this.Channels);
+            Log.d("0809", "**DIRECT** ChangePlay: StartLive");
         }
     }
     public  void  PauseVideo(){

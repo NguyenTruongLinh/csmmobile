@@ -20,7 +20,7 @@
 const NSUInteger kMaxCommand = 50;
 @implementation ImcControllerThread
 
-@synthesize delegate;
+@synthesize delegate, isRelay;
 
 -(id)init
 {
@@ -353,7 +353,7 @@ const NSUInteger kMaxCommand = 50;
           }
           GDataXMLElement* rootNode = [GDataXMLNode elementWithName:@"ALL_SETTINGS"];
           GDataXMLElement* childNode1 = [remoteConnection.deviceSetting exportSourceRequestToXML];
-          GDataXMLElement* childNode2 = [remoteConnection.deviceSetting exportResolutionRequestToXML];
+          GDataXMLElement* childNode2 = [remoteConnection.deviceSetting exportResolutionRequestToXML:isRelay];
           GDataXMLElement* childNode3 = [remoteConnection.deviceSetting exportMainSubStreamRequestToXML];
           GDataXMLElement* childNode4 = [remoteConnection.deviceSetting exportSearchFrameSizeToXML];
           GDataXMLElement* childNode5 = [env.deviceSystemInfo exportScreenSizeToXmlData];
@@ -404,7 +404,7 @@ const NSUInteger kMaxCommand = 50;
           GDataXMLElement* childNode6 = [remoteConnection.deviceSetting exportSourceRequestToXML];
           if( childNode6 )
             [rootNode addChild:childNode6];
-          GDataXMLElement* childNode7 = [remoteConnection.deviceSetting exportResolutionRequestToXML];
+          GDataXMLElement* childNode7 = [remoteConnection.deviceSetting exportResolutionRequestToXML: isRelay];
           if( childNode7 )
             [rootNode addChild:childNode7];
           GDataXMLElement* childNode8 = [env.deviceAlarmSetting exportToXML];

@@ -33,8 +33,9 @@ public class MsgCommandItem
 		buffer = _buffer;
 	}
 
-	public  static byte[] MOBILE_MSG_MOBILE_SEND_SETTINGS(int[] videosource, boolean mainstream)
+	public  static byte[] MOBILE_MSG_MOBILE_SEND_SETTINGS(int[] videosource, boolean mainstream, boolean isRelay)
 	{
+//		isRelay = false;
 		try {
 			byte[] channels = new byte[Constant.MAX_VIDEO_INPUT];
 			Arrays.fill(channels,(byte) '0');
@@ -93,9 +94,10 @@ public class MsgCommandItem
 			Element resolutionReqTab = myDocument.createElement("RESOLUTION_REQUEST");
 			resolutionReqTab.setAttribute("count", "1");
 			resolutionReqTab.setAttribute("source_0", "*");
-			int width =  Math.min(1280, mobilesysteminfo.screenWidth);
-			int height = Math.min(720, mobilesysteminfo.screenHigh);
-			if(mainstream){
+
+			int width =  Math.min(isRelay ? 640 : 1280, mobilesysteminfo.screenWidth);
+			int height = Math.min(isRelay ? 360 : 720, mobilesysteminfo.screenHigh);
+			if(!isRelay && mainstream){
 				width = mobilesysteminfo.screenWidth;
 				height = mobilesysteminfo.screenHigh;
 			}
