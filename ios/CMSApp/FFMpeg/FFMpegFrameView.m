@@ -116,7 +116,7 @@ const uint32_t numLayers = 24;
     m_delayPlayback = NO;
     defaultImg = [[UIImage alloc] initWithCGImage: [UIImage imageNamed:@"CMS-video-losss.png"].CGImage];
     searchFrameImage = defaultImg;
-    searchFrameRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
+    searchFrameRect = CGSizeMake(0, 0);
     m_dayType = NORMAL;
     oldDeviceInterfaceHandel = UIInterfaceOrientationMaskPortrait;
     needToClearScreen = false;
@@ -3015,17 +3015,17 @@ const uint32_t numLayers = 24;
   CGRect boundFrame = CGRectMake(0, 0, playerWidth, playerHeight);
   if(!_stretch)
   {
-    int originalWidth = searchFrameImage.size.width;
-    int originalHeight = searchFrameImage.size.height;
+    int originalWidth = searchFrameRect.width; // searchFrameImage.size.width;
+    int originalHeight = searchFrameRect.height; // searchFrameImage.size.height;
 //    NSLog(@"GOND size original: %d %d, player: %d %d", originalWidth, originalHeight, playerWidth, playerHeight);
     if(originalWidth > 0 && originalHeight > 0)
     {
       // dongpt: tried to fix reverted dimensions of image
-      if(((searchFrameRect.size.width - searchFrameRect.size.height) > 0) != ((originalWidth - originalHeight) > 0) && (double)searchFrameRect.size.width/searchFrameRect.size.height == (double)originalHeight/originalWidth) {
-        u_int16_t tmp = originalHeight;
-        originalHeight = originalWidth;
-        originalWidth = tmp;
-      }
+//      if(((searchFrameRect.width - searchFrameRect.height) > 0) != ((originalWidth - originalHeight) > 0) && (double)searchFrameRect.width/searchFrameRect.height == (double)originalHeight/originalWidth) {
+//        u_int16_t tmp = originalHeight;
+//        originalHeight = originalWidth;
+//        originalWidth = tmp;
+//      }
       // dongpt: end fix
       
       double hRatio = (double)playerHeight / originalHeight;
@@ -3188,14 +3188,14 @@ const uint32_t numLayers = 24;
         {
           dispatch_async(dispatch_get_main_queue(), ^{
             //NSLog(@"Shark setNeedsDisplay Search");
-            searchFrameImage = displayFrame.videoFrame;
-            searchFrameRect = CGRectMake(0, 0, displayFrame.resolutionWidth, displayFrame.resolutionHeight);
+            self->searchFrameImage = displayFrame.videoFrame;
+            self->searchFrameRect = CGSizeMake(displayFrame.resolutionWidth, displayFrame.resolutionHeight);
             
-            self.layer.contents = searchFrameImage;
+            self.layer.contents = self->searchFrameImage;
             [self.layer setNeedsDisplay];
-            [videoView setNeedsDisplay];
+            [self->videoView setNeedsDisplay];
             
-            if (videoPlayerStatus == STATE_PLAY) {
+            if (self->videoPlayerStatus == STATE_PLAY) {
               //do something
             }
             
