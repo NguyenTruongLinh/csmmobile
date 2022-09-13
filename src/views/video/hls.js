@@ -1210,7 +1210,7 @@ class HLSStreamingView extends React.Component {
 
   onLoad = event => {
     const {videoStore} = this.props;
-    videoStore.setEnableStretch(true);
+    // videoStore.setEnableStretch(true);
     this.naturalSize = event.naturalSize;
     this.onSetMargin();
   };
@@ -1221,15 +1221,15 @@ class HLSStreamingView extends React.Component {
 
     let containerWidth = this.props.width;
     let containerHeight = this.props.height;
-    let hRatio = (containerHeight * 100) / this.state.originalHeight;
-    let wRatio = (containerWidth * 100) / this.state.originalWidth;
+    let hRatio = (containerHeight * 1.0) / this.state.originalHeight;
+    let wRatio = (containerWidth * 1.0) / this.state.originalWidth;
     if (hRatio > wRatio) {
-      let height = (wRatio * this.state.originalHeight) / 100;
+      let height = wRatio * this.state.originalHeight;
       let top = (containerHeight - height) / 2;
       this.setState({marginLeft: 0});
       if (top > 0) this.setState({marginTop: top});
     } else if (hRatio < wRatio) {
-      let width = (hRatio * this.state.originalWidth) / 100;
+      let width = hRatio * this.state.originalWidth;
       let left = (containerWidth - width) / 2;
       this.setState({marginTop: 0});
       if (left > 0) this.setState({marginLeft: left});
@@ -1448,7 +1448,7 @@ class HLSStreamingView extends React.Component {
       ? typeof streamData.snapshot == 'object'
         ? streamData.snapshot.uri ?? ''
         : '' + streamData.snapshot
-      : '';
+      : ''; // NVR_Play_NoVideo_Image;
     __DEV__ &&
       console.log(
         'GOND HLS render: ',
@@ -1466,19 +1466,14 @@ class HLSStreamingView extends React.Component {
       <GestureDetector gesture={this.composed}>
         <View onLayout={this.onLayout}>
           <ImageBackground
-            // source={NVR_Play_NoVideo_Image}
-            source={
-              this.state.visibleBcg ? videoStore.selectedStreamSnapshot : null
-            }
+            source={NVR_Play_NoVideo_Image}
             style={{width: width, height: height}}
-            resizeMode={
-              !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
-            }>
+            resizeMode="cover">
             {/* <CMSImage
             isBackground={true}
             dataSource={streamData.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
-            visible={!videoStore.enableStretch}
+            // visible={!videoStore.enableStretch}
             resizeMode={
               !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
             }
