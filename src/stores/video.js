@@ -500,7 +500,7 @@ export const VideoModel = types
     // is stretched or original
     stretch: types.boolean,
     // enable stretch button
-    enableStretch: types.boolean,
+    // enableStretch: types.boolean,
     // unused yet?!?
     canSwitchMode: types.boolean,
     // is video paused
@@ -1131,9 +1131,9 @@ export const VideoModel = types
       setLoading(value) {
         self.isLoading = value;
       },
-      setEnableStretch(value) {
-        self.enableStretch = value;
-      },
+      // setEnableStretch(value) {
+      //   self.enableStretch = value;
+      // },
       setShouldShowVideoMessage(value) {
         self.shouldShowSnackbar = value ? true : false;
       },
@@ -2165,7 +2165,7 @@ export const VideoModel = types
         self.isFullscreen = false;
         self.hdMode = false;
         self.stretch = true;
-        self.enableStretch = false;
+        // self.enableStretch = false;
         self.paused = false;
         self.recordingDates = {};
         self.timeline = null;
@@ -4416,7 +4416,7 @@ const storeDefault = {
   canSwitchMode: false,
   hdMode: false,
   stretch: true,
-  enableStretch: false,
+  // enableStretch: false,
   // paused: false,
   showAuthenModal: false,
   // isSingleMode: false,

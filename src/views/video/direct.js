@@ -1503,7 +1503,7 @@ class DirectVideoView extends React.Component {
       return;
     }
 
-    videoStore.setEnableStretch(true);
+    // videoStore.setEnableStretch(true);
     this.lastTimestamp = timestamp;
 
     if (value) {
@@ -1656,7 +1656,7 @@ class DirectVideoView extends React.Component {
           onLayout={this.onLayout}
           // {...this.props}
         >
-          <ImageBackground
+          {/* <ImageBackground
             // source={NVR_Play_NoVideo_Image}
             source={
               this.state.visibleBcg ? videoStore.selectedStreamSnapshot : null
@@ -1664,8 +1664,8 @@ class DirectVideoView extends React.Component {
             style={{width: width, height: height}}
             resizeMode={
               !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
-            }>
-            {/* <CMSImage
+            }> */}
+          <CMSImage
             isBackground={true}
             dataSource={serverInfo.snapshot}
             defaultImage={NVR_Play_NoVideo_Image}
@@ -1681,7 +1681,7 @@ class DirectVideoView extends React.Component {
               controller: 'channel',
               action: 'image',
               id: serverInfo.kChannel,
-            }}> */}
+            }}>
             <Text
               style={[
                 styles.channelInfo,
@@ -1761,8 +1761,8 @@ class DirectVideoView extends React.Component {
                 })}
               </View>
             )}
-            {/* </CMSImage> */}
-          </ImageBackground>
+          </CMSImage>
+          {/* </ImageBackground> */}
           {
             /*this.state.isFilterShown*/ filterShown && (
               <View
