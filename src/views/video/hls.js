@@ -1518,7 +1518,11 @@ class HLSStreamingView extends React.Component {
                       },
                     ]}
                     hls={true}
-                    resizeMode={videoStore.stretch ? 'stretch' : 'contain'}
+                    resizeMode={
+                      videoStore.stretch || !singlePlayer
+                        ? 'stretch'
+                        : 'contain'
+                    }
                     source={{uri: playbackUrl ?? '', type: 'm3u8'}}
                     paused={
                       singlePlayer && !videoStore.isLive
