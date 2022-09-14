@@ -1207,13 +1207,16 @@ class HLSStreamingView extends React.Component {
     const {videoStore} = this.props;
     videoStore.setEnableStretch(true);
     this.naturalSize = event.naturalSize;
+    __DEV__ && console.log('GOND HLS::onLoad: ', event);
     this.setMarginLeft();
   };
+
   setMarginLeft = () => {
     const {width, height} = this.props;
     if (this.naturalSize == null || this.naturalSize.height == null) return;
     let marginleft =
       (width - (height / this.naturalSize.height) * this.naturalSize.width) / 2;
+    __DEV__ && console.log('GOND HLS::onSetMargin: ', marginleft);
     this.setState({marginLeft: marginleft});
   };
 
@@ -1421,7 +1424,8 @@ class HLSStreamingView extends React.Component {
     } = this.props;
     const {isLoading, connectionStatus} = streamData; // streamStatus;
     const {channel} = streamData;
-    const {streamUrl, urlParams, refreshCount, internalLoading} = this.state;
+    const {streamUrl, urlParams, refreshCount, internalLoading, marginLeft} =
+      this.state;
     const playbackUrl =
       streamUrl && streamUrl.length > 0 ? streamUrl /*+ urlParams*/ : null;
     const poster = streamData.snapshot
@@ -1473,9 +1477,7 @@ class HLSStreamingView extends React.Component {
                 {
                   top: singlePlayer ? '11%' : 0, // videoStore.isFullscreen ? '10%' : 0,
                   marginLeft:
-                    !videoStore.stretch && singlePlayer
-                      ? this.state.marginLeft
-                      : 0,
+                    !videoStore.stretch && singlePlayer ? marginLeft : 0,
                 },
               ]}>
               {channel.name ?? 'Unknown'}
@@ -1487,9 +1489,7 @@ class HLSStreamingView extends React.Component {
                     styles.textMessage,
                     {
                       marginLeft:
-                        !videoStore.stretch && singlePlayer
-                          ? this.state.marginLeft
-                          : 0,
+                        !videoStore.stretch && singlePlayer ? marginLeft : 0,
                     },
                   ]}>
                   {connectionStatus}
