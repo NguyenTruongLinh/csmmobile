@@ -693,14 +693,16 @@ class VideoPlayerView extends Component {
   };
 
   onNext = () => {
-    this.props.videoStore.nextChannel();
-    this.playerRef && this.playerRef.resetZoom();
+    // this.props.videoStore.nextChannel();
+    // this.playerRef && this.playerRef.resetZoom();
+    this.onSwitchChannel(this.props.videoStore.nextChannel);
     this.adjustChannelListPosition();
   };
 
   onPrevious = () => {
-    this.props.videoStore.previousChannel();
-    this.playerRef && this.playerRef.resetZoom();
+    // this.props.videoStore.previousChannel();
+    // this.playerRef && this.playerRef.resetZoom();
+    this.onSwitchChannel(this.props.videoStore.previousChannel);
     this.adjustChannelListPosition();
   };
 
