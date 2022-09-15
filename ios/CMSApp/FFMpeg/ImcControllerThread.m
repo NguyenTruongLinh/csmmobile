@@ -36,6 +36,7 @@ const NSUInteger kMaxCommand = 50;
     lockServerList = [[NSLock alloc] init];
     env = [[ImcEnvSetting alloc] init];
     firstMainStreamFrame =  NO;
+    currentVideoSource = -1;
   }
   return self;
 }
@@ -1288,6 +1289,12 @@ const NSUInteger kMaxCommand = 50;
       @autoreleasepool
       {
         EncodedFrame* frame = (EncodedFrame*)parameter;
+        
+//        if (currentVideoSource >= 0 && currentVideoSource != frame.header.sourceIndex)
+//        {
+//          NSLog(@"GOND::IMC_CMD_DECODE_FRAME wrong videoSource: %d, fromHeader: %d", currentVideoSource, frame.header.sourceIndex);
+//          break;
+//        }
         if(![self.decoderThread addEncodedFrame:frame]) break;
         
         NSInteger subMainStream = ((FrameHeaderEx*)frame.header).subMainStream;
@@ -1428,6 +1435,11 @@ const NSUInteger kMaxCommand = 50;
       break;
   }
   return 1;
+}
+
+-(void)setVideoSource:(int)value
+{
+  currentVideoSource = (int32_t)value;
 }
 
 @end

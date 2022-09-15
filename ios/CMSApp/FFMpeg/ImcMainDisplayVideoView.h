@@ -51,7 +51,7 @@
 @property (readwrite) int fullscreenView;
 @property (readwrite) int playerWidth;
 @property (readwrite) int playerHeight;
-@property (readwrite) BOOL stretch;
+//@property (readwrite) BOOL stretch;
 @property (readwrite) BOOL responseResolution;
 @property (readwrite) int oldOriginWidth;
 @property (readwrite) int oldOriginHeight;
@@ -134,5 +134,5 @@
 -(CALayer*)fullscreenLayer;
 -(void)updateViewZoomingStatus:(BOOL)status; // TRUE: view is zooming status
 -(void)showPtzIcon;
-
+-(void)setStretchMode:(BOOL)isStretch;
 @end

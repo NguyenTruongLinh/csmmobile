@@ -13,6 +13,8 @@ static NSString *const readyForDisplayKeyPath = @"readyForDisplay";
 static NSString *const playbackRate = @"rate";
 static NSString *const timedMetadata = @"timedMetadata";
 static NSString *const externalPlaybackActive = @"externalPlaybackActive";
+static NSString *const videoSizeKeyPath = @"presentationSize";
+
 
 static int const RCTVideoUnset = -1;
 
@@ -94,6 +96,8 @@ static int const RCTVideoUnset = -1;
 #endif
   NSTimer *_dataUsageTimer;
   long _lastDataUsage;
+  
+  CGSize _lastResolution;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -124,6 +128,7 @@ static int const RCTVideoUnset = -1;
     _ignoreSilentSwitch = @"inherit"; // inherit, ignore, obey
     _mixWithOthers = @"inherit"; // inherit, mix, duck
     _lastDataUsage = 0;
+    _lastResolution = CGSizeMake(0, 0);
 #if TARGET_OS_IOS
     _restoreUserInterfaceForPIPStopCompletionHandler = NULL;
 #endif
@@ -344,6 +349,7 @@ static int const RCTVideoUnset = -1;
   [_playerItem addObserver:self forKeyPath:playbackBufferEmptyKeyPath options:0 context:nil];
   [_playerItem addObserver:self forKeyPath:playbackLikelyToKeepUpKeyPath options:0 context:nil];
   [_playerItem addObserver:self forKeyPath:timedMetadata options:NSKeyValueObservingOptionNew context:nil];
+  [_playerItem addObserver:self forKeyPath:videoSizeKeyPath options:NSKeyValueObservingOptionNew context:nil];
   _playerItemObserversSet = YES;
 }
 
@@ -357,6 +363,7 @@ static int const RCTVideoUnset = -1;
     [_playerItem removeObserver:self forKeyPath:playbackBufferEmptyKeyPath];
     [_playerItem removeObserver:self forKeyPath:playbackLikelyToKeepUpKeyPath];
     [_playerItem removeObserver:self forKeyPath:timedMetadata];
+    [_playerItem removeObserver:self forKeyPath:videoSizeKeyPath];
     _playerItemObserversSet = NO;
   }
 }
@@ -776,6 +783,19 @@ static int const RCTVideoUnset = -1;
       }
       _playerBufferEmpty = NO;
       self.onVideoBuffer(@{@"isBuffering": @(NO), @"target": self.reactTag});
+    } 
+    else if ([keyPath isEqualToString:videoSizeKeyPath]) {
+      CGSize newSize = _playerItem.presentationSize;
+      if (self.onVideoLoad && newSize.width  > 0 && newSize.height > 0 && (newSize.width != _lastResolution.width || newSize.height != _lastResolution.height)) {
+        NSLog(@"GOND onSetResizeMode: %f, %f", _playerItem.presentationSize.width, _playerItem.presentationSize.height);
+        _lastResolution = CGSizeMake(newSize.width, newSize.height);
+        self.onVideoLoad(@{@"naturalSize": @{
+                              @"width": [NSNumber numberWithFloat: _lastResolution.width],
+                              @"height": [NSNumber numberWithFloat: _lastResolution.height],
+                              @"orientation": _lastResolution.width > _lastResolution.height ? @"landscape" : @"portrait",
+                               },
+                           @"target": self.reactTag});
+      }
     }
   } else if (object == _player) {
     if([keyPath isEqualToString:playbackRate]) {
@@ -932,7 +952,18 @@ static int const RCTVideoUnset = -1;
   {
     _playerLayer.videoGravity = mode;
   }
-  _resizeMode = mode;
+  
+//  CGSize newSize = _playerLayer.videoRect.size;
+//  if (self.onVideoLoad && newSize.width  > 0 && newSize.height > 0 && (newSize.width != _lastResolution.width || newSize.height != _lastResolution.height)) {
+////    NSLog(@"GOND onSetResizeMode: %f, %f", _playerItem.presentationSize.width, _playerItem.presentationSize.height);
+//    _lastResolution = CGSizeMake(newSize.width, newSize.height);
+//    self.onVideoLoad(@{@"naturalSize": @{
+//                          @"width": [NSNumber numberWithFloat: _lastResolution.width],
+//                          @"height": [NSNumber numberWithFloat: _lastResolution.height],
+//                          @"orientation": _lastResolution.width > _lastResolution.height ? @"landscape" : @"portrait",
+//                           },
+//                       @"target": self.reactTag});
+//  }
 }
 
 - (void)setPlayInBackground:(BOOL)playInBackground

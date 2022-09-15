@@ -30,6 +30,7 @@
 //  BOOL isBusy;
   AVAudioPlayer *player;
   BOOL firstMainStreamFrame;
+  int32_t currentVideoSource;
 }
 
 @property (weak,nonatomic) id<ImcCommandControllerDelegate> delegate;
@@ -72,5 +73,5 @@
 -(void)sendRequestTimeZoneToServer:(ImcConnectionServer*)connectionServer;
 -(void)sendSearchCommonMessageToServer:(ImcConnectionServer*)connectionServer message:(MOBILE_MSG)message forTimeInterval:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask;
 -(void)startTransferingVideoForServer:(NSArray*)data;
-
+-(void)setVideoSource:(int)value;
 @end

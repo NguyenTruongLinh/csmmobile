@@ -166,6 +166,7 @@ class VideoPlayerView extends Component {
       });
     let finalStatusfullscreen = videoStore.isFullscreen;
     videoStore.setNoVideo(false);
+    videoStore.setStretch(true);
     if (videoStore.isFullscreen) {
       this.onFullscreenPress(false);
     }
@@ -451,7 +452,7 @@ class VideoPlayerView extends Component {
 
   onStretch = () => {
     this.playerRef && this.playerRef.onStretch(!this.props.videoStore.stretch);
-    this.props.videoStore.switchStretch();
+    this.props.videoStore.setStretch();
   };
 
   handleChannelsScroll = event => {};
@@ -541,6 +542,7 @@ class VideoPlayerView extends Component {
     }
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onChangeChannel(channelNo);
+    videoStore.setStretch(true);
     videoStore.selectChannel(channelNo);
     this.playerRef && this.playerRef.resetZoom();
     // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
@@ -691,14 +693,16 @@ class VideoPlayerView extends Component {
   };
 
   onNext = () => {
-    this.props.videoStore.nextChannel();
-    this.playerRef && this.playerRef.resetZoom();
+    // this.props.videoStore.nextChannel();
+    // this.playerRef && this.playerRef.resetZoom();
+    this.onSwitchChannel(this.props.videoStore.nextChannel);
     this.adjustChannelListPosition();
   };
 
   onPrevious = () => {
-    this.props.videoStore.previousChannel();
-    this.playerRef && this.playerRef.resetZoom();
+    // this.props.videoStore.previousChannel();
+    // this.playerRef && this.playerRef.resetZoom();
+    this.onSwitchChannel(this.props.videoStore.previousChannel);
     this.adjustChannelListPosition();
   };
 

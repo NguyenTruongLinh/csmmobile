@@ -97,6 +97,7 @@ const uint32_t numLayers = 24;
     zoomLevel = ZOOM_LEVEL_24H;
     channelsMapping = [NSMutableArray array];
     mainDisplayVideo = [[ImcMainDisplayVideoView alloc] init];
+    mainDisplayVideo.delegate = self;
     // mainDisplayVideo.fullscreenView = 0;
     connectedServerList = [[NSMutableArray alloc] init];
     viewMaskLock = [[NSCondition alloc] init];
@@ -115,7 +116,7 @@ const uint32_t numLayers = 24;
     m_delayPlayback = NO;
     defaultImg = [[UIImage alloc] initWithCGImage: [UIImage imageNamed:@"CMS-video-losss.png"].CGImage];
     searchFrameImage = defaultImg;
-    searchFrameRect = CGRectMake(0.0, 0.0, 0.0, 0.0);
+    searchFrameRect = CGSizeMake(0, 0);
     m_dayType = NORMAL;
     oldDeviceInterfaceHandel = UIInterfaceOrientationMaskPortrait;
     needToClearScreen = false;
@@ -291,7 +292,8 @@ const uint32_t numLayers = 24;
 #pragma mark - Native Props
 
 -(void)setStretch:(BOOL)value{
-  mainDisplayVideo.stretch = value;
+//  mainDisplayVideo.stretch = value;
+  [self.mainDisplayVideo setStretchMode: value];
   [self clearScreen];
   
   _stretch = value;
@@ -449,6 +451,22 @@ const uint32_t numLayers = 24;
     }
   }
   // [self setIsHD:isHD];
+  int videoIndex = -1;
+  if([self get_obj:startplayback for_key:@"sourceIndex"]){
+    @try{
+      videoIndex = [[self get_obj:startplayback for_key:@"sourceIndex"] intValue];
+    }
+    @catch (NSException* exception){
+      NSLog(@"GOND **DIRECT** setStartplayback get sourceIndex failed: %d", videoIndex);
+    }
+    @finally{
+      [controllerThread setVideoSource:videoIndex];
+    }
+  }
+  if([self get_obj:startplayback for_key:@"stretch"]){
+    BOOL isStretch = [[self get_obj:startplayback for_key:@"stretch"] boolValue];
+    [mainDisplayVideo setStretchMode:isStretch];
+  }
   
   if(isSearch == YES){
     NSLog(@"GOND **DIRECT** setStartplayback switch to SEARCH");
@@ -1482,6 +1500,7 @@ const uint32_t numLayers = 24;
     case IMC_MSG_DISPLAY_UPDATE_LAYOUT:
     {
       CGSize smallSize,largeSize;
+      // [self.mainDisplayVideo setStretchMode:_stretch];
       [self.mainDisplayVideo getDisplaySize:&smallSize :&largeSize];
       [controllerThread updateDisplaySize:smallSize :largeSize];
       [controllerThread updateLayout:self.mainDisplayVideo.currentDiv];
@@ -1637,6 +1656,9 @@ const uint32_t numLayers = 24;
         resumeDataInfo.currentView = -2;
       }
     }
+      break;
+    case IMC_MSG_MAIN_DISPLAY_VIDEO_UPDATE_FRAME_RESOLUTION:
+      [self responseResolution:(NSArray*)responseData];
       break;
     case IMC_MSG_SEARCH_REQUEST_TIME_ZONE:
     {
@@ -2595,6 +2617,9 @@ const uint32_t numLayers = 24;
               [self addSearchVideoFrame:videoFrame];
             }
           }
+          else {
+            NSLog(@"GOND search but receive Live frame");
+          }
         }
         else
         {
@@ -2990,17 +3015,17 @@ const uint32_t numLayers = 24;
   CGRect boundFrame = CGRectMake(0, 0, playerWidth, playerHeight);
   if(!_stretch)
   {
-    int originalWidth = searchFrameImage.size.width;
-    int originalHeight = searchFrameImage.size.height;
+    int originalWidth = searchFrameRect.width; // searchFrameImage.size.width;
+    int originalHeight = searchFrameRect.height; // searchFrameImage.size.height;
 //    NSLog(@"GOND size original: %d %d, player: %d %d", originalWidth, originalHeight, playerWidth, playerHeight);
     if(originalWidth > 0 && originalHeight > 0)
     {
       // dongpt: tried to fix reverted dimensions of image
-      if(((searchFrameRect.size.width - searchFrameRect.size.height) > 0) != ((originalWidth - originalHeight) > 0) && (double)searchFrameRect.size.width/searchFrameRect.size.height == (double)originalHeight/originalWidth) {
-        u_int16_t tmp = originalHeight;
-        originalHeight = originalWidth;
-        originalWidth = tmp;
-      }
+//      if(((searchFrameRect.width - searchFrameRect.height) > 0) != ((originalWidth - originalHeight) > 0) && (double)searchFrameRect.width/searchFrameRect.height == (double)originalHeight/originalWidth) {
+//        u_int16_t tmp = originalHeight;
+//        originalHeight = originalWidth;
+//        originalWidth = tmp;
+//      }
       // dongpt: end fix
       
       double hRatio = (double)playerHeight / originalHeight;
@@ -3163,14 +3188,14 @@ const uint32_t numLayers = 24;
         {
           dispatch_async(dispatch_get_main_queue(), ^{
             //NSLog(@"Shark setNeedsDisplay Search");
-            searchFrameImage = displayFrame.videoFrame;
-            searchFrameRect = CGRectMake(0, 0, displayFrame.resolutionWidth, displayFrame.resolutionHeight);
+            self->searchFrameImage = displayFrame.videoFrame;
+            self->searchFrameRect = CGSizeMake(displayFrame.resolutionWidth, displayFrame.resolutionHeight);
             
-            self.layer.contents = searchFrameImage;
+            self.layer.contents = self->searchFrameImage;
             [self.layer setNeedsDisplay];
-            [videoView setNeedsDisplay];
+            [self->videoView setNeedsDisplay];
             
-            if (videoPlayerStatus == STATE_PLAY) {
+            if (self->videoPlayerStatus == STATE_PLAY) {
               //do something
             }
             

@@ -69,8 +69,8 @@ class DirectVideoView extends React.Component {
       translateY: 0,
       marginLeft: 0,
       marginTop: 0,
-      originalWidth: 0,
-      originalHeight: 0,
+      originalWidth: props.width,
+      originalHeight: props.height,
       visibleBcg: true,
       // isFilterShown: false,
     };
@@ -665,7 +665,7 @@ class DirectVideoView extends React.Component {
       isLive,
       hdMode,
       singlePlayer,
-      selectedChannel,
+      // selectedChannel,
     } = this.props;
     // const serverInfo = videoStore.directConnection;
     // __DEV__ &&
@@ -690,10 +690,12 @@ class DirectVideoView extends React.Component {
 
     const {
       searchDateString,
-      searchDate,
-      searchPlayTime,
-      searchPlayTimeLuxon,
-      beginSearchTime,
+      // searchDate,
+      // searchPlayTime,
+      // searchPlayTimeLuxon,
+      // beginSearchTime,
+      selectedChannel,
+      selectedChannelData,
     } = videoStore;
     // __DEV__ &&
     //   console.log(
@@ -721,6 +723,11 @@ class DirectVideoView extends React.Component {
       searchMode: !isLive,
       date: isLive ? undefined : searchDateString,
       hdmode: hdMode,
+      sourceIndex:
+        singlePlayer && selectedChannel != null
+          ? selectedChannelData.videoSource
+          : undefined,
+      stretch: videoStore.stretch,
       ...paramsObject,
     };
     // if (singlePlayer && videoStore.selectedChannel)
@@ -1147,9 +1154,10 @@ class DirectVideoView extends React.Component {
         this.onDataUsageUpdate(value);
         break;
       case NATIVE_MESSAGE.RESPONSE_RESOLUTION:
+        __DEV__ && console.log('GOND Video RESPONSE_RESOLUTION: ', value);
         if (value != null) {
-          this.setState({originalWidth: value[0]});
-          this.setState({originalHeight: value[1]});
+          __DEV__ && console.log('GOND Video RESPONSE_RESOLUTION 2: ', value);
+          this.setState({originalWidth: value[0], originalHeight: value[1]});
           this.onSetMargin();
         }
         break;
@@ -1187,6 +1195,7 @@ class DirectVideoView extends React.Component {
         break;
     }
   };
+
   onSetMargin = () => {
     let containerWidth = this.state.width;
     let containerHeight = this.state.height;
@@ -1195,15 +1204,12 @@ class DirectVideoView extends React.Component {
     if (hRatio > wRatio) {
       let height = (wRatio * this.state.originalHeight) / 100;
       let top = (containerHeight - height) / 2;
-      this.setState({marginLeft: 0});
-      if (top > 0) this.setState({marginTop: top});
+      this.setState({marginLeft: 0, marginTop: top > 0 ? top : undefined});
     } else if (hRatio < wRatio) {
       let width = (hRatio * this.state.originalWidth) / 100;
       let left = (containerWidth - width) / 2;
-      this.setState({marginTop: 0});
-      if (left > 0) this.setState({marginLeft: left});
+      this.setState({marginTop: 0, marginLeft: left > 0 ? left : undefined});
     }
-    this.setState({visibleBcg: false});
   };
 
   onDataUsageUpdate = segmentLoad => {
@@ -1268,6 +1274,7 @@ class DirectVideoView extends React.Component {
     this.newSeekPos = 0;
     this.oldPos = 0;
     if (!videoStore.paused) {
+      //&& !videoStore.isLive) {
       videoStore.setBeginSearchTime(this.lastFrameTime);
     }
     this.setState({visibleBcg: true});
@@ -1504,6 +1511,7 @@ class DirectVideoView extends React.Component {
     }
 
     // videoStore.setEnableStretch(true);
+    if (this.state.visibleBcg == true) this.setState({visibleBcg: false});
     this.lastTimestamp = timestamp;
 
     if (value) {
@@ -1636,18 +1644,22 @@ class DirectVideoView extends React.Component {
       singlePlayer,
       filterShown,
     } = this.props;
-    // const {message, videoLoading, noVideo} = this.state;
+    const {originalWidth, originalHeight, visibleBcg} = this.state;
     const {connectionStatus, isLoading} = serverInfo;
-    const isMenuReady =
-      videoStore.selectedStream && videoStore.selectedStream.isMenuReady
-        ? true
-        : false;
+    // const isMenuReady =
+    //   videoStore.selectedStream && videoStore.selectedStream.isMenuReady
+    //     ? true
+    //     : false;
     __DEV__ &&
       console.log(
-        'GOND with height: ',
-        isMenuReady,
-        this.state.width,
-        this.state.height
+        'GOND direct render: ',
+        width,
+        height,
+        originalWidth,
+        originalHeight,
+        visibleBcg,
+        videoStore.selectedStream ? videoStore.selectedStream.channelName : '',
+        videoStore.selectedStream ? videoStore.selectedStream.channelNo : ''
       );
 
     return singlePlayer ? (
@@ -1658,18 +1670,25 @@ class DirectVideoView extends React.Component {
         >
           {/* <ImageBackground
             // source={NVR_Play_NoVideo_Image}
-            source={
-              this.state.visibleBcg ? videoStore.selectedStreamSnapshot : null
-            }
-            style={{width: width, height: height}}
-            resizeMode={
-              !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
-            }> */}
+            source={visibleBcg ? videoStore.selectedStreamSnapshot : null}
+            style={{width, height}}
+            imageStyle={{
+              width: videoStore.stretch ? width : originalWidth,
+              height: videoStore.stretch ? height : originalHeight,
+              marginLeft: videoStore.stretch ? 0 : (width - originalWidth) / 2,
+              marginRight: videoStore.stretch ? 0 : (width - originalWidth) / 2,
+              marginTop: videoStore.stretch ? 0 : (height - originalHeight) / 2,
+            }}
+            // resizeMode={
+            //   !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
+            // }
+          > */}
           <CMSImage
             isBackground={true}
             dataSource={serverInfo.snapshot}
+            // defaultImage={videoStore.selectedStreamSnapshot}
             defaultImage={NVR_Play_NoVideo_Image}
-            visible={this.state.visibleBcg}
+            visible={visibleBcg}
             resizeMode={
               !videoStore.stretch && singlePlayer ? 'contain' : 'cover'
             }
@@ -1724,10 +1743,7 @@ class DirectVideoView extends React.Component {
             </View>
             {noVideo ? null : (
               <View
-                style={[
-                  styles.playerView,
-                  {zIndexn: noVideo ? -1 : undefined},
-                ]}>
+                style={[styles.playerView, {zIndex: noVideo ? -1 : undefined}]}>
                 {Platform.select({
                   ios: (
                     <FFMpegFrameViewIOS

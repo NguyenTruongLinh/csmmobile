@@ -336,7 +336,9 @@ public class CommunicationSocket implements Runnable {
                 cmdsate.remain_len = Character.BYTES;
                 cmdsate.state = Constant.EnumBufferState.COMMAND_GET;
                 try {
-                    socket.setSoTimeout(Constant.socketReadTimeOut);
+                    int timeout = this.isRelay ?  Constant.socketReadTimeOutRelay : Constant.socketReadTimeOut;
+                    Log.d("GOND", "relay timeout = " + timeout + ", isRelay: " + this.isRelay);
+                    socket.setSoTimeout(timeout);
                 } catch (SocketException ex) {
                     Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " SocketException = " + ex);
                 } catch (IllegalArgumentException iex) {
@@ -477,7 +479,7 @@ public class CommunicationSocket implements Runnable {
                 relayHeaderBlockCount++;
             }
         }else {
-            Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
+            // Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
         }
         return ReadBlock(_is, _length, buff, offset, debug);
     }
@@ -494,12 +496,12 @@ public class CommunicationSocket implements Runnable {
         }
         catch (SocketTimeoutException tm)
         {
-//            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
+            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock SocketTimeoutException tm = " + tm + " debug = " + debug);
             return  0;
         }
         catch (IndexOutOfBoundsException outex)
         {
-//            Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock IndexOutOfBoundsException outex = " + outex + " debug = " + debug);
+           Log.e("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock IndexOutOfBoundsException outex = " + outex + " debug = " + debug);
             return count;
         }
         catch (IOException e)
@@ -515,6 +517,7 @@ public class CommunicationSocket implements Runnable {
         // return 0;
         return  count;
     }
+    
     protected int SelectCommand(BufferedInputStream in, CommandState  state)
     {
         char cmd_id = state.cmdid;
@@ -1154,11 +1157,15 @@ public class CommunicationSocket implements Runnable {
         }
         return  ret;
     }
-    protected void  OnHandlerMessage(int msgid, Object data)
+    protected void  OnHandlerMessage(int msgid, Object data) {
+        OnHandlerMessage(msgid, data, -1);
+    }
+
+    protected void  OnHandlerMessage(int msgid, Object data, int sourceIndex)
     {
         if( msgid < 0 || handler == null || PlaybackStatus != Constant.EnumPlaybackSatus.VIDEO_PLAY)
             return;
-        Message completeMessage = handler.obtainMessage(msgid, data);
+        Message completeMessage = handler.obtainMessage(msgid, sourceIndex, 0, data);
         completeMessage.sendToTarget();
 
     }

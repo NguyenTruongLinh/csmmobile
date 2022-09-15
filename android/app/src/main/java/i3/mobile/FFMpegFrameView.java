@@ -83,6 +83,7 @@ public class FFMpegFrameView extends View {
     HashMap<Integer, Long> lastFrameTimeByChannel = new HashMap<Integer, Long>();
     static MobileSystemInfo mobileSystemInfo = null;
     boolean isTakeANap = false;
+    int currentSourceIndex = -1;
 
     public static MobileSystemInfo getMobileSystemInfo(){
                 return  mobileSystemInfo;
@@ -130,6 +131,10 @@ public class FFMpegFrameView extends View {
     public  void  setChannels(String value){ 
         // Log.d("GOND", "**DIRECT** setChannel: " + value);
         this.Channels = value;
+    }
+
+    public void setSourceIndex(int value) {
+        this.currentSourceIndex = value;
     }
 
     public  boolean getByChannels(){ return  this.ByChannel;}
@@ -290,6 +295,12 @@ public class FFMpegFrameView extends View {
         switch (msgId)
         {
             case Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER:
+                // dongpt: check frame from different channel (when switch channel but data from new channel not arrived yet)
+                Log.d("GOND", "MOBILE_FRAME_BUFFER " + currentSourceIndex + ", ch: " + channel);
+                if (currentSourceIndex >= 0 && currentSourceIndex != channel) {
+                    Log.d("GOND", "MOBILE_FRAME_BUFFER not same video source ...");
+                    return;
+                }
                 UpdateFrame( (Bitmap)data, channel );
                 break;
 //            case Constant.EnumVideoPlaybackSatus.MOBILE_REMOTE_RELAY_CONFIG_CHANGED:
@@ -310,10 +321,13 @@ public class FFMpegFrameView extends View {
 
     private  void  OnEvent( int msgid, Object value, int channel)
     {
-        if( msgid == Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME && valid_first_frame == false)
+        if( msgid == Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME && 
+            (valid_first_frame == false || (currentSourceIndex >= 0 && channel >= 0 && currentSourceIndex != channel)))
         {
+            Log.d("GOND", "OnEvent not valid first frame or same video source ..." + currentSourceIndex + ", ch:" + channel);
             return;
         }
+        
         try {
             WritableMap event = Arguments.createMap();
             event.putInt("msgid", msgid);

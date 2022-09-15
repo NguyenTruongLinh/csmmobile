@@ -676,7 +676,7 @@ export const VideoModel = types
       return null;
     },
     get selectedStreamSnapshot() {
-      return self.selectedChannel && self.selectedStream
+      return self.selectedChannel != null && self.selectedStream
         ? self.selectedStream.snapshot
         : NVR_Play_NoVideo_Image;
     },
@@ -1074,6 +1074,23 @@ export const VideoModel = types
         ? self.authenticationState >= AUTHENTICATION_STATES.AUTHENTICATED &&
             self.authenticationState == AUTHENTICATION_STATES.NO_PRIVILEGE
         : false;
+    },
+    get previousChannel() {
+      if (self.selectedChannelIndex > 0) {
+        return self.displayChannels[self.selectedChannelIndex - 1].channelNo;
+      } else {
+        return self.displayChannels[self.displayChannels.length - 1].channelNo;
+      }
+    },
+    get nextChannel() {
+      if (
+        self.selectedChannelIndex < self.displayChannels.length - 1 &&
+        self.selectedChannelIndex >= 0
+      ) {
+        return self.displayChannels[self.selectedChannelIndex + 1].channelNo;
+      } else {
+        return self.displayChannels[0].channelNo;
+      }
     },
     // #endregion permission's computed values
   }))
@@ -2018,7 +2035,7 @@ export const VideoModel = types
           self.getHLSInfos({channelNo: self.selectedChannel});
         }
       },
-      switchStretch(value) {
+      setStretch(value) {
         self.stretch = util.isNullOrUndef(value) ? !self.stretch : value;
       },
       switchFullscreen(value) {
@@ -2026,29 +2043,29 @@ export const VideoModel = types
           ? !self.isFullscreen
           : value;
       },
-      previousChannel() {
-        if (self.selectedChannelIndex > 0) {
-          self.selectChannel(
-            self.displayChannels[self.selectedChannelIndex - 1].channelNo
-          );
-        } else {
-          self.selectChannel(
-            self.displayChannels[self.displayChannels.length - 1].channelNo
-          );
-        }
-      },
-      nextChannel() {
-        if (
-          self.selectedChannelIndex < self.displayChannels.length - 1 &&
-          self.selectedChannelIndex >= 0
-        ) {
-          self.selectChannel(
-            self.displayChannels[self.selectedChannelIndex + 1].channelNo
-          );
-        } else {
-          self.selectChannel(self.displayChannels[0].channelNo);
-        }
-      },
+      // previousChannel() {
+      //   if (self.selectedChannelIndex > 0) {
+      //     self.selectChannel(
+      //       self.displayChannels[self.selectedChannelIndex - 1].channelNo
+      //     );
+      //   } else {
+      //     self.selectChannel(
+      //       self.displayChannels[self.displayChannels.length - 1].channelNo
+      //     );
+      //   }
+      // },
+      // nextChannel() {
+      //   if (
+      //     self.selectedChannelIndex < self.displayChannels.length - 1 &&
+      //     self.selectedChannelIndex >= 0
+      //   ) {
+      //     self.selectChannel(
+      //       self.displayChannels[self.selectedChannelIndex + 1].channelNo
+      //     );
+      //   } else {
+      //     self.selectChannel(self.displayChannels[0].channelNo);
+      //   }
+      // },
       pause(willPause) {
         self.paused = willPause == undefined ? !self.paused : willPause;
       },

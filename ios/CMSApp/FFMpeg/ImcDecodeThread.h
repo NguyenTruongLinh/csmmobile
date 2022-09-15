@@ -20,6 +20,8 @@
 #include <mach/processor_info.h>
 #include <mach/mach_host.h>
 
+#define MAX_INVALID_FRAMES 4
+
 @class decoderMapping;
 
 @interface ImcDecodeThread : NSThread {
@@ -72,6 +74,7 @@
 @property NSInteger decoderIndex;
 @property CodecfDecoder* decoder;
 @property BOOL willDestroy;
+@property NSInteger invalidFramesCount;
 @end
 
 

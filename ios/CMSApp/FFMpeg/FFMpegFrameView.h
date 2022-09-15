@@ -83,7 +83,7 @@ typedef enum
 @property BOOL firstRunAlarm;
 @property NSMutableArray* dateIntervalList;
 @property UIImage* searchFrameImage;
-@property CGRect searchFrameRect;
+@property CGSize searchFrameRect;
 @property BOOL doesTodayHasData;
 @property NSArray* dataDateList;
 @property NSInteger chosenChannelIndex;

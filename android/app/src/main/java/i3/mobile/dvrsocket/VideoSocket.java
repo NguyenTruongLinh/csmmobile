@@ -250,7 +250,7 @@ public class VideoSocket extends CommunicationSocket {
         Log.d("GOND", "**DIRECT** - VideoSocket cmdid: " + cmdid + ", mainSub = " + header.mainSubStream);
 
         if (ServerInfo.getTimeZone() != null)
-            onFrameTimeEvent( header.time, ServerInfo.getTimeZone().getTimeZone() ,last_frame_time);
+            onFrameTimeEvent( header.time, ServerInfo.getTimeZone().getTimeZone() ,last_frame_time, header.sourceIndex);
         switch ( cmdid)
         {
             case Constant.EnumCmdMsg.MOBILE_MSG_SEND_NEXT_FRAME:
@@ -438,7 +438,7 @@ public class VideoSocket extends CommunicationSocket {
         this.str_Channel = newChannel;
     }
 
-    void  onFrameTimeEvent(long time, TimeZone tz, long last_frame_time){
+    void  onFrameTimeEvent(long time, TimeZone tz, long last_frame_time, int sourceIndex){
         if( time == last_frame_time)
             return;
 
@@ -454,7 +454,7 @@ public class VideoSocket extends CommunicationSocket {
         String result[]= new String[2];
         String astr_app = "{\"timestamp\":%d, \"value\":\"%s\",\"channel\":\"%s\"}";
         String res = String.format(astr_app, time, datetime, str_Channel);
-        super.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME, "[" + res + "]");
+        super.OnHandlerMessage(Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME, "[" + res + "]", sourceIndex);
 
     }
 

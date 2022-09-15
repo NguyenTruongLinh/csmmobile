@@ -407,6 +407,7 @@ const int RELAY_RESOLUTION_Y = 329;
   GDataXMLElement* rootNode = [GDataXMLNode elementWithName:@"RESOLUTION_REQUEST"];
   if( rootNode )
   {
+    /*
     if( fullscreenChannel >= 0 )
     {
       int resolutionX = isRelay ? RELAY_RESOLUTION_X : (int)smallDivSize.width;
@@ -421,25 +422,37 @@ const int RELAY_RESOLUTION_Y = 329;
       NSLog(@"0609 exportResolutionRequestToXML if resolutionX_0 = %d", resolutionX);
       NSLog(@"0609 exportResolutionRequestToXML if resolutionY_0 = %d", resolutionY);
     }
-    else
-    {
-      CGSize size = smallDivSize;// [self calcChannelRes];
-      NSString* strWidth = [NSString stringWithFormat:@"%zd",(int)size.width];
-      NSString* strHeight = [NSString stringWithFormat:@"%zd",(int)size.height];
-      GDataXMLNode* source = [GDataXMLNode elementWithName:@"source_0" stringValue:@"*"];
-      GDataXMLNode* res_X = [GDataXMLNode elementWithName:@"resolutionX_0" stringValue:strWidth];
-      GDataXMLNode* res_Y = [GDataXMLNode elementWithName:@"resolutionY_0" stringValue:strHeight];
-      [rootNode addAttribute:source];
-      [rootNode addAttribute:res_X];
-      [rootNode addAttribute:res_Y];
-    }
-    int count = 0;
-    for( int index = 0; index < MAX_VIDEOSOURCE; index++ )
-      if( sourceResMask[index] == true )
-        count++;
-    GDataXMLNode* countAttr = [GDataXMLNode elementWithName:@"count" stringValue:[NSString stringWithFormat:@"%zd",count]];
-    [rootNode addAttribute:countAttr];
-    
+   else
+   {
+     CGSize size = smallDivSize;// [self calcChannelRes];
+     NSString* strWidth = [NSString stringWithFormat:@"%zd",(int)size.width];
+     NSString* strHeight = [NSString stringWithFormat:@"%zd",(int)size.height];
+     GDataXMLNode* source = [GDataXMLNode elementWithName:@"source_0" stringValue:@"*"];
+     GDataXMLNode* res_X = [GDataXMLNode elementWithName:@"resolutionX_0" stringValue:strWidth];
+     GDataXMLNode* res_Y = [GDataXMLNode elementWithName:@"resolutionY_0" stringValue:strHeight];
+     [rootNode addAttribute:source];
+     [rootNode addAttribute:res_X];
+     [rootNode addAttribute:res_Y];
+   }
+   int count = 0;
+   for( int index = 0; index < MAX_VIDEOSOURCE; index++ )
+     if( sourceResMask[index] == true )
+       count++;
+   GDataXMLNode* countAttr = [GDataXMLNode elementWithName:@"count" stringValue:[NSString stringWithFormat:@"%zd",count]];
+   [rootNode addAttribute:countAttr];
+    */
+
+    sourceResMask[fullscreenChannel] = true;
+    GDataXMLNode* count = [GDataXMLNode elementWithName:@"count" stringValue:[NSString stringWithFormat:@"1"]];
+    GDataXMLNode* source = [GDataXMLNode elementWithName:@"source_0" stringValue:[NSString stringWithFormat:@"*"]];
+
+    GDataXMLNode* res_X = [GDataXMLNode elementWithName:@"resolutionX_0" stringValue:[NSString stringWithFormat:@"%zd",(int)smallDivSize.width]];
+    GDataXMLNode* res_Y = [GDataXMLNode elementWithName:@"resolutionY_0" stringValue:[NSString stringWithFormat:@"%zd",(int)smallDivSize.height]];
+      
+    [rootNode addAttribute:count];
+    [rootNode addAttribute:source];
+    [rootNode addAttribute:res_X];
+    [rootNode addAttribute:res_Y];
     return rootNode;
   }
   return nil;
@@ -475,8 +488,17 @@ const int RELAY_RESOLUTION_Y = 329;
   GDataXMLElement* rootNode = [GDataXMLNode elementWithName:@"SEARCH_FRAMESIZE_REQUEST"];
   if( rootNode )
   {
-    GDataXMLNode* frame_width = [GDataXMLNode elementWithName:@"search_frame_width" stringValue:[NSString stringWithFormat:@"%f",[UIScreen mainScreen].bounds.size.width]];
-    GDataXMLNode* frame_height = [GDataXMLNode elementWithName:@"search_frame_height" stringValue:[NSString stringWithFormat:@"%f",[UIScreen mainScreen].bounds.size.height]];
+    CGSize size = [UIScreen mainScreen].bounds.size;
+    if (smallDivSize.width > 0 || largeDivSize.width > 0)
+    {
+      size = smallDivSize.width > 0 ? smallDivSize : largeDivSize;
+    }
+    
+//    GDataXMLNode* frame_width = [GDataXMLNode elementWithName:@"search_frame_width" stringValue:[NSString stringWithFormat:@"%f",[UIScreen mainScreen].bounds.size.width]];
+//    GDataXMLNode* frame_height = [GDataXMLNode elementWithName:@"search_frame_height" stringValue:[NSString stringWithFormat:@"%f",[UIScreen mainScreen].bounds.size.height]];
+
+    GDataXMLNode* frame_width = [GDataXMLNode elementWithName:@"search_frame_width" stringValue:[NSString stringWithFormat:@"%f", size.width]];
+    GDataXMLNode* frame_height = [GDataXMLNode elementWithName:@"search_frame_height" stringValue:[NSString stringWithFormat:@"%f", size.height]];
     [rootNode addAttribute:frame_width];
     [rootNode addAttribute:frame_height];
     

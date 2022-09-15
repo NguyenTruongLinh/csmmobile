@@ -56,6 +56,7 @@ public class Constant
 	//_________________________________________________________________________________________________________//
 	
 	public static final int socketReadTimeOut = 100;//120000; //From 60000
+	public static final int socketReadTimeOutRelay = 300;//120000; //From 60000
 	public static final int timeoutWatchDog   = 150000; //From 90000
 	
 	//********************************FOR CONFIG FILE -- BEGIN**********************************************//
