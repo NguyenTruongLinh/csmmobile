@@ -106,4 +106,6 @@ target 'CMSApp' do
     # Pods for testing
   end
 
+  plugin 'cocoapods-patch'
+
 end
