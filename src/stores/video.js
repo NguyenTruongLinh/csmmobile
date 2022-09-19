@@ -20,6 +20,7 @@ import snackbarUtil from '../util/snackbar';
 import {VSC, DVR, Site as SiteRoute, Server} from '../consts/apiRoutes';
 import util from '../util/general';
 import {numberValue} from '../util/types';
+import {NetworkInfo} from 'react-native-network-info';
 
 import {
   default24H,
@@ -151,6 +152,7 @@ const DirectServerModel = types
     videoInfo: {},
     // dataUsageLogs: [],
     // recordNo: 0,
+    ipAddress: '',
   }))
   .actions(self => ({
     setLoginInfo(userName, password) {
@@ -187,7 +189,13 @@ const DirectServerModel = types
       // self.dataUsageLogs = [];
       // self.recordNo = 0;
     },
-    updateDataUsageRelay(segmentLoad, timezone, videoInfo, debug) {
+    updateDataUsageRelay: flow(function* (
+      segmentLoad,
+      timezone,
+      videoInfo,
+      debug
+    ) {
+      // videoInfo.kChannel = self.channels;
       __DEV__ &&
         console.log(
           `updateDataUsage segmentLoad = `,
@@ -195,12 +203,21 @@ const DirectServerModel = types
           ' videoInfo = ',
           videoInfo
         );
+
+      if (self.ipAddress == '') {
+        self.ipAddress = yield NetworkInfo.getIPV4Address();
+      }
+
       if (segmentLoad !== FORCE_SENT_DATA_USAGE)
         self.videoInfo = {...videoInfo};
+
       let params =
         segmentLoad != FORCE_SENT_DATA_USAGE
           ? {...videoInfo}
           : {...self.videoInfo};
+
+      if (!params.VPCServer) params.VPCServer = self.ipAddress;
+
       let newLoadRecordTimePoint = DateTime.now().toSeconds();
 
       if (segmentLoad !== FORCE_SENT_DATA_USAGE)
@@ -237,11 +254,11 @@ const DirectServerModel = types
           newLoadRecordTimePoint,
           {}
         ).toFormat(DateFormat.VideoDataUsageDate);
-        params.BytesUsed = self.accumulatedDataUsage;
+        params.DataOut = self.accumulatedDataUsage;
         apiService.post(
           VSC.controller,
           1,
-          VSC.SetDataUsageActivityLogs,
+          VSC.SetRelayDataUsageActivityLogs,
           params
         );
         __DEV__ &&
@@ -255,6 +272,11 @@ const DirectServerModel = types
             'debug: ',
             debug
           );
+
+        snackbarUtil.showToast(
+          'updateDataUsage params = ' + JSON.stringify(params),
+          cmscolors.Success
+        );
         // for (let i = 0; i < self.dataUsageLogs.length; i++) {
         //   __DEV__ &&
         //     console.log(
@@ -262,9 +284,10 @@ const DirectServerModel = types
         //       self.dataUsageLogs[i]
         //     );
         // }
+
         self.resetDataUsageInfoRelay();
       }
-    },
+    }),
   }));
 
 const parseDirectServer = (
@@ -4378,14 +4401,47 @@ export const VideoModel = types
       },
       testUpdateBitrate() {
         __DEV__ && console.log(` testUpdateBitrate `);
-        apiService.post(VSC.controller, 1, VSC.SetDataUsageActivityLogs, {
-          KChannel: 5523,
+        let params = {
+          KChannel: '708',
           ViewMode: 0,
           Source: 'MP4_CMSMobile_OAM',
           StartTime: '2022-04-28 13:52:48',
           EndTime: '2022-04-28 13:52:58',
           BytesUsed: 7715737,
-        });
+        };
+        apiService.post(
+          VSC.controller,
+          1,
+          VSC.SetDataUsageActivityLogs,
+          params
+        );
+        snackbarUtil.showToast(
+          'testUpdateBitrate params = ' + JSON.stringify(params),
+          cmscolors.Success
+        );
+      },
+      testUpdateBitrateRelay() {
+        __DEV__ && console.log(` testUpdateBitrate `);
+        let params = {
+          NVRSerialId: 'Tinphan', //haspLisence
+          CMSUser: 'i3admin', //haile
+          NVRServer: '192.168.20.65:13225', // pro
+          Domain: '192.168.21.48', //relay IP
+          VPCServer: '192.168.20.47', // mobile IP
+          StartTime: '2022-04-28 13:52:48',
+          EndTime: '2022-04-28 13:52:58',
+          DataOut: 7715737,
+        };
+        apiService.post(
+          VSC.controller,
+          1,
+          VSC.SetRelayDataUsageActivityLogs,
+          params
+        );
+        snackbarUtil.showToast(
+          'testUpdateBitrateRelay params = ' + JSON.stringify(params),
+          cmscolors.Success
+        );
       },
     };
   });

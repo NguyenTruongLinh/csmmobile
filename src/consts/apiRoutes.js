@@ -95,6 +95,7 @@ export const VSC = {
   updateActiveChannels: 'UpdateVSCActiveChannel',
   linkNVRUser: 'LinkNVRUserToCMS',
   SetDataUsageActivityLogs: 'SetDataUsageActivityLogs',
+  SetRelayDataUsageActivityLogs: 'SetRelayDataUsageActivityLogs',
 };
 export const Server = {
   controller: 'Server',

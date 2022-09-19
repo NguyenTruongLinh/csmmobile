@@ -226,7 +226,7 @@ class DirectVideoView extends React.Component {
         this.onNativeMessage
       );
     }
-    const {serverInfo, appStore, videoStore} = this.props;
+    const {serverInfo, videoStore} = this.props;
     // __DEV__ && console.log('DirectStreamingView: ', videoStore.selectedChannel);
 
     if (videoStore.isAuthenticated) {
@@ -255,22 +255,6 @@ class DirectVideoView extends React.Component {
           {...serverInfo}
         );
     }
-    try {
-      this.trackingVideoSource = //'Relay';
-        util.extractModuleNameFromScreenName(
-          appStore.naviService.getPreviousRouteName()
-        ) +
-        '_Relay' +
-        (Platform.OS == 'ios' ? (singlePlayer ? '_single' : '_multi') : '');
-    } catch (e) {
-      __DEV__ && console.log(`direct this.trackingVideoSource e = `, e);
-      this.trackingVideoSource = 'Video_Relay';
-    }
-    __DEV__ &&
-      console.log(
-        `direct this.trackingVideoSource =  ` + this.trackingVideoSource
-      );
-
     // reactions:
     this.initReactions();
   }
@@ -1207,17 +1191,22 @@ class DirectVideoView extends React.Component {
   };
 
   onDataUsageUpdate = segmentLoad => {
-    const {streamData, videoStore, singlePlayer} = this.props;
+    const {streamData, videoStore, singlePlayer, serverInfo, userStore} =
+      this.props;
     __DEV__ && console.log(`onDataUsageUpdate segmentLoad = `, segmentLoad);
     videoStore.directConnection.updateDataUsageRelay(
       segmentLoad,
       videoStore.timezone,
       {
-        KChannel: 'N/A',
-        ViewMode: videoStore.isLive ? 0 : 1,
-        Source: 'MP4_CMSMobile_' + this.trackingVideoSource, // + '_NEW_' + Platform.OS,
+        NVRSerialId: videoStore.directConnection.haspLicense, //'Tinphan', //haspLicense
+        CMSUser: userStore.user.userName, //'i3admin', //haile
+        NVRServer:
+          videoStore.directConnection.serverIP +
+          ':' +
+          videoStore.directConnection.port, //'192.168.20.65:13225', // pro
+        Domain: videoStore.directConnection.relayInfo.ip, //'192.168.21.48', //relay IP
       },
-      'onDataUsageUpdate'
+      'updateDataUsageRelay'
     );
     //   self.targetUrl.updateDataUsageByURL(
     //     bitrate,
@@ -1831,4 +1820,8 @@ const controlStyles = StyleSheet.create({
     height: '100%',
   },
 });
-export default inject('videoStore', 'appStore')(observer(DirectVideoView));
+export default inject(
+  'videoStore',
+  'userStore',
+  'appStore'
+)(observer(DirectVideoView));
