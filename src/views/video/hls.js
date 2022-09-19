@@ -717,7 +717,7 @@ class HLSStreamingView extends React.Component {
       this.setState({visibleBcg: true});
     }, 200);
     const videoStore = this.props.videoStore;
-    videoStore.switchStretch(true);
+    videoStore.setStretch(true);
   };
 
   onHDMode = isHD => {
