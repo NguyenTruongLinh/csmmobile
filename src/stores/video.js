@@ -188,13 +188,13 @@ const DirectServerModel = types
       // self.recordNo = 0;
     },
     updateDataUsageRelay(segmentLoad, timezone, videoInfo, debug) {
-      __DEV__ &&
-        console.log(
-          `updateDataUsage segmentLoad = `,
-          segmentLoad,
-          ' videoInfo = ',
-          videoInfo
-        );
+      // __DEV__ &&
+      //   console.log(
+      //     `updateDataUsage segmentLoad = `,
+      //     segmentLoad,
+      //     ' videoInfo = ',
+      //     videoInfo
+      //   );
       if (segmentLoad !== FORCE_SENT_DATA_USAGE)
         self.videoInfo = {...videoInfo};
       let params =
@@ -244,17 +244,17 @@ const DirectServerModel = types
           VSC.SetDataUsageActivityLogs,
           params
         );
-        __DEV__ &&
-          console.log(
-            `0507 updateDataUsage callAPI params `,
-            JSON.stringify(params),
-            segmentLoad == FORCE_SENT_DATA_USAGE
-              ? 'STREAM STOPPED'
-              : 'AFTER 15 SECS',
-            ' ************************************** ',
-            'debug: ',
-            debug
-          );
+        // __DEV__ &&
+        //   console.log(
+        //     `0507 updateDataUsage callAPI params `,
+        //     JSON.stringify(params),
+        //     segmentLoad == FORCE_SENT_DATA_USAGE
+        //       ? 'STREAM STOPPED'
+        //       : 'AFTER 15 SECS',
+        //     ' ************************************** ',
+        //     'debug: ',
+        //     debug
+        //   );
         // for (let i = 0; i < self.dataUsageLogs.length; i++) {
         //   __DEV__ &&
         //     console.log(
