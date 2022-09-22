@@ -115,9 +115,11 @@ public class VideoSocket extends CommunicationSocket {
             {
                 try
                 {
-                    read_len = ReadBlock(InPut, remain_len ,buff, offset, isRelay && (relayHeaderBlockRemainLen == 0), "videoSocket");//utils.ReadBlock(input, remain_len ,buff, offset);
+                    boolean isRelayHeader = isRelay && (relayHeaderBlockRemainLen == 0);
+//                    Log.d("relay", "debug = videoSocket relayHeaderBlockRemainLen = " + relayHeaderBlockRemainLen);
+                    read_len = ReadBlock(InPut, remain_len ,buff, offset, isRelayHeader, false , "videoSocket");//utils.ReadBlock(input, remain_len ,buff, offset);
 
-                    relayHeaderBlockRemainLen -= read_len;
+//                    relayHeaderBlockRemainLen -= read_len;
 
                     if( read_len == -1) {
                         if(running) {
@@ -134,7 +136,7 @@ public class VideoSocket extends CommunicationSocket {
                         lastReadBlockSuccTimePoint = System.currentTimeMillis();
                     }
 
-                    if( read_len == 0)
+                    if( read_len == 0 || isRelayHeader)
                         continue;
                     
                     offset += read_len;
@@ -168,6 +170,7 @@ public class VideoSocket extends CommunicationSocket {
                                     dataframe.Reset();
                                     remain_len = FrameData.Command_Header_Length;//need to read command first
                                     offset = 0;
+                                    relayHeaderBlockRemainLen = 0;
                                 }
                             }
                             else {
@@ -193,6 +196,7 @@ public class VideoSocket extends CommunicationSocket {
                                 dataframe.Reset();
                                 remain_len = FrameData.Command_Header_Length;//need to read command first
                                 offset = 0;
+                                relayHeaderBlockRemainLen = 0;
                             }
                             else
                             {

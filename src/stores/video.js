@@ -273,10 +273,10 @@ const DirectServerModel = types
             debug
           );
 
-        snackbarUtil.showToast(
-          'updateDataUsage params = ' + JSON.stringify(params),
-          cmscolors.Success
-        );
+        // snackbarUtil.showToast(
+        //   'updateDataUsage params = ' + JSON.stringify(params),
+        //   cmscolors.Success
+        // );
         // for (let i = 0; i < self.dataUsageLogs.length; i++) {
         //   __DEV__ &&
         //     console.log(
@@ -4423,7 +4423,7 @@ export const VideoModel = types
       testUpdateBitrateRelay() {
         __DEV__ && console.log(` testUpdateBitrate `);
         let params = {
-          NVRSerialId: 'Tinphan', //haspLisence
+          NVRSerialId: 'anhpc02', //'Tinphan', //haspLisence
           CMSUser: 'i3admin', //haile
           NVRServer: '192.168.20.65:13225', // pro
           Domain: '192.168.21.48', //relay IP
@@ -4443,6 +4443,33 @@ export const VideoModel = types
           cmscolors.Success
         );
       },
+      testUpdateBitrateRelayFlow: flow(function* () {
+        __DEV__ && console.log(` testUpdateBitrate `);
+        let params = {
+          NVRSerialId: 'anhpc02', //'Tinphan', //haspLisence
+          CMSUser: 'i3admin', //haile
+          NVRServer: '192.168.20.65:13225', // pro
+          Domain: '192.168.21.48', //relay IP
+          VPCServer: '192.168.20.47', // mobile IP
+          StartTime: '2022-04-28 13:52:48',
+          EndTime: '2022-04-28 13:52:58',
+          DataOut: 7715737,
+        };
+        const res = yield apiService.post(
+          VSC.controller,
+          1,
+          VSC.SetRelayDataUsageActivityLogs,
+          params
+        );
+        snackbarUtil.showToast(
+          'testUpdateBitrateRelay params = ' + JSON.stringify(params),
+          cmscolors.Success
+        );
+        snackbarUtil.showToast(
+          'testUpdateBitrateRelay res = ' + JSON.stringify(res),
+          cmscolors.Success
+        );
+      }),
     };
   });
 
