@@ -355,6 +355,14 @@ class NotificationController extends React.Component {
 
     const naviService = appStore ? appStore.naviService : null;
 
+    if (!userStore.isLoggedIn) {
+      console.log(
+        'GOND onNotificationReceived: not show notifications if user not logged in yet!',
+        data
+      );
+      return;
+    }
+
     // __DEV__ && console.log('GOND onNotificationReceived: ', data);
     if (shouldValidate && !this.validate(data)) {
       __DEV__ && console.log('GOND notification is not valid: ', data);
