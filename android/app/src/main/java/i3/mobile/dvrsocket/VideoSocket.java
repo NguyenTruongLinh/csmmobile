@@ -115,7 +115,7 @@ public class VideoSocket extends CommunicationSocket {
             {
                 try
                 {
-                    boolean isRelayHeader = isRelay && (relayHeaderBlockRemainLen == 0);
+                    boolean isRelayHeader = isRelay && relayHeaderBlockRemainLen == 0;
 //                    Log.d("relay", "debug = videoSocket relayHeaderBlockRemainLen = " + relayHeaderBlockRemainLen);
                     read_len = ReadBlock(InPut, remain_len ,buff, offset, isRelayHeader, false , "videoSocket");//utils.ReadBlock(input, remain_len ,buff, offset);
 
