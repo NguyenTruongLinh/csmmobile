@@ -1437,6 +1437,7 @@
 
 - (void) sendCommand:(uint16_t)command :(void *)buffer :(NSInteger)bufferLength
 {
+  NSLog(@"1008 1509 sendCommand id = %@", [self mobileMsgIdToString: command]);
 	
   NSData* commandData = nil;
   if( buffer == nil || bufferLength == 0)
