@@ -176,7 +176,7 @@ __volatile BOOL isRLRunning = NO;
 //        [self sendData:handshakeRequest];
         self->waitForRelayHandshake = TRUE;
         self->isRelay = TRUE;
-        sizeWillRead = 68;
+        sizeWillRead = RELAY_HEADER_SIZE;
       }else{
         NSLog(@"1008 write self->connectionIndex = %lu", self->connectionIndex);
         [self->sentDataStream write:(uint8_t*)(&self->connectionIndex) maxLength:sizeof(self->connectionIndex)];//1008
