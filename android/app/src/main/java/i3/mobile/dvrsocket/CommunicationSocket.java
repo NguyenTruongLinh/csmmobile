@@ -347,9 +347,10 @@ public class CommunicationSocket implements Runnable {
                 withRelayHeader = true;
                 relayHeaderBlockRemainLen = 0;
                 while (!Thread.currentThread().isInterrupted() && running) {
-                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, isRelay && (relayHeaderBlockRemainLen == 0), "rcv_len");
 
-                    relayHeaderBlockRemainLen -= cmdsate.remain_len;
+                    boolean isRelayHeader = isRelay && relayHeaderBlockRemainLen == 0;
+
+                    rcv_len = ReadBlock(InPut, cmdsate.remain_len, rcv, rcv_offset, isRelayHeader, false, "rcv_len");
 
                     if( rcv_len == -1) {
                         if(running) {
@@ -366,7 +367,7 @@ public class CommunicationSocket implements Runnable {
                         lastReadBlockSuccTimePoint = System.currentTimeMillis();
                     }
 
-                    if (rcv_len == 0)
+                    if (rcv_len == 0 || isRelayHeader)
                         continue;
 
                     rcv_offset += rcv_len;
@@ -462,7 +463,7 @@ public class CommunicationSocket implements Runnable {
     }
 
     int relayHeaderBlockCount = 0;
-    protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader, String debug)
+    protected int ReadBlock(BufferedInputStream _is, int _length, byte[] buff, int offset, boolean hasRelayHeader, boolean readMoreAfterHeader, String debug)
     {
         if(hasRelayHeader) {
             byte[] headerBytes = new byte[RELAY_HEADER_LEN];
@@ -477,6 +478,8 @@ public class CommunicationSocket implements Runnable {
                         " relayHeaderBlockCount = " + relayHeaderBlockCount + " totalLen = " + totalLen + " debug = " + debug + " readHeaderCount = " + readHeaderCount);
                 relayHeaderBlockRemainLen = totalLen - RELAY_HEADER_LEN;
                 relayHeaderBlockCount++;
+                if(!readMoreAfterHeader)
+                    return readHeaderCount;
             }
         }else {
             // Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock NoRelayHeader _length = " + _length + " debug = " + debug);
@@ -492,6 +495,10 @@ public class CommunicationSocket implements Runnable {
                 count = _is.read(buff, offset, _length);
             else
                 count = _is.read(buff, offset, buff.length - offset);
+            if(_length != RELAY_HEADER_LEN){
+                Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadBlock core  _length = " + _length + " debug = " + debug);
+            }
+            relayHeaderBlockRemainLen -= count;
             notifyUpdateDataUsage(count, debug);
         }
         catch (SocketTimeoutException tm)
@@ -1410,7 +1417,7 @@ public class CommunicationSocket implements Runnable {
     {
         Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " ReadServerVersion isRelay = " + isRelay);
         byte[] header = new byte[ Integer.BYTES];
-       int len =  ReadBlock( input, Integer.BYTES, header,0 , isRelay, "ReadServerVersion");
+       int len =  ReadBlock( input, Integer.BYTES, header,0 , isRelay, true, "ReadServerVersion");
        if( len != Integer.BYTES)
            return -1;
         int msg_len = utils.ByteArrayOfCToIntJava( header,0);
