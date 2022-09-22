@@ -18,6 +18,7 @@
   NSInteger connectionIndex;
   NSMutableData* receiverBuffer;
   uint32_t receiverBufferLength;
+  long relayLenRemained;
   NSCondition *streamLock;
   NSInteger sizeWillRead;
   uint16_t currentCmd;
@@ -37,6 +38,7 @@
   long lastDataUsageSentTimePoint;
   int loopCount;
   long dataCount;
+  long lastStreamTimePoint;
 //  __volatile BOOL isRLRunning;
 }
 
