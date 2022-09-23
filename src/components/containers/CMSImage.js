@@ -223,7 +223,8 @@ class CMSImage extends React.Component {
         ) : isBackground ? (
           <ImageBackground
             style={styleImage}
-            source={visible ? image : null}
+            imageStyle={{opacity: visible ? 1 : 0}}
+            source={image}
             resizeMode={resizeMode}
             children={children}
           />

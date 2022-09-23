@@ -416,6 +416,14 @@ class VideoPlayerView extends Component {
     __DEV__ && console.log('GOND onFullscreenPress: ', isFullscreen, manually);
     StatusBar.setHidden(videoStore.isFullscreen);
     this.playerRef && this.playerRef.resetZoom();
+    if (!isFullscreen) {
+      setTimeout(() => {
+        if (this._isMounted && videoStore.isFullscreen) {
+          this.forceUpdate();
+          // this.adjustChannelListPosition();
+        }
+      }, 50);
+    }
   };
 
   onSwitchLiveSearch = () => {

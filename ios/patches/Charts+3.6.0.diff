@@ -1,0 +1,18 @@
+diff --git a/Pods/Charts/Source/Charts/Data/Implementations/.DS_Store b/Pods/Charts/Source/Charts/Data/Implementations/.DS_Store
+new file mode 100644
+index 0000000..d27832e
+Binary files /dev/null and b/Pods/Charts/Source/Charts/Data/Implementations/.DS_Store differ
+diff --git a/cocoapods-patch-20220916-13794-s24jk9/Charts/Source/Charts/Data/Implementations/Standard/ChartDataSet.swift b/Pods/Charts/Source/Charts/Data/Implementations/Standard/ChartDataSet.swift
+index 9922878..ed1c7c8 100644
+--- a/cocoapods-patch-20220916-13794-s24jk9/Charts/Source/Charts/Data/Implementations/Standard/ChartDataSet.swift
++++ b/Pods/Charts/Source/Charts/Data/Implementations/Standard/ChartDataSet.swift
+@@ -571,4 +571,9 @@ extension ChartDataSet: RangeReplaceableCollection {
+         entries.removeAll(keepingCapacity: keepCapacity)
+         notifyDataSetChanged()
+     }
++    
++    public func replaceSubrange<C>(_ subrange: Swift.Range<Int>, with newElements: C) where C : Collection, ChartDataEntry == C.Element {
++        entries.replaceSubrange(subrange, with: newElements)
++        notifyDataSetChanged()
++    }
+ }

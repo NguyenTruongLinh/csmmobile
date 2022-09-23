@@ -1188,11 +1188,18 @@ class DirectVideoView extends React.Component {
     if (hRatio > wRatio) {
       let height = (wRatio * this.state.originalHeight) / 100;
       let top = (containerHeight - height) / 2;
-      this.setState({marginLeft: 0, marginTop: top > 0 ? top : undefined});
-    } else if (hRatio < wRatio) {
+      this.setState({
+        marginLeft: 0,
+        marginTop: top > 0 ? top : 0,
+      });
+    } else {
+      // if (hRatio < wRatio) {
       let width = (hRatio * this.state.originalWidth) / 100;
       let left = (containerWidth - width) / 2;
-      this.setState({marginTop: 0, marginLeft: left > 0 ? left : undefined});
+      this.setState({
+        marginTop: 0,
+        marginLeft: left > 0 ? left : 0,
+      });
     }
   };
 

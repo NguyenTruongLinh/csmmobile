@@ -717,7 +717,7 @@ class HLSStreamingView extends React.Component {
       this.setState({visibleBcg: true});
     }, 200);
     const videoStore = this.props.videoStore;
-    videoStore.switchStretch(true);
+    videoStore.setStretch(true);
   };
 
   onHDMode = isHD => {
@@ -1215,6 +1215,7 @@ class HLSStreamingView extends React.Component {
     __DEV__ && console.log('GOND HLS::onLoad: ', event);
     this.onSetMargin();
   };
+
   onSetMargin = () => {
     if (this.naturalSize == null || this.naturalSize.height == null) return;
     const originalHeight = this.naturalSize.height;
@@ -1224,23 +1225,38 @@ class HLSStreamingView extends React.Component {
     let containerHeight = this.props.height;
     let hRatio = (containerHeight * 1.0) / originalHeight;
     let wRatio = (containerWidth * 1.0) / originalWidth;
+    let marginLeft = 0;
+    let marginTop = 0;
     if (hRatio > wRatio) {
       let height = wRatio * originalHeight;
       let top = (containerHeight - height) / 2;
-      this.setState({marginLeft: 0, marginTop: top > 0 ? top : undefined});
+      // this.setState({marginLeft: 0, marginTop: top > 0 ? top : undefined});
+      marginTop = top > 0 ? top : 0;
     } else if (hRatio < wRatio) {
       let width = hRatio * originalWidth;
       let left = (containerWidth - width) / 2;
-      this.setState({marginTop: 0, marginLeft: left > 0 ? left : undefined});
+      // this.setState({marginTop: 0, marginLeft: left > 0 ? left : undefined});
+      marginLeft = left > 0 ? left : 0;
     }
-    this.setState({visibleBcg: false});
 
-    // const {width, height} = this.props;
-    // if (this.naturalSize == null || this.naturalSize.height == null) return;
-    // let marginleft =
-    //   (width - (height / this.naturalSize.height) * this.naturalSize.width) / 2;
-    // __DEV__ && console.log('GOND HLS::onSetMargin: ', marginleft);
-    // this.setState({marginLeft: marginleft});
+    // this.setState({visibleBcg: false, marginLeft, marginTop});
+    // __DEV__ &&
+    //   console.log(
+    //     'GOND HLS::onSetMargin: ',
+    //     this.naturalSize,
+    //     ', ratios: ',
+    //     hRatio,
+    //     wRatio,
+    //     'container: ',
+    //     containerHeight,
+    //     containerWidth,
+    //     'origin: ',
+    //     originalHeight,
+    //     originalWidth,
+    //     'margin: ',
+    //     marginTop,
+    //     marginLeft
+    //   );
   };
 
   clearReconnectTimeout = () => {

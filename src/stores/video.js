@@ -261,22 +261,24 @@ const DirectServerModel = types
           VSC.SetRelayDataUsageActivityLogs,
           params
         );
-        __DEV__ &&
-          console.log(
-            `0507 updateDataUsage callAPI params `,
-            JSON.stringify(params),
-            segmentLoad == FORCE_SENT_DATA_USAGE
-              ? 'STREAM STOPPED'
-              : 'AFTER 15 SECS',
-            ' ************************************** ',
-            'debug: ',
-            debug
-          );
+
+        // __DEV__ &&
+        //   console.log(
+        //     `0507 updateDataUsage callAPI params `,
+        //     JSON.stringify(params),
+        //     segmentLoad == FORCE_SENT_DATA_USAGE
+        //       ? 'STREAM STOPPED'
+        //       : 'AFTER 15 SECS',
+        //     ' ************************************** ',
+        //     'debug: ',
+        //     debug
+        //   );
 
         // snackbarUtil.showToast(
         //   'updateDataUsage params = ' + JSON.stringify(params),
         //   cmscolors.Success
         // );
+
         // for (let i = 0; i < self.dataUsageLogs.length; i++) {
         //   __DEV__ &&
         //     console.log(

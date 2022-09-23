@@ -297,9 +297,31 @@ public class FFMpegFrameView extends View {
             case Constant.EnumVideoPlaybackSatus.MOBILE_FRAME_BUFFER:
                 // dongpt: check frame from different channel (when switch channel but data from new channel not arrived yet)
                 Log.d("GOND", "MOBILE_FRAME_BUFFER " + currentSourceIndex + ", ch: " + channel);
-                if (currentSourceIndex >= 0 && currentSourceIndex != channel) {
-                    Log.d("GOND", "MOBILE_FRAME_BUFFER not same video source ...");
-                    return;
+                boolean isLive = this.Server.getisLive();
+                if (currentSourceIndex >= 0) 
+                {
+                    if (isLive)
+                    {
+                        if (currentSourceIndex != channel && channel >= 0)
+                        {
+                            Log.d("GOND", "MOBILE_FRAME_BUFFER-LIVE not same video source: sourceIdx " + currentSourceIndex + ", channel " + channel);
+                            return;
+                        }
+                    } 
+                    else
+                    {
+                        int currentChannel = -1;
+                        try {
+                            currentChannel = Integer.parseInt(this.Channels);
+                        } catch (Exception e) {
+                            Log.e("GOND", "MOBILE_FRAME_BUFFER parse Channel failed " + this.Channels);
+                        }
+                        if (currentChannel >= 0 && currentChannel != channel)
+                        {
+                            Log.d("GOND", "MOBILE_FRAME_BUFFER-SEARCH not same video source: sourceIdx " + currentSourceIndex + ", channel " + channel);
+                            return;
+                        }
+                    }
                 }
                 UpdateFrame( (Bitmap)data, channel );
                 break;
@@ -321,12 +343,12 @@ public class FFMpegFrameView extends View {
 
     private  void  OnEvent( int msgid, Object value, int channel)
     {
-        if( msgid == Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME && 
-            (valid_first_frame == false || (currentSourceIndex >= 0 && channel >= 0 && currentSourceIndex != channel)))
-        {
-            Log.d("GOND", "OnEvent not valid first frame or same video source ..." + currentSourceIndex + ", ch:" + channel);
-            return;
-        }
+        // if( msgid == Constant.EnumVideoPlaybackSatus.MOBILE_SEARCH_FRAME_TIME && 
+        //     (valid_first_frame == false || (currentSourceIndex >= 0 && channel >= 0 && currentSourceIndex != channel)))
+        // {
+        //     Log.d("GOND", "OnEvent not valid first frame or same video source ..." + currentSourceIndex + ", ch:" + channel);
+        //     return;
+        // }
         
         try {
             WritableMap event = Arguments.createMap();

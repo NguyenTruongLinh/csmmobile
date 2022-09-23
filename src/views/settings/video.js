@@ -188,7 +188,11 @@ class VideosettingView extends Component {
     const checkBox = (
       <MaterialIcons
         style={{marginTop: 15, marginRight: 8}}
-        name={isChecked ? 'radio-button-checked' : 'radio-button-unchecked'}
+        name={
+          isChecked && !isLoading
+            ? 'radio-button-checked'
+            : 'radio-button-unchecked'
+        }
         color={
           item.value && !isStreamingAvailable
             ? CMSColors.DisableItemColor
