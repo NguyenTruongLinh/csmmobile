@@ -703,8 +703,10 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
           }
           else
           {
-            int originalWidth = screen.resolutionWidth;
-            int originalHeight = screen.resolutionHeight;
+            int originalWidth = (int)screen.resolutionWidth;
+            int originalHeight = (int)screen.resolutionHeight;
+            NSLog(@"GOND LIVE iOS size original: %d %d, player: %f %f", originalWidth, originalHeight, view.frame.size.width, view.frame.size.height);
+
             if(originalWidth > 0 && originalHeight > 0)
             {
               double hRatio = (double)view.frame.size.height / originalHeight;
@@ -715,12 +717,13 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
                   int top = (view.frame.size.height - height) /2;
                   displayRect = CGRectMake(0, top, view.frame.size.width, height);
               }
-              else if (hRatio < wRatio)
+              else // if (hRatio < wRatio)
               {
                   int width = (int)(hRatio * originalWidth);
                   int left = (view.frame.size.width - width) / 2;
                   displayRect = CGRectMake(left, 0, width, view.frame.size.height);
               }
+              NSLog(@"GOND LIVE iOS size scaled: %f %f", displayRect.size.width, displayRect.size.height);
                             
               if(_responseResolution || originalWidth != _oldOriginWidth || originalHeight != _oldOriginHeight)
               {

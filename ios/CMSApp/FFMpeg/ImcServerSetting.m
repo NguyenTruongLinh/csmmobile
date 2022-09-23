@@ -159,8 +159,11 @@ const int RELAY_RESOLUTION_Y = 329;
   for( int source = 0; source < MAX_CHANNEL; source++ )
     requestFrameType[source] = FALSE;
   
-  if( fullscreenChannel >= 0 && channelsConfig[fullscreenChannel].videoSourceInput - MAX_CHANNEL >= 0 && channelsConfig[fullscreenChannel].videoSourceInput)
+  if( fullscreenChannel >= 0 && (channelsConfig[fullscreenChannel] != nil) && channelsConfig[fullscreenChannel].videoSourceInput - MAX_CHANNEL >= 0)
+  {
     requestFrameType[channelsConfig[fullscreenChannel].videoSourceInput - MAX_CHANNEL] = TRUE;
+//    requestFrameType[fullscreenChannel] = TRUE;
+  }
 }
 
 -(void)resetRequestFrameType
@@ -403,7 +406,7 @@ const int RELAY_RESOLUTION_Y = 329;
 
 -(id)exportResolutionRequestToXML: (BOOL) isRelay
 {
-  NSLog(@"0609 exportResolutionRequestToXML isRelay = %d", isRelay);
+  NSLog(@"GOND exportResolutionRequestToXML fullscreenChannel = %d, smallRes: %fx%f, largeRes: %fx%f", fullscreenChannel, smallDivSize.width, smallDivSize.height, largeDivSize.width, largeDivSize.height);
   GDataXMLElement* rootNode = [GDataXMLNode elementWithName:@"RESOLUTION_REQUEST"];
   if( rootNode )
   {
@@ -444,10 +447,11 @@ const int RELAY_RESOLUTION_Y = 329;
 
     sourceResMask[fullscreenChannel] = true;
     GDataXMLNode* count = [GDataXMLNode elementWithName:@"count" stringValue:[NSString stringWithFormat:@"1"]];
-    GDataXMLNode* source = [GDataXMLNode elementWithName:@"source_0" stringValue:[NSString stringWithFormat:@"*"]];
+//    GDataXMLNode* source = [GDataXMLNode elementWithName:@"source_0" stringValue:[NSString stringWithFormat:@"*"]];
+    GDataXMLNode* source = fullscreenChannel >= 0 ? [GDataXMLNode elementWithName:@"source_0" stringValue:[NSString stringWithFormat:@"%d", channelsConfig[fullscreenChannel].videoSourceInput]] : [GDataXMLNode elementWithName:@"source_0" stringValue:[NSString stringWithFormat:@"*"]];
 
-    GDataXMLNode* res_X = [GDataXMLNode elementWithName:@"resolutionX_0" stringValue:[NSString stringWithFormat:@"%zd",(int)smallDivSize.width]];
-    GDataXMLNode* res_Y = [GDataXMLNode elementWithName:@"resolutionY_0" stringValue:[NSString stringWithFormat:@"%zd",(int)smallDivSize.height]];
+    GDataXMLNode* res_X = [GDataXMLNode elementWithName:@"resolutionX_0" stringValue:[NSString stringWithFormat:@"%d",(int)(/*isRelay ? RELAY_RESOLUTION_X :*/ largeDivSize.width)]];
+    GDataXMLNode* res_Y = [GDataXMLNode elementWithName:@"resolutionY_0" stringValue:[NSString stringWithFormat:@"%d",(int)(/*isRelay ? RELAY_RESOLUTION_Y :*/ largeDivSize.height)]];
       
     [rootNode addAttribute:count];
     [rootNode addAttribute:source];
@@ -469,6 +473,7 @@ const int RELAY_RESOLUTION_Y = 329;
       if (requestFrameType[i] == TRUE) {
         mainSubMask[i] = '1';
         channelMask = ((uint64_t)0x01<<i);
+        // NSLog(@"GOND exportMainSubStreamRequestToXML HD channel: %ld, sourceIdx: %d, fullScreenChannel: %d", i, channelsConfig[fullscreenChannel].videoSourceInput, fullscreenChannel);
       }
       else
       {
