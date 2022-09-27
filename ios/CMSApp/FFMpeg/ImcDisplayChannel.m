@@ -69,22 +69,25 @@
 //-(UIImage*)getScaledImage
 -(UIImage*)getScaledImage:(int)playerWidth :(int)playerHeight :(float)scaleXY :(int)translateX :(int)translateY
 {
-  CGRect fullScaled = CGRectMake(0, 0, displayImage.size.width, displayImage.size.height);
-
-  //apply zoom
-  CGRect cropScaled = CGRectInset(fullScaled, displayImage.size.width/2 - displayImage.size.width/scaleXY/2, displayImage.size.height/2 - displayImage.size.height/scaleXY/2);
-  
-//  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
-  
-  //apply translate
-  cropScaled.origin.x = -translateX*displayImage.size.width/scaleXY/playerWidth;
-  cropScaled.origin.y = -translateY*displayImage.size.height/scaleXY/playerHeight;
-  
-  CGImageRef drawImg = CGImageCreateWithImageInRect(displayImage.CGImage, cropScaled);
-  
-  UIImage *imageOut = [UIImage imageWithCGImage:drawImg];
-  return imageOut;
-  
+    UIImage *imageOut = nil;
+    CGRect fullScaled = CGRectMake(0, 0, displayImage.size.width, displayImage.size.height);
+    
+    //apply zoom
+    CGRect cropScaled = CGRectInset(fullScaled, displayImage.size.width/2 - displayImage.size.width/scaleXY/2, displayImage.size.height/2 - displayImage.size.height/scaleXY/2);
+    
+    //  NSLog(@"translate %d %d - %d %d", translateX, translateY, playerWidth, playerHeight);
+    
+    //apply translate
+    cropScaled.origin.x = -translateX*displayImage.size.width/scaleXY/playerWidth;
+    cropScaled.origin.y = -translateY*displayImage.size.height/scaleXY/playerHeight;
+    
+    // @autoreleasepool
+    {
+      CGImageRef drawImg = CGImageCreateWithImageInRect(displayImage.CGImage, cropScaled);
+      imageOut = [UIImage imageWithCGImage:drawImg];
+    }
+    
+    return imageOut;
 }
 
 -(NSTimeInterval)timeFromLastUpdate

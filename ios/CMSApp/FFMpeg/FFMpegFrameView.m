@@ -3017,7 +3017,7 @@ const uint32_t numLayers = 24;
   {
     int originalWidth = searchFrameRect.width; // searchFrameImage.size.width;
     int originalHeight = searchFrameRect.height; // searchFrameImage.size.height;
-//    NSLog(@"GOND size original: %d %d, player: %d %d", originalWidth, originalHeight, playerWidth, playerHeight);
+    // NSLog(@"GOND size original: %d %d, player: %d %d", originalWidth, originalHeight, playerWidth, playerHeight);
     if(originalWidth > 0 && originalHeight > 0)
     {
       // dongpt: tried to fix reverted dimensions of image
@@ -3056,6 +3056,7 @@ const uint32_t numLayers = 24;
   {
     responseResolution = true;
   }
+  // NSLog(@"GOND size scaled: %f %f", boundFrame.size.width, boundFrame.size.height);
   videoView.bounds = boundFrame;
   //apply zoom
   CGRect cropScaled = CGRectInset(fullScaled, searchFrameImage.size.width/2 - searchFrameImage.size.width/scaleXY/2, searchFrameImage.size.height/2 - searchFrameImage.size.height/scaleXY/2);
@@ -3110,7 +3111,7 @@ const uint32_t numLayers = 24;
 {
 	
   DisplayedVideoFrame* displayFrame = (DisplayedVideoFrame*)frame;
-  NSLog(@"GOND addSearchVideoFrame %d %d", displayFrame.videoFrame.size.width, displayFrame.videoFrame.size.height);
+  // NSLog(@"GOND addSearchVideoFrame %f %f, res = %ld : %ld", displayFrame.videoFrame.size.width, displayFrame.videoFrame.size.height, (long)displayFrame.resolutionWidth, (long)displayFrame.resolutionHeight);
   if (displayFrame.videoFrame && (displayFrame.videoFrame.CGImage || displayFrame.videoFrame.CIImage))
   {
     if (videoPlayerStatus == STATE_STOP)
@@ -3585,7 +3586,11 @@ const uint32_t numLayers = 24;
     if ((NSInteger)[_channels intValue] == displayFrame.channelIndex)
     {
       dispatch_async(dispatch_get_main_queue(), ^{
-        [mainDisplayVideo addVideoFrame:displayFrame];
+        [self->mainDisplayVideo addVideoFrame:displayFrame];
+//        if (displayFrame.videoFrame.CGImage) {
+//           CGImageRelease(displayFrame.videoFrame.CGImage);
+//        }
+//        displayFrame.videoFrame = nil;
       });
       
 //      for (ImcScreenDisplay* screen in [mainDisplayVideo getDisplayScreens])
