@@ -49,7 +49,6 @@
         decoderMappings = [NSMutableArray array];
         videoMode = NO_VIDEO;
         needToResetDecoderForChannelIndex = -1;
-        
     }
     return self;
 }
@@ -427,8 +426,6 @@
                                         else
                                             videoFrame.frameMode = encodingFrame.videoFrameInfo.frameMode;
                                         [delegate handleCommand:IMC_CMD_DISPLAY_VIDEO :videoFrame];
-                                        // dongpt: add nil
-										videoFrame = nil;
                                     }
                                 }
 								// dongpt: nil anyway
@@ -497,8 +494,6 @@
                                                 if(((FrameHeaderEx*)encodingFrame.header).snapshotImage)
                                                     videoFrame.frameMode = SNAPSHOT;
                                                 [delegate handleCommand:IMC_CMD_DISPLAY_VIDEO :videoFrame];
-												// dongpt: add nil
-                                                videoFrame = nil;
                                             }
                                             else
                                             {
@@ -519,8 +514,12 @@
                         
                     }
                     frameData =  nil;
-                    encodingFrame.frameData = nil;
-                    encodingFrame = nil;
+                    
+                    if (encodingFrame)
+                    {
+                      encodingFrame.frameData = nil;
+                      encodingFrame = nil;
+                    }
                 }
             }
         }

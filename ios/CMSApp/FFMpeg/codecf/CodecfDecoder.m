@@ -134,6 +134,9 @@
     avcodec_close(m_avcodecContext);
 	av_free(m_avcodecContext);
 	av_frame_free(&m_avFrame);
+    avpicture_free(&picture);
+    if (img_convert_ctx)
+        sws_freeContext(img_convert_ctx);
     //avpicture_free(&picture);
 	// Thang Do, add for deinterlaced D1, Dec 02, 2011, begin
 	if ( m_pDeinterlaced )
@@ -305,7 +308,11 @@
     
 	// Release old picture and scaler
 	avpicture_free(&picture);
-	sws_freeContext(img_convert_ctx);
+  if (img_convert_ctx)
+  {
+    sws_freeContext(img_convert_ctx);
+    img_convert_ctx = nil;
+  }
 	
 	// Allocate RGB picture
 	avpicture_alloc(&picture, AV_PIX_FMT_RGB24, m_outputWidth, m_outputHeight);
@@ -323,11 +330,11 @@
 
 -(void)convertFrameToRGB {
 	
-    //if (img_convert_ctx) {
+    if (img_convert_ctx) {
         sws_scale (img_convert_ctx, (const uint8_t *const*)m_avFrame->data, m_avFrame->linesize,
                    0, m_avcodecContext->height,
                    picture.data, picture.linesize);
-    //}
+    }
     
 }
 

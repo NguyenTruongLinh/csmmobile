@@ -45,6 +45,7 @@
   NSString* serverAddressInfo;
   NSString* frameRate;
   
+  UIImage* currentImage;
 }
 
 @property (readwrite) IMC_DIVISION_MODE currentDiv;

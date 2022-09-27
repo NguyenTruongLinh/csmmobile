@@ -271,6 +271,8 @@ PODS:
     - SwiftyJSON (= 5.0)
   - react-native-get-random-values (1.8.0):
     - React-Core
+  - react-native-network-info (5.2.1):
+    - React
   - react-native-orientation-locker (1.5.0):
     - React-Core
   - react-native-safe-area-context (3.4.1):
@@ -437,6 +439,7 @@ DEPENDENCIES:
   - "react-native-cameraroll (from `../node_modules/@react-native-community/cameraroll`)"
   - react-native-charts-wrapper (from `../node_modules/react-native-charts-wrapper`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
+  - react-native-network-info (from `../node_modules/react-native-network-info`)
   - react-native-orientation-locker (from `../node_modules/react-native-orientation-locker`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-video (from `../node_modules/react-native-video`)
@@ -529,6 +532,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-charts-wrapper"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
+  react-native-network-info:
+    :path: "../node_modules/react-native-network-info"
   react-native-orientation-locker:
     :path: "../node_modules/react-native-orientation-locker"
   react-native-safe-area-context:
@@ -632,6 +637,7 @@ SPEC CHECKSUMS:
   react-native-cameraroll: 60ac50a5209777cbccfe8d7a62d0743a9da87060
   react-native-charts-wrapper: 0477432e391ae48ec6253e22172110191fab06d4
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
+  react-native-network-info: d1290ffc0bd0709e11436f5b8d7f605dcc5c4530
   react-native-orientation-locker: 851f6510d8046ea2f14aa169b1e01fcd309a94ba
   react-native-safe-area-context: 5b8a418400eb3d8364aa87300e865c0262cc17b9
   react-native-video: 77ce22be7abff9e373527ca10106a99dea3ba56c
@@ -669,6 +675,6 @@ SPEC CHECKSUMS:
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: 735b01c585398f6d240da04c1bb08fa1bb55dde7
+PODFILE CHECKSUM: 50a79d4624212fe64ae40555ed131243141a974f
 
-COCOAPODS: 1.10.2
+COCOAPODS: 1.11.3

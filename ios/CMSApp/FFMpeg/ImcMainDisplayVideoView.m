@@ -96,6 +96,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     channelConfigBuffer = [NSMutableDictionary dictionary];
     displayMode = IMC_DISPLAY_STRETCH;
     _responseResolution = TRUE;
+    currentImage = nil;
   }
   return self;
 }
@@ -148,6 +149,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     rootLayer = _rootLayer;
     displayMode = IMC_DISPLAY_STRETCH;
     _responseResolution = TRUE;
+    currentImage = nil;
   }
   return self;
 }
@@ -386,9 +388,10 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
               //screen.displayImage = [UIImage imageWithCGImage:displayFrame.videoFrame.CGImage];
               //screen.displayImage = nil;
               // NSLog(@"GOND Fullscreen set displayImage");
-              screen.displayImage = [[UIImage alloc] initWithCGImage:displayFrame.videoFrame.CGImage];
+              // screen.displayImage = [[UIImage alloc] initWithCGImage:displayFrame.videoFrame.CGImage];
               //screen.frameRate = -1;
               //NSLog(@"1.Add Video Frame for Channel Index:", displayFrame.channelIndex);
+              screen.displayImage = [UIImage imageWithCGImage:displayFrame.videoFrame.CGImage];
             }
           }
           else if (displayFrame.videoFrame.CIImage)
@@ -401,6 +404,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
             }
             //NSLog(@"2.Add Video Frame for Channel Index:", displayFrame.channelIndex);
           }
+          // displayFrame.videoFrame = nil;
           
           //CGImageRelease(displayFrame.videoFrame.CGImage);
           if (screen.channelIndex == displayFrame.channelIndex) {
@@ -532,7 +536,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 - (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx
 {
   if (fullscreenView < 0) return; // CMS added
-  //@autoreleasepool
+  @autoreleasepool
   {
     UIGraphicsPushContext(ctx);
     //    if (logoImage != [UIImage imageNamed:@"Mobile_Logo1"]) {
@@ -543,13 +547,13 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
     {
       // NSLog(@"GOND CGContextClearRect");
       CGContextClearRect(ctx, layer.frame);
-      //needToClearScreen = FALSE;
+      needToClearScreen = FALSE;
     }
     // NSLog(@"GOND drawLayer inCtx sublayers = ", layer.sublayers.count);
     
-    NSInteger index = [displayLayers indexOfObject:layer];
+//    NSInteger index = [displayLayers indexOfObject:layer];
 //    NSLog(@"GOND drawLayer fullscreenView = %d, index = %d", fullscreenView, index);
-    // if( index >= 0 && index < currentDiv*currentDiv) // CMS removed
+//    if( index >= 0 && index < currentDiv*currentDiv) // CMS removed
     {
       UIFont* displayFont;
 	  // dongpt: CMSMobile display only 1 screen per reactnative view anyway
@@ -687,14 +691,14 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
           CALayer* sublayer = [CALayer layer];
           CGRect displayRect;
           
-//          if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
-//          {
-//            CGSize imageSize = screen.displayImage.size;
-//            if( imageSize.width/imageSize.height > 1.8 && imageSize.width <= 720)
-//              imageSize.height *= 2;
-//            displayRect = [self callDisplayRect:view.frame :imageSize :FALSE];
-//          }
-//          else if(_stretch) // STRETCH Mode
+          //          if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
+          //          {
+          //            CGSize imageSize = screen.displayImage.size;
+          //            if( imageSize.width/imageSize.height > 1.8 && imageSize.width <= 720)
+          //              imageSize.height *= 2;
+          //            displayRect = [self callDisplayRect:view.frame :imageSize :FALSE];
+          //          }
+          //          else if(_stretch) // STRETCH Mode
           
           if( displayMode == IMC_DISPLAY_STRETCH )
           {
@@ -706,55 +710,63 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
             int originalWidth = (int)screen.resolutionWidth;
             int originalHeight = (int)screen.resolutionHeight;
             NSLog(@"GOND LIVE iOS size original: %d %d, player: %f %f", originalWidth, originalHeight, view.frame.size.width, view.frame.size.height);
-
+            
             if(originalWidth > 0 && originalHeight > 0)
             {
               double hRatio = (double)view.frame.size.height / originalHeight;
               double wRatio = (double)view.frame.size.width / originalWidth;
               if (hRatio > wRatio)
               {
-                  int height = (int)(wRatio * originalHeight);
-                  int top = (view.frame.size.height - height) /2;
-                  displayRect = CGRectMake(0, top, view.frame.size.width, height);
+                int height = (int)(wRatio * originalHeight);
+                int top = (view.frame.size.height - height) /2;
+                displayRect = CGRectMake(0, top, view.frame.size.width, height);
               }
               else // if (hRatio < wRatio)
               {
-                  int width = (int)(hRatio * originalWidth);
-                  int left = (view.frame.size.width - width) / 2;
-                  displayRect = CGRectMake(left, 0, width, view.frame.size.height);
+                int width = (int)(hRatio * originalWidth);
+                int left = (view.frame.size.width - width) / 2;
+                displayRect = CGRectMake(left, 0, width, view.frame.size.height);
               }
               NSLog(@"GOND LIVE iOS size scaled: %f %f", displayRect.size.width, displayRect.size.height);
-                            
+              
               if(_responseResolution || originalWidth != _oldOriginWidth || originalHeight != _oldOriginHeight)
               {
-                  NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeight],nil];
-//                  [self.delegate1 responseResolution : resolution];
-                  [delegate handleResponseMessage:IMC_MSG_MAIN_DISPLAY_VIDEO_UPDATE_FRAME_RESOLUTION fromView:nil withData:resolution];
-                  _responseResolution = false;
-                  _oldOriginWidth = originalWidth;
-                  _oldOriginHeight = originalHeight;
+                NSArray *resolution = [NSArray arrayWithObjects: [NSNumber numberWithInt:originalWidth], [NSNumber numberWithInt:originalHeight],nil];
+                //                  [self.delegate1 responseResolution : resolution];
+                [delegate handleResponseMessage:IMC_MSG_MAIN_DISPLAY_VIDEO_UPDATE_FRAME_RESOLUTION fromView:nil withData:resolution];
+                _responseResolution = false;
+                _oldOriginWidth = originalWidth;
+                _oldOriginHeight = originalHeight;
               }
             }
           }
-
-          if (screen.displayImage.CGImage) 
+          
+          if (screen.displayImage.CGImage)
           {
             // NSLog(@"GOND draw frame in fullscreen: %f x %f", displayRect.size.width, displayRect.size.height);
             // NSLog(@"GOND draw frame in rect fullscreen");
-            sublayer.contents = (__bridge id)([screen getScaledImage:playerWidth:playerHeight:scaleXY:translateX:translateY].CGImage); // (screen.displayImage.CGImage);
-            sublayer.frame = displayRect;
-            // layer.sublayers = nil;
-			// dongpt: add nil
+            [CATransaction flush];
             for (CALayer* oldsublayer in layer.sublayers) {
               oldsublayer.contents = nil;
               [oldsublayer removeFromSuperlayer];
             }
+            if (currentImage)
+            {
+              CGImageRelease(currentImage.CGImage);
+              currentImage = nil;
+            }
+            currentImage = [screen getScaledImage:playerWidth:playerHeight:scaleXY:translateX:translateY];
+             sublayer.contents = (__bridge id)(currentImage.CGImage); // (screen.displayImage.CGImage);
+            // sublayer.contents = (__bridge id)(screen.displayImage.CGImage);
+            sublayer.frame = displayRect;
+            // layer.sublayers = nil;
+            // dongpt: add nil
             [layer addSublayer:sublayer];
             // [sublayer display];
             // NSLog(@"GOND drawLayer added sublayers = %lu", layer.sublayers.count);
           }
-		  
-	      if([screen needDrawScreen])
+          
+          if([screen needDrawScreen])
           {
             screen.lastDisplayImage = screen.displayImage;
             screen.lastUpdateTime = [NSDate date];
@@ -766,47 +778,49 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
             // screen.lastUpdateTime = [NSDate date];
             // [delegate handleResponseMessage:IMC_MSG_CONNECTION_NEED_RESET fromView:nil withData:nil];
           }
+          
+          screen.displayImage = nil;
           /*
-          CGRect displayRect;
-          
-          if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
-          {
-            CGSize imageSize = screen.displayImage.size;
-            if( imageSize.width/imageSize.height > 1.8 && imageSize.width <= 720)
-              imageSize.height *= 2;
-            displayRect = [self callDisplayRect:view.frame :imageSize :FALSE];
-          }
-          else // STRETCH Mode
-            displayRect = view.frame;
-          
-          //@autoreleasepool
-          {
-            if (screen.displayImage && (screen.displayImage.CGImage || screen.displayImage.CIImage) && screen.displayImage.size.width > 0 && screen.displayImage.size.height > 0)
-            {
-              //@autoreleasepool
-              {
-                UIImage* viewImage = [screen getScaledImage];
-                // UIImageView *viewImage = [[UIImageView alloc]initWithFrame:displayRect];
-                if (viewImage != nil && viewImage.size.width > 0 && viewImage.size.height > 0) {
-                  //NSLog(@"---Draw Layer for channel: ",screen.channelIndex);
-                  [viewImage drawInRect:displayRect];
-                  // [viewImage setImage:[screen getScaledImage]];
-                }
-                //viewImage = nil;
-              }
-              if([screen needDrawScreen])
-              {
-                screen.lastDisplayImage = screen.displayImage;
-                screen.lastUpdateTime = [NSDate date];
-              }
-              else if([screen timeFromLastUpdate] > TIME_REFRESS_IMAGE)
-              {
-                screen.displayImage = logoImage;
-                screen.lastUpdateTime = [NSDate date];
-              }
-            }
-          }
-        */
+           CGRect displayRect;
+           
+           if( displayMode == IMC_DISPLAY_FIT || screen.displayImage == logoImage )
+           {
+           CGSize imageSize = screen.displayImage.size;
+           if( imageSize.width/imageSize.height > 1.8 && imageSize.width <= 720)
+           imageSize.height *= 2;
+           displayRect = [self callDisplayRect:view.frame :imageSize :FALSE];
+           }
+           else // STRETCH Mode
+           displayRect = view.frame;
+           
+           //@autoreleasepool
+           {
+           if (screen.displayImage && (screen.displayImage.CGImage || screen.displayImage.CIImage) && screen.displayImage.size.width > 0 && screen.displayImage.size.height > 0)
+           {
+           //@autoreleasepool
+           {
+           UIImage* viewImage = [screen getScaledImage];
+           // UIImageView *viewImage = [[UIImageView alloc]initWithFrame:displayRect];
+           if (viewImage != nil && viewImage.size.width > 0 && viewImage.size.height > 0) {
+           //NSLog(@"---Draw Layer for channel: ",screen.channelIndex);
+           [viewImage drawInRect:displayRect];
+           // [viewImage setImage:[screen getScaledImage]];
+           }
+           //viewImage = nil;
+           }
+           if([screen needDrawScreen])
+           {
+           screen.lastDisplayImage = screen.displayImage;
+           screen.lastUpdateTime = [NSDate date];
+           }
+           else if([screen timeFromLastUpdate] > TIME_REFRESS_IMAGE)
+           {
+           screen.displayImage = logoImage;
+           screen.lastUpdateTime = [NSDate date];
+           }
+           }
+           }
+           */
         }
         
         // dongpt: remove text
@@ -1166,8 +1180,10 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 //       }
       
     }
-    if(needToClearScreen)
-      needToClearScreen = false;
+//    if(needToClearScreen) {
+//      CGContextClearRect(ctx, layer.frame);
+//      needToClearScreen = false;
+//    }
     UIGraphicsPopContext();
   }
 }
