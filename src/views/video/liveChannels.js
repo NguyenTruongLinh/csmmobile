@@ -219,6 +219,17 @@ class LiveChannelsView extends React.Component {
           } else this.playerRefs = [];
         }
       ),
+      reaction(
+        () => videoStore.gridLayout,
+        (gridLayout, previousGridLayout) => {
+          this.setState({
+            videoWindow: {
+              width: this.state.viewableWindow.width / gridLayout,
+              height: this.state.viewableWindow.height / gridLayout,
+            },
+          });
+        }
+      ),
       // reaction(
       //   () => videoStore.needAuthen,
       //   (needAuthen, previousValue) => {

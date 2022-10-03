@@ -78,7 +78,8 @@ export const Settings = {
     'Connect to your NVR directly. Public IP is required, mobile connection must be opened.',
   videoStreamDesc:
     'Connect to your NVR via cloud. Subject to AWS fees and data caps.',
-  videoRelayDesc: 'Description for Relay server.',
+  videoRelayDesc:
+    "Connect to your NVR via i3's relay server. Subject to Relay Server fees and data caps.",
 };
 
 export const ActionMessages = {

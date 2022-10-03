@@ -1,7 +1,7 @@
 PODS:
   - boost-for-react-native (1.63.0)
-  - BVLinearGradient (2.5.6):
-    - React
+  - BVLinearGradient (2.6.2):
+    - React-Core
   - Charts (3.6.0):
     - Charts/Core (= 3.6.0)
   - Charts/Core (3.6.0)
@@ -265,7 +265,7 @@ PODS:
     - React-Core
   - react-native-cameraroll (4.1.2):
     - React-Core
-  - react-native-charts-wrapper (0.5.8):
+  - react-native-charts-wrapper (0.5.9):
     - Charts (= 3.6.0)
     - React
     - SwiftyJSON (= 5.0)
@@ -377,7 +377,7 @@ PODS:
     - React-Core
   - RNGestureHandler (2.5.0):
     - React-Core
-  - RNReanimated (2.8.0):
+  - RNReanimated (2.10.0):
     - DoubleConversion
     - FBLazyVector
     - FBReactNativeSpec
@@ -404,12 +404,12 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (3.13.1):
+  - RNScreens (3.15.0):
     - React-Core
     - React-RCTImage
   - RNShare (6.5.0):
     - React-Core
-  - RNSVG (12.3.0):
+  - RNSVG (12.4.3):
     - React-Core
   - RNVectorIcons (8.1.0):
     - React-Core
@@ -607,11 +607,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
-  BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
+  BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
   Charts: b1e3a1f5a1c9ba5394438ca3b91bd8c9076310af
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: 4392827026aa53bc66663691580dda0f4063aa9e
+  FBReactNativeSpec: beddd89f4202027241cfd62a1dd93c27b754f5f7
   Firebase: 73c3e3b216ec1ecbc54d2ffdd4670c65c749edb1
   FirebaseCore: 3f09591d51292843e2a46f18358d60bf4e996255
   FirebaseCoreDiagnostics: 92e07a649aeb66352b319d43bdd2ee3942af84cb
@@ -635,7 +635,7 @@ SPEC CHECKSUMS:
   React-jsinspector: cc614ec18a9ca96fd275100c16d74d62ee11f0ae
   react-native-background-timer: 117fffdc9b0d6f144444bb49029f94275a45fdb5
   react-native-cameraroll: 60ac50a5209777cbccfe8d7a62d0743a9da87060
-  react-native-charts-wrapper: 0477432e391ae48ec6253e22172110191fab06d4
+  react-native-charts-wrapper: fa919c70d3db11c959b0f3066a01dbc0b80c4ede
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-network-info: d1290ffc0bd0709e11436f5b8d7f605dcc5c4530
   react-native-orientation-locker: 851f6510d8046ea2f14aa169b1e01fcd309a94ba
@@ -667,10 +667,10 @@ SPEC CHECKSUMS:
   RNFBMessaging: c21bf720f2e1c58728ea8779d78fc950aaa4f379
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: bad495418bcbd3ab47017a38d93d290ebd406f50
-  RNReanimated: 7f3eef39b48facdb0b053873abdaafaa6a953b0d
-  RNScreens: 40a2cb40a02a609938137a1e0acfbf8fc9eebf19
+  RNReanimated: cce4727fde9f4da9b800d999fa9975ea7a021dcf
+  RNScreens: 4a1af06327774490d97342c00aee0c2bafb497b7
   RNShare: 047d42214f875d731bde73a2b67418638af85ad9
-  RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
+  RNSVG: f3b60aeeaa81960e2e0536c3a9eef50b667ef3a9
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
