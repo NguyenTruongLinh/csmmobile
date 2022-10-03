@@ -345,7 +345,7 @@ export default HLSStreamModel = types
     },
     // dongpt: ready to enable feature buttons
     get isMenuReady() {
-      return this.true;
+      return true;
     },
     get isReady() {
       return self.targetUrl.isReady;

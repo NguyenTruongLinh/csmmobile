@@ -3663,7 +3663,7 @@ export const VideoModel = types
                   cmd: VSCCommandString.TIMELINE,
                 }
               );
-              __DEV__ && console.log('GOND get HLS data Timeline: ', res);
+              // __DEV__ && console.trace('GOND get HLS data Timeline: ', res);
               if (res && res.Data) {
                 jTimeStamp =
                   typeof res.Data == 'string' ? JSON.parse(res.Data) : res.Data;
