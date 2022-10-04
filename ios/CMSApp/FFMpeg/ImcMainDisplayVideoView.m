@@ -207,7 +207,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 {
   for(CALayer* layer in displayLayers )
   {
-    NSLog(@"GOND remove all layers");
+   NSLog(@"GOND remove all layers");
     layer.sublayers = nil;
     [layer removeFromSuperlayer];
     
@@ -536,7 +536,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
 - (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx
 {
   if (fullscreenView < 0) return; // CMS added
-  @autoreleasepool
+ @autoreleasepool
   {
     UIGraphicsPushContext(ctx);
     //    if (logoImage != [UIImage imageNamed:@"Mobile_Logo1"]) {
@@ -745,7 +745,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
           {
             // NSLog(@"GOND draw frame in fullscreen: %f x %f", displayRect.size.width, displayRect.size.height);
             // NSLog(@"GOND draw frame in rect fullscreen");
-            [CATransaction flush];
+           [CATransaction flush];
             for (CALayer* oldsublayer in layer.sublayers) {
               oldsublayer.contents = nil;
               [oldsublayer removeFromSuperlayer];
@@ -779,7 +779,7 @@ const int TIME_REFRESH_IMAGE = 20; // if there is no video in 20 seconds, screen
             // [delegate handleResponseMessage:IMC_MSG_CONNECTION_NEED_RESET fromView:nil withData:nil];
           }
           
-          screen.displayImage = nil;
+//          screen.displayImage = nil;
           /*
            CGRect displayRect;
            
