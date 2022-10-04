@@ -41,21 +41,148 @@ const NSUInteger kMaxCommand = 50;
   return self;
 }
 
+-(NSString*) controllerCommandIdToString: (uint16_t) commandId
+{
+  
+  switch (commandId) {
+    case IMC_CMD_INIT_THREAD: return @"IMC_CMD_INIT_THREAD";
+    case IMC_CMD_CONNECTION_BEGIN: return @"IMC_CMD_CONNECTION_BEGIN";
+    case IMC_CMD_CONNECTION_CONNECT: return @"IMC_CMD_CONNECTION_CONNECT";
+    case IMC_CMD_CONNECTION_CONNECT_RESPONSE: return @"IMC_CMD_CONNECTION_CONNECT_RESPONSE";
+    case IMC_CMD_CONNECTION_CONNECT_ERROR: return @"IMC_CMD_CONNECTION_CONNECT_ERROR";
+    case IMC_CMD_CONNECTION_DISCONNECT: return @"IMC_CMD_CONNECTION_DISCONNECT";
+    case IMC_CMD_CONNECTION_DISCONNECT_RESPONSE: return @"IMC_CMD_CONNECTION_DISCONNECT_RESPONSE";
+    case IMC_CMD_START_TRANSFER_VIDEO: return @"IMC_CMD_START_TRANSFER_VIDEO";
+    case IMC_CMD_STOP_TRANSFER_VIDEO: return @"IMC_CMD_STOP_TRANSFER_VIDEO";
+    case IMC_CMD_PREPARE_FOR_MINIMIZE: return @"IMC_CMD_PREPARE_FOR_MINIMIZE";
+    case IMC_CMD_PREPARE_FOR_RESTORE: return @"IMC_CMD_PREPARE_FOR_RESTORE";
+    case IMC_CMD_CONNECTION_CONNECT_SUCCESSFULL: return @"IMC_CMD_CONNECTION_CONNECT_SUCCESSFULL";
+    case IMC_CMD_MOBILE_SEND_SETTINGS: return @"IMC_CMD_MOBILE_SEND_SETTINGS";
+    case IMC_CMD_START_TRANSFER_VIDEO_FOR_SERVER: return @"IMC_CMD_START_TRANSFER_VIDEO_FOR_SERVER";
+    case IMC_CMD_START_TRANSFER_VIDEO_FOR_SERVER_RESPONSE: return @"IMC_CMD_START_TRANSFER_VIDEO_FOR_SERVER_RESPONSE";
+    case IMC_CMD_CONNECTION_END: return @"IMC_CMD_CONNECTION_END";
+    case IMC_CMD_SETTING_BEGIN: return @"IMC_CMD_SETTING_BEGIN";
+    case IMC_CMD_SEND_CAMERA_LIST: return @"IMC_CMD_SEND_CAMERA_LIST";
+    case IMC_CMD_SETTING_SERVER_SEND: return @"IMC_CMD_SETTING_SERVER_SEND";
+    case IMC_CMD_ADD_IP_CAMERAS: return @"IMC_CMD_ADD_IP_CAMERAS";
+    case IMC_CMD_REMOVE_IP_CAMERAS: return @"IMC_CMD_REMOVE_IP_CAMERAS";
+    case IMC_CMD_SERVER_CHANGED_PORTS: return @"IMC_CMD_SERVER_CHANGED_PORTS";
+    case IMC_CMD_SERVER_SEND_SETTINGS: return @"IMC_CMD_SERVER_SEND_SETTINGS";
+    case IMC_CMD_server_SEND_HARDWARE_CONFIG: return @"IMC_CMD_server_SEND_HARDWARE_CONFIG";
+    case IMC_CMD_SERVER_CHANGED_CURRENT_USER: return @"IMC_CMD_SERVER_CHANGED_CURRENT_USER";
+    case IMC_CMD_SERVER_CHANGED_SERVER_INFO: return @"IMC_CMD_SERVER_CHANGED_SERVER_INFO";
+    case IMC_CMD_UPDATE_SETTING_TO_GUI: return @"IMC_CMD_UPDATE_SETTING_TO_GUI";
+    case IMC_CMD_WAIT_UPDATE_CHANNEL_CONFIG: return @"IMC_CMD_WAIT_UPDATE_CHANNEL_CONFIG";
+    case IMC_CMD_UPDATE_CHANNEL_CONFIG: return @"IMC_CMD_UPDATE_CHANNEL_CONFIG";
+    case IMC_CMD_SERVER_CHANGE_INFO: return @"IMC_CMD_SERVER_CHANGE_INFO";
+    case IMC_CMD_SERVER_SEND_SETTINGS_SUCCESSFUL: return @"IMC_CMD_SERVER_SEND_SETTINGS_SUCCESSFUL";
+    case IMC_CMD_SETTING_END: return @"IMC_CMD_SETTING_END";
+    case IMC_CMD_ALARM_BEGIN: return @"IMC_CMD_ALARM_BEGIN";
+    case IMC_CMD_NEW_ALARM_DETECTED: return @"IMC_CMD_NEW_ALARM_DETECTED";
+    case IMC_CMD_SEND_ALARM_LIST: return @"IMC_CMD_SEND_ALARM_LIST";
+    case IMC_CMD_SEND_ALARM_LIST_RESPONSE: return @"IMC_CMD_SEND_ALARM_LIST_RESPONSE";
+    case IMC_CMD_VIEW_ALARM_IMAGES: return @"IMC_CMD_VIEW_ALARM_IMAGES";
+    case IMC_CMD_NEXT_ALARM_IMAGE: return @"IMC_CMD_NEXT_ALARM_IMAGE";
+    case IMC_CMD_NEXT_ALARM_LIST: return @"IMC_CMD_NEXT_ALARM_LIST";
+    case IMC_CMD_NEXT_ALARM_LIST_RESPONSE: return @"IMC_CMD_NEXT_ALARM_LIST_RESPONSE";
+    case IMC_CMD_PREVIOUS_ALARM_LIST: return @"IMC_CMD_PREVIOUS_ALARM_LIST";
+    case IMC_CMD_PREVIOUS_ALARM_LIST_RESPONSE: return @"IMC_CMD_PREVIOUS_ALARM_LIST_RESPONSE";
+    case IMC_CMD_EXIT_ALARM_LIST: return @"IMC_CMD_EXIT_ALARM_LIST";
+    case IMC_CMD_ALARM_END: return @"IMC_CMD_ALARM_END";
+    case IMC_CMD_DISPLAY_SETTING_BEGIN: return @"IMC_CMD_DISPLAY_SETTING_BEGIN";
+    case IMC_CMD_DISPLAY_GET_CURRENT_LAYOUT: return @"IMC_CMD_DISPLAY_GET_CURRENT_LAYOUT";
+    case IMC_CMD_DISPLAY_GET_VIEW_RESOLUTION: return @"IMC_CMD_DISPLAY_GET_VIEW_RESOLUTION";
+    case IMC_CMD_DISPLAY_VIDEO: return @"IMC_CMD_DISPLAY_VIDEO";
+    case IMC_CMD_DISPLAY_REQUEST_SNAPSHOT: return @"IMC_CMD_DISPLAY_REQUEST_SNAPSHOT";
+    case IMC_CMD_DISPLAY_RESPONSE_SNAPSHOT: return @"IMC_CMD_DISPLAY_RESPONSE_SNAPSHOT";
+    case IMC_CMD_DISPLAY_CANCEL_SNAPSHOT: return @"IMC_CMD_DISPLAY_CANCEL_SNAPSHOT";
+    case IMC_CMD_DISPLAY_SETTING_END: return @"IMC_CMD_DISPLAY_SETTING_END";
+    case IMC_CMD_DECODE_FRAME: return @"IMC_CMD_DECODE_FRAME";
+    case IMC_CMD_DECODE_SEARCH_FRAME: return @"IMC_CMD_DECODE_SEARCH_FRAME";
+    case IMC_CMD_SEARCH_RAW_VIDEO: return @"IMC_CMD_SEARCH_RAW_VIDEO";
+    case IMC_CMD_POST_DECODED_FRAME: return @"IMC_CMD_POST_DECODED_FRAME";
+    case IMC_CMD_FIRST_MAIN_STREAM_FRAME: return @"IMC_CMD_FIRST_MAIN_STREAM_FRAME";
+    case IMC_CMD_UPDATE_SUB_STREAM_STATUS: return @"IMC_CMD_UPDATE_SUB_STREAM_STATUS";
+    case IMC_CMD_DISCONNECT_VIDEO: return @"IMC_CMD_DISCONNECT_VIDEO";
+    case IMC_CMD_RESET_DECODER: return @"IMC_CMD_RESET_DECODER";
+    case IMC_CMD_MOBILE_SEND_DATA_BEGIN: return @"IMC_CMD_MOBILE_SEND_DATA_BEGIN";
+    case IMC_CMD_MOBILE_SEND_SYSTEM_INFO: return @"IMC_CMD_MOBILE_SEND_SYSTEM_INFO";
+    case IMC_CMD_MOBILE_SEND_VIDEO_QUALITY: return @"IMC_CMD_MOBILE_SEND_VIDEO_QUALITY";
+    case IMC_CMD_MOBILE_SEND_FRAME_PER_SECOND: return @"IMC_CMD_MOBILE_SEND_FRAME_PER_SECOND";
+    case IMC_CMD_MOBILE_SEND_SCREEN_LAYOUT: return @"IMC_CMD_MOBILE_SEND_SCREEN_LAYOUT";
+    case IMC_CMD_MOBILE_SEND_CHANNEL_MAPPING: return @"IMC_CMD_MOBILE_SEND_CHANNEL_MAPPING";
+    case IMC_CMD_MOBILE_SEND_ALARM_SETTING: return @"IMC_CMD_MOBILE_SEND_ALARM_SETTING";
+    case IMC_CMD_MOBILE_SEND_SCREEN_SIZE: return @"IMC_CMD_MOBILE_SEND_SCREEN_SIZE";
+    case IMC_CMD_MOBILE_SEND_RATIO_VIEW: return @"IMC_CMD_MOBILE_SEND_RATIO_VIEW";
+    case IMC_CMD_MOBILE_SEND_SOURCE_RESQUEST_MASK: return @"IMC_CMD_MOBILE_SEND_SOURCE_RESQUEST_MASK";
+    case IMC_CMD_MOBILE_SEND_RESOLUTION_REQUEST: return @"IMC_CMD_MOBILE_SEND_RESOLUTION_REQUEST";
+    case IMC_CMD_MOBILE_SEND_IS_FULL_SCREEN: return @"IMC_CMD_MOBILE_SEND_IS_FULL_SCREEN";
+    case IMC_CMD_MOBILE_SEND_DURATION_VIEW_ALARM_LIST: return @"IMC_CMD_MOBILE_SEND_DURATION_VIEW_ALARM_LIST";
+    case IMC_CMD_MOBILE_SEND_FILTER_ALARM_BY: return @"IMC_CMD_MOBILE_SEND_FILTER_ALARM_BY";
+    case IMC_CMD_MOBILE_SEND_ALL_SETTING: return @"IMC_CMD_MOBILE_SEND_ALL_SETTING";
+    case IMC_CMD_MOBILE_GUI_SEND_ALL_SETTING: return @"IMC_CMD_MOBILE_GUI_SEND_ALL_SETTING";
+    case IMC_CMD_MOBILE_SEND_DATA_END: return @"IMC_CMD_MOBILE_SEND_DATA_END";
+    case IMC_CMD_PTZ_OPERATION_BEGIN: return @"IMC_CMD_PTZ_OPERATION_BEGIN";
+    case IMC_CMD_PTZ_LEFT: return @"IMC_CMD_PTZ_LEFT";
+    case IMC_CMD_PTZ_RIGHT: return @"IMC_CMD_PTZ_RIGHT";
+    case IMC_CMD_PTZ_UP: return @"IMC_CMD_PTZ_UP";
+    case IMC_CMD_PTZ_DOWN: return @"IMC_CMD_PTZ_DOWN";
+    case IMC_CMD_PTZ_LEFTUP: return @"IMC_CMD_PTZ_LEFTUP";
+    case IMC_CMD_PTZ_RIGHTUP: return @"IMC_CMD_PTZ_RIGHTUP";
+    case IMC_CMD_PTZ_LEFTDOWN: return @"IMC_CMD_PTZ_LEFTDOWN";
+    case IMC_CMD_PTZ_RIGHTDOWN: return @"IMC_CMD_PTZ_RIGHTDOWN";
+    case IMC_CMD_PTZ_ZOOMIN: return @"IMC_CMD_PTZ_ZOOMIN";
+    case IMC_CMD_PTZ_ZOOMOUT: return @"IMC_CMD_PTZ_ZOOMOUT";
+    case IMC_CMD_PTZ_LEFT_STOP: return @"IMC_CMD_PTZ_LEFT_STOP";
+    case IMC_CMD_PTZ_RIGHT_STOP: return @"IMC_CMD_PTZ_RIGHT_STOP";
+    case IMC_CMD_PTZ_UP_STOP: return @"IMC_CMD_PTZ_UP_STOP";
+    case IMC_CMD_PTZ_DOWN_STOP: return @"IMC_CMD_PTZ_DOWN_STOP";
+    case IMC_CMD_PTZ_LEFTUP_STOP: return @"IMC_CMD_PTZ_LEFTUP_STOP";
+    case IMC_CMD_PTZ_RIGHTUP_STOP: return @"IMC_CMD_PTZ_RIGHTUP_STOP";
+    case IMC_CMD_PTZ_LEFTDOWN_STOP: return @"IMC_CMD_PTZ_LEFTDOWN_STOP";
+    case IMC_CMD_PTZ_RIGHTDOWN_STOP: return @"IMC_CMD_PTZ_RIGHTDOWN_STOP";
+    case IMC_CMD_PTZ_ZOOMIN_STOP: return @"IMC_CMD_PTZ_ZOOMIN_STOP";
+    case IMC_CMD_PTZ_ZOOMOUT_STOP: return @"IMC_CMD_PTZ_ZOOMOUT_STOP";
+    case IMC_CMD_PTZ_OPERATION_END: return @"IMC_CMD_PTZ_OPERATION_END";
+    case IMC_CMD_SEARCH_OPERATION_BEGIN: return @"IMC_CMD_SEARCH_OPERATION_BEGIN";
+    case IMC_CMD_SEARCH_UPDATE_DATA_DATE: return @"IMC_CMD_SEARCH_UPDATE_DATA_DATE";
+    case IMC_CMD_SEARCH_UPDATE_CHANNEL_LIST_IN_DATE: return @"IMC_CMD_SEARCH_UPDATE_CHANNEL_LIST_IN_DATE";
+    case IMC_CMD_SEARCH_STOP_RESPONSE: return @"IMC_CMD_SEARCH_STOP_RESPONSE";
+    case IMC_CMD_UPDATE_SETTING_SERVER: return @"IMC_CMD_UPDATE_SETTING_SERVER";
+    case IMC_CMD_SEARCH_OPERATION_END: return @"IMC_CMD_SEARCH_OPERATION_END";
+    case IMC_CMD_RELAY_HANDSHAKE_FAILED: return @"IMC_CMD_RELAY_HANDSHAKE_FAILED";
+    case IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED: return @"IMC_CMD_RELAY_REMOTE_CONFIG_CHANGED";
+    case IMC_CMD_RELAY_UPDATE_DATA_USAGE: return @"IMC_CMD_RELAY_UPDATE_DATA_USAGE";
+    case IMC_CMD_SERVER_REJECT_ACCEPT: return @"IMC_CMD_SERVER_REJECT_ACCEPT";
+    default: return @"IMC_CMD_ELSEEEEEEEEEEEEEe";
+  }
+  
+}
 - (void)mainThreadProc:(id)object
 {
+  NSLog(@"0310 controllerThread mainThreadProc isRunning = %d", isRunning);
 	
   ImcCommand* cmd = nil;
   
   while (isRunning) {
+    NSLog(@"0310 controllerThread mainThreadProc while (isRunning)");
     
-    [lockThread lock];
-    [lockThread wait];
-    [lockThread unlock];
+//    [lockThread lock];
+//    [lockThread wait];
+//    [lockThread unlock];
+    cmd = [self getCurrentCommand];
     
-    while ( (cmd = [self getCurrentCommand]) != nil ) {
+    NSLog(@"0310 controllerThread getCurrentCommand command object = %p", &cmd);
+    if(cmd != nil) {
+      NSLog(@"0310 controllerThread getCurrentCommand id = %@", [self controllerCommandIdToString: [cmd getCommand]]);
+    }else{
+      NSLog(@"0310 controllerThread getCurrentCommand = nil");
+    }
+    while ( cmd != nil ) {
       switch ([cmd getCommand] ) {
         case IMC_CMD_CONNECTION_CONNECT:
         {
+          NSLog(@"0310 controllerThread case IMC_CMD_CONNECTION_CONNECT");
           ImcConnectedServer* server = (ImcConnectedServer*)[cmd getData];
           ImcRemoteConnection*  remoteConnection = [[ImcRemoteConnection alloc] init:[server connectionServerInfo]];
           
@@ -692,6 +819,7 @@ const NSUInteger kMaxCommand = 50;
         default:
           break;
       }
+      cmd = [self getCurrentCommand];
     }
   }
   NSLog(@"STOP MAIN THREAD");
@@ -699,15 +827,15 @@ const NSUInteger kMaxCommand = 50;
 
 - (void)addCommand:(ImcCommand *)command
 {
-	
+  NSLog(@"0310 controllerThread addCommand id = %@", [self controllerCommandIdToString: [command getCommand]]);
   [lockCommandList lock];
   [commandList addObject:command];
   [lockCommandList unlock];
 //  isBusy = FALSE;
   
-  [lockThread lock];
-  [lockThread signal];
-  [lockThread unlock];
+//  [lockThread lock];
+//  [lockThread signal];
+//  [lockThread unlock];
   
 }
 
@@ -736,7 +864,7 @@ const NSUInteger kMaxCommand = 50;
 
 -(void)startThread
 {
-	
+  NSLog(@"0310 controllerThread startThread");
   self->isRunning = TRUE;
 //  isBusy = YES;
   [NSThread detachNewThreadSelector:@selector(mainThreadProc:) toTarget:self withObject:nil];
@@ -748,9 +876,9 @@ const NSUInteger kMaxCommand = 50;
 	
   [self clearAllCommands];
   self->isRunning = FALSE;
-  [lockThread lock];
-  [lockThread signal];
-  [lockThread unlock];
+//  [lockThread lock];
+//  [lockThread signal];
+//  [lockThread unlock];
 }
 
 -(void)updateLayout:(NSInteger)layout
