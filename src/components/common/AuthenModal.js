@@ -160,8 +160,7 @@ class AuthenModal extends Component {
             onSubmitEditing={this.onSubmitEditing}
             onChangeText={this.onChangeText}
             returnKeyType="next"
-            iconCustom="user-shape"
-            label="User Name"
+            label="Username *"
             placeholder=""
             disabled={false}
             secureTextEntry={false}
@@ -175,8 +174,7 @@ class AuthenModal extends Component {
             onFocus={this.onFocus}
             onChangeText={this.onChangeText}
             returnKeyType="next"
-            iconCustom="locked-padlock"
-            label="Password"
+            label="Password *"
             placeholder=""
             disabled={false}
             secureTextEntry={!showpass}
@@ -188,8 +186,8 @@ class AuthenModal extends Component {
         </View>
         <View style={[styles.footer]}>
           <Button
-            style={styles.button}
-            type="flat"
+            style={[styles.button, styles.cancelButton]}
+            type="primary"
             onPress={() => {
               this.onCancel();
             }}
@@ -197,17 +195,18 @@ class AuthenModal extends Component {
             textColor={CMSColors.PrimaryColor}
             enable={true}
             caption={'CANCEL'}
+            captionStyle={styles.cancelButtonText}
           />
           <Button
             style={styles.button}
-            type="flat"
+            type="primary"
             onPress={() => {
               this.onOK(this.state);
             }}
-            backgroundColor={CMSColors.White}
             textColor={CMSColors.PrimaryColor}
             enable={this.state.isOK}
             caption={'LOGIN'}
+            captionStyle={styles.buttonText}
           />
         </View>
       </View>
@@ -219,33 +218,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
+    justifyContent: 'space-between',
     backgroundColor: CMSColors.White,
-    paddingLeft: normalize(24),
-    paddingTop: normalize(20),
-    paddingBottom: normalize(8),
+    paddingHorizontal: normalize(16),
+    paddingTop: normalize(24),
+    paddingBottom: normalize(48),
   },
   header: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    marginRight: normalize(24),
     marginBottom: normalize(8),
   },
   headerText: {
     fontSize: normalize(20),
     color: CMSColors.PrimaryText,
+    textAlign: 'center',
+    fontWeight: '700',
   },
   body: {
-    flex: 1,
     alignItems: 'flex-start',
     flexDirection: 'column',
-    marginRight: normalize(24),
     marginBottom: normalize(8),
   },
   footer: {
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
     flexDirection: 'row',
-    marginRight: normalize(8),
+    justifyContent: 'space-between',
   },
   checkboxContainer: {
     paddingLeft: normalize(18 + 12), //18 for icon font 12 for padding
@@ -273,7 +268,26 @@ const styles = StyleSheet.create({
     color: CMSColors.PrimaryText,
   },
   button: {
-    padding: 10,
+    width: (variables.deviceWidth - 40) / 2,
+  },
+  cancelButton: {
+    borderWidth: 1,
+    borderColor: CMSColors.PrimaryActive,
+    shadowColor: CMSColors.White,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  buttonText: {
+    fontWeight: '700',
+  },
+  cancelButtonText: {
+    color: CMSColors.PrimaryActive,
+    fontWeight: '700',
   },
 });
 

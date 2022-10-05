@@ -81,10 +81,16 @@ const styles = StyleSheet.create({
   modalcontainer: {
     flex: 1,
     backgroundColor: CMSColors.PrimaryColor54,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
-  authenModal: {flex: 0, width: 343, height: 303},
+  authenModal: {
+    flex: 0,
+    width: '100%',
+    height: 346,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
 });
 
 export default inject('videoStore', 'appStore')(observer(NVRAuthenModal));
