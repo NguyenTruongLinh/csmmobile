@@ -409,11 +409,11 @@ const uint32_t numLayers = 24;
 }
 
 -(void)setStartplayback:(NSDictionary *)startplayback {
-  NSLog(@"2908 setStartplayback");
+  NSLog(@"0310 2908 setStartplayback");
 //  [self resetParam];
 //  [self handleResponseMessage:IMC_MSG_LIVE_VIEW_STOP_VIDEO fromView:self withData:nil];
   if(startplayback.count == 0){
-     NSLog(@"2908 setStartplayback failed 1");
+     NSLog(@"0310 2908 setStartplayback failed 1");
     return;
   }
   

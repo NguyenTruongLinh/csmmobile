@@ -74,4 +74,5 @@
 -(void)sendSearchCommonMessageToServer:(ImcConnectionServer*)connectionServer message:(MOBILE_MSG)message forTimeInterval:(long)ti andChannelMask:(uint64_t)channelMask withMainStreamMask:(uint64_t)mainStreamMask;
 -(void)startTransferingVideoForServer:(NSArray*)data;
 -(void)setVideoSource:(int)value;
+-(NSString*) controllerCommandIdToString: (uint16_t) commandId;
 @end
