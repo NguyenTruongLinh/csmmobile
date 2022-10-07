@@ -230,6 +230,10 @@ class LoginView extends Component {
     this.props.appStore.naviService.navigate(ROUTERS.FORGOT_PASSWORD);
   };
 
+  onI3HostLoginPress = () => {
+    this.props.appStore.naviService.navigate(ROUTERS.I3_HOST_LOGIN);
+  };
+
   render() {
     const {width} = Dimensions.get('window');
     const {domain, username, password, errors, domainErrorFlag} = this.state;
@@ -355,14 +359,6 @@ class LoginView extends Component {
             />
           </View>
           <View style={styles.space} />
-          <View
-            style={[
-              styles.space,
-              {
-                display: this.state.isInputFocus ? 'flex' : 'none',
-              },
-            ]}
-          />
           <View style={styles.buttonsContainer}>
             <Button
               style={styles.buttonLogin}
@@ -380,7 +376,21 @@ class LoginView extends Component {
               onPress={this.onForgotPasswordPress}>
               {LoginTxt.forgotPassword}
             </Text>
-            <View style={{height: 50}}></View>
+            <View style={styles.buttonLineThroughContainer}>
+              <View style={styles.orTextContainer}>
+                <Text style={styles.orText}>OR</Text>
+              </View>
+              <View style={styles.lineThrough} />
+            </View>
+            <Button
+              style={styles.buttonLoginI3Host}
+              caption="LOGIN WITH I3HOST"
+              type="primary"
+              captionStyle={styles.buttonLoginI3HostCaption}
+              onPress={this.onI3HostLoginPress}
+              enable
+              backgroundColor={CMSColors.White}
+            />
           </View>
         </View>
         <View style={styles.space_footer} />
@@ -488,10 +498,51 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   space: {
-    flex: 0.3,
+    flex: 0.2,
   },
   space_footer: {
     flex: 0.05,
+  },
+  buttonLineThroughContainer: {
+    marginVertical: 30,
+    width: '100%',
+  },
+  orTextContainer: {
+    alignSelf: 'center',
+    backgroundColor: CMSColors.White,
+    paddingHorizontal: 10,
+    zIndex: 2,
+  },
+  orText: {
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+    overflow: 'hidden',
+  },
+  lineThrough: {
+    position: 'absolute',
+    top: 9,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: CMSColors.Grey,
+    zIndex: 1,
+  },
+  buttonLoginI3Host: {
+    borderWidth: 1,
+    borderColor: CMSColors.PrimaryActive,
+    shadowColor: CMSColors.White,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+    width: '100%',
+  },
+  buttonLoginI3HostCaption: {
+    color: CMSColors.PrimaryActive,
   },
 });
 

@@ -539,6 +539,74 @@ class Api {
     __DEV__ && console.log('GOND downloaded result: ', res);
     return res;
   }
+
+  async i3HostLogin(email, password) {
+    try {
+      const resApiKey = await this._getApiKey('i3hostlogin');
+      if (resApiKey.status !== 200) {
+        return {status: resApiKey.status, Result: undefined};
+      }
+      let enc_user = AES.encrypt(email, this.configToken.apiKey);
+      let emailEncrypt = enc_user.toString();
+      enc_user = AES.encrypt(password, this.configToken.apiKey);
+      let passEncrypt = enc_user.toString();
+      const header = this._defaultHeader(this.config.appId);
+      const url = this._baseUrl('i3hostlogin');
+      const body = JSON.stringify({
+        email: emailEncrypt,
+        password: passEncrypt,
+      });
+
+      const response = await fetch(url, {
+        method: Methods.Post,
+        headers: header,
+        timeout: 30000,
+        body,
+      });
+      return response;
+    } catch (ex) {
+      __DEV__ && console.log('GOND LOGIN I3HOST Exception: ', ex);
+      return {status: undefined, Result: undefined};
+    }
+  }
+
+  async sendOtp(params) {
+    try {
+      const header = this._defaultHeader(this.config.appId);
+      const url = this._baseUrl('i3hostotp');
+      const body = JSON.stringify(params);
+
+      const response = await fetch(url, {
+        method: Methods.Post,
+        headers: header,
+        timeout: 30000,
+        body,
+      });
+      return response;
+    } catch (ex) {
+      __DEV__ && console.log('GOND I3HOST OTP Exception: ', ex);
+      return {status: undefined, Result: undefined};
+    }
+  };
+
+  async verifyOtp(params) {
+    try {
+      const header = this._defaultHeader(this.config.appId);
+      const url = this._baseUrl('i3hostverifyotp');
+      const body = JSON.stringify(params);
+
+      const response = await fetch(url, {
+        method: Methods.Post,
+        headers: header,
+        timeout: 30000,
+        body,
+      });
+      return response;
+    } catch (ex) {
+      __DEV__ && console.log('GOND I3HOST VERIFY OTP Exception: ', ex);
+      return {status: undefined, Result: undefined};
+    }
+  }
 }
 
 const apiService = new Api();

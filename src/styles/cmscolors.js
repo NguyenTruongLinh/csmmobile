@@ -37,6 +37,7 @@ module.exports = {
   White_Op54: 'rgba(255,255,255,0.54)',
   Dark_Gray: Dark_Gray,
   Dark_Gray_2: Dark_Gray_2,
+  Grey: '#E0E0E0',
 
   Transparent: 'rgba(0,0,0,0)',
   OpacityButton: 'rgba(255, 255, 255, 0.1)',

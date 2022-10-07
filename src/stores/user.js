@@ -315,6 +315,10 @@ export const UserStoreModel = types
     //
     moduleUpdatedFlag: types.boolean,
     isSubmitForgotPassLoading: types.maybeNull(types.boolean),
+    //
+    isI3HostLoading: types.maybeNull(types.boolean),
+    isOtpLoading: types.maybeNull(types.boolean),
+    isVerifyOtpLoading: types.maybeNull(types.boolean),
   })
   .volatile(self => ({
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
@@ -1190,6 +1194,31 @@ export const UserStoreModel = types
       return true;
     }),
     // #endregion
+    // i3 host
+    i3HostLogin: flow(function* (email, password) {
+      self.isI3HostLoading = true;
+      const res = yield apiService.i3HostLogin(email, password);
+      self.isI3HostLoading = false;
+      __DEV__ && console.log('GOND i3HostLogin res = ', JSON.stringify(res));
+      setTimeout(() => {
+        appStore.naviService.navigate(ROUTERS.OTP_VERIFICATION);
+      }, 200);
+    }),
+    sendOtp: flow(function* (type) {
+      const params = type === 'email' ? {Email: 'example@example.com'} : {Phone: '123456789'};
+      self.isOtpLoading = true;
+      const res = yield apiService.sendOtp(params);
+      self.isOtpLoading = false;
+      __DEV__ && console.log('GOND sendOtp res = ', JSON.stringify(res));
+      return true;
+    }),
+    verifyOtp: flow(function* (otp) {
+      self.isVerifyOtpLoading = true;
+      const res = yield apiService.verifyOtp({otp});
+      self.isVerifyOtpLoading = false;
+      __DEV__ && console.log('GOND verifyOtp res = ', JSON.stringify(res));
+      return true;
+    }),
   }));
 
 const userStore = UserStoreModel.create({

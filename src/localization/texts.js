@@ -55,6 +55,13 @@ export const Login = {
   username: 'Username *',
   copyRight:
     '© 2022 i3 International Inc. The i3 logos are property of i3 International Inc & i3 America Nevada Inc. All rights reserved.',
+  i3HostTitle: 'To continue to ',
+  i3HostTitleBold: 'i3 Host',
+  otpVerification: 'OTP Verification',
+  otpCode: 'OTP Code *',
+  resendOTP: 'Resend OTP',
+  backToLogin: 'Back to login',
+  timeLeftExpired: 'OTP has expired, resend now',
 };
 
 export const Tabbar = {
