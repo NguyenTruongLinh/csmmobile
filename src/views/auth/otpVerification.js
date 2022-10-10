@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {ActivityIndicator, Image, StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, Text, View} from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -56,7 +56,7 @@ class OTPVerification extends Component {
     const {selectedType} = this.state;
     const type = selectedType === 0 ? 'email' : 'phone';
     if (this.props.userStore) {
-      const res = await this.props.userStore.sendOtp(type);
+      const res = await this.props.userStore.getOtp(type);
       return res;
     }
 
@@ -111,7 +111,7 @@ class OTPVerification extends Component {
 
   renderSentContent = () => {
     const {otpError, isDisabledResend, otpCode} = this.state;
-    const {isOtpLoading, isVerifyOtpLoading} = this.props.userStore;
+    const {isLoading} = this.props.userStore;
 
     return (
       <>
@@ -147,28 +147,21 @@ class OTPVerification extends Component {
           onStartCountDown={this.onStartCountDown}
         />
         <View style={styles.space} />
-        {isOtpLoading ? (
-          <ActivityIndicator size={20} color={CMSColors.ActionText} />
-        ) : (
-          <Text
-            style={[
-              styles.buttonText,
-              isDisabledResend ? styles.disableButtonText : null,
-            ]}
-            onPress={this.onReSendOTPPress}>
-            {LoginTxt.resendOTP}
-          </Text>
-        )}
+        <Text
+          style={[
+            styles.buttonText,
+            isDisabledResend || isLoading ? styles.disableButtonText : null,
+          ]}
+          onPress={this.onReSendOTPPress}>
+          {LoginTxt.resendOTP}
+        </Text>
         <Button
           style={styles.buttonVerify}
-          caption={isVerifyOtpLoading ? null : 'VERIFY'}
-          type="custom"
+          caption="VERIFY"
+          type="primary"
           onPress={this.onVerifyOTP}
-          enable={!isVerifyOtpLoading && otpCode}>
-          {isVerifyOtpLoading ? (
-            <ActivityIndicator size={20} color={CMSColors.ActionText} />
-          ) : null}
-        </Button>
+          enable={!isLoading && otpCode}
+        />
         <Text style={styles.buttonText} onPress={this.onBackToLogin}>
           {LoginTxt.backToLogin}
         </Text>
@@ -178,7 +171,7 @@ class OTPVerification extends Component {
 
   render() {
     const {selectedType, isSendOTP} = this.state;
-    const {isOtpLoading} = this.props.userStore;
+    const {isLoading} = this.props.userStore;
 
     const content = isSendOTP ? (
       this.renderSentContent()
@@ -186,14 +179,11 @@ class OTPVerification extends Component {
       <>
         <View style={styles.space} />
         <Button
-          caption={isOtpLoading ? null : 'SEND OTP'}
-          type="custom"
+          caption="SEND OTP"
+          type="primary"
           onPress={this.onSendOTPPress}
-          enable={!isOtpLoading}>
-          {isOtpLoading ? (
-            <ActivityIndicator size={20} color={CMSColors.ActionText} />
-          ) : null}
-        </Button>
+          enable={!isLoading}
+        />
       </>
     );
 

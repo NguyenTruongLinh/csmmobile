@@ -72,15 +72,21 @@ class I3HostLogin extends Component {
     this.props.appStore.naviService.navigate(ROUTERS.FORGOT_PASSWORD);
   };
 
-  onLogin = () => {
+  onLogin = async () => {
     if (this.props.userStore) {
-      this.props.userStore.i3HostLogin(this.state.email, this.state.password);
+      const res = await this.props.userStore.i3HostLogin(
+        this.state.email,
+        this.state.password
+      );
+      if (res) {
+        this.props.appStore.naviService.navigate(ROUTERS.OTP_VERIFICATION);
+      }
     }
   };
 
   render() {
     const {email, password, rememberPassword, errors} = this.state;
-    const {isI3HostLoading} = this.props.userStore;
+    const {isLoading} = this.props.userStore;
 
     return (
       <SafeAreaView style={styles.container}>
@@ -155,15 +161,12 @@ class I3HostLogin extends Component {
           <View style={styles.space_footer} />
           <Button
             style={styles.buttonLogin}
-            caption={isI3HostLoading ? null : 'LOGIN'}
-            type="custom"
+            caption="LOGIN"
+            type="primary"
             captionStyle={styles.buttonLoginCaption}
             onPress={this.onLogin}
-            enable={email && password && !isI3HostLoading && !errors.email}>
-            {isI3HostLoading ? (
-              <ActivityIndicator size={20} color={CMSColors.ActionText} />
-            ) : null}
-          </Button>
+            enable={email && password && !isLoading && !errors.email}
+          />
           <Text
             style={styles.forgotPasswordLink}
             onPress={this.onForgotPasswordPress}>
