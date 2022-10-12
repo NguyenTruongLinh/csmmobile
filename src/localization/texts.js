@@ -80,6 +80,8 @@ export const Settings = {
     'Connect to your NVR via cloud. Subject to AWS fees and data caps.',
   videoRelayDesc:
     "Connect to your NVR via i3's relay server. Subject to Relay Server fees and data caps.",
+  EXCEED_MAX_CHANNELS_1: 'Only support ',
+  EXCEED_MAX_CHANNELS_2: ' channels',
 };
 
 export const ActionMessages = {
