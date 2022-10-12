@@ -156,6 +156,7 @@ class ChannelsSettingView extends Component {
     if (
       selectedChannels &&
       maxReadyChannels > 0 &&
+      !selectedChannels.includes(channel.channelNo) &&
       selectedChannels.length >= maxReadyChannels
     ) {
       snackbarUtil.onError(
