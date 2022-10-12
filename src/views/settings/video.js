@@ -32,7 +32,7 @@ import {
 import {Settings as SettingsTxt} from '../../localization/texts';
 import {MODULE_PERMISSIONS} from '../../consts/misc';
 
-const CloudSettingData = [
+export const CloudSettingData = [
   {
     id: 'direct',
     name: SettingsTxt.videoDirectName,
@@ -69,34 +69,19 @@ class VideosettingView extends Component {
       selectedValue: null,
       settingLoaded: false,
     };
-
-    this.reactions = [];
   }
 
   componentDidMount() {
     __DEV__ && console.log('VideoSettingView componentDidMount ');
+    const {cloudType} = this.props.videoStore;
 
-    this.refreshSaveButton();
+    if (cloudType) {
+      this.setState({selectedValue: cloudType});
+    }
+
     // console.log('GOND comDidMount videoStore: ', this.props.videoStore);
     this.getAPIVersion();
     this.getCloudSetting();
-
-    this.reactions = [
-      reaction(
-        () => this.props.videoStore.cloudType,
-        (newIsCloud, oldValue) => {
-          if (newIsCloud != oldValue) {
-            this.refreshSaveButton();
-          }
-        }
-      ),
-    ];
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.selectedValue != this.state.selectedValue) {
-      this.refreshSaveButton();
-    }
   }
 
   canSave = () => {
@@ -111,20 +96,6 @@ class VideosettingView extends Component {
       : false;
   };
 
-  refreshSaveButton = () => {
-    this.props.navigation.setOptions({
-      headerRight: () => (
-        <Button
-          style={commonStyles.buttonSave}
-          caption={SettingsTxt.save}
-          enable={this.canSave()}
-          onPress={this.updateCloudSetting.bind(this)}
-          styleCaption={commonStyles.buttonSaveText}
-          type="flat"
-        />
-      ),
-    });
-  };
   getAPIVersion = async () => {
     const res = await this.props.videoStore.getAPIVersion();
   };
@@ -173,6 +144,24 @@ class VideosettingView extends Component {
     snackbar.handleSaveResult(res);
   };
 
+  onItemPress = value => {
+    const {selectedValue} = this.state;
+    const {isLoading} = this.props.videoStore;
+    const isStreamingAvailable = this.props.userStore.hasPermission(
+      MODULE_PERMISSIONS.VSC
+    );
+
+    if (isLoading) {
+      return;
+    }
+
+    if (selectedValue !== value && (isStreamingAvailable || selectedValue)) {
+      this.setState({selectedValue: value}, () => {
+        this.updateCloudSetting();
+      });
+    }
+  };
+
   renderItem = ({item}) => {
     if (!item) return;
 
@@ -180,19 +169,15 @@ class VideosettingView extends Component {
       MODULE_PERMISSIONS.VSC
     );
     const {selectedValue} = this.state;
-    const {isLoading, apiVersion} = this.props.videoStore;
     const isChecked =
       (selectedValue == item.value && item.value && isStreamingAvailable) ||
       (!item.value && !selectedValue);
     item.visible = true; //item.id === 'relay' && apiVersion == '' ? false : true;
+
     const checkBox = (
       <MaterialIcons
         style={{marginTop: 15, marginRight: 8}}
-        name={
-          isChecked && !isLoading
-            ? 'radio-button-checked'
-            : 'radio-button-unchecked'
-        }
+        name={isChecked ? 'radio-button-checked' : 'radio-button-unchecked'}
         color={
           item.value && !isStreamingAvailable
             ? CMSColors.DisableItemColor
@@ -205,15 +190,7 @@ class VideosettingView extends Component {
       item.visible && (
         <Ripple
           rippleOpacity={0.87}
-          onPress={() => {
-            if (
-              selectedValue != item.value &&
-              !isLoading &&
-              (isStreamingAvailable || selectedValue)
-            ) {
-              this.setState({selectedValue: item.value});
-            }
-          }}>
+          onPress={() => this.onItemPress(item.value)}>
           <View style={styles.rowList}>
             <View style={styles.rowButton_contain_icon}>
               {/* <CMSTouchableIcon
