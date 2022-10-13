@@ -121,7 +121,7 @@ class ChannelsSettingView extends Component {
   };
 
   save = async () => {
-    const {videoStore} = this.props;
+    const {videoStore, navigation} = this.props;
     this.setState({loading: true});
     const result = await videoStore.saveActiveChannels(
       this.state.selectedChannels
@@ -138,6 +138,8 @@ class ChannelsSettingView extends Component {
       };
       // reload live channels after saved
       videoStore.getVideoInfos();
+      navigation.goBack();
+      return;
     }
     this.setState({...newState, loading: false});
   };
@@ -149,7 +151,21 @@ class ChannelsSettingView extends Component {
 
   onSelectChannel = channel => {
     const {selectedChannels} = this.state;
+    const {maxReadyChannels} = this.props.videoStore;
     // __DEV__ && console.log('GOND onSelectChannel: ', selectedChannels);
+    if (
+      selectedChannels &&
+      maxReadyChannels > 0 &&
+      !selectedChannels.includes(channel.channelNo) &&
+      selectedChannels.length >= maxReadyChannels
+    ) {
+      snackbarUtil.onError(
+        SettingsTxt.EXCEED_MAX_CHANNELS_1 +
+          maxReadyChannels +
+          SettingsTxt.EXCEED_MAX_CHANNELS_2
+      );
+      return;
+    }
 
     const updatedData = selectedChannels.includes(channel.channelNo)
       ? selectedChannels.filter(chNo => chNo != channel.channelNo)

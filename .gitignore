@@ -75,3 +75,4 @@ patches_backup/
 patches/.vs/
 *.old
 logcat.txt
+android.hls.log

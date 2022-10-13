@@ -1239,7 +1239,8 @@ class HLSStreamingView extends React.Component {
       marginLeft = left > 0 ? left : 0;
     }
 
-    // this.setState({visibleBcg: false, marginLeft, marginTop});
+    this.setState({visibleBcg: false, marginLeft, marginTop});
+
     // __DEV__ &&
     //   console.log(
     //     'GOND HLS::onSetMargin: ',
