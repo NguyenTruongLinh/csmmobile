@@ -161,22 +161,14 @@ const appStore = types
           noUpdateCb();
         });
     },
-    checkUpdateAndroid(noUpdateCb) {
+    checkUpdateAndroid: flow(function* checkUpdateAndroid(noUpdateCb) {
       __DEV__ && console.log(`checkNeedsUpdate checkUpdateAndroid `);
       self.setLoading(true);
-      const inAppUpdates = new SpInAppUpdates(false);
-      inAppUpdates.checkNeedsUpdate().then(result => {
-        //{curVersion: '0.0.8'}
+      try {
+        const inAppUpdates = new SpInAppUpdates(false);
+        const result = yield inAppUpdates.checkNeedsUpdate();
         self.setLoading(false);
-        __DEV__ &&
-          console.log(
-            `checkNeedsUpdate shouldUpdate = `,
-            result.shouldUpdate,
-            `| storeVersion = `,
-            result.storeVersion,
-            `| reason = `,
-            result.reason
-          );
+
         if (result.shouldUpdate) {
           __DEV__ && console.log(`checkNeedsUpdate IF`);
           inAppUpdates.addStatusUpdateListener(status => {
@@ -201,8 +193,11 @@ const appStore = types
           noUpdateCb();
           __DEV__ && console.log(`checkNeedsUpdate ELSE`);
         }
-      });
-    },
+      } catch (error) {
+        self.setLoading(false);
+        __DEV__ && console.log("🚀 ~ file: appStore.js ~ inAppUpdates.checkNeedsUpdate ~ error", error)
+      }
+    }),
   }))
   .create({
     nextScene: '',
