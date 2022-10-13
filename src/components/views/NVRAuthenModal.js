@@ -60,6 +60,7 @@ class NVRAuthenModal extends React.Component {
         backdropOpacity={0}
         style={{margin: 0 /*, zIndex: 99*/}}
         name="AuthenModal"
+        avoidKeyboard
         key="authenModal">
         <View style={[styles.modalcontainer]}>
           <AuthenModal

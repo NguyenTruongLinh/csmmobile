@@ -2401,6 +2401,7 @@ export const VideoModel = types
       }),
       updateCloudSetting: flow(function* updateCloudSetting(value) {
         try {
+          self.isLoading = true;
           yield apiService.post(
             VSC.controller,
             apiService.configToken.devId,

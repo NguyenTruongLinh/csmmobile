@@ -16,6 +16,7 @@ import CMSStyleSheet from '../../components/CMSStyleSheet';
 import ROUTERS from '../../consts/routes';
 import {MODULE_PERMISSIONS} from '../../consts/misc';
 import {clientLogID} from '../../stores/user';
+import {CloudSettingData} from './video';
 const IconCustom = CMSStyleSheet.IconCustom;
 
 class SettingsView extends Component {
@@ -34,6 +35,7 @@ class SettingsView extends Component {
     const {userStore} = this.props;
     __DEV__ && console.log('GOND SettingsView componentDidMount');
     userStore.setActivites(clientLogID.SETTINGS);
+    this.getCloudSetting();
   }
 
   onLogout = () => {
@@ -73,9 +75,17 @@ class SettingsView extends Component {
     this.props.appStore.naviService.navigate(ROUTERS.OPTIONS_VIDEO);
   };
 
+  getCloudSetting = async () => {
+    const isStreamingAvailable = this.props.userStore.hasPermission(
+      MODULE_PERMISSIONS.VSC
+    );
+    await this.props.videoStore.getCloudSetting(isStreamingAvailable);
+  };
+
   render() {
     if (!this.props.userStore) return <View />;
     const {user} = this.props.userStore;
+    const {cloudType} = this.props.videoStore;
     // const showVideoSetting = user.hasPermission(
     //   MODULE_PERMISSIONS.VSC
     // );
@@ -85,6 +95,10 @@ class SettingsView extends Component {
       id: user ? user.userId : 0,
     };
     // __DEV__ && console.log('GOND setting UserPhoto: ', user);
+
+    const selectedVideoConnection = CloudSettingData.find(
+      con => con.value === cloudType
+    );
 
     let avatar = user ? (
       <CMSTouchableIcon
@@ -102,6 +116,14 @@ class SettingsView extends Component {
         }
       />
     ) : null;
+
+    const videoConnection = (
+      <View>
+        <Text style={styles.videoConnectionLittleText}>
+          {selectedVideoConnection?.name}
+        </Text>
+      </View>
+    );
 
     return (
       <View style={styles.all}>
@@ -178,7 +200,12 @@ class SettingsView extends Component {
                   color={CMSColors.RowOptions}
                 />
               </View> */}
-              <Text style={styles.listText}>Video settings</Text>
+              <View style={styles.videoConnectionContent}>
+                <Text style={[styles.listText, styles.videoConnectionText]}>
+                  Video connection
+                </Text>
+                {videoConnection}
+              </View>
 
               <View style={styles.listEnterIcon}>
                 <IconCustom
@@ -349,6 +376,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  videoConnectionContent: {
+    flex: 1,
+    margin: 15,
+  },
+  videoConnectionText: {
+    margin: 0,
+    flex: 0,
+  },
+  videoConnectionLittleText: {
+    paddingLeft: 5,
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: CMSColors.RowOptions,
   },
 });
 
