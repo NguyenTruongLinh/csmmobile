@@ -194,6 +194,7 @@ const appStore = types
         }
       } catch (error) {
         self.setLoading(false);
+        noUpdateCb();
         __DEV__ &&
           console.log(
             '🚀 ~ file: appStore.js ~ inAppUpdates.checkNeedsUpdate ~ error',

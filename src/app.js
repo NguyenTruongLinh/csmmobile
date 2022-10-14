@@ -95,9 +95,6 @@ class App extends React.Component {
       this.keyboardDidHide
     );
     this.allowRotation = await this.getAutoRotateState();
-    // this.props.publishRotationState(this.allowRotation);
-    // if (Platform.OS === 'android')
-    //   this.checkAutoRotateTimer = setInterval(this.onCheckAutoRotateState, 100);
 
     Orientation.addDeviceOrientationListener(this._orientationDidChange);
     Orientation.lockToPortrait();
@@ -245,36 +242,6 @@ class App extends React.Component {
       default:
         break;
     }
-  };
-
-  onCheckAutoRotateState = async event => {
-    return;
-    if (
-      this.checkAutoRotateLocked ||
-      Actions.currentScene === ROUTERS.SPLASHPAGE ||
-      Actions.currentScene === ROUTERS.LIVEVIDEOIOS ||
-      Actions.currentScene === ROUTERS.LIVESTREAMING ||
-      Actions.currentScene === ROUTERS.RTCSTREAMING
-    )
-      return;
-    this.checkAutoRotateLocked = true;
-    const canRotate = await this.getAutoRotateState();
-    // console.log('GOND onCheckAutoRotateState, autoRotateState = ', canRotate, ', allowRotation = ', this.allowRotation) //, ', last orientation: ', this.lastOrientation)
-    if (
-      this.allowRotation !== canRotate ||
-      canRotate === Orientation.isLocked()
-    ) {
-      this.allowRotation = canRotate;
-      // this.props.publishRotationState(this.allowRotation);
-
-      if (this.allowRotation) {
-        Orientation.unlockAllOrientations();
-        // Orientation.getDeviceOrientation(ort => this.lastOrientation = ort);
-      } else {
-        Orientation.getOrientation(ort => this.lockOrientation(ort));
-      }
-    }
-    this.checkAutoRotateLocked = false;
   };
 
   _orientationDidChange = async orientation => {

@@ -665,6 +665,11 @@ export const VideoModel = types
           )
         : 0;
     },
+    get isChannelListAtTheEnd() {
+      return self.displayChannels
+        ? self.selectedChannelIndex >= self.displayChannels.length - 2
+        : false;
+    },
     get selectedChannelData() {
       return self.allChannels
         ? self.allChannels.find(ch => ch.channelNo === self.selectedChannel)
@@ -932,7 +937,7 @@ export const VideoModel = types
               )
             : [];
         default:
-          snackbarUtil.onError(VIDEO_TXT.WRONG_CLOUD_TYPE);
+          // snackbarUtil.onError(VIDEO_TXT.WRONG_CLOUD_TYPE);
           return [];
       }
     },
