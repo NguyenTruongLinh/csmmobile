@@ -1,8 +1,12 @@
+import {Alert, BackHandler, Linking} from 'react-native';
 import {types, flow} from 'mobx-state-tree';
 
 import apiService from '../services/api';
 import dbService from '../services/localdb';
 import NavigationService from '../navigation/navigationService';
+import compareVersions from 'compare-versions';
+import RNExitApp from 'react-native-exit-app';
+import {getAppstoreAppMetadata} from 'react-native-appstore-version-checker';
 // import {NavigationModel} from '../stores/navigation';
 import snackbarUtil from '../util/snackbar';
 import SpInAppUpdates, {
@@ -11,11 +15,10 @@ import SpInAppUpdates, {
   StartUpdateOptions,
   AndroidInstallStatus,
 } from 'sp-react-native-in-app-updates';
-import {getAppstoreAppMetadata} from 'react-native-appstore-version-checker';
+
+import {getStoreVersion} from '../consts/appInfo';
+import {Login as LoginTxt} from '../localization/texts';
 import variables from '../styles/variables';
-import compareVersions from 'compare-versions';
-import RNExitApp from 'react-native-exit-app';
-import {Alert, BackHandler, Linking} from 'react-native';
 
 export const CHECK_UPDATE_FLAG = true;
 const IOS_APP_ID = '1315944118';
@@ -115,54 +118,50 @@ const appStore = types
       if (Platform.OS === 'android') self.checkUpdateAndroid(noUpdateCb);
       else self.checkUpdateIOS(noUpdateCb);
     },
-    checkUpdateIOS(noUpdateCb) {
+    checkUpdateIOS: flow(function* (noUpdateCb) {
       self.setLoading(true);
-      getAppstoreAppMetadata(IOS_APP_ID) //put any apps id here
-        .then(appVersion => {
-          self.setLoading(true);
-          console.log(
-            'checkUpdateIOS curVersion = ',
-            variables.appVersion,
-            'checkUpdateIOS appStoreVersion = ',
-            // JSON.stringify(appVersion)
-            appVersion.version
-          );
-          if (
-            compareVersions.compare(
-              appVersion.version,
-              variables.appVersion,
-              '>'
-            )
-          ) {
-            Alert.alert(
-              'New Update Available',
-              'There is a version of app available. Please update it now',
-              [
-                {
-                  text: 'Update Now',
-                  onPress: () => {
-                    Linking.openURL(APP_STORE_LINK).catch(err => {
-                      console.error('checkUpdateIOS An error occurred', err);
-                      noUpdateCb();
-                    });
-                    setTimeout(() => {
-                      RNExitApp.exitApp();
-                    }, 1000);
-                  },
-                },
-              ]
-            );
-          } else {
-            noUpdateCb();
-          }
-        })
-        .catch(err => {
-          console.log('checkUpdateIOS error occurred', err);
+      const localVersion = getStoreVersion();
+
+      try {
+        const appVersion = getAppstoreAppMetadata(IOS_APP_ID); //put any apps id here
+        console.log(
+          'checkUpdateIOS curVersion = ',
+          variables.appVersion,
+          ', local version: ',
+          localVersion,
+          'checkUpdateIOS appStoreVersion = ',
+          // JSON.stringify(appVersion)
+          appVersion.version
+        );
+        if (compareVersions.compare(appVersion.version, localVersion, '>')) {
+          Alert.alert(LoginTxt.ALERT_UPDATE_TITLE, LoginTxt.ALERT_UPDATE_BODY, [
+            {
+              text: LoginTxt.ALERT_UPDATE_BUTTON,
+              onPress: () => {
+                Linking.openURL(APP_STORE_LINK).catch(err => {
+                  console.error('checkUpdateIOS An error occurred', err);
+                  noUpdateCb();
+                });
+                setTimeout(() => {
+                  RNExitApp.exitApp();
+                }, 1000);
+              },
+            },
+          ]);
+        } else {
           noUpdateCb();
-        });
-    },
-    checkUpdateAndroid: flow(function* checkUpdateAndroid(noUpdateCb) {
-      __DEV__ && console.log(`checkNeedsUpdate checkUpdateAndroid `);
+        }
+      } catch (err) {
+        console.log('checkUpdateIOS error occurred', err);
+        noUpdateCb();
+        self.setLoading(false);
+        return;
+      }
+      self.setLoading(false);
+    }),
+    checkUpdateAndroid: flow(function* (noUpdateCb) {
+      __DEV__ &&
+        console.log(`checkNeedsUpdate checkUpdateAndroid: `, getStoreVersion());
       self.setLoading(true);
       try {
         const inAppUpdates = new SpInAppUpdates(false);
@@ -195,7 +194,11 @@ const appStore = types
         }
       } catch (error) {
         self.setLoading(false);
-        __DEV__ && console.log("🚀 ~ file: appStore.js ~ inAppUpdates.checkNeedsUpdate ~ error", error)
+        __DEV__ &&
+          console.log(
+            '🚀 ~ file: appStore.js ~ inAppUpdates.checkNeedsUpdate ~ error',
+            error
+          );
       }
     }),
   }))
