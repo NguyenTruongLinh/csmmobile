@@ -357,12 +357,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: CMSColors.ColorText,
+    lineHeight: 24,
   },
   listTextDomainTitle: {
     marginLeft: 15, //10,
     fontSize: 16,
     fontWeight: 'bold',
     color: CMSColors.ColorText,
+    lineHeight: 22,
   },
   listTextDomain: {
     marginLeft: 15, // 10,
@@ -388,8 +390,8 @@ const styles = StyleSheet.create({
   videoConnectionLittleText: {
     paddingLeft: 5,
     fontSize: 12,
-    fontWeight: 'bold',
     color: CMSColors.RowOptions,
+    lineHeight: 18,
   },
 });
 
