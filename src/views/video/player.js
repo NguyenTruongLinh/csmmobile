@@ -104,6 +104,7 @@ class VideoPlayerView extends Component {
     this.savedTimelinePosition = null;
     this.reactions = [];
     this.lastRulerPosition = 0;
+    this.shouldRefreshChannelList = false;
   }
 
   componentDidMount() {
@@ -417,12 +418,7 @@ class VideoPlayerView extends Component {
     StatusBar.setHidden(videoStore.isFullscreen);
     this.playerRef && this.playerRef.resetZoom();
     if (!isFullscreen) {
-      setTimeout(() => {
-        if (this._isMounted && videoStore.isFullscreen) {
-          this.forceUpdate();
-          // this.adjustChannelListPosition();
-        }
-      }, 50);
+      this.shouldRefreshChannelList = true;
     }
   };
 
@@ -695,7 +691,9 @@ class VideoPlayerView extends Component {
       );
     this.channelsScrollView &&
       this.channelsScrollView.scrollToIndex({
-        index: videoStore.selectedChannelIndex + 2,
+        index: videoStore.isChannelListAtTheEnd
+          ? videoStore.selectedChannelIndex
+          : videoStore.selectedChannelIndex + 2,
         viewPosition: 0.5,
       });
   };
@@ -762,6 +760,13 @@ class VideoPlayerView extends Component {
 
     if (width != this.state.sWidth || sHeight != this.state.sHeight) {
       this.setState({sWidth: width, sHeight});
+    }
+
+    // __DEV__ &&
+    //   console.log('GOND onScreenLayout: ', this.shouldRefreshChannelList);
+    if (this.shouldRefreshChannelList) {
+      this.shouldRefreshChannelList = false;
+      this.adjustChannelListPosition();
     }
   };
 
@@ -1462,14 +1467,14 @@ class VideoPlayerView extends Component {
       isAuthenticated,
       canEnterChannel,
     } = this.props.videoStore;
-    // console.log('GOND renderChannelsList: ', isFullscreen);
+    // console.log('GOND renderChannelsList: ', isFullscreen, isAuthenticated);
     const itemWidth = this.state.sWidth / NUM_CHANNELS_ON_SCREEN;
     // const channelsList = isLive ? activeChannels : allChannels;
 
     return isFullscreen ? null : (
       <View style={styles.channelsListContainer}>
-        {isAuthenticated && canEnterChannel(selectedChannel) && (
-          <FlatList
+        {isAuthenticated && (
+          /*canEnterChannel(selectedChannel) &&*/ <FlatList
             ref={r => (this.channelsScrollView = r)}
             style={{flex: 1}}
             data={[{}, {}, ...displayChannels, {}, {}]}
