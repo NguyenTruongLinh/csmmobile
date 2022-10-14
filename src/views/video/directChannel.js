@@ -115,9 +115,9 @@ class DirectChannelView extends React.Component {
   renderContent = videoShowed => {
     const {width, height, serverInfo, noVideo, videoStore} = this.props;
     // const {message, videoLoading, noVideo} = this.state;
-    const {connectionStatus /*, isLoading*/, videoFrame} = serverInfo;
+    const {connectionStatus, isLoading, videoFrame} = serverInfo;
     const {nextFrame} = this.state;
-    const isLoading = !noVideo && (!videoFrame || videoFrame.length == 0);
+    // const isLoading = !noVideo && (!videoFrame || videoFrame.length == 0);
     // __DEV__ &&
     //   console.log(
     //     'GOND direct render channel: ',
@@ -140,7 +140,7 @@ class DirectChannelView extends React.Component {
           <View style={styles.textContainer}>
             <Text style={[styles.textMessage]}>{connectionStatus}</Text>
           </View>
-          {isLoading && (
+          {!noVideo && isLoading && (!videoFrame || videoFrame.length == 0) && (
             <ActivityIndicator
               style={styles.loadingIndicator}
               size="large"
