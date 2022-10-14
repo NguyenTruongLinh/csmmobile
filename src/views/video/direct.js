@@ -950,7 +950,7 @@ class DirectVideoView extends React.Component {
         // });
         serverInfo.setStreamStatus({
           isLoading: false,
-          // connectionStatus: STREAM_STATUS.ERROR,
+          connectionStatus: STREAM_STATUS.ERROR,
         });
         snackbarUtil.showToast(STREAM_STATUS.ERROR, cmscolors.Danger);
         // setTimeout(() => this.reconnect(), 1000);
@@ -1135,12 +1135,15 @@ class DirectVideoView extends React.Component {
           STREAM_STATUS.RELAY_HANDSHAKE_FAILED,
           cmscolors.Danger
         );
+        serverInfo &&
+          serverInfo.isLoading &&
+          serverInfo.setStreamStatus({
+            isLoading: false,
+            connectionStatus: STREAM_STATUS.ERROR,
+          });
         break;
       case NATIVE_MESSAGE.RELAY_REMOTE_CONFIG_CHANGED:
-        snackbarUtil.showToast(
-          STREAM_STATUS.RELAY_REMOTE_CONFIG_CHANGED,
-          cmscolors.Warning
-        );
+        snackbarUtil.showToast(STREAM_STATUS.RECONNECTING, cmscolors.Warning);
         videoStore.getDirectInfosInterval();
         break;
       case NATIVE_MESSAGE.RELAY_DATA_USAGE:

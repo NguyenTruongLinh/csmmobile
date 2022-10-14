@@ -55,6 +55,10 @@ export const Login = {
   username: 'Username *',
   copyRight:
     '© 2022 i3 International Inc. The i3 logos are property of i3 International Inc & i3 America Nevada Inc. All rights reserved.',
+  ALERT_UPDATE_TITLE: 'New Update Available',
+  ALERT_UPDATE_BODY:
+    'There is a version of app available. Please update it now',
+  ALERT_UPDATE_BUTTON: 'Update Now',
 };
 
 export const Tabbar = {

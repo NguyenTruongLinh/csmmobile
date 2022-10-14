@@ -11,4 +11,15 @@ const APP_INFO = {
   PrivacyPolicyUrl: 'https://i3international.com/privacy-policy',
 };
 
+exports.getStoreVersion = () => {
+  const versionNumbers = APP_INFO.Version.split('.');
+  if (versionNumbers.length == 4) {
+    return versionNumbers.filter((val, idx) => idx != 2).join('.');
+  } else if (versionNumbers.length == 3) {
+    return versionNumbers.join('.');
+  } else {
+    console.log('GOND version number is invalid! Please correct!');
+  }
+};
+
 export default APP_INFO;
