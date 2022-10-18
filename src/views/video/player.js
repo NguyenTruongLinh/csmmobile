@@ -546,7 +546,8 @@ class VideoPlayerView extends Component {
     }
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onChangeChannel(channelNo);
-    // videoStore.setStretch(true);
+    videoStore.setStretch(true);
+    this.playerRef && this.playerRef.onStretch(true);
     videoStore.selectChannel(channelNo);
     this.playerRef && this.playerRef.resetZoom();
     // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
