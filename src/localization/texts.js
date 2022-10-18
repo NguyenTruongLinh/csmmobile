@@ -106,6 +106,7 @@ export const Comps = {
   searchButton: 'Search',
   cancelButton: 'Cancel',
   applyButton: 'Apply',
+  noData: 'No data',
 };
 
 export const VIDEO = {

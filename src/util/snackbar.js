@@ -38,7 +38,11 @@ const showToast = (
   lastMessage = message;
 };
 
-const toastResult = (message, isError = true) => {
+const toastResult = (
+  message,
+  isError = true,
+  duration = Toast.durations.LONG
+) => {
   showToast(message, isError ? CMSColors.Danger : CMSColors.Success);
 };
 
@@ -67,12 +71,12 @@ exports.onError = message => {
   toastResult(message, true);
 };
 
-exports.onWarning = message => {
-  showToast(message, CMSColors.Warning);
+exports.onWarning = (message, duration) => {
+  showToast(message, CMSColors.Warning, duration);
 };
 
-exports.onSuccess = message => {
-  toastResult(message ?? ActionMessages.SUCCESS, false);
+exports.onSuccess = (message, duration) => {
+  toastResult(message ?? ActionMessages.SUCCESS, false, duration);
 };
 
 exports.dismiss = () => {
@@ -94,3 +98,4 @@ exports.dismiss = () => {
 exports.onMessage = onMessage;
 exports.onActionMessage = onMessage;
 exports.showToast = showToast;
+exports.durations = Toast.durations;

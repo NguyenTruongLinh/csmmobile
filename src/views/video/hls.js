@@ -312,6 +312,9 @@ class HLSStreamingView extends React.Component {
       __DEV__ && console.log('stopDataUsageTimer');
       this.player.stopDataUsageTimer();
     }
+
+    // dongpt: reset search stream prevent search bug when re-enter search mode from alarm detail
+    streamData.releaseSearchStreams();
   }
 
   computeTime = secs => {
