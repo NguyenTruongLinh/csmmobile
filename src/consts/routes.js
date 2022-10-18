@@ -141,7 +141,7 @@ export const getHeaderTitle = route => {
     case ROUTERS.OPTIONS_NOTIFY:
       return 'Notification Settings';
     case ROUTERS.OPTIONS_VIDEO:
-      return 'Video Settings';
+      return 'Video Connection';
   }
   return routeName;
 };
