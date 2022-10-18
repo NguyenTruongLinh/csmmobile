@@ -1241,12 +1241,12 @@ class VideoPlayerView extends Component {
                 },
               ]
         }>
-        {videoStore.directStreams.map(direct => {
+        {/* {videoStore.directStreams.map(direct => {
           const isMenuReady = direct ? direct.isMenuReady ?? true : false;
           return (
             <Text style={{color: 'green'}}>{isMenuReady ? 'T' : 'F'}</Text>
           );
-        })}
+        })} */}
         {showController && (
           <View style={styles.buttonWrap}>
             <CMSTouchableIcon
