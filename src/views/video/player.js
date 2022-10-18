@@ -546,7 +546,7 @@ class VideoPlayerView extends Component {
     }
     // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onChangeChannel(channelNo);
-    videoStore.setStretch(true);
+    // videoStore.setStretch(true);
     videoStore.selectChannel(channelNo);
     this.playerRef && this.playerRef.resetZoom();
     // if (videoStore.paused && this.playerRef) this.playerRef.pause(false);
@@ -1241,6 +1241,12 @@ class VideoPlayerView extends Component {
                 },
               ]
         }>
+        {videoStore.directStreams.map(direct => {
+          const isMenuReady = direct ? direct.isMenuReady ?? true : false;
+          return (
+            <Text style={{color: 'green'}}>{isMenuReady ? 'T' : 'F'}</Text>
+          );
+        })}
         {showController && (
           <View style={styles.buttonWrap}>
             <CMSTouchableIcon
