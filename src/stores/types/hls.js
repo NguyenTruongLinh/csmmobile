@@ -1002,4 +1002,15 @@ export default HLSStreamModel = types
       // self.clearStreamTimeout();
       self.updateStreamsStatus(false);
     },
+    releaseSearchStreams() {
+      if (util.isValidHttpUrl(self.searchUrl.url)) {
+        self.updateStream(self.searchUrl.sid, true);
+        self.searchUrl.reset();
+      }
+
+      if (util.isValidHttpUrl(self.searchHDUrl.url)) {
+        self.updateStream(self.searchHDUrl.sid, true);
+        self.searchHDUrl.reset();
+      }
+    },
   }));

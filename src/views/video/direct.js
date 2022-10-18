@@ -1098,8 +1098,10 @@ class DirectVideoView extends React.Component {
             );
             this.playAt(timeOffset);
             videoStore.setBeginSearchTime(null);
+          } else {
+            this.playAt(0);
           }
-        }, 200);
+        }, 100);
         break;
       case NATIVE_MESSAGE.HOUR_DATA:
         if (!singlePlayer) break;
