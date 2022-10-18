@@ -314,7 +314,6 @@ class DirectVideoView extends React.Component {
         videoStore.notifyClearDirectInfosInterval();
       }
     }
-    if (singlePlayer && serverInfo.isMenuReady) serverInfo.enableMenu(false);
   }
 
   refreshVideo = isStart => {
@@ -573,15 +572,6 @@ class DirectVideoView extends React.Component {
             snackbarUtil.showToast(STREAM_STATUS.LOGING_IN, cmscolors.Success);
             this.setNativePlayback();
           }
-        }
-      ),
-      reaction(
-        () =>
-          videoStore.selectedStream
-            ? videoStore.selectedStream.isMenuReady ?? true
-            : false,
-        isMenuReady => {
-          if (isMenuReady) this.setState({visibleBcg: false});
         }
       ),
     ];
@@ -990,6 +980,7 @@ class DirectVideoView extends React.Component {
           if (singlePlayer == true) {
             // __DEV__ && console.log('GOND direct video ready ', serverInfo);
             if (serverInfo.isMenuReady == false) serverInfo.enableMenu(true);
+            this.setState({visibleBcg: false});
             try {
               const valueObj = JSON.parse(value);
 
