@@ -314,6 +314,7 @@ class DirectVideoView extends React.Component {
         videoStore.notifyClearDirectInfosInterval();
       }
     }
+    if (singlePlayer && serverInfo.isMenuReady) serverInfo.enableMenu(false);
   }
 
   refreshVideo = isStart => {
