@@ -2148,7 +2148,7 @@ export const VideoModel = types
         //   (self.shouldUpdateSearchTimeOnGetTimeline = false);
       },
       setBeginSearchTime(value) {
-        if (self.isAlertPlay) return;
+        // if (self.isAlertPlay) return;
         if (value == null || DateTime.isDateTime(value)) {
           if (!value && __DEV__) console.trace('GOND setBginSearchTime null');
           self.beginSearchTime = value;
