@@ -574,15 +574,6 @@ class DirectVideoView extends React.Component {
           }
         }
       ),
-      reaction(
-        () =>
-          videoStore.selectedStream
-            ? videoStore.selectedStream.isMenuReady ?? true
-            : false,
-        isMenuReady => {
-          if (isMenuReady) this.setState({visibleBcg: false});
-        }
-      ),
     ];
   };
 
@@ -989,6 +980,7 @@ class DirectVideoView extends React.Component {
           if (singlePlayer == true) {
             // __DEV__ && console.log('GOND direct video ready ', serverInfo);
             if (serverInfo.isMenuReady == false) serverInfo.enableMenu(true);
+            this.setState({visibleBcg: false});
             try {
               const valueObj = JSON.parse(value);
 
