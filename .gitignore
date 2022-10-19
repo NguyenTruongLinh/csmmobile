@@ -76,3 +76,4 @@ patches/.vs/
 *.old
 logcat.txt
 android.hls.log
+ios/Podfile.lock
