@@ -1616,12 +1616,21 @@ class HLSStreamingView extends React.Component {
                     playWhenInactive={true}
                     useTextureView={singlePlayer}
                     disableFocus={true}
-                    bufferConfig={{
-                      minBufferMs: 3500,
-                      maxBufferMs: 15000,
-                      bufferForPlaybackMs: 2500,
-                      bufferForPlaybackAfterRebufferMs: 2500,
-                    }}
+                    bufferConfig={
+                      videoStore.isLive
+                        ? {
+                            minBufferMs: 1000,
+                            maxBufferMs: 3000,
+                            bufferForPlaybackMs: 1000,
+                            bufferForPlaybackAfterRebufferMs: 1000,
+                          }
+                        : {
+                            minBufferMs: 2500,
+                            maxBufferMs: 7000,
+                            bufferForPlaybackMs: 2500,
+                            bufferForPlaybackAfterRebufferMs: 2500,
+                          }
+                    }
                     maxBitRate={singlePlayer ? 0 : 1048576} // 1048576 //524288
                     reportBandwidth={true}
                     transform={[

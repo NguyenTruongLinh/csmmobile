@@ -24,7 +24,7 @@ module.exports = StyleSheet.create({
   },
   textMessage: {
     width: '100%',
-    height: '15%',
+    // height: '15%',
     color: CMSColors.Danger,
     alignSelf: 'center',
     // ...Platform.select({
