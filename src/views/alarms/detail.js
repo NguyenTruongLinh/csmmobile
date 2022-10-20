@@ -70,6 +70,7 @@ class AlarmDetailView extends Component {
     this.shouldReloadOnExit = false;
     // this.firstFocus = true;
     this.unsubFocusEvent = null;
+    this.currentPage = 0;
   }
 
   async componentDidMount() {
@@ -96,7 +97,13 @@ class AlarmDetailView extends Component {
       // } else {
       //   videoStore.resetNVRAuthentication();
       // }
+      if (this.imagesScrollView && this.currentPage > 0)
+        this.imagesScrollView.scrollToIndex({
+          animated: true,
+          index: this.currentPage,
+        });
     });
+
     let res = await videoStore.getDVRPermission(alarmStore.selectedAlarm.kDVR);
 
     // Preload video streaming: Live mode
@@ -278,6 +285,10 @@ class AlarmDetailView extends Component {
   handleScroll = event => {
     // Save the x (horizontal) value each time a scroll occurs
     this.scrollX.setValue(event.nativeEvent.contentOffset.x);
+    this.currentPage = Math.floor(
+      event.nativeEvent.contentOffset.x / this.state.viewableWindow.width
+    );
+    __DEV__ && console.log('1910 this.currentPage: ', this.currentPage);
   };
 
   getImageSize = (width, height) => {
@@ -796,6 +807,7 @@ class AlarmDetailView extends Component {
               flexDirection: 'column',
             }}>
             <FlatList
+              ref={r => (this.imagesScrollView = r)}
               pagingEnabled={true}
               style={{flex: 1}}
               initialScrollIndex={this.state.activeIndex}
