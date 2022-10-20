@@ -862,6 +862,7 @@ export default HLSStreamModel = types
     },
     reInitStream(resumeTime) {
       __DEV__ && console.trace(`GOND HLS reInitStream ---`);
+      self.updateStream(self.targetUrl.sid, true);
       self.targetUrl.reset();
       self.onStreamError(self.channelNo, self.isLive, resumeTime);
       self.reInitRemaining--;

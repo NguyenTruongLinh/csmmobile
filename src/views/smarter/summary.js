@@ -53,6 +53,7 @@ import {clientLogID} from '../../stores/user';
 
 const {width, height} = Dimensions.get('window');
 const MAX_TEXT_LENGTH = 32;
+const LINE_HEIGHT = 48;
 class DashboardView extends React.Component {
   constructor(props) {
     super(props);
@@ -67,7 +68,7 @@ class DashboardView extends React.Component {
     };
 
     this.chartViewRef = null;
-    this.dataViewRef = null;
+    this.dataListRef = null;
     this._isMounted = false;
   }
 
@@ -163,9 +164,23 @@ class DashboardView extends React.Component {
     __DEV__ && console.log(`onSelectSite siteKey = `, siteKey);
     const {exceptionStore} = this.props;
     this.setState({selectedSiteKey: siteKey, loadingDetail: true}, async () => {
-      __DEV__ &&
-        console.log(`onSelectSite getGroupDetailData siteKey = `, siteKey);
+      // __DEV__ &&
+      //   console.log(
+      //     `onSelectSite getGroupDetailData siteKey = `,
+      //     siteKey,
+      //     exceptionStore.filteredGroupsData
+      //   );
       await exceptionStore.getGroupDetailData(siteKey);
+      const selectedIndex =
+        exceptionStore.filteredGroupsData.length > 0
+          ? exceptionStore.filteredGroupsData.findIndex(
+              item => item.siteKey == siteKey
+            )
+          : 0;
+      // __DEV__ &&
+      //   console.log(`onSelectSite getGroupDetailData index = `, selectedIndex);
+      selectedIndex &&
+        this.dataListRef.scrollToIndex({animated: true, index: selectedIndex});
       this._isMounted && this.setState({loadingDetail: false});
     });
   };
@@ -274,7 +289,7 @@ class DashboardView extends React.Component {
                 justifyContent: 'center',
                 alignItems: 'center',
                 padding: 5,
-                height: 48,
+                height: LINE_HEIGHT,
                 backgroundColor: CMSColors.White,
                 // borderBottomWidth: 0.5,
                 // borderColor: CMSColors.BorderColorListRow,
@@ -410,10 +425,16 @@ class DashboardView extends React.Component {
           <NoDataView isLoading={false} style={{flex: 1}}></NoDataView>
         ) : (
           <FlatList
+            ref={r => (this.dataListRef = r)}
             data={exceptionStore.filteredGroupsData}
             renderItem={this.renderSite}
             refreshing={isLoading}
             keyExtractor={(item, index) => 'site_' + index}
+            getItemLayout={(data, index) => ({
+              length: LINE_HEIGHT,
+              offset: LINE_HEIGHT * (index - 1),
+              index,
+            })}
           />
         )}
         {exceptionStore.filteredGroupsData &&
