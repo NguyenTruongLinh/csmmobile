@@ -6,11 +6,13 @@ import {TextField} from 'react-native-material-textfield';
 import Helper from 'react-native-material-textfield/src/components/helper';
 import Counter from 'react-native-material-textfield/src/components/counter';
 import validate from 'validate.js';
+import {inject, observer} from 'mobx-react';
 
 import CMSColors from '../../styles/cmscolors';
 import CMSStyleSheet from '../CMSStyleSheet';
+import theme from '../../styles/appearance';
 
-export default class InputText extends PureComponent {
+class InputText extends PureComponent {
   static defaultProps = {
     underlineColorAndroid: 'transparent',
     disableFullscreenUI: true,
@@ -24,8 +26,6 @@ export default class InputText extends PureComponent {
     fontSize: CMSStyleSheet.FontSize,
 
     tintColor: CMSColors.BorderActiveColor,
-    textColor: CMSColors.ActionText,
-    baseColor: CMSColors.BorderColor,
 
     errorColor: CMSColors.ErrorColor,
 
@@ -270,7 +270,12 @@ export default class InputText extends PureComponent {
     } = this.props;
     let {focused, focus, error, /*errored,*/ height, text = ''} = this.state;
     let {multiline, numberOfLines} = props;
+    const {appearance} = this.props.appStore;
     // __DEV__ && console.log('GOND InputText rerender error: ', error);
+
+    const overrideBaseColor = baseColor
+      ? baseColor
+      : theme[appearance].baseColor;
 
     let count = !text ? 0 : text.length;
     let active = !!text;
@@ -280,7 +285,7 @@ export default class InputText extends PureComponent {
       ? errorColor
       : focus.interpolate({
           inputRange: [-1, 0, 1],
-          outputRange: [errorColor, baseColor, tintColor],
+          outputRange: [errorColor, overrideBaseColor, tintColor],
         });
 
     let borderBottomWidth = restricted
@@ -301,7 +306,7 @@ export default class InputText extends PureComponent {
     let inputStyle = {
       fontSize,
 
-      color: disabled ? baseColor : textColor,
+      color: disabled ? overrideBaseColor : theme[appearance].text.color,
 
       ...(multiline
         ? {
@@ -332,7 +337,7 @@ export default class InputText extends PureComponent {
     };
 
     let titleStyle = {
-      color: baseColor,
+      color: overrideBaseColor,
 
       opacity: focus.interpolate({
         inputRange: [-1, 0, 1],
@@ -382,6 +387,7 @@ export default class InputText extends PureComponent {
           error={validation ? error : props.error}
           label={label}
           labelFontSize={fontSize}
+          baseColor={overrideBaseColor}
           editable={!disabled && editable}
           onChangeText={this.onChangeText}
           onContentSizeChange={this.onContentSizeChange}
@@ -406,7 +412,10 @@ export default class InputText extends PureComponent {
               focusAnimation={new Animated.Value(0)}
             />
           </View>
-          <Counter {...{baseColor, errorColor, count, limit}} />
+          <Counter
+            baseColor={overrideBaseColor}
+            {...{errorColor, count, limit}}
+          />
         </Animated.View>
       </View>
     );
@@ -431,3 +440,5 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+export default inject('appStore')(observer(InputText));

@@ -29,6 +29,7 @@ import {getIconAlertType} from '../../util/general';
 import commonStyles from '../../styles/commons.style';
 import variables from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import ROUTERS from '../../consts/routes';
 const RowEmpty = {isEmpty: true};
@@ -143,6 +144,7 @@ class HealthDetailView extends Component {
   };
 
   renderItem = ({item}) => {
+    const {appearance} = this.props.appStore;
     __DEV__ && console.log('GOND healthDetail renderItem ', item);
     if (
       (item.computedTotalFromChildren != null &&
@@ -164,7 +166,12 @@ class HealthDetailView extends Component {
         // tension={2}
         // friction={3}
       >
-        <View style={styles.backRowContainer}>
+        <View
+          style={[
+            styles.backRowContainer,
+            theme[appearance].modalContainer,
+            theme[appearance].borderColor,
+          ]}>
           <View style={styles.dismissButton}>
             {item.canDismiss && (
               <CMSTouchableIcon
@@ -185,14 +192,18 @@ class HealthDetailView extends Component {
         <CMSRipple
           rippleOpacity={0.8}
           onPress={() => this.onAlertTypeSelected(item)}
-          style={styles.frontRowRipple}>
+          style={[
+            styles.frontRowRipple,
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}>
           <View style={styles.frontRowIcon}>
             <IconCustom
               name={alertIcon}
-              color={CMSColors.IconButton}
+              color={theme[appearance].iconColor}
               size={variables.fix_fontSize_Icon}
             />
-            <Text style={{fontSize: 16, fontWeight: '500', paddingLeft: 14}}>
+            <Text style={[styles.itemText, theme[appearance].text]}>
               {item.name}
             </Text>
           </View>
@@ -204,7 +215,7 @@ class HealthDetailView extends Component {
             </Text>
             <IconCustom
               name="keyboard-right-arrow-button"
-              color={CMSColors.IconButton}
+              color={theme[appearance].iconColor}
               size={variables.fix_fontSire}
             />
           </View>
@@ -214,17 +225,19 @@ class HealthDetailView extends Component {
   };
 
   render() {
-    const {healthStore, navigation} = this.props;
+    const {healthStore, navigation, appStore} = this.props;
     const {/*showDismissModal,*/ selectedAlertForDismiss} = this.state;
+    const {appearance} = appStore;
     // __DEV__ &&
     //   console.log(
     //     'GOND render Health detail: ',
     //     healthStore.selectedSiteAlertTypes
     //   );
-    if (!healthStore.selectedSiteAlertTypes) return <View />;
+    if (!healthStore.selectedSiteAlertTypes)
+      return <View style={[{flex: 1}, theme[appearance].container]} />;
 
     return (
-      <View style={{flex: 1}}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
         {/* <KeyboardAwareScrollView
           contentContainerStyle={{flex: 1}}
           enableOnAndroid={true}> */}
@@ -317,6 +330,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     height: ListViewHeight,
+    borderBottomWidth: 1,
   },
   dismissButton: {
     width: 50,
@@ -354,6 +368,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: CMSColors.TotalAlerts,
   },
+  itemText: {fontSize: 16, fontWeight: '500', paddingLeft: 14},
 });
 
-export default inject('userStore', 'healthStore')(observer(HealthDetailView));
+export default inject(
+  'userStore',
+  'healthStore',
+  'appStore'
+)(observer(HealthDetailView));

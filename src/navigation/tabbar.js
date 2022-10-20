@@ -12,6 +12,7 @@ import {inject, observer} from 'mobx-react';
 import {getCurrentRouteName} from '../util/general';
 import {Tabbar as Labels} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
+import theme from '../styles/appearance';
 import {IconCustom} from '../components/CMSStyleSheet';
 import ROUTERS, {INIT_ROUTE_MAP} from '../consts/routes';
 import {WIDGET_COUNTS} from '../consts/misc';
@@ -57,6 +58,7 @@ class CMSTabbar extends React.Component {
     const {navigation, state, appStore, userStore} = this.props;
     const currentIndex = state.index;
     const {height} = this.state;
+    const {appearance} = appStore;
     // const currentRoute = state.routes[state.index];
     // const {width, height} = Dimensions.get('window');
     // const tabWidth = width / TabLabels.length;
@@ -80,15 +82,15 @@ class CMSTabbar extends React.Component {
     )
       return null;
     return (
-      <View style={[styles.container, {height}]}>
+      <View style={[styles.container, theme[appearance].container, {height}]}>
         {state.routes.map((route, index) => {
           const isSelected = index === currentIndex;
           const isDisable = userStore.disableTabIndexes.includes(index);
           const textStyle = isDisable
             ? styles.textDisabled
             : isSelected
-            ? styles.textSelected
-            : undefined;
+            ? theme[appearance].textTabBarActive
+            : theme[appearance].textTabBarInactive;
           return (
             <TouchableOpacity
               key={route.name}
@@ -104,8 +106,8 @@ class CMSTabbar extends React.Component {
                   isDisable
                     ? CMSColors.DisableItemColor
                     : isSelected
-                    ? CMSColors.PrimaryActive
-                    : CMSColors.SecondaryText
+                    ? theme[appearance].iconTabBarActive
+                    : theme[appearance].iconTabBarInactive
                 }
               />
               {/* <Image
@@ -138,7 +140,6 @@ export default inject('appStore', 'userStore')(observer(CMSTabbar));
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
     justifyContent: 'space-between',
   },
   tab: {

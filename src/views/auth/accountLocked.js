@@ -29,6 +29,7 @@ import {Domain} from '../../consts/misc';
 import APP_INFO from '../../consts/appInfo';
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {I3_Logo, Lock} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
@@ -77,8 +78,10 @@ class AccountLocked extends Component {
   render() {
     const {userStore} = this.props;
     const lockedTime = userStore.loginInfo.lockedTime;
+    const {appearance} = this.props.appStore;
+
     return (
-      <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <SafeAreaView style={[{flex: 1}, theme[appearance].container]}>
         <Button
           style={styles.closeButton}
           enable={true}
@@ -97,7 +100,7 @@ class AccountLocked extends Component {
           <View style={{flex: 0.3}} />
           <Image source={Lock} style={styles.lock} resizeMode="contain" />
           <View style={{flex: 0.3}} />
-          <Text style={styles.textAccInfo}>
+          <Text style={[styles.textAccInfo, theme[appearance].text]}>
             {LoginTxt.accountLocked.replace(
               '%s',
               `${lockedTime} ${lockedTime > 1 ? 'minutes' : 'minute'}`
@@ -105,9 +108,13 @@ class AccountLocked extends Component {
           </Text>
           <View style={{flex: 0.2}} />
           <View style={styles.textContainer}>
-            <Text style={styles.textDesc}>{LoginTxt.phoneContactTitle}</Text>
+            <Text style={[styles.textDesc, theme[appearance].contactI3SubText]}>
+              {LoginTxt.phoneContactTitle}
+            </Text>
             <TouchableOpacity onPress={this.onPhonePress}>
-              <Text style={styles.phone}>{LoginTxt.phoneContactNumber}</Text>
+              <Text style={[styles.phone, theme[appearance].text]}>
+                {LoginTxt.phoneContactNumber}
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={{flex: 0.6}} />
@@ -127,7 +134,9 @@ class AccountLocked extends Component {
             style={styles.copyRightLogo}
             resizeMode="contain"
           />
-          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          <Text style={[styles.copyRightText, theme[appearance].text]}>
+            {LoginTxt.copyRight}
+          </Text>
         </View>
         <View style={styles.space_footer} />
       </SafeAreaView>

@@ -49,6 +49,7 @@ import {
   Comps as CompTxt,
 } from '../../localization/texts';
 import commonStyles from '../../styles/commons.style';
+import theme from '../../styles/appearance';
 import {clientLogID} from '../../stores/user';
 
 const {width, height} = Dimensions.get('window');
@@ -107,13 +108,15 @@ class DashboardView extends React.Component {
   }
 
   setHeader = () => {
+    const {appearance} = this.props.appStore;
+
     this.props.navigation.setOptions({
       headerRight: () => (
         <View style={commonStyles.headerContainer}>
           <CMSTouchableIcon
-            size={28}
+            size={24}
             onPress={() => this.setState({showFilterModal: true})}
-            color={CMSColors.ColorText}
+            color={theme[appearance].iconColor}
             styles={commonStyles.headerIcon}
             iconCustom="searching-magnifying-glass"
           />
@@ -207,8 +210,9 @@ class DashboardView extends React.Component {
   renderSortModal = () => {
     const {height} = Dimensions.get('window');
     const {showSortModal} = this.state;
-    const {exceptionStore} = this.props;
+    const {exceptionStore, appStore} = this.props;
     const {displaySortFields, sortField} = exceptionStore;
+    const {appearance} = appStore;
 
     return (
       <Modal
@@ -225,9 +229,12 @@ class DashboardView extends React.Component {
             marginTop:
               height - (displaySortFields.length * ListViewHeight + 100),
           },
+          theme[appearance].modalContainer,
         ]}>
         <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>{SMARTER_TXT.SORT_MODAL_TITLE}</Text>
+          <Text style={[styles.modalTitle, theme[appearance].text]}>
+            {SMARTER_TXT.SORT_MODAL_TITLE}
+          </Text>
         </View>
         <FlatList
           data={displaySortFields}
@@ -249,11 +256,11 @@ class DashboardView extends React.Component {
                   color={
                     sortField == item
                       ? CMSColors.PrimaryActive
-                      : CMSColors.ColorText
+                      : theme[appearance].radioColor
                   }
                   size={24}
                 />
-                <Text style={styles.sortItemText}>
+                <Text style={[styles.sortItemText, theme[appearance].text]}>
                   {ExceptionSortFieldName[item]}
                 </Text>
               </CMSRipple>
@@ -268,7 +275,7 @@ class DashboardView extends React.Component {
     //(data, index, isActive) => {
     // __DEV__ && console.log(`renderSite item = `, JSON.stringify(item));
     if (!item) return;
-    const {exceptionStore} = this.props;
+    const {appearance} = this.props.appStore;
 
     return (
       <View>
@@ -284,34 +291,24 @@ class DashboardView extends React.Component {
           }}>
           <View
             style={[
-              {
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: 5,
-                height: LINE_HEIGHT,
-                backgroundColor: CMSColors.White,
-                // borderBottomWidth: 0.5,
-                // borderColor: CMSColors.BorderColorListRow,
-              },
-              // isActive == true
-              //   ? {
-              //       borderBottomWidth: 0,
-              //     }
-              //   : {},
+              styles.siteItemContainer,
+              theme[appearance].container,
+              theme[appearance].borderColor,
             ]}>
             <View style={styles.siteIconContainer}>
               <IconCustom
                 name="sites"
                 size={24}
-                color={CMSColors.PrimaryText}
+                color={theme[appearance].iconColor}
               />
             </View>
             <View style={styles.siteNameContainer}>
-              <Text style={styles.siteNameText}>{item.siteName}</Text>
+              <Text style={[styles.siteNameText, theme[appearance].text]}>
+                {item.siteName}
+              </Text>
             </View>
             <View style={styles.siteRiskContainer}>
-              <Text style={styles.siteRiskText}>
+              <Text style={[styles.siteRiskText, theme[appearance].text]}>
                 {formatNumber(item.riskFactor)}
               </Text>
             </View>
@@ -324,21 +321,28 @@ class DashboardView extends React.Component {
   };
 
   renderGroupItem = ({item}) => {
-    const {exceptionStore} = this.props;
+    const {appearance} = this.props.appStore;
 
     return (
       <CMSRipple onPress={() => this.onSelectEmployee(item)} style={{}}>
-        <View style={styles.groupItemContainer}>
+        <View
+          style={[
+            styles.groupItemContainer,
+            theme[appearance].modalContainer,
+            theme[appearance].borderColor,
+          ]}>
           <View style={styles.userIconContainer}>
             <IconCustom
               name="user-shape"
               size={20}
-              color={CMSColors.iconUserListRow}
+              color={theme[appearance].iconColor}
             />
           </View>
 
           <View style={styles.employeeNameContainer}>
-            <Text style={styles.employeeNameText}>{item.employeeName}</Text>
+            <Text style={[styles.employeeNameText, theme[appearance].text]}>
+              {item.employeeName}
+            </Text>
           </View>
           <View style={styles.employeeNameRiskContainer}>
             <Text style={styles.employeeNameRiskText}>
@@ -347,7 +351,7 @@ class DashboardView extends React.Component {
             <IconCustom
               name="keyboard-right-arrow-button"
               size={20}
-              color={CMSColors.ColorText} // {CMSColors.DividerColor}
+              color={theme[appearance].iconColor} // {CMSColors.DividerColor}
             />
           </View>
         </View>
@@ -356,43 +360,50 @@ class DashboardView extends React.Component {
   };
 
   renderSiteDetail = (data, index, isActive) => {
-    const {exceptionStore} = this.props;
+    const {exceptionStore, appStore} = this.props;
     const {loadingDetail} = this.state;
+    const {appearance} = appStore;
 
     return loadingDetail ? (
-      <View
-        style={{
-          flex: 1,
-          height: 54,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: CMSColors.White,
-          paddingHorizontal: 10,
-        }}>
+      <View style={styles.siteDetailLoadingContainer}>
         <LoadingOverlay
           height={48}
-          backgroundColor={CMSColors.White}
+          backgroundColor={theme[appearance].modalContainer.backgroundColor}
           indicatorColor={CMSColors.PrimaryActive}
+          style={styles.siteLoadingDetail}
         />
       </View>
     ) : (
       <View style={{flex: 1}}>
-        <View style={styles.groupInfoContainer}>
+        <View
+          style={[
+            styles.groupInfoContainer,
+            theme[appearance].modalContainer,
+            theme[appearance].borderColor,
+          ]}>
           <View style={styles.itemInfo}>
-            <Text style={styles.textTitleInfo}>Total transaction</Text>
-            <Text style={styles.textValueInfo}>
+            <Text style={[styles.textTitleInfo, theme[appearance].text]}>
+              Total transaction
+            </Text>
+            <Text style={[styles.textValueInfo, theme[appearance].text]}>
               {data.totalTran.toLocaleString()}
             </Text>
           </View>
           <View style={styles.itemInfo}>
-            <Text style={styles.textTitleInfo}>Total amount</Text>
-            <Text style={styles.textValueInfo}>
+            <Text style={[styles.textTitleInfo, theme[appearance].text]}>
+              Total amount
+            </Text>
+            <Text style={[styles.textValueInfo, theme[appearance].text]}>
               ${data.totalAmount.toLocaleString()}
             </Text>
           </View>
           <View style={styles.itemInfo}>
-            <Text style={styles.textTitleInfo}>Ratio to Sale</Text>
-            <Text style={styles.textValueInfo}>{data.percentToSale}%</Text>
+            <Text style={[styles.textTitleInfo, theme[appearance].text]}>
+              Ratio to Sale
+            </Text>
+            <Text style={[styles.textValueInfo, theme[appearance].text]}>
+              {data.percentToSale}%
+            </Text>
           </View>
         </View>
         <FlatList
@@ -406,11 +417,13 @@ class DashboardView extends React.Component {
   };
 
   renderDataView() {
-    const {exceptionStore, sitesStore} = this.props;
+    const {exceptionStore, sitesStore, appStore} = this.props;
     const isLoading = exceptionStore.isLoading || sitesStore.isLoading;
+    const {appearance} = appStore;
+
     return (
-      <View style={{flex: 1}}>
-        <View style={commonStyles.flatSearchBarContainer}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
+        <View style={styles.dataSearchContainer}>
           <InputTextIcon
             label=""
             value={exceptionStore.groupFilter}
@@ -419,6 +432,8 @@ class DashboardView extends React.Component {
             iconCustom="searching-magnifying-glass"
             disabled={false}
             iconPosition="right"
+            iconColor={theme[appearance].iconColor}
+            iconStyle={styles.iconSearchData}
           />
         </View>
         {exceptionStore.filteredGroupsData.length == 0 ? (
@@ -582,28 +597,34 @@ class DashboardView extends React.Component {
   };
 
   renderChartView = () => {
-    const {exceptionStore, sitesStore} = this.props;
+    const {exceptionStore, appStore} = this.props;
+    const {appearance} = appStore;
+
     return (
-      <View style={{flex: 1}}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
         <View style={styles.chartHeader}>
-          <Text style={styles.chartHeaderText}>{SMARTER_TXT.TOTAL_RISK}</Text>
-          <Text style={styles.chartHeaderRiskValue}>
+          <Text style={[styles.chartHeaderText, theme[appearance].text]}>
+            {SMARTER_TXT.TOTAL_RISK}
+          </Text>
+          <Text style={[styles.chartHeaderRiskValue, theme[appearance].text]}>
             {formatNumber(exceptionStore.totalRiskFactors)}
           </Text>
         </View>
         <View style={styles.chartContainer}>{this.renderChart()}</View>
-        <View style={styles.manuallyClipText}></View>
+        <View
+          style={[styles.manuallyClipText, theme[appearance].container]}></View>
       </View>
     );
   };
 
   render() {
-    const {exceptionStore, sitesStore} = this.props;
+    const {exceptionStore, sitesStore, appStore} = this.props;
     const {showChart, showFilterModal} = this.state;
+    const {appearance} = appStore;
     const isLoading = exceptionStore.isLoading || sitesStore.isLoading;
     const content = isLoading ? (
       <LoadingOverlay
-        backgroundColor={CMSColors.White}
+        backgroundColor={theme[appearance].container.backgroundColor}
         indicatorColor={CMSColors.PrimaryActive}
       />
     ) : showChart ? (
@@ -613,17 +634,18 @@ class DashboardView extends React.Component {
     );
 
     return (
-      <View style={{flex: 1}}>
-        <View style={styles.topInfoContainer}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
+        <View
+          style={[styles.topInfoContainer, theme[appearance].headerListRow]}>
           <CMSRipple
             style={styles.calendarIconContainer}
             onPress={() => this.setState({showFilterModal: true})}>
             <IconCustom
               name={'power-connection-indicator'}
-              color={CMSColors.ColorText}
+              color={theme[appearance].iconColor}
               size={22}
             />
-            <Text style={styles.dateRangeText}>
+            <Text style={[styles.dateRangeText, theme[appearance].text]}>
               {exceptionStore.startDateTime.toFormat(
                 DateFormat.POS_Filter_Date
               ) +
@@ -649,11 +671,16 @@ class DashboardView extends React.Component {
         {exceptionStore.exceptionsGroupData.length == 0 ? (
           <NoDataView isLoading={isLoading} style={{flex: 11}} />
         ) : (
-          <View style={styles.mainViewContainer}>
-            <View style={{flex: 10}}>{content}</View>
-            <View style={{flex: 1}}>
+          <View style={[styles.mainViewContainer, theme[appearance].container]}>
+            <View style={[{flex: 10}, theme[appearance].container]}>
+              {content}
+            </View>
+            <View style={[{flex: 1}, theme[appearance].container]}>
               <Button
-                style={styles.switchViewButton}
+                style={[
+                  styles.switchViewButton,
+                  theme[appearance].headerListRow,
+                ]}
                 caption={
                   showChart ? SMARTER_TXT.SHOW_DATA : SMARTER_TXT.SHOW_CHART
                 }
@@ -739,10 +766,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 5,
     paddingVertical: 15,
-    backgroundColor: CMSColors.White, // CMSColors.DividerColor16,
-    // borderBottomWidth: 0.5,
-    // borderColor: CMSColors.BorderColorListRow,
-    //backgroundColor: '#F6F6F6',
+    borderBottomWidth: 1,
   },
   userIconContainer: {
     backgroundColor: CMSColors.Transparent, // CMSColors.DividerColor3,
@@ -777,8 +801,8 @@ const styles = StyleSheet.create({
     height: 54,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: CMSColors.White,
     paddingHorizontal: 10,
+    borderBottomWidth: 1,
     // ...Platform.select({
     //   ios: {
     //     shadowOpacity: 0.3,
@@ -795,7 +819,6 @@ const styles = StyleSheet.create({
   itemInfo: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: CMSColors.White,
   },
   textTitleInfo: {
     fontSize: 12,
@@ -840,17 +863,42 @@ const styles = StyleSheet.create({
   },
   mainViewContainer: {flex: 11, backgroundColor: CMSColors.White},
   switchViewButton: {
-    height: 42,
+    height: 46,
     padding: 5,
-    backgroundColor: CMSColors.White,
   },
   dummyBugFixingText: {
     display: 'none',
+  },
+  siteItemContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 5,
+    height: 48,
+    borderBottomWidth: 1,
+  },
+  dataSearchContainer: {
+    paddingHorizontal: 16,
+  },
+  siteDetailLoadingContainer: {
+    flex: 1,
+    height: 54,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  siteLoadingDetail: {
+    paddingTop: 0,
+  },
+  iconSearchData: {
+    position: 'absolute',
+    right: -10,
+    top: 5,
   },
 });
 
 export default inject(
   'exceptionStore',
   'sitesStore',
-  'userStore'
+  'userStore',
+  'appStore'
 )(observer(DashboardView));

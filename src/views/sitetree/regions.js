@@ -26,6 +26,7 @@ import {Comps as CompTxt} from '../../localization/texts';
 import {reaction} from 'mobx';
 import {No_Data} from '../../consts/images';
 import {clientLogID} from '../../stores/user';
+import theme from '../../styles/appearance';
 
 class RegionsView extends Component {
   constructor(props) {
@@ -74,7 +75,8 @@ class RegionsView extends Component {
   };
 
   setHeader = () => {
-    const {sitesStore, navigation} = this.props;
+    const {sitesStore, navigation, appStore} = this.props;
+    const {appearance} = appStore;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() => this.setHeader())
       : null;
@@ -85,7 +87,7 @@ class RegionsView extends Component {
           <CMSTouchableIcon
             size={22}
             onPress={this.onAllSitesPress}
-            color={CMSColors.IconButton}
+            color={theme[appearance].iconColor}
             styles={commonStyles.headerIcon}
             iconCustom="sites"
             disabled={sitesStore.isLoading}
@@ -139,23 +141,21 @@ class RegionsView extends Component {
   };
 
   renderItem = ({item}) => {
-    const itemHeight = Dimensions.get('window').height / 16;
+    const {appearance} = this.props.appStore;
+
     return (
       <View style={{height: itemHeight + 1}}>
         <CMSRipple
-          style={{
-            height: itemHeight,
-            backgroundColor: CMSColors.White,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            paddingLeft: 16,
-            borderBottomWidth: variables.borderWidthRow,
-            borderColor: CMSColors.BorderColorListRow,
-          }}
+          style={[
+            styles.itemContainer,
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}
           rippleOpacity={0.8}
           onPress={() => this.onRegionSelected(item)}>
-          <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
+          <Text style={[styles.itemText, theme[appearance].text]}>
+            {item.name}
+          </Text>
         </CMSRipple>
       </View>
     );
@@ -178,11 +178,12 @@ class RegionsView extends Component {
   };
 
   render() {
-    const {sitesStore} = this.props;
+    const {sitesStore, appStore} = this.props;
     const noData = !sitesStore.isLoading && sitesStore.filteredRegions == 0;
+    const {appearance} = appStore;
 
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
         {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
@@ -199,13 +200,7 @@ class RegionsView extends Component {
           onFilter={this.onFilter}
           value={sitesStore.regionFilter}
         />
-        <View
-          style={{
-            backgroundColor: CMSColors.HeaderListRow,
-            height: 35,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
+        <View style={[styles.rowHeader, theme[appearance].container]}>
           <Text
             style={{
               paddingLeft: 24,
@@ -233,6 +228,8 @@ class RegionsView extends Component {
   }
 }
 
+const itemHeight = Dimensions.get('window').height / 16;
+
 const styles = StyleSheet.create({
   noDataContainer: {
     flexDirection: 'column',
@@ -248,6 +245,20 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
     fontSize: 16,
     color: CMSColors.PrimaryText,
+  },
+  itemContainer: {
+    height: itemHeight,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingLeft: 16,
+    borderBottomWidth: variables.borderWidthRow,
+  },
+  itemText: {fontSize: 16, fontWeight: '500'},
+  rowHeader: {
+    height: 35,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 export default inject(

@@ -10,6 +10,7 @@ import {
 
 import Ripple from 'react-native-material-ripple';
 import Accordion from 'react-native-collapsible/Accordion';
+import {inject, observer} from 'mobx-react';
 
 import {ConditionFilterException} from '../../consts/misc';
 import CheckboxGroup from './CMSCheckBox';
@@ -17,9 +18,10 @@ import Button from './Button';
 
 import {Icon, IconCustom} from '../CMSStyleSheet';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
 const session_header_height = 78;
-export default class MultiselectCheckBoxList extends Component {
+class MultiselectCheckBoxList extends Component {
   static defaultProps = {
     titleText: 'POS Exception settings',
     itemName: 'Exception',
@@ -57,6 +59,7 @@ export default class MultiselectCheckBoxList extends Component {
   }
 
   _renderHeader(section, index, isActive) {
+    const {appearance} = this.props.appStore;
     if (!section) {
       return;
     }
@@ -76,7 +79,9 @@ export default class MultiselectCheckBoxList extends Component {
               )} */}
 
             <View style={styles.contentText}>
-              <Text style={styles.RowHeaderText}>{this.props.titleText}</Text>
+              <Text style={[styles.RowHeaderText, theme[appearance].text]}>
+                {this.props.titleText}
+              </Text>
             </View>
             {/* </Ripple> */}
           </View>
@@ -93,16 +98,22 @@ export default class MultiselectCheckBoxList extends Component {
   // }
 
   renderSelection() {
+    const {appearance} = this.props.appStore;
     let isNoneSelected =
       !this.props.selectedItems || this.props.selectedItems.length == 0
         ? true
         : false;
     return (
       <View style={[styles.containSites, {height: this.state.contentheight}]}>
-        <View style={styles.headerSites}>
+        <View
+          style={[
+            styles.headerSites,
+            theme[appearance].posExceptionModalSubHeader,
+          ]}>
           <Text
             style={[
               styles.countsite_text,
+              theme[appearance].text,
               isNoneSelected == true ? styles.countsite_text_empty : null,
             ]}>
             {this.props.selectedItems.length +
@@ -124,7 +135,7 @@ export default class MultiselectCheckBoxList extends Component {
                       ? 'sort-alpha-asc'
                       : 'sort-alpha-desc'
                   }
-                  color={CMSColors.PrimaryText}
+                  color={theme[appearance].iconColor}
                   size={17}
                 />
               </Ripple>
@@ -159,7 +170,7 @@ export default class MultiselectCheckBoxList extends Component {
           enableSort={this.props.enableSort}
           isSortAZ={this.state.isSortAZ}
           labelStyle={{
-            color: CMSColors.PrimaryText,
+            color: theme[appearance].text.color,
           }}
           rowStyle={{
             flexDirection: 'row',
@@ -302,3 +313,5 @@ const styles = StyleSheet.create({
     color: CMSColors.ErrorColor,
   },
 });
+
+export default inject('appStore')(observer(MultiselectCheckBoxList));

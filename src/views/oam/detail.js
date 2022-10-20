@@ -24,6 +24,7 @@ import snackbarUtil from '../../util/snackbar';
 
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
+import theme from '../../styles/appearance';
 
 import ROUTERS from '../../consts/routes';
 import {VIDEO as VIDEO_TXT} from '../../localization/texts';
@@ -191,11 +192,12 @@ class OAMDetailView extends Component {
   };
 
   render() {
-    const {oamStore, navigation} = this.props;
+    const {oamStore, appStore} = this.props;
+    const {appearance} = appStore;
     const isLandscape = false;
     if (!oamStore.data)
       return (
-        <View style={styles.spinner}>
+        <View style={[styles.spinner, theme[appearance].container]}>
           <ActivityIndicator
             animating={true}
             style={commonStyles.spinnerCenter}

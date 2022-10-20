@@ -1,4 +1,4 @@
-import {Text, ScrollView, StyleSheet, View} from 'react-native';
+import {Text, ScrollView, StyleSheet, View, Switch} from 'react-native';
 import React, {Component} from 'react';
 
 import {inject, observer} from 'mobx-react';
@@ -11,6 +11,7 @@ import {Account} from '../../consts/apiRoutes';
 import CMSColors from '../../styles/cmscolors';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSImage from '../../components/containers/CMSImage';
+import theme from '../../styles/appearance';
 
 import CMSStyleSheet from '../../components/CMSStyleSheet';
 import ROUTERS from '../../consts/routes';
@@ -82,9 +83,48 @@ class SettingsView extends Component {
     await this.props.videoStore.getCloudSetting(isStreamingAvailable);
   };
 
+  renderArrowIcon = () => {
+    const {appearance} = this.props.appStore;
+
+    return (
+      <View style={styles.listEnterIcon}>
+        <IconCustom
+          name="keyboard-right-arrow-button"
+          size={16}
+          color={theme[appearance].iconColor}
+        />
+      </View>
+    );
+  };
+
+  renderSwitchDarkMode = () => {
+    const {appearance} = this.props.appStore;
+
+    return (
+      <Switch
+        value={appearance === 'dark'}
+        thumbColor={
+          appearance === 'dark' ? CMSColors.PrimaryActive : CMSColors.White
+        }
+        trackColor={{true: '#7ab8e1', false: '#d3d3d3'}}
+        style={{marginRight: 16}}
+      />
+    );
+  };
+
+  onToggleDarkMode = () => {
+    const {appearance, setAppearance} = this.props.appStore;
+    if (appearance === 'dark') {
+      setAppearance('light');
+    } else {
+      setAppearance('dark');
+    }
+  };
+
   render() {
     if (!this.props.userStore) return <View />;
     const {user} = this.props.userStore;
+    const {appearance} = this.props.appStore;
     const {cloudType} = this.props.videoStore;
     // const showVideoSetting = user.hasPermission(
     //   MODULE_PERMISSIONS.VSC
@@ -125,135 +165,110 @@ class SettingsView extends Component {
       </View>
     );
 
+    const data = [
+      {
+        id: 'domain',
+        title: 'Domain',
+        subTitle: this.props.userStore.domain,
+        onPress: () => {},
+        titleStyle: [styles.listTextDomainTitle, theme[appearance].text],
+        subTitleStyle: [styles.listTextDomain, theme[appearance].text],
+        disabled: true,
+        icon: null,
+      },
+      {
+        id: 'notification-settings',
+        title: 'Notification Settings',
+        subTitle: null,
+        onPress: this.toNotify,
+        titleStyle: [styles.listText, theme[appearance].text],
+        subTitleStyle: null,
+        disabled: false,
+        icon: this.renderArrowIcon(),
+      },
+      {
+        id: 'video-connection',
+        title: 'Video Connection',
+        subTitle: selectedVideoConnection?.name,
+        onPress: this.toVideoSetting,
+        titleStyle: [styles.listText, theme[appearance].text],
+        subTitleStyle: [
+          styles.videoConnectionLittleText,
+          theme[appearance].videoConnectionLittleText,
+        ],
+        disabled: false,
+        icon: this.renderArrowIcon(),
+      },
+      {
+        id: 'dark-theme',
+        title: 'Dark theme',
+        subTitle: null,
+        onPress: this.onToggleDarkMode,
+        titleStyle: [styles.listText, theme[appearance].text],
+        subTitleStyle: null,
+        disabled: false,
+        icon: this.renderSwitchDarkMode(),
+      },
+      {
+        id: 'about',
+        title: 'About',
+        subTitle: null,
+        onPress: this.toAbout,
+        titleStyle: [styles.listText, theme[appearance].text],
+        subTitleStyle: null,
+        disabled: false,
+        icon: this.renderArrowIcon(),
+      },
+      {
+        id: 'logout',
+        title: 'Logout',
+        subTitle: null,
+        onPress: this.onLogout,
+        titleStyle: [styles.listText, {color: '#d9534f'}],
+        subTitleStyle: null,
+        disabled: false,
+        icon: null,
+      },
+    ];
+
     return (
-      <View style={styles.all}>
-        <ScrollView style={[styles.container]}>
+      <View style={[styles.all, theme[appearance].container]}>
+        <ScrollView style={[styles.container, theme[appearance].container]}>
           <Ripple
-            style={styles.headerRowContainer}
+            style={[styles.headerRowContainer, theme[appearance].borderColor]}
             rippleOpacity={0.87}
             onPress={this.toProfile}>
             <View style={[styles.infoProfile]}>
               <View>{avatar}</View>
               <View style={styles.userInfo}>
-                <Text style={styles.userInfoText}>{user.firstName}</Text>
-                <Text style={styles.userInfoSubText}>{user.email}</Text>
-              </View>
-            </View>
-            <View style={[styles.iconArrowProfile]}>
-              <IconCustom
-                name="keyboard-right-arrow-button"
-                size={16}
-                color={CMSColors.RowOptions}
-              />
-            </View>
-          </Ripple>
-          <View style={styles.rowContainer} rippleOpacity={0.87}>
-            <View style={styles.listRow}>
-              {/* <View style={styles.listIcon}>
-                <IconCustom
-                  name="earth-grid-select-language-button"
-                  size={20}
-                  color={CMSColors.RowOptions}
-                />
-              </View> */}
-              <View style={styles.domainContainer}>
-                <Text style={styles.listTextDomainTitle}>Domain</Text>
-                <Text style={styles.listTextDomain}>
-                  {/* {this.state.domainName} */}
-                  {this.props.userStore.domain}
+                <Text style={[styles.userInfoText, theme[appearance].text]}>
+                  {user.firstName}
+                </Text>
+                <Text style={[styles.userInfoSubText, theme[appearance].text]}>
+                  {user.email}
                 </Text>
               </View>
             </View>
-          </View>
-          <Ripple
-            style={styles.rowContainer}
-            rippleOpacity={0.87}
-            onPress={this.toNotify}>
-            <View style={styles.listRow}>
-              {/* <View style={styles.listIcon}>
-                <IconCustom
-                  name="notifications-button"
-                  size={20}
-                  color={CMSColors.RowOptions}
-                />
-              </View> */}
-              <Text style={styles.listText}>Notification settings</Text>
-
-              <View style={styles.listEnterIcon}>
-                <IconCustom
-                  name="keyboard-right-arrow-button"
-                  size={16}
-                  color={CMSColors.RowOptions}
-                />
-              </View>
-            </View>
+            {this.renderArrowIcon()}
           </Ripple>
-          <Ripple
-            style={styles.rowContainer}
-            rippleOpacity={0.87}
-            onPress={this.toVideoSetting}>
-            <View style={styles.listRow}>
-              {/* <View style={styles.listIcon}>
-                <IconCustom
-                  name="icon-dvr"
-                  size={20}
-                  color={CMSColors.RowOptions}
-                />
-              </View> */}
-              <View style={styles.videoConnectionContent}>
-                <Text style={[styles.listText, styles.videoConnectionText]}>
-                  Video connection
-                </Text>
-                {videoConnection}
+          {data.map(item => (
+            <Ripple
+              style={[styles.rowContainer, theme[appearance].borderColor]}
+              rippleOpacity={0.87}
+              disabled={item.disabled}
+              onPress={item.onPress}
+              key={item.id}>
+              <View style={styles.listRow}>
+                <View style={styles.listRowLeft}>
+                  <Text style={item.titleStyle}>{item.title}</Text>
+                  {item.subTitle && (
+                    <Text style={item.subTitleStyle}>{item.subTitle}</Text>
+                  )}
+                </View>
+                {item.icon}
               </View>
-
-              <View style={styles.listEnterIcon}>
-                <IconCustom
-                  name="keyboard-right-arrow-button"
-                  size={16}
-                  color={CMSColors.RowOptions}
-                />
-              </View>
-            </View>
-          </Ripple>
-          <Ripple
-            style={styles.rowContainer}
-            rippleOpacity={0.87}
-            onPress={this.toAbout}>
-            <View style={styles.listRow}>
-              {/* <View style={styles.listIcon}>
-                <IconCustom
-                  name="round-info-button"
-                  size={20}
-                  color={CMSColors.RowOptions}
-                />
-              </View> */}
-              <Text style={styles.listText}>About</Text>
-
-              <View style={styles.listEnterIcon}>
-                <IconCustom
-                  name="keyboard-right-arrow-button"
-                  size={16}
-                  color={CMSColors.RowOptions}
-                />
-              </View>
-            </View>
-          </Ripple>
-          <Ripple
-            style={styles.rowContainer}
-            rippleOpacity={0.87}
-            onPress={this.onLogout}>
-            <View style={styles.listRow}>
-              {/* <View style={styles.listIcon}>
-                <IconCustom
-                  name="logout"
-                  size={20}
-                  color={CMSColors.RowOptions}
-                />
-              </View> */}
-              <Text style={[styles.listText, {color: '#d9534f'}]}>Logout</Text>
-            </View>
-          </Ripple>
+            </Ripple>
+          ))}
         </ScrollView>
       </View>
     );
@@ -264,7 +279,6 @@ const styles = StyleSheet.create({
   all: {
     flexDirection: 'row',
     flex: 1,
-    backgroundColor: CMSColors.White,
     // backgroundColor: '#eee',
   },
   container: {
@@ -283,17 +297,17 @@ const styles = StyleSheet.create({
     borderColor: 'rgb(204, 204, 204)',
   },
   infoProfile: {
-    marginLeft: 20,
+    marginLeft: 16,
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconArrowProfile: {
+    marginRight: 10,
     width: 30,
     height: 30,
-    paddingTop: 3,
     flexDirection: 'row',
     justifyContent: 'center',
-    marginRight: 5,
+    alignItems: 'center',
   },
   avatar: {
     width: 60,
@@ -337,7 +351,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listIcon: {
-    margin: 5,
     width: 30,
     height: 30,
     flexDirection: 'row',
@@ -347,34 +360,27 @@ const styles = StyleSheet.create({
   domainContainer: {
     flexDirection: 'column',
     justifyContent: 'center',
-    flex: 1,
-    padding: 5,
   },
   listText: {
-    flex: 1,
-    margin: 15,
-    paddingLeft: 5,
     fontSize: 16,
     fontWeight: 'bold',
     color: CMSColors.ColorText,
     lineHeight: 24,
   },
   listTextDomainTitle: {
-    marginLeft: 15, //10,
     fontSize: 16,
     fontWeight: 'bold',
     color: CMSColors.ColorText,
     lineHeight: 22,
   },
   listTextDomain: {
-    marginLeft: 15, // 10,
     fontSize: 14,
     color: CMSColors.PrimaryColor,
   },
   listEnterIcon: {
+    marginRight: 10,
     width: 30,
     height: 30,
-    paddingTop: 3,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -383,15 +389,14 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 15,
   },
-  videoConnectionText: {
-    margin: 0,
-    flex: 0,
-  },
   videoConnectionLittleText: {
-    paddingLeft: 5,
     fontSize: 12,
     color: CMSColors.RowOptions,
     lineHeight: 18,
+  },
+  listRowLeft: {
+    flex: 1,
+    paddingLeft: 16,
   },
 });
 

@@ -71,7 +71,8 @@ class AcknowledgePopup extends Component {
               style={[styles.radiobuttonContainer]}
               onPress={() => {
                 this.onRadioButtonPress(index);
-              }}>
+              }}
+              key={index}>
               <Icon
                 name={
                   this.state.selectedMsgId == index

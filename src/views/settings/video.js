@@ -31,6 +31,7 @@ import {
 } from '../../consts/images';
 import {Settings as SettingsTxt} from '../../localization/texts';
 import {MODULE_PERMISSIONS} from '../../consts/misc';
+import theme from '../../styles/appearance';
 
 export const CloudSettingData = [
   {
@@ -164,6 +165,7 @@ class VideosettingView extends Component {
 
   renderItem = ({item}) => {
     if (!item) return;
+    const {appearance} = this.props.appStore;
 
     const isStreamingAvailable = this.props.userStore.hasPermission(
       MODULE_PERMISSIONS.VSC
@@ -191,7 +193,12 @@ class VideosettingView extends Component {
         <Ripple
           rippleOpacity={0.87}
           onPress={() => this.onItemPress(item.value)}>
-          <View style={styles.rowList}>
+          <View
+            style={[
+              styles.rowList,
+              theme[appearance].container,
+              theme[appearance].borderColor,
+            ]}>
             <View style={styles.rowButton_contain_icon}>
               {/* <CMSTouchableIcon
               size={24}
@@ -220,6 +227,7 @@ class VideosettingView extends Component {
               <Text
                 style={[
                   styles.rowButton_name,
+                  theme[appearance].text,
                   item.value && !isStreamingAvailable
                     ? {color: CMSColors.DisableItemColor}
                     : {},
@@ -229,6 +237,7 @@ class VideosettingView extends Component {
               <Text
                 style={[
                   styles.rowButton_desc,
+                  theme[appearance].text,
                   item.value && !isStreamingAvailable
                     ? {color: CMSColors.DisableItemColor}
                     : {},
@@ -244,11 +253,13 @@ class VideosettingView extends Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
     // let statusbar =
     //   Platform.OS == 'ios' ? <View style={styles.statusbarios}></View> : null;
 
     return (
-      <View style={commonStyles.normalViewContainer}>
+      <View
+        style={[commonStyles.normalViewContainer, theme[appearance].container]}>
         <View style={styles.firstContainer}>
           <FlatList
             data={CloudSettingData}
@@ -267,7 +278,6 @@ class VideosettingView extends Component {
 const styles = StyleSheet.create({
   all: {
     flex: 1,
-    backgroundColor: CMSColors.White,
   },
   firstContainer: {
     flex: 1,
@@ -349,7 +359,6 @@ const styles = StyleSheet.create({
     padding: 5,
     borderBottomWidth: variable.borderWidthRow,
     borderColor: 'rgb(204, 204, 204)',
-    backgroundColor: CMSColors.White,
   },
   rowButton_contain_icon: {
     //backgroundColor: 'red'
@@ -400,4 +409,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('videoStore', 'userStore')(observer(VideosettingView));
+export default inject(
+  'videoStore',
+  'userStore',
+  'appStore'
+)(observer(VideosettingView));

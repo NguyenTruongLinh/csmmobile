@@ -28,6 +28,7 @@ import snackbarUtil from '../../util/snackbar';
 
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
+import theme from '../../styles/appearance';
 import {
   SMARTER as SMARTER_TXT,
   VIDEO as VIDEO_TXT,
@@ -129,8 +130,9 @@ class TransactionDetailView extends Component {
   };
 
   setHeader = () => {
-    const {exceptionStore, navigation} = this.props;
+    const {exceptionStore, navigation, appStore} = this.props;
     const {viewMode} = this.state;
+    const {appearance} = appStore;
 
     navigation.setOptions({
       headerLeft:
@@ -155,7 +157,7 @@ class TransactionDetailView extends Component {
                   color={
                     viewMode == ViewModes.fullscreenVideo
                       ? CMSColors.White
-                      : CMSColors.ColorText
+                      : theme[appearance].iconColor
                   }
                   styles={commonStyles.headerIcon}
                   iconCustom="clear-button"
@@ -163,12 +165,6 @@ class TransactionDetailView extends Component {
               </View>
             )
           : null,
-      headerStyle: {
-        backgroundColor:
-          viewMode == ViewModes.fullscreenVideo
-            ? CMSColors.DarkTheme
-            : CMSColors.White,
-      },
       headerShown: viewMode != ViewModes.fullscreenVideo,
     });
     if (viewMode == ViewModes.fullscreenVideo) Orientation.lockToLandscape();
@@ -399,6 +395,7 @@ class TransactionDetailView extends Component {
   render() {
     const {selectedTransaction, isLoading} = this.props.exceptionStore;
     const {showFlagModal, viewMode} = this.state;
+    const {appearance} = this.props.appStore;
 
     if (!selectedTransaction) return <View />;
 
@@ -426,10 +423,10 @@ class TransactionDetailView extends Component {
     }
 
     return (
-      <View style={styles.viewContainer}>
+      <View style={[styles.viewContainer, theme[appearance].container]}>
         {isLoading ? (
           <LoadingOverlay
-            backgroundColor={CMSColors.White}
+            backgroundColor={theme[appearance].container}
             indicatorColor={CMSColors.PrimaryActive}
           />
         ) : (
@@ -449,7 +446,6 @@ class TransactionDetailView extends Component {
 const styles = StyleSheet.create({
   viewContainer: {
     flex: 1,
-    backgroundColor: CMSColors.White,
   },
   contentView: {
     paddingHorizontal: 12,
@@ -458,7 +454,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderColor: CMSColors.PrimaryActive,
     borderWidth: 2,
-    marginTop: 42,
+    marginTop: 16,
     justifyContent: 'center',
   },
   defaultBillContainer: {flex: 1, marginTop: 16},

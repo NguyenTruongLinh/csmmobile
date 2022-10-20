@@ -31,6 +31,7 @@ import {AlertTypes, DateFormat} from '../../consts/misc';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
+import theme from '../../styles/appearance';
 import {No_Image} from '../../consts/images';
 
 import {Comps as CompTxt} from '../../localization/texts';
@@ -89,7 +90,7 @@ class AlertsView extends Component {
   }
 
   setHeader = () => {
-    const {healthStore, navigation} = this.props;
+    const {healthStore, navigation, appStore} = this.props;
     const {
       selectedAlertTypeId,
       selectedAlertType,
@@ -97,6 +98,7 @@ class AlertsView extends Component {
       currentSiteName,
       alertsList,
     } = healthStore;
+    const {appearance} = appStore;
     const {isListView} = this.state;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() => this.setHeader())
@@ -133,7 +135,7 @@ class AlertsView extends Component {
                   : 'view-list-button'
               }
               size={24}
-              color={CMSColors.ColorText}
+              color={theme[appearance].iconColor}
               styles={commonStyles.headerIcon}
               onPress={() => {
                 this.setState(
@@ -246,14 +248,20 @@ class AlertsView extends Component {
   };
 
   renderUndismissableNormalAlertItem = item => {
+    const {appearance} = this.props.appStore;
+
     return (
-      <CMSRipple style={styles.alertRipple} underlayColor={CMSColors.Underlay}>
-        <View style={styles.alertContainer}>
+      <CMSRipple
+        style={[styles.alertRipple, theme[appearance].borderColor]}
+        underlayColor={CMSColors.Underlay}>
+        <View style={[styles.alertContainer, theme[appearance].container]}>
           <View style={styles.alertIconContainer}>
             <IconCustom name="icon-dvr" size={36} color={CMSColors.Dark_Gray} />
           </View>
           <View style={{flex: 2}}>
-            <Text style={{padding: 2, fontSize: 16}}>{item.dvr.name}</Text>
+            <Text style={[{padding: 2, fontSize: 16}, theme[appearance].text]}>
+              {item.dvr.name}
+            </Text>
 
             <View style={styles.thumbSub}>
               <View style={styles.thumbSubIcon}>
@@ -264,10 +272,13 @@ class AlertsView extends Component {
                 />
               </View>
               <Text
-                style={{
-                  padding: 2,
-                  fontSize: 12,
-                }}>
+                style={[
+                  {
+                    padding: 2,
+                    fontSize: 12,
+                  },
+                  theme[appearance].text,
+                ]}>
                 {DateTime.fromISO(item.timezone, {zone: 'utc'}).toFormat(
                   DateFormat.Alert_Date
                 )}
@@ -304,6 +315,7 @@ class AlertsView extends Component {
   };
 
   renderContentAlertWithSnapshot = alert => {
+    const {appearance} = this.props.appStore;
     const {width} = Dimensions.get('window');
     const itemPadding = 10;
     const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
@@ -321,7 +333,9 @@ class AlertsView extends Component {
 
     return (
       <View style={containerStyle}>
-        <Text numberOfLines={numberOfLines} style={styles.thumbChannelText}>
+        <Text
+          numberOfLines={numberOfLines}
+          style={[styles.thumbChannelText, theme[appearance].text]}>
           {alert.channelName}
         </Text>
 
@@ -333,7 +347,9 @@ class AlertsView extends Component {
               color={CMSColors.SecondaryText}
             />
           </View>
-          <Text style={styles.thumbSubText}>{alert.dvr.name}</Text>
+          <Text style={[styles.thumbSubText, theme[appearance].text]}>
+            {alert.dvr.name}
+          </Text>
         </View>
 
         <View style={styles.thumbSub}>
@@ -344,7 +360,7 @@ class AlertsView extends Component {
               color={CMSColors.SecondaryText}
             />
           </View>
-          <Text style={styles.thumbSubText}>
+          <Text style={[styles.thumbSubText, theme[appearance].text]}>
             {DateTime.fromISO(alert.timezone, {zone: 'utc'}).toFormat(
               DateFormat.Alert_Date
             )}
@@ -355,7 +371,8 @@ class AlertsView extends Component {
   };
 
   renderAlertItemWithSnapshot = item => {
-    const {healthStore} = this.props;
+    const {healthStore, appStore} = this.props;
+    const {appearance} = appStore;
     __DEV__ && console.log('GOND renderAlertItemWithSnapshot: ', item);
 
     return (
@@ -372,7 +389,12 @@ class AlertsView extends Component {
             this.gotoAlertDetail(item);
           }}
           underlayColor={CMSColors.Underlay}>
-          <View style={styles.alertThumbView}>
+          <View
+            style={[
+              styles.alertThumbView,
+              theme[appearance].container,
+              theme[appearance].borderColor,
+            ]}>
             <CMSImage
               id={'list_' + item.id} //DateTime.now().toMillis()}
               src={item.image}
@@ -393,8 +415,9 @@ class AlertsView extends Component {
   };
 
   renderAlertItemGridView = item => {
-    const {healthStore} = this.props;
+    const {healthStore, appStore} = this.props;
     const {width} = Dimensions.get('window');
+    const {appearance} = appStore;
     // const itemPadding = 10;
     const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
     __DEV__ && console.log('GOND renderAlertItemWithSnapshot: ', item);
@@ -422,15 +445,16 @@ class AlertsView extends Component {
           width: width / ALERTS_GRID_LAYOUT - 15,
         }}>
         <View
-          style={{
-            flex: 1,
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: CMSColors.White,
-            borderColor: CMSColors.BorderColorListRow,
-            // padding: itemPadding,
-          }}>
+          style={[
+            {
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            },
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}>
           <View
             style={{width: itemWidth, height: Math.floor((itemWidth * 3) / 4)}}>
             <CMSImage
@@ -482,14 +506,15 @@ class AlertsView extends Component {
   };
 
   render() {
-    const {healthStore, navigation} = this.props;
+    const {healthStore, navigation, appStore} = this.props;
+    const {appearance} = appStore;
     const {/*showDismissModal,*/ isListView, selectedAlertForDismiss} =
       this.state;
     __DEV__ && console.log('GOND alerts: render  ', healthStore.selectedSite);
     if (!healthStore.selectedSite) return null;
 
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
         {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
@@ -625,9 +650,8 @@ const styles = StyleSheet.create({
   },
   alertRipple: {
     alignItems: 'center',
-    backgroundColor: CMSColors.White,
     borderBottomColor: CMSColors.BorderColorListRow,
-    borderBottomWidth: variables.borderWidthRow,
+    borderBottomWidth: 1,
     justifyContent: 'center',
   },
   alertIconContainer: {
@@ -646,4 +670,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('healthStore')(observer(AlertsView));
+export default inject('healthStore', 'appStore')(observer(AlertsView));

@@ -15,6 +15,7 @@ import {reaction} from 'mobx';
 
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
+import theme from '../../styles/appearance';
 
 const str_showpass = 'Show password';
 
@@ -142,13 +143,16 @@ class AuthenModal extends Component {
   // };
 
   render() {
-    let {title} = this.props;
+    let {title, appStore} = this.props;
     let {showpass} = this.state;
+    const {appearance} = appStore;
     // let check_box = this.renderCheckbox(showpass);
     return (
       <View style={[styles.container, this.props.style]}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>{title}</Text>
+          <Text style={[styles.headerText, theme[appearance].text]}>
+            {title}
+          </Text>
         </View>
         <View style={[styles.body]}>
           <InputTextIcon
@@ -191,7 +195,7 @@ class AuthenModal extends Component {
             onPress={() => {
               this.onCancel();
             }}
-            backgroundColor={CMSColors.White}
+            backgroundColor={CMSColors.Transparent}
             textColor={CMSColors.PrimaryColor}
             enable={true}
             caption={'CANCEL'}
@@ -291,4 +295,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('videoStore')(observer(AuthenModal));
+export default inject('videoStore', 'appStore')(observer(AuthenModal));

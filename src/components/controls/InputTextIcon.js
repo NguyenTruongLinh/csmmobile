@@ -4,17 +4,19 @@ import {TextField} from 'react-native-material-textfield';
 import Helper from 'react-native-material-textfield/src/components/helper';
 import Counter from 'react-native-material-textfield/src/components/counter';
 import PropTypes from 'prop-types';
+import {inject, observer} from 'mobx-react';
 import variable from '../../styles/variables';
 
 import CMSColors from '../../styles/cmscolors';
 import CMSStyleSheet from '../CMSStyleSheet';
+import theme from '../../styles/appearance';
 
 const Icon = CMSStyleSheet.Icon;
 const IconCustom = CMSStyleSheet.IconCustom;
 const MaterialIcons = CMSStyleSheet.MaterialIcons;
 const LABEL_FONT_SIZE = 13;
 
-export default class InputTextIcon extends PureComponent {
+class InputTextIcon extends PureComponent {
   static defaultProps = {
     underlineColorAndroid: 'transparent',
     disableFullscreenUI: true,
@@ -28,8 +30,6 @@ export default class InputTextIcon extends PureComponent {
     fontSize: variable.fix_fontSire,
 
     tintColor: CMSColors.BorderActiveColor,
-    textColor: CMSColors.ActionText,
-    baseColor: CMSColors.BorderColor,
 
     errorColor: CMSColors.ErrorColor,
 
@@ -238,6 +238,11 @@ export default class InputTextIcon extends PureComponent {
     } = this.props;
     let {focused, focus, error, errored, height, text = ''} = this.state;
     let {multiline} = props;
+    const {appearance} = this.props.appStore;
+
+    const overrideBaseColor = baseColor
+      ? baseColor
+      : theme[appearance].baseColor;
 
     let count = text.length;
     let active = !!text;
@@ -246,7 +251,7 @@ export default class InputTextIcon extends PureComponent {
     let inputStyle = {
       fontSize,
 
-      color: disabled ? baseColor : textColor,
+      color: disabled ? overrideBaseColor : theme[appearance].text.color,
 
       ...(multiline
         ? {
@@ -277,7 +282,7 @@ export default class InputTextIcon extends PureComponent {
     };
 
     let titleStyle = {
-      color: baseColor,
+      color: overrideBaseColor,
 
       opacity: focus.interpolate({
         inputRange: [-1, 0, 1],
@@ -363,7 +368,7 @@ export default class InputTextIcon extends PureComponent {
             ]}
             selectionColor={noBorder ? CMSColors.Transparent : tintColor}
             tintColor={noBorder ? CMSColors.Transparent : tintColor}
-            baseColor={noBorder ? CMSColors.Transparent : baseColor}
+            baseColor={noBorder ? CMSColors.Transparent : overrideBaseColor}
             {...props}
             {...{
               // tintColor,
@@ -386,7 +391,7 @@ export default class InputTextIcon extends PureComponent {
             onBlur={this.onBlur}
             value={text}
             placeholder={placeholder}
-            placeholderTextColor={baseColor}
+            placeholderTextColor={overrideBaseColor}
             ref={ref => (this.inputRef = ref)}
             label={label}
             labelFontSize={label ? LABEL_FONT_SIZE : 0}
@@ -407,7 +412,10 @@ export default class InputTextIcon extends PureComponent {
                 focusAnimation={new Animated.Value(0)}
               />
             </View>
-            <Counter {...{baseColor, errorColor, count, limit}} />
+            <Counter
+              baseColor={overrideBaseColor}
+              {...{errorColor, count, limit}}
+            />
           </Animated.View>
           {fixAndroidBottomLine &&
             Platform.OS === 'android' &&
@@ -418,7 +426,7 @@ export default class InputTextIcon extends PureComponent {
                   width: '100%',
                   height: 16,
                   position: 'absolute',
-                  backgroundColor: 'white',
+                  // backgroundColor: 'white',
                   bottom: fixAndroidBottomLineBottom || 0, //0, //10
                   // borderWidth: 1,
                 }}>
@@ -484,7 +492,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 12,
     padding: 10,
-    backgroundColor: 'white',
+    // backgroundColor: 'white',
   },
   input: {
     top: 2,
@@ -504,3 +512,5 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 });
+
+export default inject('appStore')(observer(InputTextIcon));

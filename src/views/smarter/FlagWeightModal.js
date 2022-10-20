@@ -1,6 +1,13 @@
 import React, {Component} from 'react';
-import {View, ScrollView, Text, FlatList, Dimensions} from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  View,
+  ScrollView,
+  Text,
+  FlatList,
+  Dimensions,
+  StyleSheet,
+} from 'react-native';
+import {inject, observer} from 'mobx-react';
 
 // import Modal from 'react-native-modal';
 import Modal from '../../components/views/CMSModal';
@@ -8,7 +15,9 @@ import Modal from '../../components/views/CMSModal';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {SMARTER as SMARTER_TXT} from '../../localization/texts';
+import styles from 'react-native-material-textfield/src/components/helper/styles';
 
 const HeaderHeight = 56;
 const ListItemHeight = 42;
@@ -31,15 +40,10 @@ class FlagWeightModal extends Component {
   }
 
   renderItem = ({item}) => {
+    const {appearance} = this.props.appStore;
     return (
       <View
-        style={{
-          height: ListItemHeight,
-          flexDirection: 'row',
-          paddingHorizontal: 10,
-          justifyContent: 'flex-start',
-          backgroundColor: CMSColors.White,
-        }}>
+        style={[styleSheet.itemContainer, theme[appearance].modalContainer]}>
         <View
           style={{
             width: 32,
@@ -77,14 +81,15 @@ class FlagWeightModal extends Component {
             justifyContent: 'center',
             alignItems: 'flex-start',
           }}>
-          <Text style={{}}>{item.name}</Text>
+          <Text style={theme[appearance].text}>{item.name}</Text>
         </View>
       </View>
     );
   };
 
   render() {
-    const {isVisible, data, onDismiss} = this.props;
+    const {isVisible, data, onDismiss, appStore} = this.props;
+    const {appearance} = appStore;
     const {height} = Dimensions.get('window');
 
     if (!data || !Array.isArray(data)) {
@@ -107,11 +112,18 @@ class FlagWeightModal extends Component {
             marginTop:
               (marginTop < this.minMarginTop ? this.minMarginTop : marginTop) /
               1.1,
-            backgroundColor: 'white',
           },
+          theme[appearance].modalContainer,
         ]}>
-        <View style={[commonStyles.modalHeader, {height: HeaderHeight}]}>
-          <Text style={commonStyles.modalTitle}>{SMARTER_TXT.FLAG_WEIGHT}</Text>
+        <View
+          style={[
+            commonStyles.modalHeader,
+            {height: HeaderHeight},
+            theme[appearance].modalContainer,
+          ]}>
+          <Text style={[commonStyles.modalTitle, theme[appearance].text]}>
+            {SMARTER_TXT.FLAG_WEIGHT}
+          </Text>
         </View>
         <FlatList
           data={data}
@@ -123,4 +135,13 @@ class FlagWeightModal extends Component {
   }
 }
 
-export default FlagWeightModal;
+const styleSheet = StyleSheet.create({
+  itemContainer: {
+    height: ListItemHeight,
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+});
+
+export default inject('appStore')(observer(FlagWeightModal));

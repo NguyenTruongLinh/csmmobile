@@ -32,6 +32,7 @@ import {Comps as CompTxt} from '../../localization/texts';
 import {No_Data} from '../../consts/images';
 import {WIDGET_COUNTS} from '../../consts/misc';
 import {clientLogID} from '../../stores/user';
+import theme from '../../styles/appearance';
 
 // const ListViewHeight = 56; // Dimensions.get('window').height / 16;
 
@@ -131,7 +132,8 @@ class SitesView extends Component {
   };
 
   setHeader = () => {
-    const {sitesStore, navigation} = this.props;
+    const {sitesStore, navigation, appStore} = this.props;
+    const {appearance} = appStore;
     const {isHealthRoute} = this.state;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() => this.setHeader())
@@ -158,7 +160,7 @@ class SitesView extends Component {
       <CMSTouchableIcon
         size={28}
         onPress={() => navigation.navigate(ROUTERS.VIDEO_REGIONS)}
-        color={CMSColors.IconButton}
+        color={theme[appearance].iconColor}
         styles={commonStyles.headerIcon}
         iconCustom="solid_region"
       />
@@ -307,6 +309,7 @@ class SitesView extends Component {
   renderItem = ({item}) => {
     const {isHealthRoute} = this.state;
     const rowId = item.id ?? 0;
+    const {appearance} = this.props.appStore;
     // __DEV__ && console.log('GOND site height: ', ListViewHeight);
 
     return (
@@ -326,17 +329,25 @@ class SitesView extends Component {
         <CMSRipple
           rippleOpacity={0.8}
           onPress={() => this.onSiteSelected(item)}
-          style={styles.listItemRipple}>
+          style={[
+            styles.listItemRipple,
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}>
           <View style={styles.siteNameContainer}>
             {isHealthRoute && (
               <IconCustom
                 name="sites"
-                color={CMSColors.IconButton}
+                color={theme[appearance].iconColor}
                 size={variables.fix_fontSize_Icon}
               />
             )}
             <Text
-              style={[styles.siteName, {paddingLeft: isHealthRoute ? 14 : 0}]}>
+              style={[
+                styles.siteName,
+                {paddingLeft: isHealthRoute ? 14 : 0},
+                theme[appearance].text,
+              ]}>
               {isHealthRoute ? item.siteName : item.name}
             </Text>
           </View>
@@ -355,10 +366,13 @@ class SitesView extends Component {
   };
 
   renderNoData = () => {
+    const {appearance} = this.props.appStore;
     return (
       <View style={[styles.noDataContainer, {height: this.state.listHeight}]}>
         <Image source={No_Data} style={styles.noDataImg}></Image>
-        <Text style={styles.noDataTxt}>There is no data.</Text>
+        <Text style={[styles.noDataTxt, theme[appearance].text]}>
+          There is no data.
+        </Text>
       </View>
     );
   };
@@ -371,13 +385,14 @@ class SitesView extends Component {
   };
 
   render() {
-    const {sitesStore, healthStore} = this.props;
+    const {sitesStore, healthStore, appStore} = this.props;
     const {isHealthRoute, isLoadingRegardlessStep, refreshOnResume} =
       this.state;
     const siteData = isHealthRoute
       ? healthStore.filteredSites
       : sitesStore.filteredSites;
     const noData = !isLoadingRegardlessStep && siteData == 0;
+    const {appearance} = appStore;
     __DEV__ &&
       console.log(
         ` healthStore.selectedSite = `,
@@ -386,7 +401,7 @@ class SitesView extends Component {
         JSON.stringify(sitesStore.selectedSite)
       );
     return (
-      <View style={styles.screenContainer}>
+      <View style={[styles.screenContainer, theme[appearance].container]}>
         {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
@@ -404,7 +419,7 @@ class SitesView extends Component {
           value={sitesStore.siteFilter}
         />
         {!isHealthRoute && (
-          <View style={styles.summaryContainer}>
+          <View style={[styles.summaryContainer, theme[appearance].container]}>
             <Text style={styles.sitesCount}>
               {sitesStore.filteredSites.length + ' sites'}
             </Text>
@@ -467,14 +482,12 @@ const styles = StyleSheet.create({
   listItemRipple: {
     flex: 1,
     height: ListViewHeight + 2,
-    backgroundColor: CMSColors.White,
     flexDirection: 'row',
     alignItems: 'center',
     // justifyContent: 'flex-start',
     paddingLeft: 16,
     // borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: CMSColors.BorderColorListRow,
   },
   siteNameContainer: {
     flex: 1,
@@ -531,5 +544,6 @@ const styles = StyleSheet.create({
 export default inject(
   'sitesStore',
   'userStore',
-  'healthStore'
+  'healthStore',
+  'appStore'
 )(observer(SitesView));

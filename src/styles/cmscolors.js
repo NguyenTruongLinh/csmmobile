@@ -19,24 +19,24 @@ module.exports = {
   DisableItemColor: '#D8D8D8',
   DividerColor: '#BDBDBD',
   DividerColor16: 'rgba(189,189,189,0.16)',
-  DividerColor24: 'rgba(189, 189, 189, 0.24)', //'#BDBDBD',
-  DividerColor54: 'rgba(189, 189, 189, 0.54)', //'#BDBDBD',
-  PrimaryColor54: 'rgba(33,33,33, 0.54)', //'#BDBDBD',
+  DividerColor24: 'rgba(189, 189, 189, 0.24)', // '#BDBDBD',
+  DividerColor54: 'rgba(189, 189, 189, 0.54)', // '#BDBDBD',
+  PrimaryColor54: 'rgba(33,33,33, 0.54)', // '#BDBDBD',
   DividerColor3: '#D8D8D8',
   DividerColor24_HEX: '#EFEFEF',
 
-  //SEMANTIC COLORS
+  // SEMANTIC COLORS
   Success: '#449D44',
   Warning: '#F0AD4E',
   Danger: '#D9534F',
   Info: '#5BC0DE',
 
   // define
-  White: White,
+  White,
   White_Smoke: '#f1f1f1',
   White_Op54: 'rgba(255,255,255,0.54)',
-  Dark_Gray: Dark_Gray,
-  Dark_Gray_2: Dark_Gray_2,
+  Dark_Gray,
+  Dark_Gray_2,
 
   Transparent: 'rgba(0,0,0,0)',
   OpacityButton: 'rgba(255, 255, 255, 0.1)',
@@ -55,17 +55,17 @@ module.exports = {
   Dark_Blue: Dark_Moderate_Blue,
   CopyRight: 'rgba(255, 255, 255, .87)',
 
-  //ActivityIndicator
+  // ActivityIndicator
   SpinnerColor: Vivid_Blue,
   ActivityIndicator_color_Login: White,
 
-  //LOGIN
+  // LOGIN
   TextButtonLogin: Dark_Moderate_Blue,
 
-  //SEARCH
+  // SEARCH
   RowHeaderAccordion: 'rgba(216,216,216,0.00)',
 
-  //MODAL
+  // MODAL
   ModalFooter: Matte_Black,
   FooterBorder: Very_Light_Gray,
   ModalTransparent: '#11111199',
@@ -82,13 +82,13 @@ module.exports = {
   HomeHeader: '#005673',
   BoxShadow: 'rgba(0, 0, 0, 0.06)',
 
-  //OPTIONS
+  // OPTIONS
   RowOptions: '#757575',
   ColorText: Black,
   IconButton: Black,
   DisabledIconButton: 'rgba(0, 0, 0, 0.35)',
 
-  //COMPONENT
+  // COMPONENT
   BorderActiveColor: Dark_Moderate_Blue,
   IconButton: Very_Dark_Gray,
   PrimaryActive: '#00AFFF',
@@ -99,15 +99,25 @@ module.exports = {
   // ChartLine: '#FFC107',
   HighlightedDates: 'rgba(0, 175, 255, 0.2)',
 
-  //PVM
+  // PVM
   // LiveButton: '#DB5451',
   Green: '#449D43',
   // Yellow: '#F9A825',
   Red: '#A72D2A',
 
-  //icon
+  // icon
   InputIconColor: '#757575',
 
-  //filter
+  // filter
   FilterRowBg: '#f7f7f7',
+
+  // Appearance
+  CodGray: '#121212',
+  White_Op30: 'rgba(255, 255, 255, 0.3)',
+  White_Op50: 'rgba(255,255,255,0.50)',
+  White_Op85: 'rgba(255, 255, 255, 0.85)',
+  Alto: '#e0e0e0',
+  MineShaft: '#272727',
+  CodGray_2: '#1E1E1E',
+  MineShaft_2: '#383838',
 };

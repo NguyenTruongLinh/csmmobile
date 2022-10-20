@@ -27,6 +27,7 @@ import {Domain} from '../../consts/misc';
 import APP_INFO from '../../consts/appInfo';
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {I3_Logo} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
@@ -233,6 +234,7 @@ class LoginView extends Component {
   render() {
     const {width} = Dimensions.get('window');
     const {domain, username, password, errors, domainErrorFlag} = this.state;
+    const {appearance} = this.props.appStore;
     // const {isLoading} = this.props.appStore;
     // const {error} = this.props.userStore;
     // console.log('GOND login render isLoading: ', isLoading);
@@ -250,7 +252,7 @@ class LoginView extends Component {
     // );
 
     return (
-      <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <SafeAreaView style={[{flex: 1}, theme[appearance].container]}>
         {/* <Button
           style={styles.closeButton}
           enable={true}
@@ -271,11 +273,15 @@ class LoginView extends Component {
           </View>
           <View style={styles.space} />
           <View style={styles.textContainer}>
-            <Text style={styles.textTitle}>
+            <Text style={[styles.textTitle, theme[appearance].text]}>
               {LoginTxt.title}
-              <Text style={styles.textBold}>{LoginTxt.titleBold}</Text>
+              <Text style={[styles.textBold, theme[appearance].text]}>
+                {LoginTxt.titleBold}
+              </Text>
             </Text>
-            <Text style={styles.textDesc}>{LoginTxt.description}</Text>
+            <Text style={[styles.textDesc, theme[appearance].loginSubText]}>
+              {LoginTxt.description}
+            </Text>
           </View>
           <View style={styles.space} />
           <View style={[styles.content, styles.centerContent]}>
@@ -294,14 +300,11 @@ class LoginView extends Component {
               label={LoginTxt.domain}
               autoCapitalize={'none'}
               autoCorrect={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               error={domainErrorFlag ? errors.domain : undefined}
               disabled={false}
               secureTextEntry={false}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
             />
             <InputTextIcon
               ref={r => (this._refs.username = r)}
@@ -321,12 +324,9 @@ class LoginView extends Component {
               placeholder=""
               // error={errors.username}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={false}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
             />
             <InputTextIcon
               ref={r => (this._refs.password = r)}
@@ -345,13 +345,10 @@ class LoginView extends Component {
               placeholder=""
               // error={errors.password}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
             />
           </View>
           <View style={styles.space} />
@@ -390,7 +387,9 @@ class LoginView extends Component {
             style={styles.copyRightLogo}
             resizeMode="contain"
           />
-          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          <Text style={[styles.copyRightText, theme[appearance].text]}>
+            {LoginTxt.copyRight}
+          </Text>
         </View>
         <View style={styles.space_footer} />
       </SafeAreaView>
@@ -438,7 +437,11 @@ const styles = StyleSheet.create({
   textContainer: {
     alignItems: 'center',
   },
-  textTitle: {fontSize: 20, fontWeight: 'normal'},
+  textTitle: {
+    fontSize: 20,
+    fontWeight: 'normal',
+    lineHeight: 50,
+  },
   textBold: {fontWeight: 'bold'},
   textDesc: {
     fontSize: 15,

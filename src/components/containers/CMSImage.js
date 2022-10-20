@@ -2,7 +2,13 @@
 
 import React, {Fragment} from 'react';
 import PropTypes from 'prop-types';
-import {View, Image, ImageBackground, ActivityIndicator} from 'react-native';
+import {
+  View,
+  Image,
+  ImageBackground,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
 import CryptoJS from 'crypto-js';
 
 import apiService from '../../services/api';
@@ -189,7 +195,7 @@ class CMSImage extends React.Component {
 
   render() {
     const {
-      styles,
+      styles: style,
       styleImage,
       resizeMode,
       isBackground,
@@ -202,24 +208,21 @@ class CMSImage extends React.Component {
     if (image && image.uri && image.uri.uri) image.uri = image.uri.uri;
 
     return (
-      <View style={styles}>
+      <View style={style}>
         {/* <Fragment> */}
         {isLoading && showLoading ? (
-          <ActivityIndicator
-            animating={true}
-            style={{
-              height: 20,
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            size="small"
-            color="white" // "#039BE5"
-          />
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator
+              animating={true}
+              style={{
+                height: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              size="small"
+              color="white" // "#039BE5"
+            />
+          </View>
         ) : isBackground ? (
           <ImageBackground
             style={styleImage}
@@ -240,5 +243,13 @@ class CMSImage extends React.Component {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
 
 export default CMSImage;

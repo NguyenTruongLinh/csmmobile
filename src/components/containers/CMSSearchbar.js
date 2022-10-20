@@ -10,6 +10,7 @@ import InputTextIcon from '../controls/InputTextIcon';
 import CMSColors from '../../styles/cmscolors';
 
 import commonStyles from '../../styles/commons.style';
+import theme from '../../styles/appearance';
 import {Comps as CompTxt} from '../../localization/texts';
 
 const SEARCHBAR_HEIGHT = 52;
@@ -52,6 +53,7 @@ class CMSSearchbar extends React.Component {
   }
 
   getSearchButton = callback => {
+    const {appearance} = this.props.appStore;
     return (
       <CMSTouchableIcon
         size={24}
@@ -59,7 +61,7 @@ class CMSSearchbar extends React.Component {
         color={
           this.state.showSearchbar
             ? CMSColors.PrimaryActive
-            : CMSColors.ColorText
+            : theme[appearance].iconColor
         }
         styles={commonStyles.headerIcon}
         iconCustom="searching-magnifying-glass"
@@ -116,19 +118,17 @@ class CMSSearchbar extends React.Component {
   };
 
   render() {
-    const {onFilter, value, animation, applyOnEnter} = this.props;
-    const {
-      searchViewHeight,
-      searchbarPosition,
-      showSearchbar,
-      internalText,
-    } = this.state;
+    const {onFilter, value, animation, applyOnEnter, appStore} = this.props;
+    const {searchViewHeight, searchbarPosition, showSearchbar, internalText} =
+      this.state;
+    const {appearance} = appStore;
 
     return animation || showSearchbar ? (
       <Animated.View
         style={[
           commonStyles.flatSearchBarContainer,
           animation ? {height: searchViewHeight, top: searchbarPosition} : {},
+          theme[appearance].container,
         ]}>
         <InputTextIcon
           ref={r => (this.inputRef = r)}
@@ -145,7 +145,8 @@ class CMSSearchbar extends React.Component {
             right: -10,
             top: 5,
           }}
-          fixAndroidBottomLine={true}
+          iconColor={theme[appearance].iconColor}
+          // fixAndroidBottomLine={true}
           fixAndroidBottomLineBottom={11}
         />
       </Animated.View>

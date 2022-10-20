@@ -7,6 +7,7 @@ import Modal from './CMSModal';
 import AuthenModal from '../common/AuthenModal';
 
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {VIDEO as VIDEO_TXT} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
 
@@ -32,6 +33,7 @@ class NVRAuthenModal extends React.Component {
   render() {
     const {videoStore, appStore} = this.props;
     const currentScreen = appStore.naviService.getCurrentRouteName();
+    const {appearance} = appStore;
     __DEV__ &&
       console.log(
         'GOND !!! render Authen modal: ',
@@ -64,7 +66,7 @@ class NVRAuthenModal extends React.Component {
         key="authenModal">
         <View style={[styles.modalcontainer]}>
           <AuthenModal
-            style={styles.authenModal}
+            style={[styles.authenModal, theme[appearance].modalContainer]}
             onOK={this.onAuthenSubmit}
             onCancel={videoStore.onAuthenCancel}
             username={videoStore.nvrUser}

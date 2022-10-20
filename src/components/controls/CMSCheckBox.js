@@ -3,6 +3,7 @@ import {Text, View, StyleSheet, ScrollView} from 'react-native';
 
 import Ripple from 'react-native-material-ripple';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import {inject, observer} from 'mobx-react';
 import InputTextIcon from './InputTextIcon';
 
 import {compareStrings} from '../../util/general';
@@ -11,8 +12,9 @@ import {Icon, IconCustom} from '../CMSStyleSheet';
 import CMSColors from '../../styles/cmscolors';
 import {Comps as CompTxt} from '../../localization/texts';
 import CMSSearchbar from '../containers/CMSSearchbar';
+import theme from '../../styles/appearance';
 
-export default class CheckboxGroup extends Component {
+class CheckboxGroup extends Component {
   static defaultProps = {
     enableSearch: true,
     enableSort: true,
@@ -180,7 +182,9 @@ export default class CheckboxGroup extends Component {
       rowStyle,
       rowDirection,
       enableSearch,
+      appStore,
     } = this.props;
+    const {appearance} = appStore;
 
     let iconCheck = (
       <View style={styles.containIconCheck}>
@@ -205,29 +209,34 @@ export default class CheckboxGroup extends Component {
     );
 
     const header = (
-      <View style={styles.body_header}>
-        <InputTextIcon
-          label=""
-          ref={ref => (this.searchBar = ref)}
-          value={this.state.filterValue}
-          onChangeText={this._handleSearch}
-          placeholder={CompTxt.searchPlaceholder}
-          iconCustom="searching-magnifying-glass"
-          disabled={false}
-          iconPosition="right"
-          iconStyle={{
-            position: 'absolute',
-            right: -10,
-            top: 5,
-          }}
-        />
-      </View>
+      // <View style={styles.body_header}>
+      <InputTextIcon
+        label=""
+        ref={ref => (this.searchBar = ref)}
+        value={this.state.filterValue}
+        onChangeText={this._handleSearch}
+        placeholder={CompTxt.searchPlaceholder}
+        iconCustom="searching-magnifying-glass"
+        disabled={false}
+        iconPosition="right"
+        iconStyle={{
+          position: 'absolute',
+          right: -10,
+          top: 5,
+        }}
+        iconColor={theme[appearance].iconColor}
+      />
+      // </View>
     );
 
     let itemAll = (
       <Ripple
         key={0}
-        style={[rowStyle, styles.rowStyleDefault]}
+        style={[
+          rowStyle,
+          styles.rowStyleDefault,
+          theme[appearance].borderColor,
+        ]}
         onPress={() => {
           this._onSelectAll(!this._checkSelectAll());
         }}>
@@ -264,7 +273,11 @@ export default class CheckboxGroup extends Component {
               return (
                 <Ripple
                   key={index}
-                  style={[rowStyle, styles.rowStyleDefault]}
+                  style={[
+                    rowStyle,
+                    styles.rowStyleDefault,
+                    theme[appearance].borderColor,
+                  ]}
                   onPress={() => {
                     this._onSelect(this.getValue(checkbox));
                   }}>
@@ -398,3 +411,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default inject('appStore')(observer(CheckboxGroup));

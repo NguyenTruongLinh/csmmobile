@@ -1,20 +1,22 @@
 import {Alert, BackHandler, Linking} from 'react-native';
 import {types, flow} from 'mobx-state-tree';
 
-import apiService from '../services/api';
-import dbService from '../services/localdb';
-import NavigationService from '../navigation/navigationService';
 import compareVersions from 'compare-versions';
 import RNExitApp from 'react-native-exit-app';
 import {getAppstoreAppMetadata} from 'react-native-appstore-version-checker';
-// import {NavigationModel} from '../stores/navigation';
-import snackbarUtil from '../util/snackbar';
 import SpInAppUpdates, {
   NeedsUpdateResponse,
   IAUUpdateKind,
   StartUpdateOptions,
   AndroidInstallStatus,
 } from 'sp-react-native-in-app-updates';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import apiService from '../services/api';
+import dbService from '../services/localdb';
+import NavigationService from '../navigation/navigationService';
+// import {NavigationModel} from '../stores/navigation';
+import snackbarUtil from '../util/snackbar';
 
 import {getStoreVersion} from '../consts/appInfo';
 import {Login as LoginTxt} from '../localization/texts';
@@ -23,6 +25,7 @@ import variables from '../styles/variables';
 export const CHECK_UPDATE_FLAG = true;
 const IOS_APP_ID = '1315944118';
 const APP_STORE_LINK = `itms-apps://itunes.apple.com/us/app/apple-store/${IOS_APP_ID}?mt=8`;
+export const DARK_THEME = '@dark_theme';
 
 const DeviceInfo = types.model({
   deviceId: types.string,
@@ -51,6 +54,7 @@ const appStore = types
     isLoading: types.boolean,
     showSearchBar: types.boolean,
     showTabbar: types.boolean,
+    appearance: types.union(types.literal('light'), types.literal('dark')),
   })
   .volatile(self => ({
     naviService: new NavigationService(),
@@ -84,7 +88,7 @@ const appStore = types
     },
     setCurrentAppState(value) {
       if (
-        (!value && typeof value != 'string') ||
+        (!value && typeof value !== 'string') ||
         !value.match(/active|inactive|background/)
       ) {
         __DEV__ && console.log('GOND invalid appState: ', value);
@@ -123,7 +127,7 @@ const appStore = types
       const localVersion = getStoreVersion();
 
       try {
-        const appVersion = getAppstoreAppMetadata(IOS_APP_ID); //put any apps id here
+        const appVersion = getAppstoreAppMetadata(IOS_APP_ID); // put any apps id here
         console.log(
           'checkUpdateIOS curVersion = ',
           variables.appVersion,
@@ -202,6 +206,26 @@ const appStore = types
           );
       }
     }),
+    setAppearance: flow(function* (value) {
+      self.appearance = value;
+      try {
+        yield AsyncStorage.setItem(DARK_THEME, value);
+      } catch (error) {
+        __DEV__ &&
+          console.log('🚀 ~ file: appStore.js ~ setAppearance ~ error', error);
+      }
+    }),
+    getAppearance: flow(function* () {
+      try {
+        const theme = yield AsyncStorage.getItem(DARK_THEME);
+        if (theme) {
+          self.appearance = theme;
+        }
+      } catch (error) {
+        __DEV__ &&
+          console.log('🚀 ~ file: appStore.js ~ getAppearance ~ error', error);
+      }
+    }),
   }))
   .create({
     nextScene: '',
@@ -225,6 +249,7 @@ const appStore = types
     // naviService: new NavigationService(),
     showSearchBar: false,
     showTabbar: true,
+    appearance: 'light',
   });
 
 export default appStore;

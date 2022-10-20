@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import {View, StyleSheet, Text} from 'react-native';
 // import { inject } from 'mobx-react';
 import {DateTime} from 'luxon';
+import {inject, observer} from 'mobx-react';
 
 import AlarmThumb from './alarmThumb';
 import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
@@ -13,6 +14,7 @@ import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import variable from '../../styles/variables';
+import theme from '../../styles/appearance';
 
 class AlarmItem extends React.Component {
   static propTypes = {
@@ -94,6 +96,8 @@ class AlarmItem extends React.Component {
 
   renderSite = () => {
     let {site, siteName} = this.props.data;
+    const {appStore} = this.props;
+    const {appearance} = appStore;
 
     return (
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -104,7 +108,7 @@ class AlarmItem extends React.Component {
           }}>
           <IconCustom name="sites" size={14} color={CMSColors.SecondaryText} />
         </View>
-        <Text style={styles.subtext}>
+        <Text style={[styles.subtext, theme[appearance].text]}>
           {siteName && siteName.length > 0 ? siteName : site.split(':')[0]}
         </Text>
       </View>
@@ -112,6 +116,8 @@ class AlarmItem extends React.Component {
   };
 
   renderIconText = (content, icon) => {
+    const {appStore} = this.props;
+    const {appearance} = appStore;
     return (
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
         <View
@@ -121,12 +127,13 @@ class AlarmItem extends React.Component {
           }}>
           <IconCustom name={icon} size={14} color={CMSColors.SecondaryText} />
         </View>
-        <Text style={styles.subtext}>{content}</Text>
+        <Text style={[styles.subtext, theme[appearance].text]}>{content}</Text>
       </View>
     );
   };
 
   renderChannel = () => {
+    const {appearance} = this.props.appStore;
     let channelsList = [];
     let {channelNo, chanMask} = this.props.data;
     // console.log('-------- ', this.props.data.description,' ---------')
@@ -171,18 +178,25 @@ class AlarmItem extends React.Component {
             color={CMSColors.SecondaryText}
           />
         </View>
-        <Text style={styles.subtext}>{channelName}</Text>
+        <Text style={[styles.subtext, theme[appearance].text]}>
+          {channelName}
+        </Text>
       </View>
     );
   };
 
   renderNVRName = () => {
+    const {appearance} = this.props.appStore;
     let {serverID} = this.props.data;
     if (util.isNullOrUndef(serverID)) return null;
 
     return (
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <Text style={{width: 20, textAlign: 'center'}}></Text>
+        <Text
+          style={[
+            {width: 20, textAlign: 'center'},
+            theme[appearance].text,
+          ]}></Text>
         <View
           style={{
             justifyContent: 'center',
@@ -194,7 +208,7 @@ class AlarmItem extends React.Component {
             color={CMSColors.SecondaryText}
           />
         </View>
-        <Text style={styles.subtext}>{serverID}</Text>
+        <Text style={[styles.subtext, theme[appearance].text]}>{serverID}</Text>
       </View>
     );
   };
@@ -225,6 +239,8 @@ class AlarmItem extends React.Component {
   renderDescription = () => {
     let {description, kAlertTypeVA, kAlertType, status, customDescription} =
       this.props.data;
+    const {appStore} = this.props;
+    const {appearance} = appStore;
     // let descriptCustomVA = '';
     // let areaName = '';
     // // console.log('GOND renderDescription kAlertType = ', kAlertType)
@@ -266,7 +282,9 @@ class AlarmItem extends React.Component {
           {/* <Text numberOfLines={1} style={styles.description} >
             {util.isTemperatureAlert(kAlertType) ? AlertNames[kAlertType] : util.capitalize(descriptCustomVA)}
           </Text> */}
-          <Text numberOfLines={1} style={styles.description}>
+          <Text
+            numberOfLines={1}
+            style={[styles.description, theme[appearance].text]}>
             {/* {util.capitalize(descriptCustomVA)} */}
             {util.capitalize(customDescription)}
           </Text>
@@ -274,7 +292,9 @@ class AlarmItem extends React.Component {
       );
     }
     return (
-      <Text numberOfLines={1} style={styles.description}>
+      <Text
+        numberOfLines={1}
+        style={[styles.description, theme[appearance].text]}>
         {/* {util.capitalize(descriptCustomVA)} */}
         {util.capitalize(customDescription)}
       </Text>
@@ -313,7 +333,7 @@ class AlarmItem extends React.Component {
           styles.thumbSizeContain,
           {justifyContent: 'flex-end', alignItems: 'flex-end'},
         ]}>
-        <View style={{top: 0, left: 0, position: 'absolute'}}>
+        <View style={styles.thumbViewContainer}>
           <AlarmThumb
             id={data.kAlertEvent}
             index={time}
@@ -322,6 +342,7 @@ class AlarmItem extends React.Component {
             onLoad={data.getThumbnail}
             imgsize={{width: 60, height: 60}}
             resizeMode="contain"
+            styles={styles.thumbContainer}
           />
         </View>
         {/* <CMSTouchableIcon
@@ -352,7 +373,8 @@ class AlarmItem extends React.Component {
   }
 
   render() {
-    const {data} = this.props;
+    const {data, appStore} = this.props;
+    const {appearance} = appStore;
     let icon = this.renderIcon();
     let description = this.renderDescription();
     let site = this.renderSite();
@@ -361,7 +383,13 @@ class AlarmItem extends React.Component {
     let nvrname = this.renderNVRName();
 
     return (
-      <View style={[styles.container, this.props.containerstyle]}>
+      <View
+        style={[
+          styles.container,
+          theme[appearance].container,
+          theme[appearance].borderColor,
+          this.props.containerstyle,
+        ]}>
         <View style={styles.iconContainer}>{icon}</View>
         <View style={styles.datacontainer}>
           {description}
@@ -372,8 +400,8 @@ class AlarmItem extends React.Component {
               alignItems: 'center',
               marginTop: 2,
             }}>
-            <View style={{flex: 0.6}}>{time}</View>
-            <View style={{flex: 0.4}}>{channel}</View>
+            <View style={[{flex: 0.6}, theme[appearance].text]}>{time}</View>
+            <View style={[{flex: 0.4}, theme[appearance].text]}>{channel}</View>
           </View>
 
           <View
@@ -384,8 +412,8 @@ class AlarmItem extends React.Component {
               alignItems: 'center',
               marginTop: 2,
             }}>
-            <View style={{flex: 0.6}}>{site}</View>
-            <View style={{flex: 0.4}}>{nvrname}</View>
+            <View style={[{flex: 0.6}, theme[appearance].text]}>{site}</View>
+            <View style={[{flex: 0.4}, theme[appearance].text]}>{nvrname}</View>
           </View>
         </View>
       </View>
@@ -399,6 +427,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: variable.contentPadding,
     flexDirection: 'row',
+    borderBottomWidth: 1,
   },
   iconContainer: {
     width: 60,
@@ -433,6 +462,19 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
   },
+  thumbViewContainer: {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    position: 'absolute',
+  },
+  thumbContainer: {
+    flex: 1,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
-export default AlarmItem;
+export default inject('appStore')(observer(AlarmItem));
