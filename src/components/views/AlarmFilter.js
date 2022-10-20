@@ -12,6 +12,8 @@ import {
   Modal,
 } from 'react-native';
 
+import {inject, observer} from 'mobx-react';
+
 // import {CalendarList} from 'react-native-calendars';
 import CMSCalendarRange from './CMSCalendarRange';
 import {DateTime} from 'luxon';
@@ -26,6 +28,7 @@ import {IconCustom} from '../CMSStyleSheet';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {DateFormat, AlertTypeVA, FilterMore} from '../../consts/misc';
 
 let isFirst;
@@ -36,7 +39,7 @@ const Panels = {
 };
 const session_header_height = 48;
 
-export default class AlarmFilter extends Component {
+class AlarmFilter extends Component {
   constructor(props) {
     super(props);
     const {dateFrom, dateTo} = props;
@@ -668,9 +671,10 @@ export default class AlarmFilter extends Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
     __DEV__ && console.log('GOND AlarmFilter rerender: ', this.props);
     let contentHeader = (
-      <View style={styles.contentHeader}>
+      <View style={[styles.contentHeader, theme[appearance].container]}>
         <View style={styles.dateTab}>
           <Button
             style={[
@@ -908,3 +912,5 @@ const styles = StyleSheet.create({
   timeText: {color: CMSColors.PrimaryText, fontWeight: 'bold'},
   dateText: {color: CMSColors.SecondaryText, fontSize: 12},
 });
+
+export default inject('appStore')(observer(AlarmFilter));

@@ -50,6 +50,7 @@ import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import variables from '../../styles/variables';
 import commonStyles from '../../styles/commons.style';
 import videoStyles from '../../styles/scenes/videoPlayer.style';
+import theme from '../../styles/appearance';
 
 import {
   Comps as CompTxt,
@@ -340,7 +341,9 @@ class LiveChannelsView extends React.Component {
   };
 
   setHeader = enableSettingButton => {
-    const {navigation, videoStore, sitesStore, userStore} = this.props;
+    const {navigation, videoStore, sitesStore, userStore, appStore} =
+      this.props;
+    const {appearance} = appStore;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() =>
           this.setHeader(enableSettingButton)
@@ -373,7 +376,7 @@ class LiveChannelsView extends React.Component {
             <CMSTouchableIcon
               size={22}
               onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
-              color={CMSColors.ColorText}
+              color={theme[appearance].iconColor}
               disabled={
                 !enableSettingButton ||
                 !userStore.hasPermission(MODULE_PERMISSIONS.VSC) ||
@@ -392,7 +395,7 @@ class LiveChannelsView extends React.Component {
           <CMSTouchableIcon
             size={22}
             onPress={() => this.setState({showLayoutSelection: true})}
-            color={CMSColors.ColorText}
+            color={theme[appearance].iconColor}
             styles={{
               flex: 1,
               width: 40,
@@ -581,7 +584,8 @@ class LiveChannelsView extends React.Component {
   renderLayoutItem = ({item}) => {
     const {height} = Dimensions.get('window');
     const {viewableWindow} = this.state;
-    const {videoStore} = this.props;
+    const {videoStore, appStore} = this.props;
+    const {appearance} = appStore;
 
     return (
       <CMSTouchableIcon
@@ -605,7 +609,7 @@ class LiveChannelsView extends React.Component {
             }
           );
         }}
-        color={CMSColors.ColorText}
+        color={theme[appearance].iconColor}
         // styles={{height: height * 0.07}}
         iconCustom={item.icon}
       />
@@ -613,6 +617,7 @@ class LiveChannelsView extends React.Component {
   };
 
   renderLayoutModal = () => {
+    const {appearance} = this.props.appStore;
     const {width, height} = Dimensions.get('window');
     return (
       <Modal
@@ -623,17 +628,22 @@ class LiveChannelsView extends React.Component {
         backdropOpacity={0.1}
         key="divisionModal"
         name="divisionModal"
-        style={{
-          ...styles.layoutModalContainer,
-          marginBottom: 0,
-          marginTop: height - (width > 480 ? 300 : 220),
-          marginLeft: 0,
-          marginRight: 0,
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-          alignItems: 'center',
-        }}>
-        <Text style={styles.layoutModalTitle}>Division</Text>
+        style={[
+          {
+            ...styles.layoutModalContainer,
+            marginBottom: 0,
+            marginTop: height - (width > 480 ? 300 : 220),
+            marginLeft: 0,
+            marginRight: 0,
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+            alignItems: 'center',
+          },
+          theme[appearance].modalContainer,
+        ]}>
+        <Text style={[styles.layoutModalTitle, theme[appearance].text]}>
+          Division
+        </Text>
         <FlatList
           contentContainerStyle={styles.layoutModalBody}
           renderItem={this.renderLayoutItem}

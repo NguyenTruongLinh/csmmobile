@@ -125,6 +125,8 @@ class App extends React.Component {
         `checkNeedsUpdate DeviceInfo.getVersion = `,
         DeviceInfo.getVersion()
       );
+
+    appStore.getAppearance();
   }
 
   autoLogin = async () => {

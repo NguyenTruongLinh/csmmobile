@@ -23,6 +23,7 @@ import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
 import {Settings as SettingTxt, ActionMessages} from '../../localization/texts';
 import variables from '../../styles/variables';
+import theme from '../../styles/appearance.js';
 
 // const img_header = require('../../assets/images/common/profile_header.jpg');
 
@@ -38,7 +39,7 @@ class ProfileView extends React.Component {
     this.updateProfile = this.updateProfile.bind(this);
     this.onTextChanged = this.onTextChanged.bind(this);
 
-    const user = props.userStore.user;
+    const {user} = props.userStore;
 
     this.state = {
       firstName: user.firstName,
@@ -148,12 +149,14 @@ class ProfileView extends React.Component {
   }
 
   render() {
-    let {user} = this.props.userStore;
+    const {user} = this.props.userStore;
+    const {appearance} = this.props.appStore;
+
     let AvatarUser;
     if (user) {
       AvatarUser = (
         <CMSTouchableIcon
-          disabled={true}
+          disabled
           size={30}
           styles={styles.avatar}
           image={
@@ -170,7 +173,7 @@ class ProfileView extends React.Component {
       );
     }
 
-    let spninner =
+    const spninner =
       this.state.showSpinner == true ? (
         <View style={styles.spinner}>
           <ActivityIndicator
@@ -182,11 +185,12 @@ class ProfileView extends React.Component {
         </View>
       ) : null;
 
-    let statusbar =
-      Platform.OS == 'ios' ? <View style={styles.statusBar}></View> : null;
+    const statusbar =
+      Platform.OS == 'ios' ? <View style={styles.statusBar} /> : null;
 
     return (
-      <View style={commonStyles.rowsViewContainer}>
+      <View
+        style={[commonStyles.rowsViewContainer, theme[appearance].container]}>
         <StatusBar
           translucent={false}
           backgroundColor={CMSColors.Dark_Blue}
@@ -205,7 +209,7 @@ class ProfileView extends React.Component {
                 value={this.state.firstName}
                 fontSize={16}
                 autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
+                enablesReturnKeyAutomatically
                 maxLength={20}
                 onChangeText={text => this.onTextChanged('firstName', text)}
                 returnKeyType="next"
@@ -223,7 +227,7 @@ class ProfileView extends React.Component {
                 value={this.state.lastName}
                 onChangeText={text => this.onTextChanged('lastName', text)}
                 autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
+                enablesReturnKeyAutomatically
                 returnKeyType="next"
                 label="Last Name"
                 disabled={this.state.showSpinner}
@@ -239,7 +243,7 @@ class ProfileView extends React.Component {
                 value={this.state.email}
                 onChangeText={text => this.onTextChanged('email', text)}
                 autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
+                enablesReturnKeyAutomatically
                 returnKeyType="next"
                 label="Email"
                 disabled={this.state.showSpinner}
@@ -310,7 +314,7 @@ const styles = StyleSheet.create({
     backgroundColor: CMSColors.White,
     ...Platform.select({
       ios: {
-        //height: 64,
+        // height: 64,
         shadowOpacity: 0.3,
         shadowRadius: 3,
         shadowOffset: {
@@ -319,7 +323,7 @@ const styles = StyleSheet.create({
         },
       },
       android: {
-        //height: 50,
+        // height: 50,
         elevation: 1,
       },
     }),
@@ -327,9 +331,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    //borderTopWidth: 5,
-    //borderTopColor: '#828287',
-    //borderBottomWidth: 0.5,
+    // borderTopWidth: 5,
+    // borderTopColor: '#828287',
+    // borderBottomWidth: 0.5,
     borderBottomColor: '#828287',
     borderTopWidth: 0,
     borderTopLeftRadius: 5,
@@ -369,4 +373,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('userStore')(observer(ProfileView));
+export default inject('userStore', 'appStore')(observer(ProfileView));

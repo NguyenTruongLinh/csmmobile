@@ -34,6 +34,7 @@ import {
   TEMPERATURE_ALARMS_TYPES,
 } from '../../consts/misc';
 import {Settings as SettingsTxt} from '../../localization/texts';
+import theme from '../../styles/appearance';
 const ModalHeightPercentage = variable.ModalHeightPercentage;
 
 const ModalTypes = {
@@ -279,7 +280,7 @@ class NotifySettingView extends React.Component {
         coverScreen={true}
         visible={showedModal == ModalTypes.exceptions}
         onRequestClose={this.onDismissModal}>
-        <View style={{flex: 1, flexDirection: 'column'}}>
+        <View style={styles.modalContainer}>
           <TouchableOpacity
             style={{
               flex: 1 - ModalHeightPercentage,
@@ -346,6 +347,7 @@ class NotifySettingView extends React.Component {
   renderRow(rowData) {
     if (!rowData) return;
     let {item} = rowData;
+    const {appearance} = this.props.appStore;
 
     //POS Exception
     let iconL = null;
@@ -359,8 +361,8 @@ class NotifySettingView extends React.Component {
         <View style={[styles.containIconCheck]}>
           <CMSTouchableIcon
             size={14}
-            color={CMSColors.PrimaryText}
-            disabled={this.state.selectedExceptions.length == 0}
+            color={theme[appearance].iconColor}
+            // disabled={this.state.selectedExceptions.length == 0}
             iconCustom="keyboard-right-arrow-button"
             style={{selfAlign: 'center'}}
           />
@@ -375,8 +377,8 @@ class NotifySettingView extends React.Component {
         <View style={[styles.containIconCheck]}>
           <CMSTouchableIcon
             size={14}
-            color={CMSColors.PrimaryText}
-            disabled={this.state.selectedExceptions.length == 0}
+            color={theme[appearance].iconColor}
+            // disabled={this.state.selectedExceptions.length == 0}
             iconCustom="keyboard-right-arrow-button"
           />
         </View>
@@ -409,7 +411,12 @@ class NotifySettingView extends React.Component {
       <Ripple
         rippleOpacity={0.87}
         onPress={() => this.onSelectNotifyItem(item)}>
-        <View style={styles.rowList}>
+        <View
+          style={[
+            styles.rowList,
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}>
           {/* <View style={styles.rowButton_contain_icon}>
             <CMSTouchableIcon
               size={24}
@@ -426,8 +433,12 @@ class NotifySettingView extends React.Component {
               iconCustom={getIconAlertType(item.id)}
             />
           </View> */}
-          <View style={styles.rowButton_contain_name}>
-            <Text style={styles.rowButton_name}>
+          <View
+            style={[
+              styles.rowButton_contain_name,
+              theme[appearance].container,
+            ]}>
+            <Text style={[styles.rowButton_name, theme[appearance].text]}>
               {item.name}
               {selectedCount > 0 ? ` (${selectedCount})` : ''}
             </Text>
@@ -476,10 +487,11 @@ class NotifySettingView extends React.Component {
   }
 
   render() {
+    const {appearance} = this.props.appStore;
     // let statusbar =
     //   Platform.OS == 'ios' ? <View style={styles.statusbarios}></View> : null;
     return (
-      <View style={styles.all}>
+      <View style={[styles.all, theme[appearance].container]}>
         {/* <StatusBar
           translucent={false}
           backgroundColor={CMSColors.Dark_Blue}
@@ -531,9 +543,12 @@ class NotifySettingView extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    flexDirection: 'column',
+  },
   all: {
     flex: 1,
-    backgroundColor: CMSColors.White,
   },
   firstContainer: {
     flex: 1,
@@ -619,9 +634,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 5,
-    borderBottomWidth: variable.borderWidthRow,
-    borderColor: 'rgb(204, 204, 204)',
-    backgroundColor: CMSColors.White,
+    borderBottomWidth: 1,
   },
   rowButton_contain_icon: {
     //backgroundColor: 'red'
@@ -669,5 +682,6 @@ const styles = StyleSheet.create({
 
 export default inject(
   'userStore',
-  'exceptionStore'
+  'exceptionStore',
+  'appStore'
 )(observer(NotifySettingView));

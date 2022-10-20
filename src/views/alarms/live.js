@@ -22,6 +22,7 @@ import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
 import {Comps as CompTxt} from '../../localization/texts';
 import {AlertType_Support, WIDGET_COUNTS} from '../../consts/misc';
@@ -54,7 +55,8 @@ class AlarmsLiveView extends Component {
   }
 
   setHeader = () => {
-    const {navigation} = this.props;
+    const {navigation, appStore} = this.props;
+    const {appearance} = appStore;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() => this.setHeader())
       : null;
@@ -65,7 +67,7 @@ class AlarmsLiveView extends Component {
           <CMSTouchableIcon
             size={28}
             onPress={() => navigation.push(ROUTERS.ALARM_SEARCH)}
-            color={CMSColors.ColorText}
+            color={theme[appearance].iconColor}
             styles={commonStyles.headerIcon}
             iconCustom="search_solid_advancedfind"
           />
@@ -106,9 +108,13 @@ class AlarmsLiveView extends Component {
   // }
 
   renderAlarmItem = ({item, index}) => {
-    const {alarmStore} = this.props;
+    const {alarmStore, appStore} = this.props;
+    const {appearance} = appStore;
+
     return (
-      <CMSRipple onPress={() => this.onSelectAlarm(item)}>
+      <CMSRipple
+        style={theme[appearance].container}
+        onPress={() => this.onSelectAlarm(item)}>
         <AlarmItem data={item} />
         {index == alarmStore.liveCurrentPage * PAGE_LENGTH - 1 &&
           index != alarmStore.liveRawAlarms.length - 1 && (
@@ -131,10 +137,18 @@ class AlarmsLiveView extends Component {
   };
 
   renderNoData = () => {
+    const {appearance} = this.props.appStore;
     return (
-      <View style={[styles.noDataContainer, {height: this.state.height}]}>
+      <View
+        style={[
+          styles.noDataContainer,
+          {height: this.state.height},
+          theme[appearance].container,
+        ]}>
         <Image source={No_Data} style={styles.noDataImg}></Image>
-        <Text style={styles.noDataTxt}>There is no data.</Text>
+        <Text style={[styles.noDataTxt, theme[appearance].text]}>
+          There is no data.
+        </Text>
       </View>
     );
   };
@@ -151,11 +165,13 @@ class AlarmsLiveView extends Component {
   };
 
   render() {
-    const {alarmStore} = this.props;
+    const {alarmStore, appStore} = this.props;
     const noData =
       !alarmStore.isLoading && alarmStore.filteredLiveData.length == 0;
+    const {appearance} = appStore;
+
     return (
-      <View style={{flex: 1, backgroundColor: CMSColors.White}}>
+      <View style={[styles.container, theme[appearance].container]}>
         {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
             label=""
@@ -190,6 +206,9 @@ class AlarmsLiveView extends Component {
   }
 }
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   noDataContainer: {
     flexDirection: 'column',
     alignItems: 'center',
@@ -207,4 +226,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('alarmStore', 'userStore')(observer(AlarmsLiveView));
+export default inject(
+  'alarmStore',
+  'userStore',
+  'appStore'
+)(observer(AlarmsLiveView));

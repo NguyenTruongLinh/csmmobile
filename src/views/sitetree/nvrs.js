@@ -22,6 +22,7 @@ import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
+import theme from '../../styles/appearance';
 // import {Comps as CompTxt} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
 import NoDataView from '../../components/views/NoData';
@@ -108,31 +109,40 @@ class NVRsView extends Component {
   };
 
   renderItem = ({item}) => {
+    const {appearance} = this.props.appStore;
+
     const itemHeight = Dimensions.get('window').height / 16;
     return (
       <View style={{height: itemHeight + 1}}>
         <CMSRipple
-          style={{
-            height: itemHeight,
-            backgroundColor: CMSColors.White,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            paddingLeft: 16,
-            borderBottomWidth: variables.borderWidthRow,
-            borderColor: CMSColors.BorderColorListRow,
-          }}
+          style={[
+            {
+              height: itemHeight,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              paddingLeft: 16,
+              borderBottomWidth: 1,
+            },
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}
           onPress={() => this.onNVRSelected(item)}>
-          <Text style={{fontSize: 16, fontWeight: '500'}}>{item.name}</Text>
+          <Text
+            style={[{fontSize: 16, fontWeight: '500'}, theme[appearance].text]}>
+            {item.name}
+          </Text>
         </CMSRipple>
       </View>
     );
   };
 
   render() {
-    const {/*appStore,*/ sitesStore, navigation} = this.props;
+    const {appStore, sitesStore, navigation} = this.props;
+    const {appearance} = appStore;
+
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
         {/* <HeaderWithSearch
           title={
             sitesStore.selectedSite
@@ -162,18 +172,22 @@ class NVRsView extends Component {
           value={sitesStore.dvrFilter}
         />
         <View
-          style={{
-            backgroundColor: CMSColors.HeaderListRow,
-            height: 35,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
+          style={[
+            {
+              height: 35,
+              flexDirection: 'row',
+              alignItems: 'center',
+            },
+            theme[appearance].headerListRow,
+          ]}>
           <Text
-            style={{
-              paddingLeft: 24,
-              textAlignVertical: 'center',
-              color: CMSColors.RowOptions,
-            }}>
+            style={[
+              {
+                paddingLeft: 24,
+                textAlignVertical: 'center',
+              },
+              theme[appearance].videoConnectionLittleText,
+            ]}>
             {sitesStore.filteredDVRs
               ? sitesStore.filteredDVRs.length + ' NVRs'
               : 0}
@@ -199,7 +213,7 @@ class NVRsView extends Component {
 }
 
 export default inject(
-  // 'appStore',
+  'appStore',
   'sitesStore',
   'videoStore'
 )(observer(NVRsView));

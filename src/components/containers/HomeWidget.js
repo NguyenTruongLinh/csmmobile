@@ -8,9 +8,12 @@ import {
   StyleSheet,
 } from 'react-native';
 
+import {inject, observer} from 'mobx-react';
+
+import theme from '../../styles/appearance';
 import CMSColors from '../../styles/cmscolors';
 
-export default class HomeWidget extends React.Component {
+class HomeWidget extends React.Component {
   constructor(props) {
     super(props);
 
@@ -30,20 +33,32 @@ export default class HomeWidget extends React.Component {
   // }
 
   render() {
-    const {icon, iconSize, title, titleStyle, alertCount, onPress, isDisable} =
-      this.props;
+    const {
+      icon,
+      iconSize,
+      title,
+      titleStyle,
+      alertCount,
+      onPress,
+      isDisable,
+      appStore,
+    } = this.props;
+    const {appearance} = appStore;
 
     return (
       <TouchableOpacity
         onPress={isDisable ? () => {} : onPress}
-        style={{
-          flex: 1,
-          backgroundColor: CMSColors.WidgetBackground,
-          flexDirection: 'column',
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: CMSColors.WidgetBorder,
-        }}>
+        style={[
+          {
+            flex: 1,
+            backgroundColor: CMSColors.WidgetBackground,
+            flexDirection: 'column',
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: CMSColors.WidgetBorder,
+          },
+          theme[appearance].modalContainer,
+        ]}>
         <View style={{flex: 20, flexDirection: 'row-reverse'}}>
           {!isNaN(alertCount) && alertCount > 0 && !isDisable && (
             <View
@@ -98,3 +113,5 @@ export default class HomeWidget extends React.Component {
     );
   }
 }
+
+export default inject('appStore')(observer(HomeWidget));

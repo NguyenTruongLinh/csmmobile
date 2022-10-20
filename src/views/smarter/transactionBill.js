@@ -2,10 +2,9 @@ import React, {Component} from 'react';
 import {View, ScrollView, Text, FlatList, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
-import LoadingOverlay from '../../components/common/loadingOverlay';
-
-import CMSColors from '../../styles/cmscolors';
+import {inject, observer} from 'mobx-react';
 import {SMARTER as SMARTER_TXT} from '../../localization/texts';
+import theme from '../../styles/appearance';
 
 class TransactionBillView extends Component {
   static propTypes = {
@@ -77,34 +76,45 @@ class TransactionBillView extends Component {
   }
 
   renderHeaderInfo = (label, value) => {
+    const {appearance} = this.props.appStore;
     return (
       <View style={styles.normalTextContainer} key={'head_' + label}>
-        <Text style={styles.headerText}>{label + ': ' + value}</Text>
+        <Text style={[styles.headerText, theme[appearance].text]}>
+          {label + ': ' + value}
+        </Text>
       </View>
     );
   };
 
   renderDetailItem = (item, index) => {
+    const {appearance} = this.props.appStore;
     return (
       <View key={'item_' + index} style={{height: 32, flexDirection: 'row'}}>
         <View style={{flex: 1}}>
-          <Text style={styles.normalText}>{item.quantity}</Text>
+          <Text style={[styles.normalText, theme[appearance].text]}>
+            {item.quantity}
+          </Text>
         </View>
         <View style={{flex: 8}}>
-          <Text style={styles.normalText}>{item.descriptionName}</Text>
+          <Text style={[styles.normalText, theme[appearance].text]}>
+            {item.descriptionName}
+          </Text>
         </View>
         <View
           style={{
             flex: 2.5,
             alignItems: 'flex-end',
           }}>
-          <Text style={styles.normalText}>${item.total}</Text>
+          <Text style={[styles.normalText, theme[appearance].text]}>
+            ${item.total}
+          </Text>
         </View>
       </View>
     );
   };
 
   renderPaymentItem = (item, index) => {
+    const {appearance} = this.props.appStore;
     return (
       <View
         key={'paym_' + index}
@@ -114,23 +124,29 @@ class TransactionBillView extends Component {
           justifyContent: 'center',
         }}>
         <View style={{flex: 8, alignItems: 'flex-end'}}>
-          <Text style={styles.paymentText}>{item.label}</Text>
+          <Text style={[styles.paymentText, theme[appearance].text]}>
+            {item.label}
+          </Text>
         </View>
         <View style={{flex: 1}} />
         <View style={{flex: 2}}>
-          <Text style={styles.paymentText}>${item.value}</Text>
+          <Text style={[styles.paymentText, theme[appearance].text]}>
+            ${item.value}
+          </Text>
         </View>
       </View>
     );
   };
 
   render() {
-    const {transaction, style, isLoading} = this.props;
+    const {transaction, style, appStore} = this.props;
+    const {appearance} = appStore;
     const {paymentData} = this.state;
     let sortedDetail = transaction.detail.slice(0, transaction.detail.length);
     sortedDetail.sort((a, b) => a.itemLine - b.itemLine);
     return (
-      <ScrollView style={[styles.viewContainer, style]}>
+      <ScrollView
+        style={[styles.viewContainer, theme[appearance].container, style]}>
         {this.renderHeaderInfo(SMARTER_TXT.ORDER_TIME, transaction.orderTime)}
         {this.renderHeaderInfo(SMARTER_TXT.CASHIER, transaction.employeeName)}
         {this.renderHeaderInfo(SMARTER_TXT.REG, transaction.registerName)}
@@ -157,7 +173,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     padding: 7,
-    backgroundColor: CMSColors.White,
   },
   normalText: {
     fontSize: 13,
@@ -175,4 +190,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TransactionBillView;
+export default inject('appStore')(observer(TransactionBillView));

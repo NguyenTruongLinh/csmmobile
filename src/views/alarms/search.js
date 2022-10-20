@@ -37,6 +37,7 @@ import {
 } from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
 import variables from '../../styles/variables';
+import theme from '../../styles/appearance';
 import {No_Data} from '../../consts/images';
 import {ActivityIndicator} from 'react-native-paper';
 import {PAGE_LENGTH} from '../../stores/alarm';
@@ -353,6 +354,7 @@ class AlarmsSearchView extends Component {
   // };
 
   modalHeader = title => {
+    const {appearance} = this.props.appStore;
     // if (this.props.headercontent) {
     //   return (
     //     <View style={[styles.modal_header, {backgroundColor: CMSColors.White}]}>
@@ -366,11 +368,16 @@ class AlarmsSearchView extends Component {
           styles.modal_header,
           {
             flex: 10,
-            backgroundColor: CMSColors.White,
             justifyContent: 'center',
           },
+          theme[appearance].container,
         ]}>
-        <Text style={[styles.modal_title, styles.modal_title_search]}>
+        <Text
+          style={[
+            styles.modal_title,
+            styles.modal_title_search,
+            theme[appearance].text,
+          ]}>
           {title ?? CompTxt.alarmFilterTitle}
         </Text>
       </View>
@@ -378,6 +385,7 @@ class AlarmsSearchView extends Component {
   };
 
   modalFooter = () => {
+    const {appearance} = this.props.appStore;
     if (this.props.footercontent) {
       return (
         <View style={styles.modal_footer_Apply}>
@@ -386,7 +394,12 @@ class AlarmsSearchView extends Component {
       );
     }
     return (
-      <View style={[styles.modal_footer_Apply, {flex: 15}]}>
+      <View
+        style={[
+          styles.modal_footer_Apply,
+          {flex: 15},
+          theme[appearance].container,
+        ]}>
         <View style={styles.content_button_cancel}>
           <Button
             style={styles.button_cancel}
@@ -416,7 +429,8 @@ class AlarmsSearchView extends Component {
   };
 
   modalContent = () => {
-    const {alarmStore, sitesStore} = this.props;
+    const {alarmStore, sitesStore, appStore} = this.props;
+    const {appearance} = appStore;
     const {from, to, params} = this.state;
     __DEV__ &&
       console.log(
@@ -425,7 +439,7 @@ class AlarmsSearchView extends Component {
         params
       );
     return (
-      <View style={{flex: 75}}>
+      <View style={[{flex: 75}, theme[appearance].container]}>
         <AlarmFilter
           ref={r => (this.filterRef = r)}
           dateFrom={from}
@@ -454,6 +468,7 @@ class AlarmsSearchView extends Component {
   };
 
   renderFilterModal = () => {
+    const {appearance} = this.props.appStore;
     __DEV__ &&
       console.log('GOND renderFilterModal: ', this.state.showFilterModal);
     return (
@@ -474,7 +489,7 @@ class AlarmsSearchView extends Component {
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
         }}>
-        <View style={styles.modal_container}>
+        <View style={[styles.modal_container, theme[appearance].container]}>
           {this.modalHeader()}
           {this.modalContent()}
           {this.modalFooter()}
@@ -519,16 +534,25 @@ class AlarmsSearchView extends Component {
   };
 
   renderNoData = () => {
+    const {appearance} = this.props.appStore;
     return (
-      <View style={[styles.noDataContainer, {height: this.state.listHeight}]}>
+      <View
+        style={[
+          styles.noDataContainer,
+          {height: this.state.listHeight},
+          theme[appearance].container,
+        ]}>
         <Image source={No_Data} style={styles.noDataImg}></Image>
-        <Text style={styles.noDataTxt}>There is no data.</Text>
+        <Text style={[styles.noDataTxt, theme[appearance].text]}>
+          There is no data.
+        </Text>
       </View>
     );
   };
 
   render() {
-    const {alarmStore} = this.props;
+    const {alarmStore, appStore} = this.props;
+    const {appearance} = appStore;
     const actionButton = this.renderActionButton();
     const filterModal = this.renderFilterModal();
     const noData =
@@ -541,7 +565,7 @@ class AlarmsSearchView extends Component {
 
     return (
       <View
-        style={{flex: 1, backgroundColor: CMSColors.White}}
+        style={[{flex: 1}, theme[appearance].container]}
         onLayout={this.onLayout}>
         {/* <View style={commonStyles.flatSearchBarContainer}>
           <InputTextIcon
@@ -756,4 +780,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('alarmStore', 'sitesStore')(observer(AlarmsSearchView));
+export default inject(
+  'alarmStore',
+  'sitesStore',
+  'appStore'
+)(observer(AlarmsSearchView));

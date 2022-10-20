@@ -14,6 +14,7 @@ import Button from '../../components/controls/Button';
 
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
 import {Login as LoginTxt} from '../../localization/texts';
 import {I3_Logo, Submited_Img} from '../../consts/images';
@@ -31,8 +32,10 @@ class SubmitedView extends Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
+
     return (
-      <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <SafeAreaView style={[{flex: 1}, theme[appearance].container]}>
         <View style={styles.viewContainer}>
           <View style={styles.closeButtonContainer}></View>
           <View style={styles.space}></View>
@@ -46,7 +49,7 @@ class SubmitedView extends Component {
           </View>
           <View style={{height: 50}}></View>
           <View style={styles.textContainer}>
-            <Text style={styles.textTitle}>
+            <Text style={[styles.textTitle, theme[appearance].text]}>
               {LoginTxt.submitedForgotPassword}
             </Text>
           </View>
@@ -71,7 +74,9 @@ class SubmitedView extends Component {
             style={styles.copyRightLogo}
             resizeMode="contain"
           />
-          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          <Text style={[styles.copyRightText, theme[appearance].text]}>
+            {LoginTxt.copyRight}
+          </Text>
         </View>
         <View style={styles.space_footer} />
       </SafeAreaView>

@@ -19,6 +19,7 @@ import {isValidHttpUrl} from '../../util/general';
 
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
 import {I3_Logo} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
@@ -212,8 +213,10 @@ class ForgotPasswordView extends Component {
     const {domain, username, email, errors, emailErrorFlag, domainErrorFlag} =
       this.state;
     let userStore = this.props.userStore;
+    const {appearance} = this.props.appStore;
+
     return (
-      <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <SafeAreaView style={[{flex: 1}, theme[appearance].container]}>
         <View style={styles.viewContainer}>
           <View>
             {userStore.isSubmitForgotPassLoading && (
@@ -230,7 +233,9 @@ class ForgotPasswordView extends Component {
           </View>
           <View style={{height: 50}}></View>
           <View style={styles.textContainer}>
-            <Text style={styles.textTitle}>{LoginTxt.forgotPasswordTitle}</Text>
+            <Text style={[styles.textTitle, theme[appearance].text]}>
+              {LoginTxt.forgotPasswordTitle}
+            </Text>
           </View>
           <View style={{height: 50}}></View>
 
@@ -250,14 +255,11 @@ class ForgotPasswordView extends Component {
               label={LoginTxt.domain}
               autoCapitalize={'none'}
               autoCorrect={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               error={domainErrorFlag ? errors.domain : undefined}
               disabled={false}
               secureTextEntry={false}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
             />
 
             <InputTextIcon
@@ -275,14 +277,11 @@ class ForgotPasswordView extends Component {
               label={LoginTxt.email}
               autoCapitalize={'none'}
               autoCorrect={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               error={emailErrorFlag ? errors.email : undefined}
               disabled={false}
               secureTextEntry={false}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
             />
             <InputTextIcon
               ref={r => (this._refs.username = r)}
@@ -301,12 +300,9 @@ class ForgotPasswordView extends Component {
               label={LoginTxt.username}
               placeholder=""
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={false}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
             />
           </View>
 
@@ -345,7 +341,9 @@ class ForgotPasswordView extends Component {
             style={styles.copyRightLogo}
             resizeMode="contain"
           />
-          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          <Text style={[styles.copyRightText, theme[appearance].text]}>
+            {LoginTxt.copyRight}
+          </Text>
         </View>
         <View style={styles.space_footer} />
       </SafeAreaView>

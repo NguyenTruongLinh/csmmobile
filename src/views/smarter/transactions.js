@@ -24,6 +24,7 @@ import {AlertTypes, DateFormat} from '../../consts/misc';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
+import theme from '../../styles/appearance';
 import {No_Image} from '../../consts/images';
 
 import {Comps as CompTxt} from '../../localization/texts';
@@ -88,8 +89,9 @@ class ExceptionsView extends Component {
   }
 
   setHeader = () => {
-    const {exceptionStore, navigation} = this.props;
+    const {exceptionStore, navigation, appStore} = this.props;
     const {selectedEmployee} = exceptionStore;
+    const {appearance} = appStore;
     const {isListView} = this.state;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() => this.setHeader())
@@ -109,7 +111,7 @@ class ExceptionsView extends Component {
           <CMSTouchableIcon
             iconCustom={isListView ? 'grid-view-4' : 'view-list-button'}
             size={24}
-            color={CMSColors.ColorText}
+            color={theme[appearance].iconColor}
             styles={commonStyles.headerIcon}
             onPress={() => {
               this.setState(
@@ -177,11 +179,16 @@ class ExceptionsView extends Component {
   };
 
   renderItemListView = ({item}) => {
+    const {appearance} = this.props.appStore;
     // __DEV__ && console.log('GOND SMARTER render trans item: ', item);
 
     return (
       <CMSRipple
-        style={styles.alertRipple}
+        style={[
+          styles.alertRipple,
+          theme[appearance].container,
+          theme[appearance].borderColor,
+        ]}
         underlayColor={CMSColors.Underlay}
         onPress={() => this.gotoTransactionDetail(item)}>
         <View style={styles.transContainer}>
@@ -200,17 +207,19 @@ class ExceptionsView extends Component {
             styles={styles.thumbContainer}
           />
           <View style={styles.transInfoContainer}>
-            <Text style={styles.transNoText}>#{item.tranNo}</Text>
+            <Text style={[styles.transNoText, theme[appearance].text]}>
+              #{item.tranNo}
+            </Text>
 
             <View style={styles.thumbSub}>
               <View style={styles.thumbSubIcon}>
                 <IconCustom
                   name="clock-with-white-face"
                   size={12}
-                  color={CMSColors.SecondaryText}
+                  color={theme[appearance].iconColor}
                 />
               </View>
-              <Text style={styles.transDateText}>
+              <Text style={[styles.transDateText, theme[appearance].text]}>
                 {DateTime.fromISO(item.tranDate, {zone: 'utc'}).toFormat(
                   DateFormat.Alert_Date
                 )}
@@ -226,6 +235,7 @@ class ExceptionsView extends Component {
   };
 
   renderItemGridView = ({item}) => {
+    const {appearance} = this.props.appStore;
     const {width} = Dimensions.get('window');
     // const itemPadding = 10;
     const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
@@ -241,12 +251,12 @@ class ExceptionsView extends Component {
           {
             width: itemWidth,
           },
+          theme[appearance].modalContainer,
         ]}>
         <View
           style={{
             width: itemWidth,
             height: Math.floor((itemWidth * 3) / 4),
-            backgroundColor: CMSColors.DividerColor24_HEX,
           }}>
           <CMSImage
             id={'grid_' + item.tranId} //DateTime.now().toMillis()}
@@ -267,17 +277,19 @@ class ExceptionsView extends Component {
         </View>
         <View style={styles.gridInfoContainer}>
           <View style={styles.gridInfoLeft}>
-            <Text style={styles.transNoText}>#{item.tranNo}</Text>
+            <Text style={[styles.transNoText, theme[appearance].text]}>
+              #{item.tranNo}
+            </Text>
 
             <View style={styles.thumbSub}>
               <View style={styles.thumbSubIcon}>
                 <IconCustom
                   name="clock-with-white-face"
                   size={12}
-                  color={CMSColors.SecondaryText}
+                  color={theme[appearance].iconColor}
                 />
               </View>
-              <Text style={styles.transDateText}>
+              <Text style={[styles.transDateText, theme[appearance].text]}>
                 {DateTime.fromISO(item.tranDate, {zone: 'utc'}).toFormat(
                   DateFormat.Alert_Date
                 )}
@@ -293,11 +305,12 @@ class ExceptionsView extends Component {
   };
 
   render() {
-    const {exceptionStore, navigation} = this.props;
+    const {exceptionStore, appStore} = this.props;
     const {/*showDismissModal,*/ isListView} = this.state;
+    const {appearance} = appStore;
 
     return (
-      <View style={styles.viewContainer}>
+      <View style={[styles.viewContainer, theme[appearance].container]}>
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
@@ -386,9 +399,7 @@ const styles = StyleSheet.create({
   },
   alertRipple: {
     alignItems: 'center',
-    backgroundColor: CMSColors.White,
-    borderBottomColor: CMSColors.BorderColorListRow,
-    borderBottomWidth: variables.borderWidthRow,
+    borderBottomWidth: 1,
     paddingHorizontal: 10,
     justifyContent: 'center',
     flexDirection: 'row',
@@ -433,8 +444,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: CMSColors.White,
-    borderColor: CMSColors.BorderColorListRow,
     borderRadius: 2,
     backgroundColor: CMSColors.White,
     flexDirection: 'column',
@@ -454,4 +463,4 @@ const styles = StyleSheet.create({
   gridInfoLeft: {flex: 3},
 });
 
-export default inject('exceptionStore')(observer(ExceptionsView));
+export default inject('exceptionStore', 'appStore')(observer(ExceptionsView));

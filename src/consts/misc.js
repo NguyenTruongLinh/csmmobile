@@ -1,4 +1,4 @@
-//action types
+// action types
 // export const API_VERSION =''
 // export const APP_Id = '89ab5a91edf94caeae6f5a38e1cc3c26'
 export const ApiSetting = {
@@ -25,10 +25,10 @@ export const Orient = {
   PORTRAITUPSIDEDOWN: 'PORTRAITUPSIDEDOWN',
   UNKNOWN: 'UNKNOWN',
 };
-//region
+// region
 
-//endregion
-/*#region login API*/
+// endregion
+/* #region login API */
 export const LOAD_ALERT_CONFIG = 'LOAD_ALERT_CONFIG';
 export const ADD_ALERT_CONFIG = 'ADD_ALERT_CONFIG';
 export const DELETE_ALERT_CONFIG = 'DELETE_ALERT_CONFIG';
@@ -109,13 +109,13 @@ export const MODULES = {
 };
 
 export const MODULE_PERMISSIONS = {
-  SITE: 2, //normal 1, 3// ALARM // HEALTH + ALARM
+  SITE: 2, // normal 1, 3// ALARM // HEALTH + ALARM
   BAM: 3,
   DASHBOARD: 4,
   ADMINISTRATION: 8,
   INCIDENT_REPORTS: 9,
-  REBAR: 12, //normal 2, 3 // SMART-ER
-  VSC: 14, //normal 3 // VIDEO
+  REBAR: 12, // normal 2, 3 // SMART-ER
+  VSC: 14, // normal 3 // VIDEO
   MENU_DASHBOARD_FD: 16,
   MENU_CUSTOMIZE_FD: 17,
   MENU_HEALTHSCREENING: 18,
@@ -186,7 +186,7 @@ export const StatusComponet = {
 };
 export const DateFormat = {
   Alert_Date: 'MM/dd/yyyy HH:mm:ss',
-  AlertDetail_Date: 'MM/dd/yyyy HH:mm:ss', //"MMM DD, YYYY HH:mm:ss"
+  AlertDetail_Date: 'MM/dd/yyyy HH:mm:ss', // "MMM DD, YYYY HH:mm:ss"
   POS_Filter_Date: 'MM/dd/yyyy',
   TranDate: 'MM/dd/yyyy HH:mm:ss',
   QuerryDateTime: 'yyyyMMddHHmmss',
@@ -296,7 +296,7 @@ export const AlertTypes = {
   DVR_Video_returned_to_normal: 35,
   DVR_VA_detection: 36,
   DVR_Record_Less_Than: 37,
-  //new DVR alert type here
+  // new DVR alert type here
   CMS_HASP_Unplugged: 101,
   CMS_HASP_Found: 102,
   CMS_HASP_Removed: 103,
@@ -315,7 +315,7 @@ export const AlertTypes = {
   TEMPERATURE_INCREASE_RATE_BY_DAY: 115,
   SOCIAL_DISTANCE: 116,
   OAM: 117,
-  //CMS web report alert.
+  // CMS web report alert.
   CMSWEB_Report_Begin: 200,
   CMSWEB_Report_Main_DashBoard: 201,
   CMSWEB_Report_Day_At_AGlance: 202,
@@ -500,7 +500,7 @@ export const MSG_CMD = {
   MOBILE_MSG_SEVER_SEND_HARDWARE_EXCONFIG: 2010, // Trang Nguyen, added new msg to get more information of ip cameras on hardware config, Sep 27, 2012.
   MOBILE_MSG_GROUP_SETTING_END: 2011,
 
-  //Bao add to support search in mobile, Jan 02 2014 - begin
+  // Bao add to support search in mobile, Jan 02 2014 - begin
   MOBILE_MSG_SEARCH_BEGIN: 2100,
   MOBILE_MSG_SEARCH_UPDATE_SCREEN: 2101,
   MOBILE_MSG_SEARCH_REQUEST_TIME_INTERVAL: 2102,
@@ -530,7 +530,7 @@ export const MSG_CMD = {
   MOBILE_MSG_SERVER_RECORDING_ONLY_CANT_PLAY_VIDEO: 2126,
   MOBILE_MSG_SEARCH_REQUEST_MAIN_SUB: 2127,
   MOBILE_MSG_SEARCH_END: 2128,
-  //Bao add to support search in mobile, Jan 02 2014 - end
+  // Bao add to support search in mobile, Jan 02 2014 - end
 
   // Thang Do, adds for i3DM, Aug 12, 2011, begin
   MOBILE_MSG_GROUP_I3DM_BEGIN: 2500,

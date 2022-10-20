@@ -30,6 +30,7 @@ import {Domain} from '../../consts/misc';
 import APP_INFO from '../../consts/appInfo';
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {I3_Logo, Lock} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
@@ -200,8 +201,10 @@ class PasswordExpired extends Component {
       newPasswordErrorFlag,
       confirmPasswordErrorFlag,
     } = this.state;
+    const {appearance} = this.props.appStore;
+
     return (
-      <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <SafeAreaView style={[{flex: 1}, theme[appearance].container]}>
         <Button
           style={styles.closeButton}
           enable={true}
@@ -228,9 +231,11 @@ class PasswordExpired extends Component {
             resizeMode="contain"
           />
           <View style={{flex: 0.3}} />
-          <Text style={styles.textTitle}>{LoginTxt.changePasswordTitte}</Text>
+          <Text style={[styles.textTitle, theme[appearance].text]}>
+            {LoginTxt.changePasswordTitte}
+          </Text>
           <View style={{flex: 0.05}} />
-          <Text style={styles.textDesc}>
+          <Text style={[styles.textDesc, theme[appearance].text]}>
             {LoginTxt.changePassworDescription}
           </Text>
           <View style={{flex: 0.1}} />
@@ -252,12 +257,9 @@ class PasswordExpired extends Component {
               placeholder=""
               // error={errors.username}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={false}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
               fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
@@ -277,13 +279,10 @@ class PasswordExpired extends Component {
               placeholder=""
               // error={errors.oldPassword}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
               fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
@@ -304,13 +303,10 @@ class PasswordExpired extends Component {
               placeholder=""
               error={newPasswordErrorFlag && newPasswordError}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
               fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
@@ -336,13 +332,10 @@ class PasswordExpired extends Component {
               // }
               // marginTopExtended={newPasswordErrorFlag && newPasswordError}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
-              fixAndroidBottomLine={true}
+              // fixAndroidBottomLine={true}
               fixAndroidBottomLineBottom={0}
             />
           </View>
@@ -375,7 +368,9 @@ class PasswordExpired extends Component {
             style={styles.copyRightLogo}
             resizeMode="contain"
           />
-          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          <Text style={[styles.copyRightText, theme[appearance].text]}>
+            {LoginTxt.copyRight}
+          </Text>
         </View>
         <View style={styles.space_footer} />
       </SafeAreaView>

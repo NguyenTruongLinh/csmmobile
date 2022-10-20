@@ -19,6 +19,7 @@ import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
+import theme from '../../styles/appearance';
 import ROUTERS from '../../consts/routes';
 import {No_Data} from '../../consts/images';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
@@ -104,14 +105,21 @@ class OAMSitesView extends Component {
         <CMSRipple
           rippleOpacity={0.8}
           onPress={() => this.onDvrSelected(dvr)}
-          style={[styles.listItemRipple, {paddingLeft: 48}]}>
+          style={[
+            styles.listItemRipple,
+            {paddingLeft: 48},
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}>
           <View style={styles.siteNameContainer}>
             <IconCustom
               name="icon-dvr"
-              color={CMSColors.IconButton}
+              color={theme[appearance].iconColor}
               size={variables.fix_fontSize_Icon}
             />
-            <Text style={styles.siteName}>{dvr.name}</Text>
+            <Text style={[styles.siteName, theme[appearance].text]}>
+              {dvr.name}
+            </Text>
           </View>
         </CMSRipple>
       ))
@@ -119,6 +127,7 @@ class OAMSitesView extends Component {
   }
 
   notifyRenderArrow(item) {
+    const {appearance} = this.props.appStore;
     return (
       item.dvrs &&
       item.dvrs.length > 1 && (
@@ -126,7 +135,7 @@ class OAMSitesView extends Component {
           name={
             item == this.state.selectedSite ? 'expand-arrow' : 'expand-button'
           }
-          color={CMSColors.IconButton}
+          color={theme[appearance].iconColor}
           size={12}
           style={styles.arrowIcon}
         />
@@ -135,20 +144,28 @@ class OAMSitesView extends Component {
   }
 
   renderRow = ({item}) => {
+    const {appearance} = this.props.appStore;
+
     return (
       <View>
         <CMSRipple
           delayTime={item.dvrs && item.dvrs.length > 1 ? 0 : undefined}
           rippleOpacity={0.8}
           onPress={() => this.onSiteSelected(item)}
-          style={styles.listItemRipple}>
+          style={[
+            styles.listItemRipple,
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}>
           <View style={styles.siteNameContainer}>
             <IconCustom
               name="sites"
-              color={CMSColors.IconButton}
+              color={theme[appearance].iconColor}
               size={variables.fix_fontSize_Icon}
             />
-            <Text style={styles.siteName}>{item.name}</Text>
+            <Text style={[styles.siteName, theme[appearance].text]}>
+              {item.name}
+            </Text>
           </View>
         </CMSRipple>
 
@@ -170,10 +187,14 @@ class OAMSitesView extends Component {
   };
 
   renderNoData = () => {
+    const {appearance} = this.props.appStore;
+
     return (
       <View style={[styles.noDataContainer, {height: this.state.listHeight}]}>
         <Image source={No_Data} style={styles.noDataImg}></Image>
-        <Text style={styles.noDataTxt}>There is no data.</Text>
+        <Text style={[styles.noDataTxt, theme[appearance].text]}>
+          There is no data.
+        </Text>
       </View>
     );
   };
@@ -186,10 +207,12 @@ class OAMSitesView extends Component {
   };
 
   render() {
-    const {sitesStore} = this.props;
+    const {sitesStore, appStore} = this.props;
     const noData = !sitesStore.isLoading && sitesStore.filteredOamSites == 0;
+    const {appearance} = appStore;
+
     return (
-      <View style={{flex: 1, backgroundColor: CMSColors.White}}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
@@ -306,5 +329,6 @@ const styles = StyleSheet.create({
 export default inject(
   'sitesStore',
   'oamStore',
-  'userStore'
+  'userStore',
+  'appStore'
 )(observer(OAMSitesView));

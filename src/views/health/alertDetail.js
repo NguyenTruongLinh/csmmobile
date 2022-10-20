@@ -29,6 +29,7 @@ import {AlertTypes, DateFormat} from '../../consts/misc';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
+import theme from '../../styles/appearance';
 import {No_Image} from '../../consts/images';
 
 import Button from '../../components/controls/Button';
@@ -221,8 +222,9 @@ class AlertDetailView extends Component {
   };
 
   renderAlertInfo = item => {
-    const {healthStore} = this.props;
+    const {healthStore, appStore} = this.props;
     const {showDismissAllButtonInHealthDetail} = healthStore;
+    const {appearance} = appStore;
     if (!item) return <View />;
     const {dvr, channelName} = item;
 
@@ -230,7 +232,9 @@ class AlertDetailView extends Component {
       <View style={styles.infoContainer}>
         <View style={{flexDirection: 'row'}}>
           <View style={styles.infoLeft}>
-            <Text numberOfLines={2} style={[styles.infoText, {fontSize: 16}]}>
+            <Text
+              numberOfLines={2}
+              style={[styles.infoText, {fontSize: 16}, theme[appearance].text]}>
               {channelName}
             </Text>
             <View style={styles.dvrInfo}>
@@ -241,11 +245,15 @@ class AlertDetailView extends Component {
                   color={CMSColors.SecondaryText}
                 />
               </View>
-              <Text style={styles.dvrName}>{dvr.name}</Text>
+              <Text style={[styles.dvrName, theme[appearance].text]}>
+                {dvr.name}
+              </Text>
             </View>
           </View>
           <View style={styles.infoRight}>
-            <Text style={styles.hisText}>{HEALTH_TXT.HISTORICAL}</Text>
+            <Text style={[styles.hisText, theme[appearance].text]}>
+              {HEALTH_TXT.HISTORICAL}
+            </Text>
             <View style={styles.timeInfo}>
               <View style={styles.timeIcon}>
                 <IconCustom
@@ -254,7 +262,7 @@ class AlertDetailView extends Component {
                   color={CMSColors.SecondaryText}
                 />
               </View>
-              <Text style={{color: CMSColors.PrimaryText, fontSize: 14}}>
+              <Text style={[{fontSize: 14}, theme[appearance].text]}>
                 {/* {this.getDateFromActive(alert)} */}
                 {DateTime.fromISO(item.timezone).toFormat(
                   DateFormat.AlertDetail_Date
@@ -311,7 +319,8 @@ class AlertDetailView extends Component {
     if (!item) return;
     const isDummy = typeof item !== 'object' || Object.keys(item).length === 0;
     const {kChannel, channelName} = item;
-    const {healthStore} = this.props;
+    const {healthStore, appStore} = this.props;
+    const {appearance} = appStore;
     const isSelected =
       !isDummy &&
       healthStore.selectedAlert &&
@@ -330,6 +339,7 @@ class AlertDetailView extends Component {
           {
             width: imageW,
           },
+          theme[appearance].container,
         ]}
       />
     ) : (
@@ -339,6 +349,7 @@ class AlertDetailView extends Component {
           {
             width: imageW,
           },
+          theme[appearance].container,
         ]}
         onPress={() => this.onSwitchImage(item)}>
         <CMSImage
@@ -356,9 +367,10 @@ class AlertDetailView extends Component {
           }}
         />
         <Text
-          style={
-            isSelected ? styles.selectedChannelName : styles.normalChannelName
-          }
+          style={[
+            isSelected ? styles.selectedChannelName : styles.normalChannelName,
+            theme[appearance].text,
+          ]}
           numberOfLines={1}>
           {channelName}
         </Text>
@@ -414,8 +426,9 @@ class AlertDetailView extends Component {
     }, 200);
   };
   render() {
-    const {healthStore, navigation} = this.props;
+    const {healthStore, appStore} = this.props;
     const {showDismissAllButtonInHealthDetail, actionsModalShown} = healthStore;
+    const {appearance} = appStore;
     __DEV__ &&
       console.log(
         'GOND HEALTH DETAIL render, selectedAlert: ',
@@ -424,7 +437,7 @@ class AlertDetailView extends Component {
 
     return (
       <View
-        style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}
+        style={[{flex: 1}, theme[appearance].container]}
         onLayout={this.onViewLayout}>
         {healthStore.filteredAlerts.length == 0 ? (
           <NoDataView isLoading={healthStore.isLoading} style={{flex: 1}} />
@@ -433,7 +446,7 @@ class AlertDetailView extends Component {
             <Swipe onSwipeLeft={this.onNext} onSwipeRight={this.onPrevious}>
               {this.renderActiveImage(healthStore.selectedAlert)}
             </Swipe>
-            <View style={{backgroundColor: '#f7f7f7', padding: 10}}>
+            <View style={{padding: 10}}>
               {this.renderAlertInfo(healthStore.selectedAlert)}
             </View>
             <View style={{position: 'absolute', bottom: '5%'}}>
@@ -530,4 +543,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default inject('healthStore', 'videoStore')(observer(AlertDetailView));
+export default inject(
+  'healthStore',
+  'videoStore',
+  'appStore'
+)(observer(AlertDetailView));

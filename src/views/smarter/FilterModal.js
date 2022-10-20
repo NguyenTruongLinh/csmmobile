@@ -12,6 +12,7 @@ import {
 import {DateTime} from 'luxon';
 import Ripple from 'react-native-material-ripple';
 import Accordion from 'react-native-collapsible/Accordion';
+import {inject, observer} from 'mobx-react';
 // import Modal from 'react-native-modal';
 import Modal from '../../components/views/CMSModal';
 
@@ -24,6 +25,7 @@ import {Icon, IconCustom, MaterialIcons} from '../../components/CMSStyleSheet';
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
+import theme from '../../styles/appearance';
 import {DateFormat} from '../../consts/misc';
 import {
   SMARTER as SMARTER_TXT,
@@ -50,7 +52,7 @@ FILTER_PARAMS = [
 
 const SECTION_HEADER_HEIGHT = 48;
 
-export default class ExceptionSearchModal extends Component {
+class ExceptionSearchModal extends Component {
   static defaultProps = {
     onSubmit: ({dateFrom, dateTo, selectedSites}) =>
       __DEV__ && console.log('GOND ExceptionSearchModal onSubmit not defined!'),
@@ -188,6 +190,8 @@ export default class ExceptionSearchModal extends Component {
   };
 
   renderHeader = () => {
+    const {appearance} = this.props.appStore;
+
     return (
       <View
         style={[
@@ -196,8 +200,9 @@ export default class ExceptionSearchModal extends Component {
           {
             flex: 10,
           },
+          theme[appearance].container,
         ]}>
-        <Text style={[commonStyles.modalTitle]}>
+        <Text style={[commonStyles.modalTitle, theme[appearance].text]}>
           {SMARTER_TXT.FILTER_MODAL_TITLE}
         </Text>
       </View>
@@ -205,9 +210,15 @@ export default class ExceptionSearchModal extends Component {
   };
 
   renderFooter = () => {
+    const {appearance} = this.props.appStore;
+
     return (
       <View
-        style={[commonStyles.modalFooter, {flex: 15, paddingHorizontal: 12}]}>
+        style={[
+          commonStyles.modalFooter,
+          {flex: 15, paddingHorizontal: 12},
+          theme[appearance].container,
+        ]}>
         <View style={commonStyles.modalButtonCancelContainer}>
           <Button
             style={commonStyles.modalButtonCancel}
@@ -237,6 +248,7 @@ export default class ExceptionSearchModal extends Component {
   };
 
   renderContent = () => {
+    const {appearance} = this.props.appStore;
     // __DEV__ &&
     //   console.log(
     //     'GOND render SMARTERFilter active Sections = ',
@@ -244,7 +256,9 @@ export default class ExceptionSearchModal extends Component {
     //   );
 
     return (
-      <View style={{flex: 75}} onLayout={this.onContentLayout}>
+      <View
+        style={[{flex: 75}, theme[appearance].container]}
+        onLayout={this.onContentLayout}>
         <Accordion
           expandMultiple={false}
           // sections={Object.values(FILTER_SECTIONS)}
@@ -264,18 +278,23 @@ export default class ExceptionSearchModal extends Component {
   // renderSectionHeader = (section, index, isActive) => {
   renderSectionHeader = (item, index, isActive) => {
     const {dateFrom, dateTo, selectedSites} = this.state;
+    const {appearance} = this.props.appStore;
 
     switch (item.id) {
       case FILTER_SECTIONS.CALENDAR:
         return (
-          <View style={styles.sectionHeaderContainer}>
+          <View
+            style={[
+              styles.sectionHeaderContainer,
+              theme[appearance].modalContainer,
+            ]}>
             <IconCustom
               name="power-connection-indicator"
-              color={CMSColors.ColorText}
+              color={theme[appearance].iconColor}
               size={22}
             />
             <View style={{justifyContent: 'center', marginLeft: 12}}>
-              <Text style={{fontSize: 16, color: CMSColors.ColorText}}>
+              <Text style={[{fontSize: 16}, theme[appearance].text]}>
                 {dateFrom.toFormat(DateFormat.POS_Filter_Date) +
                   ' - ' +
                   dateTo.toFormat(DateFormat.POS_Filter_Date)}
@@ -284,7 +303,7 @@ export default class ExceptionSearchModal extends Component {
             <View style={{flex: 1, alignItems: 'flex-end'}}>
               <IconCustom
                 name={isActive ? 'expand-arrow' : 'expand-button'}
-                color={CMSColors.ColorText}
+                color={theme[appearance].iconColor}
                 size={22}
               />
             </View>
@@ -292,17 +311,25 @@ export default class ExceptionSearchModal extends Component {
         );
       case FILTER_SECTIONS.SITES:
         return (
-          <View style={styles.sectionHeaderContainer}>
-            <IconCustom name="sites" color={CMSColors.ColorText} size={22} />
+          <View
+            style={[
+              styles.sectionHeaderContainer,
+              theme[appearance].modalContainer,
+            ]}>
+            <IconCustom
+              name="sites"
+              color={theme[appearance].iconColor}
+              size={22}
+            />
             <View style={{justifyContent: 'center', marginLeft: 12}}>
-              <Text style={{fontSize: 16, color: CMSColors.ColorText}}>
+              <Text style={[{fontSize: 16}, theme[appearance].text]}>
                 {'' + selectedSites.length + ' sites selected'}
               </Text>
             </View>
             <View style={{flex: 1, alignItems: 'flex-end'}}>
               <IconCustom
                 name={isActive ? 'expand-arrow' : 'expand-button'}
-                color={CMSColors.ColorText}
+                color={theme[appearance].iconColor}
                 size={22}
               />
             </View>
@@ -314,18 +341,21 @@ export default class ExceptionSearchModal extends Component {
 
   renderSiteItem = ({item}) => {
     const {selectedSites} = this.state;
+    const {appearance} = this.props.appStore;
     // __DEV__ && console.log('GOND renderSiteItem selected: ', selectedSites);
     const isSelected = selectedSites.includes(item.key);
 
     return (
       <Ripple
-        style={{
-          backgroundColor: CMSColors.White,
-          height: 40,
-          flexDirection: 'row',
-          paddingHorizontal: 12,
-          alignItems: 'center',
-        }}
+        style={[
+          {
+            height: 40,
+            flexDirection: 'row',
+            paddingHorizontal: 12,
+            alignItems: 'center',
+          },
+          theme[appearance].container,
+        ]}
         onPress={() => {
           this.setState({
             selectedSites: isSelected
@@ -339,7 +369,9 @@ export default class ExceptionSearchModal extends Component {
           size={22}
         />
         <View style={styles.siteNameContainer}>
-          <Text style={styles.siteNameText}>{item.name}</Text>
+          <Text style={[styles.siteNameText, theme[appearance].text]}>
+            {item.name}
+          </Text>
         </View>
       </Ripple>
     );
@@ -352,8 +384,9 @@ export default class ExceptionSearchModal extends Component {
   };
 
   renderSitesSelection = () => {
-    const {sitesStore, sites, filteredSites} = this.props;
+    const {sitesStore, sites, filteredSites, appStore} = this.props;
     const {selectedSites, isSortAZ, contentHeight} = this.state;
+    const {appearance} = appStore;
     const isSelectedAll = this.isSelectAllSites();
 
     let sortedSites = filteredSites.slice(0, filteredSites.length);
@@ -362,23 +395,25 @@ export default class ExceptionSearchModal extends Component {
     );
 
     return (
-      <View style={{backgroundColor: CMSColors.White, height: contentHeight}}>
+      <View style={[{height: contentHeight}, theme[appearance].container]}>
         <View
-          style={{
-            height: 40,
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: CMSColors.White,
-            paddingLeft: 15,
-            paddingRight: 2,
-          }}>
+          style={[
+            {
+              height: 40,
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingLeft: 15,
+              paddingRight: 2,
+            },
+            theme[appearance].container,
+          ]}>
           <Text
             style={{
               fontSize: 12,
               color:
                 selectedSites.length == 0
                   ? CMSColors.Danger
-                  : CMSColors.ColorText,
+                  : theme[appearance].text.color,
             }}>
             {selectedSites.length == 0
               ? 'Select at least 1 site'
@@ -390,13 +425,14 @@ export default class ExceptionSearchModal extends Component {
               onPress={() => this.setState({isSortAZ: !isSortAZ})}>
               <Icon
                 name={isSortAZ == true ? 'sort-alpha-desc' : 'sort-alpha-asc'}
-                color={CMSColors.PrimaryText}
+                color={theme[appearance].iconColor}
                 size={17}
               />
             </Ripple>
           </View>
         </View>
-        <View style={styles.flatSearchBarContainer}>
+        <View
+          style={[styles.flatSearchBarContainer, theme[appearance].container]}>
           <InputTextIcon
             label=""
             value={sitesStore.siteFilter}
@@ -405,17 +441,20 @@ export default class ExceptionSearchModal extends Component {
             iconCustom="searching-magnifying-glass"
             disabled={false}
             iconPosition="right"
+            iconColor={CMSColors.InputIconColor}
           />
         </View>
         <View style={{height: '100%'}}>
           <Ripple
-            style={{
-              backgroundColor: CMSColors.White,
-              height: 40,
-              flexDirection: 'row',
-              paddingHorizontal: 12,
-              alignItems: 'center',
-            }}
+            style={[
+              {
+                height: 40,
+                flexDirection: 'row',
+                paddingHorizontal: 12,
+                alignItems: 'center',
+              },
+              theme[appearance].container,
+            ]}
             onPress={this.onSelectAllSites}>
             <MaterialIcons
               name={isSelectedAll ? 'check-box' : 'check-box-outline-blank'}
@@ -425,7 +464,9 @@ export default class ExceptionSearchModal extends Component {
               size={22}
             />
             <View style={styles.siteNameContainer}>
-              <Text style={styles.siteNameText}>All</Text>
+              <Text style={[styles.siteNameText, theme[appearance].text]}>
+                All
+              </Text>
             </View>
           </Ripple>
           <View style={{height: contentHeight * 0.68}}>
@@ -492,6 +533,8 @@ export default class ExceptionSearchModal extends Component {
         ` selectedSites = `,
         JSON.stringify(this.state.selectedSites)
       );
+    const {appearance} = this.props.appStore;
+
     return (
       <Modal
         isVisible={this.props.isVisible}
@@ -503,7 +546,8 @@ export default class ExceptionSearchModal extends Component {
         key="posFilterModal"
         name="posFilterModal"
         style={styles.modal}>
-        <View style={commonStyles.modalContainer}>
+        <View
+          style={[commonStyles.modalContainer, theme[appearance].container]}>
           {this.renderHeader()}
           {this.renderContent()}
           {this.renderFooter()}
@@ -528,7 +572,6 @@ const styles = StyleSheet.create({
     // padding: 5,
     paddingHorizontal: 12,
     height: SECTION_HEADER_HEIGHT,
-    backgroundColor: CMSColors.White,
     borderBottomWidth: 0.5,
     borderColor: CMSColors.BorderColorListRow,
   },
@@ -549,6 +592,7 @@ const styles = StyleSheet.create({
     paddingLeft: 18,
     paddingRight: 4,
     height: 50,
-    backgroundColor: CMSColors.White,
   },
 });
+
+export default inject('appStore')(observer(ExceptionSearchModal));

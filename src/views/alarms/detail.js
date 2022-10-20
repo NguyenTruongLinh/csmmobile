@@ -22,6 +22,7 @@ import TransThumb from '../../components/views/TransThumb';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
+import InputText from '../../components/controls/InputText';
 // import LoadingOverlay from '../../components/common/loadingOverlay';
 
 import util from '../../util/general';
@@ -44,6 +45,7 @@ import {
 import ROUTERS from '../../consts/routes';
 import {reaction} from 'mobx';
 import {getSnapshot} from 'mobx-state-tree';
+import theme from '../../styles/appearance';
 
 const ID_Canned_Message = 5;
 const CONTENT_INFO_HEIGHT = 92;
@@ -146,8 +148,9 @@ class AlarmDetailView extends Component {
   };
 
   setHeader = headerRightOnly => {
-    const {alarmStore} = this.props;
+    const {alarmStore, appStore} = this.props;
     const {selectedAlarm} = alarmStore;
+    const {appearance} = appStore;
     if (!selectedAlarm) return;
 
     const {rating, note, activeIndex} = this.state;
@@ -200,14 +203,17 @@ class AlarmDetailView extends Component {
     );
     const headerTitleCb = () => (
       <View style={{flexDirection: 'column', marginLeft: -20}}>
-        <Text style={{fontWeight: 'bold', fontSize: 18}}>
+        <Text
+          style={[{fontWeight: 'bold', fontSize: 18}, theme[appearance].text]}>
           {selectedAlarm.isTempSDAlert
             ? selectedAlarm.dvrUser && selectedAlarm.dvrUser.length > 0
               ? selectedAlarm.dvrUser
               : ALARM_TXT.NONEMPLOYEE
             : currentSnapshot.channelName}
         </Text>
-        <Text style={{fontSize: 16, textAlign: 'center'}} numberOfLines={1}>
+        <Text
+          style={[{fontSize: 16, textAlign: 'center'}, theme[appearance].text]}
+          numberOfLines={1}>
           {siteName}
         </Text>
       </View>
@@ -648,6 +654,7 @@ class AlarmDetailView extends Component {
 
   renderInfo = index => {
     const {selectedAlarm} = this.props.alarmStore;
+    const {appearance} = this.props.appStore;
     if (selectedAlarm == null) return;
 
     if (selectedAlarm.isTemperatureAlert) return this.renderTemperatureInfo();
@@ -661,7 +668,8 @@ class AlarmDetailView extends Component {
       selectedAlarm.status == 1 && selectedAlarm.cmsUser ? STATUS_HEIGHT : 0;
     // height: contentHeight
     return (
-      <View style={[styles.infoContainer, {backgroundColor: '#EEEEEE'}]}>
+      <View
+        style={[styles.infoContainer, theme[appearance].alarmInfoContainer]}>
         <View style={styles.leftInfoContainer}>
           {/* {this.renderActionButton(BUTTON_TYPE.SEARCH)} */}
           {/* <View style={[ styles.textInfoContainer, Platform.OS == 'ios' ? {paddingRight: btn_size + 2 * padding} : {paddingLeft: btn_size + 2* padding} ]} > */}
@@ -670,7 +678,9 @@ class AlarmDetailView extends Component {
               styles.textInfoContainer,
               {paddingLeft: /*btn_size + 2**/ padding},
             ]}>
-            <Text numberOfLines={2} style={styles.textInfo}>
+            <Text
+              numberOfLines={2}
+              style={[styles.textInfo, theme[appearance].alarmDetailColor]}>
               {this.renderInfoDescription()}
             </Text>
             {this.renderAlertStatus()}
@@ -679,10 +689,13 @@ class AlarmDetailView extends Component {
                 <IconCustom
                   name="clock-with-white-face"
                   size={12}
-                  color={CMSColors.SecondaryText}
+                  color={theme[appearance].alarmDetailColor.color}
                 />
               </View>
-              <Text style={styles.date_text}>{strTime}</Text>
+              <Text
+                style={[styles.date_text, theme[appearance].alarmDetailColor]}>
+                {strTime}
+              </Text>
             </View>
           </View>
         </View>
@@ -693,6 +706,7 @@ class AlarmDetailView extends Component {
 
   renderVideoButtons = () => {
     const {isLoading} = this.state;
+    const {appearance} = this.props.appStore;
 
     return (
       <View
@@ -707,7 +721,7 @@ class AlarmDetailView extends Component {
             iconCustom="searching-magnifying-glass"
             size={26}
             onPress={() => this.gotoVideo(false)}
-            color={CMSColors.IconButton}
+            color={theme[appearance].alarmDetailColor.color}
             disabledColor={CMSColors.DisabledIconButton}
             disabled={isLoading} // || !canSearchSelectedChannel}
           />
@@ -717,7 +731,7 @@ class AlarmDetailView extends Component {
             iconCustom="videocam-filled-tool"
             size={26}
             onPress={() => this.gotoVideo(true)}
-            color={CMSColors.IconButton}
+            color={theme[appearance].alarmDetailColor.color}
             disabledColor={CMSColors.DisabledIconButton}
             disabled={isLoading} // || !canLiveSelectedChannel}
           />
@@ -727,13 +741,13 @@ class AlarmDetailView extends Component {
   };
 
   renderNoteInput = () => {
+    const {appearance} = this.props.appStore;
+
     return (
-      <View style={{flexDirection: 'column'}}>
-        <Text style={{color: CMSColors.InactiveText, paddingLeft: 25}}>
-          Note
-        </Text>
+      <View style={[styles.inputContainer, theme[appearance].container]}>
+        <Text style={theme[appearance].text}>Note</Text>
         <TextInput
-          style={styles.inputNote}
+          style={[styles.inputNote, theme[appearance].text]}
           underlineColorAndroid={CMSColors.transparent}
           multiline={true}
           allowFontScaling={true}
@@ -752,19 +766,10 @@ class AlarmDetailView extends Component {
 
   renderRating = () => {
     const {rateId} = this.state.rating;
+    const {appearance} = this.props.appStore;
 
     return (
-      <View
-        style={{
-          borderWidth: 0,
-          flexDirection: 'column',
-          paddingTop: variable.inputPaddingLeft,
-          paddingBottom: variable.inputPaddingLeft,
-          justifyContent: 'center',
-          alignItems: 'center', //height: 56,
-          // borderBottomWidth: 1,
-          // borderColor: CMSColors.DividerColor54,
-        }}>
+      <View style={[styles.ratingContainer, theme[appearance].container]}>
         <AirbnbRating
           type="star"
           showRating={false}
@@ -775,26 +780,33 @@ class AlarmDetailView extends Component {
           onFinishRating={this.onRatingChange}
         />
         {/* <Text   numberOfLines={1} >{msg_info}</Text> */}
-        <Text style={{padding: 8}}>{this.state.rating.rateName}</Text>
+        <Text style={[{padding: 8}, theme[appearance].text]}>
+          {this.state.rating.rateName}
+        </Text>
       </View>
     );
   };
 
   render() {
     const {selectedAlarm} = this.props.alarmStore;
+    const {appearance} = this.props.appStore;
     if (selectedAlarm == null) return <View />;
     // const indicator = this.renderIndicator();
 
     const {imgSize} = this.state;
     return (
-      <View style={styles.container} onLayout={this.onLayout}>
+      <View
+        style={[styles.container, theme[appearance].container]}
+        onLayout={this.onLayout}>
         <KeyboardAwareScrollView>
           <View
-            style={{
-              flex: 1,
-              height: imgSize.height,
-              flexDirection: 'column',
-            }}>
+            style={[
+              {
+                flex: 1,
+                height: imgSize.height,
+                flexDirection: 'column',
+              },
+            ]}>
             <FlatList
               pagingEnabled={true}
               style={{flex: 1}}
@@ -832,8 +844,8 @@ class AlarmDetailView extends Component {
                 data={selectedAlarm ? selectedAlarm.snapshot : []}
                 scrollX={this.scrollX}
                 scrollOffset={this.scrollX}
-                inActiveDotColor={CMSColors.Inactive}
-                activeDotColor={CMSColors.White}
+                inActiveDotColor={theme[appearance].slideDotInactive}
+                activeDotColor={theme[appearance].slideDotActive}
                 strokeWidth={3}
               />
             </View>
@@ -903,7 +915,7 @@ const styles = StyleSheet.create({
   timeInfoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    // paddingHorizontal: 12,
     // backgroundColor: 'red',
     paddingVertical: 2,
   },
@@ -924,7 +936,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   inputNote: {
-    color: CMSColors.DarkText,
     // height: 130,
     borderBottomWidth: 1,
     borderColor: CMSColors.DarkText,
@@ -932,9 +943,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     padding: 10,
     fontSize: 14,
-    margin: 10,
-    marginLeft: 20,
-    marginRight: 20,
   },
   subtext: {
     color: CMSColors.SecondaryText,
@@ -953,10 +961,22 @@ const styles = StyleSheet.create({
     // marginTop: 24,
     marginTop: 5,
   },
+  ratingContainer: {
+    borderWidth: 0,
+    flexDirection: 'column',
+    paddingTop: variable.inputPaddingLeft,
+    paddingBottom: variable.inputPaddingLeft,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inputContainer: {
+    paddingHorizontal: 16,
+  },
 });
 
 export default inject(
   'alarmStore',
+  'appStore',
   'videoStore',
   'userStore'
 )(observer(AlarmDetailView));
