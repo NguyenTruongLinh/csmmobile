@@ -105,6 +105,7 @@ public class CommunicationSocket implements Runnable {
     protected boolean withRelayHeader = false;
     protected int relayHeaderBlockRemainLen = 0;
     private int[] lastChannelNoArray;
+    private boolean channelPrivilegeUpdated;
 
     public CommunicationSocket(Handler hwnd, ServerSite serverinfo, String channel, boolean search, boolean bychannel, String clientIp){
         //this.message = message;
@@ -125,6 +126,7 @@ public class CommunicationSocket implements Runnable {
         this.isRelay = serverinfo.isRelay && serverinfo.relayConnectable;
         this.clientIp = clientIp;
         this.lastChannelNoArray = Channel;
+        this.channelPrivilegeUpdated = false;
         Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " CommunicationSocket constructor this.isRelay = " + this.isRelay);
         Log.d("2408", "CommunicationSocket serverinfo.getIsRelayReconnecting()" + serverinfo.getIsRelayReconnecting());
     }
@@ -779,6 +781,7 @@ public class CommunicationSocket implements Runnable {
                         ch_mask = n_map.getNamedItem("search_channel_enable_mask");
                         str_mask = ch_mask.getNodeValue();
                         ServerInfo.UpdateSearchPrivilege(str_mask);
+                        this.channelPrivilegeUpdated = true;
                     }
                 }
                 catch (Exception ex){
@@ -1545,12 +1548,13 @@ public class CommunicationSocket implements Runnable {
         //if( this.PlaybyChannel == false)
         // v_index = GetChannelforIndex(this.getChannel());//this.GetVideoSourceIndex(this.Channel);
         int [] ChannelNo = this.ChannelNo(islive);
-        // Log.d("GOND", "**DIRECT** ChangePlay with channels: " + Arrays.toString(ChannelNo));
+        Log.d("GOND", "1910 **DIRECT** ChangePlay with channels: " + Arrays.toString(ChannelNo) + " channelPrivilegeUpdated = " + channelPrivilegeUpdated);
         if( ChannelNo == null || ChannelNo.length == 0)
         {
             Log.d("GOND", "**DIRECT** ChangePlay: if( ChannelNo == null || ChannelNo.length == 0)");
             // Log.d("GOND", "**DIRECT** ChangePlay: case 1");
-            OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_PERMISSION_CHANNEL_DISABLE, islive? 0 : 1);
+            if(this.channelPrivilegeUpdated)
+                OnHandlerMessage( Constant.EnumVideoPlaybackSatus.MOBILE_PERMISSION_CHANNEL_DISABLE, islive? 0 : 1);
             if( islive == false){
                 byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                 new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( msg_stop);
