@@ -1759,6 +1759,7 @@ const styles = StyleSheet.create({
     flex: 30,
     justifyContent: 'center',
     paddingLeft: 20,
+    minWidth: 80,
   },
   left: {
     flexDirection: 'row',
