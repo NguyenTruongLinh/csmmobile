@@ -97,11 +97,19 @@ class AlarmDetailView extends Component {
       // } else {
       //   videoStore.resetNVRAuthentication();
       // }
-      if (this.imagesScrollView && this.currentPage > 0)
-        this.imagesScrollView.scrollToIndex({
-          animated: true,
-          index: this.currentPage,
-        });
+      this.currentPageUpdateAllowed = true;
+      setTimeout(() => {
+        if (this.imagesScrollView && this.currentPage > 0) {
+          this.imagesScrollView.scrollToIndex({
+            animated: true,
+            index: this.currentPage,
+          });
+        }
+      }, 1000);
+    });
+
+    this.unsubBlurEvent = navigation.addListener('blur', () => {
+      this.currentPageUpdateAllowed = false;
     });
 
     let res = await videoStore.getDVRPermission(alarmStore.selectedAlarm.kDVR);
@@ -127,6 +135,7 @@ class AlarmDetailView extends Component {
     this._isMounted = false;
 
     this.unsubFocusEvent && this.unsubFocusEvent();
+    this.unsubBlurEvent && this.unsubBlurEvent();
     alarmStore.onExitAlarmDetail();
     if (videoStore.isPreloadStream) videoStore.onExitSinglePlayer();
     videoStore.releaseStreams();
@@ -285,10 +294,10 @@ class AlarmDetailView extends Component {
   handleScroll = event => {
     // Save the x (horizontal) value each time a scroll occurs
     this.scrollX.setValue(event.nativeEvent.contentOffset.x);
-    this.currentPage = Math.floor(
-      event.nativeEvent.contentOffset.x / this.state.viewableWindow.width
-    );
-    __DEV__ && console.log('1910 this.currentPage: ', this.currentPage);
+    if (this.currentPageUpdateAllowed)
+      this.currentPage = Math.floor(
+        event.nativeEvent.contentOffset.x / this.state.viewableWindow.width
+      );
   };
 
   getImageSize = (width, height) => {
