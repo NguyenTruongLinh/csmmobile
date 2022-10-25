@@ -1453,8 +1453,10 @@ public class CommunicationSocket implements Runnable {
      synchronized protected int WriteSocketData(byte[] buff, String debug){
 
          Log.d("GOND", "relay isLive = " + ServerInfo.getisLive() + " WriteSocketData debug = " + debug);
-
-         return  utils.WriteBlock( this.OutPut, utils.notifyAddRelayHeader(buff, isRelay, this.clientIp));
+         if(buff != null && buff.length > 0)
+            return  utils.WriteBlock( this.OutPut, utils.notifyAddRelayHeader(buff, isRelay, this.clientIp));
+         else
+             return 0;
     }
 
     public void PauseVideo()
@@ -1570,10 +1572,6 @@ public class CommunicationSocket implements Runnable {
             return;
         }
 
-        boolean isChannelSwitched = lastChannelNoArray == null || lastChannelNoArray.length == 0
-                || lastChannelNoArray[0] != ChannelNo[0];
-        boolean needConcatBuff = !isRelay || isChannelSwitched;
-
         if(islive)//change search to live
         {
              Log.d("GOND", "**DIRECT** ChangePlay: if(islive == true)");
@@ -1589,7 +1587,7 @@ public class CommunicationSocket implements Runnable {
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
                 int[] vindex = this.VideoSourceIndex();
                 byte[] msg_buffer = MsgCommandItem.MOBILE_MSG_MOBILE_SEND_SETTINGS( vindex, this.HDMode, isRelay);
-                if(needConcatBuff) {
+                if(!isRelay) {
                     byte[] msg = new byte[msg_buffer.length + msg_stop.length];
                     System.arraycopy(msg_stop, 0, msg, 0, msg_stop.length);
                     System.arraycopy(msg_buffer, 0, msg, msg_stop.length, msg_buffer.length);
@@ -1603,7 +1601,7 @@ public class CommunicationSocket implements Runnable {
                 Log.d("GOND", "**DIRECT** ChangePlay: if(islive == true) ELSE");
                 byte[] msg_stop = need_stop_search == false? new byte[0] : MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, ChannelNo);
                 byte[] msg_hw = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_SERVER_SEND_HARDWARE_CONFIG, null);
-                if(needConcatBuff) {
+                if(!isRelay) {
                     byte[] msg = new byte[msg_hw.length + msg_stop.length];
                     System.arraycopy( msg_stop, 0, msg, 0, msg_stop.length );
                     System.arraycopy( msg_hw, 0, msg, msg_stop.length, msg_hw.length );
@@ -1641,7 +1639,7 @@ public class CommunicationSocket implements Runnable {
                     msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                     byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
 
-                    if(needConcatBuff) {
+                    if(!isRelay) {
                         buff = new byte[buff_daylist.length + msg_stop.length ];
                         System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
                         System.arraycopy(buff_daylist,0, buff, msg_stop.length , buff_daylist.length );
@@ -1656,7 +1654,7 @@ public class CommunicationSocket implements Runnable {
                     int[] v_index = this.ChannelNo(false);
                     msg_stop = MsgCommandItem.MSG_SEARCH_REQUEST_STOP(this.ServerInfo, v_index);
                     byte[] msg_timeinterval = MsgCommandItem.MSG_SEARCH_REQUEST_TIME_INTERVAL(this.ServerInfo, ChannelNo);
-                    if(needConcatBuff) {
+                    if(!isRelay) {
                         buff = new byte[msg_timeinterval.length + msg_stop.length ];
                         System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
                         System.arraycopy(msg_timeinterval,0, buff, msg_stop.length , msg_timeinterval.length );
@@ -1678,7 +1676,7 @@ public class CommunicationSocket implements Runnable {
                 //System.arraycopy(msg_fw,0, buff,msg_set_pos.length + msg_stop.length, msg_fw.length );
 
 
-                if(needConcatBuff) {
+                if(!isRelay) {
                     new SendBufferTask(this.OutPut, isRelay, this.clientIp).execute( buff);
                 }else {
                     new SendSeparatedBufferTask(this.OutPut, isRelay, this.clientIp).execute( separatedBuff);
@@ -1696,7 +1694,7 @@ public class CommunicationSocket implements Runnable {
                 byte[] msg_stop = utils.MsgBuffer(Constant.EnumCmdMsg.MOBILE_MSG_PAUSE_SEND_VIDEO, null);
                 byte[]buff_daylist = MsgCommandItem.MSG_SEARCH_REQUEST_DAY_LIST(ServerInfo.ConnectionIndex, this.ServerInfo.getTimeZone().getTimeZone(), ChannelNo, this.HDMode);
 
-                if(needConcatBuff) {
+                if(!isRelay) {
                     byte[]buff = new byte[ msg_stop.length + buff_daylist.length];
                     System.arraycopy(msg_stop,0, buff,0, msg_stop.length );
                     System.arraycopy(buff_daylist,0, buff, msg_stop.length , buff_daylist.length );
@@ -1808,7 +1806,8 @@ public class CommunicationSocket implements Runnable {
         @Override
         protected Integer doInBackground(byte[]... buff){
 
-            int ret = utils.WriteBlock( this.writer, utils.notifyAddRelayHeader(buff[0], isRelay, clientIp));
+            int ret = buff[0] != null && buff[0].length > 0 ?
+                    utils.WriteBlock( this.writer, utils.notifyAddRelayHeader(buff[0], isRelay, clientIp)) : 0;
             return  Integer.valueOf(ret);
         }
     }
@@ -1828,7 +1827,8 @@ public class CommunicationSocket implements Runnable {
         protected Integer doInBackground(byte[][]... buff){
             int ret = 1;
             for(byte[] subBuff : buff[0]) {
-                ret = utils.WriteBlock( this.writer, utils.notifyAddRelayHeader(subBuff, isRelay, clientIp));
+                if(subBuff != null && subBuff.length > 0)
+                    ret = utils.WriteBlock( this.writer, utils.notifyAddRelayHeader(subBuff, isRelay, clientIp));
             }
             return  Integer.valueOf(ret);
         }
