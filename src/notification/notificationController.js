@@ -180,7 +180,10 @@ class NotificationController extends React.Component {
 
     messaging().setBackgroundMessageHandler(async notification => {
       __DEV__ &&
-        console.log('GOND Receveived background notification: ', notification);
+        console.log(
+          'GOND Receveived background notification - app opened: ',
+          notification
+        );
       NotificationController.onNotificationReceived({
         ...this.props,
         message: notification,
@@ -334,7 +337,7 @@ class NotificationController extends React.Component {
     // }
   };
 
-  static onNotificationReceived = async props => {
+  static onNotificationReceived = async (props, hasSavedLogin = false) => {
     const {
       videoStore,
       alarmStore,
@@ -355,7 +358,7 @@ class NotificationController extends React.Component {
 
     const naviService = appStore ? appStore.naviService : null;
 
-    if (!userStore.isLoggedIn) {
+    if (!userStore.isLoggedIn && !hasSavedLogin) {
       console.log(
         'GOND onNotificationReceived: not show notifications if user not logged in yet!',
         data
