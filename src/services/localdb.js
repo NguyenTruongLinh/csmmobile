@@ -77,7 +77,7 @@ class LocalDB {
     const d_id = await this.query(LocalDBName.device);
     if (d_id === undefined || d_id.totalrows == 0) {
       const guid = uuid.v1();
-      let _id = guid.toString();
+      let _id = guid.toString().toLowerCase();
       await this.add(LocalDBName.device, {deviceid: _id});
       return _id;
     } else {

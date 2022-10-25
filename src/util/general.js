@@ -37,7 +37,7 @@ exports.getwindow = () => {
 
 exports.autoKey = function () {
   var guid = uuid.v1();
-  return guid.toString();
+  return guid.toString().toLowerCase();
 };
 
 exports.utf8ArrayToStr = function (array) {
@@ -586,7 +586,7 @@ exports.isSDAlert = alertId => {
 };
 
 exports.getRandomId = () => {
-  return uuid.v1().toString();
+  return uuid.v1().toString().toLowerCase();
 };
 
 exports.getRandomClientId = () => {

@@ -17,6 +17,7 @@ import NotificationController from './notification/notificationController';
 import {Platform} from 'react-native';
 
 let popInitialNotificationFlagIOS = false;
+let hasSavedLogin = null;
 
 const Main = () => {
   // console.log('GOND userStore: ', userStore);
@@ -95,6 +96,8 @@ const Main = () => {
       }
     });
   }
+  // check saved login data:
+
   return (
     <Provider
       appStore={appStore}
@@ -112,7 +115,31 @@ const Main = () => {
     </Provider>
   );
 };
-// <!-- END CONSTS -->
+
+exports.onNotificationReceived = notification => {
+  if (hasSavedLogin == null) {
+    userStore.loadLocalData().then(hasData => {
+      // __DEV__ && console.log('GOND APP has saved data: ', hasData);
+      hasSavedLogin = hasData;
+      NotificationController.onNotificationReceived(
+        {
+          userStore,
+          message: notification,
+        },
+        hasSavedLogin
+      );
+    });
+  } else {
+    NotificationController.onNotificationReceived(
+      {
+        userStore,
+        message: notification,
+      },
+      hasSavedLogin
+    );
+  }
+};
+
 // ----------------------------------------------------
 
 export default Main;

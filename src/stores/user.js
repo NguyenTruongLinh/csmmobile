@@ -904,7 +904,7 @@ export const UserStoreModel = types
           return false;
         }
         self.error = '';
-        return true;
+        return self.domain?.length > 0 && self.api?.token?.length > 0;
       }
       return false;
     }),
