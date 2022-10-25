@@ -1,32 +1,29 @@
-import React, {Component, Fragment, PropTypes} from 'react';
+import React, {Component} from 'react';
 import {
   Text,
   View,
   Dimensions,
   StyleSheet,
-  ScrollView,
-  Platform,
-  FlatList,
   TouchableOpacity,
 } from 'react-native';
-// import Modal from 'react-native-modal';
-import Modal from '../../components/views/CMSModal';
 
-import CMSCalendarSingleDate from '../../components/views/CMSCalendarSingleDate';
-import Button from '../../components/controls/Button';
-import CMSColors from '../../styles/cmscolors';
-import commonStyles from '../../styles/commons.style';
+import {inject, observer} from 'mobx-react';
+
+import Modal from '../../components/views/CMSModal';
 import {Comps as CompTxt} from '../../localization/texts';
 import CMSNumberPicker from '../../components/views/CMSNumberPicker';
+
+import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
 const SECTION_HEADER_HEIGHT = 48;
 
 const ALL_HOURS = Array.from(Array(24).keys());
 const MINUTES = Array.from(Array(60).keys());
 const SECONDS = Array.from(Array(60).keys());
-const {width, height} = Dimensions.get('window');
+const {height} = Dimensions.get('window');
 
-export default class VideoTimeModal extends Component {
+class VideoTimeModal extends Component {
   static defaultProps = {
     selectedTime: {hourIndex: 0, hour: 0, minute: 0, second: 0},
   };
@@ -44,10 +41,6 @@ export default class VideoTimeModal extends Component {
 
   componentDidMount() {
     __DEV__ && console.log(`VideoTimeModal timepicker componentDidMount `);
-    // if (this.props.Rotatable) {
-    //   Dimensions.addEventListener('change', this.onDimensionChange);
-    // }
-    // this.onDimensionChange({window: Dimensions.get('window')});
     const {hour, minute, second} = this.props.selectedTime ?? {
       hour: 0,
       minute: 0,
@@ -90,8 +83,10 @@ export default class VideoTimeModal extends Component {
   };
 
   renderHeader = () => {
+    const {appearance} = this.props.appStore;
+
     return (
-      <View style={styles.modalHeader}>
+      <View style={[styles.modalHeader, theme[appearance].modalContainer]}>
         <TouchableOpacity
           caption={CompTxt.cancelButton}
           type="flat"
@@ -100,13 +95,7 @@ export default class VideoTimeModal extends Component {
             const {onDismiss} = this.props;
             onDismiss && onDismiss();
           }}>
-          <Text
-            style={[
-              styles.headerActionText,
-              {
-                color: CMSColors.SecondaryText,
-              },
-            ]}>
+          <Text style={[styles.headerActionText, theme[appearance].text]}>
             Cancel
           </Text>
         </TouchableOpacity>
@@ -114,7 +103,6 @@ export default class VideoTimeModal extends Component {
           caption={CompTxt.applyButton}
           captionStyle={{color: CMSColors.White}}
           type="flat"
-          // enable={this.state.selectedSites.length > 0}
           enable={true}
           onPress={() => {
             const {onSubmit} = this.props;
@@ -143,8 +131,10 @@ export default class VideoTimeModal extends Component {
   };
 
   renderContent = height => {
+    const {appearance} = this.props.appStore;
+
     return (
-      <View style={{flex: 1, flexDirection: 'row'}}>
+      <View style={[styles.contentContainer, theme[appearance].modalContainer]}>
         <CMSNumberPicker
           ref={r => (this.hourRef = r)}
           numbers={this.state.dstHours}
@@ -172,6 +162,8 @@ export default class VideoTimeModal extends Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
+
     return (
       <Modal
         isVisible={this.props.isVisible}
@@ -181,19 +173,8 @@ export default class VideoTimeModal extends Component {
         backdropOpacity={0.3}
         key="videoTimeModal"
         name="videoTimeModal"
-        style={{
-          margin: 0,
-          flex: 1,
-          justifyContent: 'flex-end',
-        }}>
-        <View
-          style={{
-            height: '40%',
-            backgroundColor: 'white',
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            flexDirection: 'column',
-          }}>
+        style={styles.modalContainer}>
+        <View style={[styles.container, theme[appearance].modalContainer]}>
           {this.renderHeader()}
           {this.renderContent((height * 40) / 100 - 50)}
         </View>
@@ -202,7 +183,20 @@ export default class VideoTimeModal extends Component {
   }
 }
 
+export default inject('appStore')(observer(VideoTimeModal));
+
 const styles = StyleSheet.create({
+  modalContainer: {
+    margin: 0,
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  container: {
+    height: '40%',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    flexDirection: 'column',
+  },
   modalHeader: {
     height: 50,
     backgroundColor: CMSColors.White,
@@ -246,4 +240,5 @@ const styles = StyleSheet.create({
     height: 50,
     backgroundColor: CMSColors.White,
   },
+  contentContainer: {flex: 1, flexDirection: 'row'},
 });

@@ -5,14 +5,7 @@ import {
   Text,
   Modal,
   TouchableOpacity,
-  TextInput,
-  BackHandler,
-  KeyboardAvoidingView,
-  Platform,
-  AppState,
   Dimensions,
-  ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 
@@ -21,14 +14,11 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import CMSStyleSheet from '../../../components/CMSStyleSheet';
 const IconCustom = CMSStyleSheet.IconCustom;
+import Button from '../../../components/controls/Button';
 
 import {normalize} from '../../../util/general';
 
 import CMSColors from '../../../styles/cmscolors';
-import CMSTouchableIcon from '../../../components/containers/CMSTouchableIcon';
-
-import commonStyles from '../../../styles/commons.style';
-import Button from '../../../components/controls/Button';
 
 const warningMessages = [
   'I have responded to the alarm and per company protocol, have taken corrective action.',

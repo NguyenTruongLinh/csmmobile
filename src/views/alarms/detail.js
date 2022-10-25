@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import {
   View,
-  StyleSheet,
   Text,
   FlatList,
   TextInput,
@@ -9,45 +8,38 @@ import {
   Animated,
   LogBox,
 } from 'react-native';
-// import PropTypes from 'prop-types';
+
 import {inject, observer} from 'mobx-react';
-// import BigNumber from 'bignumber.js';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 import {AirbnbRating} from 'react-native-ratings';
 import Svg, {Polygon} from 'react-native-svg';
 import {DateTime} from 'luxon';
+import {reaction} from 'mobx';
 
 import TransThumb from '../../components/views/TransThumb';
 import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import InputText from '../../components/controls/InputText';
-// import LoadingOverlay from '../../components/common/loadingOverlay';
+import RatingDetail from './components/rating';
 
 import util from '../../util/general';
 import snackbarUtil from '../../util/snackbar';
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
 import variable from '../../styles/variables';
+import theme from '../../styles/appearance';
+import styles from './styles/detailStyles';
+
 import {
   Comps as ComponentTxt,
   Settings as SettingsTxt,
   ALARM as ALARM_TXT,
   VIDEO as VIDEO_TXT,
 } from '../../localization/texts';
-import {
-  DateFormat,
-  AlertTypes,
-  AlertNames,
-  AlertType_Support,
-} from '../../consts/misc';
+import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
-import {reaction} from 'mobx';
-import {getSnapshot} from 'mobx-state-tree';
-import theme from '../../styles/appearance';
 
-const ID_Canned_Message = 5;
 const CONTENT_INFO_HEIGHT = 92;
 const STATUS_HEIGHT = 17;
 
@@ -70,7 +62,6 @@ class AlarmDetailView extends Component {
     this.reactions = [];
     this._isMounted = false;
     this.shouldReloadOnExit = false;
-    // this.firstFocus = true;
     this.unsubFocusEvent = null;
   }
 
@@ -90,14 +81,7 @@ class AlarmDetailView extends Component {
     alarmStore.selectedAlarm.loadSnapshotImages();
     this.initReactions();
     this.unsubFocusEvent = navigation.addListener('focus', () => {
-      // __DEV__ &&
-      //   console.log('GOND alarm detail on focused, first ', this.firstFocus);
       videoStore.setShouldShowVideoMessage(false);
-      // if (this.firstFocus) {
-      //   this.firstFocus = false;
-      // } else {
-      //   videoStore.resetNVRAuthentication();
-      // }
     });
     let res = await videoStore.getDVRPermission(alarmStore.selectedAlarm.kDVR);
 
@@ -110,10 +94,6 @@ class AlarmDetailView extends Component {
     )
       res = await videoStore.onAlertPlay(true, alarmStore.selectedAlarm, true);
     videoStore.enterVideoView(true);
-    // const snapShots = getSnapshot(alarmStore.selectedAlarm.snapshot);
-    // __DEV__ && console.log(` snapShots = `, snapShots);
-    // if (!snapShots || snapShots.length == 0 || snapShots[0].fileName == null)
-    //   alarmStore.getAlarms({aty: AlertType_Support});
   }
 
   componentWillUnmount() {
@@ -127,9 +107,6 @@ class AlarmDetailView extends Component {
     videoStore.releaseStreams();
     this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
 
-    // if (this.shouldReloadOnExit) {
-    //   alarmStore.getAlarms();
-    // }
     videoStore.enterVideoView(false);
   }
 
@@ -162,38 +139,13 @@ class AlarmDetailView extends Component {
       channelName: 'Channel ' + (selectedAlarm.channelNo + 1),
     };
 
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND canSave: note ',
-    //     currentSnapshot,
-    //     ',  a.note: ',
-    //     selectedAlarm.note,
-    //     ' > ',
-    //     note != selectedAlarm.note,
-    //     '\n rating: ',
-    //     rating,
-    //     ', a.rate: ',
-    //     selectedAlarm.rate,
-    //     ' > ',
-    //     rating.rateId != selectedAlarm.rate
-    //   );
-
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND AlarmDetail currentSnapshot: ',
-    //     currentSnapshot,
-    //     selectedAlarm.snapshot
-    //   );
     const siteName =
       selectedAlarm.siteName && selectedAlarm.siteName.length > 0
         ? selectedAlarm.siteName
         : selectedAlarm.serverID;
     const headerRightCb = () => (
       <Button
-        style={[
-          commonStyles.buttonSave,
-          // {borderWidth: 2, borderColor: 'red'},
-        ]}
+        style={[commonStyles.buttonSave]}
         caption={SettingsTxt.save}
         enable={canSave}
         onPress={this.onSave}
@@ -235,7 +187,6 @@ class AlarmDetailView extends Component {
 
   onLayout = event => {
     const {x, y, width, height} = event.nativeEvent.layout;
-    const {gridLayout} = this.state;
 
     this.setState({
       viewableWindow: {
@@ -291,15 +242,6 @@ class AlarmDetailView extends Component {
     if (width < height) {
       let v_width = Math.min(width, height);
       let v_height = this.state ? this.state.viewableWindow.height : height;
-      // __DEV__ &&
-      //   console.log(
-      //     'GOND getImageSize w = ',
-      //     v_width,
-      //     ', h = ',
-      //     v_height,
-      //     ', size = ',
-      //     util.getImageSize({width: v_width, height: v_height})
-      //   );
       return util.getImageSize({width: v_width, height: v_height});
     } else {
       //lanscape mode
@@ -314,13 +256,6 @@ class AlarmDetailView extends Component {
 
   gotoVideo = isLive => {
     const {alarmStore, videoStore, navigation} = this.props;
-
-    // this.setState({isLoading: true}, async () => {
-    //   let res = await videoStore.onAlertPlay(isLive, alarmStore.selectedAlarm);
-
-    // res &&
-    // videoStore.setLiveMode(isLive);
-    // if (!isLive) {
 
     __DEV__ && console.log('GOND Alarm-gotoVideo: ', alarmStore.selectedAlarm);
     videoStore.postAuthenticationCheck(() => {
@@ -352,14 +287,11 @@ class AlarmDetailView extends Component {
         <Svg
           height="100%"
           width="100%"
-          viewBox={'0 0 ' + imgSize.width + ' ' + imgSize.height} //"0 0 100 100"
-          // style={{position: 'absolute', borderWidth: 2, borderColor: 'blue'}}
-        >
+          viewBox={'0 0 ' + imgSize.width + ' ' + imgSize.height}>
           <Polygon
             points={coordinateList
               .map(point => {
                 let res = '' + point.x + ',' + point.y;
-                // console.log('GOND --- point: ', res)
                 return res;
               }, [])
               .join(' ')}
@@ -373,6 +305,7 @@ class AlarmDetailView extends Component {
   };
 
   renderAlertStatus = () => {
+    const {appearance} = this.props.appStore;
     const {selectedAlarm} = this.props.alarmStore;
     if (selectedAlarm == null) return;
 
@@ -380,12 +313,7 @@ class AlarmDetailView extends Component {
     if (status == 1)
       return (
         <View style={styles.statusContainer}>
-          <View
-            style={{
-              justifyContent: 'center',
-              paddingRight: variable.inputPaddingLeft,
-              paddingLeft: 4,
-            }}>
+          <View style={styles.alertStatusWrapper}>
             <IconCustom
               name={'check-symbol'}
               size={12}
@@ -394,20 +322,12 @@ class AlarmDetailView extends Component {
           </View>
           <Text
             numberOfLines={1}
-            style={{fontSize: 14, color: CMSColors.Success}}>
+            style={[styles.alertStatusSuccess, theme[appearance].text]}>
             {ALARM_TXT.PROCESSED_BY}{' '}
           </Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
+          <View style={styles.alertStatusBottomContainer}>
             <Text
-              style={{
-                fontSize: 14,
-                color: CMSColors.Success,
-                fontWeight: 'bold',
-              }}>
+              style={[styles.alertStatusBottomText, theme[appearance].text]}>
               {selectedAlarm.cmsUser}
             </Text>
           </View>
@@ -446,15 +366,10 @@ class AlarmDetailView extends Component {
 
     return (
       <View style={{...this.state.imgSize, flex: 1}}>
-        <View
-          style={[this.state.imgSize, {top: 0, left: 0, position: 'absolute'}]}>
+        <View style={[this.state.imgSize, styles.imageThumbContainer]}>
           <TransThumb
             data={item}
-            containerStyle={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            containerStyle={styles.imageThumb}
             imageSize={this.state.imgSize}
             imageStyle={{
               resizeMode: selectedAlarm.isTemperatureAlert
@@ -465,7 +380,6 @@ class AlarmDetailView extends Component {
           />
           {violationGroup}
         </View>
-        {/* {alertStatus} */}
       </View>
     );
   };
@@ -475,12 +389,10 @@ class AlarmDetailView extends Component {
     if (selectedAlarm == null) return;
     let {description, kAlertTypeVA, kAlertType, isSDAlert} = selectedAlarm;
 
-    // __DEV__ && console.log('GOND infoDesc: ', description);
     if (kAlertType != AlertTypes.DVR_VA_detection) {
       if (isSDAlert) {
         return description.split(',')[0] + ': Social distance';
       }
-      // __DEV__ && console.log('GOND infoDesc not change');
       return description;
     }
 
@@ -493,7 +405,6 @@ class AlarmDetailView extends Component {
         return lstT.join(' ');
       } else {
         let lst = description.split('.');
-        //console.log(lst);
         if (!lst || lst.length == 0) return '';
         lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
         lst[lst.length - 2] = util.capitalize(lst[lst.length - 2], '&');
@@ -511,6 +422,7 @@ class AlarmDetailView extends Component {
   };
 
   renderTemperatureItem = ({index, item}) => {
+    const {appearance} = this.props.appStore;
     const strTime =
       typeof item.key === 'string'
         ? item.key
@@ -518,75 +430,47 @@ class AlarmDetailView extends Component {
             DateFormat.AlertDetail_Date
           );
     const iconSize = 16;
-    // return this.state.alertType ===
-    //   AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY ? (
     const {selectedAlarm} = this.props.alarmStore;
     const color =
       selectedAlarm.kAlertType === AlertTypes.TEMPERATURE_OUT_OF_RANGE
         ? CMSColors.Danger
-        : CMSColors.PrimaryText;
+        : theme[appearance].text.color;
     return (
-      <View style={[styles.timeInfoContainer, {flexDirection: 'row'}]}>
-        <View style={{flexDirection: 'row'}}>
-          <View style={{justifyContent: 'center'}}>
+      <View
+        style={[
+          styles.temperatureInfoContainer,
+          styles.timeInfoContainer,
+          styles.row,
+        ]}>
+        <View style={[styles.row, styles.alignCenter]}>
+          <View style={styles.justifyBetween}>
             <IconCustom
               name="clock-with-white-face"
               size={iconSize}
-              color={CMSColors.SecondaryText}
+              color={theme[appearance].iconColor}
             />
           </View>
-          <Text style={styles.temp_text}>{strTime}</Text>
+          <Text style={[styles.temp_text, theme[appearance].text]}>
+            {strTime}
+          </Text>
         </View>
 
-        <View style={{flexDirection: 'row'}}>
-          <View style={{justifyContent: 'center'}}>
+        <View style={[styles.row, styles.alignCenter]}>
+          <View style={styles.justifyBetween}>
             <IconCustom
               name="ic-temperature-32px"
               size={iconSize}
-              color={CMSColors.SecondaryText}
+              color={theme[appearance].iconColor}
             />
           </View>
-          <Text style={[styles.temp_text, {color: color}]}>
-            {item.value /* + String.fromCharCode(176) + 'C'*/}
-          </Text>
+          <Text style={[styles.temp_text, {color: color}]}>{item.value}</Text>
         </View>
       </View>
     );
-    // ) : (
-    //   <View style={[styles.timeInfoContainer, {flexDirection: 'column'}]}>
-    //     <View style={[{flexDirection: 'row'}]}>
-    //       <View style={{justifyContent: 'center'}}>
-    //         <IconCustom
-    //           name="ic-temperature-32px"
-    //           size={iconSize}
-    //           color={CMSColors.SecondaryText}
-    //         />
-    //       </View>
-    //       <Text
-    //         style={[
-    //           styles.temp_text,
-    //           this.state.alertType === AlertTypes.TEMPERATURE_OUT_OF_RANGE
-    //             ? {color: CMSColors.Danger}
-    //             : {},
-    //         ]}>
-    //         {item.value /* + String.fromCharCode(176) + 'C'*/}
-    //       </Text>
-    //     </View>
-    //     <View style={styles.timeInfoContainer}>
-    //       <View style={{justifyContent: 'center'}}>
-    //         <IconCustom
-    //           name="clock-with-white-face"
-    //           size={iconSize}
-    //           color={CMSColors.SecondaryText}
-    //         />
-    //       </View>
-    //       <Text style={styles.temp_text}>{strTime}</Text>
-    //     </View>
-    //   </View>
-    // );
   };
 
   renderTemperatureInfo = () => {
+    const {appearance} = this.props.appStore;
     const {selectedAlarm} = this.props.alarmStore;
     if (selectedAlarm == null || !selectedAlarm.extra) return null;
 
@@ -599,40 +483,19 @@ class AlarmDetailView extends Component {
       selectedAlarm.status == 1 && selectedAlarm.cmsUser ? STATUS_HEIGHT : 0;
     let padding = variable.contentPadding;
 
-    // console.log('GOND renderTemperatureInfo extradata: ', selectedAlarm.extra)
-    // let cmsUserInfo = selectedAlarm.cmsUser ? (
-    //   <View
-    //     style={{
-    //       flexDirection: 'row',
-    //       alignItems: 'center',
-    //       marginBottom: 2,
-    //       borderColor: 'red',
-    //       borderWidth: 1,
-    //       borderColor: 'red',
-    //       borderWidth: 1,
-    //     }}>
-    //     <Text style={{width: 40, textAlign: 'center'}}>-</Text>
-    //     <View style={{justifyContent: 'center'}}>
-    //       <IconCustom
-    //         name="user-shape"
-    //         size={12}
-    //         color={CMSColors.SecondaryText}
-    //       />
-    //     </View>
-    //     <Text style={styles.name_text}>{selectedAlarm.cmsUser}</Text>
-    //   </View>
-    // ) : null;
-    // height: contentHeight
     return (
-      <View style={{backgroundColor: CMSColors.DividerColor24_HEX}}>
+      <View style={theme[appearance].temperatureInfo}>
         <View
           style={[
             styles.infoContainer,
-            {borderBottomColor: 'lightgray', borderBottomWidth: 1},
+            theme[appearance].borderColor,
+            {borderBottomWidth: 1},
           ]}>
           <View style={styles.leftInfoContainer}>
             <View style={[styles.textInfoContainer, {paddingLeft: padding}]}>
-              <Text numberOfLines={2} style={styles.textInfo}>
+              <Text
+                numberOfLines={2}
+                style={[styles.textInfo, theme[appearance].text]}>
                 {AlertNames[selectedAlarm.kAlertType]}
               </Text>
               {this.renderAlertStatus()}
@@ -640,14 +503,14 @@ class AlarmDetailView extends Component {
           </View>
           {this.renderVideoButtons()}
         </View>
-        {selectedAlarm.extra.length > 0 && <View style={{height: 3}}></View>}
+        {selectedAlarm.extra.length > 0 && <View style={styles.height3}></View>}
         <FlatList
           data={selectedAlarm.extra}
           renderItem={this.renderTemperatureItem}
           keyExtractor={(item, index) => index.toString()}
           initialNumToRender={selectedAlarm.extra.length}
         />
-        {selectedAlarm.extra.length > 0 && <View style={{height: 3}}></View>}
+        {selectedAlarm.extra.length > 0 && <View style={styles.height3}></View>}
       </View>
     );
   };
@@ -671,21 +534,15 @@ class AlarmDetailView extends Component {
       <View
         style={[styles.infoContainer, theme[appearance].alarmInfoContainer]}>
         <View style={styles.leftInfoContainer}>
-          {/* {this.renderActionButton(BUTTON_TYPE.SEARCH)} */}
-          {/* <View style={[ styles.textInfoContainer, Platform.OS == 'ios' ? {paddingRight: btn_size + 2 * padding} : {paddingLeft: btn_size + 2* padding} ]} > */}
-          <View
-            style={[
-              styles.textInfoContainer,
-              {paddingLeft: /*btn_size + 2**/ padding},
-            ]}>
+          <View style={[styles.textInfoContainer, {paddingLeft: padding}]}>
             <Text
               numberOfLines={2}
               style={[styles.textInfo, theme[appearance].alarmDetailColor]}>
               {this.renderInfoDescription()}
             </Text>
             {this.renderAlertStatus()}
-            <View style={styles.timeInfoContainer}>
-              <View style={{justifyContent: 'center'}}>
+            <View style={[styles.timeInfoContainer, styles.alignCenter]}>
+              <View style={styles.justifyBetween}>
                 <IconCustom
                   name="clock-with-white-face"
                   size={12}
@@ -709,14 +566,8 @@ class AlarmDetailView extends Component {
     const {appearance} = this.props.appStore;
 
     return (
-      <View
-        style={{
-          flex: 3,
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={styles.videoButtonContainer}>
+        <View style={styles.videoButtonWrapper}>
           <CMSTouchableIcon
             iconCustom="searching-magnifying-glass"
             size={26}
@@ -726,7 +577,7 @@ class AlarmDetailView extends Component {
             disabled={isLoading} // || !canSearchSelectedChannel}
           />
         </View>
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={styles.videoButtonWrapper}>
           <CMSTouchableIcon
             iconCustom="videocam-filled-tool"
             size={26}
@@ -751,7 +602,6 @@ class AlarmDetailView extends Component {
           underlineColorAndroid={CMSColors.transparent}
           multiline={true}
           allowFontScaling={true}
-          // numberOfLines={4}
           onChangeText={this.onNoteChange}
           autoCorrect={false}
           enablesReturnKeyAutomatically={true}
@@ -764,34 +614,10 @@ class AlarmDetailView extends Component {
     );
   };
 
-  renderRating = () => {
-    const {rateId} = this.state.rating;
-    const {appearance} = this.props.appStore;
-
-    return (
-      <View style={[styles.ratingContainer, theme[appearance].container]}>
-        <AirbnbRating
-          type="star"
-          showRating={false}
-          ratingCount={5}
-          defaultRating={rateId == -1 ? rateId : 5 - rateId}
-          size={30}
-          allowEmpty={true}
-          onFinishRating={this.onRatingChange}
-        />
-        {/* <Text   numberOfLines={1} >{msg_info}</Text> */}
-        <Text style={[{padding: 8}, theme[appearance].text]}>
-          {this.state.rating.rateName}
-        </Text>
-      </View>
-    );
-  };
-
   render() {
     const {selectedAlarm} = this.props.alarmStore;
     const {appearance} = this.props.appStore;
     if (selectedAlarm == null) return <View />;
-    // const indicator = this.renderIndicator();
 
     const {imgSize} = this.state;
     return (
@@ -801,15 +627,14 @@ class AlarmDetailView extends Component {
         <KeyboardAwareScrollView>
           <View
             style={[
+              styles.contentWrapper,
               {
-                flex: 1,
                 height: imgSize.height,
-                flexDirection: 'column',
               },
             ]}>
             <FlatList
               pagingEnabled={true}
-              style={{flex: 1}}
+              style={styles.container}
               initialScrollIndex={this.state.activeIndex}
               viewabilityConfig={{
                 minimumViewTime: 300,
@@ -830,16 +655,12 @@ class AlarmDetailView extends Component {
               }
             />
             <View
-              style={{
-                position: 'absolute',
-                alignItems: 'center',
-                width: '100%',
-                top: imgSize.height - 18,
-                // right: 0,
-                // height: '100%',
-                // flexDirection: 'row',
-                // paddingBottom: 5,
-              }}>
+              style={[
+                styles.likeContainer,
+                {
+                  top: imgSize.height - 18,
+                },
+              ]}>
               <LiquidLike
                 data={selectedAlarm ? selectedAlarm.snapshot : []}
                 scrollX={this.scrollX}
@@ -849,16 +670,13 @@ class AlarmDetailView extends Component {
                 strokeWidth={3}
               />
             </View>
-            {/* {indicator} */}
-            {/* {this.renderActionButton(BUTTON_TYPE.LIVE, 50)}
-            {this.renderActionButton(BUTTON_TYPE.SEARCH)} */}
           </View>
-          <View
-            style={{
-              flex: 1,
-            }}>
+          <View style={styles.container}>
             {this.renderInfo()}
-            {this.renderRating()}
+            <RatingDetail
+              rating={this.state.rating}
+              onRatingChange={this.onRatingChange}
+            />
             {this.renderNoteInput()}
           </View>
         </KeyboardAwareScrollView>
@@ -866,113 +684,6 @@ class AlarmDetailView extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // paddingLeft: variable.inputPaddingLeft
-    // , paddingRight: variable.inputPaddingLeft
-    backgroundColor: 'white',
-  },
-  infoContainer: {
-    flexDirection: 'row',
-    // backgroundColor: CMSColors.DividerColor24,
-    // height: CONTENT_INFO_HEIGHT,
-    flex: 1,
-    paddingVertical: 10,
-  },
-  textInfoContainer: {
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  textInfo: {
-    fontSize: 15,
-    color: CMSColors.PrimaryText,
-    justifyContent: 'center',
-    fontWeight: 'bold',
-  },
-  Indicator: {
-    flexDirection: 'row',
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-    left: 0,
-    right: 0,
-    bottom: variable.contentPadding,
-  },
-  leftInfoContainer: {
-    flex: 7,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  RightInfoContainer: {
-    flex: 1,
-    paddingRight: variable.contentPadding,
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  timeInfoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    // paddingHorizontal: 12,
-    // backgroundColor: 'red',
-    paddingVertical: 2,
-  },
-  date_text: {
-    color: CMSColors.PrimaryText,
-    fontSize: 14,
-    paddingLeft: variable.inputPaddingLeft,
-    //paddingTop: 3
-  },
-  name_text: {
-    color: CMSColors.PrimaryText,
-    fontSize: 14,
-    paddingLeft: variable.inputPaddingLeft,
-  },
-  temp_text: {
-    color: CMSColors.PrimaryText,
-    fontSize: 15,
-    marginLeft: 10,
-  },
-  inputNote: {
-    // height: 130,
-    borderBottomWidth: 1,
-    borderColor: CMSColors.DarkText,
-    // borderRadius: 4,
-    textAlignVertical: 'top',
-    padding: 10,
-    fontSize: 14,
-  },
-  subtext: {
-    color: CMSColors.SecondaryText,
-    fontSize: 12,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    // justifyContent: 'flex-start',
-    // alignItems: 'center',
-    // paddingLeft: variable.inputPaddingLeft,
-    // backgroundColor: CMSColors.Success,
-    // width: 74,
-    // height: 22,
-    // borderTopRightRadius: 6,
-    // borderBottomRightRadius: 6,
-    // marginTop: 24,
-    marginTop: 5,
-  },
-  ratingContainer: {
-    borderWidth: 0,
-    flexDirection: 'column',
-    paddingTop: variable.inputPaddingLeft,
-    paddingBottom: variable.inputPaddingLeft,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  inputContainer: {
-    paddingHorizontal: 16,
-  },
-});
 
 export default inject(
   'alarmStore',

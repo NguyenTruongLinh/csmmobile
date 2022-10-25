@@ -2,18 +2,9 @@
 
 // ----------------------------------------------------
 // <!-- START MODULES -->
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import {
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-import util from '../../util/general';
-const Timer_Get_Image = 1;
+import {View, Image, ActivityIndicator} from 'react-native';
 
 // <!-- END MODULES -->
 // ----------------------------------------------------
@@ -64,21 +55,6 @@ class AlarmThumb extends React.Component {
     }
   }
 
-  // clearImageInterval = () => {
-  //   if (this.imageLoadingInterval) {
-  //     clearTimeout(this.imageLoadingInterval);
-  //   }
-  // };
-
-  // initImageInterval = () => {
-  //   this.clearTimerImage();
-  //   this.imageLoadingInterval = setInterval(() => {
-  //     let {data} = this.props;
-  //     this.setState({isloading: true});
-  //     this.loadImage(data);
-  //   }, Timer_Get_Image);
-  // };
-
   loadImage = async data => {
     __DEV__ && console.log('GOND Alarm load thumb:');
     if (!data) return;
@@ -115,9 +91,7 @@ class AlarmThumb extends React.Component {
 
     if (this.props.onLoad) {
       let res = await this.props.onLoad(data);
-      // __DEV__ && console.log('GOND Alarm load thumb: loaded', res);
       data.setThumbnail(res);
-      // __DEV__ && console.log('GOND Alarm load thumb: onLoad ', data.thumb);
       let {imgsize} = this.props;
       if (res && res.isCloud == true) {
         let url = res.url_thumnail;
@@ -150,8 +124,7 @@ class AlarmThumb extends React.Component {
   }
 
   render() {
-    const {type, color, size, onPress, styles, domain, imageStyle, imgsize} =
-      this.props;
+    const {styles, imageStyle, imgsize} = this.props;
 
     return (
       <View style={styles} ref={r => (this.viewRef = r)}>
@@ -164,9 +137,5 @@ class AlarmThumb extends React.Component {
     );
   }
 }
-
-// const styles_Com = StyleSheet.create({
-
-// });
 
 module.exports = AlarmThumb;

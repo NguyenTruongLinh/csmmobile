@@ -26,7 +26,6 @@ export default function HealthStack() {
       initialRouteName={ROUTERS.HEALTH_SITES}
       screenOptions={({route, navigation}) => ({
         headerStyle: {
-          // backgroundColor: CMSColors.White,
           borderBottomWidth: 1,
         },
         headerStatusBarHeight: variables.StatusBarHeight,
@@ -56,7 +55,7 @@ export default function HealthStack() {
       <HStack.Screen
         name={ROUTERS.HEALTH_VIDEO}
         component={VideoPlayerView}
-        options={({route, navigation}) => ({
+        options={({navigation}) => ({
           headerLeft: () => (
             <BackButton
               navigator={navigation}

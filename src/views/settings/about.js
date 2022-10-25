@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, Text, Image, StyleSheet, Linking, StatusBar} from 'react-native';
+import {View, Text, Image, StyleSheet, Linking} from 'react-native';
 
 import Ripple from 'react-native-material-ripple';
 import {inject, observer} from 'mobx-react';
@@ -8,7 +8,6 @@ import CMSStyleSheet from '../../components/CMSStyleSheet';
 import APP_INFO from '../../consts/appInfo';
 
 import variable from '../../styles/variables';
-// import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
 import {CMS_Logo} from '../../consts/images';
@@ -24,7 +23,6 @@ class AboutView extends Component {
   }
 
   onOpenPolicies() {
-    // let url = 'https://i3international.com/company-policies';
     Linking.canOpenURL(APP_INFO.PoliciesUrl)
       .then(supported => {
         if (!supported) {
@@ -51,40 +49,9 @@ class AboutView extends Component {
 
   render() {
     const {appearance} = this.props.appStore;
-    // let statusbar = Platform.OS == 'ios' ?  (
-    //   <View style={styles.statusbarios}></View>
-    // ) : null;
 
     return (
       <View style={[styles.viewContainer, theme[appearance].container]}>
-        {/* <StatusBar
-          translucent={false}
-          backgroundColor={CMSColors.Dark_Blue}
-          barStyle="light-content" />
-        {statusbar} */}
-        {/* <View style={styles.navbar_body}>
-          <View style={styles.navbar}>
-            <Ripple
-              rippleCentered={true}
-              style={styles.left}
-              onPress={this.onBack.bind(this)}>
-              <View style={styles.icon}>
-                <CMSTouchableIcon
-                  size={20}
-                  color={CMSColors.SecondaryText}
-                  styles={styles.contentIcon}
-                  iconCustom='keyboard-left-arrow-button' />
-              </View>
-              <View style={styles.title}>
-                <Text>{this.state.title}</Text>
-              </View>
-            </Ripple>
-            <View>
-
-            </View>
-          </View>
-        </View> */}
-
         <View style={styles.firstContainer}>
           <View style={styles.imageLogo}>
             <Image
@@ -203,7 +170,6 @@ const styles = StyleSheet.create({
   rowIcon: {
     width: 30,
     height: 30,
-    // fontSize: 20,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -223,10 +189,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // statusbarios: {
-  //   height: variable.isPhoneX ? 44 : 20,
-  //   backgroundColor: CMSColors.Dark_Blue,
-  // },
 });
 
 export default inject('appStore')(observer(AboutView));

@@ -1,31 +1,23 @@
 import React, {Component} from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  // Modal as ModalBase,
-  Platform,
-  Dimensions,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import {View, Text, FlatList, Dimensions, Image} from 'react-native';
+
+import {ActivityIndicator} from 'react-native-paper';
 import {inject, observer} from 'mobx-react';
-// import Ripple from 'react-native-material-ripple';
-// import Modal from 'react-native-modal';
 import Modal from '../../components/views/CMSModal';
 import {DateTime} from 'luxon';
 
 import CMSRipple from '../../components/controls/CMSRipple';
-import AlarmItem from './alarmItem';
+import AlarmItem from './components/alarmItem';
 import AlarmFilter from '../../components/views/AlarmFilter';
-import InputTextIcon from '../../components/controls/InputTextIcon';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-// import {IconCustom} from '../../components/CMSStyleSheet';
 import Button from '../../components/controls/Button';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
+import NoDataView from '../../components/views/NoData';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
+import styles from './styles/searchStyles';
 
 import {Comps as CompTxt} from '../../localization/texts';
 import {
@@ -36,17 +28,10 @@ import {
   DateFormat,
 } from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
-import variables from '../../styles/variables';
-import theme from '../../styles/appearance';
 import {No_Data} from '../../consts/images';
-import {ActivityIndicator} from 'react-native-paper';
 import {PAGE_LENGTH} from '../../stores/alarm';
 
-const header_height = 50;
-const footer_height = 50;
-
 class AlarmsSearchView extends Component {
-  //{sdate, edate, sty, aty, ara,ano, sta, sid, vty, aid, avaid} = params;
   constructor(props) {
     super(props);
     const {width, height} = Dimensions.get('window');
@@ -60,7 +45,6 @@ class AlarmsSearchView extends Component {
       to: filterParams
         ? DateTime.fromFormat(filterParams.edate, DateFormat.QuerryDateTime)
         : DateTime.now().minus({days: 1}),
-      // selectedSites: [], // props.selectedsite? props.selectedsite: [],
       params: filterParams ?? {},
       width,
       height,
@@ -82,7 +66,6 @@ class AlarmsSearchView extends Component {
     if (!alarmStore.rateConfig || alarmStore.rateConfig.length == 0) {
       alarmStore.getConfigs();
     }
-    // setTimeout(() => this.showFilter(true), 1500);
   }
 
   componentWillUnmount() {
@@ -230,20 +213,8 @@ class AlarmsSearchView extends Component {
       }
       case FilterMore.Time: {
         if (!params || !params.time) {
-          // let timeNe;
-          // if (data.type == 'stime')
-          //   timeNe = {
-          //     stime: data.time,
-          //     etime: 23,
-          //   };
-          // else
-          //   timeNe = {
-          //     stime: 0,
-          //     etime: data.time,
-          //   };
           newParams = {
             ...params,
-            // time: timeNe,
             time: {
               stime: data.type == 'stime' ? data.time : 0,
               etime: data.type == 'etime' ? data.time : 23,
@@ -251,52 +222,19 @@ class AlarmsSearchView extends Component {
           };
         } else {
           let {time} = params;
-          // if (!time) {
-          // let timeN;
-          // if (data.type == 'stime')
-          //   timeN = {
-          //     stime: data.time,
-          //     etime: 23,
-          //   };
-          // else
-          //   timeN = {
-          //     stime: 0,
-          //     etime: data.time,
-          //   };
-          // newParams = {
-          //   ...params,
-          // time: timeN,
-          // };
-          // } else {
-          // let timeU;
-          // if (data.type == 'stime') {
-          //   timeU = {
-          //     stime: data.time,
-          //     etime: time.etime < data.time ? data.time : time.etime,
-          //   };
-          // } else {
-          //   timeU = {
-          //     stime: time.stime > data.time ? data.time : time.stime,
-          //     etime: data.time,
-          //   };
-          // }
+
           newParams = {
             ...params,
-            // time: timeU,
             time: {
               stime: data.type == 'stime' ? data.time : time.stime,
               etime: data.type == 'etime' ? data.time : time.etime,
             },
           };
-          // }
         }
 
         __DEV__ &&
           console.log('GOND Alarm search onAddMoreParams result: ', newParams);
-        this.setState(
-          {params: newParams}
-          // () => this.filterRef && this.filterRef.forceUpdate()
-        );
+        this.setState({params: newParams});
         break;
       }
       case FilterMore.AlertType: {
@@ -308,7 +246,6 @@ class AlarmsSearchView extends Component {
         break;
       }
       case FilterMore.Rating: {
-        // __DEV__ && console.log('GOND on add Rating: ', data);
         newParams = {
           ...params,
           ara: data.join(','),
@@ -349,19 +286,9 @@ class AlarmsSearchView extends Component {
     alarmStore.loadMore();
   };
 
-  // onSiteSelected = sites => {
-  //   this.setState({selectedSites: sites});
-  // };
-
   modalHeader = title => {
     const {appearance} = this.props.appStore;
-    // if (this.props.headercontent) {
-    //   return (
-    //     <View style={[styles.modal_header, {backgroundColor: CMSColors.White}]}>
-    //       {this.props.headercontent}
-    //     </View>
-    //   );
-    // }
+
     return (
       <View
         style={[
@@ -417,7 +344,6 @@ class AlarmsSearchView extends Component {
             caption={CompTxt.applyButton}
             captionStyle={{color: CMSColors.White}}
             type="flat"
-            // enable={this.state.selectedSites.length > 0}
             enable={true}
             onPress={() => {
               this.onSubmitFilter(true);
@@ -432,12 +358,7 @@ class AlarmsSearchView extends Component {
     const {alarmStore, sitesStore, appStore} = this.props;
     const {appearance} = appStore;
     const {from, to, params} = this.state;
-    __DEV__ &&
-      console.log(
-        // `GOND modalContent ModalHeightPercentage = ${variables.ModalHeightPercentage}, stateH = ${this.state.height}`
-        'GOND modalContent =',
-        params
-      );
+    __DEV__ && console.log('GOND modalContent =', params);
     return (
       <View style={[{flex: 75}, theme[appearance].container]}>
         <AlarmFilter
@@ -448,20 +369,9 @@ class AlarmsSearchView extends Component {
           sites={sitesStore.sitesList}
           alarmConfig={alarmStore.rateConfig}
           alertTypesVA={alarmStore.vaConfig}
-          // initheight={
-          //   /*variables.ModalHeightPercentage **/ this.state.height -
-          //   header_height
-          // }
-          // initwidth={
-          //   variables.ModalHeightPercentage * this.state.width -
-          //   header_height -
-          //   footer_height
-          // }
           onDateChange={this.onDateChange}
           onAddMoreParams={this.onAddMoreParams}
           onRemoveParam={this.onRemoveParam}
-          // selectedsite={this.state.selectedSites}
-          // sitesData={this.props.sitesStore.sitesList}
         />
       </View>
     );
@@ -475,20 +385,11 @@ class AlarmsSearchView extends Component {
       <Modal
         isVisible={this.state.showFilterModal}
         onBackdropPress={() => this.showFilter(false)}
-        // onSwipeOut={() => this.showFilter(false)}
         onBackButtonPress={() => this.showFilter(false)}
-        // panResponderThreshold={10}
         backdropOpacity={0.3}
         key="alarmFilterModal"
         name="alarmFilterModal"
-        style={{
-          marginBottom: 0,
-          marginTop: '10%',
-          marginLeft: 0,
-          marginRight: 0,
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-        }}>
+        style={styles.filterModalContainer}>
         <View style={[styles.modal_container, theme[appearance].container]}>
           {this.modalHeader()}
           {this.modalContent()}
@@ -508,7 +409,6 @@ class AlarmsSearchView extends Component {
             <ActivityIndicator
               color={CMSColors.SpinnerColor}></ActivityIndicator>
           )}
-        {/* <Text style={{height: 0}}>{index}</Text> */}
       </CMSRipple>
     );
   };
@@ -533,22 +433,7 @@ class AlarmsSearchView extends Component {
     });
   };
 
-  renderNoData = () => {
-    const {appearance} = this.props.appStore;
-    return (
-      <View
-        style={[
-          styles.noDataContainer,
-          {height: this.state.listHeight},
-          theme[appearance].container,
-        ]}>
-        <Image source={No_Data} style={styles.noDataImg}></Image>
-        <Text style={[styles.noDataTxt, theme[appearance].text]}>
-          There is no data.
-        </Text>
-      </View>
-    );
-  };
+  renderNoData = () => <NoDataView style={{height: this.state.listHeight}} />;
 
   render() {
     const {alarmStore, appStore} = this.props;
@@ -567,25 +452,12 @@ class AlarmsSearchView extends Component {
       <View
         style={[{flex: 1}, theme[appearance].container]}
         onLayout={this.onLayout}>
-        {/* <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={alarmStore.filterText}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View> */}
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
           value={alarmStore.filterText}
         />
-        <View
-          style={{flex: 1, flexDirection: 'column'}}
-          onLayout={this.onFlatListLayout}>
+        <View style={styles.contentWrapper} onLayout={this.onFlatListLayout}>
           <FlatList
             renderItem={this.renderAlarmItem}
             data={alarmStore.filteredSearchData}
@@ -602,183 +474,6 @@ class AlarmsSearchView extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  modal: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    //height: 200,
-    //width: 300,
-  },
-  modal_container: {
-    flexDirection: 'column',
-    flex: 1,
-    backgroundColor: CMSColors.DividerColor24_HEX,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  modal_header: {
-    // height: header_height,
-    alignItems: 'center',
-    flexDirection: 'row',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    ...Platform.select({
-      ios: {
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        shadowOffset: {
-          height: 0,
-          width: 0,
-        },
-      },
-      android: {
-        elevation: 1,
-      },
-    }),
-  },
-  modal_header_icon: {
-    marginLeft: 15,
-  },
-  modal_title: {
-    marginLeft: 10,
-    fontSize: 16,
-  },
-  modal_title_search: {
-    color: CMSColors.PrimaryText,
-    textAlign: 'center',
-    fontSize: 20,
-    fontWeight: '500',
-  },
-  modal_body: {
-    flex: 1,
-
-    //alignSelf: 'stretch',
-  },
-  modal_footer: {
-    height: footer_height,
-    backgroundColor: CMSColors.ModalFooter,
-    borderTopWidth: 1,
-    borderColor: CMSColors.FooterBorder,
-    //alignItems: 'flex-end',
-    //paddingRight: 10,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  modal_footer_Apply: {
-    height: footer_height,
-    backgroundColor: CMSColors.White,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  form_horizontal: {
-    flex: 1,
-    padding: 10,
-    flexDirection: 'column',
-  },
-  form_horizontal_label: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  form_horizontal_textarea: {
-    flex: 3,
-  },
-  form_horizontal_datepicker: {
-    flex: 1,
-  },
-  form_horizontal_datepicker_group: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  form_horizontal_datepicker_text: {
-    width: 40,
-    alignSelf: 'center',
-  },
-  form_horizontal_datepicker_date: {
-    flex: 1,
-  },
-  form_horizontal_listcheckbox: {
-    flex: 2,
-  },
-  button: {
-    height: 26,
-    borderWidth: 0,
-    marginTop: 3,
-  },
-
-  content_button_apply: {
-    height: 50,
-    flex: 2,
-    justifyContent: 'center',
-    //paddingLeft: 10,
-    //paddingRight: 10,
-    marginRight: 10,
-  },
-  content_button_cancel: {
-    height: 50,
-    flex: 2,
-    justifyContent: 'center',
-    marginLeft: 10,
-  },
-  button_cancel: {
-    height: 50,
-    flex: 1,
-    justifyContent: 'center',
-    borderColor: CMSColors.PrimaryActive,
-    borderWidth: 1,
-    margin: 3,
-    //backgroundColor: 'red'
-  },
-  button_apply: {
-    height: 50,
-    flex: 1,
-    backgroundColor: CMSColors.PrimaryActive,
-    margin: 3,
-  },
-  dateIcon: {
-    position: 'absolute',
-    left: 0,
-    top: 4,
-    marginLeft: 0,
-  },
-  dateInput: {
-    marginLeft: 36,
-    height: 25,
-  },
-  inputDescript: {
-    height: 130,
-    borderWidth: 2,
-    borderColor: '#eee',
-    borderRadius: 4,
-    textAlignVertical: 'top',
-    padding: 10,
-    fontSize: 14,
-  },
-  modal_header_dismiss: {
-    borderColor: CMSColors.White,
-  },
-  modal_footer_dismiss: {
-    marginRight: 10,
-    alignItems: 'center',
-    borderColor: CMSColors.White,
-  },
-  noDataContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  noDataImg: {
-    width: 100,
-    height: 100,
-  },
-  noDataTxt: {
-    marginTop: 12,
-    paddingBottom: 50,
-    fontSize: 16,
-    color: CMSColors.PrimaryText,
-  },
-});
 
 export default inject(
   'alarmStore',

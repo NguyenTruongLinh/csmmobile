@@ -1,21 +1,12 @@
-import React, {Component, PropTypes} from 'react';
-import {
-  Text,
-  View,
-  Dimensions,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  Keyboard,
-  FlatList,
-  Modal,
-  Button,
-} from 'react-native';
-import CMSColors from '../../styles/cmscolors';
+import React from 'react';
+import {StyleSheet, Text, TouchableOpacity} from 'react-native';
+
+import {inject, observer} from 'mobx-react';
 import Carousel from 'react-native-snap-carousel';
 
-export default class CMSNumberPicker extends React.Component {
+import theme from '../../styles/appearance';
+
+class CMSNumberPicker extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -40,37 +31,12 @@ export default class CMSNumberPicker extends React.Component {
     this._isMounted = false;
   }
 
-  // static getDerivedStateFromProps(nextProps) {
-  //   return {
-  //     selected: nextProps.selected,
-  //   };
-  // }
+  renderItem = ({item}) => {
+    const {appearance} = this.props.appStore;
 
-  renderItem = ({item, index}) => {
     return (
-      <TouchableOpacity
-        // onPress={() => {
-        //   this.props.onSelectNumber(item, index);
-        //   this.setState({selected: item});
-        // }}
-        style={{
-          // backgroundColor:
-          //   item == this.state.selected
-          //     ? CMSColors.DisableItemColor
-          //     : 'transparent',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 2,
-          // borderColor: 'red',
-          // borderWidth: 1,
-          height: 40,
-        }}>
-        <Text
-          style={{
-            color: index == CMSColors.PrimaryText, //this.state.midIndex ? 'red' : 'green', //
-            fontSize: 30,
-            fontWeight: 'bold',
-          }}>
+      <TouchableOpacity style={styles.itemContainer}>
+        <Text style={[styles.itemText, theme[appearance].text]}>
           {item < 10 ? '0' + item : item}
         </Text>
       </TouchableOpacity>
@@ -88,32 +54,21 @@ export default class CMSNumberPicker extends React.Component {
   };
 
   onViewableItemsChanged = ({viewableItems, changed}) => {
-    console.log(
-      'onViewableItemsChanged Changed in this iteration viewableItems',
-      viewableItems
-    );
+    __DEV__ &&
+      console.log(
+        'onViewableItemsChanged Changed in this iteration viewableItems',
+        viewableItems
+      );
     let mid = Math.floor(
       (viewableItems[0].index + viewableItems[viewableItems.length - 1].index) /
         2
     );
-    // console.log(
-    //   'onViewableItemsChanged Visible items are',
-    //   viewableItems
-    //   // 'mid = ',
-    //   // mid
-    // );
     this.setState({midIndex: mid});
   };
 
   onSnapToItem = index => {
     this.props.onSelectNumber(this.props.numbers[index], index);
-    // this.setState({selected: this.props.numbers[index]});
-    // this.setState({midIndex: index});
   };
-
-  // onBeforeSnapToItem = slideIndex => {
-  //   // this.setState({midIndex: slideIndex});
-  // };
 
   render() {
     const {numbers, slideHeight} = this.props;
@@ -127,6 +82,7 @@ export default class CMSNumberPicker extends React.Component {
         `render this.onViewableItemsChanged = `,
         this.onViewableItemsChanged
       );
+
     return (
       <Carousel
         ref={c => {
@@ -146,19 +102,23 @@ export default class CMSNumberPicker extends React.Component {
         swipeThreshold={0}
         activeSlideOffset={0}
         firstItem={parseInt(this.state.selected)}
-        // useScrollView={true}
         initialNumToRender={numbers.length}
       />
-      // <FlatList
-      //   initialScrollIndex={this.state.selected}
-      //   data={numbers}
-      //   renderItem={this.renderItem}
-      //   keyExtractor={item => 'k' + item}
-      //   initialNumToRender={numbers.length > 60 ? 60 : numbers.length}
-      //   // onScroll={this.onScroll}
-      //   onViewableItemsChanged={this.onViewableItemsChanged}
-      //   // pagingEnabled={true}
-      // />
     );
   }
 }
+
+const styles = StyleSheet.create({
+  itemContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 2,
+    height: 40,
+  },
+  itemText: {
+    fontSize: 30,
+    fontWeight: 'bold',
+  },
+});
+
+export default inject('appStore')(observer(CMSNumberPicker));

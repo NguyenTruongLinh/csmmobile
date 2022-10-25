@@ -1,29 +1,14 @@
 import React, {Component} from 'react';
-import {
-  View,
-  FlatList,
-  Text,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-} from 'react-native';
+import {View, FlatList, Text, Dimensions} from 'react-native';
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
-// import Ripple from 'react-native-material-ripple';
 
 import CMSRipple from '../../components/controls/CMSRipple';
-// import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
-// import InputTextIcon from '../../components/controls/InputTextIcon';
-import snackbar from '../../util/snackbar';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 import commonStyles from '../../styles/commons.style';
-import CMSColors from '../../styles/cmscolors';
-import variables from '../../styles/variables';
 import theme from '../../styles/appearance';
-// import {Comps as CompTxt} from '../../localization/texts';
+
 import ROUTERS from '../../consts/routes';
 import NoDataView from '../../components/views/NoData';
 
@@ -38,7 +23,6 @@ class NVRsView extends Component {
     __DEV__ && console.log('SitesView componentWillUnmount');
     this._isMounted = false;
 
-    // appStore.enableSearchbar(false);
     this.onFilter('');
     this.reactions && this.reactions.forEach(unsubscribe => unsubscribe());
   }
@@ -49,12 +33,6 @@ class NVRsView extends Component {
     if (__DEV__)
       console.log('NVRS componentDidMount: ', sitesStore.selectedSite);
 
-    // navigation.setOptions({
-    //   headerTitle: sitesStore.selectedSite
-    //     ? sitesStore.selectedSite.name
-    //     : 'No site was selected',
-    // });
-    // this.getSitesList();
     this.setHeader();
 
     this.initReactions();
@@ -105,7 +83,6 @@ class NVRsView extends Component {
     if (sitesStore.selectedDVR) return; // prevent double click
     sitesStore.selectDVR(item.kDVR);
     navigation.push(ROUTERS.VIDEO_CHANNELS);
-    // this.props.appStore.enableSearchbar(false);
   };
 
   renderItem = ({item}) => {
@@ -143,29 +120,6 @@ class NVRsView extends Component {
 
     return (
       <View style={[{flex: 1}, theme[appearance].container]}>
-        {/* <HeaderWithSearch
-          title={
-            sitesStore.selectedSite
-              ? sitesStore.selectedSite.name
-              : 'No site was selected'
-          }
-          showSearchBar={appStore.showSearchBar}
-          onChangeSearchText={this.onFilter}
-          searchValue={sitesStore.dvrFilter}
-          // backButton={false}
-          navigator={navigation}
-        /> */}
-        {/* <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={sitesStore.dvrFilter}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View> */}
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
@@ -201,10 +155,6 @@ class NVRsView extends Component {
             renderItem={this.renderItem}
             keyExtractor={item => item.kDVR}
             data={sitesStore.filteredDVRs}
-            // onRefresh={this.getSitesList}
-            // refreshing={
-            //   sitesStore ? sitesStore.isLoading : false
-            // }
           />
         )}
       </View>

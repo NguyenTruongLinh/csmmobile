@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-  View,
-  FlatList,
-  Platform,
-  Dimensions,
-  StyleSheet,
-  Text,
-  Animated,
-  // BackHandler,
-} from 'react-native';
+import {View, FlatList, Dimensions, Text} from 'react-native';
 import {reaction} from 'mobx';
 import {inject, observer} from 'mobx-react';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -23,29 +14,27 @@ import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
-import {CLOUD_TYPE} from '../../consts/video';
-import ROUTERS from '../../consts/routes';
-import {MODULE_PERMISSIONS, ChannelStatus} from '../../consts/misc';
 import commonStyles from '../../styles/commons.style';
-// import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
+import styles, {
+  DROPDOWN_ITEM_HEIGHT,
+  ITEMS_PER_ROW,
+} from './styles/channelsListStyles';
+import theme from '../../styles/appearance';
+
+import {CLOUD_TYPE} from '../../consts/video';
+import {MODULE_PERMISSIONS, ChannelStatus} from '../../consts/misc';
+import ROUTERS from '../../consts/routes';
 import {
   Comps as CompTxt,
   VIDEO as VIDEO_TXT,
   STREAM_STATUS,
 } from '../../localization/texts';
-// import Ripple from 'react-native-material-ripple';
 
 const {width, height} = Dimensions.get('window');
-
-const ITEMS_PER_ROW = 2;
-const ITEM_HEIGHT = 200;
-const DROPDOWN_ITEM_HEIGHT = 56;
 
 class ChannelsListView extends React.Component {
   constructor(props) {
     super(props);
-    const {gridLayout} = props.videoStore;
-    const {width, height} = Dimensions.get('window');
 
     this.state = {
       width,
@@ -61,7 +50,7 @@ class ChannelsListView extends React.Component {
 
   componentWillUnmount() {
     __DEV__ && console.log('ChannelsListView componentWillUnmount');
-    const {videoStore, sitesStore, healthStore} = this.props;
+    const {videoStore, sitesStore} = this.props;
     this._isMounted = false;
 
     videoStore.releaseStreams();
@@ -87,24 +76,9 @@ class ChannelsListView extends React.Component {
     }
 
     this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
-      // __DEV__ &&
-      //   console.log(
-      //     'GOND channels list view on focused, set islive: ',
-      //     healthStore.isLiveVideo
-      //   );
       videoStore.setShouldShowVideoMessage(false);
       videoStore.setLiveMode(healthStore.isLiveVideo);
-      // if (this.firstFocus) {
-      //   this.firstFocus = false;
-      // } else {
-      //   videoStore.resetNVRAuthentication();
-      // }
     });
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND channels list view on focused event sub: ',
-    //     this.unsubscribleFocusEvent
-    //   );
 
     if (util.isNullOrUndef(sitesStore.selectedDVR)) {
       sitesStore.selectDVR(); // select default
@@ -128,9 +102,16 @@ class ChannelsListView extends React.Component {
 
   setHeader = enableSettingButton => {
     if (!this._isMounted) return;
-    const {navigation, videoStore, healthStore, sitesStore, userStore} =
-      this.props;
+    const {
+      navigation,
+      videoStore,
+      healthStore,
+      sitesStore,
+      userStore,
+      appStore,
+    } = this.props;
     const {isListView} = this.state;
+    const {appearance} = appStore;
 
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() =>
@@ -145,14 +126,6 @@ class ChannelsListView extends React.Component {
     title =
       width < 440 && title.length > 10 ? title.substring(0, 9) + '...' : title;
 
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND channels setHeader: ',
-    //     healthStore.isLiveVideo,
-    //     videoStore.hasNVRPermission,
-    //     videoStore.authenticationState
-    //   );
-
     navigation.setOptions({
       headerTitle: title,
       headerRight: () => (
@@ -163,7 +136,7 @@ class ChannelsListView extends React.Component {
             <CMSTouchableIcon
               size={24}
               onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
-              color={CMSColors.ColorText}
+              color={theme[appearance].iconColor}
               disabled={
                 !enableSettingButton ||
                 !userStore.hasPermission(MODULE_PERMISSIONS.VSC) ||
@@ -180,7 +153,7 @@ class ChannelsListView extends React.Component {
                 this.setHeader(enableSettingButton)
               );
             }}
-            color={CMSColors.ColorText}
+            color={theme[appearance].iconColor}
             styles={commonStyles.headerIcon}
             iconCustom={isListView ? 'grid-view-4' : 'view-list-button'}
           />
@@ -213,7 +186,6 @@ class ChannelsListView extends React.Component {
     // prevent double click
     if (!value || Object.keys(value) == 0 /*|| videoStore.selectedChannel*/)
       return;
-    // videoStore.switchLiveSearch(healthStore.isLiveVideo);
 
     if (healthStore.isLiveVideo) {
       videoStore.selectChannel(
@@ -255,13 +227,12 @@ class ChannelsListView extends React.Component {
       sitesStore.selectDVR(item.kDVR); // select default
       videoStore.selectDVR(item.kDVR);
       videoStore.releaseStreams();
-      // videoStore.resetNVRAuthentication(true);
       this.getChannelsInfo();
     }
   };
 
   renderItemList = ({item}) => {
-    console.log('GOND renderItemList ');
+    const {appearance} = this.props.appStore;
     const isStatusOK = item.status && item.status != ChannelStatus.VIDEOLOSS;
 
     return (
@@ -271,7 +242,7 @@ class ChannelsListView extends React.Component {
         }}
         underlayColor={CMSColors.Underlay}
         style={styles.listItemRipple}>
-        <View style={styles.listItemContainer}>
+        <View style={[styles.listItemContainer]}>
           <CMSImage
             id={'list_' + item.kChannel}
             src={item.snapshot}
@@ -282,7 +253,8 @@ class ChannelsListView extends React.Component {
               controller: 'channel',
               action: 'image',
               id: item.kChannel,
-            }} // {this.getSnapShot(item)}
+            }}
+            styles={styles.listItemImage}
             styleImage={styles.listItemImage}
           />
           <View style={styles.listInfoContainer}>
@@ -294,7 +266,7 @@ class ChannelsListView extends React.Component {
               size={24}
             />
             <View style={styles.channelName}>
-              <Text>{item.name}</Text>
+              <Text style={theme[appearance].text}>{item.name}</Text>
             </View>
           </View>
         </View>
@@ -303,7 +275,8 @@ class ChannelsListView extends React.Component {
   };
 
   renderItemGrid = ({item, index}) => {
-    // __DEV__ && console.log('GOND renderChannelItem: ', item);
+    const {appearance} = this.props.appStore;
+
     return Object.keys(item).length == 0 ? (
       <View key="ch_none" style={styles.gridNoItem} />
     ) : (
@@ -322,7 +295,6 @@ class ChannelsListView extends React.Component {
             id={'grid_' + item.kChannel}
             resizeMode="cover"
             styleImage={styles.gridImage}
-            // src={item.snapshot}
             dataSource={item.snapshot}
             dataCompleteHandler={(param, data) =>
               this.onChannelSnapshotLoaded(item, data)
@@ -346,7 +318,7 @@ class ChannelsListView extends React.Component {
             />
           </View>
           <View style={styles.channelName}>
-            <Text numberOfLines={2} style={{}}>
+            <Text numberOfLines={2} style={theme[appearance].text}>
               {item.name}
             </Text>
           </View>
@@ -356,7 +328,8 @@ class ChannelsListView extends React.Component {
   };
 
   renderInfoText = () => {
-    const {userStore, videoStore, navigation} = this.props;
+    const {userStore, videoStore, navigation, appStore} = this.props;
+    const {appearance} = appStore;
 
     __DEV__ &&
       console.log(
@@ -381,28 +354,25 @@ class ChannelsListView extends React.Component {
     )
       return (
         <View style={styles.infoTextContainer}>
-          <Text>{VIDEO_TXT.SELECT_CHANNEL_1}</Text>
-          {/* <IconCustom name="add-cam" size={22} color={CMSColors.ColorText} /> */}
+          <Text style={theme[appearance].text}>
+            {VIDEO_TXT.SELECT_CHANNEL_1}
+          </Text>
           <CMSTouchableIcon
             size={22}
             onPress={() => navigation.push(ROUTERS.VIDEO_CHANNELS_SETTING)}
-            color={CMSColors.ColorText}
-            styles={{
-              flex: 1,
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
+            color={theme[appearance].iconColor}
+            styles={styles.noChannelIcon}
             iconCustom="add-cam"
           />
-          <Text>{VIDEO_TXT.SELECT_CHANNEL_2}</Text>
+          <Text style={theme[appearance].text}>
+            {VIDEO_TXT.SELECT_CHANNEL_2}
+          </Text>
         </View>
       );
 
     return (
       <View style={styles.infoTextContainer}>
-        <Text>
+        <Text style={theme[appearance].text}>
           {videoStore.allChannels.length == 0
             ? VIDEO_TXT.NO_CHANNEL
             : userStore.hasPermission(MODULE_PERMISSIONS.VSC)
@@ -414,7 +384,8 @@ class ChannelsListView extends React.Component {
   };
 
   render() {
-    const {videoStore, sitesStore} = this.props;
+    const {videoStore, sitesStore, appStore} = this.props;
+    const {appearance} = appStore;
     const {isListView, isLoading} = this.state;
     __DEV__ &&
       console.log(
@@ -429,8 +400,9 @@ class ChannelsListView extends React.Component {
       isListView || videoStore.filteredDisplayChannels.length % 2 == 0
         ? videoStore.filteredDisplayChannels
         : [...videoStore.filteredDisplayChannels, {}];
+
     return (
-      <View style={styles.screenContainer}>
+      <View style={[styles.screenContainer, theme[appearance].container]}>
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
@@ -454,7 +426,7 @@ class ChannelsListView extends React.Component {
                   <IconCustom
                     name={'icon-dvr'}
                     size={24}
-                    color={CMSColors.PrimaryText}
+                    color={theme[appearance].text}
                   />
                 </View>
               )}
@@ -468,119 +440,37 @@ class ChannelsListView extends React.Component {
           </View>
         )}
         <View style={styles.videoListContainer} onLayout={this.onLayout}>
-          {
-            // isLoading ||
-            // !videoStore.isCloud ||
-            videoStore.displayChannels.length > 0 &&
-            videoStore.isAuthenticated &&
-            videoStore.hasNVRPermission ? (
-              <FlatList
-                ref={r => (this.videoListRef = r)}
-                renderItem={renderItem}
-                data={data} // {this.state.liveData}
-                columnWrapperStyle={
-                  isListView ? undefined : {justifyContent: 'space-between'}
-                }
-                key={isListView ? 'listChannels' : 'gridlChannels'}
-                keyExtractor={item =>
-                  (isListView ? 'list_' : 'grid_') + item.kChannel
-                }
-                numColumns={isListView ? 1 : ITEMS_PER_ROW}
-                onRefresh={this.getChannelsInfo}
-                refreshing={isLoading}
-              />
-            ) : (
-              this.renderInfoText()
-            )
-          }
+          {videoStore.displayChannels.length > 0 &&
+          videoStore.isAuthenticated &&
+          videoStore.hasNVRPermission ? (
+            <FlatList
+              ref={r => (this.videoListRef = r)}
+              renderItem={renderItem}
+              data={data} // {this.state.liveData}
+              columnWrapperStyle={
+                isListView ? undefined : {justifyContent: 'space-between'}
+              }
+              key={isListView ? 'listChannels' : 'gridlChannels'}
+              keyExtractor={item =>
+                (isListView ? 'list_' : 'grid_') + item.kChannel
+              }
+              numColumns={isListView ? 1 : ITEMS_PER_ROW}
+              onRefresh={this.getChannelsInfo}
+              refreshing={isLoading}
+            />
+          ) : (
+            this.renderInfoText()
+          )}
         </View>
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    paddingLeft: 10,
-    paddingRight: 10,
-    backgroundColor: CMSColors.White,
-  },
-  headerIcon: {
-    flex: 1,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerRight: {
-    flex: 1,
-    flexDirection: 'row',
-    alignContent: 'center',
-    marginBottom: 5,
-  },
-  dropdownContainer: {
-    height: DROPDOWN_ITEM_HEIGHT,
-    marginVertical: 14,
-    padding: 14,
-    backgroundColor: CMSColors.WidgetBackground,
-  },
-  videoListContainer: {flex: 1, flexDirection: 'column'},
-  infoTextContainer: {
-    flex: 1,
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dropdownIcon: {marginRight: 14},
-  gridNoItem: {
-    flex: 1,
-    width: '48%',
-    height: ITEM_HEIGHT,
-    marginRight: 0,
-    marginLeft: 7,
-  },
-  gridItemRipple: {
-    flex: 1,
-    flexDirection: 'column',
-    // width: '48%',
-    height: ITEM_HEIGHT,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: CMSColors.BorderColorListRow,
-  },
-  gridImageContainer: {flex: 8},
-  gridImage: {width: '100%', height: '100%'},
-  gridInfoContainer: {
-    flex: 2,
-    flexDirection: 'row',
-  },
-  gridCamIcon: {justifyContent: 'center', paddingLeft: 7},
-  channelName: {flex: 1, justifyContent: 'center', paddingLeft: 7},
-  listItemRipple: {
-    height: 74,
-    borderBottomWidth: 1,
-    borderBottomColor: CMSColors.BorderColorListRow,
-  },
-  listItemContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    padding: 5,
-  },
-  listItemImage: {width: 60, height: 60},
-  listInfoContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 7,
-  },
-});
-
 export default inject(
   'videoStore',
   'healthStore',
   'sitesStore',
-  'userStore'
+  'userStore',
+  'appStore'
 )(observer(ChannelsListView));

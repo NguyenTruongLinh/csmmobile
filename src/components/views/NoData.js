@@ -10,8 +10,8 @@ import LoadingOverlay from '../common/loadingOverlay';
 import {No_Data} from '../../consts/images';
 
 import CMSColors from '../../styles/cmscolors';
-import {COMMON as COMMON_TXT} from '../../localization/texts';
 import theme from '../../styles/appearance';
+import {COMMON as COMMON_TXT} from '../../localization/texts';
 
 class NoDataView extends React.Component {
   static propTypes = {
@@ -27,7 +27,7 @@ class NoDataView extends React.Component {
   }
 
   onLayout = ({nativeEvent}) => {
-    const {width, height} = nativeEvent.layout;
+    const {height} = nativeEvent.layout;
 
     this.setState({height});
   };
@@ -38,11 +38,7 @@ class NoDataView extends React.Component {
 
     return (
       <View
-        style={[
-          styles.noDataContainer,
-          this.props.style,
-          //{height: this.props.height}
-        ]}
+        style={[styles.noDataContainer, this.props.style]}
         onLayout={this.onLayout}>
         {isLoading ? (
           <LoadingOverlay

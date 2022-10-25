@@ -14,8 +14,6 @@ import {inject, observer} from 'mobx-react';
 import {normalize} from '../../util/general';
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 
-// import appStore from '../../stores/appStore';
-
 import Button from '../../components/controls/Button';
 
 import {
@@ -24,11 +22,9 @@ import {
   Intro_Video,
   Intro_Smarter,
   Intro_OAM,
-  I3_Logo,
 } from '../../consts/images';
 import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
-// import styles from '../../styles/scenes/intro.style';
 
 const IntroData = [
   {

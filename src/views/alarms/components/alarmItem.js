@@ -1,20 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {View, StyleSheet, Text} from 'react-native';
-// import { inject } from 'mobx-react';
+
 import {DateTime} from 'luxon';
 import {inject, observer} from 'mobx-react';
 
-import AlarmThumb from './alarmThumb';
-import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
-import {IconCustom} from '../../components/CMSStyleSheet';
+import AlarmThumb from '../alarmThumb';
+import {DateFormat, AlertTypes} from '../../../consts/misc';
+import {IconCustom} from '../../../components/CMSStyleSheet';
 import {BigNumber} from 'bignumber.js';
 
-import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import util from '../../util/general';
-import CMSColors from '../../styles/cmscolors';
-import variable from '../../styles/variables';
-import theme from '../../styles/appearance';
+import CMSTouchableIcon from '../../../components/containers/CMSTouchableIcon';
+import util from '../../../util/general';
+import CMSColors from '../../../styles/cmscolors';
+import variable from '../../../styles/variables';
+import theme from '../../../styles/appearance';
 
 class AlarmItem extends React.Component {
   static propTypes = {
@@ -41,25 +41,8 @@ class AlarmItem extends React.Component {
     this.state = {
       image: null,
       live: true,
-      // snapshot: props.data.snapshot,
     };
   }
-
-  // static getDerivedStateFromProps(nextProps, prevState) {
-  //   const oldSnapshot = prevState.data.snapshot;
-  //   const {snapshot} = nextProps.data;
-
-  //   if (oldSnapshot.length != snapshot.length) {
-  //     return {snapshot};
-  //   }
-  //   for (let i = 0; i < snapshot.length; i++) {
-  //     if (
-  //       JSON.stringify({...snapshot[i]}) != JSON.stringify({...oldSnapshot[i]})
-  //     ) {
-  //       return {snapshot};
-  //     }
-  //   }
-  // }
 
   getIconName = type => {
     switch (type) {
@@ -136,10 +119,7 @@ class AlarmItem extends React.Component {
     const {appearance} = this.props.appStore;
     let channelsList = [];
     let {channelNo, chanMask} = this.props.data;
-    // console.log('-------- ', this.props.data.description,' ---------')
-    // console.log('GOND renderChannel channel = ', channel, ', chanMask = ', chanMask)
 
-    // if (util.isNullOrUndef(chanMask) || chanMask == 0) {
     if (!chanMask) {
       if (util.isNullOrUndef(channelNo)) return null;
 
@@ -213,56 +193,10 @@ class AlarmItem extends React.Component {
     );
   };
 
-  // customDescription = (desc, kAlertTypeVA) => {
-  //   if (!desc) return;
-  //   try {
-  //     // version old
-  //     if (desc.includes(':')) {
-  //       let lst = desc.split(' ');
-  //       if (!lst || lst.length == 0) return '';
-  //       lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
-  //       return lst.join(' ');
-  //     } else {
-  //       let lst = desc.split('.');
-  //       if (!lst || lst.length == 0) return '';
-  //       lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
-  //       lst[lst.length - 2] = util.capitalize(lst[lst.length - 2], '&');
-  //       lst[lst.length - 2] = ': ' + util.capitalize(lst[lst.length - 2], '/');
-  //       return lst.map(s => s.trim()).join(' ');
-  //     }
-  //   } catch (err) {
-  //     __DEV__ && console.log('GOND custom desciption failed: ', err);
-  //     return;
-  //   }
-  // };
-
   renderDescription = () => {
-    let {description, kAlertTypeVA, kAlertType, status, customDescription} =
-      this.props.data;
+    let {status, customDescription} = this.props.data;
     const {appStore} = this.props;
     const {appearance} = appStore;
-    // let descriptCustomVA = '';
-    // let areaName = '';
-    // // console.log('GOND renderDescription kAlertType = ', kAlertType)
-    // switch (kAlertType) {
-    //   case AlertTypes.DVR_Sensor_Triggered:
-    //     descriptCustomVA = description;
-    //     break;
-    //   case AlertTypes.DVR_VA_detection:
-    //     descriptCustomVA = this.customDescription(description, kAlertTypeVA);
-    //     break;
-    //   case AlertTypes.TEMPERATURE_OUT_OF_RANGE:
-    //   case AlertTypes.TEMPERATURE_NOT_WEAR_MASK:
-    //   case AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY:
-    //     descriptCustomVA = AlertNames[kAlertType.toString()];
-    //     break;
-    //   case AlertTypes.SOCIAL_DISTANCE:
-    //     areaName = description.split(',')[0];
-    //     descriptCustomVA = areaName
-    //       ? areaName + ': Social distance'
-    //       : 'Social distance';
-    //     break;
-    // }
 
     // console.log('GOND customDescription = ', customDescription)
     if (status == 1) {
@@ -279,13 +213,9 @@ class AlarmItem extends React.Component {
               color={CMSColors.Success}
             />
           </View>
-          {/* <Text numberOfLines={1} style={styles.description} >
-            {util.isTemperatureAlert(kAlertType) ? AlertNames[kAlertType] : util.capitalize(descriptCustomVA)}
-          </Text> */}
           <Text
             numberOfLines={1}
             style={[styles.description, theme[appearance].text]}>
-            {/* {util.capitalize(descriptCustomVA)} */}
             {util.capitalize(customDescription)}
           </Text>
         </View>
@@ -295,7 +225,6 @@ class AlarmItem extends React.Component {
       <Text
         numberOfLines={1}
         style={[styles.description, theme[appearance].text]}>
-        {/* {util.capitalize(descriptCustomVA)} */}
         {util.capitalize(customDescription)}
       </Text>
     );
@@ -308,17 +237,6 @@ class AlarmItem extends React.Component {
     const iconName = this.getIconName(data.kAlertType);
     const _isTempAlert = util.isTemperatureAlert(data.kAlertType);
     const _isSDAlert = util.isSDAlert(data.kAlertType);
-    // if (__DEV__) {
-    //   console.log(
-    //     'GOND renderAlarmIcon type: ',
-    //     data.kAlertType,
-    //     ', isTemp: ',
-    //     _isTempAlert,
-    //     ', isSD: ',
-    //     _isSDAlert
-    //   );
-    //   console.log('GOND renderAlarmIcon, snapshot: ', data.snapshot.length);
-    // }
 
     return data.snapshot.length == 0 || _isTempAlert || _isSDAlert ? (
       <CMSTouchableIcon
@@ -345,19 +263,6 @@ class AlarmItem extends React.Component {
             styles={styles.thumbContainer}
           />
         </View>
-        {/* <CMSTouchableIcon
-          size={18}
-          disabled={true}
-          color={CMSColors.Transparent}
-          styles={{
-            width: 25,
-            height: 25,
-            backgroundColor: CMSColors.PrimaryActive,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          iconCustom={iconName}
-        /> */}
         <View
           style={{
             width: 25,
@@ -420,6 +325,7 @@ class AlarmItem extends React.Component {
     );
   }
 }
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'flex-start',
@@ -440,14 +346,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     paddingLeft: variable.contentPadding,
-    //height: 60
-    // paddingTop: 2,
-    // paddingBottom: 2,
     paddingVertical: 2,
   },
   descriptionContainer: {
     flexDirection: 'row',
-    //backgroundColor: 'red'
   },
   description: {
     fontSize: 16,

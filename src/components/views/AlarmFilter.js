@@ -1,22 +1,17 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import {
   Text,
   View,
-  Dimensions,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Platform,
-  Keyboard,
   FlatList,
   Modal,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 
-// import {CalendarList} from 'react-native-calendars';
 import CMSCalendarRange from './CMSCalendarRange';
-import {DateTime} from 'luxon';
 import Ripple from 'react-native-material-ripple';
 
 import CMSPanel from '../controls/CMSPanel';
@@ -29,7 +24,7 @@ import {IconCustom} from '../CMSStyleSheet';
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
-import {DateFormat, AlertTypeVA, FilterMore} from '../../consts/misc';
+import {DateFormat, FilterMore} from '../../consts/misc';
 
 let isFirst;
 
@@ -37,7 +32,6 @@ const Panels = {
   DateSelect: 0,
   FilterMore: 1,
 };
-const session_header_height = 48;
 
 class AlarmFilter extends Component {
   constructor(props) {
@@ -77,52 +71,6 @@ class AlarmFilter extends Component {
     // }
   }
 
-  /**
-   *
-   * @param {DateTime} from
-   * @param {DateTime} to
-   */
-  /*
-  static createDateRange(from, to) {
-    const dateRangeObj = {};
-    const selectedStyle = {
-      color: CMSColors.PrimaryActive,
-      textColor: CMSColors.White,
-    };
-    if (from.startOf('day').toSeconds() == to.startOf('day').toSeconds()) {
-      dateRangeObj[from.toFormat(DateFormat.CalendarDate)] = {
-        ...selectedStyle,
-        startingDay: true,
-        endingDay: true,
-      };
-    } else {
-      const [dateFrom, dateTo] =
-        from.startOf('day').toSeconds() < to.startOf('day').toSeconds()
-          ? [from.startOf('day'), to.startOf('day')]
-          : [to.startOf('day'), from.startOf('day')];
-      dateRangeObj[dateFrom.toFormat(DateFormat.CalendarDate)] = {
-        ...selectedStyle,
-        startingDay: true,
-      };
-      dateRangeObj[dateTo.toFormat(DateFormat.CalendarDate)] = {
-        ...selectedStyle,
-        endingDay: true,
-      };
-
-      let current = dateFrom.plus({days: 1});
-      while (current < dateTo) {
-        dateRangeObj[current.toFormat(DateFormat.CalendarDate)] = {
-          ...selectedStyle,
-          marked: true,
-          selected: true,
-        };
-        current = current.plus({days: 1});
-      }
-    }
-    return dateRangeObj;
-  }
-  */
-
   static getDerivedStateFromProps(nextProps, prevState) {
     let {dateFrom, dateTo} = nextProps;
     const {lastFrom, lastTo} = prevState;
@@ -136,10 +84,6 @@ class AlarmFilter extends Component {
       };
     return {};
   }
-  // shouldComponentUpdate = (nextProps, nextState) => {
-  //   __DEV__ && console.log('GOND AlarmFilter getDerivedStateFromProps: ');
-  //   return true;
-  // };
 
   convertParamSelected = props => {
     //{sdate, edate, sty, aty, ara,ano, sta, sid, vty, aid, avaid} = params;
@@ -381,7 +325,6 @@ class AlarmFilter extends Component {
         data={_dataSource}
         selected={selected}
         onAddMoreParams={data => {
-          // this.setState({dataSource: this.state.filterMore});
           this.props.onAddMoreParams(data, _filterMore);
         }}
       />
@@ -397,14 +340,6 @@ class AlarmFilter extends Component {
     );
   };
 
-  //   renderTimePickerModal = ()=>
-  //  {
-  //     let {authmodal} = this.state;
-  //     return(
-
-  //   );
-  //   }
-
   setParamStartTime = time => {
     __DEV__ && console.log('GOND AlarmFilter setParamStartTime: ', time);
     let timeN = {
@@ -412,7 +347,6 @@ class AlarmFilter extends Component {
       time: time,
     };
     this.props.onAddMoreParams(timeN, FilterMore.Time);
-    // this.setState({dataSource: this.state.filterMore});
   };
 
   setParamEndTime = time => {
@@ -550,7 +484,6 @@ class AlarmFilter extends Component {
           onPress={() => {
             this.setState({
               authmodal: true,
-              // dataSource: this.state.filterMore,
             });
           }}>
           {header}
@@ -575,7 +508,6 @@ class AlarmFilter extends Component {
       }
       case FilterMore.Sites: {
         let {sites} = this.props;
-        // __DEV__ && console.log('GOND AlarmFilter sites: ', sites);
         if (util.isNullOrUndef(sites)) break;
 
         let ds_Sites = sites.map(x => {
@@ -620,12 +552,8 @@ class AlarmFilter extends Component {
         if (util.isNullOrUndef(alertTypesVA)) break;
         __DEV__ &&
           console.log('GOND FilterMore VA alertTypesVA = ', alertTypesVA, item);
-        //getAlertTypeVA
         let ds_Video_Analytics = alertTypesVA
-          .filter(
-            // i => i.id != AlertTypeVA.Unknown && i.id != AlertTypeVA.ManyHuman
-            alert => util.isAlertTypeVASupported(alert.id)
-          )
+          .filter(alert => util.isAlertTypeVASupported(alert.id))
           .map(x => {
             return {
               id: x.id,
@@ -633,9 +561,6 @@ class AlarmFilter extends Component {
                 x.id == 8 ? 'Ai Detection' : util.getAlertTypeVA(x.id, x.name),
             };
           });
-        // __DEV__ &&
-        //   console.log('GOND FilterMore VA build data = ', ds_Video_Analytics);
-        //let ds_Video_Analytics = alertTypesVA;
         cmp = this.renderCombox('Video Analytics', item, ds_Video_Analytics);
         break;
       }
@@ -661,9 +586,8 @@ class AlarmFilter extends Component {
     return (
       <View style={{flex: 1}}>
         <FlatList
-          data={this.state.filterMore} // {this.state.dataSource}
+          data={this.state.filterMore}
           renderItem={this.renderRow}
-          // onRefresh={this.onRefresh}
           keyExtractor={item => 'k' + item}
         />
       </View>
@@ -706,17 +630,6 @@ class AlarmFilter extends Component {
                 ? {color: CMSColors.White}
                 : styles.button_FilterMore_None,
             ]}
-            // captionStyle={{
-            //   fontSize: 28,
-            //   textAlignVertical: 'center',
-            //   textAlign: 'center',
-            //   includeFontPadding: false,
-            //   color:
-            //     this.state.panel == Panels.FilterMore
-            //       ? CMSColors.White
-            //       : CMSColors.PrimaryActive,
-            // }}
-            // captionCustom="+"
             iconCustom="i-add"
             iconSize={24}
             iconStyleEnable={{
@@ -738,19 +651,9 @@ class AlarmFilter extends Component {
       </View>
     );
 
-    // console.log('GOND render AlarmFilter, content heitght = ', this.state.contentheight)
-
     let contentBody =
       this.state.panel == Panels.DateSelect ? (
-        <View
-          style={[
-            styles.contentBody,
-            {
-              /*this.state.contentheight*/
-            },
-          ]}>
-          {this.renderDate()}
-        </View>
+        <View style={styles.contentBody}>{this.renderDate()}</View>
       ) : (
         <View style={[styles.contentBody /*, {paddingBottom: 48}*/]}>
           {this.renderFilterMore()}
@@ -760,14 +663,6 @@ class AlarmFilter extends Component {
 
     return (
       <View style={{flex: 1}}>
-        {/* <Accordion
-            ref="collapsible"
-            key='1'
-            activeSections={[0]}
-            sections={SECTIONS}
-            renderHeader={this._renderHeader.bind(this)}
-            renderContent={this._renderContent.bind(this)} /> */}
-
         {contentHeader}
         {contentBody}
       </View>
@@ -783,19 +678,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     backgroundColor: CMSColors.White,
-    // ...Platform.select({
-    //   ios: {
-    //     shadowOpacity: 0.3,
-    //     shadowRadius: 3,
-    //     shadowOffset: {
-    //       height: 0,
-    //       width: 0,
-    //     },
-    //   },
-    //   android: {
-    //     elevation: 1,
-    //   },
-    // }),
   },
   dateTab: {
     justifyContent: 'center',
@@ -807,7 +689,6 @@ const styles = StyleSheet.create({
   },
   addMoreButtonContainer: {
     justifyContent: 'center',
-    // padding: 5,
   },
   button_FilterMore: {
     height: 36,
@@ -815,20 +696,16 @@ const styles = StyleSheet.create({
     backgroundColor: CMSColors.PrimaryActive,
   },
   button_FilterMore_None: {
-    // backgroundColor: CMSColors.White_Smoke,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: CMSColors.PrimaryActive,
     backgroundColor: CMSColors.White,
-    // width: 32,
   },
   button_DateNotSelect: {
-    // backgroundColor: CMSColors.White_Smoke,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: CMSColors.DividerColor24_HEX,
-    // width: 32,
   },
   button_FilterMore_Add: {
     height: 36,
@@ -857,15 +734,11 @@ const styles = StyleSheet.create({
     marginTop: 6,
     paddingHorizontal: 12,
     marginHorizontal: 12,
-    // borderColor: 'red',
-    // borderWidth: 1,
     backgroundColor: CMSColors.FilterRowBg,
   },
   rowListFilterTimeContain: {
     backgroundColor: CMSColors.White,
     marginTop: 6,
-    // paddingLeft: 12,
-    // paddingRight: 12,
     paddingHorizontal: 12,
     marginHorizontal: 12,
     flexDirection: 'row',
@@ -876,28 +749,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    // backgroundColor: CMSColors.White,
-    //flex: 1,
     height: 48,
   },
   contentIconRemoveFilter: {
-    //paddingLeft: 6,
-    //paddingTop: 6,
     paddingRight: 12,
   },
   modalcontainer: {
     flex: 1,
     backgroundColor: CMSColors.ModalTransparent,
-    //justifyContent: 'center'
-    //alignItems: 'center,
     flexDirection: 'column',
   },
   modalcontainer_TimePicker: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: CMSColors.White,
-    // marginLeft: 15,
-    // marginRight: 15,
     marginHorizontal: 15,
     borderRadius: 5,
     borderWidth: 1,

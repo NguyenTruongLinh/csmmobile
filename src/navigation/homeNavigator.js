@@ -160,8 +160,6 @@ function HomeStack(props) {
           name={ROUTERS.HOME}
           component={HomeView}
         />
-        {/* <HOStack.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} /> */}
-        {/* <HOStack.Screen name={ROUTERS.SMARTER_STACK} component={SmartERStack} /> */}
         {HealthScreens(appearance)}
         {SmartERScreens(appearance)}
         {OAMScreens(appearance)}

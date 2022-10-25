@@ -1,78 +1,34 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
-  View,
-  StatusBar,
-  BackHandler,
   Platform,
   Keyboard,
   NativeEventEmitter,
-  // NativeModules,
   AppState,
   Text,
-  SafeAreaView,
   LogBox,
 } from 'react-native';
 import {observer, inject} from 'mobx-react';
 import Orientation from 'react-native-orientation-locker';
 import DeviceInfo from 'react-native-device-info';
 
-import CMSIntroView from '../views/intro/cmsIntro';
-
 import AppNavigator from './navigation/appNavigator';
 import NotificationController from './notification/notificationController';
-// import navigationService from './navigation/navigationService';
-// import navigationStore from './stores/navigation';
 
-// import CMSTouchableIcon from './components/CMSTouchableIcon';
-// import CMSModal from './components/CMSModal';
-// import CMSBottomBar from './components/CMSBottomBar';
-// import CMSNavBarCustom from './components/CMSNavBarCustom';
-// import PushController from './PushController';
-import {getwindow, isNullOrUndef} from './util/general';
+import {isNullOrUndef} from './util/general';
 
-// import styles from './styles/scenes/appnavigation.style';
-import {ROUTERS, DateFormat, MODULE_PERMISSIONS} from './consts/misc';
-import APP_INFO from './consts/appInfo';
+import {MODULE_PERMISSIONS} from './consts/misc';
 
-import {CLOUD_TYPE} from './consts/video';
-import CMSColors from './styles/cmscolors';
 import {clientLogID} from './stores/user';
 import {CHECK_UPDATE_FLAG} from './stores/appStore';
 
-const {height, width} = getwindow(); //Dimensions.get('window')
-
-// let selectedSite = [];
-let LogActivityCMS = {
-  UserID: 0,
-  AccessTime: new Date(),
-  PageURL: '',
-  ReportID: 0,
-  EnterTime: new Date(),
-  LeaveTime: new Date(),
-  ClientIP: '',
-  ClientID: 0,
-  OldState: '',
-  NewState: '',
-  PathApi: '',
-  ClientTime: new Date(),
-};
-// <!-- END CONSTS -->
-// ----------------------------------------------------
-
 class App extends React.Component {
-  // static propTypes = {
-  // };
-
   constructor(props) {
     super(props);
     this.appState = AppState.currentState;
     this.allowRotation = true;
     this.locked = false;
 
-    // this.pushController = undefined;
     this.appStateEventListener = null;
-    // this.props.appStore.setLoading(true);
   }
 
   async componentDidMount() {
@@ -98,9 +54,6 @@ class App extends React.Component {
 
     Orientation.addDeviceOrientationListener(this._orientationDidChange);
     Orientation.lockToPortrait();
-    // BackHandler.addEventListener('hardwareBackPress', this.handleBack);
-    // let config = this.props.config;
-    // if (!config || !config.isLoaded) this.props.LoadConfig();
 
     if (Platform.OS === 'ios') {
       try {
@@ -140,12 +93,7 @@ class App extends React.Component {
 
     appStore.setLoading(true);
     await appStore.loadLocalData();
-    // await this.props.userStore.loadLocalData();
     const isLoggedIn = await userStore.shouldAutoLogin();
-    // setTimeout(() => {
-    //   this.props.appStore.setLoading(false);
-    //   this.setState({notificationController: <NotificationController />});
-    // }, 100);
   };
 
   componentWillUnmount() {
@@ -339,33 +287,6 @@ class App extends React.Component {
     this.notifController && this.notifController.clearAllNotifications();
   };
 
-  // renderBottomBar = () => {
-  //   let user = this.props.user;
-  //   if (user === undefined || user == null || user.isAuth === false) {
-  //     console.log('GONDx renderBottomBar unknow user');
-  //     return undefined;
-  //   }
-
-  //   // console.log('GONDx renderBottomBar scene: ', Actions.currentScene)
-  //   if (
-  //     Actions.currentScene !== ROUTERS.LOGIN &&
-  //     Actions.currentScene !== ROUTERS.SPLASHPAGE &&
-  //     // && Actions.currentScene !== ROUTERS.HOME
-  //     Actions.currentScene !== ROUTERS.TRANS_DETAIL
-  //   ) {
-  //     return (
-  //       <CMSBottomBar
-  //         forwardRef={bar => (this.Bottombar = bar)}
-  //         avtiveModules={this.props.user.Routes}
-  //         OnChange={this.OnChangeModule}
-  //       />
-  //     );
-  //   } else {
-  //     console.log('GONDx renderBottomBar no-bar scene: ', Actions.currentScene);
-  //   }
-  //   return undefined;
-  // };
-
   setNavigator = ref => {
     __DEV__ && console.log('GOND set top navigator: ', ref);
     this.props.appStore.setNavigator(ref);
@@ -376,7 +297,6 @@ class App extends React.Component {
     const notificationController = (
       <NotificationController ref={r => (this.notifController = r)} />
     );
-    // showIntro = true; // testing
     const {isLoggedIn} = this.props.userStore;
 
     return AppNavigator({

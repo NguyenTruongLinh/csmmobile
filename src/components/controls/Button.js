@@ -250,13 +250,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 3,
-    // borderRadius: HEIGHT / 2,
-    // borderWidth: 1 / PixelRatio.get(),
   },
 
   button: {
-    // flex: 1,
-    //flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'red',
@@ -282,31 +278,25 @@ const styles = StyleSheet.create({
 
   caption_Icon: {
     letterSpacing: 1,
-    //fontSize: FONT_SIZE,
   },
 
   Background: {
-    //backgroundColor: 'rgba(0, 86, 145, 1)'
     backgroundColor: CMSColors.PrimaryActive,
     borderColor: CMSColors.PrimaryActive,
   },
 
   disableBackground: {
-    //backgroundColor: 'rgba(0, 0, 0, 0.12)'
     backgroundColor: '#E1E1E1',
   },
 
   disableCaption: {
-    //color: 'rgba(0, 0, 0, 0.26)'
     color: '#BDBDBD',
   },
   primaryCaption: {
     color: 'rgb(242,242,242)',
-    //backgroundColor: CMSColors.PrimaryColor,
   },
 
   flatCaption: {
-    // color: 'rgba(0, 86, 145, 1)',
     color: CMSColors.PrimaryActive,
   },
   flatCaptionDisable: {
@@ -329,11 +319,9 @@ const styles = StyleSheet.create({
   },
 
   linkbackgrounddisable: {
-    //backgroundColor: 'rgb(225,225,225)'
     backgroundColor: 'transparent',
   },
   linkbackground: {
-    //backgroundColor: 'rgba(0, 0, 0, 0.0)'
     backgroundColor: 'transparent',
   },
 });

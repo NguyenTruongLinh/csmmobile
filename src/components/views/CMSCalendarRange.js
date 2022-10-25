@@ -1,7 +1,7 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-// import Calendar from 'rn-date-range';
-import {CalendarList, Calendar} from 'react-native-calendars';
+
+import {CalendarList} from 'react-native-calendars';
 import {DateTime} from 'luxon';
 import {inject, observer} from 'mobx-react';
 
@@ -38,16 +38,9 @@ class CMSCalendarRange extends React.Component {
 
   componentDidMount() {
     this._isMounted = true;
-    // if (this.props.Rotatable) {
-    //   Dimensions.addEventListener('change', this.onDimensionChange);
-    // }
-    // this.onDimensionChange({window: Dimensions.get('window')});
   }
 
   componentWillUnmount() {
-    // if (this.props.Rotatable) {
-    //   Dimensions.removeEventListener('change', this.onDimensionChange);
-    // }
     this._isMounted = false;
   }
 
@@ -182,16 +175,12 @@ class CMSCalendarRange extends React.Component {
     }
 
     markedData = {...markedData, ...this.state.dateRange};
-    // __DEV__ && console.log('GOND today marked: ', markedData);
     return (
-      // <View style={{flex: 1}}>
       <CalendarList
-        // current={new Date()}
         markingType={'period'}
         onDayPress={this.onDayPress}
         markedDates={markedData}
         hideExtraDays={true}
-        // pastScrollRange={36}
         futureScrollRange={0}
         initialNumToRender={6}
         animateScroll={false}
@@ -213,7 +202,6 @@ class CMSCalendarRange extends React.Component {
           selectedDayTextColor: theme[appearance].text.color,
         }}
       />
-      // </View>
     );
   }
 }

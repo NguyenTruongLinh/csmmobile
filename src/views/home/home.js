@@ -1,21 +1,14 @@
 // ----------------------------------------------------
 // <!-- START MODULES -->
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {
-  View,
-  Text,
-  Image,
-  Platform,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
-import {useIsFocused} from '@react-navigation/native';
+import {View, Dimensions} from 'react-native';
 import {inject, observer} from 'mobx-react';
 
 import HomeWidget from '../../components/containers/HomeWidget';
-import {IconCustom} from '../../components/CMSStyleSheet';
-const {width, height} = Dimensions.get('window');
+const {width} = Dimensions.get('window');
+
+import theme from '../../styles/appearance';
+import styles from './styles/homeStyles';
 
 import {
   Home_Alarm,
@@ -25,8 +18,6 @@ import {
   Home_Video,
 } from '../../consts/images';
 import ROUTERS from '../../consts/routes';
-import CMSColors from '../../styles/cmscolors';
-import theme from '../../styles/appearance';
 import {clientLogID} from '../../stores/user';
 
 class HomeView extends Component {
@@ -172,67 +163,5 @@ class HomeView extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  header: {
-    flex: 5,
-  },
-  footer: {
-    flex: 9,
-    flexDirection: 'row',
-  },
-  headerBackground: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: '76%',
-    backgroundColor: CMSColors.HomeHeader,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-  },
-  topWidgetsContainer: {
-    flex: 30,
-    margin: 25,
-    padding: 20,
-    borderRadius: 16,
-
-    flexDirection: 'row',
-    ...Platform.select({
-      ios: {
-        shadowRadius: 10,
-        shadowColor: CMSColors.BoxShadow,
-      },
-      android: {
-        elevation: 10,
-      },
-    }),
-    // borderColor: 'red',
-    // borderWidth: 1,
-  },
-  topWidgetTitle: {
-    fontSize: 21,
-    fontWeight: 'bold',
-    color: CMSColors.Dark_Blue,
-  },
-  leftWidget: {flex: 1, marginRight: 14},
-  rightWidget: {flex: 1, marginLeft: 14},
-  normalWidgetTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  widgetRow: {
-    flex: 28,
-    flexDirection: 'row',
-    margin: 25,
-    marginTop: 0,
-    // borderColor: 'red',
-    // borderWidth: 1,
-  },
-});
 
 export default inject('appStore', 'userStore')(observer(HomeView));

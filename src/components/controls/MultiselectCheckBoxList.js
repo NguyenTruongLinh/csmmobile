@@ -67,17 +67,6 @@ class MultiselectCheckBoxList extends Component {
       case ConditionFilterException.EXCEPTION:
         return (
           <View key={section.type} style={styles.RowHeader}>
-            {/* <Ripple style={styles.event}>
-              {this.props.showTitleIcon && (
-                <View style={styles.icon_flag}>
-                  <IconCustom
-                    name={this.props.titleIconName}
-                    size={24}
-                    color={CMSColors.SecondaryText}
-                  />
-                </View>
-              )} */}
-
             <View style={styles.contentText}>
               <Text style={[styles.RowHeaderText, theme[appearance].text]}>
                 {this.props.titleText}
@@ -90,12 +79,6 @@ class MultiselectCheckBoxList extends Component {
         return <View />;
     }
   }
-
-  // sortData(data, isSortAZ) {
-  //   return data.sort((a, b) =>
-  //     isSortAZ == true ? a.label > b.label : a.label < b.label
-  //   );
-  // }
 
   renderSelection() {
     const {appearance} = this.props.appStore;
@@ -116,11 +99,7 @@ class MultiselectCheckBoxList extends Component {
               theme[appearance].text,
               isNoneSelected == true ? styles.countsite_text_empty : null,
             ]}>
-            {this.props.selectedItems.length +
-              // ' ' +
-              // this.props.itemName +
-              // (this.props.selectedItems.length > 1 ? 's' : '') +
-              ' selected'}
+            {this.props.selectedItems.length + ' selected'}
           </Text>
           <View>
             {this.props.enableSort ? (
@@ -166,7 +145,6 @@ class MultiselectCheckBoxList extends Component {
           textname={this.props.itemName}
           allData={this.state.data}
           dataForSearch={this.props.data}
-          //checkboxes={this.props.data}
           enableSort={this.props.enableSort}
           isSortAZ={this.state.isSortAZ}
           labelStyle={{
@@ -240,20 +218,8 @@ const styles = StyleSheet.create({
   RowHeader: {
     height: session_header_height,
     backgroundColor: CMSColors.RowHeaderAccordion,
-    // flexDirection: 'center',
     justifyContent: 'center',
     alignItems: 'center',
-    // borderBottomWidth: 0.5,
-    // borderColor: 'rgb(204, 204, 204)',
-    // ...Platform.select({
-    //   ios: {
-    //     shadowOffset: {
-    //       height: 0,
-    //       width: 0,
-    //     },
-    //   },
-    //   android: {},
-    // }),
   },
   RowHeaderText: {
     fontSize: 20,

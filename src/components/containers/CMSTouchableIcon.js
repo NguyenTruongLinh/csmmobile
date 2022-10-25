@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import {View, Image} from 'react-native';
 
 import {Icon, IconCustom, MaterialIcons} from '../CMSStyleSheet';
-// import Ripple from 'react-native-material-ripple';
 import CMSRipple from '../controls/CMSRipple';
 import cmscolors from '../../styles/cmscolors';
 
@@ -16,7 +15,6 @@ import cmscolors from '../../styles/cmscolors';
 const PRESS_DELAY_TIME = 1000;
 
 class CMSTouchableIcon extends React.Component {
-  //const TYPES = ['circle', 'square'];
   static propTypes = {
     type: PropTypes.string,
     icon: PropTypes.string,
@@ -57,19 +55,10 @@ class CMSTouchableIcon extends React.Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     const {disabled} = nextProps;
     if (disabled != prevState.disabled) {
-      // __DEV__ && console.log('GOND TouchIcon get disbaled: ', disabled);
       return {disabled};
     }
     return {};
   }
-
-  // componentDidUpdate(prevProps) {
-  //   if (prevProps.disabled != this.props.disabled && this.onPressTimeout) {
-  //     __DEV__ && console.log('GOND TouchIcon cancel Timeout');
-  //     clearTimeout(this.onPressTimeout);
-  //     this.onPressTimeout = null;
-  //   }
-  // }
 
   getCubes(size) {
     let borderRd;
@@ -97,9 +86,7 @@ class CMSTouchableIcon extends React.Component {
       onPress();
 
       this.onPressTimeout = setTimeout(() => {
-        // __DEV__ && console.log('GOND TouchIcon onPressTimeout');
         if (this.state.disabled && !this.props.disabled) {
-          // __DEV__ && console.log('GOND TouchIcon onPressTimeout >>>');
           this.setState({disabled: false});
         }
       }, PRESS_DELAY_TIME);
@@ -114,15 +101,12 @@ class CMSTouchableIcon extends React.Component {
       color,
       size,
       image,
-      // onPress,
       styles,
       isHidden,
       disabledColor,
     } = this.props;
 
     const {disabled} = this.state;
-    // __DEV__ &&
-    //   console.log('GOND touch icon color: ', color, ', disabled: ', disabled);
 
     let content;
     if (image) {

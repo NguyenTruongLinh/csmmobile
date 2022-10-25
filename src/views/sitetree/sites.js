@@ -1,40 +1,27 @@
 import React, {Component} from 'react';
-import {
-  View,
-  FlatList,
-  Text,
-  Platform,
-  StyleSheet,
-  BackHandler,
-  Dimensions,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import {View, FlatList, Text, Image} from 'react-native';
+
 import {inject, observer} from 'mobx-react';
-// import Ripple from 'react-native-material-ripple';
 import {SwipeRow} from 'react-native-swipe-list-view';
 
 import CMSRipple from '../../components/controls/CMSRipple';
 import AlertDismissModal from '../health/modals/dismissModal';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
-// import InputTextIcon from '../../components/controls/InputTextIcon';
 import BackButton from '../../components/controls/BackButton';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
+import {IconCustom} from '../../components/CMSStyleSheet';
+import HealthBackRow from './components/healthBackRow';
 
-import snackbar from '../../util/snackbar';
-
-import ROUTERS from '../../consts/routes';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
-import {Comps as CompTxt} from '../../localization/texts';
-import {No_Data} from '../../consts/images';
-import {WIDGET_COUNTS} from '../../consts/misc';
-import {clientLogID} from '../../stores/user';
+import styles from './styles/sitesStyles';
 import theme from '../../styles/appearance';
 
-// const ListViewHeight = 56; // Dimensions.get('window').height / 16;
+import ROUTERS from '../../consts/routes';
+import {WIDGET_COUNTS} from '../../consts/misc';
+import {clientLogID} from '../../stores/user';
+import NoData from '../../components/views/NoData';
 
 class SitesView extends Component {
   constructor(props) {
@@ -42,9 +29,6 @@ class SitesView extends Component {
     const {route} = props;
     this._isMounted = false;
 
-    // this.state = {
-    //   enableSearchbar: false,
-    // };
     this.state = {
       isLoadingRegardlessStep: true,
       listHeight: 0,
@@ -62,27 +46,16 @@ class SitesView extends Component {
     this._isMounted = false;
     this.props.sitesStore.onSitesViewExit();
     this.onFilter('');
-    // BackHandler.removeEventListener('hardwareBackPress', this.onBack);
     this.unsubscribleFocusEvent && this.unsubscribleFocusEvent();
     this.unsubscribleBlurEvent && this.unsubscribleBlurEvent();
   }
 
   async componentDidMount() {
     this._isMounted = true;
-    // const {sitesStore, healthStore, userStore, route} = this.props;
     const {navigation, userStore, sitesStore} = this.props;
     const {isHealthRoute} = this.state;
     if (__DEV__)
       console.log('SitesView componentDidMount: ', this.searchbarRef);
-
-    // BackHandler.addEventListener('hardwareBackPress', this.onBack);
-    // const backEventHandler = e => {
-    //   console.log('GOND navigation event: ', e);
-    //   if (this.state.enableSearchbar && typeof e.preventDefault == 'function') {
-    //     this.setState({enableSearchbar: false});
-    //     e.preventDefault();
-    //   }
-    // };
 
     this.unsubscribleFocusEvent = navigation.addListener('focus', () => {
       if (this.blurFlag) {
@@ -109,15 +82,11 @@ class SitesView extends Component {
     }
   }
 
-  getData = async isReload => {
-    const {sitesStore, healthStore, userStore, route} = this.props;
+  getData = async () => {
+    const {sitesStore, healthStore, userStore} = this.props;
     const {isHealthRoute} = this.state;
     this.setState({isLoadingRegardlessStep: true});
-    if (
-      !sitesStore.selectedRegion ||
-      !sitesStore.hasRegions
-      // (!sitesStore.sitesList || sitesStore.sitesList.length == 0)
-    ) {
+    if (!sitesStore.selectedRegion || !sitesStore.hasRegions) {
       await sitesStore.getAllSites();
     }
 
@@ -126,8 +95,7 @@ class SitesView extends Component {
         await userStore.getAlertTypesSettings();
       }
       await healthStore.getHealthData(sitesStore.sitesList);
-    } // else if (route.name == ROUTERS.VIDEO_SITES) {
-    // }
+    }
     this.setState({isLoadingRegardlessStep: false});
   };
 
@@ -138,7 +106,6 @@ class SitesView extends Component {
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() => this.setHeader())
       : null;
-    // __DEV__ && console.log('SitesView searchButton: ', searchButton);
 
     if (isHealthRoute) {
       __DEV__ &&
@@ -190,21 +157,6 @@ class SitesView extends Component {
     navigation.setOptions(options);
   };
 
-  // onBack = () => {
-  //   if (this.state.enableSearchbar) {
-  //     this.setState({enableSearchbar: false});
-  //   }
-  // };
-
-  onDismissSiteAlerts = item => {
-    if (!this.state.isHealthRoute) return;
-    const {healthStore} = this.props;
-    __DEV__ && console.log(` selectSite 5 item = `, JSON.stringify(item));
-    healthStore.selectSite(item.id);
-    this.onRowOpen();
-    healthStore.showDismissModal(true);
-  };
-
   onSiteSelected = item => {
     const {sitesStore, navigation, healthStore} = this.props;
     const {isHealthRoute} = this.state;
@@ -227,15 +179,6 @@ class SitesView extends Component {
     }
   };
 
-  gotoVideo = (isLive, data) => {
-    const {sitesStore, healthStore, navigation} = this.props;
-    __DEV__ && console.log('GOND Health gotoVideo ... ', data);
-    __DEV__ && console.log(` selectSite 8 data = `, JSON.stringify(data));
-    sitesStore.selectSite(data.id);
-    healthStore.setVideoMode(isLive);
-    navigation.push(ROUTERS.HEALTH_CHANNELS);
-  };
-
   onFilter = value => {
     const {sitesStore, healthStore} = this.props;
     const {isHealthRoute} = this.state;
@@ -248,7 +191,6 @@ class SitesView extends Component {
 
   onRowOpen = data => {
     const rowId = data ? data.id ?? 0 : null;
-    // __DEV__ && console.log('GOND Health onRowOpen ... ', this.lastOpenRowId);
 
     if (
       this.lastOpenRowId &&
@@ -260,57 +202,10 @@ class SitesView extends Component {
     this.lastOpenRowId = rowId;
   };
 
-  renderBackRow = data => {
-    const {isHealthRoute} = this.state;
-
-    return isHealthRoute ? (
-      <View style={styles.backRowContainer}>
-        <View style={styles.backRowLeft}>
-          <View style={styles.backRowButtonContainer}>
-            <CMSTouchableIcon
-              iconCustom="double-tick-indicator"
-              size={26}
-              onPress={() => this.onDismissSiteAlerts(data)}
-              color={CMSColors.IconButton}
-              // disabledColor={CMSColors.DisabledIconButton}
-              // disabled={isLoading}
-            />
-          </View>
-        </View>
-        <View style={styles.backRowRight}>
-          {/* <View style={{flex: 6}} /> */}
-          <View style={styles.backRowButtonContainer}>
-            <CMSTouchableIcon
-              iconCustom="searching-magnifying-glass"
-              size={26}
-              onPress={() => this.gotoVideo(false, data)}
-              color={CMSColors.IconButton}
-              // disabledColor={CMSColors.DisabledIconButton}
-              // disabled={isLoading}
-            />
-          </View>
-          <View style={styles.backRowButtonContainer}>
-            <CMSTouchableIcon
-              iconCustom="videocam-filled-tool"
-              size={26}
-              onPress={() => this.gotoVideo(true, data)}
-              color={CMSColors.IconButton}
-              // disabledColor={CMSColors.DisabledIconButton}
-              // disabled={isLoading}
-            />
-          </View>
-        </View>
-      </View>
-    ) : (
-      <View />
-    );
-  };
-
   renderItem = ({item}) => {
     const {isHealthRoute} = this.state;
     const rowId = item.id ?? 0;
     const {appearance} = this.props.appStore;
-    // __DEV__ && console.log('GOND site height: ', ListViewHeight);
 
     return (
       <SwipeRow
@@ -321,11 +216,12 @@ class SitesView extends Component {
         disableLeftSwipe={!isHealthRoute}
         swipeToOpenPercent={10}
         rightOpenValue={isHealthRoute ? -100 : 0}
-        leftOpenValue={isHealthRoute ? 50 : 0}
-        // tension={2}
-        // friction={3}
-      >
-        {this.renderBackRow(item)}
+        leftOpenValue={isHealthRoute ? 50 : 0}>
+        <HealthBackRow
+          data={item}
+          isHealthRoute={isHealthRoute}
+          onRowOpen={this.onRowOpen}
+        />
         <CMSRipple
           rippleOpacity={0.8}
           onPress={() => this.onSiteSelected(item)}
@@ -366,15 +262,7 @@ class SitesView extends Component {
   };
 
   renderNoData = () => {
-    const {appearance} = this.props.appStore;
-    return (
-      <View style={[styles.noDataContainer, {height: this.state.listHeight}]}>
-        <Image source={No_Data} style={styles.noDataImg}></Image>
-        <Text style={[styles.noDataTxt, theme[appearance].text]}>
-          There is no data.
-        </Text>
-      </View>
-    );
+    return <NoData style={{height: this.state.listHeight}} />;
   };
 
   onFlatListLayout = event => {
@@ -393,6 +281,7 @@ class SitesView extends Component {
       : sitesStore.filteredSites;
     const noData = !isLoadingRegardlessStep && siteData == 0;
     const {appearance} = appStore;
+
     __DEV__ &&
       console.log(
         ` healthStore.selectedSite = `,
@@ -400,19 +289,9 @@ class SitesView extends Component {
         `| sitesStore.selectedSite = `,
         JSON.stringify(sitesStore.selectedSite)
       );
+
     return (
       <View style={[styles.screenContainer, theme[appearance].container]}>
-        {/* <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={sitesStore.siteFilter}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View> */}
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
@@ -426,8 +305,6 @@ class SitesView extends Component {
           </View>
         )}
         <View style={{flex: 1}} onLayout={this.onFlatListLayout}>
-          {/* <Text>{siteData == 0 ? 'siteData == 0' : 'siteData != 0'}</Text>
-          <Text>{isLoading ? 'isLoading' : '!isLoading'}</Text> */}
           <FlatList
             ref={ref => (this.sitesListRef = ref)}
             renderItem={this.renderItem}
@@ -449,97 +326,6 @@ class SitesView extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    flex: 1,
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginRight: 7,
-  },
-  screenContainer: {flex: 1, flexDirection: 'column'},
-  backRowContainer: {flex: 1, flexDirection: 'row'},
-  backRowLeft: {
-    flex: 1,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    height: ListViewHeight,
-  },
-  backRowButtonContainer: {
-    width: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backRowRight: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    height: ListViewHeight,
-    // padding: 15,
-  },
-  listItemRipple: {
-    flex: 1,
-    height: ListViewHeight + 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    // justifyContent: 'flex-start',
-    paddingLeft: 16,
-    // borderTopWidth: 1,
-    borderBottomWidth: 1,
-  },
-  siteNameContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    // backgroundColor: CMSColors.Transparent,
-  },
-  siteName: {
-    fontSize: 16,
-    fontWeight: '500',
-    // paddingLeft: 14,
-    marginRight: 30,
-  },
-  alertsCountContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: ListViewHeight - 15,
-    height: ListViewHeight - 15,
-    marginRight: 14,
-    backgroundColor: CMSColors.BtnNumberListRow,
-  },
-  alertsCount: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: CMSColors.White,
-  },
-  summaryContainer: {
-    backgroundColor: CMSColors.HeaderListRow,
-    height: 35,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sitesCount: {
-    paddingLeft: 24,
-    textAlignVertical: 'center',
-    color: CMSColors.RowOptions,
-  },
-  noDataContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  noDataImg: {
-    width: 100,
-    height: 100,
-  },
-  noDataTxt: {
-    marginTop: 12,
-    paddingBottom: 50,
-    fontSize: 16,
-    color: CMSColors.PrimaryText,
-  },
-});
 
 export default inject(
   'sitesStore',

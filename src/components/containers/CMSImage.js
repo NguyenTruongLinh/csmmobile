@@ -1,6 +1,6 @@
 'use strict';
 
-import React, {Fragment} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {
   View,
@@ -9,10 +9,9 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
-import CryptoJS from 'crypto-js';
 
 import apiService from '../../services/api';
-import {isNullOrUndef, isValidHttpUrl, stringtoBase64} from '../util/general';
+import {isNullOrUndef, stringtoBase64} from '../util/general';
 
 import {File, CommonActions} from '../../consts/apiRoutes';
 import {No_Image} from '../../consts/images';
@@ -38,8 +37,6 @@ class CMSImage extends React.Component {
     isBackground: PropTypes.bool,
     showLoading: PropTypes.bool,
     visible: PropTypes.bool,
-    // dataSource: PropTypes.string,
-    // defaultImage: PropTypes.object,
   };
 
   static defaultProps = {
@@ -49,20 +46,12 @@ class CMSImage extends React.Component {
     isBackground: false,
     showLoading: true,
     visible: true,
-    // dataSource: PropTypes.string,
-    // defaultImage: PropTypes.object,
   };
 
   loadImage = async () => {
-    const {
-      domain,
-      source,
-      twoStepsLoading,
-      // srcUrl,
-      dataSource,
-      defaultImage,
-    } = this.props;
-    // if (srcUrl && isValidHttpUrl(srcUrl)) {
+    const {domain, source, twoStepsLoading, dataSource, defaultImage} =
+      this.props;
+
     if (dataSource && dataSource.length > 0) {
       this.setState({
         isLoading: false,
@@ -79,7 +68,7 @@ class CMSImage extends React.Component {
       defaultImage,
       twoStepsLoading
     );
-    // __DEV__ && console.log('GOND CMSImage completed imgData =', imgData);
+
     if (this._isMounted) {
       this.onLoadingCompleted(domain, imgData);
       this.setState(
@@ -102,7 +91,6 @@ class CMSImage extends React.Component {
    * @returns
    */
   loadImageAsync = async (data, source, defaultImage, isTwoSteps) => {
-    // __DEV__ && console.log('GOND loadImageAsync, source: ', source);
     if (source) {
       return {uri: 'data:image/jpeg;base64,' + this.props.source};
     } else {
@@ -121,23 +109,16 @@ class CMSImage extends React.Component {
             data.id,
             CommonActions.image
           );
-          // __DEV__ &&
-          // console.log('GOND loadImageAsync step 1 res = ', pathResponse);
 
           if (pathResponse && !pathResponse.isCloud) {
             if (pathResponse.isExist) {
               if (pathResponse.url_thumnail) {
-                // const dataPath = CryptoJS.enc.Base64.stringify(
-                //   CryptoJS.enc.Utf8.parse(pathResponse.url_thumnail)
-                // );
                 const dataPath = stringtoBase64(pathResponse.url_thumnail);
                 response = await apiService.getBase64Stream(
                   File.controller,
                   dataPath
                 );
 
-                // __DEV__ &&
-                //   console.log('GOND loadImageAsync step 2 res = ', response);
                 if (response.data)
                   return {
                     ...pathResponse,
@@ -158,7 +139,7 @@ class CMSImage extends React.Component {
             data.param
           );
         }
-        // __DEV__ && console.log('GOND CMSImage loadImageAsync res = ', response);
+
         let imgbase64 =
           response.data && response.data != 'null' ? response.data : null;
         if (imgbase64) return {uri: 'data:image/jpeg;base64,' + imgbase64};
@@ -204,21 +185,23 @@ class CMSImage extends React.Component {
       visible,
     } = this.props;
     const {isLoading, image} = this.state;
-    // __DEV__ && console.log('GOND CMSImage render: ', isLoading, image);
     if (image && image.uri && image.uri.uri) image.uri = image.uri.uri;
 
     return (
       <View style={style}>
-        {/* <Fragment> */}
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator
+            animating={true}
+            style={styles.loadingIcon}
+            size="small"
+            color="white" // "#039BE5"
+          />
+        </View>
         {isLoading && showLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator
               animating={true}
-              style={{
-                height: 20,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              style={styles.loadingIcon}
               size="small"
               color="white" // "#039BE5"
             />
@@ -238,7 +221,6 @@ class CMSImage extends React.Component {
             resizeMode={resizeMode}
           />
         )}
-        {/* </Fragment> */}
       </View>
     );
   }
@@ -247,6 +229,16 @@ class CMSImage extends React.Component {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  loadingIcon: {
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

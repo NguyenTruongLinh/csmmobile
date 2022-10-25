@@ -1,25 +1,21 @@
-import React, {Component, PropTypes} from 'react';
-import {
-  Text,
-  View,
-  Dimensions,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  FlatList,
-} from 'react-native';
-// import Modal from 'react-native-modal';
-import Modal from '../../components/views/CMSModal';
+import React, {Component} from 'react';
+import {Text, View, StyleSheet} from 'react-native';
 
+import {inject, observer} from 'mobx-react';
+
+import Modal from '../../components/views/CMSModal';
 import CMSCalendarSingleDate from '../../components/views/CMSCalendarSingleDate';
 import Button from '../../components/controls/Button';
+
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
+import theme from '../../styles/appearance';
+
 import {Comps as CompTxt} from '../../localization/texts';
 
 const SECTION_HEADER_HEIGHT = 48;
 
-export default class VideoDateModal extends Component {
+class VideoDateModal extends Component {
   constructor(props) {
     super(props);
 
@@ -57,6 +53,8 @@ export default class VideoDateModal extends Component {
   };
 
   renderHeader = () => {
+    const {appearance} = this.props.appStore;
+
     return (
       <View
         style={[
@@ -65,16 +63,25 @@ export default class VideoDateModal extends Component {
           {
             flex: 10,
           },
+          theme[appearance].modalContainer,
         ]}>
-        <Text style={[commonStyles.modalTitle]}>Select date</Text>
+        <Text style={[commonStyles.modalTitle, theme[appearance].text]}>
+          Select date
+        </Text>
       </View>
     );
   };
 
   renderFooter = () => {
+    const {appearance} = this.props.appStore;
+
     return (
       <View
-        style={[commonStyles.modalFooter, {flex: 15, paddingHorizontal: 12}]}>
+        style={[
+          commonStyles.modalFooter,
+          styles.modalFooter,
+          theme[appearance].modalContainer,
+        ]}>
         <View style={commonStyles.modalButtonCancelContainer}>
           <Button
             style={commonStyles.modalButtonCancel}
@@ -104,8 +111,14 @@ export default class VideoDateModal extends Component {
   };
 
   renderContent = () => {
+    const {appearance} = this.props.appStore;
+
     return (
-      <View style={{flex: 75}}>
+      <View
+        style={[
+          styles.modalContentContainer,
+          theme[appearance].modalContainer,
+        ]}>
         <CMSCalendarSingleDate
           markedDates={this.props.markedDates}
           date={this.props.date}
@@ -116,6 +129,8 @@ export default class VideoDateModal extends Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
+
     return (
       <Modal
         isVisible={this.props.isVisible}
@@ -130,6 +145,7 @@ export default class VideoDateModal extends Component {
           style={[
             commonStyles.modalContainer,
             {marginTop: this.props.isFullscreen ? '5%' : '25%'},
+            theme[appearance].modalContainer,
           ]}>
           {this.renderHeader()}
           {this.renderContent()}
@@ -178,4 +194,8 @@ const styles = StyleSheet.create({
     height: 50,
     backgroundColor: CMSColors.White,
   },
+  modalFooter: {flex: 15, paddingHorizontal: 12},
+  modalContentContainer: {flex: 75},
 });
+
+export default inject('appStore')(observer(VideoDateModal));

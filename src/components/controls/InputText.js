@@ -1,6 +1,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View, Animated, Easing, StyleSheet, Platform} from 'react-native';
+import {View, Animated, StyleSheet, Platform} from 'react-native';
 
 import {TextField} from 'react-native-material-textfield';
 import Helper from 'react-native-material-textfield/src/components/helper';
@@ -76,28 +76,11 @@ class InputText extends PureComponent {
       focused: false,
 
       error: error,
-      // errored: !!error,
       validationError: '',
 
       height: 24,
     };
   }
-
-  // UNSAFE_componentWillReceiveProps(props) {
-  //   let {text, error} = this.state;
-
-  //   if (null != props.value && props.value !== text) {
-  //     this.setState({text: props.value});
-  //   }
-
-  //   if (props.error && props.error !== error) {
-  //     this.setState({error: props.error});
-  //   }
-
-  //   if (props.error !== this.props.error) {
-  //     this.setState({errored: !!props.error});
-  //   }
-  // }
 
   static getDerivedStateFromProps(nextProps, prevState) {
     let {text, error} = prevState;
@@ -111,29 +94,8 @@ class InputText extends PureComponent {
       nextState = {...nextState, error: nextProps.error};
     }
 
-    // if (nextProps.error !== this.props.error) {
-    //   this.setState({errored: !!props.error});
-    // }
     return nextState;
   }
-
-  // UNSAFE_componentWillUpdate(props, state) {
-  //   let {error, animationDuration} = this.props;
-  //   let {focus, focused} = this.state;
-
-  //   if (props.error !== error || focused ^ state.focused) {
-  //     Animated.timing(focus, {
-  //       toValue: props.error ? -1 : state.focused ? 1 : 0,
-  //       duration: animationDuration,
-  //       easing: Easing.inOut(Easing.ease),
-  //       useNativeDriver: false,
-  //     }).start(() => {
-  //       if (this._isMounted) {
-  //         this.setState((state, {error}) => ({error}));
-  //       }
-  //     });
-  //   }
-  // }
 
   componentDidMount() {
     this._isMounted = true;
@@ -231,12 +193,9 @@ class InputText extends PureComponent {
     const result = validate(formValues, formFields);
     // If there is an error message, return it!
     if (result) {
-      // Return only the field error message if there are multiple
-      // __DEV__ && console.log('GOND InputText validate = ', result);
       return result[name][0];
     }
 
-    // __DEV__ && console.log('GOND InputText validate is valid');
     return null;
   }
 
@@ -362,12 +321,6 @@ class InputText extends PureComponent {
       <View
         onStartShouldSetResponder={() => true}
         onResponderRelease={this.focus}>
-        {/* <Animated.View style={[ styles.container, containerStyle ]}> */}
-        {/* {disabled && <Line type='dotted' color={baseColor} focusAnimation={new Animated.Value(0)} />} */}
-        {/* <Label activeFontSize={fontSize} active={true} > */}
-        {/* {...{ fontSize, tintColor, baseColor, errorColor, animationDuration, focused, errored, restricted, active }}> */}
-        {/* {label} */}
-        {/* </Label> */}
         <TextField
           style={[styles.input, inputStyle, style]}
           selectionColor={tintColor}
@@ -380,7 +333,6 @@ class InputText extends PureComponent {
             errorColor,
             animationDuration,
             focused,
-            // errored,
             restricted,
             active,
           }}
@@ -396,7 +348,6 @@ class InputText extends PureComponent {
           value={text}
           ref={ref => (this.inputRef = ref)}
         />
-        {/* </Animated.View> */}
 
         <Animated.View style={helperContainerStyle}>
           <View style={styles.flex}>

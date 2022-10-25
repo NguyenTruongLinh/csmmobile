@@ -1,15 +1,5 @@
 import {CommonActions, StackActions} from '@react-navigation/native';
-import {types} from 'mobx-state-tree';
 import ROUTERS from '../consts/routes';
-
-// import {
-//   RouteParams,
-//   navigationStore,
-//   NavigationModel,
-// } from '../stores/navigation';
-
-// let this._navigator;
-// let _navStore = navigationStore;
 
 class NavigationService {
   constructor() {
@@ -19,7 +9,7 @@ class NavigationService {
     this.state = null;
   }
 
-  setTopLevelNavigator = (navigatorRef, route) => {
+  setTopLevelNavigator = navigatorRef => {
     if (!navigatorRef) return;
     __DEV__ && console.log('GOND setTopNav ref = ', navigatorRef);
     this._navigator = navigatorRef;
@@ -45,28 +35,12 @@ class NavigationService {
           ]);
   };
 
-  // setNavigationStore(store) {
-  //   this._navStore = store;
-  // },
-
   /**
    *
    * @param {string} routeName
    * @param {object = {params, key}} options
    */
   navigate = (routeName, options) => {
-    // const {params, key} = options || {params: undefined, key: undefined};
-    // if (params || key) {
-    //   const routeParams = RouteParams.create({routeKey: key, params: params});
-    //   // this._navStore.setParamsForRoute(routeParams);
-    // }
-    // this._navigator.dispatch(
-    //   CommonActions.navigate({
-    //     name: routeName,
-    //     key,
-    //     params,
-    //   })
-    // );
     __DEV__ && console.log(`navigate routeName`, routeName, `options`, options);
     this._navigator.navigate(routeName, options);
   };

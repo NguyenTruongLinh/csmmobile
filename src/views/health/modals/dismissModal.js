@@ -2,17 +2,8 @@
 // <!-- START MODULES -->
 
 import React, {Component} from 'react';
-import {
-  View,
-  FlatList,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Platform,
-} from 'react-native';
 import {inject, observer} from 'mobx-react';
 
-// import InputTextIcon from '../../../components/controls/InputTextIcon';
 import CMSTextInputModal from '../../../components/controls/CMSTextInputModal';
 
 class AlertDismissModal extends Component {
@@ -46,11 +37,6 @@ class AlertDismissModal extends Component {
     if (selectedAlert) {
       healthStore.dismissAlert(selectedAlert, description);
     } else healthStore.dismissAlertsByType(selectedAlertType, description);
-    // else {
-    //   console.log(
-    //     'Warning: None alert or alert type is selected, nothing is dismissed!'
-    //   );
-    // }
     if (callback && typeof callback == 'function') callback();
     healthStore.showDismissModal(false);
   };
@@ -76,7 +62,5 @@ class AlertDismissModal extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({});
 
 export default inject('healthStore')(observer(AlertDismissModal));

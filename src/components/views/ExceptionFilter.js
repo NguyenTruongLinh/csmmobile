@@ -58,7 +58,7 @@ class ExceptionFilter extends Component {
             }}
           />
         </View>
-        <View style={{width: 8}}></View>
+        <View style={styles.separator}></View>
         <View style={styles.content_button_apply}>
           <Button
             style={styles.button_apply}
@@ -269,6 +269,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderColor: CMSColors.White,
   },
+  separator: {width: 8},
 });
 
 export default inject('appStore')(observer(ExceptionFilter));
