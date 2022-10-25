@@ -1,15 +1,8 @@
 import React, {Component} from 'react';
-import {
-  Text,
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  FlatList,
-  Modal,
-} from 'react-native';
+import {Text, View, StyleSheet, ScrollView, FlatList} from 'react-native';
 
 import {inject, observer} from 'mobx-react';
+import Modal from 'react-native-modal';
 
 import CMSCalendarRange from './CMSCalendarRange';
 import Ripple from 'react-native-material-ripple';
@@ -24,6 +17,7 @@ import {IconCustom} from '../CMSStyleSheet';
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
+import styles from './styles/alarmFilterStyles';
 import {DateFormat, FilterMore} from '../../consts/misc';
 
 let isFirst;
@@ -139,9 +133,7 @@ class AlarmFilter extends Component {
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         automaticallyAdjustContentInsets={false}
-        style={{
-          maxHeight: 60,
-        }}>
+        style={styles.scrollViewContainer}>
         <View style={styles.contentHeader_FilterMore}>
           <View style={[styles.addMoreButtonContainer, {paddingLeft: 15}]}>
             <Button
@@ -392,25 +384,21 @@ class AlarmFilter extends Component {
 
     let content = (
       <View style={styles.modalcontainer_TimePicker}>
-        <View style={{flex: 1, height: 150}}>
+        <View style={styles.timePickerContainer}>
           <TimePicker
             type="start"
             setParamTime={this.setParamStartTime}
             selected={stime}
           />
         </View>
-        <View
-          style={{
-            marginTop: 43,
-            justifyContent: 'center',
-          }}>
+        <View style={styles.arrowIconContainer}>
           <IconCustom
             name="arrow-to"
             size={30}
             color={CMSColors.SecondaryText}
           />
         </View>
-        <View style={{flex: 1, height: 150}}>
+        <View style={styles.timePickerContainer}>
           <TimePicker
             type="end"
             setParamTime={this.setParamEndTime}
@@ -421,7 +409,7 @@ class AlarmFilter extends Component {
     );
 
     let header = (
-      <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+      <View style={styles.timePickerHeaderContainer}>
         <View style={styles.timeContainer}>
           <Text style={styles.timeText}>{stime + ':00:00'}</Text>
           <Text style={styles.dateText}>
@@ -446,33 +434,12 @@ class AlarmFilter extends Component {
 
     let modal = (
       <Modal
-        animationType={'slide'}
-        transparent={true}
-        isDisabled={false}
-        backdrop={true}
-        coverScreen={true}
         visible={this.state.authmodal}
-        onRequestClose={() => {
-          this.setState({authmodal: false}, () => this.forceUpdate());
-        }}>
-        <View opacity={1} style={[styles.modalcontainer]}>
-          <TouchableOpacity
-            style={{flex: 1}}
-            activeOpacity={1}
-            onPress={() => {
-              this.setState({authmodal: false});
-            }}
-          />
-
-          {content}
-          <TouchableOpacity
-            style={{flex: 1}}
-            activeOpacity={1}
-            onPress={() => {
-              this.setState({authmodal: false});
-            }}
-          />
-        </View>
+        onBackdropPress={() => {
+          this.setState({authmodal: false});
+        }}
+        style={styles.modalTimePickerContainer}>
+        <View style={[styles.modalcontainer]}>{content}</View>
       </Modal>
     );
 
@@ -480,7 +447,7 @@ class AlarmFilter extends Component {
       <View style={styles.rowListFilterTimeContain}>
         {renderContentCustom}
         <Ripple
-          style={{justifyContent: 'center'}}
+          style={styles.justifyCenter}
           onPress={() => {
             this.setState({
               authmodal: true,
@@ -584,7 +551,7 @@ class AlarmFilter extends Component {
     if (!this.state.filterMore || this.state.filterMore.length == 0) return;
 
     return (
-      <View style={{flex: 1}}>
+      <View style={styles.container}>
         <FlatList
           data={this.state.filterMore}
           renderItem={this.renderRow}
@@ -653,129 +620,23 @@ class AlarmFilter extends Component {
 
     let contentBody =
       this.state.panel == Panels.DateSelect ? (
-        <View style={styles.contentBody}>{this.renderDate()}</View>
+        <View style={[styles.contentBody, theme[appearance].container]}>
+          {this.renderDate()}
+        </View>
       ) : (
-        <View style={[styles.contentBody /*, {paddingBottom: 48}*/]}>
+        <View style={[styles.contentBody, theme[appearance].container]}>
           {this.renderFilterMore()}
           {this.renderListFilter()}
         </View>
       );
 
     return (
-      <View style={{flex: 1}}>
+      <View style={styles.container}>
         {contentHeader}
         {contentBody}
       </View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  contentHeader: {
-    flex: 15,
-    paddingLeft: 10,
-    height: 45,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    backgroundColor: CMSColors.White,
-  },
-  dateTab: {
-    justifyContent: 'center',
-    padding: 5,
-  },
-  button_DateSelect: {
-    height: 32,
-    minWidth: 230,
-  },
-  addMoreButtonContainer: {
-    justifyContent: 'center',
-  },
-  button_FilterMore: {
-    height: 36,
-    width: 36,
-    backgroundColor: CMSColors.PrimaryActive,
-  },
-  button_FilterMore_None: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: CMSColors.PrimaryActive,
-    backgroundColor: CMSColors.White,
-  },
-  button_DateNotSelect: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: CMSColors.DividerColor24_HEX,
-  },
-  button_FilterMore_Add: {
-    height: 36,
-    minWidth: 36,
-    marginRight: 5,
-    padding: 5,
-  },
-
-  button_FilterMore_Add_None: {
-    backgroundColor: CMSColors.DividerColor24_HEX, // CMSColors.White,
-  },
-
-  contentBody: {
-    flex: 85,
-    backgroundColor: CMSColors.White, // CMSColors.DividerColor24_HEX,
-  },
-
-  contentHeader_FilterMore: {
-    height: 60,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    backgroundColor: CMSColors.transparent,
-  },
-  rowListFilterContain: {
-    backgroundColor: CMSColors.White,
-    marginTop: 6,
-    paddingHorizontal: 12,
-    marginHorizontal: 12,
-    backgroundColor: CMSColors.FilterRowBg,
-  },
-  rowListFilterTimeContain: {
-    backgroundColor: CMSColors.White,
-    marginTop: 6,
-    paddingHorizontal: 12,
-    marginHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: CMSColors.FilterRowBg,
-  },
-  rowListFilter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    height: 48,
-  },
-  contentIconRemoveFilter: {
-    paddingRight: 12,
-  },
-  modalcontainer: {
-    flex: 1,
-    backgroundColor: CMSColors.ModalTransparent,
-    flexDirection: 'column',
-  },
-  modalcontainer_TimePicker: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: CMSColors.White,
-    marginHorizontal: 15,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  timeContainer: {
-    justifyContent: 'center',
-    marginLeft: 5,
-    marginRight: 5,
-    flexDirection: 'column',
-  },
-  timeText: {color: CMSColors.PrimaryText, fontWeight: 'bold'},
-  dateText: {color: CMSColors.SecondaryText, fontSize: 12},
-});
 
 export default inject('appStore')(observer(AlarmFilter));

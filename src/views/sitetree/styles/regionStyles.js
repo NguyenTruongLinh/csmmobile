@@ -40,4 +40,5 @@ export default StyleSheet.create({
     textAlignVertical: 'center',
     color: CMSColors.RowOptions,
   },
+  itemWrapper: {height: itemHeight + 1},
 });

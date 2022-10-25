@@ -129,7 +129,7 @@ export default class TimePicker extends Component {
 }
 
 const styles = StyleSheet.create({
-  containe: {flex: 1},
+  container: {flex: 1},
   rowList: {
     flexDirection: 'row',
     justifyContent: 'space-between',

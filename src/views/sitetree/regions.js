@@ -9,7 +9,6 @@ import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
 import commonStyles from '../../styles/commons.style';
-import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
 import styles from './styles/regionStyles';
 
@@ -123,7 +122,7 @@ class RegionsView extends Component {
     const {appearance} = this.props.appStore;
 
     return (
-      <View style={{height: itemHeight + 1}}>
+      <View style={styles.itemWrapper}>
         <CMSRipple
           style={[
             styles.itemContainer,
