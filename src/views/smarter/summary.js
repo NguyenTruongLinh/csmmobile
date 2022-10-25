@@ -26,11 +26,14 @@ import {SMARTER as SMARTER_TXT} from '../../localization/texts';
 import {clientLogID} from '../../stores/user';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const {width, height} = Dimensions.get('window');
 const MAX_TEXT_LENGTH = 32;
 const LINE_HEIGHT = 48;
 =======
 >>>>>>> b15ad82 (Refactor stylesheet and split components)
+=======
+>>>>>>> b15ad8269d1eeabb049c80c33b073b829124fc96
 class DashboardView extends React.Component {
   constructor(props) {
     super(props);
