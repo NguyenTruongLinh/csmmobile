@@ -1,32 +1,20 @@
 import React, {Component} from 'react';
-import {
-  View,
-  FlatList,
-  Text,
-  Dimensions,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from 'react-native';
-import {inject, observer} from 'mobx-react';
-// import Ripple from 'react-native-material-ripple';
+import {View, FlatList, Text, Image} from 'react-native';
 
-// import InputTextIcon from '../../components/controls/InputTextIcon';
+import {reaction} from 'mobx';
+import {inject, observer} from 'mobx-react';
+
 import CMSRipple from '../../components/controls/CMSRipple';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 
-import snackbar from '../../util/snackbar';
-
-import ROUTERS from '../../consts/routes';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
-import variables from '../../styles/variables';
-import {Comps as CompTxt} from '../../localization/texts';
-import {reaction} from 'mobx';
-import {No_Data} from '../../consts/images';
-import {clientLogID} from '../../stores/user';
 import theme from '../../styles/appearance';
+import styles from './styles/regionStyles';
+
+import ROUTERS from '../../consts/routes';
+import {No_Data} from '../../consts/images';
 
 class RegionsView extends Component {
   constructor(props) {
@@ -47,7 +35,6 @@ class RegionsView extends Component {
   }
 
   componentDidMount() {
-    const {userStore} = this.props;
     this._isMounted = true;
     if (__DEV__) console.log('RegionsView componentDidMount');
 
@@ -101,7 +88,6 @@ class RegionsView extends Component {
   getRegionsList = async () => {
     let res = await this.props.sitesStore.getSiteTree();
     if (!res) {
-      // snackbar.handleRequestFailed();
       this.props.navigation.navigate(ROUTERS.VIDEO_SITES);
     }
   };
@@ -126,13 +112,6 @@ class RegionsView extends Component {
     } else {
       navigation.push(ROUTERS.VIDEO_SITES);
     }
-    // if (item.dvrs.length == 1) {
-    //   sitesStore.selectDVR(item.dvrs[0]);
-    //   navigation.push(ROUTERS.VIDEO_CHANNELS);
-    // } else {
-    //   navigation.push(ROUTERS.VIDEO_NVRS);
-    // }
-    // // this.props.appStore.enableSearchbar(false);
   };
 
   onFilter = value => {
@@ -184,35 +163,18 @@ class RegionsView extends Component {
 
     return (
       <View style={[{flex: 1}, theme[appearance].container]}>
-        {/* <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={sitesStore.siteFilter}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View> */}
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
           value={sitesStore.regionFilter}
         />
         <View style={[styles.rowHeader, theme[appearance].container]}>
-          <Text
-            style={{
-              paddingLeft: 24,
-              textAlignVertical: 'center',
-              color: CMSColors.RowOptions,
-            }}>
+          <Text style={styles.rowHeaderText}>
             {sitesStore.filteredRegions.length + ' regions'}
           </Text>
         </View>
         <View style={{flex: 1}} onLayout={this.onFlatListLayout}>
           <FlatList
-            // ref={ref => (this.sitesListRef = ref)}
             renderItem={this.renderItem}
             keyExtractor={item => item.key}
             data={this.props.sitesStore.filteredRegions}
@@ -228,39 +190,6 @@ class RegionsView extends Component {
   }
 }
 
-const itemHeight = Dimensions.get('window').height / 16;
-
-const styles = StyleSheet.create({
-  noDataContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  noDataImg: {
-    width: 100,
-    height: 100,
-  },
-  noDataTxt: {
-    marginTop: 12,
-    paddingBottom: 50,
-    fontSize: 16,
-    color: CMSColors.PrimaryText,
-  },
-  itemContainer: {
-    height: itemHeight,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingLeft: 16,
-    borderBottomWidth: variables.borderWidthRow,
-  },
-  itemText: {fontSize: 16, fontWeight: '500'},
-  rowHeader: {
-    height: 35,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-});
 export default inject(
   'appStore',
   'sitesStore',

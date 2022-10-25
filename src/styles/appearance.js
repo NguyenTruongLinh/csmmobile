@@ -54,6 +54,9 @@ const theme = {
     headerListRow: {
       backgroundColor: CMSColors.HeaderListRow,
     },
+    temperatureInfo: {
+      backgroundColor: CMSColors.DividerColor24_HEX,
+    },
   },
   dark: {
     container: {
@@ -107,6 +110,9 @@ const theme = {
     textCalendarDisabledColor: CMSColors.White_Op30,
     headerListRow: {
       backgroundColor: CMSColors.MineShaft_2,
+    },
+    temperatureInfo: {
+      backgroundColor: CMSColors.CodGray,
     },
   },
 };

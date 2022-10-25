@@ -1,24 +1,14 @@
 import React, {Component} from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  ImageBackground,
-  ActivityIndicator,
-} from 'react-native';
+import {View, Text, ImageBackground, ActivityIndicator} from 'react-native';
 import PropTypes from 'prop-types';
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
 import {RTCView} from 'react-native-webrtc';
 import {DateTime} from 'luxon';
 
-import util, {normalize} from '../../util/general';
-import snackbarUtil from '../../util/snackbar';
-import CMSColors from '../../styles/cmscolors';
 import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 import {RTC_COMMANDS, VIDEO_MESSAGE} from '../../consts/video';
-import {TIMEZONE_MAP} from '../../consts/timezonesmap';
 import {NVRPlayerConfig} from '../../consts/misc';
 
 import {STREAM_STATUS} from '../../localization/texts';
@@ -43,8 +33,6 @@ class RTCStreamingView extends Component {
     super(props);
 
     this.state = {
-      // hdMode: false,
-      // isLive: true,
       width: props.width,
       height: props.height,
       status: STREAM_STATUS.CONNECTING,
@@ -72,20 +60,9 @@ class RTCStreamingView extends Component {
       onLowBuffer: this.dataChannelOnLowBuffer,
     });
 
-    // if (!viewer.dataChannel) {
-    //   console.log('RTCStreamingView dataChannel not created yet');
-    //   return;
-    // }
-
     if (viewer.isDataChannelOpened) {
       __DEV__ && console.log('GOND dc opened send live cmd now ...');
       this.dataChannelOnOpen();
-      // if (videoStore.isLive) {
-      //   this.sendRtcCommand(RTC_COMMANDS.TIMEZONE);
-      //   this.sendRtcCommand(RTC_COMMANDS.LIVE);
-      // } else {
-      //   // TODO: search in single player
-      // }
     }
   }
 
@@ -121,10 +98,6 @@ class RTCStreamingView extends Component {
           }
         }
       ),
-      // reaction(
-      //   () => videoStore.hdMode,
-      //   () => this._isMounted && singlePlayer && this.startPlayback()
-      // ),
       reaction(
         () => videoStore.searchDate,
         () => {
@@ -142,43 +115,6 @@ class RTCStreamingView extends Component {
       ),
     ];
   };
-
-  /*
-  componentDidUpdate(prevProps, prevState) {
-    if (!this._isMounted) return;
-    const {hdMode, isLive, videoStore, viewer, searchDate} = this.props;
-
-    if (isLive != prevProps.isLive) {
-      if (videoStore.dvrTimezone) {
-        this.pause();
-        setTimeout(() => {
-          if (isLive) {
-            this.startPlayback(true);
-          } else {
-            this.sendRtcCommand(RTC_COMMANDS.DAYLIST);
-            setTimeout(
-              () =>
-                this._isMounted && this.sendRtcCommand(RTC_COMMANDS.TIMELINE),
-              500
-            );
-          }
-        }, 500);
-      }
-    }
-
-    if (hdMode != prevProps.hdMode) {
-      this.startPlayback();
-    }
-
-    if (!isLive && searchDate != prevProps.searchDate) {
-      this.pause();
-      setTimeout(
-        () => this._isMounted && this.sendRtcCommand(RTC_COMMANDS.TIMELINE),
-        500
-      );
-    }
-  }
-  */
 
   stop = () => {
     this.pause();
@@ -213,7 +149,6 @@ class RTCStreamingView extends Component {
   };
 
   timeDataConverter = value => {
-    // __DEV__ && console.log('GOND convert time: ', value);
     const timezoneName = this.props.videoStore.timezone ?? 'local';
     return {
       id: 0,
@@ -224,34 +159,8 @@ class RTCStreamingView extends Component {
         1000,
       begin: value.begin_time, // * 1000,
       end: value.end_time, // * 1000,
-      // string_begin: DateTime.fromSeconds(value.begin_time)
-      //   .setZone(timezoneName)
-      //   .toFormat('MM/DD/YYYY HH:mm:ss'),
-      // string_end: DateTime.fromSeconds(value.end_time)
-      //   .setZone(timezoneName)
-      //   .toFormat('MM/DD/YYYY HH:mm:ss'),
     };
   };
-
-  // fillRange = (start, end) => {
-  //   return Array(end - start + 1)
-  //     .fill()
-  //     .map((item, index) => start + index);
-  // };
-
-  // generateFullTimeline = timestamp => {
-  //   let result = [];
-  //   for (let i = 0; i < timestamp.length; i++) {
-  //     // if (USE_TIMESTAMP) {
-  //     // 	result = result.concat(this.fillRange(timestamp[i].begin_sv,timestamp[i].end_sv))
-  //     // } else {
-  //     result = result.concat(
-  //       this.fillRange(timestamp[i].begin, timestamp[i].end)
-  //     );
-  //     // }
-  //   }
-  //   return result;
-  // };
 
   startPlayback = (showMessage = false) => {
     const {viewer} = this.props;
@@ -276,16 +185,11 @@ class RTCStreamingView extends Component {
         '>>> [GOND] Everything is ready, start video now, cmd: ',
         cmd
       );
-    // showMessage && showSnackbarMsg(VIDEO_MESSAGE.MSG_STREAM_CONNECTED);
     this.sendRtcCommand(cmd);
   };
 
   sendRtcCommand = cmd => {
     const {videoStore, viewer} = this.props;
-    // if (this.needResetConnection) {
-    // 	this.getVideoInfos({KDVR: this.state.DVR.KDVR, ChannelNo: this.state.channelNo})
-    // 	return;
-    // }
     let requestObj = {
       request_type: cmd,
       main_sub: this.props.hdMode ? 1 : 0,
@@ -294,13 +198,6 @@ class RTCStreamingView extends Component {
     const searchDate = videoStore.getSafeSearchDate();
 
     if (cmd == RTC_COMMANDS.SEARCH) {
-      // __DEV__ &&
-      //   console.log(
-      //     'GOND RTC_COMMANDS.SEARCH startTs = ',
-      //     videoStore.searchBegin,
-      //     '\n --- endTs = ',
-      //     videoStore.searchEnd
-      //   );
       requestObj = {
         ...requestObj,
         begin_ts: this.state.startTs,
@@ -360,14 +257,6 @@ class RTCStreamingView extends Component {
       connectionStatus: STREAM_STATUS.CONNECTED,
       needResetConnection: false,
     });
-    // if (videoStore.isLive) {
-    //   this.sendRtcCommand(RTC_COMMANDS.LIVE);
-    //   this.sendRtcCommand(RTC_COMMANDS.TIMEZONE);
-    // } else {
-    //   // TODO: search in single player
-    //   this.sendRtcCommand(RTC_COMMANDS.TIMEZONE);
-    //   this.sendRtcCommand(RTC_COMMANDS.TIMEZONE);
-    // }
     this.sendRtcCommand(RTC_COMMANDS.TIMEZONE);
   };
 
@@ -420,26 +309,15 @@ class RTCStreamingView extends Component {
                 '-- GOND timeInterval is empty, jtimeData =',
                 jtimeData
               );
-            // this.pause();
             viewer.setStreamStatus({
               isLoading: false,
-              // novideo: true,
               connectionStatus: STREAM_STATUS.NOVIDEO,
-              // displayInfo: '',
               error: 'No video',
             });
-            // videoStore.setDisplayDateTime('')
-            // snackbarUtil.showMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
             return;
           }
 
-          // console.log('-- GOND timeInterval', timeInterval);
           __DEV__ && console.log('-- GOND searchDate', videoStore.searchDate);
-          // __DEV__ &&
-          //   console.log(
-          //     '-- GOND currentDate',
-          //     DateTime.fromSeconds(videoStore.searchDate)
-          //   );
 
           timeInterval.sort((a, b) => a.begin - b.begin);
           __DEV__ && console.log('-- GOND timeInterval', timeInterval);
@@ -448,14 +326,12 @@ class RTCStreamingView extends Component {
             // novideo: false,
           });
           videoStore.setTimeline(timeInterval);
-          // this.fullTimeline = this.generateFullTimeline(timeInterval);
         } catch (ex) {
           console.log(
             '%c [GOND] RTC.dataChannel.onerror: ',
             'color: red; font-style: italic',
             ex
           );
-          // snackbarUtil.showMessage(VIDEO_MESSAGE.MSG_STREAM_ERROR, CMSColors.Danger);
           viewer.setStreamStatus({
             isLoading: false,
             connectionStatus: STREAM_STATUS.ERROR,
@@ -491,9 +367,6 @@ class RTCStreamingView extends Component {
           data[0].ti.length > 0
         ) {
           let recordingDates = data[0].ti.map(params => {
-            // let daylightday = convertToLocalTime(params.begin_time, this.dvrTimezone) * 1000;
-            // console.log('-- GOND daylightday', daylightday);
-            // return dayjs(daylightday).format("YYYY-MM-DD");
             return DateTime.fromSeconds(params.begin_time)
               .setZone(videoStore.timezone)
               .toFormat('yyyy-MM-dd');
@@ -512,15 +385,6 @@ class RTCStreamingView extends Component {
         if (videoStore.selectedChannel != viewer.channelNo) break;
         let currentTime = null;
         let timestamps = data.time.split('_');
-        // __DEV__ &&
-        //   console.log(
-        //     'GOND timestamps = ',
-        //     timestamps,
-        //     '\n - time 0 = ',
-        //     DateTime.fromSeconds(parseInt(timestamps[0])),
-        //     '\n - time 1 = ',
-        //     DateTime.fromSeconds(parseInt(timestamps[1]))
-        //   );
         try {
           currentTime =
             typeof data.time === 'string'
@@ -536,13 +400,6 @@ class RTCStreamingView extends Component {
           );
           return;
         }
-        // __DEV__ &&
-        //   console.log(
-        //     'GOND on timestamp: ',
-        //     currentTime,
-        //     ', ',
-        //     new Date(currentTime * 1000)
-        //   );
 
         this.onTimeFrame(currentTime);
         return;
@@ -553,13 +410,11 @@ class RTCStreamingView extends Component {
         if (viewer.isLoading) {
           viewer.setStreamStatus({
             isLoading: false,
-            // canLiveSearch: true,
             connectionStatus:
               data.status == 'OK'
                 ? STREAM_STATUS.CONNECTED
                 : STREAM_STATUS.ERROR,
             error: data.status == 'OK' ? '' : data.description,
-            // novideo: false,
           });
         }
         return;
@@ -571,30 +426,18 @@ class RTCStreamingView extends Component {
             'color: red; font-style: italic',
             data.description || 'Unknow error'
           );
-          // snackbarUtil.showMessage(VIDEO_MESSAGE.MSG_STREAM_ERROR, CMSColors.Danger);
           if (viewer.isLoading)
             this.props.viewer.setStreamStatus({
               isLoading: false,
-              // novideo: true,
               connectionStatus: STREAM_STATUS.ERROR,
               error: data.description ?? 'Unknow error',
-              // displayInfo: '',
             });
           return;
         }
-        // this.fixedpos = true;
-        // Video frames are coming, stop videoLoading
-        // if(this.isScrolling)
-        // USE_TIMESTAMP
-        // 	? this._handleScrollTo(this.state.startTs)
-        // 	: this._handleScrollTo(this.state.startTime.unix());
         __DEV__ && console.log('GOND PAUSE 3 false');
         this.props.viewer.setStreamStatus({
           isLoading: false,
-          // paused: false,
-          // canLiveSearch: true,
           connectionStatus: STREAM_STATUS.CONNECTED,
-          // novideo: false,
           error: '',
         });
 
@@ -605,9 +448,6 @@ class RTCStreamingView extends Component {
         ) {
           setTimeout(() => {
             if (this._isMounted && viewer) {
-              // const searchTime = DateTime.fromISO(searchPlayTime, {
-              //   zone: videoStore.timezone,
-              // });
               this.setState(
                 {
                   startTs: searchPlayTimeLuxon.toSeconds(), // searchTime.toSeconds(),
@@ -653,19 +493,6 @@ class RTCStreamingView extends Component {
     if (event == null || event.nativeEvent == null || !this._isMounted) return;
     __DEV__ &&
       console.log('GOND RTCPlayer onlayout: ', event.nativeEvent.layout);
-    // let {width, height} = event.nativeEvent.layout;
-    // setTimeout(() => {
-    //   if (width <= height) {
-    //     const videoRatio = width / height;
-    //     if (videoRatio !== NATURAL_RATIO) {
-    //       height = parseInt((width * 9) / 16);
-    //     }
-    //   }
-    //   this.setState({
-    //     width: width,
-    //     height: height,
-    //   });
-    // }, 100);
   };
 
   onChangeSearchDate = () => {};
@@ -684,7 +511,6 @@ class RTCStreamingView extends Component {
     const {remoteStream, channelName, isLoading, connectionStatus, error} =
       this.props.viewer;
     const {width, height, videoStore} = this.props;
-    // const {error} = this.state;
     const noVideo =
       connectionStatus === STREAM_STATUS.NOVIDEO || this.props.noVideo;
     __DEV__ &&
@@ -696,22 +522,11 @@ class RTCStreamingView extends Component {
       );
 
     return (
-      // <RTCView
-      //   streamUrl={remoteStream.toURL()}
-      //   objectFit={'cover'}
-      //   style={{width: width, height: height}}
-      //   // width={width}
-      //   // height={height}
-      //   ref={ref => {
-      //     this.player = ref;
-      //   }}
-      // />
       <View onLayout={this.onLayout}>
         <ImageBackground
           source={NVR_Play_NoVideo_Image}
           style={{width: width, height: height}}
           resizeMode="cover">
-          {/* <View style={{width: width, height: height}}> */}
           <Text
             style={[
               styles.channelInfo,
@@ -739,8 +554,6 @@ class RTCStreamingView extends Component {
                 streamURL={remoteStream.toURL()}
                 objectFit={'cover'}
                 style={{width: width, height: height}}
-                // width={width}
-                // height={height}
                 ref={ref => {
                   this.player = ref;
                 }}

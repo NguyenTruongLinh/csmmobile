@@ -1,31 +1,22 @@
-import React, {Component, PropTypes} from 'react';
-import {
-  Text,
-  View,
-  Dimensions,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  FlatList,
-} from 'react-native';
-// import {CalendarList} from 'react-native-calendars';
+import React, {Component} from 'react';
+import {Text, View, Dimensions, ScrollView, FlatList} from 'react-native';
+
 import {DateTime} from 'luxon';
 import Ripple from 'react-native-material-ripple';
 import Accordion from 'react-native-collapsible/Accordion';
 import {inject, observer} from 'mobx-react';
-// import Modal from 'react-native-modal';
 import Modal from '../../components/views/CMSModal';
 
 import CMSCalendarRange from '../../components/views/CMSCalendarRange';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import Button from '../../components/controls/Button';
-import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import {Icon, IconCustom, MaterialIcons} from '../../components/CMSStyleSheet';
 
-import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
 import theme from '../../styles/appearance';
+import styles, {SECTION_HEADER_HEIGHT} from './styles/filterModalStyles';
+
 import {DateFormat} from '../../consts/misc';
 import {
   SMARTER as SMARTER_TXT,
@@ -49,8 +40,6 @@ FILTER_PARAMS = [
     key: 'sec_sites',
   },
 ];
-
-const SECTION_HEADER_HEIGHT = 48;
 
 class ExceptionSearchModal extends Component {
   static defaultProps = {
@@ -293,14 +282,14 @@ class ExceptionSearchModal extends Component {
               color={theme[appearance].iconColor}
               size={22}
             />
-            <View style={{justifyContent: 'center', marginLeft: 12}}>
-              <Text style={[{fontSize: 16}, theme[appearance].text]}>
+            <View style={styles.dateTimeTextContainer}>
+              <Text style={[styles.textBase, theme[appearance].text]}>
                 {dateFrom.toFormat(DateFormat.POS_Filter_Date) +
                   ' - ' +
                   dateTo.toFormat(DateFormat.POS_Filter_Date)}
               </Text>
             </View>
-            <View style={{flex: 1, alignItems: 'flex-end'}}>
+            <View style={styles.iconHeaderContainer}>
               <IconCustom
                 name={isActive ? 'expand-arrow' : 'expand-button'}
                 color={theme[appearance].iconColor}
@@ -321,12 +310,12 @@ class ExceptionSearchModal extends Component {
               color={theme[appearance].iconColor}
               size={22}
             />
-            <View style={{justifyContent: 'center', marginLeft: 12}}>
-              <Text style={[{fontSize: 16}, theme[appearance].text]}>
+            <View style={styles.siteSelectedContainer}>
+              <Text style={[styles.textBase, theme[appearance].text]}>
                 {'' + selectedSites.length + ' sites selected'}
               </Text>
             </View>
-            <View style={{flex: 1, alignItems: 'flex-end'}}>
+            <View style={styles.siteSelectedIconContainer}>
               <IconCustom
                 name={isActive ? 'expand-arrow' : 'expand-button'}
                 color={theme[appearance].iconColor}
@@ -342,20 +331,11 @@ class ExceptionSearchModal extends Component {
   renderSiteItem = ({item}) => {
     const {selectedSites} = this.state;
     const {appearance} = this.props.appStore;
-    // __DEV__ && console.log('GOND renderSiteItem selected: ', selectedSites);
     const isSelected = selectedSites.includes(item.key);
 
     return (
       <Ripple
-        style={[
-          {
-            height: 40,
-            flexDirection: 'row',
-            paddingHorizontal: 12,
-            alignItems: 'center',
-          },
-          theme[appearance].container,
-        ]}
+        style={[styles.siteItemContainer, theme[appearance].container]}
         onPress={() => {
           this.setState({
             selectedSites: isSelected
@@ -419,7 +399,7 @@ class ExceptionSearchModal extends Component {
               ? 'Select at least 1 site'
               : '' + selectedSites.length + ' sites selected'}
           </Text>
-          <View style={{flex: 1, alignItems: 'flex-end'}}>
+          <View style={styles.sortIconContainer}>
             <Ripple
               style={styles.button_sort}
               onPress={() => this.setState({isSortAZ: !isSortAZ})}>
@@ -444,17 +424,9 @@ class ExceptionSearchModal extends Component {
             iconColor={CMSColors.InputIconColor}
           />
         </View>
-        <View style={{height: '100%'}}>
+        <View style={styles.allSelectedContainer}>
           <Ripple
-            style={[
-              {
-                height: 40,
-                flexDirection: 'row',
-                paddingHorizontal: 12,
-                alignItems: 'center',
-              },
-              theme[appearance].container,
-            ]}
+            style={[styles.allSelectedButton, theme[appearance].container]}
             onPress={this.onSelectAllSites}>
             <MaterialIcons
               name={isSelectedAll ? 'check-box' : 'check-box-outline-blank'}
@@ -474,13 +446,7 @@ class ExceptionSearchModal extends Component {
               data={sortedSites}
               keyExtractor={item => 'site_' + item.key}
               renderItem={this.renderSiteItem}
-              style={{height: '100%'}}
-              // getItemLayout={(data, index) => ({
-              //   length: 40,
-              //   offset: 40 * index,
-              //   index,
-              // })}
-              // removeClippedSubviews={false}
+              style={styles.sortSiteContainer}
             />
           </View>
         </View>
@@ -488,7 +454,6 @@ class ExceptionSearchModal extends Component {
     );
   };
 
-  // renderSectionContent = (section, index, isActive) => {
   renderSectionContent = (item, index, isActive) => {
     const {dateFrom, dateTo, contentHeight} = this.state;
     if (!isActive) return;
@@ -503,24 +468,6 @@ class ExceptionSearchModal extends Component {
               onDateChange={this.onDateChange}
             />
           </View>
-        );
-
-        return (
-          // <View style={{height: '100%'}}>
-          <ScrollView
-            ref={r => (this.calendarRef = r)}
-            onContentSizeChange={() =>
-              this.calendarRef &&
-              this.calendarRef.scrollToEnd({animated: false})
-            }
-            style={{height: contentHeight, flex: 1}}>
-            <CMSCalendarRange
-              dateFrom={dateFrom}
-              dateTo={dateTo}
-              onDateChange={this.onDateChange}
-            />
-          </ScrollView>
-          //</View>
         );
       case FILTER_SECTIONS.SITES:
         return this.renderSitesSelection();
@@ -539,7 +486,6 @@ class ExceptionSearchModal extends Component {
       <Modal
         isVisible={this.props.isVisible}
         onBackdropPress={this.onDismiss}
-        // onSwipeOut={() => this.setState({showFilterModal: false})}
         onBackButtonPress={this.onDismiss}
         panResponderThreshold={10}
         backdropOpacity={0.3}
@@ -556,43 +502,5 @@ class ExceptionSearchModal extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  modal: {
-    marginBottom: 0,
-    marginTop: 0,
-    marginLeft: 0,
-    marginRight: 0,
-    flex: 1,
-  },
-  sectionHeaderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    // padding: 5,
-    paddingHorizontal: 12,
-    height: SECTION_HEADER_HEIGHT,
-    borderBottomWidth: 0.5,
-    borderColor: CMSColors.BorderColorListRow,
-  },
-  siteNameContainer: {
-    alignItems: 'center',
-    marginLeft: 12,
-  },
-  siteNameText: {
-    fontSize: 14,
-  },
-  button_sort: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  flatSearchBarContainer: {
-    paddingLeft: 18,
-    paddingRight: 4,
-    height: 50,
-  },
-});
 
 export default inject('appStore')(observer(ExceptionSearchModal));

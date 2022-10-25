@@ -22,7 +22,6 @@ export default function SmartERStack() {
       initialRouteName={ROUTERS.SMARTER_DASHBOARD}
       screenOptions={({route, navigation}) => ({
         headerStyle: {
-          // backgroundColor: CMSColors.White,
           borderBottomWidth: 1,
         },
         headerStatusBarHeight: variables.StatusBarHeight,
@@ -47,7 +46,7 @@ export default function SmartERStack() {
       <PStack.Screen
         name={ROUTERS.TRANS_VIDEO}
         component={VideoPlayerView}
-        options={({route, navigation}) => ({
+        options={({navigation}) => ({
           headerLeft: () => (
             <BackButton
               navigator={navigation}

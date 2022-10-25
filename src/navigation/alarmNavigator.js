@@ -51,10 +51,8 @@ function AlarmStack(props) {
         })}>
         <AStack.Screen
           name={ROUTERS.ALARM_LIVE}
+          options={{headerLeft: () => null}}
           component={AlarmsLiveView}
-          options={({route, navigation}) => ({
-            headerLeft: () => {},
-          })}
         />
         <AStack.Screen
           name={ROUTERS.ALARM_SEARCH}
@@ -67,7 +65,7 @@ function AlarmStack(props) {
         <AStack.Screen
           name={ROUTERS.VIDEO_PLAYER}
           component={VideoPlayerView}
-          options={({route, navigation}) => ({
+          options={({navigation}) => ({
             headerLeft: () => (
               <BackButton
                 navigator={navigation}

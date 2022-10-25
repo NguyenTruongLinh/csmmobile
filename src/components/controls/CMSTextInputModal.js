@@ -4,21 +4,20 @@ import {
   StyleSheet,
   Text,
   Dimensions,
-  KeyboardAvoidingView,
-  ScrollView,
   Keyboard,
   Platform,
 } from 'react-native';
-// import Modal from 'react-native-modal';
+
+import {inject, observer} from 'mobx-react';
+
 import Modal from '../views/CMSModal';
 
-import AuthenModal from '../common/AuthenModal';
 import InputText from './InputText';
 import Button from './Button';
 import {normalize} from '../../util/general';
 
 import CMSColors from '../../styles/cmscolors';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import theme from '../../styles/appearance';
 
 class CMSTextInputModal extends React.Component {
   static defaultProps = {
@@ -97,16 +96,12 @@ class CMSTextInputModal extends React.Component {
   };
 
   render() {
-    const {isVisible, placeHolder, title, label} = this.props;
-    const {textInput /*, focused*/} = this.state;
+    const {isVisible, placeHolder, title, label, appStore} = this.props;
+    const {textInput} = this.state;
+    const {appearance} = appStore;
     const {height} = Dimensions.get('window');
 
     return (
-      // <KeyboardAwareScrollView
-      //   contentContainerStyle={{flex: 1}}
-      //   enableOnAndroid={true}>
-      // <KeyboardAvoidingView style={{flex: 1}} enabled>
-      //   <ScrollView scrollEnabled={false} keyboardShouldPersistTaps="handled">
       <Modal
         isVisible={isVisible}
         onBackdropPress={this.onCancel}
@@ -122,14 +117,12 @@ class CMSTextInputModal extends React.Component {
               (this.state.isInputFocus ? this.state.keyboardHeight + 333 : 333),
           },
         ]}>
-        <View style={[styles.modalView]}>
+        <View style={[styles.modalView, theme[appearance].modalContainer]}>
           {title.length > 0 && (
-            <View
-              style={[
-                styles.header,
-                // Platform.OS == 'ios' ? {height: 80} : {flex: 2},
-              ]}>
-              <Text style={styles.headerText}>{title}</Text>
+            <View style={[styles.header]}>
+              <Text style={[styles.headerText, theme[appearance].text]}>
+                {title}
+              </Text>
             </View>
           )}
           <View
@@ -154,8 +147,6 @@ class CMSTextInputModal extends React.Component {
               label={label}
               placeHolder={placeHolder}
               style={styles.textInput}
-              // onFocus={() => this.setState({focused: true})}
-              // onBlur={() => this.setState({focused: false})}
             />
           </View>
           <View
@@ -169,7 +160,6 @@ class CMSTextInputModal extends React.Component {
               style={styles.button}
               type="flat"
               onPress={this.onCancel}
-              // backgroundColor={CMSColors.White}
               enable={true}
               caption="CANCEL"
             />
@@ -177,7 +167,6 @@ class CMSTextInputModal extends React.Component {
               style={[styles.button, styles.buttonSave]}
               type="flat"
               onPress={this.onSubmit}
-              // backgroundColor={CMSColors.White}
               captionStyle={{color: CMSColors.White}}
               enable={true} // {textInput.length > 0}
               caption="SAVE"
@@ -185,24 +174,18 @@ class CMSTextInputModal extends React.Component {
           </View>
         </View>
       </Modal>
-      // </ScrollView>
-      // </KeyboardAvoidingView>
-      // </KeyboardAwareScrollView>
     );
   }
 }
 
 const styles = StyleSheet.create({
   modalView: {
-    // width: 350,
-    // height: 280,
     flex: 1,
     width: '100%',
     flexDirection: 'column',
     backgroundColor: CMSColors.White,
     paddingLeft: normalize(8),
     paddingRight: normalize(8),
-    // paddingTop: normalize(20),
     paddingBottom: normalize(8),
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
@@ -225,10 +208,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     flexDirection: 'row',
-    // borderColor: 'red',
-    // borderWidth: 1,
-    // marginLeft: normalize(21),
-    // marginBottom: normalize(7),
   },
   headerText: {
     fontSize: normalize(20),
@@ -239,12 +218,8 @@ const styles = StyleSheet.create({
   body: {
     flex: 5,
     flexDirection: 'column',
-    // padding: 10,
     marginHorizontal: normalize(10),
-    // marginBottom: normalize(8),
     marginTop: 10,
-    // borderColor: 'red',
-    // borderWidth: 1,
   },
   footer: {
     flex: 1,
@@ -252,22 +227,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
     marginBottom: 50,
-    // borderColor: 'red',
-    // borderWidth: 1,
   },
   textInput: {
     width: '100%',
-    // height: 140,
-    // borderWidth: 2,
-    // borderColor: '#eee',
-    // borderRadius: 4,
-    // textAlignVertical: 'top',
     padding: 10,
     fontSize: 14,
-    // ...Platform.select({
-    //   ios: {left: 1, top: -1},
-    //   android: {textAlignVertical: 'top'},
-    // }),
   },
   button: {
     height: 50,
@@ -285,4 +249,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CMSTextInputModal;
+export default inject('appStore')(observer(CMSTextInputModal));

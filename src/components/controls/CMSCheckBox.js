@@ -1,4 +1,4 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import {Text, View, StyleSheet, ScrollView} from 'react-native';
 
 import Ripple from 'react-native-material-ripple';
@@ -11,7 +11,6 @@ import {compareStrings} from '../../util/general';
 import {Icon, IconCustom} from '../CMSStyleSheet';
 import CMSColors from '../../styles/cmscolors';
 import {Comps as CompTxt} from '../../localization/texts';
-import CMSSearchbar from '../containers/CMSSearchbar';
 import theme from '../../styles/appearance';
 
 class CheckboxGroup extends Component {
@@ -24,7 +23,6 @@ class CheckboxGroup extends Component {
 
   constructor(props) {
     super(props);
-    // __DEV__ && console.log('GOND allData = ', props.allData);
     this._onSelectAll.bind(this);
     this.state = {
       filterValue: '',
@@ -32,7 +30,6 @@ class CheckboxGroup extends Component {
   }
 
   componentDidMount = () => {
-    // __DEV__ && console.log('GOND allData = ', this.props.allData);
     if (!this.props.allData) return;
 
     this.props.allData.map(checkbox => {
@@ -97,10 +94,6 @@ class CheckboxGroup extends Component {
       return;
     }
 
-    // let can_search = !input || input.length == 0 ? true : false;
-    //this.setState({ can_refresh: can_search});
-    //let alt_type = this.props.Data;
-
     let result = checkboxes.filter(val => {
       let str = this.getLabel(val).toLowerCase();
       let search = input.toLowerCase();
@@ -122,27 +115,12 @@ class CheckboxGroup extends Component {
     let res = [...data];
     if (!this.props.enableSort) return res;
 
-    // if (isSortAZ == true) {
-    //   return _.sortBy(data, [
-    //     o => {
-    //       return this.getLabelSort(o);
-    //     },
-    //   ]);
-    // }
-
-    // return _.sortBy(data, [
-    //   o => {
-    //     return this.getLabelSort(o);
-    //   },
-    // ]).reverse();
-
     res.sort(
       (a, b) =>
         isSortAZ
           ? compareStrings(this.getLabelSort(a), this.getLabelSort(b)) // this.getLabelSort(a) > this.getLabelSort(b)
           : compareStrings(this.getLabelSort(b), this.getLabelSort(a)) // this.getLabelSort(a) < this.getLabelSort(b)
     );
-    // __DEV__ &&  console.log('GOND sortItems after: ', res);
     return res;
   }
 
@@ -209,7 +187,6 @@ class CheckboxGroup extends Component {
     );
 
     const header = (
-      // <View style={styles.body_header}>
       <InputTextIcon
         label=""
         ref={ref => (this.searchBar = ref)}
@@ -226,7 +203,6 @@ class CheckboxGroup extends Component {
         }}
         iconColor={theme[appearance].iconColor}
       />
-      // </View>
     );
 
     let itemAll = (
@@ -240,7 +216,6 @@ class CheckboxGroup extends Component {
         onPress={() => {
           this._onSelectAll(!this._checkSelectAll());
         }}>
-        {/* {iconAvatar} */}
         <Text style={[labelStyle, styles.labeldefault, {marginLeft: 4}]}>
           All
         </Text>
@@ -283,11 +258,6 @@ class CheckboxGroup extends Component {
                   }}>
                   {this.props.showItemIcon && (
                     <View style={styles.containIcon}>
-                      {/* <View style={[styles.flagCount]}>
-                        <Text style={styles.flagCount_Text}>
-                          {checkbox.typeWeight}
-                        </Text>
-                      </View> */}
                       <IconCustom
                         name="ic_flag_black_48px"
                         color={checkbox.color}
@@ -325,14 +295,10 @@ const styles = StyleSheet.create({
       height: 2,
       width: 2,
     },
-    // borderWidth: 1,
-    // borderColor: 'rgb(204, 204, 204)',
     backgroundColor: CMSColors.White,
-    // flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 10,
-    // height: 48,
     height: 42, // to prevent scrollview overlap header and weird behavior with parent's header
     paddingHorizontal: 8,
   },
@@ -343,7 +309,6 @@ const styles = StyleSheet.create({
 
   labeldefault: {
     alignSelf: 'center',
-    // height: 48,
     marginLeft: 10,
     flex: 1,
     justifyContent: 'center',
@@ -371,7 +336,6 @@ const styles = StyleSheet.create({
     height: 48,
     borderBottomWidth: 0.5,
     borderColor: 'rgb(204, 204, 204)',
-    // paddingTop: 5,
     paddingLeft: 5,
   },
 

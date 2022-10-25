@@ -2,27 +2,17 @@
 // <!-- START MODULES -->
 
 import React, {Component} from 'react';
-import {
-  View,
-  FlatList,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Platform,
-} from 'react-native';
+import {View, FlatList, Text} from 'react-native';
+
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
-
 import {SwipeRow} from 'react-native-swipe-list-view';
-// import Ripple from 'react-native-material-ripple';
 
-import CMSRipple from '../../components/controls/CMSRipple';
 import AlertActionModal from './modals/actionsModal';
 import AlertDismissModal from './modals/dismissModal';
-// import InputTextIcon from '../../components/controls/InputTextIcon';
-import CMSTextInputModal from '../../components/controls/CMSTextInputModal';
+import CMSRipple from '../../components/controls/CMSRipple';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
+import {IconCustom} from '../../components/CMSStyleSheet';
 
 import {getIconAlertType} from '../../util/general';
 
@@ -30,17 +20,14 @@ import commonStyles from '../../styles/commons.style';
 import variables from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import styles from './styles/healthDetailStyles';
 import ROUTERS from '../../consts/routes';
-const RowEmpty = {isEmpty: true};
 
 class HealthDetailView extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      // showActionsModal: false,
-      // showDismissModal: false,
       dismissDescription: '',
       selectedAlertForDismiss: null,
     };
@@ -103,7 +90,6 @@ class HealthDetailView extends Component {
       await userStore.getAlertTypesSettings();
     }
 
-    // Use saved alertTypes in healthStore
     await healthStore.getHealthDetail();
   };
 
@@ -133,7 +119,6 @@ class HealthDetailView extends Component {
         <CMSTouchableIcon
           iconCustom="grid-view-9"
           onPress={() => {
-            // this.setState({showActionsModal: true})
             this.props.healthStore.showActionsModal(true);
           }}
           size={28}
@@ -162,10 +147,7 @@ class HealthDetailView extends Component {
         closeOnRowPress={true}
         disableRightSwipe={true}
         swipeToOpenPercent={10}
-        rightOpenValue={item.canDismiss ? -55 : 0}
-        // tension={2}
-        // friction={3}
-      >
+        rightOpenValue={item.canDismiss ? -55 : 0}>
         <View
           style={[
             styles.backRowContainer,
@@ -180,7 +162,6 @@ class HealthDetailView extends Component {
                 onPress={() => {
                   this.setState({
                     selectedAlertForDismiss: item,
-                    // showDismissModal: true,
                   });
                   this.props.healthStore.showDismissModal(true);
                 }}
@@ -226,21 +207,13 @@ class HealthDetailView extends Component {
 
   render() {
     const {healthStore, navigation, appStore} = this.props;
-    const {/*showDismissModal,*/ selectedAlertForDismiss} = this.state;
+    const {selectedAlertForDismiss} = this.state;
     const {appearance} = appStore;
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND render Health detail: ',
-    //     healthStore.selectedSiteAlertTypes
-    //   );
     if (!healthStore.selectedSiteAlertTypes)
       return <View style={[{flex: 1}, theme[appearance].container]} />;
 
     return (
       <View style={[{flex: 1}, theme[appearance].container]}>
-        {/* <KeyboardAwareScrollView
-          contentContainerStyle={{flex: 1}}
-          enableOnAndroid={true}> */}
         <FlatList
           renderItem={this.renderItem}
           keyExtractor={item => item.alertId}
@@ -249,15 +222,6 @@ class HealthDetailView extends Component {
           refreshing={healthStore.isLoading}
         />
         {this.renderActionButton()}
-        {/* {this.renderActionsModal()} */}
-        {/* <CMSTextInputModal
-          isVisible={showDismissModal}
-          title="Dismiss alert"
-          label="Description"
-          onSubmit={this.onDismissAlert}
-          onCancel={this.onCancelDismiss}
-          placeHolder="Dismiss descriptions"
-        /> */}
         <AlertActionModal
           data={
             healthStore.selectedSite
@@ -275,101 +239,10 @@ class HealthDetailView extends Component {
             this._isMounted && this.setState({selectedAlertForDismiss: null})
           }
         />
-        {/* </KeyboardAwareScrollView> */}
       </View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  actionContainer: {},
-  actionModal: {
-    flex: 1,
-    marginBottom: 0,
-    marginLeft: 0,
-    marginRight: 0,
-    paddingTop: 0,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    alignItems: 'flex-start',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    backgroundColor: CMSColors.White,
-  },
-  actionRowContainer: {
-    width: '100%',
-    height: ListViewHeight,
-    borderBottomWidth: 1,
-    borderBottomColor: CMSColors.BorderColorListRow,
-    paddingLeft: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  actionText: {marginLeft: 14},
-  actionButtonContainer: {
-    position: 'absolute',
-    right: 35,
-    bottom: 28,
-    width: 63,
-    height: 63,
-    borderRadius: 45,
-    backgroundColor: CMSColors.PrimaryActive,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // android's shadow
-    elevation: 5,
-    // ios's shadow check later
-    shadowOffset: {width: 14, height: 14},
-    shadowColor: 'black',
-    shadowOpacity: 0.7,
-    shadowRadius: 45,
-  },
-  backRowContainer: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    height: ListViewHeight,
-    borderBottomWidth: 1,
-  },
-  dismissButton: {
-    width: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  frontRowRipple: {
-    flex: 1,
-    height: ListViewHeight + 2,
-    backgroundColor: CMSColors.White,
-    flexDirection: 'row',
-    alignItems: 'center',
-    // justifyContent: 'flex-start',
-    paddingLeft: 16,
-    // borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: CMSColors.BorderColorListRow,
-  },
-  frontRowIcon: {
-    flex: 1,
-    flexDirection: 'row',
-    // backgroundColor: CMSColors.Transparent,
-  },
-  frontRowInfoContainer: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: ListViewHeight - 15,
-    height: ListViewHeight - 15,
-    marginRight: 14,
-    flexDirection: 'row',
-    // backgroundColor: CMSColors.BtnNumberListRow,
-  },
-  frontRowText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: CMSColors.TotalAlerts,
-  },
-  itemText: {fontSize: 16, fontWeight: '500', paddingLeft: 14},
-});
 
 export default inject(
   'userStore',

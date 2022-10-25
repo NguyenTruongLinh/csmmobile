@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, StyleSheet, Dimensions, Animated} from 'react-native';
+import {StyleSheet, Animated} from 'react-native';
 import PropTypes from 'prop-types';
 
 import {inject, observer} from 'mobx-react';
@@ -101,12 +101,6 @@ class CMSSearchbar extends React.Component {
     if (!applyOnEnter) {
       onFilter(value);
     }
-
-    // if (applyOnEnter) {
-    //   this.setState({internalText: value});
-    // } else {
-    //   onFilter(value);
-    // }
   };
 
   onEnter = event => {
@@ -140,11 +134,7 @@ class CMSSearchbar extends React.Component {
           iconCustom="searching-magnifying-glass"
           disabled={false}
           iconPosition="right"
-          iconStyle={{
-            position: 'absolute',
-            right: -10,
-            top: 5,
-          }}
+          iconStyle={styles.inputIcon}
           iconColor={theme[appearance].iconColor}
           // fixAndroidBottomLine={true}
           fixAndroidBottomLineBottom={11}
@@ -154,6 +144,12 @@ class CMSSearchbar extends React.Component {
   }
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  inputIcon: {
+    position: 'absolute',
+    right: -10,
+    top: 5,
+  },
+});
 
 export default inject('appStore')(observer(CMSSearchbar));

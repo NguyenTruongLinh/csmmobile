@@ -1,5 +1,5 @@
-import React, {Component, PropTypes} from 'react';
-import {Text, View, StyleSheet, ScrollView, FlatList} from 'react-native';
+import React, {Component} from 'react';
+import {Text, View, StyleSheet, FlatList} from 'react-native';
 import Ripple from 'react-native-material-ripple';
 
 import util from '../../util/general';
@@ -19,52 +19,13 @@ export default class TimePicker extends Component {
   componentDidMount = () => {
     const {selected} = this.props;
     setTimeout(() => {
-      // this.setState(
-      // {
-      //   dataSource: this.buildListData(selected),
-      // },
-      // () => {
       if (selected)
         setTimeout(() => {
           this._scrollView &&
             this._scrollView.scrollToIndex({index: selected, animated: true});
         }, 100);
-      // }
-      // );
     }, 100);
   };
-
-  // componentDidUpdate(prevProp) {
-  //   const {selected} = this.props;
-  //   if (selected != this.state.selected) {
-  //     this.setState({
-  //       selected: selected,
-  //       dataSource: this.buildListData(selected),
-  //     });
-
-  //     setTimeout(() => {
-  //       // let newY = parseInt(selected * LINE_HEIGHT - LINE_HEIGHT);
-  //       // this._scrollView.scrollTo({y: newY, animated: true});
-  //       this._scrollView.scrollToIndex({index: selected, animated: true});
-  //     }, 100);
-  //   }
-  // }
-
-  // buildListData = selected => {
-  //   let ds = [];
-
-  //   let filter = util.isNullOrUndef(selected) ? this.state.selected : selected;
-
-  //   for (let i = 0; i <= 23; i++) {
-  //     let item = {
-  //       id: i,
-  //       isCheck: i == filter ? true : false,
-  //     };
-  //     ds.push(item);
-  //   }
-
-  //   return ds;
-  // };
 
   formatNumber = n => {
     return n > 9 ? n : '0' + n;
@@ -73,12 +34,9 @@ export default class TimePicker extends Component {
   onSelected = (item, index) => {
     __DEV__ && console.log('GOND TimePicker onSelected: ', item);
     this.setState({
-      selected: item, // item.id,
-      // dataSource: this.buildListData(item.id),
+      selected: item,
     });
     if (this._scrollView) {
-      // let newY = parseInt((index - 1) * LINE_HEIGHT);
-      // this._scrollView.scrollTo({y: newY, animated: true});
       this._scrollView.scrollToIndex({
         index,
         animated: true,
@@ -91,12 +49,9 @@ export default class TimePicker extends Component {
     if (util.isNullOrUndef(item)) return;
 
     const isCheck = item == this.state.selected;
-    // if (item.isCheck == true) {
     if (isCheck) {
       setTimeout(() => {
         if (this._scrollView) {
-          // let newY = parseInt(this.state.selected * LINE_HEIGHT - LINE_HEIGHT);
-          // this._scrollView.scrollTo({y: newY, animated: true});
           this._scrollView.scrollToIndex({
             index: this.state.selected,
             animated: true,
@@ -113,10 +68,8 @@ export default class TimePicker extends Component {
               <Text
                 style={[
                   styles.rowButton_name,
-                  // item.isCheck == true ? styles.rowButton_name_selected : null,
                   isCheck ? styles.rowButton_name_selected : null,
                 ]}>
-                {/* {this.formatNumber(item.id)} */}
                 {this.formatNumber(item)}
               </Text>
             </View>
@@ -124,7 +77,6 @@ export default class TimePicker extends Component {
               <Text
                 style={[
                   styles.rowButton_name,
-                  // item.isCheck == true ? styles.rowButton_name_selected : null,
                   isCheck ? styles.rowButton_name_selected : null,
                 ]}>
                 {this.props.type == 'end' ? '59' : '00'}
@@ -134,7 +86,6 @@ export default class TimePicker extends Component {
               <Text
                 style={[
                   styles.rowButton_name,
-                  // item.isCheck == true ? styles.rowButton_name_selected : null,
                   isCheck ? styles.rowButton_name_selected : null,
                 ]}>
                 {this.props.type == 'end' ? '59' : '00'}
@@ -147,9 +98,8 @@ export default class TimePicker extends Component {
   };
 
   render() {
-    // __DEV__ && console.log('GOND TimePicker data: ', this.state.dataSource);
     return (
-      <View style={{flex: 1}}>
+      <View style={styles.container}>
         <View style={[styles.rowButton_contain_title_time]}>
           <View style={styles.titleContainer}>
             <Text style={styles.title_time}>Hour</Text>
@@ -161,15 +111,9 @@ export default class TimePicker extends Component {
             <Text style={styles.title_time}>Second</Text>
           </View>
         </View>
-        {/* <ScrollView
-          style={{zIndex: 1}}
-          ref={e => {
-            this._scrollView = e;
-          }}> */}
         <FlatList
           style={{zIndex: 1}}
           ref={r => (this._scrollView = r)}
-          // data={this.state.dataSource}
           data={hoursData}
           renderItem={this.renderRow}
           keyExtractor={item => 'h_' + item}
@@ -178,15 +122,14 @@ export default class TimePicker extends Component {
             offset: LINE_HEIGHT * (index - 1),
             index,
           })}
-          // initialScrollIndex={}
         />
-        {/* </ScrollView> */}
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  containe: {flex: 1},
   rowList: {
     flexDirection: 'row',
     justifyContent: 'space-between',

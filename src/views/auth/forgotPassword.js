@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import {
   View,
   SafeAreaView,
-  StyleSheet,
   Text,
   Image,
   Dimensions,
@@ -17,9 +16,9 @@ import Button from '../../components/controls/Button';
 
 import {isValidHttpUrl} from '../../util/general';
 
-import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
+import styles from './styles/forgotStyles';
 
 import {I3_Logo} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
@@ -28,7 +27,7 @@ import {Login as LoginTxt} from '../../localization/texts';
 
 // <!-- END CONSTS -->
 // ----------------------------------------------------
-const {width, height} = Dimensions.get('window');
+const {height} = Dimensions.get('window');
 
 class ForgotPasswordView extends Component {
   constructor(props) {
@@ -259,7 +258,6 @@ class ForgotPasswordView extends Component {
               error={domainErrorFlag ? errors.domain : undefined}
               disabled={false}
               secureTextEntry={false}
-              // fixAndroidBottomLine={true}
             />
 
             <InputTextIcon
@@ -281,7 +279,6 @@ class ForgotPasswordView extends Component {
               error={emailErrorFlag ? errors.email : undefined}
               disabled={false}
               secureTextEntry={false}
-              // fixAndroidBottomLine={true}
             />
             <InputTextIcon
               ref={r => (this._refs.username = r)}
@@ -302,7 +299,6 @@ class ForgotPasswordView extends Component {
               disabled={false}
               iconColor={theme[appearance].inputIconColor}
               secureTextEntry={false}
-              // fixAndroidBottomLine={true}
             />
           </View>
 
@@ -350,69 +346,5 @@ class ForgotPasswordView extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  viewContainer: {
-    flex: 1,
-    paddingHorizontal: width * 0.1,
-  },
-  logo: {
-    tintColor: CMSColors.Dark_Blue,
-    width: width * 0.3,
-    height: '100%',
-    alignSelf: 'center',
-  },
-  logoContainer: {
-    height: 60,
-    flexDirection: 'column',
-  },
-  centerContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 7,
-    flexDirection: 'column',
-  },
-  textTitle: {
-    fontSize: 18,
-    fontWeight: 'normal',
-    alignItems: 'flex-start',
-    marginLeft: 10,
-  },
-  buttonsContainer: {
-    alignItems: 'center',
-    flexDirection: 'column',
-  },
-  buttonSubmit: {
-    width: '100%',
-  },
-  content: {
-    maxWidth: variable.deviceWidth,
-    backgroundColor: CMSColors.Transparent,
-  },
-  captionStyle: {
-    color: CMSColors.TextButtonLogin,
-  },
-  copyRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: '6%',
-  },
-  copyRightLogo: {
-    tintColor: CMSColors.Dark_Blue,
-    width: (width * 28) / 100,
-    height: (width * 28 * 132) / 300 / 100,
-  },
-  copyRightText: {
-    flex: 1,
-    fontSize: 11,
-    marginLeft: 5,
-  },
-  space: {
-    flex: 0.3,
-  },
-  space_footer: {
-    flex: 0.05,
-  },
-});
 
 export default inject('userStore', 'appStore')(observer(ForgotPasswordView));

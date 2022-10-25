@@ -1,5 +1,5 @@
 import React, {PureComponent} from 'react';
-import {Dimensions, View, ScrollView, Text} from 'react-native';
+import {Dimensions, View, ScrollView, Text, StyleSheet} from 'react-native';
 import {DateTime} from 'luxon';
 
 import CMSColors from '../../styles/cmscolors';
@@ -34,8 +34,6 @@ export default class TimeRuler extends PureComponent {
     timeData: [], //[{value:0,status:0},{value:1,status:0}],
     searchDate: null,
     fontSize: 8,
-    // scrollTo: this.scrollTo,
-    // startAt: 0,
     hourBuildRuler: default24H,
     hourSpecial: '',
     rulerDST: null,
@@ -90,8 +88,6 @@ export default class TimeRuler extends PureComponent {
     this.lastX = 0;
     this.draggedX = 0;
     this.lastScrollOffsetX = -1;
-    // this.isTouchEnd = true;
-    // this.isScrollEnd = true;
     this.scrollEndTimeout = null;
     this.lastDataTime = 0;
 
@@ -108,21 +104,12 @@ export default class TimeRuler extends PureComponent {
     const {initialPosition} = this.props;
     __DEV__ && console.log('GOND TimeRuler didMount', initialPosition);
     if (initialPosition) {
-      // this.moveToPosition(initialPosition);
       this.savedSecPos = initialPosition;
     }
-
-    // this.autoUpdatePosition(currentTime, searchDate);
-    // if (currentTime && currentTime > searchDate) {
-    //   let sec = currentTime - searchDate;
-    //   let secWidth = this.state.dwidth / (SECONDS_PER_MINUTE * MINUTE_PER_HOUR);
-    //   this.scrollTo(sec * secWidth, 0);
-    // }
   }
 
   componentWillUnmount() {
     Dimensions.removeEventListener('change', this.onDimensionChange);
-    // this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
     this._isMounted = false;
 
     this.clearScrollEndTimeout();
@@ -131,13 +118,6 @@ export default class TimeRuler extends PureComponent {
   componentDidUpdate(prevProps) {
     const {currentTime, searchDate} = this.props;
     const lastTime = prevProps.currentTime;
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND Timeline prev frameTime: ',
-    //     lastTime,
-    //     ', this.isManualScrolling',
-    //     this.isManualScrolling
-    //   );
     if (currentTime != lastTime && !this.isManualScrolling) {
       this.autoUpdatePosition(currentTime, searchDate);
     }
@@ -188,13 +168,6 @@ export default class TimeRuler extends PureComponent {
       currentDate = hourIterator.toFormat(
         NVRPlayerConfig.QueryStringUTCDateFormat
       );
-      // __DEV__ &&
-      //   console.log(
-      //     'GOND TimeRuler constructArrayOfHours',
-      //     currentDate,
-      //     hourIterator,
-      //     hourIterator.hour
-      //   );
     } while (currentDate == selectedDate);
 
     return [resString, resValues];
@@ -203,9 +176,7 @@ export default class TimeRuler extends PureComponent {
   autoUpdatePosition = (currentTime, searchDate) => {
     const {hoursValue} = this.state;
     let sec = currentTime - searchDate;
-    // const secsPerHour = SECONDS_PER_MINUTE * MINUTE_PER_HOUR;
     let secWidth = this.state.dwidth / SECONDS_PER_HOUR;
-    // __DEV__ && console.log('GOND auto update timeline: ', currentTime, sec);
 
     let secToAdd = 0;
     let hourIndex = 0;
@@ -219,13 +190,6 @@ export default class TimeRuler extends PureComponent {
           : hourIndex == hoursValue.length - 1
           ? hoursValue[hourIndex] + 1
           : hoursValue[hourIndex + 1]) * SECONDS_PER_HOUR;
-      // __DEV__ &&
-      //   console.log(
-      //     'GOND auto timeline check: ',
-      //     currentHourSec,
-      //     nextHourSec,
-      //     sec
-      //   );
       if (sec < nextHourSec && sec > currentHourSec) {
         secToAdd = sec - currentHourSec;
         break;
@@ -234,8 +198,6 @@ export default class TimeRuler extends PureComponent {
 
     if (hourIndex < hoursValue.length) {
       const realSecToScroll = hourIndex * SECONDS_PER_HOUR + secToAdd;
-      // __DEV__ && console.log('GOND move timeline, sec: ', sec, ', secW = ', secWidth);
-      // this.scrollTo(sec * secWidth, 0);
       this.scrollTo(realSecToScroll * secWidth, 0);
     } else {
       __DEV__ &&
@@ -278,7 +240,6 @@ export default class TimeRuler extends PureComponent {
   };
 
   getcolor = code => {
-    // console.log('GOND getColor code = ', code)
     if (
       code == this.Enum_RecordType.CONTINUOUS ||
       code == this.Enum_RecordType.EMERGENCY_S ||
@@ -365,15 +326,6 @@ export default class TimeRuler extends PureComponent {
   };
 
   scrollTo = (x, y) => {
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND === TimeRuler scrollTo ',
-    //     this.isAutoScrolling,
-    //     this.isManualScrolling,
-    //     this.scrollRef,
-    //     'pos: ',
-    //     x
-    //   );
     if (this.isAutoScrolling && !this.isManualScrolling && this.scrollRef) {
       if (this.lastScrollOffsetX >= 0) this.lastScrollOffsetX = -1;
       if (this.draggedX > 0) {
@@ -394,7 +346,6 @@ export default class TimeRuler extends PureComponent {
           return;
         }
       }
-      // __DEV__ && console.log('GOND === TimeRuler scrollTo $ure ', x);
       this.scrollRef.scrollTo({x: x, y: y, animated: false});
       const secWidth = this.state.dwidth / SECONDS_PER_HOUR;
       this.props.onPositionChanged(x / secWidth);
@@ -439,26 +390,15 @@ export default class TimeRuler extends PureComponent {
     );
   };
 
-  // _roundOddToEven = value => {
-  //   if (value == 0) return 2;
-  //   if (value % 2 == 0) return value;
-
-  //   let rs = value + 1;
-  //   return rs;
-  // };
-
   onSendTimeData = xAxis => {
     const {hoursArray, hoursValue} = this.state;
     this.scrollEndTimeout = null;
-    // if (this.isTouchEnd && this.isScrollEnd) {
     if (!this._isMounted || xAxis == this.lastScrollOffsetX) {
       return;
     } else {
       this.lastScrollOffsetX = xAxis;
     }
     __DEV__ && console.log('GOND === TimeRuler onSendTimeData');
-    // }
-    // let { hourBuildRuler, hourSpecial } = this.props
     let decimalhour = xAxis / this.state.dwidth;
     // let hour = Math.floor(decimalhour);
     let hourIndex = Math.floor(decimalhour);
@@ -492,7 +432,6 @@ export default class TimeRuler extends PureComponent {
 
       return;
     }
-    // }
   };
 
   onScrollEnd = event => {
@@ -502,50 +441,10 @@ export default class TimeRuler extends PureComponent {
         event.nativeEvent.contentOffset.x,
         this.lastScrollOffsetX
       );
-    // this.isScrollEnd = true;
 
     this.clearScrollEndTimeout();
     let {x} = event.nativeEvent.contentOffset;
     this.scrollEndTimeout = setTimeout(() => this.onSendTimeData(x), 500);
-    /*
-    // if (this.lastScrollOffsetX >= 0) {
-    if (event.nativeEvent.contentOffset.x == this.lastScrollOffsetX) {
-      return;
-    } else {
-      this.lastScrollOffsetX = event.nativeEvent.contentOffset.x;
-    }
-    // }
-    // let { hourBuildRuler, hourSpecial } = this.props
-    let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
-    let hour = Math.floor(decimalhour);
-    // if (hourBuildRuler == startDST && hour >= hourSpecial) {
-    //   hour++;
-    // } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
-    //   hour--;
-    // }
-    let decimalminutes = (decimalhour - hour) * 60;
-    let minutes = Math.floor(decimalminutes);
-    let seconds = Math.floor((decimalminutes - minutes) * 60);
-
-    this.draggedX = event.nativeEvent.contentOffset.x;
-    if (this.props.onScrollEnd) {
-      this.props.onScrollEnd(event, {
-        hour: hour,
-        minutes: minutes,
-        seconds: seconds,
-        timestamp:
-          hour * 3600 + minutes * 60 + seconds,
-      });
-
-      // Delaying auto scroll to prevent glitch
-      setTimeout(() => {
-        if (this._isMounted) this.isAutoScrolling = true;
-      }, 2000);
-
-      // this.isTouchEnd = true;
-      return;
-    }
-    */
   };
 
   onPressIn = event => {
@@ -554,15 +453,7 @@ export default class TimeRuler extends PureComponent {
       this.props.onBeginSrcoll();
     }
     this.isAutoScrolling = false;
-    // this.isTouchEnd = false;
-    // this.isScrollEnd = false;
   };
-
-  // onPressOut = event => {
-  //   __DEV__ && console.log('GOND === TimeRuler onPressOut');
-  //   this.isAutoScrolling = true;
-  //   this.isTouchEnd = true;
-  // };
 
   onScrollBeginDrag = event => {
     __DEV__ && console.log('GOND === TimeRuler onScrollBeginDrag');
@@ -572,12 +463,10 @@ export default class TimeRuler extends PureComponent {
   };
 
   onScroll = event => {
-    // __DEV__ && console.log('GOND === TimeRuler onScroll', event);
     this.clearScrollEndTimeout();
     const {hourBuildRuler, hourSpecial} = this.props;
     const {hoursArray, hoursValue} = this.state;
     if (this.isManualScrolling == true) {
-      // this.isAutoScrolling = true;
       let decimalhour = event.nativeEvent.contentOffset.x / this.state.dwidth;
       let hourIndex = Math.floor(decimalhour);
       hourIndex =
@@ -591,28 +480,8 @@ export default class TimeRuler extends PureComponent {
       let minutes = Math.floor(decimalminutes);
       let seconds = Math.floor((decimalminutes - minutes) * 60);
 
-      // if (this.props.hourBuildRuler != default24H && this.props.hourBuildRuler == endDST) {
-      //   if (hour >= (this.props.hourSpecial + 1)) {
-      //     hour--;
-      //   }
-      // }
-
-      // if (this.props.hourBuildRuler != default24H && this.props.hourBuildRuler == startDST) {
-      //   if (hour >= (this.props.hourSpecial)) {
-      //     hour++;
-      //   }
-      // }
-      /*
-      if (hourBuildRuler == startDST && hour >= hourSpecial) {
-        hour++;
-      } else if (hourBuildRuler == endDST && hour >= hourSpecial) {
-        hour--;
-      }
-      */
-
       __DEV__ &&
         console.log('GOND === TimeRuler onScroll', hour, minutes, seconds);
-      //this.props.onScrolling({hour:hour,minutes:minutes,seconds:seconds, timestamp: (hour*3600+minutes*60+seconds) });
       this.props.onScrolling(
         this.formatTime(hour) +
           ':' +
@@ -620,7 +489,6 @@ export default class TimeRuler extends PureComponent {
           ':' +
           this.formatTime(seconds)
       );
-      //console.log(decimalhour);
     }
   };
 
@@ -632,9 +500,6 @@ export default class TimeRuler extends PureComponent {
   };
 
   renderTimeHeaderFooter = isheader => {
-    // let arrayHours = this.props.is24hour
-    //   ? arrayof24HTime.slice(0)
-    //   : arrayof12HTime.slice(0);
     let arrayHours = [...this.state.hoursArray];
     let attachment = isheader ? arrayHours.reverse() : arrayHours;
     let lenngthofprefix =
@@ -649,7 +514,6 @@ export default class TimeRuler extends PureComponent {
   };
 
   renderDST = (is24hour, hourBuildRuler, hourSpecial, rulerDST) => {
-    // console.log('GOND TimeRuler renderDST! hourSpecial = ', hourSpecial)
     if (!this.props.timeData) return [];
 
     if (Array.isArray(rulerDST) && rulerDST.length > 0) {
@@ -671,7 +535,6 @@ export default class TimeRuler extends PureComponent {
       ? this.props.searchDate
       : new Date() / 1000;
     const minValue = 60 / this.props.numofMin;
-    // __DEV__ && console.log('GOND renderDST minValue = ', minValue);
 
     for (let i = 0; i < numofview; i++) {
       let value = this.state.hoursArray[i]; // i;
@@ -682,7 +545,6 @@ export default class TimeRuler extends PureComponent {
         value = i - 1;
       }
       let objectValue = {
-        // key: is24hour ? arrayof24HTime[value] : arrayof12HTime[value],
         key: value,
         visible: true,
         color: CMSColors.White,
@@ -691,19 +553,10 @@ export default class TimeRuler extends PureComponent {
 
       let minArray = [];
       for (let j = 0; j < this.props.numofMin; j++) {
-        // let start = j * minValue;
-        // let end = start + (minValue - 1);
         let minObject = {};
         let long_start =
           searchDate + this.state.hoursValue[i] * 3600 + j * minValue * 60;
         let long_end = long_start + minValue * 60 - 1;
-        // __DEV__ &&
-        //   console.log(
-        //     'GOND renderDST long_start = ',
-        //     long_start,
-        //     ', long_end = ',
-        //     long_end
-        //   );
         minObject.begin = long_start;
         minObject.end = long_end;
         minObject.id = -1;
@@ -725,25 +578,16 @@ export default class TimeRuler extends PureComponent {
   };
 
   renderHours = is24hour => {
-    // console.log('GOND TimeRuler renderHours!')
     if (!this.props.timeData) return [];
     let numofview = this.state.hoursArray.length; // 24;
     let arrayofViews = [];
-    // let _searchDateNow = new Date();
-    // _searchDateNow = moment([_searchDateNow.getFullYear(), _searchDateNow.getMonth(), _searchDateNow.getDate()]).unix();
-    // _searchDateNow = _searchDateNow / 1000;
-    // let _searchDate = this.props.searchDate ? this.props.searchDate : _searchDateNow; //= new Date(this.searchDate ?this.searchDate:(this.props.searchDate?this.props.searchDate: Date.now()));
-    // console.log('GOND TimeRuler _searchDate = ', _searchDate, ', ', dayjs(_searchDate * 1000).format()); //('DD/MM/YY HH:mm:ss'))
-    // let searchDate = _searchDate;
     let searchDate = this.props.searchDate
       ? this.props.searchDate
       : new Date() / 1000;
     const minValue = 60 / this.props.numofMin;
-    // __DEV__ && console.log('GOND renderHours searchDate = ', searchDate);
     for (let i = 0; i < numofview; i++) {
       let value = this.state.hoursArray[i]; // i;
       let objectValue = {
-        // key: is24hour ? arrayof24HTime[i] : arrayof12HTime[i],
         key: value,
         visible: true,
         color: CMSColors.White,
@@ -751,19 +595,10 @@ export default class TimeRuler extends PureComponent {
       };
       let minArray = [];
       for (let j = 0; j < this.props.numofMin; j++) {
-        // let start = j * minValue;
-        // let end = start + (minValue - 1);
         let minObject = {};
         let long_start =
           searchDate + this.state.hoursValue[i] * 3600 + j * minValue * 60;
         let long_end = long_start + minValue * 60 - 1;
-        // __DEV__ &&
-        //   console.log(
-        //     'GOND renderHours long_start = ',
-        //     long_start,
-        //     ', long_end = ',
-        //     long_end
-        //   );
         minObject.begin = long_start;
         minObject.end = long_end;
         minObject.id = -1;
@@ -787,33 +622,20 @@ export default class TimeRuler extends PureComponent {
     if (item.visible == false) return <View />;
     let arrayofViews = [];
     let numOfSecs = this.props.numofMin;
-    // let widthofViews = Dimensions.get('screen').width / this.state.secondValue;
     let secWidth = this.state.dwidth / numOfSecs;
     let heightofView = 10;
     let heighofPaint = 5;
     let timeData = this.props.timeData;
     let lastFound = '';
     let currentSpaceLength = 0;
-    // console.log('GOND item: ', item, ', timeData: ', timeData);
     for (let i = 0; i < numOfSecs; i++) {
       let _foundColor = 'transparent';
-      // console.log('GOND sec: ', 1, ', timeData: ', timeData);
       if (timeData) {
         let idx = timeData.findIndex(t => {
           let b1 = item.minData[i].begin,
             e1 = item.minData[i].end;
           let b2 = t.begin,
             e2 = t.end;
-          // console.log(
-          //   'GOND renderMinutes: \n- b1 = ',
-          //   dayjs(b1).format('DD/MM/YY HH:mm:ss'),
-          //   ', e1 = ',
-          //   dayjs(e1).format('DD/MM/YY HH:mm:ss'),
-          //   '\n- b2 = ',
-          //   dayjs(b2).format('DD/MM/YY HH:mm:ss'),
-          //   ', e2 = ',
-          //   dayjs(e2).format('DD/MM/YY HH:mm:ss')
-          // );
 
           let found1 = b2 <= b1 && b1 <= e1 && e1 <= e2;
           let found2 = b2 <= b1 && b1 <= e2 && e2 <= e1;
@@ -821,22 +643,8 @@ export default class TimeRuler extends PureComponent {
 
           return found1 || found2 || found3;
         });
-        // this.props.timeData &&
-        //   this.props.timeData.length > 0 &&
-        //   console.log(
-        //     'GOND sec: ',
-        //     item.minData[i],
-        //     ' :: ',
-        //     dayjs(item.minData[i].begin * 1000).format('DD/MM/YY HH:mm:ss'),
-        //     ' - ',
-        //     dayjs(item.minData[i].end * 1000).format('DD/MM/YY HH:mm:ss'),
-        //     ', _foundIdx: ',
-        //     idx
-        //   );
         _foundColor =
           idx >= 0 ? this.getcolor(timeData[idx].type) : 'transparent';
-        // _foundColor != 'transparent' &&
-        //   console.log('GOND sec: ', i, ', _foundColor: ', _foundColor);
       }
 
       if (_foundColor == lastFound || lastFound == '') {
@@ -848,7 +656,6 @@ export default class TimeRuler extends PureComponent {
             style={{
               height: heightofView,
               width: currentSpaceLength, // this.state.widthMarker,
-              // borderLeftWidth: 1, borderRightWidth: 1, borderLeftColor: 'white', borderRightColor: 'white',
             }}>
             <View
               key={item.minData[i].begin + i}
@@ -862,12 +669,6 @@ export default class TimeRuler extends PureComponent {
         );
         currentSpaceLength = secWidth;
       }
-      // console.log(
-      //   'GOND spacelenght: ',
-      //   currentSpaceLength,
-      //   ', color: ',
-      //   _foundColor
-      // );
       lastFound = _foundColor;
     }
     // Push last part of time
@@ -884,65 +685,51 @@ export default class TimeRuler extends PureComponent {
         />
       </View>
     );
-    // __DEV__ && console.log('GOND === TimeRuler arrayofViews: ', arrayofViews);
     return arrayofViews;
   };
 
   render() {
     const {is24hour, hourBuildRuler, hourSpecial, rulerDST, timeData} =
       this.props;
-    // console.log('GOND TimeRuler hourBuildRuler: ', hourBuildRuler);
     let _data =
       hourBuildRuler != default24H
         ? this.renderDST(is24hour, hourBuildRuler, hourSpecial, rulerDST)
         : this.renderHours(is24hour);
-    // __DEV__ &&
-    //   timeData &&
-    //   console.log('GOND TimeRuler built ruler data: ', _data);
     const isEnable = timeData && timeData.length > 0;
     return (
       <View
-        style={{
-          flex: 1,
-          height: this.props.height,
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          justifyContent: 'flex-start',
-        }}
+        style={[
+          {
+            height: this.props.height,
+          },
+          styles.container,
+        ]}
         onLayout={this.onLayout}>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            zIndex: 10,
-          }}>
+        <View style={styles.contentContainer}>
           <ScrollView
             ref={sc => {
               this.scrollRef = sc;
             }}
             horizontal={true}
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              backgroundColor: isEnable
-                ? CMSColors.PrimaryText
-                : CMSColors.DisableItemColor,
-            }}
+            style={[
+              styles.scrollViewContainer,
+              {
+                backgroundColor: isEnable
+                  ? CMSColors.PrimaryText
+                  : CMSColors.DisableItemColor,
+              },
+            ]}
             scrollEnabled={isEnable}
             showsHorizontalScrollIndicator={false}
             onScrollBeginDrag={this.onScrollBeginDrag}
             onScroll={this.onScroll}
             onScrollEndDrag={this.onScrollEndDrag}
-            // onMomentumScrollBegin={this.onPressIn}
             onMomentumScrollEnd={this.onScrollEnd}
             onTouchStart={this.onPressIn}
             onTouchEnd={this.onPressOut}
             bounces={false}
             scrollEventThrottle={16}>
             {_data.map((item, index) => {
-              // console.log('GOND TimeRuler renderHour: ', item);
               return item ? (
                 <View
                   key={index}
@@ -953,45 +740,20 @@ export default class TimeRuler extends PureComponent {
                   }}>
                   <View
                     key={index + item.value}
-                    style={{
-                      flexDirection: 'row',
-                      height: 20,
-                      width: this.state.dwidth,
-                      borderLeftWidth: 2,
-                      borderTopWidth: 1,
-                      borderTopColor: item.visible
-                        ? 'gray'
-                        : CMSColors.InactiveText,
-                      borderLeftColor: 'gray',
-                    }}>
+                    style={[
+                      styles.minutesContainer,
+                      {
+                        width: this.state.dwidth,
+                        borderTopColor: item.visible
+                          ? 'gray'
+                          : CMSColors.InactiveText,
+                      },
+                    ]}>
                     {this.renderMinutes(item)}
                   </View>
-                  <View
-                    style={{
-                      position: 'absolute',
-                      flexDirection: 'row',
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <View
-                      style={{
-                        position: 'relative',
-                        flex: 1,
-                        height: 10,
-                        borderRightWidth: 1,
-                        borderColor: 'white',
-                      }}
-                    />
-                    <View
-                      style={{
-                        position: 'relative',
-                        flex: 1,
-                        height: 10,
-                        borderLeftWidth: 1,
-                        borderColor: 'white',
-                      }}
-                    />
+                  <View style={styles.whiteLineContainer}>
+                    <View style={styles.lineRightContainer} />
+                    <View style={styles.lineLeftContainer} />
                   </View>
                   <Text
                     style={{
@@ -1007,16 +769,69 @@ export default class TimeRuler extends PureComponent {
           </ScrollView>
 
           <View
-            style={{
-              backgroundColor: this.props.colorMarker,
-              width: 10,
-              height: this.props.height,
-              position: this.props.markerPosition,
-              opacity: 0.5,
-            }}
+            style={[
+              styles.markerContainer,
+              {
+                backgroundColor: this.props.colorMarker,
+                height: this.props.height,
+                position: this.props.markerPosition,
+              },
+            ]}
           />
         </View>
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+  },
+  contentContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  scrollViewContainer: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  minutesContainer: {
+    flexDirection: 'row',
+    height: 20,
+    borderLeftWidth: 2,
+    borderTopWidth: 1,
+    borderLeftColor: 'gray',
+  },
+  whiteLineContainer: {
+    position: 'absolute',
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lineRightContainer: {
+    position: 'relative',
+    flex: 1,
+    height: 10,
+    borderRightWidth: 1,
+    borderColor: 'white',
+  },
+  lineLeftContainer: {
+    position: 'relative',
+    flex: 1,
+    height: 10,
+    borderLeftWidth: 1,
+    borderColor: 'white',
+  },
+  markerContainer: {
+    width: 10,
+    opacity: 0.5,
+  },
+});

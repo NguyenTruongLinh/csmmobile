@@ -3,19 +3,12 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
 
-// import navigationService from './navigationService';
-// import {navigationStore} from '../stores/navigation';
 import CMSTabbar from './tabbar';
 
 import CMSIntroView from '../views/intro/cmsIntro';
 import LoginView from '../views/auth/login';
 import ForgotPasswordView from '../views/auth/forgotPassword';
 import SubmitedView from '../views/auth/submited';
-
-// import DashboardView from '../views/smarter/summary';
-// import ExceptionsView from '../views/smarter/transactions';
-// import TransactionDetailView from '../views/smarter/transactionDetail';
-// import TransactionFCMView from '../views/smarter/transactionDetailFCM';
 
 import AccountLocked from '../views/auth/accountLocked';
 import passwordExpired from '../views/auth/passwordExpired';
@@ -31,80 +24,8 @@ import GlobalModal from '../components/views/GlobalModal';
 
 import theme from '../styles/appearance';
 import ROUTERS from '../consts/routes';
-// import cmscolors from '../styles/cmscolors';
-
-// const getHeaderOptions = route => {
-//   const headerTitle = getHeaderTitle(route);
-//   console.log('GOND getHeaderTitle: ', headerTitle);
-//   return {
-//     title: headerTitle,
-//     headerStyle: {
-//       backgroundColor: CMSColors.White_Op54,
-//     },
-//     // headerTintColor: '#fff',
-//     headerTitleStyle: {
-//       fontWeight: 'bold',
-//     },
-//   };
-// };
-
-// const HOStack = createStackNavigator();
-// const HealthStack = () => (
-//   <HOStack.Navigator initialRouteName={ROUTERS.HEALTH_SITES} headerMode="float">
-//     <HOStack.Screen name={ROUTERS.HEALTH_SITES} component={HealthView} />
-//     <HOStack.Screen name={ROUTERS.HEALTH_DETAIL} component={HealthDetailView} />
-//     <HOStack.Screen name={ROUTERS.HEALTH_ALERTS} component={AlertsView} />
-//     <HOStack.Screen
-//       name={ROUTERS.HEALTH_ALERT_DETAIL}
-//       component={AlertDetailView}
-//     />
-//   </HOStack.Navigator>
-// );
-
-// const HOStack = createStackNavigator();
-// const POSStack = () => (
-//   <HOStack.Navigator
-//     initialRouteName={ROUTERS.SMARTER_DASHBOARD}
-//     headerMode="float">
-//     <HOStack.Screen name={ROUTERS.SMARTER_DASHBOARD} component={DashboardView} />
-//     <HOStack.Screen name={ROUTERS.TRANSACTIONS} component={ExceptionsView} />
-//     <HOStack.Screen
-//       name={ROUTERS.TRAN_DETAIL}
-//       component={TransactionDetailView}
-//     />
-//     <HOStack.Screen
-//       name={ROUTERS.TRAN_DETAIL_FCM}
-//       component={TransactionFCMView}
-//     />
-//   </HOStack.Navigator>
-// );
 
 const BottomTab = createBottomTabNavigator();
-const CMSMainTab = () => (
-  <BottomTab.Navigator
-    initialRouteName={ROUTERS.HOME_NAVIGATOR}
-    headerMode="none"
-    backBehavior="none"
-    sceneContainerStyle={{
-      flex: 1,
-      backgroundColor: 'white',
-    }}
-    screenOptions={{unmountOnBlur: true}}
-    tabBar={props => <CMSTabbar {...props} />}>
-    <BottomTab.Screen name={ROUTERS.HOME_NAVIGATOR} component={HomeStack} />
-    <BottomTab.Screen name={ROUTERS.VIDEO_STACK} component={VideoStack} />
-    <BottomTab.Screen name={ROUTERS.ALARM_STACK} component={AlarmStack} />
-    <BottomTab.Screen
-      name={ROUTERS.OPTIONS_NAVIGATOR}
-      component={SettingsStack}
-    />
-    {/* Hidden tabs: can only access from Home screen */}
-    {/* <BottomTab.Screen name={ROUTERS.HEALTH_STACK} component={HealthStack} />
-    <BottomTab.Screen name={ROUTERS.SMARTER_STACK} component={POSStack} />
-    <BottomTab.Screen name={ROUTERS.OAM_STACK} component={OAMStack} /> */}
-  </BottomTab.Navigator>
-);
-
 const IntroStack = createStackNavigator();
 const WelcomeStack = createStackNavigator();
 
@@ -117,34 +38,13 @@ const WelcomeStack = createStackNavigator();
 const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
   const {showIntro, isLoading, naviService, appearance} = appStore;
 
-  // __DEV__ && console.log('GOND NavContainer: ', this.props);
-  return (
-    <NavigationContainer
-      // theme={{
-      //   ...DefaultTheme,
-      //   colors: {
-      //     ...DefaultTheme.colors,
-      //     background: cmscolors.White,
-      //   },
-      // }}
-      ref={ref => {
-        // __DEV__ && console.log('GOND NavContainer ref = ', ref);
-        appStore.setNavigator(ref);
-      }}
-      onReady={() => {
-        __DEV__ && console.log('GOND NavigationContainer onReady!!!!!');
-        naviService && naviService.onReady(true);
-      }}
-      onStateChange={state => {
-        // __DEV__ &&
-        //   console.log('GOND onStateChange state = ' + JSON.stringify(state));
-        naviService && naviService.onStateChange(state);
-      }}>
-      {isLoggedIn && notificationController}
-      <GlobalModal ref={r => appStore.setModalRef(r)} />
-      {isLoading ? (
-        <LoadingOverlay />
-      ) : showIntro ? (
+  const renderContentNavigator = () => {
+    if (isLoading) {
+      return <LoadingOverlay />;
+    }
+
+    if (showIntro) {
+      return (
         <IntroStack.Navigator
           initialRouteName={ROUTERS.INTRO_CMS}
           headerMode="none">
@@ -153,76 +53,116 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
             component={CMSIntroView}
           />
         </IntroStack.Navigator>
-      ) : isLoggedIn ? (
-        CMSMainTab()
-      ) : (
-        <WelcomeStack.Navigator
-          initialRouteName={ROUTERS.LOGIN}
-          headerMode="screen">
-          {/* <WelcomeStack.Screen
-            name={ROUTERS.INTRO_WELCOME}
-            component={WelcomeView}
-          /> */}
-          <WelcomeStack.Screen
-            options={() => ({
-              headerStyle: {
-                height: 0,
-              },
-              headerMode: 'none',
-              headerTitle: '',
-            })}
-            name={ROUTERS.LOGIN}
-            component={LoginView}
-          />
+      );
+    }
 
-          <WelcomeStack.Screen
-            options={() => ({
-              headerStyle: {
-                height: 0,
-              },
-              headerMode: 'none',
-              headerTitle: '',
-            })}
-            name={ROUTERS.PASSWORD_EXPIRED}
-            component={passwordExpired}
+    if (isLoggedIn) {
+      return (
+        <BottomTab.Navigator
+          initialRouteName={ROUTERS.HOME_NAVIGATOR}
+          headerMode="none"
+          backBehavior="none"
+          sceneContainerStyle={{
+            flex: 1,
+            backgroundColor: 'white',
+          }}
+          screenOptions={{unmountOnBlur: true}}
+          tabBar={props => <CMSTabbar {...props} />}>
+          <BottomTab.Screen
+            name={ROUTERS.HOME_NAVIGATOR}
+            component={HomeStack}
           />
-          <WelcomeStack.Screen
-            options={() => ({
-              headerStyle: {
-                height: 0,
-              },
-              headerMode: 'none',
-              headerTitle: '',
-            })}
-            name={ROUTERS.ACCOUNT_LOCKED}
-            component={AccountLocked}
+          <BottomTab.Screen name={ROUTERS.VIDEO_STACK} component={VideoStack} />
+          <BottomTab.Screen name={ROUTERS.ALARM_STACK} component={AlarmStack} />
+          <BottomTab.Screen
+            name={ROUTERS.OPTIONS_NAVIGATOR}
+            component={SettingsStack}
           />
-          <WelcomeStack.Screen
-            options={() => ({
-              headerShown: false,
-              headerStyle: {
-                height: 0,
-              },
-              headerMode: 'none',
-              headerTitle: '',
-            })}
-            name={ROUTERS.SUBMITED}
-            component={SubmitedView}
-          />
-          <WelcomeStack.Screen
-            options={({navigation}) => ({
-              headerMode: 'screen',
-              headerTitle: '',
-              headerStyle: {
-                ...theme[appearance].container,
-              },
-              headerLeft: () => <BackButton navigator={navigation} />,
-            })}
-            name={ROUTERS.FORGOT_PASSWORD}
-            component={ForgotPasswordView}
-          />
-        </WelcomeStack.Navigator>
-      )}
+        </BottomTab.Navigator>
+      );
+    }
+
+    return (
+      <WelcomeStack.Navigator
+        initialRouteName={ROUTERS.LOGIN}
+        headerMode="screen">
+        <WelcomeStack.Screen
+          options={() => ({
+            headerStyle: {
+              height: 0,
+            },
+            headerMode: 'none',
+            headerTitle: '',
+          })}
+          name={ROUTERS.LOGIN}
+          component={LoginView}
+        />
+
+        <WelcomeStack.Screen
+          options={() => ({
+            headerStyle: {
+              height: 0,
+            },
+            headerMode: 'none',
+            headerTitle: '',
+          })}
+          name={ROUTERS.PASSWORD_EXPIRED}
+          component={passwordExpired}
+        />
+        <WelcomeStack.Screen
+          options={() => ({
+            headerStyle: {
+              height: 0,
+            },
+            headerMode: 'none',
+            headerTitle: '',
+          })}
+          name={ROUTERS.ACCOUNT_LOCKED}
+          component={AccountLocked}
+        />
+        <WelcomeStack.Screen
+          options={() => ({
+            headerShown: false,
+            headerStyle: {
+              height: 0,
+            },
+            headerMode: 'none',
+            headerTitle: '',
+          })}
+          name={ROUTERS.SUBMITED}
+          component={SubmitedView}
+        />
+        <WelcomeStack.Screen
+          options={({navigation}) => ({
+            headerMode: 'screen',
+            headerTitle: '',
+            headerStyle: {
+              ...theme[appearance].container,
+            },
+            headerLeft: () => <BackButton navigator={navigation} />,
+          })}
+          name={ROUTERS.FORGOT_PASSWORD}
+          component={ForgotPasswordView}
+        />
+      </WelcomeStack.Navigator>
+    );
+  };
+
+  return (
+    <NavigationContainer
+      ref={ref => {
+        appStore.setNavigator(ref);
+      }}
+      onReady={() => {
+        __DEV__ && console.log('GOND NavigationContainer onReady!!!!!');
+        naviService && naviService.onReady(true);
+      }}
+      onStateChange={state => {
+        naviService && naviService.onStateChange(state);
+      }}>
+      {isLoggedIn && notificationController}
+      <GlobalModal ref={r => appStore.setModalRef(r)} />
+      {renderContentNavigator()}
     </NavigationContainer>
   );
 };

@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   Dimensions,
-  Image,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 
@@ -15,7 +14,6 @@ import CMSColors from '../styles/cmscolors';
 import theme from '../styles/appearance';
 import {IconCustom} from '../components/CMSStyleSheet';
 import ROUTERS, {INIT_ROUTE_MAP} from '../consts/routes';
-import {WIDGET_COUNTS} from '../consts/misc';
 
 const TabIcons = [
   'ic_home_24px',
@@ -59,26 +57,10 @@ class CMSTabbar extends React.Component {
     const currentIndex = state.index;
     const {height} = this.state;
     const {appearance} = appStore;
-    // const currentRoute = state.routes[state.index];
-    // const {width, height} = Dimensions.get('window');
-    // const tabWidth = width / TabLabels.length;
 
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND createTabbar currentRoute.state = ',
-    //     currentRoute.state,
-    //     '\n--- getCurrentRouteName = ',
-    //     this.getCurrentRouteName()
-    //   );
     if (
-      // currentRoute.state &&
-      // HideTabbarScreens.includes(
-      //   currentRoute.state.routes[currentRoute.state.index].name
-      // )
       HideTabbarScreens.includes(getCurrentRouteName(state)) ||
       !appStore.showTabbar
-      // (getCurrentRouteName(state) == ROUTERS.OAM_DETAIL &&
-      //   !oamStore.isBottomTabShown)
     )
       return null;
     return (
@@ -110,17 +92,6 @@ class CMSTabbar extends React.Component {
                     : theme[appearance].iconTabBarInactive
                 }
               />
-              {/* <Image
-                source={TabIcons[index]}
-                resizeMode="contain"
-                style={{
-                  alignSelf: 'center',
-                  width: tabWidth * 0.8,
-                  tintColor: isSelected
-                    ? CMSColors.PrimaryActive
-                    : CMSColors.Inactive,
-                }}
-              /> */}
               <Text style={[styles.text, textStyle]}>{TabLabels[index]}</Text>
               {isSelected && (
                 <View style={styles.highlightContainer}>

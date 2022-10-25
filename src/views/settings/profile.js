@@ -1,14 +1,7 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StatusBar,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import {View, StatusBar, ActivityIndicator} from 'react-native';
 
 import {inject, observer} from 'mobx-react';
-import Ripple from 'react-native-material-ripple';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 
 import {profileConstraints} from '../../util/constraints.js';
@@ -18,20 +11,13 @@ import Button from '../../components/controls/Button';
 import CMSImage from '../../components/containers/CMSImage';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
-import {Account} from '../../consts/apiRoutes';
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
-import {Settings as SettingTxt, ActionMessages} from '../../localization/texts';
-import variables from '../../styles/variables';
 import theme from '../../styles/appearance.js';
+import styles from './styles/profileStyles';
 
-// const img_header = require('../../assets/images/common/profile_header.jpg');
-
-const Fields = {
-  firstname: 'firstName',
-  lastname: 'lastName',
-  email: 'email',
-};
+import {Account} from '../../consts/apiRoutes';
+import {Settings as SettingTxt} from '../../localization/texts';
 
 class ProfileView extends React.Component {
   constructor(props) {
@@ -87,17 +73,6 @@ class ProfileView extends React.Component {
 
   compareInputNewData() {
     const {user} = this.props.userStore;
-    // console.log(
-    //   'GOND state: {',
-    //   this.state.firstName,
-    //   this.state.lastName,
-    //   this.state.email,
-    //   '} , user: {',
-    //   user.firstName,
-    //   user.lastName,
-    //   user.email,
-    //   '}'
-    // );
     if (
       this.state.firstName != user.firstName ||
       this.state.lastName != user.lastName ||
@@ -109,7 +84,6 @@ class ProfileView extends React.Component {
   }
 
   isInputsValid() {
-    // console.log('GOND isInputsValid: ', this._refs.firstName);
     return (
       this._refs.firstName &&
       this._refs.lastName &&
@@ -185,9 +159,6 @@ class ProfileView extends React.Component {
         </View>
       ) : null;
 
-    const statusbar =
-      Platform.OS == 'ios' ? <View style={styles.statusBar} /> : null;
-
     return (
       <View
         style={[commonStyles.rowsViewContainer, theme[appearance].container]}>
@@ -197,7 +168,6 @@ class ProfileView extends React.Component {
           barStyle="light-content"
         />
         <View style={styles.container}>
-          {/* {statusbar} */}
           {spninner}
           <View style={styles.rowHeaderContainer}>
             <View>{AvatarUser}</View>
@@ -257,120 +227,5 @@ class ProfileView extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: null,
-    height: null,
-  },
-  rowHeaderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    padding: 20,
-    height: 120,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderWidth: 2,
-    borderColor: '#3c7ba4',
-    marginRight: 5,
-    borderRadius: 50,
-  },
-  image: {
-    top: 1,
-    left: 1,
-    width: 94,
-    height: 94,
-    borderRadius: 47,
-  },
-  control: {
-    marginLeft: 24,
-    marginRight: 24,
-  },
-  statusBar: {
-    height: variables.isPhoneX ? 44 : 20,
-    backgroundColor: CMSColors.White, // CMSColors.Dark_Blue,
-  },
-  navbarBody: {
-    backgroundColor: CMSColors.Dark_Blue,
-    justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        shadowOffset: {
-          height: 0,
-          width: 0,
-        },
-      },
-      android: {
-        elevation: 1,
-      },
-    }),
-  },
-  navbar: {
-    backgroundColor: CMSColors.White,
-    ...Platform.select({
-      ios: {
-        // height: 64,
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        shadowOffset: {
-          height: 0,
-          width: 0,
-        },
-      },
-      android: {
-        // height: 50,
-        elevation: 1,
-      },
-    }),
-    height: 50,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    // borderTopWidth: 5,
-    // borderTopColor: '#828287',
-    // borderBottomWidth: 0.5,
-    borderBottomColor: '#828287',
-    borderTopWidth: 0,
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
-  },
-  left: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginLeft: 10,
-    marginTop: 2,
-    alignItems: 'center',
-  },
-  icon: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 5,
-  },
-  contentIcon: {
-    paddingTop: 2,
-  },
-  title: {
-    marginLeft: 5,
-  },
-  // buttonSave: {
-  //   marginRight: 12,
-  //   backgroundColor: CMSColors.Transparent,
-  //   height: 20,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  // },
-  spinner: {
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    justifyContent: 'center',
-    height: 50,
-  },
-});
 
 export default inject('userStore', 'appStore')(observer(ProfileView));

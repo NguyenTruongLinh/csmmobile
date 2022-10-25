@@ -1,33 +1,20 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {
-  View,
-  FlatList,
-  ActivityIndicator,
-  Modal as ModalBase,
-  Dimensions,
-  BackHandler,
-  Text,
-  Image,
-  StyleSheet,
-} from 'react-native';
+import {View, FlatList, ActivityIndicator, Text, Image} from 'react-native';
 import {inject, observer} from 'mobx-react';
-// import Ripple from 'react-native-material-ripple';
 
 import CMSRipple from '../../components/controls/CMSRipple';
-import AlarmItem from './alarmItem';
-// import InputTextIcon from '../components/controls/InputTextIcon';
+import AlarmItem from './components/alarmItem';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
+import styles from './styles/liveStyles';
 
-import {Comps as CompTxt} from '../../localization/texts';
 import {AlertType_Support, WIDGET_COUNTS} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
-import {No_Data, No_Image} from '../../consts/images';
+import {No_Data} from '../../consts/images';
 import {PAGE_LENGTH} from '../../stores/alarm';
 import {clientLogID} from '../../stores/user';
 
@@ -45,7 +32,6 @@ class AlarmsLiveView extends Component {
     userStore.resetWidgetCount(WIDGET_COUNTS.ALARM);
     userStore.setActivites(clientLogID.ALARM);
     this.props.alarmStore.getLiveData(this.buildRequestParams());
-    // this.refreshLiveData();
     this.setHeader();
   }
 
@@ -102,11 +88,6 @@ class AlarmsLiveView extends Component {
     navigation.push(ROUTERS.ALARM_DETAIL);
   };
 
-  // onDimensionChange = event => {
-  //   const {width, height} = event.window;
-  //   this.setState({width: width, height: height});
-  // }
-
   renderAlarmItem = ({item, index}) => {
     const {alarmStore, appStore} = this.props;
     const {appearance} = appStore;
@@ -121,9 +102,6 @@ class AlarmsLiveView extends Component {
             <ActivityIndicator
               color={CMSColors.SpinnerColor}></ActivityIndicator>
           )}
-        {/* <Text>
-          {index}-{alarmStore.liveRawAlarms.length}
-        </Text> */}
       </CMSRipple>
     );
   };
@@ -172,17 +150,6 @@ class AlarmsLiveView extends Component {
 
     return (
       <View style={[styles.container, theme[appearance].container]}>
-        {/* <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={alarmStore.filterText}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View> */}
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
@@ -205,26 +172,6 @@ class AlarmsLiveView extends Component {
     );
   }
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  noDataContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  noDataImg: {
-    width: 100,
-    height: 100,
-  },
-  noDataTxt: {
-    marginTop: 12,
-    paddingBottom: 50,
-    fontSize: 16,
-    color: CMSColors.PrimaryText,
-  },
-});
 
 export default inject(
   'alarmStore',

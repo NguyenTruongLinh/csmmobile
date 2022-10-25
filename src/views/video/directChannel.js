@@ -1,11 +1,11 @@
 import React, {Fragment} from 'react';
 import {
   View,
-  StyleSheet,
   Text,
   Image,
   ImageBackground,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
@@ -17,7 +17,6 @@ import styles from '../../styles/scenes/videoPlayer.style';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 
 import {NATURAL_RATIO} from '../../consts/video';
-import {STREAM_STATUS} from '../../localization/texts';
 
 class DirectChannelView extends React.Component {
   static defaultProps = {
@@ -31,28 +30,16 @@ class DirectChannelView extends React.Component {
     this.state = {
       width: props.width,
       height: props.height,
-      // nextFrame: NVR_Play_NoVideo_Image,
       nextFrame: null,
     };
-    // should set search time from alert/exception
     this.reactions = [];
     this.isPlaying = false;
-    // this.isViewable = false;
   }
 
   componentDidMount() {
     this._isMounted = true;
     __DEV__ && console.log('DirectChannelView componentDidMount');
-    const {index, singlePlayer, videoStore} = this.props;
 
-    // const renderLimit = videoStore.gridLayout * (videoStore.gridLayout + 1);
-    // __DEV__ &&
-    //   console.log('DirectStreamingView renderLimit: ', renderLimit, index);
-
-    // if (singlePlayer || index < renderLimit) {
-    //   this.isViewable = true;
-    // }
-    // reactions:
     this.initReactions();
   }
 
@@ -63,13 +50,12 @@ class DirectChannelView extends React.Component {
         this.props.serverInfo.channelName
       );
 
-    // this.setNative({disconnect: true}, true);
     this._isMounted = false;
     this.reactions.forEach(unsubsribe => unsubsribe());
   }
 
   initReactions = () => {
-    const {videoStore, serverInfo} = this.props;
+    const {serverInfo} = this.props;
 
     this.reactions = [
       reaction(
@@ -84,8 +70,6 @@ class DirectChannelView extends React.Component {
 
   onLayout = event => {
     if (event == null || event.nativeEvent == null) return;
-    // __DEV__ &&
-    //   console.log('GOND directplayer onlayout: ', event.nativeEvent.layout);
     let {width, height} = event.nativeEvent.layout;
     setTimeout(() => {
       if (!this._isMounted) return;
@@ -93,14 +77,10 @@ class DirectChannelView extends React.Component {
       if (width <= height) {
         const videoRatio = width / height;
         if (videoRatio !== NATURAL_RATIO) {
-          // height = parseInt((width * 9) / 16);
           width = parseInt((height * 16) / 9);
-          //console.log( _height);
         }
       }
       this.setState({
-        // controller: false,
-        // fullscreen: true,
         width: width,
         height: height,
         status: '',
@@ -108,22 +88,10 @@ class DirectChannelView extends React.Component {
     }, 100);
   };
 
-  // setViewable = isViewable => {
-  //   this.isViewable = isViewable;
-  // };
-
   renderContent = videoShowed => {
     const {width, height, serverInfo, noVideo, videoStore} = this.props;
-    // const {message, videoLoading, noVideo} = this.state;
     const {connectionStatus, isLoading, videoFrame} = serverInfo;
     const {nextFrame} = this.state;
-    // const isLoading = !noVideo && (!videoFrame || videoFrame.length == 0);
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND direct render channel: ',
-    //     serverInfo.channelName,
-    //     videoFrame ? videoFrame.length : 'null'
-    //   );
 
     return (
       <Fragment>
@@ -151,7 +119,6 @@ class DirectChannelView extends React.Component {
         <View style={styles.playerView}>
           {videoShowed && (
             <Image
-              // source={serverInfo.videoImage}
               source={nextFrame ?? serverInfo.snapshot}
               style={{
                 width: width,
@@ -167,24 +134,13 @@ class DirectChannelView extends React.Component {
   };
 
   render() {
-    const {width, height, serverInfo, noVideo, videoStore} = this.props;
-    // const {message, videoLoading, noVideo} = this.state;
-    // const {connectionStatus, isLoading} = serverInfo;
-    // const {nextFrame} = this.state;
-    // if (!this.isViewable) return <View />;
-    // __DEV__ &&
-    //   console.log('GOND direct render channel: ', serverInfo.videoImage);
+    const {width, height, serverInfo, noVideo} = this.props;
+
     const videoShowed =
       !noVideo && serverInfo.videoFrame && serverInfo.videoFrame.length > 0;
     const content = this.renderContent(videoShowed);
     return (
-      <View
-        onLayout={this.onLayout}
-        // {...this.props}
-        style={{
-          width: '100%',
-          height: '100%',
-        }}>
+      <View onLayout={this.onLayout} style={styleSheet.container}>
         {videoShowed ? (
           <ImageBackground
             source={noVideo ? serverInfo.snapshot : serverInfo.videoImage}
@@ -218,5 +174,12 @@ class DirectChannelView extends React.Component {
     );
   }
 }
+
+const styleSheet = StyleSheet.create({
+  container: {
+    width: '100%',
+    height: '100%',
+  },
+});
 
 export default inject('videoStore')(observer(DirectChannelView));

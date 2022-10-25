@@ -26,7 +26,6 @@ class InputTextIcon extends PureComponent {
 
     animationDuration: 225,
 
-    //fontSize: CMSStyleSheet.FontSize,
     fontSize: variable.fix_fontSire,
 
     tintColor: CMSColors.BorderActiveColor,

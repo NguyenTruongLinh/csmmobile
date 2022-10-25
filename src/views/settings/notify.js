@@ -3,11 +3,8 @@ import {
   View,
   FlatList,
   Text,
-  StyleSheet,
-  Platform,
   Modal as ModalBase,
   TouchableOpacity,
-  StatusBar,
   Dimensions,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
@@ -18,23 +15,21 @@ import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import ExceptionFilter from '../../components/views/ExceptionFilter';
 import TemperatureFilter from '../../components/views/TemperatureFilterModal';
+import {Icon} from '../../components/CMSStyleSheet';
 
-import {
-  isNullOrUndef,
-  getIconAlertType,
-  compareArrays,
-} from '../../util/general.js';
-
-import {Icon, Icon5} from '../../components/CMSStyleSheet';
 import commonStyles from '../../styles/commons.style';
 import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
+import styles from './styles/notifyStyles';
+
 import {
   AlertTypes as C_AlertTypes,
   TEMPERATURE_ALARMS_TYPES,
 } from '../../consts/misc';
 import {Settings as SettingsTxt} from '../../localization/texts';
-import theme from '../../styles/appearance';
+import {compareArrays, isNullOrUndef} from '../../util/general.js';
+
 const ModalHeightPercentage = variable.ModalHeightPercentage;
 
 const ModalTypes = {
@@ -159,9 +154,7 @@ class NotifySettingView extends React.Component {
       };
       result.push(item);
     });
-    // console.log('GOND *** AlertTypesFiltered = ', AlertTypeFilter);
 
-    // console.log('GOND notifysetting datasource = ', result)
     return result;
   };
 
@@ -322,7 +315,7 @@ class NotifySettingView extends React.Component {
         coverScreen={true}
         visible={showedModal == ModalTypes.temperature}
         onRequestClose={this.onDismissModal}>
-        <View style={{flex: 1, flexDirection: 'column'}}>
+        <View style={styles.alarmsModalWrapper}>
           <TouchableOpacity
             style={{
               flex: 1 - ModalHeightPercentage,
@@ -362,9 +355,8 @@ class NotifySettingView extends React.Component {
           <CMSTouchableIcon
             size={14}
             color={theme[appearance].iconColor}
-            // disabled={this.state.selectedExceptions.length == 0}
             iconCustom="keyboard-right-arrow-button"
-            style={{selfAlign: 'center'}}
+            style={styles.rowIcon}
           />
         </View>
       );
@@ -400,12 +392,6 @@ class NotifySettingView extends React.Component {
           </View>
         );
     }
-    // __DEV__ && console.log(
-    //   'GOND renderRow notifysetting: ',
-    //   item,
-    //   ', -- icon: ',
-    //   getIconAlertType(item.id)
-    // );
 
     return (
       <Ripple
@@ -417,22 +403,6 @@ class NotifySettingView extends React.Component {
             theme[appearance].container,
             theme[appearance].borderColor,
           ]}>
-          {/* <View style={styles.rowButton_contain_icon}>
-            <CMSTouchableIcon
-              size={24}
-              styles={[
-                styles.rowButton_icon,
-                item.isCheck == true
-                  ? styles.rowButton_icon_check
-                  : styles.rowButton_icon_uncheck,
-              ]}
-              disabled={false}
-              color={
-                item.isCheck == true ? CMSColors.White : CMSColors.RowOptions
-              }
-              iconCustom={getIconAlertType(item.id)}
-            />
-          </View> */}
           <View
             style={[
               styles.rowButton_contain_name,
@@ -453,13 +423,6 @@ class NotifySettingView extends React.Component {
   canSave = () => {
     const newSettings = this.state.selectedNotifies;
     const currentSettings = [...this.props.userStore.settings.selectedNotifies];
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND canSave new: ',
-    //     newSettings,
-    //     '\n ----- current: ',
-    //     currentSettings
-    //   );
     if (
       !newSettings ||
       !this.props.userStore.settings ||
@@ -468,13 +431,6 @@ class NotifySettingView extends React.Component {
       return false;
     }
 
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND canSave 2 new: ',
-    //     newSettings.sort(),
-    //     '\n ----- current: ',
-    //     currentSettings.sort
-    //   );
     return !compareArrays(newSettings.sort(), currentSettings.sort());
   };
 
@@ -488,47 +444,9 @@ class NotifySettingView extends React.Component {
 
   render() {
     const {appearance} = this.props.appStore;
-    // let statusbar =
-    //   Platform.OS == 'ios' ? <View style={styles.statusbarios}></View> : null;
+
     return (
       <View style={[styles.all, theme[appearance].container]}>
-        {/* <StatusBar
-          translucent={false}
-          backgroundColor={CMSColors.Dark_Blue}
-          barStyle="light-content"
-        /> */}
-        {/* {statusbar} */}
-        {/* <View style={styles.navbar_body}>
-          <View style={styles.navbar}>
-            <Ripple
-              rippleCentered={true}
-              style={styles.left}
-              onPress={this.onBack.bind(this)}>
-              <View style={styles.icon}>
-                <CMSTouchableIcon
-                  size={20}
-                  color={CMSColors.SecondaryText}
-                  styles={styles.contentIcon}
-                  iconCustom="keyboard-left-arrow-button"
-                />
-              </View>
-              <View style={styles.title}>
-                <Text>{this.state.title}</Text>
-              </View>
-            </Ripple>
-            <View>
-              <Button
-                style={styles.buttonSave}
-                caption="SAVE"
-                enable={this.compareInputNewData()}
-                onPress={this.UpdateNotifySetting}
-                styleCaption={styles.buttonSave_text}
-                type="flat"
-              />
-            </View>
-          </View>
-        </View> */}
-
         <View style={styles.firstContainer}>
           <FlatList
             ref={ref => (this.flatListRef = ref)}
@@ -541,144 +459,6 @@ class NotifySettingView extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  all: {
-    flex: 1,
-  },
-  firstContainer: {
-    flex: 1,
-    //justifyContent: 'center',
-    //alignItems: 'center',
-    //backgroundColor: 'red'
-  },
-
-  // statusbarios: {
-  //   height: variable.isPhoneX? 44: 20,
-  //   backgroundColor: CMSColors.Dark_Blue
-  // },
-  // navbar_body:{
-  //   backgroundColor: CMSColors.Dark_Blue,
-  //   justifyContent:'center',
-  //   ...Platform.select({
-  //     ios: {
-  //       shadowOpacity: 0.3,
-  //       shadowRadius: 3,
-  //       shadowOffset: {
-  //         height: 0,
-  //         width: 0
-  //       },
-  //     },
-  //     android: {
-  //       elevation: 1,
-  //     },
-  //   }),
-
-  // },
-  // navbar: {
-  //   backgroundColor: CMSColors.White,
-  //   ...Platform.select({
-  //     ios: {
-  //       //height: 64,
-  //       shadowOpacity: 0.3,
-  //       shadowRadius: 3,
-  //       shadowOffset: {
-  //         height: 0,
-  //         width: 0
-  //       },
-  //     },
-  //     android: {
-  //       //height: 54,
-  //       elevation: 1,
-  //     },
-  //   }),
-  //   height: 50,
-  //   flexDirection: 'row',
-  //   justifyContent: 'space-between',
-  //   alignItems: 'center',
-  //   //borderBottomWidth: 0.5,
-  //   borderBottomColor: '#828287',
-  //   borderTopLeftRadius:5,
-  //   borderTopRightRadius:5,
-  // },
-  // left:{
-  //   flexDirection: 'row',
-  //   justifyContent: 'flex-start',
-  //   marginLeft: 10,
-  //   marginTop: 2,
-  //   alignItems: 'center',
-  // },
-  // icon: {
-  //   flexDirection: 'row',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   padding: 5,
-  // },
-  // contentIcon: {
-  //   paddingTop: 5,
-  // },
-  iconAlert: {
-    margin: 5,
-    color: '#CDCDCD',
-    width: 36,
-    height: 36,
-    marginLeft: 0,
-    marginRight: 14,
-    fontSize: 36,
-  },
-  rowList: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 5,
-    borderBottomWidth: 1,
-  },
-  rowButton_contain_icon: {
-    //backgroundColor: 'red'
-  },
-  rowButton_icon: {
-    margin: 5,
-    marginLeft: 10,
-    marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  rowButton_icon_check: {
-    backgroundColor: CMSColors.PrimaryActive,
-  },
-  rowButton_icon_uncheck: {
-    backgroundColor: '#D8D8D8',
-  },
-  rowButton_contain_name: {
-    flex: 1,
-    //backgroundColor: 'green',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  rowButton_name: {
-    margin: 5,
-    marginLeft: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
-    //fontSize: 14,
-    // borderColor: 'red',
-    // borderWidth: 1,
-  },
-  containIconCheck: {
-    //backgroundColor: 'blue'
-    margin: 5,
-    marginLeft: 10,
-    marginRight: 10,
-    justifyContent: 'center',
-    //backgroundColor: '#D8D8D8',
-  },
-});
 
 export default inject(
   'userStore',

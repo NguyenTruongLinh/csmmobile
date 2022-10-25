@@ -42,30 +42,13 @@ function VideoStack(props) {
           headerTitleStyle: {
             ...theme[appearance].text,
           },
-          cardOverlayEnabled: true,
-          cardOverlay: () => (
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: theme[appearance].container.backgroundColor,
-              }}
-            />
-          ),
-        })}
-        // screenOptions={() => ({
-        //   headerShown: false,
-        // })}
-      >
+        })}>
         <VStack.Screen
           name={ROUTERS.VIDEO_REGIONS}
           component={RegionsView}
           options={{headerLeft: () => null}}
         />
-        <VStack.Screen
-          name={ROUTERS.VIDEO_SITES}
-          component={SitesView}
-          // options={{headerLeft: () => {}}}
-        />
+        <VStack.Screen name={ROUTERS.VIDEO_SITES} component={SitesView} />
         <VStack.Screen name={ROUTERS.VIDEO_NVRS} component={NVRsView} />
         <VStack.Screen
           name={ROUTERS.VIDEO_CHANNELS}
@@ -79,7 +62,7 @@ function VideoStack(props) {
         <VStack.Screen
           name={ROUTERS.VIDEO_PLAYER}
           component={VideoPlayerView}
-          options={({route, navigation}) => ({
+          options={({navigation}) => ({
             headerLeft: () => (
               <BackButton
                 navigator={navigation}
