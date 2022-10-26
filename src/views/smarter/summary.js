@@ -170,17 +170,26 @@ class DashboardView extends React.Component {
       //     siteKey,
       //     exceptionStore.filteredGroupsData
       //   );
+
+      setTimeout(() => {
+        if (!this._isMounted) return;
+        const selectedIndex =
+          exceptionStore.filteredGroupsData.length > 0
+            ? exceptionStore.filteredGroupsData.findIndex(
+                item => item.siteKey == siteKey
+              )
+            : 0;
+        // __DEV__ &&
+        //   console.log(`onSelectSite getGroupDetailData index = `, selectedIndex);
+        selectedIndex &&
+          this.dataListRef.scrollToIndex({
+            animated: true,
+            index: selectedIndex,
+          });
+      }, 500);
+
       await exceptionStore.getGroupDetailData(siteKey);
-      const selectedIndex =
-        exceptionStore.filteredGroupsData.length > 0
-          ? exceptionStore.filteredGroupsData.findIndex(
-              item => item.siteKey == siteKey
-            )
-          : 0;
-      // __DEV__ &&
-      //   console.log(`onSelectSite getGroupDetailData index = `, selectedIndex);
-      selectedIndex &&
-        this.dataListRef.scrollToIndex({animated: true, index: selectedIndex});
+
       this._isMounted && this.setState({loadingDetail: false});
     });
   };
