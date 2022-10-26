@@ -4,14 +4,16 @@ import React from 'react';
 import {View, Text, Image, StyleSheet} from 'react-native';
 
 import PropTypes from 'prop-types';
+import {inject, observer} from 'mobx-react';
 
 import LoadingOverlay from '../common/loadingOverlay';
 import {No_Data} from '../../consts/images';
 
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {COMMON as COMMON_TXT} from '../../localization/texts';
 
-export default class NoDataView extends React.Component {
+class NoDataView extends React.Component {
   static propTypes = {
     height: PropTypes.number,
   };
@@ -25,31 +27,30 @@ export default class NoDataView extends React.Component {
   }
 
   onLayout = ({nativeEvent}) => {
-    const {width, height} = nativeEvent.layout;
+    const {height} = nativeEvent.layout;
 
     this.setState({height});
   };
 
   render() {
-    const {isLoading} = this.props;
+    const {isLoading, appStore} = this.props;
+    const {appearance} = appStore;
 
     return (
       <View
-        style={[
-          styles.noDataContainer,
-          this.props.style,
-          //{height: this.props.height}
-        ]}
+        style={[styles.noDataContainer, this.props.style]}
         onLayout={this.onLayout}>
         {isLoading ? (
           <LoadingOverlay
-            backgroundColor={CMSColors.White}
+            backgroundColor={theme[appearance].container}
             indicatorColor={CMSColors.PrimaryActive}
           />
         ) : (
-          <View>
+          <View style={styles.contentContainer}>
             <Image source={No_Data} style={styles.noDataImg}></Image>
-            <Text style={styles.noDataTxt}>{COMMON_TXT.NO_DATA}</Text>
+            <Text style={[styles.noDataTxt, theme[appearance].text]}>
+              {COMMON_TXT.NO_DATA}
+            </Text>
           </View>
         )}
       </View>
@@ -74,4 +75,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: CMSColors.PrimaryText,
   },
+  contentContainer: {alignItems: 'center', justifyContent: 'center'},
 });
+
+export default inject('appStore')(observer(NoDataView));

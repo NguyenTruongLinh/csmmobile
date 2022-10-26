@@ -1,18 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {View, StyleSheet, Text} from 'react-native';
-// import { inject } from 'mobx-react';
-import {DateTime} from 'luxon';
 
-import AlarmThumb from './alarmThumb';
-import {DateFormat, AlertTypes, AlertNames} from '../../consts/misc';
-import {IconCustom} from '../../components/CMSStyleSheet';
+import {DateTime} from 'luxon';
+import {inject, observer} from 'mobx-react';
+
+import AlarmThumb from '../alarmThumb';
+import {DateFormat, AlertTypes} from '../../../consts/misc';
+import {IconCustom} from '../../../components/CMSStyleSheet';
 import {BigNumber} from 'bignumber.js';
 
-import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
-import util from '../../util/general';
-import CMSColors from '../../styles/cmscolors';
-import variable from '../../styles/variables';
+import CMSTouchableIcon from '../../../components/containers/CMSTouchableIcon';
+import util from '../../../util/general';
+import CMSColors from '../../../styles/cmscolors';
+import variable from '../../../styles/variables';
+import theme from '../../../styles/appearance';
 
 class AlarmItem extends React.Component {
   static propTypes = {
@@ -39,25 +41,8 @@ class AlarmItem extends React.Component {
     this.state = {
       image: null,
       live: true,
-      // snapshot: props.data.snapshot,
     };
   }
-
-  // static getDerivedStateFromProps(nextProps, prevState) {
-  //   const oldSnapshot = prevState.data.snapshot;
-  //   const {snapshot} = nextProps.data;
-
-  //   if (oldSnapshot.length != snapshot.length) {
-  //     return {snapshot};
-  //   }
-  //   for (let i = 0; i < snapshot.length; i++) {
-  //     if (
-  //       JSON.stringify({...snapshot[i]}) != JSON.stringify({...oldSnapshot[i]})
-  //     ) {
-  //       return {snapshot};
-  //     }
-  //   }
-  // }
 
   getIconName = type => {
     switch (type) {
@@ -94,6 +79,8 @@ class AlarmItem extends React.Component {
 
   renderSite = () => {
     let {site, siteName} = this.props.data;
+    const {appStore} = this.props;
+    const {appearance} = appStore;
 
     return (
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -104,7 +91,7 @@ class AlarmItem extends React.Component {
           }}>
           <IconCustom name="sites" size={14} color={CMSColors.SecondaryText} />
         </View>
-        <Text style={styles.subtext}>
+        <Text style={[styles.subtext, theme[appearance].text]}>
           {siteName && siteName.length > 0 ? siteName : site.split(':')[0]}
         </Text>
       </View>
@@ -112,6 +99,8 @@ class AlarmItem extends React.Component {
   };
 
   renderIconText = (content, icon) => {
+    const {appStore} = this.props;
+    const {appearance} = appStore;
     return (
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
         <View
@@ -121,18 +110,16 @@ class AlarmItem extends React.Component {
           }}>
           <IconCustom name={icon} size={14} color={CMSColors.SecondaryText} />
         </View>
-        <Text style={styles.subtext}>{content}</Text>
+        <Text style={[styles.subtext, theme[appearance].text]}>{content}</Text>
       </View>
     );
   };
 
   renderChannel = () => {
+    const {appearance} = this.props.appStore;
     let channelsList = [];
     let {channelNo, chanMask} = this.props.data;
-    // console.log('-------- ', this.props.data.description,' ---------')
-    // console.log('GOND renderChannel channel = ', channel, ', chanMask = ', chanMask)
 
-    // if (util.isNullOrUndef(chanMask) || chanMask == 0) {
     if (!chanMask) {
       if (util.isNullOrUndef(channelNo)) return null;
 
@@ -171,18 +158,25 @@ class AlarmItem extends React.Component {
             color={CMSColors.SecondaryText}
           />
         </View>
-        <Text style={styles.subtext}>{channelName}</Text>
+        <Text style={[styles.subtext, theme[appearance].text]}>
+          {channelName}
+        </Text>
       </View>
     );
   };
 
   renderNVRName = () => {
+    const {appearance} = this.props.appStore;
     let {serverID} = this.props.data;
     if (util.isNullOrUndef(serverID)) return null;
 
     return (
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <Text style={{width: 20, textAlign: 'center'}}></Text>
+        <Text
+          style={[
+            {width: 20, textAlign: 'center'},
+            theme[appearance].text,
+          ]}></Text>
         <View
           style={{
             justifyContent: 'center',
@@ -194,59 +188,15 @@ class AlarmItem extends React.Component {
             color={CMSColors.SecondaryText}
           />
         </View>
-        <Text style={styles.subtext}>{serverID}</Text>
+        <Text style={[styles.subtext, theme[appearance].text]}>{serverID}</Text>
       </View>
     );
   };
 
-  // customDescription = (desc, kAlertTypeVA) => {
-  //   if (!desc) return;
-  //   try {
-  //     // version old
-  //     if (desc.includes(':')) {
-  //       let lst = desc.split(' ');
-  //       if (!lst || lst.length == 0) return '';
-  //       lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
-  //       return lst.join(' ');
-  //     } else {
-  //       let lst = desc.split('.');
-  //       if (!lst || lst.length == 0) return '';
-  //       lst[lst.length - 1] = util.getAlertTypeVA(kAlertTypeVA);
-  //       lst[lst.length - 2] = util.capitalize(lst[lst.length - 2], '&');
-  //       lst[lst.length - 2] = ': ' + util.capitalize(lst[lst.length - 2], '/');
-  //       return lst.map(s => s.trim()).join(' ');
-  //     }
-  //   } catch (err) {
-  //     __DEV__ && console.log('GOND custom desciption failed: ', err);
-  //     return;
-  //   }
-  // };
-
   renderDescription = () => {
-    let {description, kAlertTypeVA, kAlertType, status, customDescription} =
-      this.props.data;
-    // let descriptCustomVA = '';
-    // let areaName = '';
-    // // console.log('GOND renderDescription kAlertType = ', kAlertType)
-    // switch (kAlertType) {
-    //   case AlertTypes.DVR_Sensor_Triggered:
-    //     descriptCustomVA = description;
-    //     break;
-    //   case AlertTypes.DVR_VA_detection:
-    //     descriptCustomVA = this.customDescription(description, kAlertTypeVA);
-    //     break;
-    //   case AlertTypes.TEMPERATURE_OUT_OF_RANGE:
-    //   case AlertTypes.TEMPERATURE_NOT_WEAR_MASK:
-    //   case AlertTypes.TEMPERATURE_INCREASE_RATE_BY_DAY:
-    //     descriptCustomVA = AlertNames[kAlertType.toString()];
-    //     break;
-    //   case AlertTypes.SOCIAL_DISTANCE:
-    //     areaName = description.split(',')[0];
-    //     descriptCustomVA = areaName
-    //       ? areaName + ': Social distance'
-    //       : 'Social distance';
-    //     break;
-    // }
+    let {status, customDescription} = this.props.data;
+    const {appStore} = this.props;
+    const {appearance} = appStore;
 
     // console.log('GOND customDescription = ', customDescription)
     if (status == 1) {
@@ -263,19 +213,18 @@ class AlarmItem extends React.Component {
               color={CMSColors.Success}
             />
           </View>
-          {/* <Text numberOfLines={1} style={styles.description} >
-            {util.isTemperatureAlert(kAlertType) ? AlertNames[kAlertType] : util.capitalize(descriptCustomVA)}
-          </Text> */}
-          <Text numberOfLines={1} style={styles.description}>
-            {/* {util.capitalize(descriptCustomVA)} */}
+          <Text
+            numberOfLines={1}
+            style={[styles.description, theme[appearance].text]}>
             {util.capitalize(customDescription)}
           </Text>
         </View>
       );
     }
     return (
-      <Text numberOfLines={1} style={styles.description}>
-        {/* {util.capitalize(descriptCustomVA)} */}
+      <Text
+        numberOfLines={1}
+        style={[styles.description, theme[appearance].text]}>
         {util.capitalize(customDescription)}
       </Text>
     );
@@ -288,17 +237,6 @@ class AlarmItem extends React.Component {
     const iconName = this.getIconName(data.kAlertType);
     const _isTempAlert = util.isTemperatureAlert(data.kAlertType);
     const _isSDAlert = util.isSDAlert(data.kAlertType);
-    // if (__DEV__) {
-    //   console.log(
-    //     'GOND renderAlarmIcon type: ',
-    //     data.kAlertType,
-    //     ', isTemp: ',
-    //     _isTempAlert,
-    //     ', isSD: ',
-    //     _isSDAlert
-    //   );
-    //   console.log('GOND renderAlarmIcon, snapshot: ', data.snapshot.length);
-    // }
 
     return data.snapshot.length == 0 || _isTempAlert || _isSDAlert ? (
       <CMSTouchableIcon
@@ -313,7 +251,7 @@ class AlarmItem extends React.Component {
           styles.thumbSizeContain,
           {justifyContent: 'flex-end', alignItems: 'flex-end'},
         ]}>
-        <View style={{top: 0, left: 0, position: 'absolute'}}>
+        <View style={styles.thumbViewContainer}>
           <AlarmThumb
             id={data.kAlertEvent}
             index={time}
@@ -322,21 +260,9 @@ class AlarmItem extends React.Component {
             onLoad={data.getThumbnail}
             imgsize={{width: 60, height: 60}}
             resizeMode="contain"
+            styles={styles.thumbContainer}
           />
         </View>
-        {/* <CMSTouchableIcon
-          size={18}
-          disabled={true}
-          color={CMSColors.Transparent}
-          styles={{
-            width: 25,
-            height: 25,
-            backgroundColor: CMSColors.PrimaryActive,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          iconCustom={iconName}
-        /> */}
         <View
           style={{
             width: 25,
@@ -352,7 +278,8 @@ class AlarmItem extends React.Component {
   }
 
   render() {
-    const {data} = this.props;
+    const {data, appStore} = this.props;
+    const {appearance} = appStore;
     let icon = this.renderIcon();
     let description = this.renderDescription();
     let site = this.renderSite();
@@ -361,7 +288,13 @@ class AlarmItem extends React.Component {
     let nvrname = this.renderNVRName();
 
     return (
-      <View style={[styles.container, this.props.containerstyle]}>
+      <View
+        style={[
+          styles.container,
+          theme[appearance].container,
+          theme[appearance].borderColor,
+          this.props.containerstyle,
+        ]}>
         <View style={styles.iconContainer}>{icon}</View>
         <View style={styles.datacontainer}>
           {description}
@@ -372,8 +305,8 @@ class AlarmItem extends React.Component {
               alignItems: 'center',
               marginTop: 2,
             }}>
-            <View style={{flex: 0.6}}>{time}</View>
-            <View style={{flex: 0.4}}>{channel}</View>
+            <View style={[{flex: 0.6}, theme[appearance].text]}>{time}</View>
+            <View style={[{flex: 0.4}, theme[appearance].text]}>{channel}</View>
           </View>
 
           <View
@@ -384,14 +317,15 @@ class AlarmItem extends React.Component {
               alignItems: 'center',
               marginTop: 2,
             }}>
-            <View style={{flex: 0.6}}>{site}</View>
-            <View style={{flex: 0.4}}>{nvrname}</View>
+            <View style={[{flex: 0.6}, theme[appearance].text]}>{site}</View>
+            <View style={[{flex: 0.4}, theme[appearance].text]}>{nvrname}</View>
           </View>
         </View>
       </View>
     );
   }
 }
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'flex-start',
@@ -399,6 +333,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: variable.contentPadding,
     flexDirection: 'row',
+    borderBottomWidth: 1,
   },
   iconContainer: {
     width: 60,
@@ -411,14 +346,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     paddingLeft: variable.contentPadding,
-    //height: 60
-    // paddingTop: 2,
-    // paddingBottom: 2,
     paddingVertical: 2,
   },
   descriptionContainer: {
     flexDirection: 'row',
-    //backgroundColor: 'red'
   },
   description: {
     fontSize: 16,
@@ -433,6 +364,19 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
   },
+  thumbViewContainer: {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    position: 'absolute',
+  },
+  thumbContainer: {
+    flex: 1,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
-export default AlarmItem;
+export default inject('appStore')(observer(AlarmItem));

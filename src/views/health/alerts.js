@@ -1,48 +1,31 @@
 import {inject, observer} from 'mobx-react';
 import React, {Component} from 'react';
-import {
-  View,
-  FlatList,
-  Text,
-  Platform,
-  StatusBar,
-  Dimensions,
-  StyleSheet,
-} from 'react-native';
+import {View, FlatList} from 'react-native';
 
-// import Ripple from 'react-native-material-ripple';
 import {SwipeRow} from 'react-native-swipe-list-view';
-import {DateTime} from 'luxon';
 import {reaction} from 'mobx';
 
 import CMSRipple from '../../components/controls/CMSRipple';
 import AlertActionModal from './modals/actionsModal';
 import AlertDismissModal from './modals/dismissModal';
-// import HeaderWithSearch from '../../components/containers/HeaderWithSearch';
-import InputTextIcon from '../../components/controls/InputTextIcon';
-// import BackButton from '../../components/controls/BackButton';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSImage from '../../components/containers/CMSImage';
-// import CMSTextInputModal from '../../components/controls/CMSTextInputModal';
-import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
 import CMSSearchbar from '../../components/containers/CMSSearchbar';
+import ContentAlertWithSnapshot from './components/contentAlertWithSnapshot';
 
-import {AlertTypes, DateFormat} from '../../consts/misc';
 import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
-import variables from '../../styles/variables';
-import {No_Image} from '../../consts/images';
+import styles from './styles/alertsStyles';
+import theme from '../../styles/appearance';
 
-import {Comps as CompTxt} from '../../localization/texts';
+import {AlertTypes} from '../../consts/misc';
 import ROUTERS from '../../consts/routes';
 import NoDataView from '../../components/views/NoData';
 import {NonDismissableAlerts} from '../../stores/health';
+import AlertsBackItem from './components/alertsBackItem';
+import UnDismissNormalAlertItem from './components/unDismissNormalAlertItem';
 
 const ALERTS_GRID_LAYOUT = 2;
-
-// const HEADER_MAX_HEIGHT = Platform.OS !== 'ios' ? 54 : 64;
-// const HEADER_MIN_HEIGHT = 35;
-// const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 class AlertsView extends Component {
   constructor(props) {
@@ -89,7 +72,7 @@ class AlertsView extends Component {
   }
 
   setHeader = () => {
-    const {healthStore, navigation} = this.props;
+    const {healthStore, navigation, appStore} = this.props;
     const {
       selectedAlertTypeId,
       selectedAlertType,
@@ -97,6 +80,7 @@ class AlertsView extends Component {
       currentSiteName,
       alertsList,
     } = healthStore;
+    const {appearance} = appStore;
     const {isListView} = this.state;
     const searchButton = this.searchbarRef
       ? this.searchbarRef.getSearchButton(() => this.setHeader())
@@ -133,7 +117,7 @@ class AlertsView extends Component {
                   : 'view-list-button'
               }
               size={24}
-              color={CMSColors.ColorText}
+              color={theme[appearance].iconColor}
               styles={commonStyles.headerIcon}
               onPress={() => {
                 this.setState(
@@ -155,7 +139,6 @@ class AlertsView extends Component {
 
   getData = async () => {
     const {healthStore} = this.props;
-    // if (healthStore.isFromNotification) return;
 
     await healthStore.getAlertsByType();
   };
@@ -180,16 +163,12 @@ class AlertsView extends Component {
     this.lastOpenRowId = rowId;
   };
 
-  // onDismissAlert = description => {
-  //   const {healthStore} = this.props;
-  //   const {selectedAlertForDismiss} = this.state;
-  //   healthStore.dismissAlert(selectedAlertForDismiss, description);
-  //   this.setState({showDismissModal: false, selectedAlertForDismiss: null});
-  // };
-
-  // onCancelDismiss = () => {
-  //   this.setState({showDismissModal: false, selectedAlertForDismiss: null});
-  // };
+  onBackItemPress = item => {
+    this.setState({
+      selectedAlertForDismiss: item,
+    });
+    this.props.healthStore.showDismissModal(true);
+  };
 
   gotoAlertDetail = alert => {
     const {healthStore, navigation} = this.props;
@@ -199,37 +178,14 @@ class AlertsView extends Component {
     navigation.push(ROUTERS.HEALTH_ALERT_DETAIL);
   };
 
-  // getSnapShot = alert => {
-  //   if (!alert) return;
-  //   const {selectedAlertTypeId} = this.props.healthStore;
-
-  //   if (selectedAlertTypeId == AlertTypes.DVR_Sensor_Triggered)
-  //     return {
-  //       controller: 'alert',
-  //       action: 'imagetime',
-  //       id: alert.timezone,
-  //       param: {
-  //         thumb: true,
-  //         download: false,
-  //         next: false,
-  //         kdvr: alert.KDVR,
-  //         ch: alert.ChannelNo,
-  //       },
-  //       no_img: No_Image,
-  //     };
-  //   return {
-  //     controller: 'channel',
-  //     action: 'image',
-  //     param: null,
-  //     id: alert.kChannel,
-  //     no_img: No_Image,
-  //   };
-  // };
   renderNormalAlertItem = (item, canDismiss) => {
-    return canDismiss
-      ? this.renderDismissableNormalAlertItem(item)
-      : this.renderUndismissableNormalAlertItem(item);
+    return canDismiss ? (
+      this.renderDismissableNormalAlertItem(item)
+    ) : (
+      <UnDismissNormalAlertItem data={item} />
+    );
   };
+
   renderDismissableNormalAlertItem = item => {
     return (
       <SwipeRow
@@ -239,123 +195,15 @@ class AlertsView extends Component {
         disableRightSwipe={true}
         swipeToOpenPercent={10}
         rightOpenValue={-55}>
-        {this.renderBackItem(item)}
-        {this.renderUndismissableNormalAlertItem(item)}
+        <AlertsBackItem onPress={() => this.onBackItemPress(item)} />
+        <UnDismissNormalAlertItem data={item} />
       </SwipeRow>
     );
   };
 
-  renderUndismissableNormalAlertItem = item => {
-    return (
-      <CMSRipple style={styles.alertRipple} underlayColor={CMSColors.Underlay}>
-        <View style={styles.alertContainer}>
-          <View style={styles.alertIconContainer}>
-            <IconCustom name="icon-dvr" size={36} color={CMSColors.Dark_Gray} />
-          </View>
-          <View style={{flex: 2}}>
-            <Text style={{padding: 2, fontSize: 16}}>{item.dvr.name}</Text>
-
-            <View style={styles.thumbSub}>
-              <View style={styles.thumbSubIcon}>
-                <IconCustom
-                  name="clock-with-white-face"
-                  size={12}
-                  color={CMSColors.SecondaryText}
-                />
-              </View>
-              <Text
-                style={{
-                  padding: 2,
-                  fontSize: 12,
-                }}>
-                {DateTime.fromISO(item.timezone, {zone: 'utc'}).toFormat(
-                  DateFormat.Alert_Date
-                )}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </CMSRipple>
-    );
-  };
-
-  renderBackItem = item => {
-    return (
-      <CMSRipple
-        style={styles.backRowRipple}
-        onPress={() => {
-          this.setState({
-            selectedAlertForDismiss: item,
-            // showDismissModal: true,
-          });
-          this.props.healthStore.showDismissModal(true);
-        }}>
-        {/* <View style={{flex: 1, padding: 5, justifyContent: 'center'}}> */}
-        <View style={styles.backRowView}>
-          <IconCustom
-            name="double-tick-indicator"
-            size={24}
-            color={CMSColors.Dismiss}
-          />
-        </View>
-        {/* </View> */}
-      </CMSRipple>
-    );
-  };
-
-  renderContentAlertWithSnapshot = alert => {
-    const {width} = Dimensions.get('window');
-    const itemPadding = 10;
-    const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
-    const {isListView} = this.state;
-    // __DEV__ && console.log('GOND renderContentAlertWithSnapshot: ', alert);
-
-    const containerStyle = isListView
-      ? {flex: 2}
-      : {
-          backgroundColor: CMSColors.transparent,
-          padding: 5,
-          width: itemWidth,
-        };
-    const numberOfLines = isListView ? 0 : 1;
-
-    return (
-      <View style={containerStyle}>
-        <Text numberOfLines={numberOfLines} style={styles.thumbChannelText}>
-          {alert.channelName}
-        </Text>
-
-        <View style={styles.thumbSub}>
-          <View style={styles.thumbSubIcon}>
-            <IconCustom
-              name="icon-dvr"
-              size={12}
-              color={CMSColors.SecondaryText}
-            />
-          </View>
-          <Text style={styles.thumbSubText}>{alert.dvr.name}</Text>
-        </View>
-
-        <View style={styles.thumbSub}>
-          <View style={styles.thumbSubIcon}>
-            <IconCustom
-              name="clock-with-white-face"
-              size={12}
-              color={CMSColors.SecondaryText}
-            />
-          </View>
-          <Text style={styles.thumbSubText}>
-            {DateTime.fromISO(alert.timezone, {zone: 'utc'}).toFormat(
-              DateFormat.Alert_Date
-            )}
-          </Text>
-        </View>
-      </View>
-    );
-  };
-
   renderAlertItemWithSnapshot = item => {
-    const {healthStore} = this.props;
+    const {healthStore, appStore} = this.props;
+    const {appearance} = appStore;
     __DEV__ && console.log('GOND renderAlertItemWithSnapshot: ', item);
 
     return (
@@ -366,13 +214,18 @@ class AlertsView extends Component {
         disableRightSwipe={true}
         swipeToOpenPercent={10}
         rightOpenValue={item.canDismiss ? -55 : 0}>
-        {this.renderBackItem(item)}
+        <AlertsBackItem onPress={() => this.onBackItemPress(item)} />
         <CMSRipple
           onPress={() => {
             this.gotoAlertDetail(item);
           }}
           underlayColor={CMSColors.Underlay}>
-          <View style={styles.alertThumbView}>
+          <View
+            style={[
+              styles.alertThumbView,
+              theme[appearance].container,
+              theme[appearance].borderColor,
+            ]}>
             <CMSImage
               id={'list_' + item.id} //DateTime.now().toMillis()}
               src={item.image}
@@ -385,7 +238,10 @@ class AlertsView extends Component {
               styleImage={styles.alertThumb}
               styles={styles.alertThumbContainer}
             />
-            {this.renderContentAlertWithSnapshot(item)}
+            <ContentAlertWithSnapshot
+              alert={item}
+              isListView={this.state.isListView}
+            />
           </View>
         </CMSRipple>
       </SwipeRow>
@@ -393,10 +249,8 @@ class AlertsView extends Component {
   };
 
   renderAlertItemGridView = item => {
-    const {healthStore} = this.props;
-    const {width} = Dimensions.get('window');
-    // const itemPadding = 10;
-    const itemWidth = width / ALERTS_GRID_LAYOUT - 15;
+    const {healthStore, appStore} = this.props;
+    const {appearance} = appStore;
     __DEV__ && console.log('GOND renderAlertItemWithSnapshot: ', item);
 
     return (
@@ -405,44 +259,18 @@ class AlertsView extends Component {
           this.gotoAlertDetail(item);
         }}
         underlayColor={CMSColors.Underlay}
-        style={{
-          borderRadius: 2,
-          backgroundColor: CMSColors.White,
-          flexDirection: 'column',
-          ...Platform.select({
-            ios: {
-              shadowRadius: 2,
-              shadowColor: CMSColors.BoxShadow,
-            },
-            android: {
-              elevation: 2,
-            },
-          }),
-          margin: 5,
-          width: width / ALERTS_GRID_LAYOUT - 15,
-        }}>
+        style={styles.alertItemGridViewContainer}>
         <View
-          style={{
-            flex: 1,
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: CMSColors.White,
-            borderColor: CMSColors.BorderColorListRow,
-            // padding: itemPadding,
-          }}>
-          <View
-            style={{width: itemWidth, height: Math.floor((itemWidth * 3) / 4)}}>
+          style={[
+            styles.itemGridViewWrapper,
+            theme[appearance].container,
+            theme[appearance].borderColor,
+          ]}>
+          <View style={styles.itemGridViewContentContainer}>
             <CMSImage
               id={'grid_' + item.id} //DateTime.now().toMillis()}
               src={item.image ? item.image : undefined}
-              styleImage={[
-                styles.alertThumbGrid,
-                {
-                  width: itemWidth,
-                  height: Math.floor((itemWidth * 3) / 4),
-                },
-              ]}
+              styleImage={[styles.alertThumbGrid, styles.alertThumbGrid_2]}
               styles={{flex: 8}}
               dataCompleteHandler={(param, image) => {
                 if (image) {
@@ -452,7 +280,10 @@ class AlertsView extends Component {
               domain={healthStore.getAlertSnapShot(item)} // {this.getSnapShot(item)}
             />
           </View>
-          {this.renderContentAlertWithSnapshot(item)}
+          <ContentAlertWithSnapshot
+            alert={item}
+            isListView={this.state.isListView}
+          />
         </View>
       </CMSRipple>
     );
@@ -482,32 +313,24 @@ class AlertsView extends Component {
   };
 
   render() {
-    const {healthStore, navigation} = this.props;
-    const {/*showDismissModal,*/ isListView, selectedAlertForDismiss} =
-      this.state;
+    const {healthStore, navigation, appStore} = this.props;
+    const {appearance} = appStore;
+    const {isListView, selectedAlertForDismiss} = this.state;
     __DEV__ && console.log('GOND alerts: render  ', healthStore.selectedSite);
     if (!healthStore.selectedSite) return null;
 
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
-        {/* <View style={commonStyles.flatSearchBarContainer}>
-          <InputTextIcon
-            label=""
-            value={healthStore.alertFilter}
-            onChangeText={this.onFilter}
-            placeholder={CompTxt.searchPlaceholder}
-            iconCustom="searching-magnifying-glass"
-            disabled={false}
-            iconPosition="right"
-          />
-        </View> */}
+      <View style={[styles.container, theme[appearance].container]}>
         <CMSSearchbar
           ref={r => (this.searchbarRef = r)}
           onFilter={this.onFilter}
           value={healthStore.alertFilter}
         />
         {healthStore.filteredAlerts.length == 0 ? (
-          <NoDataView isLoading={healthStore.isLoading} style={{flex: 1}} />
+          <NoDataView
+            isLoading={healthStore.isLoading}
+            style={styles.container}
+          />
         ) : (
           <FlatList
             key={isListView ? 'list' : 'grid'}
@@ -522,14 +345,6 @@ class AlertsView extends Component {
             style={{padding: isListView ? 0 : 5}}
           />
         )}
-        {/* <CMSTextInputModal
-          isVisible={showDismissModal}
-          title="Dismiss alert"
-          label="Description"
-          onSubmit={this.onDismissAlert}
-          onCancel={this.onCancelDismiss}
-          placeHolder="Dismiss descriptions"
-        /> */}
         <AlertActionModal
           data={{
             siteId: healthStore.selectedSite.id,
@@ -548,102 +363,4 @@ class AlertsView extends Component {
   }
 }
 
-const styles = StyleSheet.create({
-  item: {
-    flex: 1,
-    borderRadius: 2,
-    backgroundColor: CMSColors.White,
-    flexDirection: 'column',
-    ...Platform.select({
-      ios: {
-        shadowRadius: 2,
-        shadowColor: CMSColors.BoxShadow,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-    margin: 6,
-  },
-  thumbSub: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  thumbChannelText: {
-    fontSize: 16,
-    color: CMSColors.PrimaryText,
-    marginTop: 0,
-  },
-  thumbSubIcon: {
-    //paddingTop: 5,
-    paddingRight: 5,
-  },
-  thumbSubText: {
-    color: CMSColors.SecondaryText,
-    fontSize: 12,
-    marginBottom: 2,
-    //paddingTop: 2
-  },
-  alertThumbView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: CMSColors.White,
-    borderBottomWidth: 1,
-    borderColor: CMSColors.BorderColorListRow,
-    padding: 5,
-  },
-  alertThumbContainer: {
-    margin: 5,
-    width: 60,
-    height: 60,
-    // paddingLeft: 5,
-    // marginLeft: 5,
-    // marginRight: 20,
-  },
-  alertThumb: {
-    width: 60,
-    height: 60,
-  },
-  alertThumbGrid: {
-    width: 150,
-    height: 145,
-    resizeMode: 'cover',
-  },
-  backRowRipple: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    flexDirection: 'row',
-  },
-  backRowView: {
-    // flex: 1,
-    paddingRight: 14,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  alertRipple: {
-    alignItems: 'center',
-    backgroundColor: CMSColors.White,
-    borderBottomColor: CMSColors.BorderColorListRow,
-    borderBottomWidth: variables.borderWidthRow,
-    justifyContent: 'center',
-  },
-  alertIconContainer: {
-    width: 60,
-    height: 60,
-    backgroundColor: CMSColors.DividerColor24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  alertContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 5,
-  },
-});
-
-export default inject('healthStore')(observer(AlertsView));
+export default inject('healthStore', 'appStore')(observer(AlertsView));

@@ -1,0 +1,87 @@
+import {StyleSheet} from 'react-native';
+
+import {ListViewHeight} from '../../../components/CMSStyleSheet';
+import CMSColors from '../../../styles/cmscolors';
+
+export default StyleSheet.create({
+  actionContainer: {},
+  actionModal: {
+    flex: 1,
+    marginBottom: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    paddingTop: 0,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    alignItems: 'flex-start',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  actionRowContainer: {
+    width: '100%',
+    height: ListViewHeight,
+    borderBottomWidth: 1,
+    borderBottomColor: CMSColors.BorderColorListRow,
+    paddingLeft: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionText: {marginLeft: 14},
+  actionButtonContainer: {
+    position: 'absolute',
+    right: 35,
+    bottom: 28,
+    width: 63,
+    height: 63,
+    borderRadius: 45,
+    backgroundColor: CMSColors.PrimaryActive,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowOffset: {width: 14, height: 14},
+    shadowColor: 'black',
+    shadowOpacity: 0.7,
+    shadowRadius: 45,
+  },
+  backRowContainer: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    height: ListViewHeight,
+    borderBottomWidth: 1,
+  },
+  dismissButton: {
+    width: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  frontRowRipple: {
+    flex: 1,
+    height: ListViewHeight + 2,
+    backgroundColor: CMSColors.White,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 16,
+    borderBottomWidth: 1,
+    borderColor: CMSColors.BorderColorListRow,
+  },
+  frontRowIcon: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  frontRowInfoContainer: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: ListViewHeight - 15,
+    height: ListViewHeight - 15,
+    marginRight: 14,
+    flexDirection: 'row',
+  },
+  frontRowText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: CMSColors.TotalAlerts,
+  },
+  itemText: {fontSize: 16, fontWeight: '500', paddingLeft: 14},
+});

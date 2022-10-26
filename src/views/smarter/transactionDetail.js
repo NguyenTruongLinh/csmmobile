@@ -1,33 +1,23 @@
 import React, {Component} from 'react';
-import {
-  View,
-  ScrollView,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  BackHandler,
-  StatusBar,
-} from 'react-native';
-import PropTypes from 'prop-types';
+import {View, StyleSheet, StatusBar} from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
-// import Video from 'react-native-video';
-import VideoPlayer from 'react-native-video-player';
 
 import Button from '../../components/controls/Button';
 import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import BackButton from '../../components/controls/BackButton';
 import FlagWeightModal from './FlagWeightModal';
-import TransactionBillView from './transactionBill';
+import TransactionBillView from './components/transactionDetail/transactionBill';
 import LoadingOverlay from '../../components/common/loadingOverlay';
+import VideoPlayerView from './components/transactionDetail/videoPlayer';
+import DefaultModeView from './components/transactionDetail/defaultMode';
 
 import snackbarUtil from '../../util/snackbar';
 
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
+import theme from '../../styles/appearance';
 import {
   SMARTER as SMARTER_TXT,
   VIDEO as VIDEO_TXT,
@@ -41,28 +31,18 @@ const ViewModes = {
   fullscreenBill: 1,
   fullscreenVideo: 2,
 };
-const {width, height} = Dimensions.get('window');
-const fullscreenVideoW = height;
-const fullscreenVideoH = width;
-const videoW = width;
-const videoH = (width * 9) / 16;
+
 class TransactionDetailView extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       showFlagModal: false,
-      // fullscreenVideo: false,
-      // fullscreenBill: false,
       viewMode: ViewModes.normal,
-      // videoWidth: width,
-      // videoHeight: (1.1 * (width * 9)) / 16,
     };
 
     this.reactions = [];
     this.unsubBackEvent = null;
-    // this.unsubFocusEvent = null;
-    // this.firstFocus = true;
   }
 
   componentWillUnmount() {
@@ -129,8 +109,9 @@ class TransactionDetailView extends Component {
   };
 
   setHeader = () => {
-    const {exceptionStore, navigation} = this.props;
+    const {exceptionStore, navigation, appStore} = this.props;
     const {viewMode} = this.state;
+    const {appearance} = appStore;
 
     navigation.setOptions({
       headerLeft:
@@ -155,7 +136,7 @@ class TransactionDetailView extends Component {
                   color={
                     viewMode == ViewModes.fullscreenVideo
                       ? CMSColors.White
-                      : CMSColors.ColorText
+                      : theme[appearance].iconColor
                   }
                   styles={commonStyles.headerIcon}
                   iconCustom="clear-button"
@@ -163,12 +144,6 @@ class TransactionDetailView extends Component {
               </View>
             )
           : null,
-      headerStyle: {
-        backgroundColor:
-          viewMode == ViewModes.fullscreenVideo
-            ? CMSColors.DarkTheme
-            : CMSColors.White,
-      },
       headerShown: viewMode != ViewModes.fullscreenVideo,
     });
     if (viewMode == ViewModes.fullscreenVideo) Orientation.lockToLandscape();
@@ -252,6 +227,8 @@ class TransactionDetailView extends Component {
     });
   };
 
+  onFlagPress = () => this.setState({showFlagModal: true});
+
   renderActionButton = () => {
     return (
       <View style={commonStyles.floatingActionButton}>
@@ -269,7 +246,6 @@ class TransactionDetailView extends Component {
     const {selectedTransaction, isLoading} = this.props.exceptionStore;
     return (
       <View style={[styles.viewContainer, styles.contentView]}>
-        {/* <View style={{height: 42}} /> */}
         <Button
           style={styles.button}
           caption={SMARTER_TXT.FLAG}
@@ -289,116 +265,33 @@ class TransactionDetailView extends Component {
     );
   };
 
-  renderVideoPlayer = () => {
-    const {selectedTransaction} = this.props.exceptionStore;
-    // const {videoWidth, videoHeight} = this.state;
-    const width =
-      this.state.viewMode == ViewModes.fullscreenVideo
-        ? fullscreenVideoW
-        : videoW;
-    const height =
-      this.state.viewMode == ViewModes.fullscreenVideo
-        ? fullscreenVideoH
-        : videoH;
+  renderFullscreenVideo = () => {
     return (
-      <View style={{height: height, width: width}}>
-        <VideoPlayer
-          // controls={true}
-          video={
-            selectedTransaction.media
-              ? {uri: selectedTransaction.media}
-              : undefined
-          }
-          videoWidth={width}
-          videoHeight={height}
-          poster={
-            selectedTransaction.snapshot.uri
-              ? selectedTransaction.snapshot.uri
-              : selectedTransaction.snapshot
-          }
-          resizeMode={'stretch'}
-          // controlsTimeout={3}
-          disableControlsAutoHide
-          muted
-          autoplay
-          fullScreenHandler={this.onViewVideo}
-          showDuration={true}
-          // style={{
-          //   width: '100%',
-          //   height: videoHeight,
-          //   // backgroundColor: CMSColors.PrimaryText,
-          // }}
+      <View style={styles.videoContainer}>
+        <VideoPlayerView
+          viewMode={this.state.viewMode}
+          onViewVideo={this.onViewVideo}
         />
       </View>
     );
   };
 
-  renderFullscreenVideo = () => {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'green', //CMSColors.DarkTheme,
-        }}>
-        {this.renderVideoPlayer()}
-      </View>
-    );
-  };
-
   renderDefaultMode = () => {
-    const {selectedTransaction, isLoading} = this.props.exceptionStore;
-    // const {videoWidth, videoHeight} = this.state;
-    __DEV__ &&
-      console.log(
-        'GOND transaction detail video url: ',
-        selectedTransaction.media
-      );
-
     return (
-      <View style={[styles.viewContainer]}>
-        {selectedTransaction.hasVideo && this.renderVideoPlayer()}
-        <View style={[styles.contentView, {flexDirection: 'row'}]}>
-          {selectedTransaction.hasVideo && (
-            <Button
-              style={[styles.button, {flex: 1}]}
-              caption={SMARTER_TXT.DOWNLOAD.toUpperCase()}
-              captionStyle={{color: CMSColors.PrimaryActive, fontSize: 20}}
-              iconMaterial="get-app"
-              iconSize={24}
-              type="flat"
-              enable={true}
-              onPress={this.onVideoDownload}
-            />
-          )}
-          {selectedTransaction.hasVideo && <View style={{width: 20}} />}
-          <Button
-            style={[styles.button, {flex: 1}]}
-            caption={SMARTER_TXT.FLAG.toUpperCase()}
-            captionStyle={{color: CMSColors.PrimaryActive, fontSize: 20}}
-            iconCustom="ic_flag_black_48px"
-            iconSize={24}
-            type="flat"
-            enable={true}
-            onPress={() => this.setState({showFlagModal: true})}
-          />
-        </View>
-        <TouchableOpacity
-          onPress={this.onViewBill}
-          style={[styles.contentView, styles.defaultBillContainer]}>
-          <TransactionBillView
-            isLoading={isLoading}
-            transaction={selectedTransaction}
-          />
-        </TouchableOpacity>
-      </View>
+      <DefaultModeView
+        viewMode={this.state.viewMode}
+        onViewVideo={this.onViewVideo}
+        onVideoDownload={this.onVideoDownload}
+        onFlagPress={this.onFlagPress}
+        onViewBill={this.onViewBill}
+      />
     );
   };
 
   render() {
     const {selectedTransaction, isLoading} = this.props.exceptionStore;
     const {showFlagModal, viewMode} = this.state;
+    const {appearance} = this.props.appStore;
 
     if (!selectedTransaction) return <View />;
 
@@ -426,10 +319,10 @@ class TransactionDetailView extends Component {
     }
 
     return (
-      <View style={styles.viewContainer}>
+      <View style={[styles.viewContainer, theme[appearance].container]}>
         {isLoading ? (
           <LoadingOverlay
-            backgroundColor={CMSColors.White}
+            backgroundColor={theme[appearance].container}
             indicatorColor={CMSColors.PrimaryActive}
           />
         ) : (
@@ -449,7 +342,6 @@ class TransactionDetailView extends Component {
 const styles = StyleSheet.create({
   viewContainer: {
     flex: 1,
-    backgroundColor: CMSColors.White,
   },
   contentView: {
     paddingHorizontal: 12,
@@ -458,7 +350,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderColor: CMSColors.PrimaryActive,
     borderWidth: 2,
-    marginTop: 42,
+    marginTop: 16,
     justifyContent: 'center',
   },
   defaultBillContainer: {flex: 1, marginTop: 16},

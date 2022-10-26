@@ -1,10 +1,12 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-// import Calendar from 'rn-date-range';
-import {CalendarList, Calendar} from 'react-native-calendars';
+
+import {CalendarList} from 'react-native-calendars';
 import {DateTime} from 'luxon';
+import {inject, observer} from 'mobx-react';
 
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {DateFormat} from '../../consts/misc';
 
 const Months = [
@@ -22,7 +24,7 @@ const Months = [
   'December',
 ];
 
-export default class CMSCalendarRange extends React.Component {
+class CMSCalendarRange extends React.Component {
   constructor(props) {
     super(props);
     const {dateFrom, dateTo} = props;
@@ -36,16 +38,9 @@ export default class CMSCalendarRange extends React.Component {
 
   componentDidMount() {
     this._isMounted = true;
-    // if (this.props.Rotatable) {
-    //   Dimensions.addEventListener('change', this.onDimensionChange);
-    // }
-    // this.onDimensionChange({window: Dimensions.get('window')});
   }
 
   componentWillUnmount() {
-    // if (this.props.Rotatable) {
-    //   Dimensions.removeEventListener('change', this.onDimensionChange);
-    // }
     this._isMounted = false;
   }
 
@@ -89,7 +84,6 @@ export default class CMSCalendarRange extends React.Component {
         dateRangeObj[current.toFormat(DateFormat.CalendarDate)] = {
           // ...selectedStyle,
           color: CMSColors.HighlightedDates,
-          textColor: CMSColors.ColorText,
           marked: true,
           selected: true,
         };
@@ -165,11 +159,11 @@ export default class CMSCalendarRange extends React.Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
     const today = DateTime.utc();
     let markedData = {};
     markedData[today.toFormat(DateFormat.CalendarDate)] = {
       marked: true,
-      textColor: CMSColors.ColorText,
       dotColor: 'red',
     };
     let futureDay = today.plus({days: 1});
@@ -181,28 +175,33 @@ export default class CMSCalendarRange extends React.Component {
     }
 
     markedData = {...markedData, ...this.state.dateRange};
-    // __DEV__ && console.log('GOND today marked: ', markedData);
     return (
-      // <View style={{flex: 1}}>
       <CalendarList
-        // current={new Date()}
         markingType={'period'}
         onDayPress={this.onDayPress}
         markedDates={markedData}
         hideExtraDays={true}
-        // pastScrollRange={36}
         futureScrollRange={0}
         initialNumToRender={6}
         animateScroll={false}
         renderHeader={date => (
           <View style={styles.monthContainer}>
-            <Text style={styles.monthText}>
+            <Text style={[styles.monthText, theme[appearance].text]}>
               {Months[date.getMonth()] + ' ' + date.getFullYear()}
             </Text>
           </View>
         )}
+        theme={{
+          backgroundColor: theme[appearance].container.backgroundColor,
+          calendarBackground: theme[appearance].container.backgroundColor,
+          textSectionTitleColor: theme[appearance].text.color,
+          dayTextColor: theme[appearance].text.color,
+          todayTextColor: CMSColors.PrimaryActive,
+          todayDotColor: CMSColors.PrimaryActive,
+          textDisabledColor: theme[appearance].textCalendarDisabledColor,
+          selectedDayTextColor: theme[appearance].text.color,
+        }}
       />
-      // </View>
     );
   }
 }
@@ -215,3 +214,5 @@ const styles = StyleSheet.create({
   },
   monthText: {textAlign: 'left', fontSize: 18},
 });
+
+export default inject('appStore')(observer(CMSCalendarRange));

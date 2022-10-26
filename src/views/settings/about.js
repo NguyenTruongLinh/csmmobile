@@ -1,16 +1,18 @@
 import React, {Component} from 'react';
-import {View, Text, Image, StyleSheet, Linking, StatusBar} from 'react-native';
+import {View, Text, Image, StyleSheet, Linking} from 'react-native';
 
 import Ripple from 'react-native-material-ripple';
+import {inject, observer} from 'mobx-react';
 
 import CMSStyleSheet from '../../components/CMSStyleSheet';
-const IconCustom = CMSStyleSheet.IconCustom;
 import APP_INFO from '../../consts/appInfo';
 
 import variable from '../../styles/variables';
-// import commonStyles from '../../styles/commons.style';
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 import {CMS_Logo} from '../../consts/images';
+
+const {IconCustom} = CMSStyleSheet;
 
 class AboutView extends Component {
   constructor(props) {
@@ -21,11 +23,10 @@ class AboutView extends Component {
   }
 
   onOpenPolicies() {
-    // let url = 'https://i3international.com/company-policies';
     Linking.canOpenURL(APP_INFO.PoliciesUrl)
       .then(supported => {
         if (!supported) {
-          console.log("Can't handle url: " + APP_INFO.PoliciesUrl);
+          console.log(`Can't handle url: ${APP_INFO.PoliciesUrl}`);
         } else {
           return Linking.openURL(APP_INFO.PoliciesUrl);
         }
@@ -38,7 +39,7 @@ class AboutView extends Component {
     Linking.canOpenURL(APP_INFO.PrivacyPolicyUrl)
       .then(supported => {
         if (!supported) {
-          console.log("Can't handle url: " + APP_INFO.PrivacyPolicyUrl);
+          console.log(`Can't handle url: ${APP_INFO.PrivacyPolicyUrl}`);
         } else {
           return Linking.openURL(APP_INFO.PrivacyPolicyUrl);
         }
@@ -47,40 +48,10 @@ class AboutView extends Component {
   }
 
   render() {
-    // let statusbar = Platform.OS == 'ios' ?  (
-    //   <View style={styles.statusbarios}></View>
-    // ) : null;
+    const {appearance} = this.props.appStore;
 
     return (
-      <View style={styles.viewContainer}>
-        {/* <StatusBar
-          translucent={false}
-          backgroundColor={CMSColors.Dark_Blue}
-          barStyle="light-content" />
-        {statusbar} */}
-        {/* <View style={styles.navbar_body}>
-          <View style={styles.navbar}>
-            <Ripple
-              rippleCentered={true}
-              style={styles.left}
-              onPress={this.onBack.bind(this)}>
-              <View style={styles.icon}>
-                <CMSTouchableIcon
-                  size={20}
-                  color={CMSColors.SecondaryText}
-                  styles={styles.contentIcon}
-                  iconCustom='keyboard-left-arrow-button' />
-              </View>
-              <View style={styles.title}>
-                <Text>{this.state.title}</Text>
-              </View>
-            </Ripple>
-            <View>
-
-            </View>
-          </View>
-        </View> */}
-
+      <View style={[styles.viewContainer, theme[appearance].container]}>
         <View style={styles.firstContainer}>
           <View style={styles.imageLogo}>
             <Image
@@ -90,59 +61,57 @@ class AboutView extends Component {
             />
           </View>
           <View style={styles.name}>
-            <Text style={styles.textName}>{APP_INFO.Title}</Text>
+            <Text style={[styles.textName, theme[appearance].text]}>
+              {APP_INFO.Title}
+            </Text>
           </View>
           <View style={styles.infos}>
-            <Text style={styles.textInfo}>{APP_INFO.Name}</Text>
-            <Text style={styles.textInfo}>
+            <Text style={[styles.textInfo, theme[appearance].text]}>
+              {APP_INFO.Name}
+            </Text>
+            <Text style={[styles.textInfo, theme[appearance].text]}>
               Build : {APP_INFO.BuiltDate} - {APP_INFO.Version}
             </Text>
-            <Text style={styles.textInfo}>{APP_INFO.CopyRight}</Text>
+            <Text style={[styles.textInfo, theme[appearance].text]}>
+              {APP_INFO.CopyRight}
+            </Text>
           </View>
         </View>
         <View style={styles.secondContainer}>
           <Ripple
-            style={styles.containerRow}
+            style={[
+              styles.containerRow,
+              theme[appearance].borderColor,
+              {borderTopWidth: 1},
+            ]}
             rippleOpacity={0.87}
             onPress={this.onOpenPolicies.bind(this)}>
             <View style={styles.row}>
-              <View style={styles.rowIcon}>
-                <IconCustom
-                  name="polocies"
-                  size={20}
-                  color={CMSColors.RowOptions}
-                />
-              </View>
-
-              <Text style={styles.rowText}>Policies</Text>
+              <Text style={[styles.rowText, theme[appearance].text]}>
+                Policies
+              </Text>
               <View style={styles.rowIconEnd}>
                 <IconCustom
                   name="keyboard-right-arrow-button"
                   size={16}
-                  color={CMSColors.RowOptions}
+                  color={theme[appearance].iconColor}
                 />
               </View>
             </View>
           </Ripple>
           <Ripple
-            style={styles.containerRow}
+            style={[styles.containerRow, theme[appearance].borderColor]}
             rippleOpacity={0.87}
             onPress={this.onOpenPrivacyPolicy.bind(this)}>
             <View style={styles.row}>
-              <View style={styles.rowIcon}>
-                <IconCustom
-                  name="polocies"
-                  size={20}
-                  color={CMSColors.RowOptions}
-                />
-              </View>
-
-              <Text style={styles.rowText}>Privacy policy</Text>
+              <Text style={[styles.rowText, theme[appearance].text]}>
+                Privacy policy
+              </Text>
               <View style={styles.rowIconEnd}>
                 <IconCustom
                   name="keyboard-right-arrow-button"
                   size={16}
-                  color={CMSColors.RowOptions}
+                  color={theme[appearance].iconColor}
                 />
               </View>
             </View>
@@ -156,7 +125,6 @@ class AboutView extends Component {
 const styles = StyleSheet.create({
   viewContainer: {
     flex: 1,
-    backgroundColor: CMSColors.White,
   },
   firstContainer: {
     flex: 1,
@@ -191,8 +159,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: 70,
-    borderWidth: 1,
-    borderColor: 'rgb(204, 204, 204)',
+    borderBottomWidth: 1,
+    paddingHorizontal: 16,
   },
   row: {
     flexDirection: 'row',
@@ -200,10 +168,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rowIcon: {
-    margin: 5,
     width: 30,
     height: 30,
-    //fontSize: 20,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -211,8 +177,6 @@ const styles = StyleSheet.create({
   },
   rowText: {
     flex: 1,
-    margin: 5,
-    padding: 5,
     fontSize: 16,
     fontWeight: 'bold',
     color: CMSColors.ColorText,
@@ -225,10 +189,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // statusbarios: {
-  //   height: variable.isPhoneX ? 44 : 20,
-  //   backgroundColor: CMSColors.Dark_Blue,
-  // },
 });
 
-export default AboutView;
+export default inject('appStore')(observer(AboutView));

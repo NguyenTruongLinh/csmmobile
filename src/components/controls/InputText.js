@@ -1,16 +1,18 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View, Animated, Easing, StyleSheet, Platform} from 'react-native';
+import {View, Animated, StyleSheet, Platform} from 'react-native';
 
 import {TextField} from 'react-native-material-textfield';
 import Helper from 'react-native-material-textfield/src/components/helper';
 import Counter from 'react-native-material-textfield/src/components/counter';
 import validate from 'validate.js';
+import {inject, observer} from 'mobx-react';
 
 import CMSColors from '../../styles/cmscolors';
 import CMSStyleSheet from '../CMSStyleSheet';
+import theme from '../../styles/appearance';
 
-export default class InputText extends PureComponent {
+class InputText extends PureComponent {
   static defaultProps = {
     underlineColorAndroid: 'transparent',
     disableFullscreenUI: true,
@@ -24,8 +26,6 @@ export default class InputText extends PureComponent {
     fontSize: CMSStyleSheet.FontSize,
 
     tintColor: CMSColors.BorderActiveColor,
-    textColor: CMSColors.ActionText,
-    baseColor: CMSColors.BorderColor,
 
     errorColor: CMSColors.ErrorColor,
 
@@ -76,28 +76,11 @@ export default class InputText extends PureComponent {
       focused: false,
 
       error: error,
-      // errored: !!error,
       validationError: '',
 
       height: 24,
     };
   }
-
-  // UNSAFE_componentWillReceiveProps(props) {
-  //   let {text, error} = this.state;
-
-  //   if (null != props.value && props.value !== text) {
-  //     this.setState({text: props.value});
-  //   }
-
-  //   if (props.error && props.error !== error) {
-  //     this.setState({error: props.error});
-  //   }
-
-  //   if (props.error !== this.props.error) {
-  //     this.setState({errored: !!props.error});
-  //   }
-  // }
 
   static getDerivedStateFromProps(nextProps, prevState) {
     let {text, error} = prevState;
@@ -111,29 +94,8 @@ export default class InputText extends PureComponent {
       nextState = {...nextState, error: nextProps.error};
     }
 
-    // if (nextProps.error !== this.props.error) {
-    //   this.setState({errored: !!props.error});
-    // }
     return nextState;
   }
-
-  // UNSAFE_componentWillUpdate(props, state) {
-  //   let {error, animationDuration} = this.props;
-  //   let {focus, focused} = this.state;
-
-  //   if (props.error !== error || focused ^ state.focused) {
-  //     Animated.timing(focus, {
-  //       toValue: props.error ? -1 : state.focused ? 1 : 0,
-  //       duration: animationDuration,
-  //       easing: Easing.inOut(Easing.ease),
-  //       useNativeDriver: false,
-  //     }).start(() => {
-  //       if (this._isMounted) {
-  //         this.setState((state, {error}) => ({error}));
-  //       }
-  //     });
-  //   }
-  // }
 
   componentDidMount() {
     this._isMounted = true;
@@ -231,12 +193,9 @@ export default class InputText extends PureComponent {
     const result = validate(formValues, formFields);
     // If there is an error message, return it!
     if (result) {
-      // Return only the field error message if there are multiple
-      // __DEV__ && console.log('GOND InputText validate = ', result);
       return result[name][0];
     }
 
-    // __DEV__ && console.log('GOND InputText validate is valid');
     return null;
   }
 
@@ -270,7 +229,12 @@ export default class InputText extends PureComponent {
     } = this.props;
     let {focused, focus, error, /*errored,*/ height, text = ''} = this.state;
     let {multiline, numberOfLines} = props;
+    const {appearance} = this.props.appStore;
     // __DEV__ && console.log('GOND InputText rerender error: ', error);
+
+    const overrideBaseColor = baseColor
+      ? baseColor
+      : theme[appearance].baseColor;
 
     let count = !text ? 0 : text.length;
     let active = !!text;
@@ -280,7 +244,7 @@ export default class InputText extends PureComponent {
       ? errorColor
       : focus.interpolate({
           inputRange: [-1, 0, 1],
-          outputRange: [errorColor, baseColor, tintColor],
+          outputRange: [errorColor, overrideBaseColor, tintColor],
         });
 
     let borderBottomWidth = restricted
@@ -301,7 +265,7 @@ export default class InputText extends PureComponent {
     let inputStyle = {
       fontSize,
 
-      color: disabled ? baseColor : textColor,
+      color: disabled ? overrideBaseColor : theme[appearance].text.color,
 
       ...(multiline
         ? {
@@ -332,7 +296,7 @@ export default class InputText extends PureComponent {
     };
 
     let titleStyle = {
-      color: baseColor,
+      color: overrideBaseColor,
 
       opacity: focus.interpolate({
         inputRange: [-1, 0, 1],
@@ -357,12 +321,6 @@ export default class InputText extends PureComponent {
       <View
         onStartShouldSetResponder={() => true}
         onResponderRelease={this.focus}>
-        {/* <Animated.View style={[ styles.container, containerStyle ]}> */}
-        {/* {disabled && <Line type='dotted' color={baseColor} focusAnimation={new Animated.Value(0)} />} */}
-        {/* <Label activeFontSize={fontSize} active={true} > */}
-        {/* {...{ fontSize, tintColor, baseColor, errorColor, animationDuration, focused, errored, restricted, active }}> */}
-        {/* {label} */}
-        {/* </Label> */}
         <TextField
           style={[styles.input, inputStyle, style]}
           selectionColor={tintColor}
@@ -375,13 +333,13 @@ export default class InputText extends PureComponent {
             errorColor,
             animationDuration,
             focused,
-            // errored,
             restricted,
             active,
           }}
           error={validation ? error : props.error}
           label={label}
           labelFontSize={fontSize}
+          baseColor={overrideBaseColor}
           editable={!disabled && editable}
           onChangeText={this.onChangeText}
           onContentSizeChange={this.onContentSizeChange}
@@ -390,7 +348,6 @@ export default class InputText extends PureComponent {
           value={text}
           ref={ref => (this.inputRef = ref)}
         />
-        {/* </Animated.View> */}
 
         <Animated.View style={helperContainerStyle}>
           <View style={styles.flex}>
@@ -406,7 +363,10 @@ export default class InputText extends PureComponent {
               focusAnimation={new Animated.Value(0)}
             />
           </View>
-          <Counter {...{baseColor, errorColor, count, limit}} />
+          <Counter
+            baseColor={overrideBaseColor}
+            {...{errorColor, count, limit}}
+          />
         </Animated.View>
       </View>
     );
@@ -431,3 +391,5 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+export default inject('appStore')(observer(InputText));

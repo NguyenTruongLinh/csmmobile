@@ -12,6 +12,7 @@ import ROUTERS from '../../consts/routes';
 import {STREAM_STATUS} from '../../localization/texts';
 import Button from '../../components/controls/Button';
 import {Warning_Img} from '../../consts/images';
+import theme from '../../styles/appearance';
 
 class PermissionModal extends React.Component {
   static defaultProps = {
@@ -51,7 +52,8 @@ class PermissionModal extends React.Component {
   };
 
   render() {
-    const {videoStore} = this.props;
+    const {videoStore, appStore} = this.props;
+    const {appearance} = appStore;
     // const hasNVRPermission = videoStore.hasNVRPermission;
     __DEV__ &&
       console.log(
@@ -69,13 +71,16 @@ class PermissionModal extends React.Component {
         key="permissionModal"
         name="permissionModal"
         style={styles.containerModal}>
-        <View style={styles.containerContent}>
+        <View
+          style={[styles.containerContent, theme[appearance].modalContainer]}>
           <Image
             source={Warning_Img}
             style={styles.icon}
             resizeMode="contain"
           />
-          <Text style={styles.actionText}>{STREAM_STATUS.NO_PERMISSION}</Text>
+          <Text style={[styles.actionText, theme[appearance].text]}>
+            {STREAM_STATUS.NO_PERMISSION}
+          </Text>
           <Button
             style={styles.button}
             title="OK"

@@ -1,21 +1,14 @@
 // ----------------------------------------------------
 // <!-- START MODULES -->
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {
-  View,
-  Text,
-  Image,
-  Platform,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
-import {useIsFocused} from '@react-navigation/native';
+import {View, Dimensions} from 'react-native';
 import {inject, observer} from 'mobx-react';
 
 import HomeWidget from '../../components/containers/HomeWidget';
-import {IconCustom} from '../../components/CMSStyleSheet';
-const {width, height} = Dimensions.get('window');
+const {width} = Dimensions.get('window');
+
+import theme from '../../styles/appearance';
+import styles from './styles/homeStyles';
 
 import {
   Home_Alarm,
@@ -25,7 +18,6 @@ import {
   Home_Video,
 } from '../../consts/images';
 import ROUTERS from '../../consts/routes';
-import CMSColors from '../../styles/cmscolors';
 import {clientLogID} from '../../stores/user';
 
 class HomeView extends Component {
@@ -95,22 +87,24 @@ class HomeView extends Component {
   };
 
   render() {
-    const {userStore} = this.props;
+    const {userStore, appStore} = this.props;
     const disableIndexes = userStore.disableHomeWidgetIndexes;
+    const {appearance} = appStore;
     const topIconSize = ((width - 118) * (width > 600 ? 4 : 5.8)) / 20;
     const iconSize = ((width - 78) * (width > 600 ? 3.5 : 4)) / 20;
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, theme[appearance].container]}>
         <View style={styles.header} />
         <View style={styles.headerBackground} />
-        <View style={[styles.topWidgetsContainer]}>
+        <View
+          style={[styles.topWidgetsContainer, theme[appearance].homeHeaderRow]}>
           <View style={styles.leftWidget}>
             <HomeWidget
               isDisable={disableIndexes.includes(0)}
               icon={Home_Alarm}
               title="Alarm"
               alertCount={userStore.alarmWidgetCount}
-              titleStyle={styles.topWidgetTitle}
+              titleStyle={[styles.topWidgetTitle, theme[appearance].text]}
               onPress={this.onAlarmPress}
               iconSize={topIconSize}
             />
@@ -120,7 +114,7 @@ class HomeView extends Component {
               isDisable={disableIndexes.includes(1)}
               icon={Home_Video}
               title="Video"
-              titleStyle={styles.topWidgetTitle}
+              titleStyle={[styles.topWidgetTitle, theme[appearance].text]}
               onPress={this.onVideoPress}
               iconSize={topIconSize}
             />
@@ -133,7 +127,7 @@ class HomeView extends Component {
               icon={Home_Health}
               title="Health Monitor"
               alertCount={userStore.healthWidgetCount}
-              titleStyle={styles.normalWidgetTitle}
+              titleStyle={[styles.normalWidgetTitle, theme[appearance].text]}
               onPress={this.onHealthPress}
               iconSize={iconSize}
             />
@@ -144,7 +138,7 @@ class HomeView extends Component {
               icon={Home_SmartER}
               title="Smart-ER"
               alertCount={userStore.smartWidgetCount}
-              titleStyle={styles.normalWidgetTitle}
+              titleStyle={[styles.normalWidgetTitle, theme[appearance].text]}
               onPress={this.onSmartERPress}
               iconSize={iconSize}
             />
@@ -157,7 +151,7 @@ class HomeView extends Component {
               icon={Home_OAM}
               title="OAM"
               alertCount={userStore.oamWidgetCount}
-              titleStyle={styles.normalWidgetTitle}
+              titleStyle={[styles.normalWidgetTitle, theme[appearance].text]}
               onPress={this.onOAMPress}
               iconSize={iconSize}
             />
@@ -169,69 +163,5 @@ class HomeView extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    backgroundColor: CMSColors.White,
-  },
-  header: {
-    flex: 5,
-  },
-  footer: {
-    flex: 9,
-    flexDirection: 'row',
-  },
-  headerBackground: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: '76%',
-    backgroundColor: CMSColors.HomeHeader,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-  },
-  topWidgetsContainer: {
-    flex: 30,
-    margin: 25,
-    padding: 20,
-    borderRadius: 16,
-
-    flexDirection: 'row',
-    backgroundColor: CMSColors.White,
-    ...Platform.select({
-      ios: {
-        shadowRadius: 10,
-        shadowColor: CMSColors.BoxShadow,
-      },
-      android: {
-        elevation: 10,
-      },
-    }),
-    // borderColor: 'red',
-    // borderWidth: 1,
-  },
-  topWidgetTitle: {
-    fontSize: 21,
-    fontWeight: 'bold',
-    color: CMSColors.Dark_Blue,
-  },
-  leftWidget: {flex: 1, marginRight: 14},
-  rightWidget: {flex: 1, marginLeft: 14},
-  normalWidgetTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  widgetRow: {
-    flex: 28,
-    flexDirection: 'row',
-    margin: 25,
-    marginTop: 0,
-    // borderColor: 'red',
-    // borderWidth: 1,
-  },
-});
 
 export default inject('appStore', 'userStore')(observer(HomeView));

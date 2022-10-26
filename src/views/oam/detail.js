@@ -1,12 +1,6 @@
 'use strict';
 import React, {Component} from 'react';
-import {
-  View,
-  StyleSheet,
-  Platform,
-  ActivityIndicator,
-  StatusBar,
-} from 'react-native';
+import {View, Platform, ActivityIndicator, StatusBar} from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
@@ -24,6 +18,8 @@ import snackbarUtil from '../../util/snackbar';
 
 import CMSColors from '../../styles/cmscolors';
 import commonStyles from '../../styles/commons.style';
+import theme from '../../styles/appearance';
+import styles from './styles/detailStyles';
 
 import ROUTERS from '../../consts/routes';
 import {VIDEO as VIDEO_TXT} from '../../localization/texts';
@@ -38,7 +34,6 @@ class OAMDetailView extends Component {
       Name: 'Unknow',
       noData: false,
     },
-    // showBackButton: true,
   };
   isHeaderShown = true;
 
@@ -130,7 +125,6 @@ class OAMDetailView extends Component {
           {backgroundColor: 'ffffff00', borderColor: foreColor + BORDER_ALPHA},
         ]}
         type="Flat"
-        // iconCustom='todo' iconsize={24}
         enable={true}
         caption={'acknowledge'}
         captionStyle={{color: foreColor, fontSize: normalize(14)}}
@@ -143,10 +137,6 @@ class OAMDetailView extends Component {
     const {oamStore, videoStore, navigation} = this.props;
     videoStore.setLiveMode(true);
     const {kDVR, timezone, channelNo} = oamStore.data;
-    // videoStore.onAlertPlay(true, {kDVR, timezone, channelNo});
-    // setTimeout(() => {
-    //   navigation.push(ROUTERS.VIDEO_PLAYER);
-    // }, 200);
 
     __DEV__ && console.log('GOND OAM-gotoVideo: ', oamStore.data);
     videoStore.postAuthenticationCheck(() => {
@@ -154,7 +144,6 @@ class OAMDetailView extends Component {
       __DEV__ && console.log('GOND OAM canPlay: ', canPlay);
       if (videoStore.isUserNotLinked || canPlay) {
         videoStore.onAlertPlay(true, {kDVR, timezone, channelNo});
-        // }
         setTimeout(() => {
           navigation.push(ROUTERS.VIDEO_PLAYER);
           this.setState({isLoading: false});
@@ -162,7 +151,6 @@ class OAMDetailView extends Component {
       } else {
         snackbarUtil.onWarning(VIDEO_TXT.NO_NVR_PERMISSION);
       }
-      // });
     });
   };
 
@@ -182,7 +170,6 @@ class OAMDetailView extends Component {
   onFullScreenPress = () => {
     const {oamStore} = this.props;
     this.isHeaderShown = !this.isHeaderShown;
-    // oamStore.setIsBottomTabShown(this.isHeaderShown);
     this.props.appStore.hideBottomTabs(!this.isHeaderShown);
     this.props.navigation.setOptions({
       headerShown: this.isHeaderShown,
@@ -191,11 +178,12 @@ class OAMDetailView extends Component {
   };
 
   render() {
-    const {oamStore, navigation} = this.props;
+    const {oamStore, appStore} = this.props;
+    const {appearance} = appStore;
     const isLandscape = false;
     if (!oamStore.data)
       return (
-        <View style={styles.spinner}>
+        <View style={[styles.spinner, theme[appearance].container]}>
           <ActivityIndicator
             animating={true}
             style={commonStyles.spinnerCenter}
@@ -237,12 +225,6 @@ class OAMDetailView extends Component {
           backgroundColor: backColor,
           paddingBottom: 120,
         }}>
-        {/* <Text>{JSON.stringify(oamStore.data)}</Text> */}
-        {/* <Text>{JSON.stringify(historycals)}</Text>
-          <Text>{JSON.stringify(foreCasts)}</Text> */}
-        {/* <Text>
-          {flex1}-{flex2}
-        </Text> */}
         <View
           style={[styles.header, {backgroundColor: foreColor + BORDER_ALPHA}]}>
           {this.renderAcknowledgeButton(foreColor, backColor)}
@@ -294,125 +276,6 @@ class OAMDetailView extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  siteName: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    //paddingTop:25,
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingRight: 6,
-    justifyContent: 'flex-end',
-    // paddingVertical: 5,
-    minHeight: 45,
-  },
-  occupancyView: {
-    flex: 1.2,
-    flexDirection: 'row',
-  },
-  analyzeViews: {
-    paddingTop: 10,
-    flex: 7,
-    flexDirection: 'column',
-  },
-  footerButtons: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    // alignItems: 'center',
-  },
-  ackButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 5,
-    marginLeft: 3,
-    borderWidth: 1,
-    paddingHorizontal: 5,
-    height: 36,
-    marginRight: 30,
-  },
-  liveButton: {
-    fontSize: 32,
-    color: 'white',
-  },
-  buttonback: {
-    color: 'white',
-    paddingTop: 10,
-    backgroundColor: 'black',
-  },
-  buttonCaption: {
-    color: '#fff',
-    //opacity: 1,
-    fontSize: normalize(14),
-  },
-  buttonSite: {
-    backgroundColor: 'rgba(255,255,255,0.28)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 5,
-    height: 24,
-    marginRight: 3,
-  },
-  modalcontainer: {
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'column',
-    backgroundColor: 'white',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  modalcontent: {
-    height: 50,
-    alignContent: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    borderBottomColor: 'rgb(204, 204, 204)',
-  },
-  centering: {
-    height: '100%',
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'column',
-  },
-  actionButtonContainer: {
-    position: 'absolute',
-    right: 35,
-    bottom: 28,
-    width: 63,
-    height: 63,
-    borderRadius: 45,
-    backgroundColor: CMSColors.PrimaryActive,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // android's shadow
-    elevation: 5,
-    // ios's shadow check later
-    shadowOffset: {width: 14, height: 14},
-    shadowColor: 'black',
-    shadowOpacity: 0.7,
-    shadowRadius: 45,
-  },
-  spinner: {
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    justifyContent: 'center',
-    height: '100%',
-  },
-});
 
 export default inject(
   'oamStore',

@@ -2,12 +2,15 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {StyleSheet, View, Platform} from 'react-native';
 
+import {inject, observer} from 'mobx-react';
+
 import Button from '../controls/Button';
 import MultiselectCheckBoxList from '../controls/MultiselectCheckBoxList';
 
 import CMSColors from '../../styles/cmscolors';
 import {getwindow} from '../../util/general';
 import cmscolors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
 const {width, height} = getwindow(); //Dimensions.get('window');
 
@@ -38,7 +41,7 @@ const TemperatureAlarmData = [
   },
 ];
 
-export default class TemperatureFilter extends Component {
+class TemperatureFilter extends Component {
   static propTypes = {
     tempAlarms: PropTypes.array,
     footercontent: PropTypes.any,
@@ -55,12 +58,14 @@ export default class TemperatureFilter extends Component {
   }
 
   renderFooter = () => {
+    const {appearance} = this.props.appStore;
     // if( this.props.footercontent)
     // {
     //   return(<View style={styles.modal_footer_Apply}>{ this.props.footercontent}</View>);
     // }
     let footer = (
-      <View style={styles.modal_footer_Apply}>
+      <View
+        style={[styles.modal_footer_Apply, theme[appearance].modalContainer]}>
         <View style={styles.content_button_cancel}>
           <Button
             style={styles.button_cancel}
@@ -133,8 +138,10 @@ export default class TemperatureFilter extends Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
+
     return (
-      <View style={styles.modal_container}>
+      <View style={[styles.modal_container, theme[appearance].modalContainer]}>
         <View style={styles.modal_body}>{this.renderBody()}</View>
         {this.renderFooter()}
       </View>
@@ -151,7 +158,8 @@ const styles = StyleSheet.create({
   modal_container: {
     flexDirection: 'column',
     flex: 1,
-    backgroundColor: CMSColors.White,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
 
   modal_title: {
@@ -179,7 +187,6 @@ const styles = StyleSheet.create({
 
   modal_footer_Apply: {
     height: footer_height,
-    backgroundColor: CMSColors.White,
     // borderTopWidth: 1,
     // borderColor: CMSColors.FooterBorder,
     flexDirection: 'row',
@@ -235,7 +242,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderColor: cmscolors.PrimaryActive,
     borderWidth: 1,
-    height: 36,
+    height: 48,
   },
 
   content_button_apply: {
@@ -253,7 +260,7 @@ const styles = StyleSheet.create({
   },
 
   button_apply: {
-    height: 36,
+    height: 48,
   },
 
   dateIcon: {
@@ -288,3 +295,5 @@ const styles = StyleSheet.create({
     borderColor: CMSColors.White,
   },
 });
+
+export default inject('appStore')(observer(TemperatureFilter));

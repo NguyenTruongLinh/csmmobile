@@ -135,7 +135,7 @@ export const getHeaderTitle = route => {
     case ROUTERS.OPTIONS:
       return 'Settings';
     case ROUTERS.OPTIONS_PROFILE:
-      return 'EDIT PROFILE';
+      return 'Edit profile';
     case ROUTERS.OPTIONS_ABOUT:
       return 'About';
     case ROUTERS.OPTIONS_NOTIFY:

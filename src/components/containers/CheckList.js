@@ -40,13 +40,6 @@ export default class CheckList extends Component {
         rippleOpacity={0.87}
         onPress={() => {
           const {selected} = this.state;
-          // __DEV__ &&
-          //   console.log(
-          //     'GOND CheckList onSelected: ',
-          //     item,
-          //     ', current: ',
-          //     selected
-          //   );
           if (selected.includes(item.id)) {
             let newSelected = selected.filter(e => e != item.id);
             this.props.onAddMoreParams(newSelected);
@@ -86,12 +79,6 @@ export default class CheckList extends Component {
   render() {
     return (
       <FlatList
-        // contentContainerStyle={[
-        //   styles_cmp.PullToRefreshListView_content,
-        //   {backgroundColor: CMSColors.White},
-        // ]}
-        // style={[styles_cmp.PullToRefreshListView_Style]}
-        // enableEmptySections={true}
         data={this.state.dataSource}
         renderItem={this.renderRow}
         keyExtractor={(item, index) => item.id ?? 'k_' + index}
@@ -105,31 +92,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 5,
-    //borderBottomWidth: 1,
-    // borderColor: 'rgb(204, 204, 204)',
     backgroundColor: CMSColors.White,
     minHeight: 40,
   },
 
   rowButton_contain_name: {
     flex: 1,
-    //backgroundColor: 'green',
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
   rowButton_name: {
     margin: 5,
-    //paddingTop: 2,
-    //paddingBottom: 2,
     color: CMSColors.PrimaryText,
     fontSize: 15,
   },
   containIconCheck: {
-    //backgroundColor: 'blue'
     margin: 5,
     marginLeft: 10,
     marginRight: 10,
     justifyContent: 'center',
-    //backgroundColor: '#D8D8D8',
   },
 });

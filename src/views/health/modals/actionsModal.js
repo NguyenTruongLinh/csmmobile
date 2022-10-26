@@ -15,6 +15,7 @@ import {IconCustom, ListViewHeight} from '../../../components/CMSStyleSheet';
 import snackbarUtil from '../../../util/snackbar';
 import variables from '../../../styles/variables';
 import CMSColors from '../../../styles/cmscolors';
+import theme from '../../../styles/appearance';
 import ROUTERS from '../../../consts/routes';
 import {
   HEALTH as HEALTH_TXT,
@@ -81,8 +82,9 @@ class AlertActionsModal extends React.Component {
 
   render() {
     const {height} = Dimensions.get('window');
-    const {healthStore, siteAlerts, data} = this.props;
+    const {healthStore, siteAlerts, data, appStore} = this.props;
     const {showDismissAllButtonInHealthDetail, actionsModalShown} = healthStore;
+    const {appearance} = appStore;
 
     return (
       <Modal
@@ -99,6 +101,7 @@ class AlertActionsModal extends React.Component {
             marginTop:
               height - (showDismissAllButtonInHealthDetail ? 210 : 140),
           },
+          theme[appearance].modalContainer,
         ]}>
         <CMSRipple
           style={[
@@ -108,20 +111,24 @@ class AlertActionsModal extends React.Component {
           onPress={() => this.onLiveSearchVideo(true, data)}>
           <IconCustom
             name="videocam-filled-tool"
-            color={CMSColors.IconButton}
+            color={theme[appearance].iconColor}
             size={variables.fix_fontSize_Icon}
           />
-          <Text style={styles.actionText}>{VIDEO_TXT.LIVE}</Text>
+          <Text style={[styles.actionText, theme[appearance].text]}>
+            {VIDEO_TXT.LIVE}
+          </Text>
         </CMSRipple>
         <CMSRipple
           style={styles.actionRowContainer}
           onPress={() => this.onLiveSearchVideo(false, data)}>
           <IconCustom
             name="searching-magnifying-glass"
-            color={CMSColors.IconButton}
+            color={theme[appearance].iconColor}
             size={variables.fix_fontSize_Icon}
           />
-          <Text style={styles.actionText}>{VIDEO_TXT.SEARCH}</Text>
+          <Text style={[styles.actionText, theme[appearance].text]}>
+            {VIDEO_TXT.SEARCH}
+          </Text>
         </CMSRipple>
         {showDismissAllButtonInHealthDetail && (
           <CMSRipple
@@ -129,10 +136,10 @@ class AlertActionsModal extends React.Component {
             onPress={this.onDismissAlert}>
             <IconCustom
               name="double-tick-indicator"
-              color={CMSColors.IconButton}
+              color={theme[appearance].iconColor}
               size={variables.fix_fontSize_Icon}
             />
-            <Text style={styles.actionText}>
+            <Text style={[styles.actionText, theme[appearance].text]}>
               {siteAlerts ? HEALTH_TXT.DISMISS_ALL : HEALTH_TXT.DISMISS_CURRENT}
             </Text>
           </CMSRipple>
@@ -190,5 +197,6 @@ const styles = StyleSheet.create({
 export default inject(
   'healthStore',
   'sitesStore',
-  'videoStore'
+  'videoStore',
+  'appStore'
 )(observer(AlertActionsModal));

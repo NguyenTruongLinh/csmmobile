@@ -28,12 +28,6 @@ export default class FullWidthImage extends React.Component {
     }
   };
 
-  // getStyle = () => {
-  //   const style = [StyleSheet.flatten(this.props.style)];
-  //   style.push({width: this.state.width, height: this.state.height});
-  //   return StyleSheet.flatten(style);
-  // };
-
   render() {
     const {style} = this.props;
     const {width, height} = this.state;

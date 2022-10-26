@@ -3,12 +3,12 @@ import {StyleSheet, View, Platform} from 'react-native';
 import Ripple from 'react-native-material-ripple';
 
 import CMSTouchableIcon from '../containers/CMSTouchableIcon';
-import CMSColors from '../../styles/cmscolors';
+import {inject, observer} from 'mobx-react';
+import theme from '../../styles/appearance';
 
 class BackButton extends React.Component {
   static defaultProps = {
     icon: 'keyboard-left-arrow-button',
-    color: CMSColors.SecondaryText,
   };
 
   constructor(props) {
@@ -21,7 +21,10 @@ class BackButton extends React.Component {
   }
 
   render() {
-    const {navigator, icon, color} = this.props;
+    const {navigator, icon, color, appStore} = this.props;
+    const {appearance} = appStore;
+    const overrideColor = color ? color : theme[appearance].backIconColor;
+
     return (
       <Ripple
         rippleCentered={true}
@@ -33,7 +36,7 @@ class BackButton extends React.Component {
         <View style={styles.icon}>
           <CMSTouchableIcon
             size={20}
-            color={color}
+            color={overrideColor}
             styles={[
               styles.contentIcon,
               {position: 'relative', paddingBottom: 14},
@@ -73,4 +76,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BackButton;
+export default inject('appStore')(observer(BackButton));

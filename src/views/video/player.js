@@ -1,7 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import {
   View,
-  StyleSheet,
   Text,
   Image,
   ImageBackground,
@@ -15,8 +14,6 @@ import {
 import BackgroundTimer from 'react-native-background-timer';
 import {inject, observer} from 'mobx-react';
 import {reaction} from 'mobx';
-import {CalendarList} from 'react-native-calendars';
-// import Modal from 'react-native-modal';
 import Orientation from 'react-native-orientation-locker';
 import TimePicker from 'react-native-24h-timepicker';
 import {DateTime} from 'luxon';
@@ -28,7 +25,6 @@ import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import TimeRuler from '../../components/controls/BetterTimeRuler';
 import BackButton from '../../components/controls/BackButton';
 import TimeOnTimeRuler from '../../components/controls/TimeOnTimeRuler';
-import Swipe from '../../components/controls/Swipe';
 import NVRAuthenModal from '../../components/views/NVRAuthenModal';
 
 import DirectVideoView from './direct';
@@ -42,12 +38,10 @@ import VideoTimeModal from './videoTimeModal';
 import snackbarUtil from '../../util/snackbar';
 import CameraRoll from '@react-native-community/cameraroll';
 
-import {normalize, isNullOrUndef, getAutoRotateState} from '../../util/general';
+import {normalize, isNullOrUndef} from '../../util/general';
 import {
   CLOUD_TYPE,
-  HOURS_ON_SCREEN,
   CONTROLLER_TIMEOUT,
-  VIDEO_MESSAGE,
   VIDEO_INACTIVE_TIMEOUT,
 } from '../../consts/video';
 import {
@@ -66,10 +60,10 @@ import CMSColors from '../../styles/cmscolors';
 import {NVR_Play_NoVideo_Image} from '../../consts/images';
 
 import videoStyles from '../../styles/scenes/videoPlayer.style';
+import styles from './styles/playerStyles';
 
 const NUM_CHANNELS_ON_SCREEN = 5;
 const IconSize = normalize(28);
-const IconViewSize = IconSize * 3;
 
 class VideoPlayerView extends Component {
   static defaultProps = {
@@ -85,7 +79,6 @@ class VideoPlayerView extends Component {
       showTimerPicker: false,
       showController: false,
       videoLoading: true,
-      // pause: false,
       seekpos: {},
       sWidth: width,
       sHeight: this.getVideoHeight(width, height),
@@ -96,7 +89,6 @@ class VideoPlayerView extends Component {
 
     this.timelineAutoScroll = true;
     this.timeOnTimeline = null;
-    // this.isNoDataSearch = false;
     this.eventSubscribers = [];
     this.resumeFromInterupt = false;
     this.lastOrientation = OrientationType.LANDSCAPE;
@@ -113,7 +105,6 @@ class VideoPlayerView extends Component {
     this._isMounted = true;
 
     this.eventSubscribers = [
-      // Dimensions.addEventListener('change', this.onDimensionsChange),
       AppState.addEventListener('change', this.handleAppStateChange),
     ];
     __DEV__ &&
@@ -146,21 +137,9 @@ class VideoPlayerView extends Component {
 
   componentWillUnmount() {
     this._isMounted = false;
-    // Dimensions.removeEventListener('change', this.onDimensionsChange);
-    // this.dimensionsChangeEvtSub && this.dimensionsChangeEvtSub.remove();
     AppState.removeEventListener('change', this.handleAppStateChange);
     const {videoStore, route} = this.props;
 
-    // __DEV__ &&
-    //   console.log(
-    //     'VideoPlayerView componentWillUnmount, evtSubs: ',
-    //     this.eventSubscribers
-    //   );
-    // this.eventSubscribers.forEach(evt => evt && evt.remove());
-
-    // if (videoStore.isSingleMode) {
-    //   videoStore.releaseStreams();
-    // }
     videoStore.selectedStream &&
       videoStore.selectedStream.setStreamStatus({
         connectionStatus: STREAM_STATUS.DONE,
@@ -179,8 +158,6 @@ class VideoPlayerView extends Component {
     // dongpt: TODO handle Orientation
     Orientation.removeDeviceOrientationListener(this.onOrientationChange);
     Orientation.lockToPortrait();
-    // this.unsubSearchTimeReaction();
-    //StatusBar.setHidden(finalStatusfullscreen);
     this.reactions.forEach(unsubsribe => unsubsribe());
   }
 
@@ -188,18 +165,11 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
 
     if (this.ruler && this.savedTimelinePosition) {
-      // __DEV__ && console.log(
-      //   'GOND on player setTimelinePosition 2: ',
-      //   videoStore.beginSearchTimeOffset
-      // );
       this.ruler.moveToPosition(this.savedTimelinePosition);
       videoStore.setDisplayDateTime(
         videoStore.beginSearchTime.toFormat(NVRPlayerConfig.FrameFormat)
       );
       this.savedTimelinePosition = null;
-      // if (videoStore.timeline) {
-      //   videoStore.setBeginSearchTime(null);
-      // }
     }
   }
 
@@ -207,10 +177,6 @@ class VideoPlayerView extends Component {
     const {videoStore} = this.props;
 
     this.reactions = [
-      // reaction(
-      //   () => videoStore.searchDate,
-      //   () => this.ruler && this.ruler.forceUpdate()
-      // ),
       reaction(
         () => videoStore.beginSearchTime,
         searchTime => {
@@ -222,17 +188,10 @@ class VideoPlayerView extends Component {
             );
           if (!searchTime || videoStore.isLive) return;
           if (this.ruler) {
-            // __DEV__ && console.log(
-            //   'GOND on player setTimelinePosition 1: ',
-            //   videoStore.beginSearchTimeOffset
-            // );
             this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
             videoStore.setDisplayDateTime(
               searchTime.toFormat(NVRPlayerConfig.FrameFormat)
             );
-            // if (videoStore.timeline) {
-            //   videoStore.setBeginSearchTime(null);
-            // }
           } else {
             this.savedTimelinePosition = videoStore.beginSearchTimeOffset;
           }
@@ -259,7 +218,6 @@ class VideoPlayerView extends Component {
     if (nextAppState === 'active') {
       if (this.appState && this.appState.match(/inactive|background/)) {
         // todo: check is already paused to not resume video
-        // this.playerRef.pause(false);
         if (this.resumeFromInterupt) {
           __DEV__ && console.log('GOND: Video resume from interupt');
           switch (videoStore.cloudType) {
@@ -271,10 +229,6 @@ class VideoPlayerView extends Component {
             case CLOUD_TYPE.HLS:
             case CLOUD_TYPE.RTC:
               if (videoStore.selectedChannel != null) {
-                // self.getHLSInfos({
-                //   channelNo: videoStore.selectedChannel,
-                //   timeline: !videoStore.isLive,
-                // });
                 videoStore.resumeVideoStreamFromBackground(true);
               } else {
                 __DEV__ &&
@@ -284,8 +238,6 @@ class VideoPlayerView extends Component {
                   );
               }
               break;
-            // case CLOUD_TYPE.RTC:
-            //   break;
             default:
               __DEV__ &&
                 console.log(
@@ -316,8 +268,6 @@ class VideoPlayerView extends Component {
   onOrientationChange = async orientation => {
     const {videoStore} = this.props;
 
-    // const locked = await getAutoRotateState();
-    // __DEV__ && console.log('GOND onOrientationChange, canRotate = ', locked);
     let isFullscreen = false;
     switch (orientation) {
       case OrientationType.PORTRAIT:
@@ -349,10 +299,8 @@ class VideoPlayerView extends Component {
     // dongpt: add no data (selected a day without data)
     const {videoStore} = this.props;
     const recordingDates = {...(videoStore.recordingDates ?? {})};
-    // let datesList = [];
     let datesList = Object.keys(recordingDates);
 
-    // let selectedDate = videoStore.searchDate.toFormat(CALENDAR_DATE_FORMAT);
     __DEV__ &&
       console.log(
         'GOND checkDataOnSearchDate selectedDate = ',
@@ -368,36 +316,15 @@ class VideoPlayerView extends Component {
       datesList.indexOf(selectedDate) < 0
     ) {
       __DEV__ && console.log('GOND: checkDataOnSearchDate NOVIDEO');
-      // this.playerRef && this.playerRef.stop();
-      // videoStore.selectedStream &&
-      //   videoStore.selectedStream.setStreamStatus({
-      //     isLoading: false,
-      //     connectionStatus: STREAM_STATUS.NOVIDEO,
-      //   });
       videoStore.setNoVideo(true);
-      // snackbar.onMessage(VIDEO_MESSAGE.MSG_NO_VIDEO_DATA);
 
       __DEV__ && console.log('GOND PAUSE 2 false');
-      // this.setState({
-      //   videoLoading: false,
-      //   canLiveSearch: true,
-      //   displayInfo: '',
-      //   paused: false,
-      //   connectionStatus: STREAM_STATUS.NOVIDEO,
-      // });
       return false;
     }
 
-    // this.isNoDataSearch = false;
     this.forceUpdate();
     return true;
   };
-
-  // onDimensionsChange = ({window}) => {
-  //   const {width, height} = window;
-  //   __DEV__ && console.log('GOND onDimensionsChange: ', window);
-  //   this.setState({sWidth: width, sHeight: this.getVideoHeight(width, height)});
-  // };
 
   onFullscreenPress = (isFullscreen, manually) => {
     const {videoStore} = this.props;
@@ -409,10 +336,6 @@ class VideoPlayerView extends Component {
       } else {
         Orientation.lockToPortrait();
       }
-      // setTimeout(
-      //   () => this._isMounted && Orientation.unlockAllOrientations(),
-      //   500
-      // );
     }
     __DEV__ && console.log('GOND onFullscreenPress: ', isFullscreen, manually);
     StatusBar.setHidden(videoStore.isFullscreen);
@@ -424,17 +347,10 @@ class VideoPlayerView extends Component {
 
   onSwitchLiveSearch = () => {
     const {videoStore} = this.props;
-    // videoStore.setNoVideo(false);
     this.playerRef && this.playerRef.onSwitchLiveSearch(!videoStore.isLive);
     this.lastRulerPosition = 0;
     videoStore.switchLiveSearch(undefined, true);
-    // __DEV__ && console.log(
-    //   'GOND on player setTimelinePosition 3: ',
-    //   videoStore.beginSearchTimeOffset
-    // );
-    // this.ruler && this.ruler.moveToPosition(videoStore.beginSearchTimeOffset);
     this.updateHeader();
-    // this.playerRef && this.playerRef.pause(true);
     setTimeout(() => {
       this.channelsScrollView &&
         videoStore.selectedChannelIndex >= 0 &&
@@ -464,7 +380,6 @@ class VideoPlayerView extends Component {
   onSelectDate = dateString => {
     if (!dateString) return;
     const {videoStore} = this.props;
-    // value = {year, month, day, timestamp, dateString}
     __DEV__ &&
       console.log(
         'GOND onSelectDate: ',
@@ -481,10 +396,9 @@ class VideoPlayerView extends Component {
         NVRPlayerConfig.FrameFormat
       )
     );
-    // __DEV__ && console.log('GOND on player setTimelinePosition 4: ');
+
     this.ruler && this.ruler.moveToPosition(0);
     if (this.checkDataOnSearchDate(dateString)) {
-      // videoStore.setNoVideo(false);
       this.setState({showCalendar: false});
       videoStore.setSearchDate(dateString, CALENDAR_DATE_FORMAT);
     } else {
@@ -509,7 +423,6 @@ class VideoPlayerView extends Component {
         ' = ',
         secondsValue
       );
-    // __DEV__ && console.log('GOND on player setTimelinePosition 5: ', secondsValue);
     this.ruler && this.ruler.moveToPosition(secondsValue);
     this.playerRef && this.playerRef.onBeginDraggingTimeline();
 
@@ -560,17 +473,13 @@ class VideoPlayerView extends Component {
   onTakeVideoSnapshot = () => {};
 
   onShowControlButtons = () => {
-    // __DEV__ && console.log('GOND onShowControlButtons');
-    // if (__DEV__ && this.props.videoStore.isFullscreen) {
     if (__DEV__) {
       this.setState({showController: !this.state.showController});
     } else {
       this.setState({showController: true}, () => {
-        // __DEV__ && console.log('GOND onShowControlButtons already showed');
         if (this.controllerTimeout) clearTimeout(this.controllerTimeout);
         this.controllerTimeout = setTimeout(
           () => {
-            // __DEV__ && console.log('GOND onShowControlButtons hidden');
             if (this._isMounted) this.setState({showController: false});
             this.controllerTimeout = null;
           },
@@ -605,33 +514,12 @@ class VideoPlayerView extends Component {
 
   onTimelineScrollEnd = value => {
     const {videoStore} = this.props;
-    const {timeline, timezone} = videoStore;
     const searchDate = videoStore.getSafeSearchDate();
-    // if (this.timelineScrollTimeout) {
-    //   clearTimeout(this.timelineScrollTimeout);
-    // }
-    // this.timelineScrollTimeout = setTimeout(() => {
-    // const destinationTime = searchDate
-    //   ? searchDate.plus({seconds: value.timestamp}).toSeconds()
-    //   : DateTime.now()
-    //       .setZone(timezone)
-    //       .startOf('day')
-    //       .plus({seconds: value.timestamp})
-    //       .toSeconds();
     __DEV__ &&
       console.log(`onTimelineScrollEnd value.timestamp = `, value.timestamp);
     const destinationTime = searchDate
       .plus({seconds: value.timestamp})
       .toSeconds();
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND onTimeline sliding end: ',
-    //     value,
-    //     searchDate,
-    //     destinationTime,
-    //     timeline[timeline.length - 1],
-    //     destinationTime >= timeline[timeline.length - 1].end
-    //   );
 
     const dateString = searchDate.toFormat(NVRPlayerConfig.FrameDateFormat);
     const timeString =
@@ -652,26 +540,18 @@ class VideoPlayerView extends Component {
       }, CONTROLLER_TIMEOUT);
     }
 
-    if (
-      // timeline.length > 0 &&
-      !videoStore.checkTimeOnTimeline(destinationTime)
-    ) {
-      // this.playerRef && this.playerRef.stop();
+    if (!videoStore.checkTimeOnTimeline(destinationTime)) {
       __DEV__ && console.log('GOND onTimeline sliding end: AAAAAAAA');
 
       videoStore.setNoVideo(true, false);
       return;
-    } // else if (videoStore.noVideo) {
-    //   videoStore.setNoVideo(false, false);
-    // }
+    }
     videoStore.setBeginSearchTime(destinationTime);
     if (this.playerRef) {
       this.playerRef.playAt(value.timestamp);
     } else {
       __DEV__ && console.log('GOND playAt failed playerRef not available!');
     }
-    // this.timelineScrollTimeout = null;
-    // }, 500);
   };
 
   onAuthenSubmit = (username, password) => {
@@ -700,15 +580,11 @@ class VideoPlayerView extends Component {
   };
 
   onNext = () => {
-    // this.props.videoStore.nextChannel();
-    // this.playerRef && this.playerRef.resetZoom();
     this.onSwitchChannel(this.props.videoStore.nextChannel);
     this.adjustChannelListPosition();
   };
 
   onPrevious = () => {
-    // this.props.videoStore.previousChannel();
-    // this.playerRef && this.playerRef.resetZoom();
     this.onSwitchChannel(this.props.videoStore.previousChannel);
     this.adjustChannelListPosition();
   };
@@ -763,8 +639,6 @@ class VideoPlayerView extends Component {
       this.setState({sWidth: width, sHeight});
     }
 
-    // __DEV__ &&
-    //   console.log('GOND onScreenLayout: ', this.shouldRefreshChannelList);
     if (this.shouldRefreshChannelList) {
       this.shouldRefreshChannelList = false;
       this.adjustChannelListPosition();
@@ -778,68 +652,10 @@ class VideoPlayerView extends Component {
 
   //#endregion Event handlers
 
-  /**
-   * move Timeline to a specific time
-   * @param {luxon || moment} time
-   */
-  /*
-  moveTimeline = time => {
-    if (!this.ruler) return;
-
-    let hour = time.hour() + time.minutes() / 60 + time.seconds() / 3600;
-
-    // TODO: handle DST
-    // ---
-
-    let dwidth = this.state.sWidth / HOURS_ON_SCREEN;
-
-    this.ruler.scrollTo(hour * dwidth, 0);
-  };
-  */
-
-  //#region Render
-  /*
   renderCalendar = () => {
     const {videoStore} = this.props;
-    const {sWidth, sHeight} = this.state;
-
-    return (
-      // <Modal
-      //   visible={this.state.showCalendar}
-      //   onTouchOutside={() => this.setState({showCalendar: false})}
-      //   width={videoStore.isFullscreen ? 0.4 : 0.7}
-      //   height={videoStore.isFullscreen ? 0.8 : 0.5}
-      //   modalAnimation={new SlideAnimation({slideFrom: 'top'})}>
-      <Modal
-        isVisible={this.state.showCalendar}
-        onBackdropPress={() => this.setState({showCalendar: false})}
-        onBackButtonPress={() => this.setState({showCalendar: false})}
-        backdropOpacity={0.1}
-        style={{
-          marginVertical: videoStore.isFullscreen
-            ? sHeight * (sHeight > 480 ? 0.1 : 0.05)
-            : sHeight * 0.2,
-          borderRadius: 7,
-        }}>
-        <View style={styles.calendarContainer}>
-          <CalendarList
-            style={styles.calendar}
-            onDayPress={this.onSelectDate}
-            onDayLongPress={__DEV__ ? this.onSelectDate : undefined} // debug only
-            markedDates={videoStore.recordingDates}
-            disableMonthChange={false}
-            markingType={'period'}
-          />
-        </View>
-      </Modal>
-    );
-  };
-  */
-
-  renderCalendar = () => {
-    const {videoStore} = this.props;
-    const {displayDateTime, isLive, isFullscreen} = videoStore;
-    const [date, time] = displayDateTime.split(' - ');
+    const {displayDateTime, isFullscreen} = videoStore;
+    const [date] = displayDateTime.split(' - ');
     const displayDate = DateTime.fromFormat(date, DateFormat.POS_Filter_Date);
 
     return (
@@ -857,31 +673,13 @@ class VideoPlayerView extends Component {
   };
 
   renderVideo = () => {
-    // if (!this._isMounted) return;
     const {videoStore} = this.props;
-    const {
-      selectedStream,
-      isAuthenticated,
-      isAPIPermissionSupported,
-      selectedStreamSnapshot,
-    } = videoStore;
-    const {pause, sWidth, sHeight, showController} = this.state;
+    const {selectedStream, isAuthenticated, selectedStreamSnapshot} =
+      videoStore;
+    const {sWidth, sHeight, showController} = this.state;
     const width = sWidth;
-    const height = sHeight; // videoStore.isFullscreen ? sHeight : (sWidth * 9) / 16;
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND renderVid player: ',
-    //     selectedStream,
-    //     isAPIPermissionSupported
-    //   );
-    if (
-      !selectedStream ||
-      !selectedStream.channel ||
-      // !isAPIPermissionSupported ||
-      !isAuthenticated
-    ) {
-      // if (selectedStream && !isAuthenticated && this.authenRef)
-      //   this.authenRef.forceUpdate();
+    const height = sHeight;
+    if (!selectedStream || !selectedStream.channel || !isAuthenticated) {
       return (
         <TouchableWithoutFeedback onPress={this.onShowControlButtons}>
           <Image
@@ -894,7 +692,6 @@ class VideoPlayerView extends Component {
     }
 
     const canPlay = videoStore.canPlaySelectedChannel(videoStore.isLive);
-    // __DEV__ && console.log('GOND render player canPlay: ', canPlay);
     if (!canPlay) {
       __DEV__ && console.log('GOND renderVid player NO PERMISSION');
       return (
@@ -903,7 +700,7 @@ class VideoPlayerView extends Component {
           style={{width: width, height: height}}
           resizeMode="cover">
           <TouchableWithoutFeedback onPress={this.onShowControlButtons}>
-            <View style={{flex: 1}}>
+            <View style={styles.container}>
               <Text style={videoStyles.channelInfo}>
                 {selectedStream.channelName ?? 'Unknown'}
               </Text>
@@ -926,10 +723,8 @@ class VideoPlayerView extends Component {
       hdMode: videoStore.hdMode,
       stretch: videoStore.stretch,
       isLive: videoStore.isLive,
-      noVideo: videoStore.isLive ? false : videoStore.noVideo, // this.isNoDataSearch,
-      // searchDate: videoStore.searchDate,
+      noVideo: videoStore.isLive ? false : videoStore.noVideo,
       searchDate: videoStore.getSafeSearchDate(),
-      // searchPlayTime: videoStore.searchPlayTime,
       paused: videoStore.paused,
       singlePlayer: true,
       filterShown: showController && !videoStore.isLive,
@@ -980,7 +775,7 @@ class VideoPlayerView extends Component {
 
   renderFullscreenHeader = () => {
     const {videoStore, navigation} = this.props;
-    const {sWidth, sHeight, showController} = this.state;
+    const {showController} = this.state;
 
     return videoStore.isFullscreen && showController ? (
       <View style={styles.headerContainerFullscreen}>
@@ -1016,7 +811,7 @@ class VideoPlayerView extends Component {
                 top: -sHeight,
               },
         ]}>
-        <View style={{flex: 70, alignContent: 'flex-start'}}>
+        <View style={styles.footerScreenTimelineContainer}>
           {this.renderTimeline()}
         </View>
         <View
@@ -1034,7 +829,6 @@ class VideoPlayerView extends Component {
 
   renderDatetime = () => {
     const {displayDateTime, isLive, isFullscreen} = this.props.videoStore;
-    const {sHeight} = this.state;
     const [date, time] = displayDateTime.split(' - ');
 
     const textStyle = [
@@ -1048,7 +842,6 @@ class VideoPlayerView extends Component {
           isFullscreen
             ? styles.datetimeContainerFullscreen
             : styles.datetimeContainer,
-          // {justifyContent: 'space-between', alignContent: 'center'},
         ]}>
         {isLive ? null : (
           <CMSRipple
@@ -1065,24 +858,16 @@ class VideoPlayerView extends Component {
   };
 
   renderControlButtons = () => {
-    // if (!this.state.showController) {
-    //   return null;
-    // }
-
     const {videoStore} = this.props;
     const {
       isLive,
-      selectedChannelIndex,
       displayChannels,
       paused,
       noVideo,
       selectedStream,
-      timeline,
       cloudType,
-      isFullscreen,
     } = videoStore;
     const {sHeight, buttonBoxHeight, showController} = this.state;
-    // const IconSize = normalize(28); // normalize(sHeight * 0.035);
 
     let showPlayPauseButton =
       !isLive &&
@@ -1093,33 +878,28 @@ class VideoPlayerView extends Component {
     if (cloudType == CLOUD_TYPE.HLS) {
       showPlayPauseButton = showPlayPauseButton && selectedStream.streamUrl;
     }
-    // let verticalPos = {
-    //   marginTop:
-    //     -IconViewSize / 2 +
-    //     (isFullscreen ? 0 : Platform.OS === 'android' ? 12 : 48),
-    // };
+
     const bottomPos = (sHeight - buttonBoxHeight) / 2;
 
     return (
       <Fragment>
-        {showController &&
-          displayChannels.length > 1 && ( // && selectedChannelIndex > 0
-            <View
-              style={[styles.controlButtonContainer, {bottom: bottomPos}]}
-              onLayout={this.onControlButtonLayout}>
-              <IconCustom
-                name="keyboard-left-arrow-button"
-                size={IconSize}
-                onPress={this.onPrevious}
-                style={[
-                  styles.controlButton,
-                  {
-                    justifyContent: 'flex-start',
-                  },
-                ]}
-              />
-            </View>
-          )}
+        {showController && displayChannels.length > 1 && (
+          <View
+            style={[styles.controlButtonContainer, {bottom: bottomPos}]}
+            onLayout={this.onControlButtonLayout}>
+            <IconCustom
+              name="keyboard-left-arrow-button"
+              size={IconSize}
+              onPress={this.onPrevious}
+              style={[
+                styles.controlButton,
+                {
+                  justifyContent: 'flex-start',
+                },
+              ]}
+            />
+          </View>
+        )}
         {showPlayPauseButton && (showController || paused) && (
           <View
             style={[
@@ -1137,32 +917,30 @@ class VideoPlayerView extends Component {
             />
           </View>
         )}
-        {showController &&
-          displayChannels.length > 1 && ( //&& selectedChannelIndex < displayChannels.length - 1
-            <View
+        {showController && displayChannels.length > 1 && (
+          <View
+            style={[
+              styles.controlButtonContainer,
+              {
+                right: 0,
+                bottom: bottomPos,
+              },
+            ]}
+            onLayout={this.onControlButtonLayout}>
+            <IconCustom
+              name="keyboard-right-arrow-button"
+              size={IconSize}
+              onPress={this.onNext}
               style={[
-                styles.controlButtonContainer,
-                // verticalPos,
+                styles.controlButton,
                 {
-                  right: 0,
-                  bottom: bottomPos,
+                  justifyContent: 'flex-end',
+                  paddingRight: 5,
                 },
               ]}
-              onLayout={this.onControlButtonLayout}>
-              <IconCustom
-                name="keyboard-right-arrow-button"
-                size={IconSize}
-                onPress={this.onNext}
-                style={[
-                  styles.controlButton,
-                  {
-                    justifyContent: 'flex-end',
-                    paddingRight: 5,
-                  },
-                ]}
-              />
-            </View>
-          )}
+            />
+          </View>
+        )}
       </Fragment>
     );
   };
@@ -1191,7 +969,6 @@ class VideoPlayerView extends Component {
         this.playerRef.takeSnapshotNative();
       } else if (this.viewShot) {
         this.viewShot.capture().then(async fileSource => {
-          // console.log('takeSnapshot fileSource = ', fileSource);
           if (
             Platform.OS === 'android' &&
             !(await this.hasAndroidPermission())
@@ -1212,21 +989,12 @@ class VideoPlayerView extends Component {
   };
 
   renderFeatureButtons = () => {
-    const {videoStore, isLive, selectedStream} = this.props;
-    // const {sWidth, sHeight} = this.state;
+    const {videoStore, isLive} = this.props;
     const {showController} = this.state;
-    // const IconSize = normalize(28); // normalize(sHeight * 0.035);
-    // const isMenuReady = videoStore.selectedStream
-    //   ? videoStore.selectedStream.isMenuReady ?? true
-    //   : false;
-    // __DEV__ &&
-    //   console.log('GOND renderFeatureButtons', isMenuReady, selectedStream);
-
     const isMenuReady = videoStore.selectedStream
       ? videoStore.selectedStream.isMenuReady ?? true
       : false;
-    // __DEV__ &&
-    //   console.log('GOND renderFeatureButtons', isMenuReady, selectedStream);
+
     return (
       <View
         style={
@@ -1242,12 +1010,6 @@ class VideoPlayerView extends Component {
                 },
               ]
         }>
-        {/* {videoStore.directStreams.map(direct => {
-          const isMenuReady = direct ? direct.isMenuReady ?? true : false;
-          return (
-            <Text style={{color: 'green'}}>{isMenuReady ? 'T' : 'F'}</Text>
-          );
-        })} */}
         {showController && (
           <View style={styles.buttonWrap}>
             <CMSTouchableIcon
@@ -1258,9 +1020,7 @@ class VideoPlayerView extends Component {
               }
               color={CMSColors.White}
               size={IconSize}
-              // style={styles.buttonStyle}
               onPress={this.onSwitchLiveSearch}
-              // disabled={videoStore.isLoading || !this.playerRef}
               disabled={
                 videoStore.isLive
                   ? !videoStore.canSearchSelectedChannel
@@ -1300,19 +1060,14 @@ class VideoPlayerView extends Component {
             <CMSTouchableIcon
               iconCustom="hd"
               color={
-                // CMSColors.PrimaryActive
                 videoStore.hdMode == true
                   ? CMSColors.PrimaryActive
                   : CMSColors.White
               }
               size={IconSize}
-              // style={styles.buttonStyle}
               onPress={this.onHDMode}
               disabled={
-                !videoStore.selectedStream ||
-                // videoStore.selectedStream.isLoading ||
-                !this.playerRef ||
-                !isMenuReady
+                !videoStore.selectedStream || !this.playerRef || !isMenuReady
               }
             />
           </View>
@@ -1327,7 +1082,6 @@ class VideoPlayerView extends Component {
               }
               size={IconSize}
               color={CMSColors.White}
-              // style={styles.buttonStyle}
               onPress={() => this.onFullscreenPress(undefined, true)}
             />
           </View>
@@ -1339,10 +1093,9 @@ class VideoPlayerView extends Component {
   renderTimeline = () => {
     const {videoStore} = this.props;
     const {sWidth} = this.state;
-    // console.log('GONND searchDate ', videoStore.getSafeSearchDate());
 
     return videoStore.isLive || !videoStore.isAuthenticated ? (
-      <View style={{flex: 8}}></View>
+      <View style={styles.timelineNoView}></View>
     ) : (
       <View style={styles.timelineContainer}>
         <View style={styles.rulerContainer}>
@@ -1354,7 +1107,6 @@ class VideoPlayerView extends Component {
             markerPosition="absolute"
             timeData={videoStore.timeline}
             currentTime={videoStore.frameTime}
-            // onBeginScroll={this.onTimelineScrollBegin}
             onScrolling={this.onDraggingTimeRuler}
             onPauseVideoScrolling={() => {
               __DEV__ && console.log(`GOND onPauseVideoScrolling `);
@@ -1372,17 +1124,6 @@ class VideoPlayerView extends Component {
             }}
             onScrollEnd={this.onTimelineScrollEnd}
             onPositionChanged={secOffset => {
-              // const hour = Math.floor(secOffset / 3600);
-              // const minute = Math.floor((secOffset - hour * 3600) / 60);
-              // const sec = secOffset - hour * 3600 - minute * 60;
-              // __DEV__ &&
-              //   console.log(
-              //     'GOND Timeruler onReceiveRulerPosition: ',
-              //     secOffset,
-              //     hour,
-              //     minute,
-              //     sec
-              //   );
               this.lastRulerPosition = secOffset;
             }}
             initialPosition={this.lastRulerPosition}
@@ -1415,7 +1156,6 @@ class VideoPlayerView extends Component {
     const borderStyle = isSelected
       ? {borderWidth: 2, borderColor: CMSColors.PrimaryActive}
       : {};
-    // console.log('GOND renderChannelItem ', item);
 
     return isDummy ? (
       <View
@@ -1463,27 +1203,21 @@ class VideoPlayerView extends Component {
 
   renderChannelsList = () => {
     const {
-      // allChannels,
-      // activeChannels,
       displayChannels,
       selectedChannelIndex,
       selectedStream,
       selectedChannel,
       isFullscreen,
-      isLive,
       isAuthenticated,
-      canEnterChannel,
     } = this.props.videoStore;
-    // console.log('GOND renderChannelsList: ', isFullscreen, isAuthenticated);
     const itemWidth = this.state.sWidth / NUM_CHANNELS_ON_SCREEN;
-    // const channelsList = isLive ? activeChannels : allChannels;
 
     return isFullscreen ? null : (
       <View style={styles.channelsListContainer}>
         {isAuthenticated && (
-          /*canEnterChannel(selectedChannel) &&*/ <FlatList
+          <FlatList
             ref={r => (this.channelsScrollView = r)}
-            style={{flex: 1}}
+            style={styles.container}
             data={[{}, {}, ...displayChannels, {}, {}]}
             renderItem={this.renderChannelItem}
             keyExtractor={(item, index) => item.channelNo ?? 'dummy' + index}
@@ -1510,11 +1244,6 @@ class VideoPlayerView extends Component {
   };
 
   renderTimePicker = () => {
-    // __DEV__ &&
-    //   console.log(
-    //     ` renderTimePicker this.state.timePickerDatetime = `,
-    //     this.state.timePickerDatetime
-    //   );
     return Platform.OS == 'ios' ? (
       <TimePicker
         ref={ref => {
@@ -1524,7 +1253,6 @@ class VideoPlayerView extends Component {
         selectedTime={this.state.selectedTime}
         onConfirm={this.onSetSearchTime}
         datetime={this.props.videoStore.getSafeSearchDate()}
-        // datetime={this.state.timePickerDatetime}
       />
     ) : (
       <VideoTimeModal
@@ -1535,7 +1263,6 @@ class VideoPlayerView extends Component {
         onSubmit={this.onSetSearchTime}
         onDismiss={this.closeTimePickerAndroid}
         datetime={this.state.timePickerDatetime}
-        // datetime={this.props.videoStore.getSafeSearchDate()}
       />
     );
   };
@@ -1554,8 +1281,6 @@ class VideoPlayerView extends Component {
     const controlButtons = this.renderControlButtons();
     const calendar = this.renderCalendar();
     const timePicker = this.renderTimePicker();
-
-    // __DEV__ && console.log('GOND FUllscreen header = ', fullscreenHeader);
 
     return (
       <View style={styles.screenContainer} onLayout={this.onScreenLayout}>
@@ -1585,206 +1310,5 @@ class VideoPlayerView extends Component {
   }
   //#endregion Render
 }
-
-const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    backgroundColor: CMSColors.DarkTheme,
-  },
-  datetimeContainer: {
-    flex: 10,
-    flexDirection: 'row',
-    margin: 28,
-    backgroundColor: CMSColors.DarkElement,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 4,
-  },
-  datetimeContainerFullscreen: {
-    // margin: 28,
-    // backgroundColor: CMSColors.DarkElement,
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingRight: 140,
-  },
-  datetime: {
-    textAlign: 'center',
-    justifyContent: 'center',
-    fontWeight: '500',
-    color: CMSColors.White,
-  },
-  calendarContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  calendar: {
-    flex: 1,
-    // width: '100%',
-    // height: '100%',
-  },
-  playerContainer: {
-    flex: 44,
-    justifyContent: 'flex-end',
-    // borderWidth: 2,
-    // borderColor: 'green',
-  },
-  controlsContainer: {
-    position: 'absolute',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    left: 0,
-    top: 0,
-    width: '100%',
-    height: '100%',
-  },
-  controlButtonContainer: {
-    position: 'absolute',
-    width: '10%', // IconViewSize,
-    height: '20%', // IconViewSize,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // top: '42%',
-    // borderWidth: 1,
-    // borderColor: 'red',
-  },
-  controlButton: {
-    color: CMSColors.White,
-    // backgroundColor: CMSColors.OpacityButton,
-    padding: 7,
-  },
-  pauseButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: CMSColors.White,
-  },
-  buttonsContainers: {
-    flex: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    backgroundColor: CMSColors.DarkElement,
-  },
-  buttonsContainersFullscreen: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  buttonWrap: {
-    paddingRight: 25,
-  },
-  buttonStyle: {
-    // color: CMSColors.White,
-  },
-  timelineContainer: {
-    flex: 8,
-    backgroundColor: CMSColors.DarkElement,
-  },
-  rulerContainer: {
-    flex: 1,
-    // backgroundColor: CMSColors.PrimaryColor54,
-    flexDirection: 'row',
-    alignContent: 'flex-start',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  timeOnRuler: {
-    backgroundColor: CMSColors.Transparent,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    top: 10,
-  },
-  channelContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    height: '100%',
-    justifyContent: 'center',
-    backgroundColor: CMSColors.DarkTheme,
-  },
-  selectedChannelName: {
-    fontSize: 14,
-    width: '100%',
-    paddingTop: 10,
-    color: CMSColors.White,
-    justifyContent: 'center',
-  },
-  normalChannelName: {
-    fontSize: 12,
-    width: '100%',
-    paddingTop: 10,
-    color: CMSColors.SecondaryText,
-    justifyContent: 'center',
-  },
-  channelsListContainer: {
-    flex: 30,
-    justifyContent: 'center',
-  },
-  headerContainerFullscreen: {
-    position: 'absolute',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '15%',
-    backgroundColor: CMSColors.PrimaryText,
-    opacity: 0.8,
-    zIndex: 1,
-  },
-  headerBack: {justifyContent: 'flex-start', paddingLeft: 20},
-  headerTitleWrap: {justifyContent: 'center', alignContent: 'center'},
-  headerTitleText: {
-    fontSize: 24,
-    color: CMSColors.White,
-    paddingLeft: 20,
-  },
-  footerContainerFullscreen: {
-    position: 'absolute',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    left: 0,
-    width: '100%',
-    height: '20%',
-    backgroundColor: CMSColors.PrimaryText,
-    opacity: 0.8,
-    zIndex: 1,
-  },
-  footerButtonsWrap: {
-    flex: 30,
-    justifyContent: 'center',
-    paddingLeft: 20,
-    minWidth: 80,
-  },
-  left: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginLeft: 10,
-    // marginTop: 2,
-    alignItems: 'center',
-  },
-  icon: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 5,
-    ...Platform.select({
-      android: {
-        marginTop: 10,
-      },
-    }),
-  },
-  contentIcon: {
-    paddingTop: 2,
-  },
-  title: {
-    marginLeft: 5,
-  },
-});
 
 export default inject('videoStore', 'appStore')(observer(VideoPlayerView));

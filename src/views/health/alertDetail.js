@@ -1,49 +1,23 @@
-import {inject, observer} from 'mobx-react';
 import React, {Component} from 'react';
-import {
-  View,
-  FlatList,
-  Text,
-  Platform,
-  StatusBar,
-  Image,
-  Dimensions,
-  StyleSheet,
-} from 'react-native';
+import {View, FlatList, Text, Dimensions} from 'react-native';
+
 import {reaction} from 'mobx';
+import {inject, observer} from 'mobx-react';
 
-// import Ripple from 'react-native-material-ripple';
-// import {SwipeRow} from 'react-native-swipe-list-view';
 import Swipe from '../../components/controls/Swipe';
-
 import CMSRipple from '../../components/controls/CMSRipple';
-import AlertActionModal from './modals/actionsModal';
 import AlertDismissModal from './modals/dismissModal';
-import InputTextIcon from '../../components/controls/InputTextIcon';
-import CMSTouchableIcon from '../../components/containers/CMSTouchableIcon';
 import CMSImage from '../../components/containers/CMSImage';
-import {IconCustom, ListViewHeight} from '../../components/CMSStyleSheet';
-
-import utils from '../../util/general';
-import {AlertTypes, DateFormat} from '../../consts/misc';
-import commonStyles from '../../styles/commons.style';
-import CMSColors from '../../styles/cmscolors';
-import variables from '../../styles/variables';
-import {No_Image} from '../../consts/images';
-
-import Button from '../../components/controls/Button';
-
-import {
-  Comps as CompTxt,
-  HEALTH as HEALTH_TXT,
-  VIDEO as VIDEO_TXT,
-} from '../../localization/texts';
-import {DateTime} from 'luxon';
-import ROUTERS from '../../consts/routes';
+import AlertInfoDetail from './components/alertInfoDetail';
 import NoDataView from '../../components/views/NoData';
 
-const VIEW_PADDING = 0;
-const ITEM_PADDING = 5;
+import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
+import styles from './styles/alertDetailStyles';
+
+import {VIDEO as VIDEO_TXT} from '../../localization/texts';
+import ROUTERS from '../../consts/routes';
+
 const NUM_IMAGES_ON_SCREEN = 5;
 
 const {width, height} = Dimensions.get('window');
@@ -60,7 +34,6 @@ class AlertDetailView extends Component {
     this.imagesScrollView = null;
     this._isMounted = false;
     this.reactions = [];
-    // this.eventSubscribers = [];
     __DEV__ &&
       console.log(
         'AlertDetailView constructor, alerts list: ',
@@ -78,9 +51,6 @@ class AlertDetailView extends Component {
     __DEV__ && console.log('AlertDetailView componentDidMount');
     this._isMounted = true;
 
-    // this.eventSubscribers = [
-    //   Dimensions.addEventListener('change', this.onDimensionsChange),
-    // ];
     this.reactions = [
       reaction(
         () => healthStore.alertsList,
@@ -106,13 +76,8 @@ class AlertDetailView extends Component {
 
   setHeader = () => {
     const {healthStore, navigation} = this.props;
-    const {
-      selectedAlertTypeId,
-      selectedAlertType,
-      selectedSite,
-      currentSiteName,
-      alertsList,
-    } = healthStore;
+    const {selectedAlertType, selectedSite, currentSiteName, alertsList} =
+      healthStore;
 
     __DEV__ &&
       console.log('GOND AlertsView setHeader, selectedSite = ', selectedSite);
@@ -161,7 +126,7 @@ class AlertDetailView extends Component {
     healthStore.selectAlert(item);
   };
 
-  onSnapshotLoaded = (alert, image, param) => {
+  onSnapshotLoaded = (alert, image) => {
     if (image) {
       alert.saveImage(image);
     }
@@ -186,7 +151,6 @@ class AlertDetailView extends Component {
           dataCompleteHandler={(param, image) => {
             this.onSnapshotLoaded(activeItem, image, param);
           }}
-          // resizeMode="cover"
           styleImage={{width: imageWidth, height: imageHeight}}
         />
       </View>
@@ -220,108 +184,20 @@ class AlertDetailView extends Component {
     healthStore.showDismissModal(true);
   };
 
-  renderAlertInfo = item => {
-    const {healthStore} = this.props;
-    const {showDismissAllButtonInHealthDetail} = healthStore;
-    if (!item) return <View />;
-    const {dvr, channelName} = item;
-
-    return (
-      <View style={styles.infoContainer}>
-        <View style={{flexDirection: 'row'}}>
-          <View style={styles.infoLeft}>
-            <Text numberOfLines={2} style={[styles.infoText, {fontSize: 16}]}>
-              {channelName}
-            </Text>
-            <View style={styles.dvrInfo}>
-              <View style={styles.dvrIcon}>
-                <IconCustom
-                  name="icon-dvr"
-                  size={12}
-                  color={CMSColors.SecondaryText}
-                />
-              </View>
-              <Text style={styles.dvrName}>{dvr.name}</Text>
-            </View>
-          </View>
-          <View style={styles.infoRight}>
-            <Text style={styles.hisText}>{HEALTH_TXT.HISTORICAL}</Text>
-            <View style={styles.timeInfo}>
-              <View style={styles.timeIcon}>
-                <IconCustom
-                  name="clock-with-white-face"
-                  size={12}
-                  color={CMSColors.SecondaryText}
-                />
-              </View>
-              <Text style={{color: CMSColors.PrimaryText, fontSize: 14}}>
-                {/* {this.getDateFromActive(alert)} */}
-                {DateTime.fromISO(item.timezone).toFormat(
-                  DateFormat.AlertDetail_Date
-                )}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            marginTop: 16,
-            justifyContent: 'center',
-          }}>
-          <Button
-            style={styles.buttonStyle}
-            caption={VIDEO_TXT.LIVE}
-            iconCustom="videocam-filled-tool"
-            iconSize={17}
-            type="flat"
-            enable={true}
-            onPress={() => this.onLiveSearchVideo(true, item)}
-            captionStyle={styles.buttonCaptionStyle}
-          />
-          <Button
-            style={styles.buttonStyle}
-            caption={VIDEO_TXT.SEARCH}
-            iconCustom="searching-magnifying-glass"
-            iconSize={17}
-            type="flat"
-            enable={true}
-            onPress={() => this.onLiveSearchVideo(false, item)}
-            captionStyle={styles.buttonCaptionStyle}
-          />
-          {showDismissAllButtonInHealthDetail && (
-            <Button
-              style={[styles.buttonStyle, styles.buttonDismiss]}
-              caption={HEALTH_TXT.DISMISS_CURRENT}
-              iconCustom="double-tick-indicator"
-              iconSize={17}
-              type="flat"
-              enable={true}
-              onPress={this.onDismissAlert}
-              captionStyle={styles.buttonCaptionStyle}
-            />
-          )}
-        </View>
-      </View>
-    );
-  };
-
   renderImageItem = ({item}) => {
     if (!item) return;
     const isDummy = typeof item !== 'object' || Object.keys(item).length === 0;
     const {kChannel, channelName} = item;
-    const {healthStore} = this.props;
+    const {healthStore, appStore} = this.props;
+    const {appearance} = appStore;
     const isSelected =
       !isDummy &&
       healthStore.selectedAlert &&
       healthStore.selectedAlert.id == item.id;
-    // const {imageW, imageH} = this.state;
     const imageW = (width / NUM_IMAGES_ON_SCREEN) * (isSelected ? 1.2 : 1);
     const borderStyle = isSelected
       ? {borderWidth: 2, borderColor: CMSColors.PrimaryActive}
       : {};
-    // console.log('GOND renderChannelItem ', item);
 
     return isDummy ? (
       <View
@@ -330,6 +206,7 @@ class AlertDetailView extends Component {
           {
             width: imageW,
           },
+          theme[appearance].container,
         ]}
       />
     ) : (
@@ -339,10 +216,10 @@ class AlertDetailView extends Component {
           {
             width: imageW,
           },
+          theme[appearance].container,
         ]}
         onPress={() => this.onSwitchImage(item)}>
         <CMSImage
-          // resizeMode="cover"
           style={{height: imageW}}
           styleImage={[borderStyle, {width: imageW, height: imageW}]}
           dataCompleteHandler={(param, image) =>
@@ -356,9 +233,10 @@ class AlertDetailView extends Component {
           }}
         />
         <Text
-          style={
-            isSelected ? styles.selectedChannelName : styles.normalChannelName
-          }
+          style={[
+            isSelected ? styles.selectedChannelName : styles.normalChannelName,
+            theme[appearance].text,
+          ]}
           numberOfLines={1}>
           {channelName}
         </Text>
@@ -373,11 +251,10 @@ class AlertDetailView extends Component {
     return (
       <FlatList
         ref={r => (this.imagesScrollView = r)}
-        // style={{flex: 1}}
         data={[{}, {}, ...data, {}, {}]}
         renderItem={this.renderImageItem}
         keyExtractor={(item, index) => item.id ?? 'dummy' + index}
-        getItemLayout={(data, index) => ({
+        getItemLayout={(_, index) => ({
           length: itemWidth,
           offset: itemWidth * index,
           index,
@@ -391,6 +268,7 @@ class AlertDetailView extends Component {
       />
     );
   };
+
   onNext = () => {
     __DEV__ && console.log(`Swipe onNext`);
     const {healthStore} = this.props;
@@ -402,6 +280,7 @@ class AlertDetailView extends Component {
       });
     }, 200);
   };
+
   onPrevious = () => {
     __DEV__ && console.log(`Swipe onPrevious`);
     const {healthStore} = this.props;
@@ -413,9 +292,10 @@ class AlertDetailView extends Component {
       });
     }, 200);
   };
+
   render() {
-    const {healthStore, navigation} = this.props;
-    const {showDismissAllButtonInHealthDetail, actionsModalShown} = healthStore;
+    const {healthStore, appStore} = this.props;
+    const {appearance} = appStore;
     __DEV__ &&
       console.log(
         'GOND HEALTH DETAIL render, selectedAlert: ',
@@ -424,19 +304,31 @@ class AlertDetailView extends Component {
 
     return (
       <View
-        style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}
+        style={[styles.container, theme[appearance].container]}
         onLayout={this.onViewLayout}>
         {healthStore.filteredAlerts.length == 0 ? (
-          <NoDataView isLoading={healthStore.isLoading} style={{flex: 1}} />
+          <NoDataView
+            isLoading={healthStore.isLoading}
+            style={styles.container}
+          />
         ) : (
-          <View style={{flex: 1}}>
+          <View style={styles.container}>
             <Swipe onSwipeLeft={this.onNext} onSwipeRight={this.onPrevious}>
               {this.renderActiveImage(healthStore.selectedAlert)}
             </Swipe>
-            <View style={{backgroundColor: '#f7f7f7', padding: 10}}>
-              {this.renderAlertInfo(healthStore.selectedAlert)}
+            <View style={styles.infoViewContainer}>
+              <AlertInfoDetail
+                data={healthStore.selectedAlert}
+                onLivePress={() =>
+                  this.onLiveSearchVideo(true, healthStore.selectedAlert)
+                }
+                onSearchPress={() =>
+                  this.onLiveSearchVideo(false, healthStore.selectedAlert)
+                }
+                onDismissPress={this.onDismissAlert}
+              />
             </View>
-            <View style={{position: 'absolute', bottom: '5%'}}>
+            <View style={styles.imageSlideListContainer}>
               {healthStore.alertsList.length > 0 &&
                 this.renderImageList(
                   healthStore.alertsList,
@@ -451,83 +343,8 @@ class AlertDetailView extends Component {
   }
 }
 
-const styles = StyleSheet.create({
-  listImageContainer: {
-    // flex: 1,
-    flexDirection: 'column',
-    // height: '100%',
-    justifyContent: 'center',
-    backgroundColor: CMSColors.White,
-  },
-  selectedChannelName: {
-    fontSize: 14,
-    width: '100%',
-    paddingTop: 10,
-    color: CMSColors.White,
-    justifyContent: 'center',
-  },
-  normalChannelName: {
-    fontSize: 12,
-    width: '100%',
-    paddingTop: 10,
-    color: CMSColors.SecondaryText,
-    justifyContent: 'center',
-  },
-  actionButton: {
-    borderRadius: 45,
-    backgroundColor: CMSColors.PrimaryActive,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 52,
-    height: 52,
-  },
-  infoContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-  actionsButtonContainer: {
-    flex: 16,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-  },
-  infoLeft: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-  infoRight: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  infoText: {fontSize: 14, color: CMSColors.PrimaryText, fontWeight: 'bold'},
-  hisText: {fontSize: 14, color: CMSColors.SecondaryText},
-  dvrName: {fontSize: 14, color: CMSColors.PrimaryText},
-  dvrInfo: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginTop: 4,
-  },
-  dvrIcon: {paddingRight: 5, justifyContent: 'center'},
-  timeInfo: {flexDirection: 'row', paddingTop: 5},
-  timeIcon: {paddingRight: 5, justifyContent: 'center'},
-  buttonStyle: {
-    borderColor: CMSColors.PrimaryActive,
-    borderWidth: 1,
-    maxHeight: 32,
-    paddingHorizontal: 10,
-    marginRight: 12,
-  },
-  buttonCaptionStyle: {
-    fontSize: 14,
-    // fontWeight: 'bold',
-  },
-  buttonDismiss: {
-    // position: 'absolute',
-    // right: 0,
-    marginRight: 0,
-  },
-});
-
-export default inject('healthStore', 'videoStore')(observer(AlertDetailView));
+export default inject(
+  'healthStore',
+  'videoStore',
+  'appStore'
+)(observer(AlertDetailView));

@@ -2,21 +2,23 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {StyleSheet, View} from 'react-native';
 
+import {inject, observer} from 'mobx-react';
+
 import Button from '../controls/Button';
 import MultiselectCheckBoxList from '../controls/MultiselectCheckBoxList';
 
 import {getwindow} from '../../util/general';
 
-import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
 import cmscolors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
 const {width, height} = getwindow(); //Dimensions.get('window');
 
 const header_height = 50;
 const footer_height = 60;
 
-export default class ExceptionFilter extends Component {
+class ExceptionFilter extends Component {
   static propTypes = {
     exceptions: PropTypes.array,
     footercontent: PropTypes.any,
@@ -33,6 +35,7 @@ export default class ExceptionFilter extends Component {
   }
 
   _footer = () => {
+    const {appearance} = this.props.appStore;
     if (this.props.footercontent) {
       return (
         <View style={styles.modal_footer_Apply}>
@@ -42,7 +45,8 @@ export default class ExceptionFilter extends Component {
     }
 
     let footer = (
-      <View style={styles.modal_footer_Apply}>
+      <View
+        style={[styles.modal_footer_Apply, theme[appearance].modalContainer]}>
         <View style={styles.content_button_cancel}>
           <Button
             style={styles.button_cancel}
@@ -54,7 +58,7 @@ export default class ExceptionFilter extends Component {
             }}
           />
         </View>
-        <View style={{width: 5}}></View>
+        <View style={styles.separator}></View>
         <View style={styles.content_button_apply}>
           <Button
             style={styles.button_apply}
@@ -76,12 +80,11 @@ export default class ExceptionFilter extends Component {
   }
 
   _content = () => {
-    const paddingBottom = variable.isIOS == false ? -25 : 0;
     let content = (
       <MultiselectCheckBoxList
         itemId={'id'}
         itemName={'name'}
-        initheight={this.props.initheight - footer_height + paddingBottom}
+        initheight={this.props.initheight - footer_height}
         initwidth={this.props.initwidth - footer_height}
         scr_width={width}
         scr_height={height}
@@ -106,11 +109,13 @@ export default class ExceptionFilter extends Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
+
     let footer = this._footer();
     let content = this._content();
 
     return (
-      <View style={styles.modal_container}>
+      <View style={[styles.modal_container, theme[appearance].modalContainer]}>
         <View style={styles.modal_body}>{content}</View>
         {footer}
       </View>
@@ -127,7 +132,9 @@ const styles = StyleSheet.create({
   modal_container: {
     flexDirection: 'column',
     flex: 1,
-    backgroundColor: CMSColors.White,
+    borderTopRightRadius: 12,
+    borderTopLeftRadius: 12,
+    overflow: 'hidden',
   },
 
   modal_title: {
@@ -155,7 +162,6 @@ const styles = StyleSheet.create({
 
   modal_footer_Apply: {
     height: footer_height,
-    backgroundColor: CMSColors.White,
     // borderTopWidth: 1,
     // borderColor: CMSColors.FooterBorder,
     flexDirection: 'row',
@@ -211,7 +217,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderColor: cmscolors.PrimaryActive,
     borderWidth: 1,
-    height: 36,
+    height: 48,
   },
 
   content_button_apply: {
@@ -229,7 +235,7 @@ const styles = StyleSheet.create({
   },
 
   button_apply: {
-    height: 36,
+    height: 48,
   },
 
   dateIcon: {
@@ -263,4 +269,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderColor: CMSColors.White,
   },
+  separator: {width: 8},
 });
+
+export default inject('appStore')(observer(ExceptionFilter));

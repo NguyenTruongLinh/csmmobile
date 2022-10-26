@@ -2,45 +2,27 @@ import React, {Component} from 'react';
 import {
   View,
   SafeAreaView,
-  StyleSheet,
   Text,
   Image,
-  Linking,
-  Alert,
   Dimensions,
-  TouchableOpacity,
   Keyboard,
-  Platform,
 } from 'react-native';
 
 import {inject, observer} from 'mobx-react';
-import {onPatch} from 'mobx-state-tree';
-import call from 'react-native-phone-call';
-
-// import validatejs from 'validate.js';
 
 import InputTextIcon from '../../components/controls/InputTextIcon';
 import Button from '../../components/controls/Button';
 
-// import navigationService from '../../navigation/navigationService';
-
-import {isValidHttpUrl} from '../../util/general';
-
-import {Domain} from '../../consts/misc';
-import APP_INFO from '../../consts/appInfo';
-import variable from '../../styles/variables';
 import CMSColors from '../../styles/cmscolors';
-import {I3_Logo, Lock} from '../../consts/images';
+import theme from '../../styles/appearance';
+import {I3_Logo} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
-
-// const backgroundImg = require('../../assets/images/intro/welcome.png');
-// const launchscreenLogo = require('../../assets/images/CMS-logo-white.png');
 
 // const validators = validatejs.validators;
 // <!-- END CONSTS -->
 // ----------------------------------------------------
-const {width, height} = Dimensions.get('window');
+const {height} = Dimensions.get('window');
 
 class PasswordExpired extends Component {
   constructor(props) {
@@ -200,8 +182,10 @@ class PasswordExpired extends Component {
       newPasswordErrorFlag,
       confirmPasswordErrorFlag,
     } = this.state;
+    const {appearance} = this.props.appStore;
+
     return (
-      <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <SafeAreaView style={[{flex: 1}, theme[appearance].container]}>
         <Button
           style={styles.closeButton}
           enable={true}
@@ -228,9 +212,11 @@ class PasswordExpired extends Component {
             resizeMode="contain"
           />
           <View style={{flex: 0.3}} />
-          <Text style={styles.textTitle}>{LoginTxt.changePasswordTitte}</Text>
+          <Text style={[styles.textTitle, theme[appearance].text]}>
+            {LoginTxt.changePasswordTitte}
+          </Text>
           <View style={{flex: 0.05}} />
-          <Text style={styles.textDesc}>
+          <Text style={[styles.textDesc, theme[appearance].text]}>
             {LoginTxt.changePassworDescription}
           </Text>
           <View style={{flex: 0.1}} />
@@ -250,14 +236,9 @@ class PasswordExpired extends Component {
               iconCustom="user-shape"
               label={LoginTxt.username}
               placeholder=""
-              // error={errors.username}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={false}
-              fixAndroidBottomLine={true}
               fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
@@ -275,15 +256,10 @@ class PasswordExpired extends Component {
               iconCustom="locked-padlock"
               label={LoginTxt.oldPassword}
               placeholder=""
-              // error={errors.oldPassword}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
-              fixAndroidBottomLine={true}
               fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
@@ -304,13 +280,9 @@ class PasswordExpired extends Component {
               placeholder=""
               error={newPasswordErrorFlag && newPasswordError}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
-              fixAndroidBottomLine={true}
               fixAndroidBottomLineBottom={0}
             />
             <InputTextIcon
@@ -329,20 +301,10 @@ class PasswordExpired extends Component {
               label={LoginTxt.confirmPassword}
               placeholder=""
               error={confirmPasswordErrorFlag && confirmPasswordError}
-              //   !this.state.confirmPassword ||
-              //   this.state.confirmPassword === this.state.newPassword
-              //     ? ''
-              //     : LoginTxt.confirmPasswordError
-              // }
-              // marginTopExtended={newPasswordErrorFlag && newPasswordError}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
-              fixAndroidBottomLine={true}
               fixAndroidBottomLineBottom={0}
             />
           </View>
@@ -375,104 +337,14 @@ class PasswordExpired extends Component {
             style={styles.copyRightLogo}
             resizeMode="contain"
           />
-          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          <Text style={[styles.copyRightText, theme[appearance].text]}>
+            {LoginTxt.copyRight}
+          </Text>
         </View>
         <View style={styles.space_footer} />
       </SafeAreaView>
     );
   }
 }
-
-const dim = Dimensions.get('window');
-
-const styles = StyleSheet.create({
-  viewContainer: {
-    flex: 1,
-    paddingHorizontal: width * 0.1,
-  },
-  closeButton: {
-    width: 30,
-    // alignItems: 'center',
-    position: 'absolute',
-    right: width * 0.1 - 30,
-    top: width * 0.1 - (Platform.OS == 'ios' ? 0 : 36),
-    zIndex: 10,
-  },
-  topSpace: {
-    height: 30,
-  },
-  logo: {
-    tintColor: CMSColors.Dark_Blue,
-    height: 56,
-    alignSelf: 'center',
-  },
-  space: {
-    flex: 0.3,
-  },
-  lock: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
-  },
-  space_text: {
-    flex: 0.15,
-  },
-  space_footer: {
-    flex: 0.05,
-  },
-  buttonsContainer: {
-    alignItems: 'center',
-    flexDirection: 'column',
-    borderColor: 'blue',
-    borderWidth: 1,
-  },
-  buttonLogin: {
-    width: '100%',
-  },
-  textContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textTitle: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: CMSColors.PrimaryText,
-  },
-  textDesc: {
-    fontSize: 14,
-    color: CMSColors.SecondaryText,
-    lineHeight: 20,
-  },
-  phone: {
-    fontWeight: 'bold',
-    color: CMSColors.PrimaryActive,
-  },
-  content: {
-    maxWidth: variable.deviceWidth,
-    backgroundColor: CMSColors.Transparent,
-  },
-  centerContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    flexDirection: 'column',
-  },
-  copyRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: '6%',
-  },
-  copyRightLogo: {
-    tintColor: CMSColors.Dark_Blue,
-    width: (width * 28) / 100,
-    height: (width * 28 * 132) / 300 / 100,
-  },
-  copyRightText: {
-    flex: 1,
-    fontSize: 11,
-    marginLeft: 5,
-  },
-});
 
 export default inject('userStore', 'appStore')(observer(PasswordExpired));

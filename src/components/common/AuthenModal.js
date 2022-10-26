@@ -1,22 +1,17 @@
 import React, {Component} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 
+import {reaction} from 'mobx';
+import {inject, observer} from 'mobx-react';
+
 import Button from '../controls/Button';
 import InputTextIcon from '../controls/InputTextIcon';
-import {normalize} from '../util/general';
-import Ripple from 'react-native-material-ripple';
 import {IconCustom} from '../CMSStyleSheet';
-
-import {inject, observer} from 'mobx-react';
-import {reaction} from 'mobx';
-//import Icon from 'react-native-vector-icons/FontAwesome';
-//import { createIconSetFromFontello } from 'react-native-vector-icons';
-//import fontelloConfig from './common/fontello/config.json';
 
 import CMSColors from '../../styles/cmscolors';
 import variables from '../../styles/variables';
-
-const str_showpass = 'Show password';
+import theme from '../../styles/appearance';
+import styles from './styles/authenModalStyles';
 
 class AuthenModal extends Component {
   constructor(props) {
@@ -29,7 +24,6 @@ class AuthenModal extends Component {
       showpass: showpass,
       username: username ?? '',
       password: password ?? '',
-      // showpasslable: ShowPassLabel ? ShowPassLabel : str_showpass,
     };
 
     this._refs = {};
@@ -100,7 +94,6 @@ class AuthenModal extends Component {
   };
 
   checkedIcon = checked => {
-    //<IConCustom name={checkedIcon} color={CMSColors.White} size={iconSize}/>
     if (checked === true) {
       return (
         <View style={[styles.checkboxIcon, styles.checkedboxIcon]}>
@@ -122,33 +115,17 @@ class AuthenModal extends Component {
     }
   };
 
-  // renderCheckbox = showpass => {
-  //   let check_uncheck_Icon = this.checkedIcon(showpass);
-  //   return (
-  //     <View style={[styles.checkboxContainer]}>
-  //       <Ripple
-  //         style={[styles.checkboxRipple]}
-  //         onPress={() => {
-  //           this._refs['password'].blur();
-  //           this.setState({showpass: !this.state.showpass});
-  //         }}>
-  //         <View style={{paddingRight: normalize(12)}}>
-  //           {check_uncheck_Icon}
-  //         </View>
-  //         <Text style={[styles.checkboxLable]}>{this.state.showpasslable}</Text>
-  //       </Ripple>
-  //     </View>
-  //   );
-  // };
-
   render() {
-    let {title} = this.props;
+    let {title, appStore} = this.props;
     let {showpass} = this.state;
+    const {appearance} = appStore;
     // let check_box = this.renderCheckbox(showpass);
     return (
       <View style={[styles.container, this.props.style]}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>{title}</Text>
+          <Text style={[styles.headerText, theme[appearance].text]}>
+            {title}
+          </Text>
         </View>
         <View style={[styles.body]}>
           <InputTextIcon
@@ -191,7 +168,7 @@ class AuthenModal extends Component {
             onPress={() => {
               this.onCancel();
             }}
-            backgroundColor={CMSColors.White}
+            backgroundColor={CMSColors.Transparent}
             textColor={CMSColors.PrimaryColor}
             enable={true}
             caption={'CANCEL'}
@@ -214,81 +191,4 @@ class AuthenModal extends Component {
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    backgroundColor: CMSColors.White,
-    paddingHorizontal: normalize(16),
-    paddingTop: normalize(24),
-    paddingBottom: normalize(48),
-  },
-  header: {
-    marginBottom: normalize(8),
-  },
-  headerText: {
-    fontSize: normalize(20),
-    color: CMSColors.PrimaryText,
-    textAlign: 'center',
-    fontWeight: '700',
-  },
-  body: {
-    alignItems: 'flex-start',
-    flexDirection: 'column',
-    marginBottom: normalize(8),
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  checkboxContainer: {
-    paddingLeft: normalize(18 + 12), //18 for icon font 12 for padding
-    flexDirection: 'row',
-  },
-  checkboxRipple: {
-    flexDirection: 'row',
-  },
-  checkedboxIcon: {
-    borderColor: CMSColors.PrimaryColor,
-    backgroundColor: CMSColors.PrimaryColor,
-    flex: 1,
-  },
-  checkboxIcon: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: normalize(22),
-    height: normalize(22),
-    borderRadius: 2,
-    borderWidth: 2,
-    borderColor: 'rgba(01,01,01,0.54)',
-  },
-  checkboxLable: {
-    fontSize: normalize(16),
-    color: CMSColors.PrimaryText,
-  },
-  button: {
-    width: (variables.deviceWidth - 40) / 2,
-  },
-  cancelButton: {
-    borderWidth: 1,
-    borderColor: CMSColors.PrimaryActive,
-    shadowColor: CMSColors.White,
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    elevation: 0,
-  },
-  buttonText: {
-    fontWeight: '700',
-  },
-  cancelButtonText: {
-    color: CMSColors.PrimaryActive,
-    fontWeight: '700',
-  },
-});
-
-export default inject('videoStore')(observer(AuthenModal));
+export default inject('videoStore', 'appStore')(observer(AuthenModal));

@@ -47,76 +47,24 @@ class WelcomeView extends Component {
   };
 
   render() {
-    const {width, height} = Dimensions.get('window');
     console.log('GOND Dimension = ', Dimensions.get('window'));
 
     return (
       // <SafeAreaView style={{flex: 1}}>
-      <ImageBackground
-        source={backgroundImg}
-        style={{
-          width: width,
-          flex: 1,
-          resizeMode: 'cover',
-        }}>
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'column',
-            // paddingLeft: width * 0.1,
-            // paddingRight: width * 0.1,
-            paddingHorizontal: width * 0.1,
-            backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          }}>
+      <ImageBackground source={backgroundImg} style={styles.imageBackground}>
+        <View style={styles.imageWrapper}>
           <View style={styles.larger_space} />
-          <Image
-            source={I3_Logo}
-            style={{
-              width: 180,
-              height: 90,
-              tintColor: CMSColor.Dark_Blue,
-            }}
-            resizeMode="contain"
-          />
+          <Image source={I3_Logo} style={styles.image} resizeMode="contain" />
           <View style={styles.space} />
-          <View
-            style={{
-              flexDirection: 'column',
-              width: width * 0.8,
-            }}>
-            <Text
-              style={{
-                fontWeight: 'normal',
-                fontSize: height > 600 ? 28 : 24,
-                flexWrap: 'wrap',
-                fontFamily: 'Roboto-Regular',
-              }}>
-              {WelcomeTxt.title}
-            </Text>
-            <Text
-              style={{
-                fontWeight: 'bold',
-                fontSize: height > 600 ? 27 : 23,
-                flexWrap: 'wrap',
-              }}>
-              {WelcomeTxt.titleBold}
-            </Text>
+          <View style={styles.welcomeTextContainer}>
+            <Text style={styles.welcomeText}>{WelcomeTxt.title}</Text>
+            <Text style={styles.welcomeTextBold}>{WelcomeTxt.titleBold}</Text>
           </View>
           <View style={styles.text_space} />
-          <Text
-            style={{
-              fontWeight: 'normal',
-              fontSize: 16,
-              flexWrap: 'wrap',
-              fontFamily: 'Roboto-Regular',
-            }}>
+          <Text style={styles.welcomeDesc}>
             {WelcomeTxt.description}
             <Text
-              style={{
-                // fontWeight: 'normal',
-                // fontSize: 16,
-                color: CMSColor.PrimaryActive,
-              }}
+              style={styles.contactLinkText}
               onPress={() => {
                 Linking.openURL(APP_INFO.ContactUrl);
               }}>
@@ -156,6 +104,46 @@ const styles = StyleSheet.create({
   },
   text_space: {
     flex: 0.1,
+  },
+  imageBackground: {
+    width: width,
+    flex: 1,
+    resizeMode: 'cover',
+  },
+  imageWrapper: {
+    flex: 1,
+    flexDirection: 'column',
+    paddingHorizontal: width * 0.1,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+  },
+  image: {
+    width: 180,
+    height: 90,
+    tintColor: CMSColor.Dark_Blue,
+  },
+  welcomeTextContainer: {
+    flexDirection: 'column',
+    width: width * 0.8,
+  },
+  welcomeText: {
+    fontWeight: 'normal',
+    fontSize: height > 600 ? 28 : 24,
+    flexWrap: 'wrap',
+    fontFamily: 'Roboto-Regular',
+  },
+  welcomeTextBold: {
+    fontWeight: 'bold',
+    fontSize: height > 600 ? 27 : 23,
+    flexWrap: 'wrap',
+  },
+  welcomeDesc: {
+    fontWeight: 'normal',
+    fontSize: 16,
+    flexWrap: 'wrap',
+    fontFamily: 'Roboto-Regular',
+  },
+  contactLinkText: {
+    color: CMSColor.PrimaryActive,
   },
 });
 

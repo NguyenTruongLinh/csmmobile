@@ -5,16 +5,15 @@ import {
   Text,
   StyleSheet,
   Dimensions,
-  Image,
 } from 'react-native';
 import {inject, observer} from 'mobx-react';
 
 import {getCurrentRouteName} from '../util/general';
 import {Tabbar as Labels} from '../localization/texts';
 import CMSColors from '../styles/cmscolors';
+import theme from '../styles/appearance';
 import {IconCustom} from '../components/CMSStyleSheet';
 import ROUTERS, {INIT_ROUTE_MAP} from '../consts/routes';
-import {WIDGET_COUNTS} from '../consts/misc';
 
 const TabIcons = [
   'ic_home_24px',
@@ -57,38 +56,23 @@ class CMSTabbar extends React.Component {
     const {navigation, state, appStore, userStore} = this.props;
     const currentIndex = state.index;
     const {height} = this.state;
-    // const currentRoute = state.routes[state.index];
-    // const {width, height} = Dimensions.get('window');
-    // const tabWidth = width / TabLabels.length;
+    const {appearance} = appStore;
 
-    // __DEV__ &&
-    //   console.log(
-    //     'GOND createTabbar currentRoute.state = ',
-    //     currentRoute.state,
-    //     '\n--- getCurrentRouteName = ',
-    //     this.getCurrentRouteName()
-    //   );
     if (
-      // currentRoute.state &&
-      // HideTabbarScreens.includes(
-      //   currentRoute.state.routes[currentRoute.state.index].name
-      // )
       HideTabbarScreens.includes(getCurrentRouteName(state)) ||
       !appStore.showTabbar
-      // (getCurrentRouteName(state) == ROUTERS.OAM_DETAIL &&
-      //   !oamStore.isBottomTabShown)
     )
       return null;
     return (
-      <View style={[styles.container, {height}]}>
+      <View style={[styles.container, theme[appearance].container, {height}]}>
         {state.routes.map((route, index) => {
           const isSelected = index === currentIndex;
           const isDisable = userStore.disableTabIndexes.includes(index);
           const textStyle = isDisable
             ? styles.textDisabled
             : isSelected
-            ? styles.textSelected
-            : undefined;
+            ? theme[appearance].textTabBarActive
+            : theme[appearance].textTabBarInactive;
           return (
             <TouchableOpacity
               key={route.name}
@@ -104,21 +88,10 @@ class CMSTabbar extends React.Component {
                   isDisable
                     ? CMSColors.DisableItemColor
                     : isSelected
-                    ? CMSColors.PrimaryActive
-                    : CMSColors.SecondaryText
+                    ? theme[appearance].iconTabBarActive
+                    : theme[appearance].iconTabBarInactive
                 }
               />
-              {/* <Image
-                source={TabIcons[index]}
-                resizeMode="contain"
-                style={{
-                  alignSelf: 'center',
-                  width: tabWidth * 0.8,
-                  tintColor: isSelected
-                    ? CMSColors.PrimaryActive
-                    : CMSColors.Inactive,
-                }}
-              /> */}
               <Text style={[styles.text, textStyle]}>{TabLabels[index]}</Text>
               {isSelected && (
                 <View style={styles.highlightContainer}>
@@ -138,7 +111,6 @@ export default inject('appStore', 'userStore')(observer(CMSTabbar));
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
     justifyContent: 'space-between',
   },
   tab: {

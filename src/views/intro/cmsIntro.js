@@ -14,8 +14,6 @@ import {inject, observer} from 'mobx-react';
 import {normalize} from '../../util/general';
 import {LiquidLike} from 'react-native-animated-pagination-dots';
 
-// import appStore from '../../stores/appStore';
-
 import Button from '../../components/controls/Button';
 
 import {
@@ -24,10 +22,9 @@ import {
   Intro_Video,
   Intro_Smarter,
   Intro_OAM,
-  I3_Logo,
 } from '../../consts/images';
 import CMSColors from '../../styles/cmscolors';
-// import styles from '../../styles/scenes/intro.style';
+import theme from '../../styles/appearance';
 
 const IntroData = [
   {
@@ -123,6 +120,7 @@ class CMSIntroView extends Component {
   };
 
   renderIntroItem = ({item, index}) => {
+    const {appearance} = this.props.appStore;
     // this.currentIndex = index;
     let dim = Dimensions.get('window');
     return (
@@ -146,16 +144,22 @@ class CMSIntroView extends Component {
           resizeMode="contain"
         />
         <View style={[styles.itemTextContainer]}>
-          <Text style={styles.itemTitle}>{item.title}</Text>
-          <Text style={styles.itemDesc}>{item.description}</Text>
+          <Text style={[styles.itemTitle, theme[appearance].text]}>
+            {item.title}
+          </Text>
+          <Text style={[styles.itemDesc, theme[appearance].loginSubText]}>
+            {item.description}
+          </Text>
         </View>
       </View>
     );
   };
 
   render() {
+    const {appearance} = this.props.appStore;
+
     return (
-      <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={[{flex: 1}, theme[appearance].container]}>
         <View style={styles.container}>
           <View style={styles.skipContainer}>
             <Button
