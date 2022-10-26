@@ -9,6 +9,8 @@ import CMSIntroView from '../views/intro/cmsIntro';
 import LoginView from '../views/auth/login';
 import ForgotPasswordView from '../views/auth/forgotPassword';
 import SubmitedView from '../views/auth/submited';
+import I3HostLogin from '../views/auth/i3HostLogin';
+import OTPVerification from '../views/auth/otpVerification';
 
 import AccountLocked from '../views/auth/accountLocked';
 import passwordExpired from '../views/auth/passwordExpired';
@@ -143,6 +145,23 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
           })}
           name={ROUTERS.FORGOT_PASSWORD}
           component={ForgotPasswordView}
+        />
+
+        <WelcomeStack.Screen
+          options={() => ({
+            headerMode: 'screen',
+            headerTitle: '',
+          })}
+          name={ROUTERS.I3_HOST_LOGIN}
+          component={I3HostLogin}
+        />
+        <WelcomeStack.Screen
+          options={() => ({
+            headerMode: 'screen',
+            headerTitle: '',
+          })}
+          name={ROUTERS.OTP_VERIFICATION}
+          component={OTPVerification}
         />
       </WelcomeStack.Navigator>
     );

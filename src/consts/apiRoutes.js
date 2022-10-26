@@ -11,6 +11,8 @@ export const Account = {
   updateNotifySettings: 'EditUserNotifySettings',
   changePassword: 'changePassword',
   profile: 'profile',
+  i3hostLogin: 'i3hostlogin',
+  i3hostOtp: 'i3hostotp',
 };
 
 export const AlertType = {

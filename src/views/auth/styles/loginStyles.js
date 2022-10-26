@@ -20,7 +20,7 @@ export default StyleSheet.create({
     // alignItems: 'center',
     position: 'absolute',
     right: width * 0.1 - 30,
-    top: width * 0.1 - (Platform.OS === 'ios' ? 0 : 36),
+    top: width * 0.1 - (Platform.OS == 'ios' ? 0 : 36),
     zIndex: 10,
   },
   logo: {
@@ -42,11 +42,7 @@ export default StyleSheet.create({
   textContainer: {
     alignItems: 'center',
   },
-  textTitle: {
-    fontSize: 20,
-    fontWeight: 'normal',
-    lineHeight: 50,
-  },
+  textTitle: {fontSize: 20, fontWeight: 'normal'},
   textBold: {fontWeight: 'bold'},
   textDesc: {
     fontSize: 15,
@@ -96,9 +92,50 @@ export default StyleSheet.create({
     marginLeft: 5,
   },
   space: {
-    flex: 0.3,
+    flex: 0.2,
   },
   space_footer: {
     flex: 0.05,
+  },
+  buttonLineThroughContainer: {
+    marginVertical: 30,
+    width: '100%',
+  },
+  orTextContainer: {
+    alignSelf: 'center',
+    backgroundColor: CMSColors.White,
+    paddingHorizontal: 10,
+    zIndex: 2,
+  },
+  orText: {
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+    overflow: 'hidden',
+  },
+  lineThrough: {
+    position: 'absolute',
+    top: 9,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: CMSColors.Grey,
+    zIndex: 1,
+  },
+  buttonLoginI3Host: {
+    borderWidth: 1,
+    borderColor: CMSColors.PrimaryActive,
+    shadowColor: CMSColors.White,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+    width: '100%',
+  },
+  buttonLoginI3HostCaption: {
+    color: CMSColors.PrimaryActive,
   },
 });

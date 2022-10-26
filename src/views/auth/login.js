@@ -19,6 +19,7 @@ import {isValidHttpUrl} from '../../util/general';
 
 import {Domain} from '../../consts/misc';
 import theme from '../../styles/appearance';
+import CMSColors from '../../styles/cmscolors';
 import {I3_Logo} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
@@ -179,6 +180,10 @@ class LoginView extends Component {
     this.props.appStore.naviService.navigate(ROUTERS.FORGOT_PASSWORD);
   };
 
+  onI3HostLoginPress = () => {
+    this.props.appStore.naviService.navigate(ROUTERS.I3_HOST_LOGIN);
+  };
+
   render() {
     const {domain, username, password, errors, domainErrorFlag} = this.state;
     const {appearance} = this.props.appStore;
@@ -267,14 +272,6 @@ class LoginView extends Component {
             />
           </View>
           <View style={styles.space} />
-          <View
-            style={[
-              styles.space,
-              {
-                display: this.state.isInputFocus ? 'flex' : 'none',
-              },
-            ]}
-          />
           <View style={styles.buttonsContainer}>
             <Button
               style={styles.buttonLogin}
@@ -289,7 +286,21 @@ class LoginView extends Component {
               onPress={this.onForgotPasswordPress}>
               {LoginTxt.forgotPassword}
             </Text>
-            <View style={{height: 50}}></View>
+            <View style={styles.buttonLineThroughContainer}>
+              <View style={styles.orTextContainer}>
+                <Text style={styles.orText}>OR</Text>
+              </View>
+              <View style={styles.lineThrough} />
+            </View>
+            <Button
+              style={styles.buttonLoginI3Host}
+              caption="LOGIN WITH I3HOST"
+              type="primary"
+              captionStyle={styles.buttonLoginI3HostCaption}
+              onPress={this.onI3HostLoginPress}
+              enable
+              backgroundColor={CMSColors.White}
+            />
           </View>
         </View>
         <View style={styles.space_footer} />

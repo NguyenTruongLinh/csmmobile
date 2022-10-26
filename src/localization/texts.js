@@ -52,13 +52,19 @@ export const Login = {
     'An email include your password was sent to your email, please go to your mailbox to get the password.',
   forgotPasswordErrorTitle: 'Submit forgot password failed',
   email: 'Email *',
-  username: 'Username *',
   copyRight:
     '© 2022 i3 International Inc. The i3 logos are property of i3 International Inc & i3 America Nevada Inc. All rights reserved.',
   ALERT_UPDATE_TITLE: 'New Update Available',
   ALERT_UPDATE_BODY:
     'There is a version of app available. Please update it now',
   ALERT_UPDATE_BUTTON: 'Update Now',
+  i3HostTitle: 'To continue to ',
+  i3HostTitleBold: 'i3 Host',
+  otpVerification: 'OTP Verification',
+  otpCode: 'OTP Code *',
+  resendOTP: 'Resend OTP',
+  backToLogin: 'Back to login',
+  timeLeftExpired: 'OTP has expired, resend now',
 };
 
 export const Tabbar = {
@@ -148,7 +154,7 @@ export const STREAM_STATUS = {
   WRONG_SERVER: 'Wrong server id.',
   PORT_ERROR: 'Video port error.',
   CONNECTION_ERROR: 'Connection Failed.',
-  RELAY_HANDSHAKE_FAILED: 'Network Error.', //'Relay handshake failed.',
+  RELAY_HANDSHAKE_FAILED: 'Network Error.', // 'Relay handshake failed.',
   RELAY_REMOTE_CONFIG_CHANGED: 'Network Error.', // 'Remote relay config changed, try reconnecting...',
 };
 

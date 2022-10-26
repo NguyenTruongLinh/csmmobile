@@ -17,6 +17,8 @@ const ROUTERS = {
   ACCOUNT_LOCKED: 'accountlocked',
   FORGOT_PASSWORD: 'forgotpassword',
   SUBMITED: 'submited',
+  I3_HOST_LOGIN: 'i3hostlogin',
+  OTP_VERIFICATION: 'otpverification',
 
   HOME_TAB: 'hometab',
   HOME_NAVIGATOR: 'homenavi',

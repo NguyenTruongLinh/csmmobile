@@ -133,6 +133,7 @@ class Button extends Component {
         }>
         {icon}
         {text}
+        {this.props.children}
       </MaterialButton.RaisedButton>
     );
   }

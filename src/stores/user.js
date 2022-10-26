@@ -315,6 +315,8 @@ export const UserStoreModel = types
     //
     moduleUpdatedFlag: types.boolean,
     isSubmitForgotPassLoading: types.maybeNull(types.boolean),
+    //
+    isLoading: types.maybeNull(types.boolean),
   })
   .volatile(self => ({
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
@@ -1190,6 +1192,67 @@ export const UserStoreModel = types
       return true;
     }),
     // #endregion
+    // i3 host
+    i3HostLogin: flow(function* (email, password) {
+      try {
+        self.isLoading = true;
+        const res = yield apiService.post(AccountRoute.i3hostLogin, '', '', {
+          Email: email,
+          Password: password,
+        });
+        self.isLoading = false;
+        __DEV__ && console.log('GOND i3HostLogin res = ', JSON.stringify(res));
+
+        if (res && res.status === 200 && res.Result && !res.Result.error) {
+          return true;
+        }
+        return false;
+      } catch (error) {
+        __DEV__ && console.log('GOND i3HostLogin error = ', JSON.stringify(error));
+        snackbarUtil.handleRequestFailed();
+        return false;
+      }
+    }),
+    getOtp: flow(function* (type) {
+      try {
+        const params =
+          type === 'email'
+            ? {Email: 'example@example.com'}
+            : {Phone: '123456789'};
+        self.isLoading = true;
+        const res = yield apiService.get(AccountRoute.i3hostOtp, '', '', params);
+        self.isLoading = false;
+        __DEV__ && console.log('GOND getOtp res = ', JSON.stringify(res));
+
+        if (res && res.status === 200 && res.Result && !res.Result.error) {
+          return res.Result;
+        }
+        return false;
+      } catch (error) {
+        __DEV__ && console.log('GOND getOtp error = ', JSON.stringify(error));
+        snackbarUtil.handleRequestFailed();
+        return false;
+      }
+    }),
+    verifyOtp: flow(function* (otp) {
+      try {
+        self.isLoading = true;
+        const res = yield apiService.post(AccountRoute.i3hostOtp, '', '', {
+          Otp: otp,
+        });
+        self.isLoading = false;
+        __DEV__ && console.log('GOND verifyOtp res = ', JSON.stringify(res));
+
+        if (res && res.status === 200 && res.Result && !res.Result.error) {
+          return res.Result;
+        }
+        return false;
+      } catch (error) {
+        __DEV__ && console.log('GOND verifyOtp error = ', JSON.stringify(error));
+        snackbarUtil.handleRequestFailed();
+        return false;
+      }
+    }),
   }));
 
 const userStore = UserStoreModel.create({
