@@ -19,10 +19,13 @@ stages:          # List of stages for jobs, and their order of execution
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   before_script:
-    # - echo "${CI_PROJECT_ID}"
+    - echo "${CI_PROJECT_ID}"
     - echo "Yarn install..."
     - yarn
   script:
     - echo "Building apk file..."
-    - cd android && ./gradlew clean && ./gradlew :app:assembleRelease && cd ..
+    - cd .\android
+    - .\gradlew clean
+    - .\gradlew assembleRelease
+    - cd ..
     - echo "Build complete."
