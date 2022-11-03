@@ -35,10 +35,10 @@ build-job:       # This job runs in the build stage, which runs first.
     - ls src/consts
     - cd src/consts
     - cat "appInfo.js"
+    - i = 1
     - while read line; do
-        echo "Line $LINE => $line";
-        variables:
-          LINE: $(($LINE+1))
+        echo "Line $i => $line";
+        ((i++));
       done < "appInfo.js"
   script:
     - echo "Building apk file..."
