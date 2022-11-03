@@ -32,6 +32,7 @@ build-job:       # This job runs in the build stage, which runs first.
     # - yarn
     - ls src
     - ls src/consts
+    - cd src/consts
     - cat $IN_FILE
     # - while read line; do
     #     echo "Line => $line";
