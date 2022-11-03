@@ -38,8 +38,9 @@ build-job:       # This job runs in the build stage, which runs first.
   after_script:
     # - xcopy /y /s /r $OUTPUT_PATH $EXPORT_FOLDER_DEST
     - cd src/consts
-    - VERSION_IN_FILE=$(grep -E "Version:" "appInfo.js")
-    - VERSION=$(echo "${VERSION_IN_FILE//[^\w0-9.]/}")
+    - BUILD_NUMBER_IN_FILE=$(grep -E "Version:" "appInfo.js")
+    - BUILD_NUMBER=$(echo "${BUILD_NUMBER_IN_FILE//[^\w0-9.]/}")
+    - VERSION=($(echo $BUILD_NUMBER | cut -d "." -f 1).$(echo $BUILD_NUMBER | cut -d "." -f 2))
     - echo $VERSION
   # artifacts:
   #   expire_in: 1 week
