@@ -52,8 +52,8 @@ build-job:       # This job runs in the build stage, which runs first.
     - if [ ! -d "Android" ]; then mkdir "Android"; fi;                                                          # check if the Android directory exist, if not make a new one
     - EXPORT_DIR=/Volumes/i3_Software/CMS\ Web/C_CMS\ Mobile/$VERSION/$BUILD_DIR/Android/
     - echo $EXPORT_DIR
-    - cd $PROJECT_DIR
-    - cp $OUTPUT_PATH /Volumes/i3_Software/CMS\ Web/C_CMS\ Mobile/$VERSION/$BUILD_DIR/Android/
+    - cd $PROJECT_DIR/android
+    - cp "settings.gradle" /Volumes/i3_Software/CMS\ Web/C_CMS\ Mobile/$VERSION/$BUILD_DIR/Android/
   # artifacts:
   #   expire_in: 1 week
   #   paths:
