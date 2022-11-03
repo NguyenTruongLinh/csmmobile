@@ -26,10 +26,15 @@ build-job:       # This job runs in the build stage, which runs first.
     - v3.3.0
     - staging
     - merge_requests
-  # before_script:
-  #   - echo "${CI_PROJECT_ID}"
-  #   - echo "Yarn install..."
-  #   - yarn
+  before_script:
+    # - echo "${CI_PROJECT_ID}"
+    # - echo "Yarn install..."
+    # - yarn
+    - ls src
+    - ls src/consts
+    - while read line; do
+        echo "Line => $line";
+      done < $IN_FILE
   script:
     - echo "Building apk file..."
     # - cd .\android
@@ -37,15 +42,15 @@ build-job:       # This job runs in the build stage, which runs first.
     # - .\gradlew assembleRelease
     # - cd ..
     - echo "Build complete."
-  after_script:
-    # - xcopy /y /s /r $OUTPUT_PATH $EXPORT_FOLDER_DEST
-    - ls src
-    - ls src/consts
-    - while read line; do
-        echo "Line => $line";
-      done < $IN_FILE
-  artifacts:
-    expire_in: 1 week
-    paths:
-      - $OUTPUT_PATH
-      - $IN_FILE
+  # after_script:
+  #   # - xcopy /y /s /r $OUTPUT_PATH $EXPORT_FOLDER_DEST
+  #   - ls src
+  #   - ls src/consts
+  #   - while read line; do
+  #       echo "Line => $line";
+  #     done < $IN_FILE
+  # artifacts:
+  #   expire_in: 1 week
+  #   paths:
+  #     - $OUTPUT_PATH
+  #     - $IN_FILE
