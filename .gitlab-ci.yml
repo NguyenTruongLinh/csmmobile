@@ -50,7 +50,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - if [ ! -d $BUILD_DIR ]; then mkdir $BUILD_DIR; fi;                                                        # check if the build directory exist, if not make a new one
     - cd $BUILD_DIR
     - if [ ! -d "Android" ]; then mkdir "Android"; fi;                                                          # check if the Android directory exist, if not make a new one
-    - EXPORT_DIR=/Volumes/i3_Software/CMS\ Web/C_CMS\ Mobile/$VERSION/$BUILD_DIR/Android/
+    - EXPORT_DIR="/Volumes/i3_Software/CMS\ Web/C_CMS\ Mobile/$VERSION/$BUILD_DIR/Android/"
     - cd $PROJECT_DIR
     # - cp $OUTPUT_PATH $EXPORT_DIR
     - cd $EXPORT_DIR
