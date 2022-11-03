@@ -34,7 +34,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - ls src
     - ls src/consts
     - cd src/consts
-    - VERSION=$(grep -E "Version:" "appInfo.js";)
+    - VERSION = echo "${$(grep -E "Version:" "appInfo.js")//[^\w0-9.]/}"
     - echo $VERSION
   script:
     - echo "Building apk file..."
