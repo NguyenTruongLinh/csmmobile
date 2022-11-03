@@ -45,9 +45,10 @@ build-job:       # This job runs in the build stage, which runs first.
     - cd /Volumes/i3_Software/CMS\ Web/C_CMS\ Mobile
     - if [ ! -d $VERSION ]; then mkdir $VERSION; fi;                                                            # check if the version directory exist, if not make a new one
     - cd $VERSION
-    - mkdir $(echo $(date "+%Y-%m-%d")-v$BUILD_NUMBER)
+    - mkdir $(echo $(date "+%Y-%m-%d")-v$BUILD_NUMBER)                                                          # make a directory base on date and build number
     - cd
-    - ls                                                          # make a directory base on date and build number
+    - ls
+    - echo $CI_BUILDS_DIR
   # artifacts:
   #   expire_in: 1 week
   #   paths:
