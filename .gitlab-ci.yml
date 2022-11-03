@@ -45,10 +45,11 @@ build-job:       # This job runs in the build stage, which runs first.
     - VERSION=($(echo $BUILD_NUMBER | cut -d "." -f 1).$(echo $BUILD_NUMBER | cut -d "." -f 2))                 # split the build number string to take the version at the start of the build number
     - echo $VERSION
     - cd $CMS_MOBILE_SVN_PATH
-    - if [ ! -d $VERSION ]; then mkdir $VERSION; fi;                                                            # check if the version directory exist, if not make a new one
-    - cd $VERSION
     - ls
-    - mkdir "v$BUILD_NUMBER"
+    # - if [ ! -d $VERSION ]; then mkdir $VERSION; fi;                                                            # check if the version directory exist, if not make a new one
+    # - cd $VERSION
+    # - ls
+    # - mkdir "v$BUILD_NUMBER"
   # artifacts:
   #   expire_in: 1 week
   #   paths:
