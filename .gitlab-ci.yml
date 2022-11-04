@@ -18,15 +18,17 @@ variables:
 stages:          # List of stages for jobs, and their order of execution
   - build
 
+before_script:
+  - echo "Yarn install..."
+  - yarn
+  - echo "Yarn installed."
+
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   only:
     - v3.3.0
     - staging
     - merge_requests
-  before_script:
-    - echo "Yarn install..."
-    - yarn
   script:
     - echo "Building apk file..."
     - cd android
