@@ -21,6 +21,10 @@ export default StyleSheet.create({
     flexDirection: 'row',
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
+    paddingVertical: 24,
+    borderBottomWidth: 1,
+    marginBottom: 5,
+    justifyContent: 'center',
     ...Platform.select({
       ios: {
         shadowOpacity: 0.3,
@@ -60,7 +64,6 @@ export default StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modal_footer_Apply: {
-    height: footerHeight,
     backgroundColor: CMSColors.White,
     flexDirection: 'row',
     justifyContent: 'center',

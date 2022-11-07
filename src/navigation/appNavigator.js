@@ -31,6 +31,16 @@ const BottomTab = createBottomTabNavigator();
 const IntroStack = createStackNavigator();
 const WelcomeStack = createStackNavigator();
 
+const screenOptions = ({navigation}, appearance) => ({
+  headerMode: 'screen',
+  headerTitle: '',
+  headerStyle: {
+    ...theme[appearance].container,
+    borderBottomWidth: 0,
+  },
+  headerLeft: () => <BackButton navigator={navigation} />,
+});
+
 /**
  *
  * @param {bool} showIntro
@@ -148,18 +158,12 @@ const AppNavigator = ({isLoggedIn, appStore, notificationController}) => {
         />
 
         <WelcomeStack.Screen
-          options={() => ({
-            headerMode: 'screen',
-            headerTitle: '',
-          })}
+          options={props => screenOptions(props, appearance)}
           name={ROUTERS.I3_HOST_LOGIN}
           component={I3HostLogin}
         />
         <WelcomeStack.Screen
-          options={() => ({
-            headerMode: 'screen',
-            headerTitle: '',
-          })}
+          options={props => screenOptions(props, appearance)}
           name={ROUTERS.OTP_VERIFICATION}
           component={OTPVerification}
         />

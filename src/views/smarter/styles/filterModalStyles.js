@@ -2,7 +2,7 @@ import {StyleSheet} from 'react-native';
 
 import CMSColors from '../../../styles/cmscolors';
 
-export const SECTION_HEADER_HEIGHT = 48;
+export const SECTION_HEADER_HEIGHT = 50;
 
 export default StyleSheet.create({
   modal: {
@@ -12,14 +12,15 @@ export default StyleSheet.create({
     marginRight: 0,
     flex: 1,
   },
+  header: {
+    flex: 10,
+  },
   sectionHeaderContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 12,
     height: SECTION_HEADER_HEIGHT,
-    borderBottomWidth: 0.5,
-    borderColor: CMSColors.BorderColorListRow,
   },
   siteNameContainer: {
     alignItems: 'center',

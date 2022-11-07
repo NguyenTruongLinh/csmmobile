@@ -12,6 +12,7 @@ import variables from '../../styles/variables';
 class Checkbox extends Component {
   static propTypes = {
     label: PropTypes.string,
+    labelStyle: PropTypes.object,
     checked: PropTypes.bool,
     onPress: PropTypes.func,
     style: PropTypes.any,
@@ -19,6 +20,7 @@ class Checkbox extends Component {
 
   static defaultProps = {
     label: '',
+    labelStyle: {},
     checked: false,
     onPress: () => {},
     style: {},
@@ -51,14 +53,14 @@ class Checkbox extends Component {
   };
 
   render() {
-    const {label, checked, onPress, style} = this.props;
+    const {label, checked, onPress, style, labelStyle} = this.props;
     const check_uncheck_Icon = this.checkedIcon(checked);
 
     return (
       <View style={[styles.checkboxContainer, style]}>
         <Ripple style={[styles.checkboxRipple]} onPress={() => onPress()}>
           <View style={{paddingRight: 12}}>{check_uncheck_Icon}</View>
-          <Text style={styles.checkboxLabel}>{label}</Text>
+          <Text style={[styles.checkboxLabel, labelStyle]}>{label}</Text>
         </Ripple>
       </View>
     );

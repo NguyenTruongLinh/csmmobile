@@ -3,6 +3,8 @@ import {Platform, StyleSheet} from 'react-native';
 import CMSColors from '../../../styles/cmscolors';
 import {ListViewHeight} from '../../../components/CMSStyleSheet';
 
+export const SITE_ITEM_HEIGHT = 48;
+
 export default StyleSheet.create({
   container: {
     flex: 1,
@@ -148,7 +150,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 5,
-    height: 48,
+    height: SITE_ITEM_HEIGHT,
     borderBottomWidth: 1,
   },
   dataSearchContainer: {

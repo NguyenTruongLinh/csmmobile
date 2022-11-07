@@ -65,8 +65,18 @@ class Button extends Component {
         size={size}
         style={
           enable
-            ? [styles.caption_Icon, enable_style, styles.icon]
-            : [styles.caption_Icon, disable_style, styles.icon]
+            ? [
+                styles.caption_Icon,
+                enable_style,
+                styles.icon,
+                this.props.iconStyle,
+              ]
+            : [
+                styles.caption_Icon,
+                disable_style,
+                styles.icon,
+                this.props.iconStyle,
+              ]
         }
       />
     ) : null;
@@ -147,7 +157,7 @@ class Button extends Component {
     let icon = this.renderIcon(styles.primaryCaption, styles.disableCaption);
     let text = this.renderText(
       caption,
-      {...styles.primaryCaption, ...(this.props.captionStyle || {})},
+      [styles.primaryCaption, this.props.captionStyle],
       styles.disableCaption
     );
     let Background = this.props.backgroundColor
@@ -165,6 +175,7 @@ class Button extends Component {
         }>
         {icon}
         {text}
+        {this.props.children}
       </MaterialButton.RaisedButton>
     );
   }

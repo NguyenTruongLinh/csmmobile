@@ -19,11 +19,11 @@ import {isValidHttpUrl} from '../../util/general';
 
 import {Domain} from '../../consts/misc';
 import theme from '../../styles/appearance';
-import CMSColors from '../../styles/cmscolors';
 import {I3_Logo} from '../../consts/images';
 import {CMS_Logo} from '../../consts/images';
 import {Login as LoginTxt} from '../../localization/texts';
 import ROUTERS from '../../consts/routes';
+import snackbarUtil from '../../util/snackbar';
 // <!-- END CONSTS -->
 // ----------------------------------------------------
 const {width, height} = Dimensions.get('window');
@@ -181,7 +181,13 @@ class LoginView extends Component {
   };
 
   onI3HostLoginPress = () => {
-    this.props.appStore.naviService.navigate(ROUTERS.I3_HOST_LOGIN);
+    const {domain} = this.state;
+
+    if (!domain) {
+      snackbarUtil.onWarning('Please enter your domain.');
+    } else {
+      this.props.appStore.naviService.navigate(ROUTERS.I3_HOST_LOGIN, {domain});
+    }
   };
 
   render() {
@@ -287,10 +293,16 @@ class LoginView extends Component {
               {LoginTxt.forgotPassword}
             </Text>
             <View style={styles.buttonLineThroughContainer}>
-              <View style={styles.orTextContainer}>
-                <Text style={styles.orText}>OR</Text>
+              <View
+                style={[
+                  styles.orTextContainer,
+                  theme[appearance].loginWithI3HostBackground,
+                ]}>
+                <Text style={[styles.orText, theme[appearance].text]}>OR</Text>
               </View>
-              <View style={styles.lineThrough} />
+              <View
+                style={[styles.lineThrough, theme[appearance].lineThroughLogin]}
+              />
             </View>
             <Button
               style={styles.buttonLoginI3Host}
@@ -299,7 +311,9 @@ class LoginView extends Component {
               captionStyle={styles.buttonLoginI3HostCaption}
               onPress={this.onI3HostLoginPress}
               enable
-              backgroundColor={CMSColors.White}
+              backgroundColor={
+                theme[appearance].loginWithI3HostBackground.backgroundColor
+              }
             />
           </View>
         </View>

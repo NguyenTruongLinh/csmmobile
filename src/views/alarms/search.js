@@ -293,18 +293,10 @@ class AlarmsSearchView extends Component {
       <View
         style={[
           styles.modal_header,
-          {
-            flex: 10,
-            justifyContent: 'center',
-          },
-          theme[appearance].container,
+          theme[appearance].modalContainer,
+          theme[appearance].borderColor,
         ]}>
-        <Text
-          style={[
-            styles.modal_title,
-            styles.modal_title_search,
-            theme[appearance].text,
-          ]}>
+        <Text style={[styles.modal_title_search, theme[appearance].text]}>
           {title ?? CompTxt.alarmFilterTitle}
         </Text>
       </View>
@@ -322,11 +314,7 @@ class AlarmsSearchView extends Component {
     }
     return (
       <View
-        style={[
-          styles.modal_footer_Apply,
-          {flex: 15},
-          theme[appearance].container,
-        ]}>
+        style={[styles.modal_footer_Apply, theme[appearance].modalContainer]}>
         <View style={styles.content_button_cancel}>
           <Button
             style={styles.button_cancel}
@@ -360,7 +348,7 @@ class AlarmsSearchView extends Component {
     const {from, to, params} = this.state;
     __DEV__ && console.log('GOND modalContent =', params);
     return (
-      <View style={[{flex: 75}, theme[appearance].container]}>
+      <View style={[{flex: 1}, theme[appearance].container]}>
         <AlarmFilter
           ref={r => (this.filterRef = r)}
           dateFrom={from}
@@ -390,7 +378,8 @@ class AlarmsSearchView extends Component {
         key="alarmFilterModal"
         name="alarmFilterModal"
         style={styles.filterModalContainer}>
-        <View style={[styles.modal_container, theme[appearance].container]}>
+        <View
+          style={[styles.modal_container, theme[appearance].modalContainer]}>
           {this.modalHeader()}
           {this.modalContent()}
           {this.modalFooter()}

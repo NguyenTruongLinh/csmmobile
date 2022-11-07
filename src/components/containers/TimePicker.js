@@ -4,11 +4,13 @@ import Ripple from 'react-native-material-ripple';
 
 import util from '../../util/general';
 import CMSColors from '../../styles/cmscolors';
+import {inject, observer} from 'mobx-react';
+import theme from '../../styles/appearance';
 
 const LINE_HEIGHT = 40;
 const hoursData = [...Array(24).keys()];
 
-export default class TimePicker extends Component {
+class TimePicker extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -47,6 +49,7 @@ export default class TimePicker extends Component {
 
   renderRow = ({item, index}) => {
     if (util.isNullOrUndef(item)) return;
+    const {appearance} = this.props.appStore;
 
     const isCheck = item == this.state.selected;
     if (isCheck) {
@@ -62,13 +65,14 @@ export default class TimePicker extends Component {
 
     return (
       <Ripple rippleOpacity={0.87} onPress={() => this.onSelected(item, index)}>
-        <View style={styles.rowList}>
+        <View style={[styles.rowList, theme[appearance].headerListRow]}>
           <View style={[styles.rowButton_contain_name]}>
             <View style={styles.titleContainer}>
               <Text
                 style={[
                   styles.rowButton_name,
                   isCheck ? styles.rowButton_name_selected : null,
+                  theme[appearance].text,
                 ]}>
                 {this.formatNumber(item)}
               </Text>
@@ -78,6 +82,7 @@ export default class TimePicker extends Component {
                 style={[
                   styles.rowButton_name,
                   isCheck ? styles.rowButton_name_selected : null,
+                  theme[appearance].text,
                 ]}>
                 {this.props.type == 'end' ? '59' : '00'}
               </Text>
@@ -87,6 +92,7 @@ export default class TimePicker extends Component {
                 style={[
                   styles.rowButton_name,
                   isCheck ? styles.rowButton_name_selected : null,
+                  theme[appearance].text,
                 ]}>
                 {this.props.type == 'end' ? '59' : '00'}
               </Text>
@@ -98,8 +104,10 @@ export default class TimePicker extends Component {
   };
 
   render() {
+    const {appearance} = this.props.appStore;
+
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, theme[appearance].headerListRow]}>
         <View style={[styles.rowButton_contain_title_time]}>
           <View style={styles.titleContainer}>
             <Text style={styles.title_time}>Hour</Text>
@@ -173,3 +181,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default inject('appStore')(observer(TimePicker));

@@ -1,7 +1,15 @@
 import {types, flow, getSnapshot} from 'mobx-state-tree';
 import {Alert} from 'react-native';
+import AES from 'crypto-js/aes';
 
-import {WIDGET_COUNTS, MODULES, Orient, NOTIFY_ACTION} from '../consts/misc';
+import {
+  WIDGET_COUNTS,
+  MODULES,
+  Orient,
+  NOTIFY_ACTION,
+  LocalDBName,
+  MODULE_PERMISSIONS,
+} from '../consts/misc';
 import APP_INFO from '../consts/appInfo';
 import ROUTERS from '../consts/routes';
 
@@ -21,7 +29,6 @@ import appStore from './appStore';
 // const AppId = '4d53bce03ec34c0a911182d4c228ee6c';
 import {isNullOrUndef} from '../util/general';
 import snackbarUtil from '../util/snackbar';
-import {LocalDBName, MODULE_PERMISSIONS} from '../consts/misc';
 
 import cmscolors from '../styles/cmscolors';
 import notificationController from '../notification/notificationController';
@@ -89,13 +96,12 @@ const ModuleModel = types
     },
   }));
 
-const parseModule = _module => {
-  return ModuleModel.create({
+const parseModule = _module =>
+  ModuleModel.create({
     moduleId: _module.ModuleID,
     functionId: _module.FunctionID,
     functionName: _module.FunctionName,
   });
-};
 
 const WidgetCountModel = types.model({
   id: types.identifier,
@@ -271,8 +277,8 @@ const AlertTypeModel = types.model({
   displayStatus: types.maybeNull(types.number),
 });
 
-const parseAlertType = _data => {
-  return AlertTypeModel.create({
+const parseAlertType = _data =>
+  AlertTypeModel.create({
     id: _data.Id,
     kAlertSeverity: _data.KAlertSeverity,
     name: _data.Name,
@@ -280,7 +286,6 @@ const parseAlertType = _data => {
     cmsWebGroup: _data.CmsWebGroup,
     displayStatus: _data.DisplayStatus,
   });
-};
 
 const UserSettingsModel = types.model({
   selectedNotifies: types.array(types.number),
@@ -317,6 +322,7 @@ export const UserStoreModel = types
     isSubmitForgotPassLoading: types.maybeNull(types.boolean),
     //
     isLoading: types.maybeNull(types.boolean),
+    countDownTimeOTP: types.maybeNull(types.number),
   })
   .volatile(self => ({
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
@@ -325,7 +331,7 @@ export const UserStoreModel = types
   .views(self => ({
     get disableTabIndexes() {
       let result = [1, 2];
-      let tmp = [];
+      const tmp = [];
       for (const [key, value] of MODULE_TAB_MAP.entries()) {
         if (key == MODULE_PERMISSIONS.VSC || self.hasPermission(key)) {
           tmp.push(...value);
@@ -336,7 +342,7 @@ export const UserStoreModel = types
     },
     get disableHomeWidgetIndexes() {
       let result = [0, 1, 2, 3, 4];
-      let tmp = [];
+      const tmp = [];
       for (const [key, value] of MODULE_HOME_WIDGET_MAP.entries()) {
         if (key == MODULE_PERMISSIONS.VSC || self.hasPermission(key)) {
           tmp.push(...value);
@@ -380,9 +386,9 @@ export const UserStoreModel = types
     },
     // #region authorization
     addAuthenticationEventListeners({onLogin, onLogout}) {
-      if (onLogin != undefined && typeof onLogin == 'function')
+      if (onLogin != undefined && typeof onLogin === 'function')
         self.onLogin = onLogin;
-      if (onLogout != undefined && typeof onLogout == 'function')
+      if (onLogout != undefined && typeof onLogout === 'function')
         self.onLogout = onLogout;
     },
     login: flow(function* (domainname, username, password) {
@@ -440,7 +446,7 @@ export const UserStoreModel = types
       // data.Api && self.api.parse(data.Api);
       // yield self.getUserPhoto();
       // yield self.getPrivilege();
-      let {configToken} = apiService.getConfig();
+      const {configToken} = apiService.getConfig();
       if (configToken) {
         self.api.id = configToken.id;
         self.api.apiKey = configToken.apiKey;
@@ -548,7 +554,7 @@ export const UserStoreModel = types
     refreshUser: flow(function* () {
       if (self.user && self.user.userId) {
         try {
-          let res = yield apiService.get(
+          const res = yield apiService.get(
             AccountRoute.controller,
             self.user.userId,
             AccountRoute.profile
@@ -567,7 +573,7 @@ export const UserStoreModel = types
       if (self.user && self.user.userId) {
         yield self.getDataPostLogin(true);
         if (self.moduleUpdatedFlag)
-          noti.body = user + "'s permission has updated.";
+          noti.body = `${user}'s permission has updated.`;
         __DEV__ &&
           console.log(
             'refreshUserFromNotif',
@@ -593,7 +599,7 @@ export const UserStoreModel = types
       __DEV__ && console.log('getUserPhoto');
       if (self.user && self.user.userId) {
         try {
-          let res = yield apiService.getBase64Stream(
+          const res = yield apiService.getBase64Stream(
             AccountRoute.controller,
             self.user.userId,
             AccountRoute.avatar
@@ -613,7 +619,7 @@ export const UserStoreModel = types
     }),
     getDisableTabIndexes() {
       let result = [1, 2];
-      let tmp = [];
+      const tmp = [];
       for (const [key, value] of MODULE_TAB_MAP.entries()) {
         if (self.hasPermission(key)) {
           tmp.push(...value);
@@ -624,7 +630,7 @@ export const UserStoreModel = types
     },
     getDisableHomeWidgetIndexes() {
       let result = [0, 1, 2, 3, 4];
-      let tmp = [];
+      const tmp = [];
       for (const [key, value] of MODULE_HOME_WIDGET_MAP.entries()) {
         if (self.hasPermission(key)) {
           tmp.push(...value);
@@ -636,7 +642,7 @@ export const UserStoreModel = types
     getPrivilege: flow(function* () {
       if (self.user && self.user.userId) {
         try {
-          let res = yield apiService.get(
+          const res = yield apiService.get(
             AccountRoute.controller,
             self.user.userId,
             AccountRoute.modules
@@ -697,7 +703,8 @@ export const UserStoreModel = types
           );
           appStore.naviService.replace(ROUTERS.LOGIN, {});
           return true;
-        } else if (
+        }
+        if (
           res.Result &&
           res.Result.message &&
           Array.isArray(res.Result.message) &&
@@ -715,13 +722,11 @@ export const UserStoreModel = types
               LoginTxt.errorLoginIncorrect
           );
           return false;
-        } else if (
-          res.Result.ReturnMessage &&
-          res.Result.ReturnMessage.length > 0
-        ) {
+        }
+        if (res.Result.ReturnMessage && res.Result.ReturnMessage.length > 0) {
           let message = '';
           res.Result.ReturnMessage.map(
-            item => (message = message + item + '\n')
+            item => (message = `${message + item}\n`)
           );
           Alert.alert(LoginTxt.passwordChangeErrorTitle, message);
         }
@@ -746,21 +751,21 @@ export const UserStoreModel = types
           appStore.naviService.navigate(ROUTERS.SUBMITED);
           self.isSubmitForgotPassLoading = false;
           return true;
-        } else if (res.Result == undefined && res.error == undefined) {
+        }
+        if (res.Result == undefined && res.error == undefined) {
           Alert.alert(
             LoginTxt.forgotPasswordErrorTitle,
             LoginTxt.errorLoginCantConnect
           );
           self.isSubmitForgotPassLoading = false;
           return false;
-        } else {
-          Alert.alert(
-            LoginTxt.forgotPasswordErrorTitle,
-            LoginTxt.emailOrUsernameIncorrect
-          );
-          self.isSubmitForgotPassLoading = false;
-          return false;
         }
+        Alert.alert(
+          LoginTxt.forgotPasswordErrorTitle,
+          LoginTxt.emailOrUsernameIncorrect
+        );
+        self.isSubmitForgotPassLoading = false;
+        return false;
       } catch (err) {
         __DEV__ && console.log('GOND user changePassword failed: ', err);
         return false;
@@ -770,16 +775,16 @@ export const UserStoreModel = types
     getWidgetCounts: flow(function* () {
       if (self.user && self.user.userId) {
         try {
-          let res = yield apiService.get(
+          const res = yield apiService.get(
             UserRoute.controller,
             self.user.userId,
             UserRoute.alertCount
           );
           // __DEV__ && console.log('GOND user getWidgetCounts: res = ', res);
           if (!Array.isArray(res)) return false;
-          let data = {};
+          const data = {};
           res.map(item => {
-            data['' + item.Id] = item.Total;
+            data[`${item.Id}`] = item.Total;
           });
           self.widgetCounts = WidgeCountsModel.create(data);
           return true;
@@ -792,7 +797,7 @@ export const UserStoreModel = types
     }),
     intervalUpdateWidgetCounts() {
       // return;
-      return setInterval(function () {
+      return setInterval(() => {
         self.getWidgetCounts();
         __DEV__ && console.log('GOND intervalUpdateWidgetCounts ...');
       }, 30000); // 30 secs
@@ -824,10 +829,10 @@ export const UserStoreModel = types
     // #region local data
     saveLocal: flow(function* () {
       try {
-        let data = {...self.user};
+        const data = {...self.user};
         data.api = self.api.data;
         data.domain = self.domain;
-        let localUser = yield dbService.getFirstData(LocalDBName.user);
+        const localUser = yield dbService.getFirstData(LocalDBName.user);
 
         // __DEV__ && console.log('GOND user save local data: ', data);
         if (!localUser) {
@@ -855,7 +860,7 @@ export const UserStoreModel = types
       }
     }),
     deleteLocal: flow(function* () {
-      let res = yield dbService.delete(LocalDBName.user);
+      const res = yield dbService.delete(LocalDBName.user);
       // __DEV__ && console.trace('GOND user delete local: ', res);
       return res;
     }),
@@ -1032,8 +1037,8 @@ export const UserStoreModel = types
       return res;
     }),
     onProfileUpdated(data) {
-      let {photo, profile, module} = data;
-      let user = state;
+      const {photo, profile, module} = data;
+      const user = state;
       if (module && Array.isArray(module)) {
         self.modules = [];
         self.routes = [];
@@ -1061,7 +1066,7 @@ export const UserStoreModel = types
       return {...user};
     },
     getNotifySettings: flow(function* () {
-      let res = yield apiService.get(
+      const res = yield apiService.get(
         AccountRoute.controller,
         self.user.userId,
         AccountRoute.getNotifySettings
@@ -1070,17 +1075,16 @@ export const UserStoreModel = types
         __DEV__ && console.log('GOND getNotifySetting failed: ', res.error);
         snackbarUtil.handleRequestFailed();
         return false;
-      } else {
-        // __DEV__ && console.log('GOND getNotifySettings: ', res);
-        res.NotifySelected &&
-          (self.settings.selectedNotifies = [...res.NotifySelected]);
-        res.ExceptionSelected &&
-          (self.settings.selectedExceptions = [...res.ExceptionSelected]);
-        return true;
       }
+      // __DEV__ && console.log('GOND getNotifySettings: ', res);
+      res.NotifySelected &&
+        (self.settings.selectedNotifies = [...res.NotifySelected]);
+      res.ExceptionSelected &&
+        (self.settings.selectedExceptions = [...res.ExceptionSelected]);
+      return true;
     }),
     updateNotifySettings: flow(function* (newSetting) {
-      let res = yield apiService.post(
+      const res = yield apiService.post(
         AccountRoute.controller,
         self.user.userId,
         AccountRoute.updateNotifySettings,
@@ -1094,7 +1098,7 @@ export const UserStoreModel = types
       res && !res.error && self.getNotifySettings();
     }),
     getAlertTypesSettings: flow(function* () {
-      let res = yield apiService.get(
+      const res = yield apiService.get(
         AccountRoute.controller,
         self.user.userId,
         AccountRoute.getAlertSettings
@@ -1104,25 +1108,24 @@ export const UserStoreModel = types
         __DEV__ && console.log('!!! GOND getAlertTypesSetting failed: ', res);
         // snackbarUtil.handleRequestFailed();
         return false;
-      } else {
-        if (!Array.isArray(res)) {
-          __DEV__ &&
-            console.log(
-              'GOND getAlertTypeSettings failed: result is not an array.'
-            );
-          return;
-        }
-        self.settings.alertTypes = res.map(alertType =>
-          parseAlertType(alertType)
-        );
-        return true;
       }
+      if (!Array.isArray(res)) {
+        __DEV__ &&
+          console.log(
+            'GOND getAlertTypeSettings failed: result is not an array.'
+          );
+        return;
+      }
+      self.settings.alertTypes = res.map(alertType =>
+        parseAlertType(alertType)
+      );
+      return true;
     }),
     setActivites: flow(function* (reportId) {
       __DEV__ && console.log('setActivites ', `reportId=${reportId}`);
       const isScreenSwitch = reportId > clientLogID.LOGOUT;
 
-      let model = {
+      const model = {
         LogID:
           isScreenSwitch || reportId == clientLogID.APP_TO_BACKGROUND
             ? moduleSwitchLogId
@@ -1151,7 +1154,7 @@ export const UserStoreModel = types
 
       let logId = 0;
 
-      //set activity STOP OLD activity
+      // set activity STOP OLD activity
       if (reportId != clientLogID.APP_TO_FOREGROUND) {
         logId = yield apiService.post(
           ACConfig.controller,
@@ -1169,7 +1172,7 @@ export const UserStoreModel = types
         else loginLogId = logId;
       }
 
-      //set activity START NEW activity
+      // set activity START NEW activity
       if (reportId != clientLogID.APP_TO_BACKGROUND) {
         if (logId == 0) {
           model.LogID = 0;
@@ -1193,22 +1196,101 @@ export const UserStoreModel = types
     }),
     // #endregion
     // i3 host
-    i3HostLogin: flow(function* (email, password) {
+    i3HostLogin: flow(function* (domainname, username, password) {
       try {
         self.isLoading = true;
-        const res = yield apiService.post(AccountRoute.i3hostLogin, '', '', {
-          Email: email,
-          Password: password,
-        });
+        if (!appStore.deviceInfo || !appStore.deviceInfo.deviceId) {
+          yield appStore.loadLocalData();
+        }
+        const config = apiService.getConfig();
+        const {apiKey} = config.configToken;
+        console.log(
+          '🚀 ~ file: user.js ~ line 1207 ~ i3HostLogin:flow ~ apiKey',
+          apiKey
+        );
+        const uid = AES.encrypt(username, apiKey).toString();
+        console.log(
+          '🚀 ~ file: user.js ~ line 1212 ~ i3HostLogin:flow ~ uid',
+          uid
+        );
+        self.error = '';
+        // self.loginInfo = LoginModel.create({
+        //   domainname,
+        //   username,
+        //   password,
+        // });
+        // self.domain = domainname;
+        // self.api = APIModel.create({
+        //   url: domainname + AccountRoute.i3hostLogin,
+        //   appId: APP_INFO.AppId,
+        //   version: APP_INFO.Version,
+        //   id: '',
+        //   apiKey: '',
+        //   token: '',
+        // });
+        // self.setConfigApi();
+
+        // const response = yield apiService.i3hostLogin(
+        //   domainname,
+        //   username,
+        //   password
+        // );
+        // self.isLoading = false;
+        // const {leftAttempts} = response || {};
+
+        // if (leftAttempts === 0) {
+        //   snackbarUtil.onError(
+        //     'Could not login. Please contact your administrator.'
+        //   );
+        // }
+
+        // if (res && res.status === 200 && res.Result && !res.Result.error) {
+        //   self.countDownTimeOTP = res.Result.CountDownTimeOTP;
+        // }
+        // return false;
+      } catch (error) {
         self.isLoading = false;
-        __DEV__ && console.log('GOND i3HostLogin res = ', JSON.stringify(res));
+        __DEV__ &&
+          console.log('GOND i3HostLogin error = ', JSON.stringify(error));
+        snackbarUtil.handleRequestFailed();
+        return false;
+      }
+    }),
+    getI3HostDomain: flow(function* (domainname, username, password) {
+      try {
+        self.isLoading = true;
+        if (!appStore.deviceInfo || !appStore.deviceInfo.deviceId) {
+          yield appStore.loadLocalData();
+        }
+        self.error = '';
+        self.loginInfo = LoginModel.create({
+          domainname,
+          username,
+          password,
+        });
+        self.domain = domainname;
+        self.api = APIModel.create({
+          url: domainname + Route,
+          appId: APP_INFO.AppId,
+          version: APP_INFO.Version,
+          id: '',
+          apiKey: '',
+          token: '',
+        });
+        self.setConfigApi();
+
+        const res = yield apiService.login(username, password, true);
 
         if (res && res.status === 200 && res.Result && !res.Result.error) {
-          return true;
+          const {CountDownTimeOTP, I3HostDomain} = res.Result;
+          self.countDownTimeOTP = CountDownTimeOTP;
+          self.i3HostLogin(I3HostDomain, username, password);
         }
         return false;
       } catch (error) {
-        __DEV__ && console.log('GOND i3HostLogin error = ', JSON.stringify(error));
+        self.isLoading = false;
+        __DEV__ &&
+          console.log('GOND i3HostLogin error = ', JSON.stringify(error));
         snackbarUtil.handleRequestFailed();
         return false;
       }
@@ -1220,7 +1302,12 @@ export const UserStoreModel = types
             ? {Email: 'example@example.com'}
             : {Phone: '123456789'};
         self.isLoading = true;
-        const res = yield apiService.get(AccountRoute.i3hostOtp, '', '', params);
+        const res = yield apiService.get(
+          AccountRoute.i3hostOtp,
+          '',
+          '',
+          params
+        );
         self.isLoading = false;
         __DEV__ && console.log('GOND getOtp res = ', JSON.stringify(res));
 
@@ -1248,7 +1335,8 @@ export const UserStoreModel = types
         }
         return false;
       } catch (error) {
-        __DEV__ && console.log('GOND verifyOtp error = ', JSON.stringify(error));
+        __DEV__ &&
+          console.log('GOND verifyOtp error = ', JSON.stringify(error));
         snackbarUtil.handleRequestFailed();
         return false;
       }

@@ -185,11 +185,8 @@ class ExceptionSearchModal extends Component {
       <View
         style={[
           commonStyles.modalHeader,
-          commonStyles.modalHeaderSeparator,
-          {
-            flex: 10,
-          },
-          theme[appearance].container,
+          styles.header,
+          theme[appearance].modalContainer,
         ]}>
         <Text style={[commonStyles.modalTitle, theme[appearance].text]}>
           {SMARTER_TXT.FILTER_MODAL_TITLE}
@@ -206,7 +203,7 @@ class ExceptionSearchModal extends Component {
         style={[
           commonStyles.modalFooter,
           {flex: 15, paddingHorizontal: 12},
-          theme[appearance].container,
+          theme[appearance].modalContainer,
         ]}>
         <View style={commonStyles.modalButtonCancelContainer}>
           <Button
@@ -246,7 +243,7 @@ class ExceptionSearchModal extends Component {
 
     return (
       <View
-        style={[{flex: 75}, theme[appearance].container]}
+        style={[{flex: 75}, theme[appearance].modalContainer]}
         onLayout={this.onContentLayout}>
         <Accordion
           expandMultiple={false}
@@ -275,7 +272,8 @@ class ExceptionSearchModal extends Component {
           <View
             style={[
               styles.sectionHeaderContainer,
-              theme[appearance].modalContainer,
+              theme[appearance].headerListRow,
+              {marginBottom: isActive ? 0 : 10},
             ]}>
             <IconCustom
               name="power-connection-indicator"
@@ -293,7 +291,7 @@ class ExceptionSearchModal extends Component {
               <IconCustom
                 name={isActive ? 'expand-arrow' : 'expand-button'}
                 color={theme[appearance].iconColor}
-                size={22}
+                size={14}
               />
             </View>
           </View>
@@ -303,7 +301,7 @@ class ExceptionSearchModal extends Component {
           <View
             style={[
               styles.sectionHeaderContainer,
-              theme[appearance].modalContainer,
+              theme[appearance].headerListRow,
             ]}>
             <IconCustom
               name="sites"
@@ -319,7 +317,7 @@ class ExceptionSearchModal extends Component {
               <IconCustom
                 name={isActive ? 'expand-arrow' : 'expand-button'}
                 color={theme[appearance].iconColor}
-                size={22}
+                size={14}
               />
             </View>
           </View>
@@ -335,7 +333,7 @@ class ExceptionSearchModal extends Component {
 
     return (
       <Ripple
-        style={[styles.siteItemContainer, theme[appearance].container]}
+        style={[styles.siteItemContainer, theme[appearance].modalContainer]}
         onPress={() => {
           this.setState({
             selectedSites: isSelected
@@ -375,7 +373,7 @@ class ExceptionSearchModal extends Component {
     );
 
     return (
-      <View style={[{height: contentHeight}, theme[appearance].container]}>
+      <View style={[{height: contentHeight}, theme[appearance].modalContainer]}>
         <View
           style={[
             {
@@ -385,7 +383,7 @@ class ExceptionSearchModal extends Component {
               paddingLeft: 15,
               paddingRight: 2,
             },
-            theme[appearance].container,
+            theme[appearance].modalContainer,
           ]}>
           <Text
             style={{
@@ -412,7 +410,10 @@ class ExceptionSearchModal extends Component {
           </View>
         </View>
         <View
-          style={[styles.flatSearchBarContainer, theme[appearance].container]}>
+          style={[
+            styles.flatSearchBarContainer,
+            theme[appearance].modalContainer,
+          ]}>
           <InputTextIcon
             label=""
             value={sitesStore.siteFilter}
@@ -426,7 +427,7 @@ class ExceptionSearchModal extends Component {
         </View>
         <View style={styles.allSelectedContainer}>
           <Ripple
-            style={[styles.allSelectedButton, theme[appearance].container]}
+            style={[styles.allSelectedButton, theme[appearance].modalContainer]}
             onPress={this.onSelectAllSites}>
             <MaterialIcons
               name={isSelectedAll ? 'check-box' : 'check-box-outline-blank'}
@@ -493,7 +494,10 @@ class ExceptionSearchModal extends Component {
         name="posFilterModal"
         style={styles.modal}>
         <View
-          style={[commonStyles.modalContainer, theme[appearance].container]}>
+          style={[
+            commonStyles.modalContainer,
+            theme[appearance].modalContainer,
+          ]}>
           {this.renderHeader()}
           {this.renderContent()}
           {this.renderFooter()}

@@ -19,6 +19,7 @@ import CMSColors from '../../styles/cmscolors';
 import theme from '../../styles/appearance';
 import styles from './styles/alarmFilterStyles';
 import {DateFormat, FilterMore} from '../../consts/misc';
+import AlarmFilterItem from './AlarmFilterItem';
 
 let isFirst;
 
@@ -128,6 +129,53 @@ class AlarmFilter extends Component {
     const hasRating = this.state.filterMore.includes(FilterMore.Rating);
     const hasVA = this.state.filterMore.includes(FilterMore.VA);
 
+    const data = [
+      {
+        id: 1,
+        caption: 'Status',
+        isActive: hasStatus,
+        onPress: () => this.eventAddMoreFilter(FilterMore.Status),
+        style: {paddingLeft: 15},
+      },
+      {
+        id: 2,
+        caption: 'Site ID',
+        isActive: hasSites,
+        onPress: () => this.eventAddMoreFilter(FilterMore.Sites),
+      },
+      {
+        id: 3,
+        caption: 'Time',
+        isActive: hasTime,
+        onPress: () => {
+          this.eventAddMoreFilter(FilterMore.Time);
+          let timeN = {
+            type: 'stime',
+            time: 0,
+          };
+          this.props.onAddMoreParams(timeN, FilterMore.Time);
+        },
+      },
+      {
+        id: 4,
+        caption: 'Alert Type',
+        isActive: hasAlertType,
+        onPress: () => this.eventAddMoreFilter(FilterMore.AlertType),
+      },
+      {
+        id: 5,
+        caption: 'Rating',
+        isActive: hasRating,
+        onPress: () => this.eventAddMoreFilter(FilterMore.Rating),
+      },
+      {
+        id: 6,
+        caption: 'Video Analytics',
+        isActive: hasVA,
+        onPress: () => this.eventAddMoreFilter(FilterMore.VA),
+      },
+    ];
+
     return (
       <ScrollView
         horizontal={true}
@@ -135,107 +183,9 @@ class AlarmFilter extends Component {
         automaticallyAdjustContentInsets={false}
         style={styles.scrollViewContainer}>
         <View style={styles.contentHeader_FilterMore}>
-          <View style={[styles.addMoreButtonContainer, {paddingLeft: 15}]}>
-            <Button
-              style={[
-                styles.button_FilterMore_Add,
-                hasStatus ? '' : styles.button_FilterMore_Add_None,
-              ]}
-              caption="Status"
-              iconCustom="i-add"
-              iconSize={18}
-              type={hasStatus ? 'primary' : 'flat'}
-              enable={true}
-              onPress={() => {
-                this.eventAddMoreFilter(FilterMore.Status);
-              }}
-            />
-          </View>
-          <View style={styles.addMoreButtonContainer}>
-            <Button
-              style={[
-                styles.button_FilterMore_Add,
-                hasSites ? '' : styles.button_FilterMore_Add_None,
-              ]}
-              caption="Site ID"
-              iconCustom="i-add"
-              iconSize={18}
-              type={hasSites ? 'primary' : 'flat'}
-              enable={true}
-              onPress={() => {
-                this.eventAddMoreFilter(FilterMore.Sites);
-              }}
-            />
-          </View>
-          <View style={styles.addMoreButtonContainer}>
-            <Button
-              style={[
-                styles.button_FilterMore_Add,
-                hasTime ? '' : styles.button_FilterMore_Add_None,
-              ]}
-              caption="Time"
-              iconCustom="i-add"
-              iconSize={18}
-              type={hasTime ? 'primary' : 'flat'}
-              enable={true}
-              onPress={() => {
-                this.eventAddMoreFilter(FilterMore.Time);
-                let timeN = {
-                  type: 'stime',
-                  time: 0,
-                };
-                this.props.onAddMoreParams(timeN, FilterMore.Time);
-              }}
-            />
-          </View>
-          <View style={styles.addMoreButtonContainer}>
-            <Button
-              style={[
-                styles.button_FilterMore_Add,
-                hasAlertType ? '' : styles.button_FilterMore_Add_None,
-              ]}
-              caption="Alert Type"
-              iconCustom="i-add"
-              iconSize={18}
-              type={hasAlertType ? 'primary' : 'flat'}
-              enable={true}
-              onPress={() => {
-                this.eventAddMoreFilter(FilterMore.AlertType);
-              }}
-            />
-          </View>
-          <View style={styles.addMoreButtonContainer}>
-            <Button
-              style={[
-                styles.button_FilterMore_Add,
-                hasRating ? '' : styles.button_FilterMore_Add_None,
-              ]}
-              caption="Rating"
-              iconCustom="i-add"
-              iconSize={18}
-              type={hasRating ? 'primary' : 'flat'}
-              enable={true}
-              onPress={() => {
-                this.eventAddMoreFilter(FilterMore.Rating);
-              }}
-            />
-          </View>
-          <View style={styles.addMoreButtonContainer}>
-            <Button
-              style={[
-                styles.button_FilterMore_Add,
-                hasVA ? '' : styles.button_FilterMore_Add_None,
-              ]}
-              caption="Video Analytics"
-              iconCustom="i-add"
-              iconSize={18}
-              type={hasVA ? 'primary' : 'flat'}
-              enable={true}
-              onPress={() => {
-                this.eventAddMoreFilter(FilterMore.VA);
-              }}
-            />
-          </View>
+          {data.map(item => {
+            return <AlarmFilterItem key={item.id} data={item} />;
+          })}
           <View style={[styles.addMoreButtonContainer, {width: 45}]}></View>
         </View>
       </ScrollView>
@@ -296,6 +246,8 @@ class AlarmFilter extends Component {
   };
 
   renderCombox = (title, _filterMore, _dataSource) => {
+    const {appearance} = this.props.appStore;
+
     let renderContentCustom = (
       <View style={styles.rowListFilter}>
         <CMSTouchableIcon
@@ -303,11 +255,11 @@ class AlarmFilter extends Component {
           onPress={() => {
             this.eventAddMoreFilter(_filterMore);
           }}
-          color={CMSColors.PrimaryText}
+          color={theme[appearance].text.color}
           styles={styles.contentIconRemoveFilter}
           iconCustom="close"
         />
-        <Text style={{color: CMSColors.PrimaryText}}>{title}</Text>
+        <Text style={theme[appearance].text}>{title}</Text>
       </View>
     );
     let selected = this.getDataSeleted(_filterMore);
@@ -319,14 +271,16 @@ class AlarmFilter extends Component {
         onAddMoreParams={data => {
           this.props.onAddMoreParams(data, _filterMore);
         }}
+        style={theme[appearance].headerListRow}
       />
     );
 
     return (
       <CMSPanel
         renderContentCustom={renderContentCustom}
-        style={styles.rowListFilterContain}
-        header={selected.length > 0 ? selected.length + ' Selected' : 'Any'}>
+        style={[styles.rowListFilterContain, theme[appearance].headerListRow]}
+        header={selected.length > 0 ? selected.length + ' Selected' : 'Any'}
+        headerStyle={theme[appearance].text}>
         {content}
       </CMSPanel>
     );
@@ -365,8 +319,11 @@ class AlarmFilter extends Component {
   renderTimePicker = (title, _filterMore) => {
     let stime = this.getTimeData('stime');
     let etime = this.getTimeData('etime');
-    const {dateFrom, dateTo} = this.props;
+    const {dateFrom, dateTo, appStore} = this.props;
+    const {appearance} = appStore;
+
     __DEV__ && console.log('GOND AlarmFilter renderTimePicker: ', stime, etime);
+
     let renderContentCustom = (
       <View style={styles.rowListFilter}>
         <CMSTouchableIcon
@@ -374,11 +331,11 @@ class AlarmFilter extends Component {
           onPress={() => {
             this.eventAddMoreFilter(_filterMore);
           }}
-          color={CMSColors.PrimaryText}
+          color={theme[appearance].text.color}
           styles={styles.contentIconRemoveFilter}
           iconCustom="close"
         />
-        <Text style={{color: CMSColors.PrimaryText}}>{title}</Text>
+        <Text style={theme[appearance].text}>{title}</Text>
       </View>
     );
 
@@ -391,7 +348,8 @@ class AlarmFilter extends Component {
             selected={stime}
           />
         </View>
-        <View style={styles.arrowIconContainer}>
+        <View
+          style={[styles.arrowIconContainer, theme[appearance].headerListRow]}>
           <IconCustom
             name="arrow-to"
             size={30}
@@ -411,8 +369,10 @@ class AlarmFilter extends Component {
     let header = (
       <View style={styles.timePickerHeaderContainer}>
         <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{stime + ':00:00'}</Text>
-          <Text style={styles.dateText}>
+          <Text style={[styles.timeText, theme[appearance].text]}>
+            {stime + ':00:00'}
+          </Text>
+          <Text style={[styles.dateText, theme[appearance].text]}>
             {dateFrom.toFormat(DateFormat.POS_Filter_Date)}
           </Text>
         </View>
@@ -424,8 +384,10 @@ class AlarmFilter extends Component {
           />
         </View>
         <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{etime + ':59:59'}</Text>
-          <Text style={styles.dateText}>
+          <Text style={[styles.timeText, theme[appearance].text]}>
+            {etime + ':59:59'}
+          </Text>
+          <Text style={[styles.dateText, theme[appearance].text]}>
             {dateTo.toFormat(DateFormat.POS_Filter_Date)}
           </Text>
         </View>
@@ -444,7 +406,11 @@ class AlarmFilter extends Component {
     );
 
     return (
-      <View style={styles.rowListFilterTimeContain}>
+      <View
+        style={[
+          styles.rowListFilterTimeContain,
+          theme[appearance].headerListRow,
+        ]}>
         {renderContentCustom}
         <Ripple
           style={styles.justifyCenter}
@@ -538,12 +504,11 @@ class AlarmFilter extends Component {
 
   renderSelectedDates = () => {
     let {dateFrom, dateTo} = this.props;
-    __DEV__ && console.log('GOND renderSelectedDates ', dateFrom, dateTo);
-    return (
-      dateFrom.toFormat(DateFormat.POS_Filter_Date) +
-      ' -> ' +
-      dateTo.toFormat(DateFormat.POS_Filter_Date)
-    );
+
+    return {
+      from: dateFrom.toFormat(DateFormat.POS_Filter_Date),
+      to: dateTo.toFormat(DateFormat.POS_Filter_Date),
+    };
   };
 
   renderListFilter = () => {
@@ -565,37 +530,43 @@ class AlarmFilter extends Component {
     const {appearance} = this.props.appStore;
     __DEV__ && console.log('GOND AlarmFilter rerender: ', this.props);
     let contentHeader = (
-      <View style={[styles.contentHeader, theme[appearance].container]}>
+      <View style={[styles.contentHeader, theme[appearance].modalContainer]}>
         <View style={styles.dateTab}>
           <Button
             style={[
               styles.button_DateSelect,
               this.state.panel == Panels.DateSelect
                 ? {}
-                : styles.button_DateNotSelect,
+                : theme[appearance].alarmSearchButtonFilter,
             ]}
-            caption={this.renderSelectedDates()}
-            captionStyle={{
-              color:
-                this.state.panel == Panels.DateSelect
-                  ? CMSColors.White
-                  : CMSColors.ColorText,
-            }}
-            type={this.state.panel == Panels.DateSelect ? 'primary' : 'flat'}
+            type="primary"
             enable={true}
             onPress={() => {
               isFirst = true;
               this.setState({panel: Panels.DateSelect});
-            }}
-          />
+            }}>
+            <Text style={[styles.buttonHeaderText, theme[appearance].text]}>
+              {this.renderSelectedDates().from}
+            </Text>
+            <IconCustom
+              name="arrow-to"
+              size={20}
+              color={theme[appearance].text.color}
+              style={{marginHorizontal: 5}}
+            />
+            <Text style={[styles.buttonHeaderText, theme[appearance].text]}>
+              {this.renderSelectedDates().to}
+            </Text>
+          </Button>
         </View>
         <View style={styles.addMoreButtonContainer}>
           <Button
             style={[
               styles.button_FilterMore,
+              theme[appearance].modalContainer,
               this.state.panel == Panels.FilterMore
-                ? {color: CMSColors.White}
-                : styles.button_FilterMore_None,
+                ? styles.button_FilterMore_Select
+                : null,
             ]}
             iconCustom="i-add"
             iconSize={24}
@@ -620,18 +591,18 @@ class AlarmFilter extends Component {
 
     let contentBody =
       this.state.panel == Panels.DateSelect ? (
-        <View style={[styles.contentBody, theme[appearance].container]}>
+        <View style={[styles.contentBody, theme[appearance].modalContainer]}>
           {this.renderDate()}
         </View>
       ) : (
-        <View style={[styles.contentBody, theme[appearance].container]}>
+        <View style={[styles.contentBody, theme[appearance].modalContainer]}>
           {this.renderFilterMore()}
           {this.renderListFilter()}
         </View>
       );
 
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, theme[appearance].modalContainer]}>
         {contentHeader}
         {contentBody}
       </View>

@@ -2,11 +2,14 @@ import React, {Component} from 'react';
 import {Text, View, StyleSheet, FlatList} from 'react-native';
 import Ripple from 'react-native-material-ripple';
 
+import {inject, observer} from 'mobx-react';
+
 import {Icon} from '../CMSStyleSheet';
 
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
-export default class CheckList extends Component {
+class CheckList extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -35,6 +38,9 @@ export default class CheckList extends Component {
 
   renderRow = ({item}) => {
     if (!item) return;
+    const {style} = this.props;
+    const {appearance} = this.props.appStore;
+
     return (
       <Ripple
         rippleOpacity={0.87}
@@ -56,7 +62,7 @@ export default class CheckList extends Component {
             });
           }
         }}>
-        <View style={styles.rowList}>
+        <View style={[styles.rowList, style]}>
           <View style={[styles.containIconCheck]}>
             {item.isCheck == true ? (
               <Icon
@@ -69,7 +75,9 @@ export default class CheckList extends Component {
             )}
           </View>
           <View style={styles.rowButton_contain_name}>
-            <Text style={styles.rowButton_name}>{item.name}</Text>
+            <Text style={[styles.rowButton_name, theme[appearance].text]}>
+              {item.name}
+            </Text>
           </View>
         </View>
       </Ripple>
@@ -113,3 +121,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default inject('appStore')(observer(CheckList));

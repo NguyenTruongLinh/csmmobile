@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, Text, View} from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -10,10 +10,12 @@ import InputTextIcon from '../../components/controls/InputTextIcon';
 import Radio from '../../components/controls/Radio';
 
 import CMSColors from '../../styles/cmscolors';
-import variables from '../../styles/variables';
+import styles from './styles/otpVerificationStyles';
+
 import {Login as LoginTxt} from '../../localization/texts';
 import {I3_Logo} from '../../consts/images';
 import ROUTERS from '../../consts/routes';
+import theme from '../../styles/appearance';
 
 class OTPVerification extends Component {
   constructor(props) {
@@ -25,10 +27,8 @@ class OTPVerification extends Component {
       otpError: '',
       isDisabledResend: false,
     };
-    this._refs = {
-      otpCode: null,
-      countDown: null,
-    };
+    this._otpCodeRef = null;
+    this._countdownRef = null;
   }
 
   onRadioPress = type => {
@@ -73,12 +73,12 @@ class OTPVerification extends Component {
   };
 
   onReSendOTPPress = async () => {
-    if (this._refs.countDown) {
-      if (this._refs.countDown.getSeconds() === 0) {
+    if (this._countdownRef) {
+      if (this._countdownRef.getSeconds() === 0) {
         const isSent = await this.onSendOTP();
 
         if (isSent) {
-          this._refs.countDown.onReCountDown();
+          this._countdownRef.onReCountDown();
         }
       }
     }
@@ -112,16 +112,17 @@ class OTPVerification extends Component {
   renderSentContent = () => {
     const {otpError, isDisabledResend, otpCode} = this.state;
     const {isLoading} = this.props.userStore;
+    const {appearance} = this.props.appStore;
 
     return (
       <>
         <View style={styles.space_footer} />
-        <Text style={styles.enterTitle}>
+        <Text style={[styles.enterTitle, theme[appearance].text]}>
           Enter the OTP code sent to email{' '}
           <Text style={styles.textBold}>i3xxxx@gmail.com</Text>
         </Text>
         <InputTextIcon
-          ref={r => (this._refs.otpCode = r)}
+          ref={r => (this._otpCodeRef = r)}
           name="otpCode"
           maxLength={60}
           autoCapitalize={'none'}
@@ -134,15 +135,12 @@ class OTPVerification extends Component {
           label={LoginTxt.otpCode}
           placeholder=""
           disabled={false}
-          tintColor={CMSColors.PrimaryText}
-          textColor={CMSColors.PrimaryText}
-          baseColor={CMSColors.PrimaryText}
-          iconColor={CMSColors.InputIconColor}
+          iconColor={theme[appearance].inputIconColor}
           fixAndroidBottomLine={true}
           error={otpError}
         />
         <CountDown
-          ref={r => (this._refs.countDown = r)}
+          ref={r => (this._countdownRef = r)}
           onStopCountDown={this.onStopCountDown}
           onStartCountDown={this.onStartCountDown}
         />
@@ -172,6 +170,7 @@ class OTPVerification extends Component {
   render() {
     const {selectedType, isSendOTP} = this.state;
     const {isLoading} = this.props.userStore;
+    const {appearance} = this.props.appStore;
 
     const content = isSendOTP ? (
       this.renderSentContent()
@@ -188,10 +187,12 @@ class OTPVerification extends Component {
     );
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, theme[appearance].container]}>
         <View style={styles.contentContainer}>
           <View style={styles.space_footer} />
-          <Text style={styles.textTitle}>{LoginTxt.otpVerification}</Text>
+          <Text style={[styles.textTitle, theme[appearance].text]}>
+            {LoginTxt.otpVerification}
+          </Text>
           <View style={styles.space_footer} />
           <View style={styles.checkboxGroupContainer}>
             <Radio
@@ -213,74 +214,14 @@ class OTPVerification extends Component {
             style={styles.copyRightLogo}
             resizeMode="contain"
           />
-          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          <Text style={[styles.copyRightText, theme[appearance].text]}>
+            {LoginTxt.copyRight}
+          </Text>
         </View>
         <View style={styles.space_footer} />
       </SafeAreaView>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  contentContainer: {
-    flex: 1,
-    paddingHorizontal: variables.deviceWidth * 0.1,
-  },
-  space: {
-    height: 40,
-  },
-  copyRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: '6%',
-  },
-  copyRightLogo: {
-    tintColor: CMSColors.Dark_Blue,
-    width: (variables.deviceWidth * 28) / 100,
-    height: (variables.deviceWidth * 28 * 132) / 300 / 100,
-  },
-  copyRightText: {
-    flex: 1,
-    fontSize: 11,
-    marginLeft: 5,
-  },
-  space_footer: {
-    height: 25,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: CMSColors.PrimaryActive,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  textTitle: {
-    fontSize: 24,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  checkboxGroupContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  enterTitle: {
-    fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  textBold: {
-    fontWeight: 'bold',
-  },
-  buttonVerify: {
-    marginVertical: 30,
-  },
-  disableButtonText: {
-    color: 'rgb(156,156,156)',
-  },
-});
 
 export default inject('userStore', 'appStore')(observer(OTPVerification));

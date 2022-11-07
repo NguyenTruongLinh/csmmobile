@@ -57,6 +57,31 @@ const theme = {
     temperatureInfo: {
       backgroundColor: CMSColors.DividerColor24_HEX,
     },
+    nvrItemVideo: {
+      color: CMSColors.ColorText,
+      borderColor: CMSColors.Alto,
+      backgroundColor: CMSColors.White,
+    },
+    videoAllTab: {
+      borderColor: CMSColors.Gallery,
+      backgroundColor: CMSColors.Gallery,
+    },
+    videoAllTabIndicator: {
+      backgroundColor: CMSColors.White,
+    },
+    loginWithI3HostBackground: {
+      backgroundColor: CMSColors.White,
+    },
+    lineThroughLogin: {
+      backgroundColor: CMSColors.Grey,
+    },
+    borderHeaderScreen: CMSColors.Gallery,
+    videoItemAddress: {
+      color: CMSColors.SecondaryText,
+    },
+    alarmSearchButtonFilter: {
+      backgroundColor: CMSColors.Gallery,
+    },
   },
   dark: {
     container: {
@@ -113,6 +138,31 @@ const theme = {
     },
     temperatureInfo: {
       backgroundColor: CMSColors.CodGray,
+    },
+    nvrItemVideo: {
+      color: CMSColors.White_Op85,
+      borderColor: CMSColors.MineShaft_2,
+      backgroundColor: CMSColors.MineShaft_2,
+    },
+    videoAllTab: {
+      borderColor: CMSColors.MineShaft_3,
+      backgroundColor: CMSColors.MineShaft,
+    },
+    videoAllTabIndicator: {
+      backgroundColor: CMSColors.MineShaft_2,
+    },
+    loginWithI3HostBackground: {
+      backgroundColor: CMSColors.CodGray,
+    },
+    lineThroughLogin: {
+      backgroundColor: CMSColors.MineShaft,
+    },
+    borderHeaderScreen: CMSColors.White_Op16,
+    videoItemAddress: {
+      color: CMSColors.White_Op50,
+    },
+    alarmSearchButtonFilter: {
+      backgroundColor: CMSColors.MineShaft_4,
     },
   },
 };

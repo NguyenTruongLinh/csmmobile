@@ -116,8 +116,12 @@ module.exports = {
   White_Op30: 'rgba(255, 255, 255, 0.3)',
   White_Op50: 'rgba(255,255,255,0.50)',
   White_Op85: 'rgba(255, 255, 255, 0.85)',
+  White_Op16: 'rgba(255, 255, 255, 0.16)',
   Alto: '#e0e0e0',
   MineShaft: '#272727',
   CodGray_2: '#1E1E1E',
   MineShaft_2: '#383838',
+  MineShaft_3: '#333333',
+  MineShaft_4: '#2C2C2C',
+  Gallery: '#EEEEEE',
 };

@@ -9,7 +9,7 @@ import NoDataView from '../../../../components/views/NoData';
 import DataItem from './dataItem';
 
 import theme from '../../../../styles/appearance';
-import styles from '../../styles/smartErStyles';
+import styles, {SITE_ITEM_HEIGHT} from '../../styles/smartErStyles';
 
 import {Comps as CompTxt} from '../../../../localization/texts';
 
@@ -64,10 +64,16 @@ class DataView extends React.Component {
           <NoDataView isLoading={false} style={{flex: 1}} />
         ) : (
           <FlatList
+            ref={this.props.dataListRef}
             data={exceptionStore.filteredGroupsData}
             renderItem={this.renderSite}
             refreshing={isLoading}
             keyExtractor={(_, index) => `site_${index}`}
+            getItemLayout={(_, index) => ({
+              length: SITE_ITEM_HEIGHT,
+              offset: SITE_ITEM_HEIGHT * (index - 1),
+              index,
+            })}
           />
         )}
         {exceptionStore.filteredGroupsData &&

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {ActivityIndicator, Image, StyleSheet, Text, View} from 'react-native';
+import {Image, Text, View} from 'react-native';
 
 import {Dropdown} from 'react-native-element-dropdown';
 import {inject, observer} from 'mobx-react';
@@ -11,7 +11,9 @@ import {IconCustom} from '../../components/CMSStyleSheet';
 import InputTextIcon from '../../components/controls/InputTextIcon';
 
 import CMSColors from '../../styles/cmscolors';
-import variables from '../../styles/variables';
+import styles from './styles/i3LoginStyles';
+import theme from '../../styles/appearance';
+
 import {I3_Logo} from '../../consts/images';
 import ROUTERS from '../../consts/routes';
 import {Login as LoginTxt} from '../../localization/texts';
@@ -20,8 +22,8 @@ class I3HostLogin extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: '',
-      password: '',
+      email: __DEV__ ? 'hanhan3@mailinator.com' : '',
+      password: __DEV__ ? 'Han@123456' : '',
       errors: {
         email: '',
         password: '',
@@ -33,6 +35,14 @@ class I3HostLogin extends Component {
       password: null,
     };
   }
+
+  onTyping = (text, name) => {
+    if (name) {
+      if (text != this.state[name]) {
+        this.setState({[name]: text});
+      }
+    }
+  };
 
   onTypingPassword = (text, name) => {
     this.setState({password: text});
@@ -73,26 +83,35 @@ class I3HostLogin extends Component {
   };
 
   onLogin = async () => {
+    const {route} = this.props;
+    const {domain} = route.params || {};
+
     if (this.props.userStore) {
-      const res = await this.props.userStore.i3HostLogin(
+      const res = await this.props.userStore.getI3HostDomain(
+        domain,
         this.state.email,
         this.state.password
       );
-      if (res) {
-        this.props.appStore.naviService.navigate(ROUTERS.OTP_VERIFICATION);
-      }
+      console.log(
+        '🚀 ~ file: i3HostLogin.js ~ line 101 ~ I3HostLogin ~ onLogin= ~ res',
+        res
+      );
+      // if (res) {
+      //   this.props.appStore.naviService.navigate(ROUTERS.OTP_VERIFICATION);
+      // }
     }
   };
 
   render() {
     const {email, password, rememberPassword, errors} = this.state;
     const {isLoading} = this.props.userStore;
+    const {appearance} = this.props.appStore;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, theme[appearance].container]}>
         <View style={styles.contentContainer}>
           <View style={styles.space_footer} />
-          <Text style={styles.textTitle}>
+          <Text style={[styles.textTitle, theme[appearance].text]}>
             {LoginTxt.i3HostTitle}
             <Text style={styles.textBold}>{LoginTxt.i3HostTitleBold}</Text>
           </Text>
@@ -107,7 +126,7 @@ class I3HostLogin extends Component {
               enablesReturnKeyAutomatically={true}
               onEndEditing={this.onEndEditing}
               onFocus={this.onFocus}
-              onChangeText={this.onTypingEmail}
+              onChangeText={this.onTyping}
               onSubmitEditing={this.onSubmitEmail}
               returnKeyType="next"
               autoCapitalize={'none'}
@@ -116,10 +135,7 @@ class I3HostLogin extends Component {
               placeholder=""
               error={errors.email}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={false}
               fixAndroidBottomLine={true}
             />
@@ -133,17 +149,13 @@ class I3HostLogin extends Component {
               enablesReturnKeyAutomatically={true}
               onEndEditing={this.onEndEditing}
               onFocus={this.onFocus}
-              onChangeText={this.onTypingPassword}
+              onChangeText={this.onTyping}
               returnKeyType="next"
               iconCustom="locked-padlock"
               label={LoginTxt.password}
               placeholder=""
-              // error={errors.password}
               disabled={false}
-              tintColor={CMSColors.PrimaryText}
-              textColor={CMSColors.PrimaryText}
-              baseColor={CMSColors.PrimaryText}
-              iconColor={CMSColors.InputIconColor}
+              iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
               fixAndroidBottomLine={true}
@@ -157,6 +169,7 @@ class I3HostLogin extends Component {
               this.setState({rememberPassword: !this.state.rememberPassword});
             }}
             style={styles.checkbox}
+            labelStyle={theme[appearance].text}
           />
           <View style={styles.space_footer} />
           <Button
@@ -191,6 +204,7 @@ class I3HostLogin extends Component {
               </View>
             )}
             style={styles.dropdown}
+            placeholderStyle={theme[appearance].text}
           />
         </View>
         <View style={styles.copyRight}>
@@ -199,72 +213,14 @@ class I3HostLogin extends Component {
             style={styles.copyRightLogo}
             resizeMode="contain"
           />
-          <Text style={styles.copyRightText}>{LoginTxt.copyRight}</Text>
+          <Text style={[styles.copyRightText, theme[appearance].text]}>
+            {LoginTxt.copyRight}
+          </Text>
         </View>
         <View style={styles.space_footer} />
       </SafeAreaView>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  contentContainer: {
-    flex: 1,
-    paddingHorizontal: variables.deviceWidth * 0.1,
-  },
-  space: {
-    height: 40,
-  },
-  copyRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: '6%',
-  },
-  copyRightLogo: {
-    tintColor: CMSColors.Dark_Blue,
-    width: (variables.deviceWidth * 28) / 100,
-    height: (variables.deviceWidth * 28 * 132) / 300 / 100,
-  },
-  copyRightText: {
-    flex: 1,
-    fontSize: 11,
-    marginLeft: 5,
-  },
-  space_footer: {
-    height: 25,
-  },
-  forgotPasswordLink: {
-    marginTop: 30,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: CMSColors.PrimaryActive,
-    textAlign: 'center',
-  },
-  textTitle: {
-    fontSize: 24,
-    fontWeight: 'normal',
-    textAlign: 'center',
-  },
-  textBold: {fontWeight: 'bold'},
-  checkbox: {
-    marginBottom: 20,
-  },
-  dropdown: {
-    width: 128,
-    alignSelf: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: CMSColors.DividerColor,
-  },
-  dropdownIcon: {
-    marginRight: 12,
-  },
-  buttonLoginCaption: {
-    color: 'white',
-  },
-});
 
 export default inject('userStore', 'appStore')(observer(I3HostLogin));

@@ -1,7 +1,11 @@
 import React, {PureComponent} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
+import {inject, observer} from 'mobx-react';
+
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
+
 import {Login as LoginTxt} from '../../localization/texts';
 
 const SECONDS = 180;
@@ -79,18 +83,24 @@ class CountDown extends PureComponent {
 
   render() {
     const {time, seconds} = this.state;
+    const {appearance} = this.props.appStore;
 
     const content =
       seconds > 0 ? (
         <View>
-          <Text style={styles.timeLeftText}>
+          <Text style={[styles.timeLeftText, theme[appearance].text]}>
             <Text style={styles.textBold}>
               {time.m}:{time.s} seconds left
             </Text>
           </Text>
         </View>
       ) : (
-        <Text style={[styles.timeLeftText, styles.timeLeftExpiredText]}>
+        <Text
+          style={[
+            styles.timeLeftText,
+            theme[appearance].text,
+            styles.timeLeftExpiredText,
+          ]}>
           {LoginTxt.timeLeftExpired}
         </Text>
       );
@@ -114,4 +124,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CountDown;
+export default inject('appStore')(observer(CountDown));

@@ -2,10 +2,12 @@ import React, {Component} from 'react';
 import {StyleSheet, Text} from 'react-native';
 import PropTypes from 'prop-types';
 
+import {inject, observer} from 'mobx-react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ripple from 'react-native-material-ripple';
 
 import CMSColors from '../../styles/cmscolors';
+import theme from '../../styles/appearance';
 
 class Radio extends Component {
   static PropTypes = {
@@ -30,7 +32,9 @@ class Radio extends Component {
   }
 
   render() {
-    const {label, onPress, style, checked} = this.props;
+    const {label, onPress, style, checked, appStore} = this.props;
+    const {appearance} = appStore;
+
     return (
       <Ripple
         style={[styles.radioButtonContainer, style]}
@@ -42,7 +46,7 @@ class Radio extends Component {
           size={24}
           color={CMSColors.PrimaryActive}
         />
-        <Text style={styles.text}>{label}</Text>
+        <Text style={[styles.text, theme[appearance].text]}>{label}</Text>
       </Ripple>
     );
   }
@@ -64,4 +68,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Radio;
+export default inject('appStore')(observer(Radio));

@@ -45,7 +45,7 @@ class CMSPanel extends Component {
   };
 
   renderHeader = () => {
-    const {header} = this.props;
+    const {header, headerStyle} = this.props;
     const {expanded} = this.state;
     const icon = expanded ? (
       <IconCustom
@@ -66,7 +66,7 @@ class CMSPanel extends Component {
     } else if (typeof header === 'string') {
       return (
         <View style={styles.button}>
-          <Text style={styles.title}>{header}</Text>
+          <Text style={[styles.title, headerStyle]}>{header}</Text>
           {icon}
         </View>
       );
@@ -75,7 +75,7 @@ class CMSPanel extends Component {
     } else {
       return (
         <View style={styles.button}>
-          <Text style={styles.title}>
+          <Text style={[styles.title, headerStyle]}>
             [Must be String, or Function that {'\n'}
             render React Element]
           </Text>
@@ -149,7 +149,7 @@ CMSPanel.propTypes = {
     PropTypes.func,
     PropTypes.object,
   ]),
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
+  style: PropTypes.any,
   onPress: PropTypes.func,
   children: PropTypes.element.isRequired,
 };

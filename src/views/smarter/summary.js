@@ -124,13 +124,6 @@ class DashboardView extends React.Component {
     __DEV__ && console.log(`onSelectSite siteKey = `, siteKey);
     const {exceptionStore} = this.props;
     this.setState({selectedSiteKey: siteKey, loadingDetail: true}, async () => {
-      // __DEV__ &&
-      //   console.log(
-      //     `onSelectSite getGroupDetailData siteKey = `,
-      //     siteKey,
-      //     exceptionStore.filteredGroupsData
-      //   );
-
       setTimeout(() => {
         if (!this._isMounted) return;
         const selectedIndex =
@@ -139,8 +132,7 @@ class DashboardView extends React.Component {
                 item => item.siteKey == siteKey
               )
             : 0;
-        // __DEV__ &&
-        //   console.log(`onSelectSite getGroupDetailData index = `, selectedIndex);
+
         selectedIndex &&
           this.dataListRef.scrollToIndex({
             animated: true,
@@ -191,6 +183,7 @@ class DashboardView extends React.Component {
       <ChartView onChartEvent={this.onChartEvent} />
     ) : (
       <DataView
+        dataListRef={ref => (this.dataListRef = ref)}
         selectedSiteKey={this.state.selectedSiteKey}
         onSelectSite={this.onSelectSite}
         loadingDetail={this.state.loadingDetail}

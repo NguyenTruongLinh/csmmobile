@@ -5,12 +5,10 @@ import CMSColors from '../../../styles/cmscolors';
 export default StyleSheet.create({
   container: {flex: 1},
   contentHeader: {
-    flex: 15,
     paddingLeft: 10,
-    height: 45,
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    backgroundColor: CMSColors.White,
+    marginBottom: 10,
   },
   dateTab: {
     justifyContent: 'center',
@@ -18,7 +16,7 @@ export default StyleSheet.create({
   },
   button_DateSelect: {
     height: 32,
-    minWidth: 230,
+    paddingHorizontal: 10,
   },
   addMoreButtonContainer: {
     justifyContent: 'center',
@@ -26,14 +24,16 @@ export default StyleSheet.create({
   button_FilterMore: {
     height: 36,
     width: 36,
-    backgroundColor: CMSColors.PrimaryActive,
+    borderWidth: 1,
+    borderColor: CMSColors.PrimaryActive,
   },
   button_FilterMore_None: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: CMSColors.PrimaryActive,
     backgroundColor: CMSColors.White,
+  },
+  button_FilterMore_Select: {
+    backgroundColor: CMSColors.PrimaryActive,
   },
   button_DateNotSelect: {
     justifyContent: 'center',
@@ -42,9 +42,15 @@ export default StyleSheet.create({
   },
   button_FilterMore_Add: {
     height: 36,
-    minWidth: 36,
+    minWidth: 0,
     marginRight: 5,
-    padding: 5,
+    margin: 0,
+    padding: 0,
+    paddingHorizontal: 6,
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
 
   button_FilterMore_Add_None: {
@@ -52,7 +58,7 @@ export default StyleSheet.create({
   },
 
   contentBody: {
-    flex: 85,
+    flex: 1,
   },
 
   contentHeader_FilterMore: {
@@ -64,15 +70,16 @@ export default StyleSheet.create({
   rowListFilterContain: {
     marginTop: 6,
     paddingHorizontal: 12,
-    marginHorizontal: 12,
+    marginHorizontal: 15,
+    borderRadius: 2,
   },
   rowListFilterTimeContain: {
     marginTop: 6,
     paddingHorizontal: 12,
-    marginHorizontal: 12,
+    marginHorizontal: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: CMSColors.FilterRowBg,
+    borderRadius: 2,
   },
   rowListFilter: {
     flexDirection: 'row',
@@ -111,9 +118,23 @@ export default StyleSheet.create({
   },
   timePickerContainer: {flex: 1, height: 150},
   arrowIconContainer: {
-    marginTop: 43,
+    paddingTop: 43,
     justifyContent: 'center',
   },
   timePickerHeaderContainer: {flexDirection: 'row', justifyContent: 'center'},
   justifyCenter: {justifyContent: 'center'},
+
+  buttonFilterMoreCaption: {
+    textTransform: 'capitalize',
+    color: CMSColors.PrimaryText,
+    fontFamily: 'Roboto-Medium',
+    fontSize: 14,
+  },
+  button_FilterMore_Add_Active: {
+    color: CMSColors.White,
+  },
+  buttonHeaderText: {
+    fontSize: 14,
+    fontFamily: 'Roboto-Bold',
+  },
 });

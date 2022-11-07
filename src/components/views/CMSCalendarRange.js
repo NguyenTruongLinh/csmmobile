@@ -192,8 +192,8 @@ class CMSCalendarRange extends React.Component {
           </View>
         )}
         theme={{
-          backgroundColor: theme[appearance].container.backgroundColor,
-          calendarBackground: theme[appearance].container.backgroundColor,
+          backgroundColor: theme[appearance].modalContainer.backgroundColor,
+          calendarBackground: theme[appearance].modalContainer.backgroundColor,
           textSectionTitleColor: theme[appearance].text.color,
           dayTextColor: theme[appearance].text.color,
           todayTextColor: CMSColors.PrimaryActive,

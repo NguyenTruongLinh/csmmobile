@@ -11,7 +11,7 @@ import {DateTime} from 'luxon';
 import {stringtoBase64, isValidHttpUrl} from '../util/general';
 import snackbarUtil from '../util/snackbar';
 
-import {File as FileRoute} from '../consts/apiRoutes';
+import {File as FileRoute, Account as AccountRoute} from '../consts/apiRoutes';
 import {Domain} from '../consts/misc';
 
 // const _get = 'GET';
@@ -136,36 +136,44 @@ class Api {
     }
   }
 
-  async _login(_uid, _pass) {
-    let header = this._defaultHeader(this.config.appId);
-    //header.SID = this.ApiToken.Id;
-    header.set('SID', this.configToken.id);
-    let url = this._baseUrl('account');
-    let body = JSON.stringify({UserName: _uid, Password: _pass});
-    let response = await fetch(url, {
-      method: Methods.Post,
-      headers: header,
-      timeout: 30000,
-      body: body,
-    });
-    __DEV__ &&
-      console.log(
-        `GOND user _login  url = `,
-        url,
-        'headers = ',
-        header,
-        `body = `,
-        body
-      );
-    if (response.status == 200) {
-      header = response.headers;
-      let raw_token = header.get('www-authenticate');
-      let hindex = raw_token.indexOf('3rd-auth ');
-      if (hindex >= 0)
-        raw_token = raw_token.substr(hindex + '3rd-auth '.length);
-      this.configToken.token = raw_token;
+  async _login(_uid, _pass, _isI3Host) {
+    try {
+      let header = this._defaultHeader(this.config.appId);
+      //header.SID = this.ApiToken.Id;
+      header.set('SID', this.configToken.id);
+      let url = this._baseUrl('account');
+      const i3hostParams = _isI3Host ? {
+        IsI3Host: true,
+        TokenI3Host: '',
+      } : {};
+      let body = JSON.stringify({UserName: _uid, Password: _pass, ...i3hostParams});
+      let response = await fetch(url, {
+        method: Methods.Post,
+        headers: header,
+        timeout: 30000,
+        body: body,
+      });
+      __DEV__ &&
+        console.log(
+          `GOND user _login  url = `,
+          url,
+          'headers = ',
+          header,
+          `body = `,
+          body
+        );
+      if (response.status == 200) {
+        header = response.headers;
+        let raw_token = header.get('www-authenticate');
+        let hindex = raw_token.indexOf('3rd-auth ');
+        if (hindex >= 0)
+          raw_token = raw_token.substr(hindex + '3rd-auth '.length);
+        this.configToken.token = raw_token;
+      }
+      return response;
+    } catch (error) {
+      console.log("🚀 ~ file: api.js ~ line 175 ~ Api ~ _login ~ error", error)
     }
-    return response;
   }
   async _changePassword(_userName, _oldPass, _newPass, _apiKey) {
     let header = this._defaultHeader(this.config.appId);
@@ -401,7 +409,7 @@ class Api {
     return this.parseResponse(response);
   }
 
-  async login(username, pass) {
+  async login(username, pass, isI3Host) {
     try {
       let response = await this._getApiKey('account');
       if (response.status != 200) {
@@ -411,7 +419,7 @@ class Api {
       let uid = enc_user.toString();
       enc_user = AES.encrypt(pass, this.configToken.apiKey);
       let pas = enc_user.toString();
-      let res = await this._login(uid, pas);
+      let res = await this._login(uid, pas, isI3Host);
       //response =  await this.GetDVRs();
 
       // if (res.status == 200) {
@@ -538,6 +546,28 @@ class Api {
 
     __DEV__ && console.log('GOND downloaded result: ', res);
     return res;
+  }
+
+  async i3hostLogin(domainName, username, password) {
+    try {
+      const uid = AES.encrypt(username, "i3 International Inc.").toString();
+      const pas = AES.encrypt(password, "i3 International Inc.").toString();
+
+      const res = await this._fetch(domainName + AccountRoute.i3hostLogin, Methods.Post, JSON.stringify({
+        Username: uid,
+        Password: pas,
+        ClientId: 'i3AuthServer',
+        ClientSecret: 'i3international_authorization',
+        Scope:
+          'profile i3Master.Services.i3Host i3Tenant.Services.i3Host i3Auth.Services.i3Host offline_access',
+      }));
+
+      const rs = await res.json();
+      return rs;
+    } catch (ex) {
+      __DEV__ && console.log("🚀 ~ file: api.js ~ line 568 ~ Api ~ i3hostLogin ~ ex", ex)
+      return undefined;
+    }
   }
 }
 
