@@ -69,7 +69,7 @@ class CMSTabbar extends React.Component {
           const isSelected = index === currentIndex;
           const isDisable = userStore.disableTabIndexes.includes(index);
           const textStyle = isDisable
-            ? styles.textDisabled
+            ? theme[appearance].textTabBarDisabled
             : isSelected
             ? theme[appearance].textTabBarActive
             : theme[appearance].textTabBarInactive;
@@ -86,7 +86,7 @@ class CMSTabbar extends React.Component {
                 size={30}
                 color={
                   isDisable
-                    ? CMSColors.DisableItemColor
+                    ? theme[appearance].iconTabBarDisabled
                     : isSelected
                     ? theme[appearance].iconTabBarActive
                     : theme[appearance].iconTabBarInactive

@@ -433,6 +433,7 @@ export const UserStoreModel = types
         __DEV__ && console.log('GOND load user profile error: ', err);
         self.isLoggedIn = false;
         self.error = err;
+        self.isLoading = false;
         appStore.setLoading(false);
         return;
       }
@@ -443,6 +444,7 @@ export const UserStoreModel = types
       self.error = '';
       self.message = data.message || '';
       self.isLoggedIn = true;
+      self.isLoading = false;
 
       // data.Api && self.api.parse(data.Api);
       // yield self.getUserPhoto();
@@ -487,6 +489,7 @@ export const UserStoreModel = types
         Alert.alert(LoginTxt.errorTitle, LoginTxt.errorLoginCantConnect);
       }
       self.isLoggedIn = false;
+      self.isLoading = false;
       appStore.setLoading(false);
     },
     logout: flow(function* () {
@@ -1021,7 +1024,7 @@ export const UserStoreModel = types
     // #endregion
     // #region Settings:
     hasPermission(id) {
-      return !!self.modules.find(mod => mod.functionId == id);
+      return !!self.modules.find(mod => mod.functionId !== id);
     },
     updateProfile: flow(function* (data) {
       self.user.updateProfile(data);
@@ -1280,24 +1283,24 @@ export const UserStoreModel = types
           );
 
           const rs = yield res.json();
-          self.isLoading = false;
 
           if (Object.keys(rs).length > 0) {
             const {leftAttempts, accessToken} = rs || {};
 
             if (leftAttempts >= 0) {
+              self.isLoading = false;
               snackbarUtil.onError(
                 'Could not login. Please contact your administrator.'
               );
             } else if (accessToken) {
               self.loginI3hostSuccessful(accessToken);
             } else {
+              self.isLoading = false;
               return rs;
             }
           }
         }
 
-        self.isLoading = false;
         return undefined;
       } catch (error) {
         self.isLoading = false;
@@ -1355,7 +1358,6 @@ export const UserStoreModel = types
         );
 
         const rs = yield res.json();
-        self.isLoading = false;
 
         if (Object.keys(rs).length > 0) {
           const {leftAttempts, accessToken} = rs || {};

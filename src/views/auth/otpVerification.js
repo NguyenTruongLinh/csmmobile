@@ -161,7 +161,6 @@ class OTPVerification extends Component {
           disabled={false}
           tintColor={theme[appearance].inputIconColor}
           iconColor={theme[appearance].inputIconColor}
-          fixAndroidBottomLine={true}
           error={otpError}
         />
         <CountDown

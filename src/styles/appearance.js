@@ -82,6 +82,10 @@ const theme = {
     alarmSearchButtonFilter: {
       backgroundColor: CMSColors.Gallery,
     },
+    iconTabBarDisabled: CMSColors.DisableItemColor,
+    textTabBarDisabled: {
+      color: CMSColors.DisableItemColor,
+    },
   },
   dark: {
     container: {
@@ -163,6 +167,10 @@ const theme = {
     },
     alarmSearchButtonFilter: {
       backgroundColor: CMSColors.MineShaft_4,
+    },
+    iconTabBarDisabled: CMSColors.SecondaryText,
+    textTabBarDisabled: {
+      color: CMSColors.SecondaryText,
     },
   },
 };

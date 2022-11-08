@@ -22,8 +22,8 @@ class I3HostLogin extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: __DEV__ ? 'hanhan3@mailinator.com' : '',
-      password: __DEV__ ? 'Han@123456' : '',
+      email: __DEV__ ? 'i3admin' : '',
+      password: __DEV__ ? 'i3admin' : '',
       errors: {
         email: '',
         password: '',
