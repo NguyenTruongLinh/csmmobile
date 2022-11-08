@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Image, Text, View} from 'react-native';
+import {ActivityIndicator, Image, Text, View} from 'react-native';
 
 import {inject, observer} from 'mobx-react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -54,9 +54,15 @@ class OTPVerification extends Component {
 
   onSendOTP = async () => {
     const {selectedType} = this.state;
-    const type = selectedType === 0 ? 'email' : 'phone';
+    const {userId} = this.props?.route?.params;
+
+    const params = {
+      UserID: userId,
+      ByEmail: selectedType === 0,
+      BySms: selectedType === 1,
+    };
     if (this.props.userStore) {
-      const res = await this.props.userStore.getOtp(type);
+      const res = await this.props.userStore.getOtp(params);
       return res;
     }
 
@@ -86,10 +92,19 @@ class OTPVerification extends Component {
 
   onVerifyOTP = () => {
     const {otpCode} = this.state;
+    const {userId} = this.props?.route?.params;
 
     if (otpCode.length === 6) {
       if (this.props.userStore) {
-        this.props.userStore.verifyOtp(otpCode);
+        const params = {
+          userId,
+          Token: otpCode,
+          ClientId: 'i3AuthServer',
+          ClientSecret: 'i3international_authorization',
+          Scope:
+            'profile i3Master.Services.i3Host i3Tenant.Services.i3Host i3Auth.Services.i3Host offline_access',
+        };
+        this.props.userStore.verifyOtp(params);
       }
       this.setState({otpError: ''});
     } else {
@@ -111,15 +126,24 @@ class OTPVerification extends Component {
 
   renderSentContent = () => {
     const {otpError, isDisabledResend, otpCode} = this.state;
-    const {isLoading} = this.props.userStore;
+    const {isLoading, userEmail, countDownTimeOTP} = this.props.userStore;
     const {appearance} = this.props.appStore;
+
+    const hashEmail = () => {
+      // split userEmail by @ and get the first part, then change the middle part to ***
+      const email = userEmail.split('@');
+      const firstPart = email[0].slice(0, 2);
+      const lastPart = email[0].slice(-2);
+      const middlePart = email[0].slice(2, -2).replace(/./g, '*');
+      return `${firstPart}${middlePart}${lastPart}@${email[1]}`;
+    };
 
     return (
       <>
         <View style={styles.space_footer} />
         <Text style={[styles.enterTitle, theme[appearance].text]}>
           Enter the OTP code sent to email{' '}
-          <Text style={styles.textBold}>i3xxxx@gmail.com</Text>
+          <Text style={styles.textBold}>{hashEmail()}</Text>
         </Text>
         <InputTextIcon
           ref={r => (this._otpCodeRef = r)}
@@ -135,6 +159,7 @@ class OTPVerification extends Component {
           label={LoginTxt.otpCode}
           placeholder=""
           disabled={false}
+          tintColor={theme[appearance].inputIconColor}
           iconColor={theme[appearance].inputIconColor}
           fixAndroidBottomLine={true}
           error={otpError}
@@ -143,6 +168,7 @@ class OTPVerification extends Component {
           ref={r => (this._countdownRef = r)}
           onStopCountDown={this.onStopCountDown}
           onStartCountDown={this.onStartCountDown}
+          countDownTimeOTP={countDownTimeOTP}
         />
         <View style={styles.space} />
         <Text
@@ -171,6 +197,7 @@ class OTPVerification extends Component {
     const {selectedType, isSendOTP} = this.state;
     const {isLoading} = this.props.userStore;
     const {appearance} = this.props.appStore;
+    const {isMultiOtpOptions} = this.props?.route?.params;
 
     const content = isSendOTP ? (
       this.renderSentContent()
@@ -178,11 +205,12 @@ class OTPVerification extends Component {
       <>
         <View style={styles.space} />
         <Button
-          caption="SEND OTP"
+          caption={isLoading ? null : 'SEND OTP'}
           type="primary"
           onPress={this.onSendOTPPress}
-          enable={!isLoading}
-        />
+          enable={!isLoading}>
+          {isLoading && <ActivityIndicator size="small" color="#fff" />}
+        </Button>
       </>
     );
 
@@ -204,6 +232,7 @@ class OTPVerification extends Component {
               label="By phone number"
               checked={selectedType === 1}
               onPress={() => this.onRadioPress(1)}
+              disabled={!isMultiOtpOptions}
             />
           </View>
           {content}

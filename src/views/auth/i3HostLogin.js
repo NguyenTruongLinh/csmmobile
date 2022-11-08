@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Image, Text, View} from 'react-native';
+import {ActivityIndicator, Image, Text, View} from 'react-native';
 
 import {Dropdown} from 'react-native-element-dropdown';
 import {inject, observer} from 'mobx-react';
@@ -44,25 +44,6 @@ class I3HostLogin extends Component {
     }
   };
 
-  onTypingPassword = (text, name) => {
-    this.setState({password: text});
-  };
-
-  onTypingEmail = text => {
-    let email = text;
-    this.setState({email: text});
-    if (!email) return;
-    const regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    let invalidMsg = '';
-    if (!regexEmail.test(email)) {
-      invalidMsg = 'Email is incorrect format.';
-      this.setState({errors: {email: invalidMsg}});
-    } else {
-      this.setState({errors: {email: invalidMsg}});
-    }
-    __DEV__ && console.log('email', `invalidMsg=${invalidMsg}`);
-  };
-
   onEndEditing = (event, name) => {
     if (name && event.nativeEvent) {
       let {text} = event.nativeEvent;
@@ -76,8 +57,6 @@ class I3HostLogin extends Component {
     this._refs.password && this._refs.password.focus();
   };
 
-  onFocus = event => {};
-
   onForgotPasswordPress = () => {
     this.props.appStore.naviService.navigate(ROUTERS.FORGOT_PASSWORD);
   };
@@ -87,18 +66,21 @@ class I3HostLogin extends Component {
     const {domain} = route.params || {};
 
     if (this.props.userStore) {
-      const res = await this.props.userStore.getI3HostDomain(
+      const res = await this.props.userStore.i3HostLogin(
         domain,
         this.state.email,
         this.state.password
       );
-      console.log(
-        '🚀 ~ file: i3HostLogin.js ~ line 101 ~ I3HostLogin ~ onLogin= ~ res',
-        res
-      );
-      // if (res) {
-      //   this.props.appStore.naviService.navigate(ROUTERS.OTP_VERIFICATION);
-      // }
+
+      if (res) {
+        if ('isMultiOtpOptions' in res) {
+          const {userId, isMultiOtpOptions} = res;
+          this.props.appStore.naviService.navigate(ROUTERS.OTP_VERIFICATION, {
+            userId,
+            isMultiOtpOptions,
+          });
+        }
+      }
     }
   };
 
@@ -125,7 +107,6 @@ class I3HostLogin extends Component {
               autoCorrect={false}
               enablesReturnKeyAutomatically={true}
               onEndEditing={this.onEndEditing}
-              onFocus={this.onFocus}
               onChangeText={this.onTyping}
               onSubmitEditing={this.onSubmitEmail}
               returnKeyType="next"
@@ -135,6 +116,7 @@ class I3HostLogin extends Component {
               placeholder=""
               error={errors.email}
               disabled={false}
+              tintColor={theme[appearance].inputIconColor}
               iconColor={theme[appearance].inputIconColor}
               secureTextEntry={false}
               fixAndroidBottomLine={true}
@@ -148,13 +130,13 @@ class I3HostLogin extends Component {
               autoCorrect={false}
               enablesReturnKeyAutomatically={true}
               onEndEditing={this.onEndEditing}
-              onFocus={this.onFocus}
               onChangeText={this.onTyping}
               returnKeyType="next"
               iconCustom="locked-padlock"
               label={LoginTxt.password}
               placeholder=""
               disabled={false}
+              tintColor={theme[appearance].inputIconColor}
               iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}
@@ -174,12 +156,13 @@ class I3HostLogin extends Component {
           <View style={styles.space_footer} />
           <Button
             style={styles.buttonLogin}
-            caption="LOGIN"
+            caption={isLoading ? null : 'LOGIN'}
             type="primary"
             captionStyle={styles.buttonLoginCaption}
             onPress={this.onLogin}
-            enable={email && password && !isLoading && !errors.email}
-          />
+            enable={email && password && !isLoading && !errors.email}>
+            {isLoading && <ActivityIndicator size="small" color="#fff" />}
+          </Button>
           <Text
             style={styles.forgotPasswordLink}
             onPress={this.onForgotPasswordPress}>

@@ -21,8 +21,10 @@ class CountDown extends PureComponent {
   }
 
   componentDidMount() {
-    let timeLeftVar = this.secondsToTime(this.state.seconds);
-    this.setState({time: timeLeftVar});
+    const {countDownTimeOTP} = this.props;
+    const timeLeft = countDownTimeOTP ? countDownTimeOTP / 10 : SECONDS;
+    let timeLeftVar = this.secondsToTime(timeLeft);
+    this.setState({time: timeLeftVar, seconds: timeLeft});
     this.startTimer();
   }
 

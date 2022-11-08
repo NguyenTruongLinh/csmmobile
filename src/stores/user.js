@@ -1,6 +1,5 @@
 import {types, flow, getSnapshot} from 'mobx-state-tree';
 import {Alert} from 'react-native';
-import AES from 'crypto-js/aes';
 
 import {
   WIDGET_COUNTS,
@@ -323,6 +322,8 @@ export const UserStoreModel = types
     //
     isLoading: types.maybeNull(types.boolean),
     countDownTimeOTP: types.maybeNull(types.number),
+    userEmail: types.maybeNull(types.string),
+    i3hostDomain: types.maybeNull(types.string),
   })
   .volatile(self => ({
     onLogin: () => __DEV__ && console.log('GOND onLogin event not defined!'),
@@ -1196,66 +1197,6 @@ export const UserStoreModel = types
     }),
     // #endregion
     // i3 host
-    i3HostLogin: flow(function* (domainname, username, password) {
-      try {
-        self.isLoading = true;
-        if (!appStore.deviceInfo || !appStore.deviceInfo.deviceId) {
-          yield appStore.loadLocalData();
-        }
-        const config = apiService.getConfig();
-        const {apiKey} = config.configToken;
-        console.log(
-          '🚀 ~ file: user.js ~ line 1207 ~ i3HostLogin:flow ~ apiKey',
-          apiKey
-        );
-        const uid = AES.encrypt(username, apiKey).toString();
-        console.log(
-          '🚀 ~ file: user.js ~ line 1212 ~ i3HostLogin:flow ~ uid',
-          uid
-        );
-        self.error = '';
-        // self.loginInfo = LoginModel.create({
-        //   domainname,
-        //   username,
-        //   password,
-        // });
-        // self.domain = domainname;
-        // self.api = APIModel.create({
-        //   url: domainname + AccountRoute.i3hostLogin,
-        //   appId: APP_INFO.AppId,
-        //   version: APP_INFO.Version,
-        //   id: '',
-        //   apiKey: '',
-        //   token: '',
-        // });
-        // self.setConfigApi();
-
-        // const response = yield apiService.i3hostLogin(
-        //   domainname,
-        //   username,
-        //   password
-        // );
-        // self.isLoading = false;
-        // const {leftAttempts} = response || {};
-
-        // if (leftAttempts === 0) {
-        //   snackbarUtil.onError(
-        //     'Could not login. Please contact your administrator.'
-        //   );
-        // }
-
-        // if (res && res.status === 200 && res.Result && !res.Result.error) {
-        //   self.countDownTimeOTP = res.Result.CountDownTimeOTP;
-        // }
-        // return false;
-      } catch (error) {
-        self.isLoading = false;
-        __DEV__ &&
-          console.log('GOND i3HostLogin error = ', JSON.stringify(error));
-        snackbarUtil.handleRequestFailed();
-        return false;
-      }
-    }),
     getI3HostDomain: flow(function* (domainname, username, password) {
       try {
         self.isLoading = true;
@@ -1282,9 +1223,13 @@ export const UserStoreModel = types
         const res = yield apiService.login(username, password, true);
 
         if (res && res.status === 200 && res.Result && !res.Result.error) {
-          const {CountDownTimeOTP, I3HostDomain} = res.Result;
+          const {CountDownTimeOTP, I3HostDomain, Email} = res.Result;
+
+          self.userEmail = Email;
           self.countDownTimeOTP = CountDownTimeOTP;
-          self.i3HostLogin(I3HostDomain, username, password);
+          self.i3HostDomain = I3HostDomain;
+
+          return res.Result;
         }
         return false;
       } catch (error) {
@@ -1295,24 +1240,92 @@ export const UserStoreModel = types
         return false;
       }
     }),
-    getOtp: flow(function* (type) {
+    i3HostLogin: flow(function* (domainname, username, password) {
       try {
-        const params =
-          type === 'email'
-            ? {Email: 'example@example.com'}
-            : {Phone: '123456789'};
         self.isLoading = true;
-        const res = yield apiService.get(
-          AccountRoute.i3hostOtp,
-          '',
-          '',
-          params
-        );
-        self.isLoading = false;
-        __DEV__ && console.log('GOND getOtp res = ', JSON.stringify(res));
+        self.error = '';
 
-        if (res && res.status === 200 && res.Result && !res.Result.error) {
-          return res.Result;
+        const i3hostRes = yield self.getI3HostDomain(
+          domainname,
+          username,
+          password
+        );
+
+        if (i3hostRes && i3hostRes?.I3HostDomain) {
+          const {I3HostDomain, UserName, Password} = i3hostRes;
+          const domain = I3HostDomain + AccountRoute.i3hostLogin;
+
+          self.i3hostDomain = I3HostDomain;
+          self.api = APIModel.create({
+            url: domain,
+            appId: APP_INFO.AppId,
+            version: APP_INFO.Version,
+            id: '',
+            apiKey: '',
+            token: '',
+          });
+          self.setConfigApi();
+
+          const res = yield apiService._fetch(
+            domain,
+            'POST',
+            JSON.stringify({
+              Username: UserName,
+              Password,
+              ClientId: 'i3AuthServer',
+              ClientSecret: 'i3international_authorization',
+              Scope:
+                'profile i3Master.Services.i3Host i3Tenant.Services.i3Host i3Auth.Services.i3Host offline_access',
+            })
+          );
+
+          const rs = yield res.json();
+          self.isLoading = false;
+
+          if (Object.keys(rs).length > 0) {
+            const {leftAttempts, accessToken} = rs || {};
+
+            if (leftAttempts >= 0) {
+              snackbarUtil.onError(
+                'Could not login. Please contact your administrator.'
+              );
+            } else if (accessToken) {
+              self.loginI3hostSuccessful(accessToken);
+            } else {
+              return rs;
+            }
+          }
+        }
+
+        self.isLoading = false;
+        return undefined;
+      } catch (error) {
+        self.isLoading = false;
+        __DEV__ &&
+          console.log('GOND i3HostLogin error = ', JSON.stringify(error));
+        snackbarUtil.handleRequestFailed();
+        return false;
+      }
+    }),
+    getOtp: flow(function* (params) {
+      try {
+        self.isLoading = true;
+
+        self.api = APIModel.create({
+          url: self.i3hostDomain + AccountRoute.i3hostGetOtp,
+          appId: APP_INFO.AppId,
+          version: APP_INFO.Version,
+          id: '',
+          apiKey: '',
+          token: '',
+        });
+        self.setConfigApi();
+
+        const res = yield apiService.post('', '', '', params);
+        self.isLoading = false;
+
+        if (res && res?.userId) {
+          return true;
         }
         return false;
       } catch (error) {
@@ -1321,24 +1334,70 @@ export const UserStoreModel = types
         return false;
       }
     }),
-    verifyOtp: flow(function* (otp) {
+    verifyOtp: flow(function* (params) {
       try {
         self.isLoading = true;
-        const res = yield apiService.post(AccountRoute.i3hostOtp, '', '', {
-          Otp: otp,
-        });
-        self.isLoading = false;
-        __DEV__ && console.log('GOND verifyOtp res = ', JSON.stringify(res));
 
-        if (res && res.status === 200 && res.Result && !res.Result.error) {
-          return res.Result;
+        const domain = self.i3hostDomain + AccountRoute.i3hostVerifyOtp;
+        self.api = APIModel.create({
+          url: domain,
+          appId: APP_INFO.AppId,
+          version: APP_INFO.Version,
+          id: '',
+          apiKey: '',
+          token: '',
+        });
+        self.setConfigApi();
+        const res = yield apiService._fetch(
+          domain,
+          'POST',
+          JSON.stringify(params)
+        );
+
+        const rs = yield res.json();
+        self.isLoading = false;
+
+        if (Object.keys(rs).length > 0) {
+          const {leftAttempts, accessToken} = rs || {};
+
+          if (leftAttempts >= 0) {
+            snackbarUtil.onError(
+              'Your OTP is invalid or expired. Please try again.'
+            );
+          } else if (accessToken) {
+            self.loginI3hostSuccessful(accessToken);
+          }
         }
-        return false;
       } catch (error) {
         __DEV__ &&
           console.log('GOND verifyOtp error = ', JSON.stringify(error));
         snackbarUtil.handleRequestFailed();
         return false;
+      }
+    }),
+    loginI3hostSuccessful: flow(function* (token) {
+      self.api = APIModel.create({
+        url: self.domain + Route,
+        appId: APP_INFO.AppId,
+        version: APP_INFO.Version,
+        id: '',
+        apiKey: '',
+        token: '',
+      });
+      self.setConfigApi();
+
+      const res = yield apiService.login(
+        self.loginInfo.username,
+        self.loginInfo.password,
+        false,
+        token
+      );
+
+      if (res && res.status == 200 && res.Result) {
+        self.user.userName = self.loginInfo.username;
+        self.loginSuccess(res);
+      } else {
+        self.loginFailed(res);
       }
     }),
   }));

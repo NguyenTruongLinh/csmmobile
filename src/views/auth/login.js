@@ -183,6 +183,8 @@ class LoginView extends Component {
   onI3HostLoginPress = () => {
     const {domain} = this.state;
 
+    if (this.state.errors.domain) return;
+
     if (!domain) {
       snackbarUtil.onWarning('Please enter your domain.');
     } else {
@@ -231,6 +233,7 @@ class LoginView extends Component {
               label={LoginTxt.domain}
               autoCapitalize={'none'}
               autoCorrect={false}
+              tintColor={theme[appearance].inputIconColor}
               iconColor={theme[appearance].inputIconColor}
               error={domainErrorFlag ? errors.domain : undefined}
               disabled={false}
@@ -253,6 +256,7 @@ class LoginView extends Component {
               label={LoginTxt.username}
               placeholder=""
               disabled={false}
+              tintColor={theme[appearance].inputIconColor}
               iconColor={theme[appearance].inputIconColor}
               secureTextEntry={false}
             />
@@ -272,6 +276,7 @@ class LoginView extends Component {
               label={LoginTxt.password}
               placeholder=""
               disabled={false}
+              tintColor={theme[appearance].inputIconColor}
               iconColor={theme[appearance].inputIconColor}
               secureTextEntry={true}
               revealable={true}

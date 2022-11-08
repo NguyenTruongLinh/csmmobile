@@ -77,7 +77,6 @@ const styles = StyleSheet.create({
   checkedboxIcon: {
     borderColor: CMSColors.PrimaryColor,
     backgroundColor: CMSColors.PrimaryColor,
-    flex: 1,
   },
   checkboxIcon: {
     alignItems: 'center',

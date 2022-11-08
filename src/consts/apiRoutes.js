@@ -12,7 +12,8 @@ export const Account = {
   changePassword: 'changePassword',
   profile: 'profile',
   i3hostLogin: 'api/auth/checkin',
-  i3hostOtp: 'i3hostotp',
+  i3hostGetOtp: 'api/auth-gateway/resend-otp',
+  i3hostVerifyOtp: 'api/auth/checkin/verify-otp',
 };
 
 export const AlertType = {

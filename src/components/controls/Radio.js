@@ -15,6 +15,7 @@ class Radio extends Component {
     checked: PropTypes.bool,
     onPress: PropTypes.func,
     style: PropTypes.any,
+    disabled: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -22,6 +23,7 @@ class Radio extends Component {
     checked: false,
     onPress: () => {},
     style: {},
+    disabled: false,
   };
 
   constructor(props) {
@@ -32,7 +34,7 @@ class Radio extends Component {
   }
 
   render() {
-    const {label, onPress, style, checked, appStore} = this.props;
+    const {label, onPress, style, checked, appStore, disabled} = this.props;
     const {appearance} = appStore;
 
     return (
@@ -40,13 +42,22 @@ class Radio extends Component {
         style={[styles.radioButtonContainer, style]}
         onPress={() => {
           onPress && onPress();
-        }}>
+        }}
+        disabled={disabled}>
         <Icon
           name={checked ? 'dot-circle-o' : 'circle-o'}
           size={24}
-          color={CMSColors.PrimaryActive}
+          color={disabled ? CMSColors.SecondaryText : CMSColors.PrimaryActive}
         />
-        <Text style={[styles.text, theme[appearance].text]}>{label}</Text>
+        <Text
+          style={[
+            styles.text,
+            disabled
+              ? {color: CMSColors.SecondaryText}
+              : theme[appearance].text,
+          ]}>
+          {label}
+        </Text>
       </Ripple>
     );
   }
